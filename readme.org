@@ -1,0 +1,102 @@
+#+TITLE: Elastica
+#+AUTHOR: Tejaswin Parthasarathy
+#+DATE:<2019-07-23 Mon>
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Software to simulate the dynamics of filaments that, at every cross-section,
+can undergo all six possible modes of deformation, allowing the filament to bend, twist,
+stretch and shear, while interacting with complex environments via muscular activity, surface contact,
+friction and hydrodynamics
+*** TODO Add project logo.
+
+[[https://github.com/sxs-collaboration/spectre/blob/develop/LICENSE.txt][https://img.shields.io/badge/license-MIT-blue.svg ]][[https://en.wikipedia.org/wiki/C%2B%2B#Standardization][https://img.shields.io/badge/c%2B%2B-14-blue.svg]]
+
+*** If you are using badges, add them here.
+
+* About
+  :PROPERTIES:
+  :CUSTOM-ID: about
+  :END:
+
+  Add a detailed introduction about the project here, everything you want the
+  reader to know.
+
+* Usage
+  Write about how to use this project.
+
+** Installation
+   - Steps on how to install this project, to use it.
+   - Be very detailed here, For example, if you have tools which run on
+     different operating systems, write installation steps for all of them.
+
+   #+begin_src sh
+   echo "add installations steps if you have to."
+   #+end_src
+
+** Commands
+   - Commands to start the project.
+
+* Development
+  If you want other people to contribute to this project, this is the section,
+  make sure you always add this.
+
+** Pre-Requisites
+   List all the pre-requisites the system needs to develop this project.
+   - A tool
+   - B tool
+
+** Development Environment
+   Write about setting up the working environment for your project.
+   - How to download the project...
+   - How to install dependencies...
+
+** Build
+   Write the build Instruction here.
+
+** Deployment
+   Write the deployment instruction here.
+
+* Community
+
+  If it's open-source, talk about the community here, ask social media links and
+  other links.
+
+** Contribution
+
+  Your contributions are always welcome and appreciated. Following are the
+  things you can do to contribute to this project.
+
+  1) *Report a bug*
+	 - If you think you have encountered a bug, and I should know about it, feel
+       free to report it [[][here]] and I will take care of it.
+  2) *Request a feature*
+	 - You can also request for a feature [[][here]], and if it will viable, it
+       will be picked for development.
+  3) *Create a merge request*
+     - It can't get better then this, your pull request will be appreciated by
+       the community. You can get started by picking up any open issues from
+       [[][here]] and make a pull request.
+
+** Branches
+
+   I use an agile continuous integration methodology, so the version is
+   frequently updated and development is really fast.
+
+  1. ~Master~ is the development branch.
+
+  2. ~Production~ is the production branch.
+
+  3. No further branches should be created in the main repository.
+
+  *Steps to create a merge request*
+
+  1. Make a PR to ~master~ branch.
+  2. Comply with the best practices and guidelines e.g. where the PR concerns
+     visual elements it should have an image showing the effect.
+  3. It must pass all continuous integration checks and get positive reviews.
+
+  After this, changes will be merged.
+
+** Guideline
+   coding guidelines or other things you want people to follow should follow.
