@@ -1,9 +1,8 @@
 #!/bin/bash
 
-mkdir build
-cd build
+mkdir -p build && cd "$_" || return
 
 cmake \
-  "$@" ..
+	"$@" ..
 
-make -j`nproc`
+make -j"$(nproc)"

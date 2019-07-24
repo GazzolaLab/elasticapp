@@ -5,9 +5,9 @@ stages:
 
 .job_template: &build_job_docker_modules
   stage: build
-  tags:
-    - docker
-    - modules
+  #tags:
+    #- docker
+    #- modules
   image: ospray/docker-images:centos6-mod # default image
   script:
     - scripts/linux_build.sh # default script

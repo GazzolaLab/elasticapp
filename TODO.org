@@ -1,0 +1,18 @@
+* Corrections
+** Remove tags from CI linters
+
+* Modification checklist
+** Cmakelist files
+** script files
+** gitfiles (ignores, hooks)
+
+* Commit checklist
+** Run linters
+   - makefile as make all
+   - cmake-format
+   - shell-format
+   - cpp-format
+   - yaml-format, yaml-lint (for GITLAB Config) (Unnecessary)
+** Local testing
+
+* Features
