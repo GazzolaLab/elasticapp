@@ -15,7 +15,7 @@ endif()
 # ##############################################################################
 # Project and host details
 # ##############################################################################
-project(Elastica VERSION 0.0.0 LANGUAGES CXX C)
+project(Elastica LANGUAGES CXX C)
 
 site_name(HOSTNAME)
 
@@ -58,12 +58,16 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # include(SetupOpenMP) include(SetupPapi) include(SetupSciPy)
 # include(SetupLibsharp)
 include(SetupTBB)
+include(SetupCatch)
 # include(SetupVTK) include(SetupYamlCpp)
+
+enable_testing(true)
+include(ElasticaAddCatchTests)
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR})
 
 add_subdirectory(src)
-# add_subdirectory(tests)
+add_subdirectory(tests)
 
 include(PrintUsefulCMakeInfo)

@@ -1,3 +1,6 @@
+all:fmt ci
+.PHONY : all
+
 shfmt:
 	@shfmt --version
 	@find . -maxdepth 3 -name '*.sh'\
@@ -17,4 +20,3 @@ ci: shcheck
 
 fmt:shfmt cmakefmt
 
-all:fmt ci

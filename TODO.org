@@ -1,5 +1,4 @@
-* Corrections
-** Remove tags from CI linters
+* Bugs to be fixed
 
 * Modification checklist
 ** Cmakelist files

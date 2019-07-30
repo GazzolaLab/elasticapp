@@ -20,9 +20,9 @@ else()
                 "\n" "Invalid value for CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}\n"
                 "Valid values: ${CMAKE_BUILD_TYPES}\n")
     endif()
-    message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+    # message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 endif()
 
 # cmake-format: off
-log_info("-> CMAKE_BUILD_TYPE                ${CMAKE_BUILD_TYPE}")
+log_info("CMAKE_BUILD_TYPE                ${CMAKE_BUILD_TYPE}")
 # cmake-format: on
