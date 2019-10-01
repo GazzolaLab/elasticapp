@@ -7,9 +7,11 @@ AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 PointerAlignment: Left
 DerivePointerAlignment: false
+FixNamespaceComments: true
 IncludeCategories:
   - Regex:           '^<.*'
     Priority:        1
   - Regex:           '.*'
     Priority:        2
+NamespaceIndentation: All
 ...

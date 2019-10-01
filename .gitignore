@@ -5,6 +5,7 @@
 # Ignore build dirs named similarly to the example in the installation notes;
 # in general arbitrary names are possible and cannot all be ignored.
 /build*
+/cmake-build-*
 
 # Temporary editor files
 *~
@@ -32,3 +33,6 @@ compile_commands.json
 # Python related files
 *.pyc
 .ipynb_checkpoints
+
+# Other files
+# TODO.org

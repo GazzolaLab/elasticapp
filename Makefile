@@ -16,7 +16,12 @@ cmakefmt:
 	@find . \( -name "CMakeLists.txt" -o -name "*.cmake" \) -type f\
 		| while read -r src; do cmake-format -i "$$src"; done
 
+clangfmt:
+	@/usr/local/opt/llvm/bin/clang-format --version
+	@find . \( -name "*.cpp" -o -name "*.hpp" \) -type f\
+		| while read -r src; do /usr/local/opt/llvm/bin/clang-format -i -style=file "$$src"; done
+
 ci: shcheck
 
-fmt:shfmt cmakefmt
+fmt: shfmt cmakefmt
 
