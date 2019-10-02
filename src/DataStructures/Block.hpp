@@ -21,13 +21,13 @@
  * 2. Clean separation of content from aggregation
  */
 namespace Blocks {
-  template <int Dimensions, int Size,
+  template <size_t Dimension, size_t Size,
             storage_detail::StorageOption SO =
                 storage_detail::StorageOption::STDArray>
   class BlockData {
    public:
-    static constexpr int Dim = Dimensions;
-    static constexpr int BlockSize = Size;
+    static constexpr size_t Dim = Dimension;
+    static constexpr size_t BlockSize = Size;
     static constexpr auto storage_option = SO;
   };
 

@@ -232,6 +232,11 @@ namespace tt {
   constexpr bool is_all_unique_v = detail::IsAllUnique<Args...>::value;
 
   namespace detail {
+    /*
+     * Taken from
+     * https://stackoverflow.com/a/34672753
+     * But is similar in spirit to Walter Brown's talks.
+     */
     template <template <typename...> class Base, typename Derived>
     struct IsBaseOfTemplateImpl {
       template <typename... Ts>

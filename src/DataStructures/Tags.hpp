@@ -28,14 +28,14 @@ namespace Tags {
 
   template <typename T>
   struct VectorTag : BaseTag<T> {
-    template <class StoreType, typename U, int FirstDim, int, typename... Args>
+    template <class StoreType, typename U, size_t FirstDim, size_t, typename... Args>
     using data_type =
         typename StoreType::template vector_type<U, FirstDim, Args...>;
   };
 
   template <typename T>
   struct MatrixTag : BaseTag<T> {
-    template <class StoreType, typename U, int FirstDim, int SecondDim,
+    template <class StoreType, typename U, size_t FirstDim, size_t SecondDim,
               typename... Args>
     using data_type =
         typename StoreType::template matrix_type<U, FirstDim, SecondDim,
