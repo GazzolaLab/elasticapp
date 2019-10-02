@@ -26,7 +26,6 @@ find_path(CATCH_INCLUDE_DIR
                         catch
                         catch2
           NAMES catch.hpp
-                # HINTS ${CATCH_ROOT}
           HINTS ${CMAKE_SOURCE_DIR}/external ${CATCH_ROOT}
           DOC "catch include dir")
 
