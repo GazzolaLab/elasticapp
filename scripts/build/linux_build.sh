@@ -1,8 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env sh
 
-mkdir -p build && cd "$_" || return
+BUILD_FOLDER="build"
 
-cmake \
-	"$@" ..
+# Pass arguments including FLAGS, COMPILERS etc.
+cmake -B"${BUILD_FOLDER}" -H. "$@"
 
-make -j"$(nproc)"
+#cmake --build . --target elastica -- -j4
+cmake --build "${BUILD_FOLDER}" --target elastica -- -j"$(nproc)"

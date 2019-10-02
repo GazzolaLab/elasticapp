@@ -30,7 +30,6 @@ log_info("-> Source Directory:  ${CMAKE_SOURCE_DIR}")
 log_info("-> Bin Directory:  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 log_info("-> CMake Modules Path:  ${CMAKE_MODULE_PATH}")
 log_info("-> Operating System:  ${CMAKE_SYSTEM_NAME}")
-log_info("-> CMAKE_BUILD_TYPE:  ${CMAKE_BUILD_TYPE}")
 
 log_info("\nCompiler Information")
 log_info("------------------")
@@ -42,10 +41,10 @@ log_info("-> CMAKE_CXX_LINK_FLAGS:  ${CMAKE_CXX_LINK_FLAGS}")
 log_info("-> CMAKE_CXX_FLAGS_DEBUG:  ${CMAKE_CXX_FLAGS_DEBUG}")
 log_info("-> CMAKE_CXX_FLAGS_RELEASE: ${CMAKE_CXX_FLAGS_RELEASE}")
 log_info("-> CMAKE_EXE_LINKER_FLAGS:  ${CMAKE_EXE_LINKER_FLAGS}")
-
-# message(STATUS "ELASTICA_LIBRARIES: ${ELASTICA_LIBRARIES}") message(STATUS
-# "USE_PCH: ${USE_PCH}") message(STATUS "USE_SYSTEM_INCLUDE:
-# ${USE_SYSTEM_INCLUDE}")
+log_info("-> CMAKE_BUILD_TYPE:  ${CMAKE_BUILD_TYPE}")
+log_info("-> ELASTICA_LIBRARIES: ${ELASTICA_LIBRARIES}")
+log_info("-> USE_SYSTEM_INCLUDE: ${USE_SYSTEM_INCLUDE}")
+# message(STATUS "USE_PCH: ${USE_PCH}")
 
 # if (PYTHONINTERP_FOUND) message(STATUS "Python: " ${PYTHON_EXECUTABLE})
 # message(STATUS "Python Version: ${PYTHON_VERSION_STRING}") else()

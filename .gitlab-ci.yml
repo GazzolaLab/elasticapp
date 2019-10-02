@@ -9,7 +9,7 @@ stages:
     - docker
   image: ospray/docker-images:centos6-mod # default image
   script:
-    - scripts/build/build_linux.sh # default script
+    - scripts/build/linux_build.sh # default script
 
 ### BUILD JOBS ###
 # build-centos6-gcc:
