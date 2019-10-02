@@ -26,7 +26,7 @@ namespace tuples {
     template <typename Tag, Requires<Tags::is_simple_tag_v<Tag>> = nullptr>
     struct SimpleTagTrait : Tag {
       using tag_type = Tag;
-      using Tag::data_type;
+      using typename Tag::data_type;
     };
 
     /*
