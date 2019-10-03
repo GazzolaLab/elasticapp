@@ -107,8 +107,8 @@ namespace Tags {
      * Checks if Tag is derived from templated BaseTag
      */
     template <typename Tag>
-    struct IsContainerTagWellFormed
-        : cpp17::bool_constant<tt::is_templated_base_of_v<BaseTag, Tag>> {};
+    struct IsContainerTagWellFormed : tt::is_templated_base_of_t<BaseTag, Tag> {
+    };
 
   }  // namespace detail
 
