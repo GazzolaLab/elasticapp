@@ -3,6 +3,7 @@
 
 #define CATCH_CONFIG_RUNNER
 #include <cstdio>
+#include "TestingFramework.hpp"
 #include "catch.hpp"
 
 int main(int argc, char* argv[]) {
@@ -16,6 +17,4 @@ int main(int argc, char* argv[]) {
 }
 
 // [[OutputRegex, I failed]]
-TEST_CASE("TestFramework.Hello", "[Unit]") { printf("I failed"); }
-
-// int main() { return 0; }
+ELASTICA_TEST_CASE("TestFramework.Hello", "[Unit]") { printf("I failed"); }
