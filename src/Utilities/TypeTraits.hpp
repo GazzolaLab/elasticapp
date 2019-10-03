@@ -1,6 +1,7 @@
 #pragma once
 
 #include <type_traits>
+#include "Utilities/Requires.hpp"
 
 namespace cpp17 {
   /*!
@@ -236,6 +237,7 @@ namespace tt {
      * Taken from
      * https://stackoverflow.com/a/34672753
      * But is similar in spirit to Walter Brown's talks.
+     * Needs to publicly inherit!!!
      */
     template <template <typename...> class Base, typename Derived>
     struct IsBaseOfTemplateImpl {
@@ -251,4 +253,218 @@ namespace tt {
   constexpr bool is_templated_base_of_v =
       detail::IsBaseOfTemplateImpl<Base, Derived>::value;
 
+  template <template <typename...> class Base, typename Derived>
+  using is_templated_base_of_t =
+      cpp17::bool_constant<is_templated_base_of_v<Base, Derived>>;
+
+  // @{
+  /// \ingroup TypeTraitsGroup
+  /// \brief Check if type T has a begin() and end() function
+  ///
+  /// \details
+  /// Given a type `T` inherits from std::true_type if `T` has member functions
+  /// `begin()` and `end()`, otherwise inherits from std::false_type
+  ///
+  /// \usage
+  /// For any type `T`
+  /// \code
+  /// using result = tt::is_iterable<T>;
+  /// \endcode
+  ///
+  /// \metareturns
+  /// cpp17::bool_constant
+  ///
+  /// \semantics
+  /// If `T` has member function `begin()` and `end()` then
+  /// \code
+  /// typename result::type = std::true_type;
+  /// \endcode
+  /// otherwise
+  /// \code
+  /// typename result::type = std::false_type;
+  /// \endcode
+  ///
+  /// \example
+  /// \snippet Utilities/Test_TypeTraits.cpp is_iterable_example
+  /// \see has_size
+  /// \tparam T the type to check
+  namespace detail {
+    template <typename T, typename = cpp17::void_t<>>
+    struct is_iterable : std::false_type {};
+    /// \cond HIDDEN_SYMBOLS
+    template <typename T>
+    struct is_iterable<T, cpp17::void_t<decltype(std::declval<T>().begin(),
+                                                 std::declval<T>().end())>>
+        : std::true_type {};
+    /// \endcond
+    /// \see is_iterable
+  }  // namespace detail
+  template <typename T>
+  constexpr bool is_iterable_v = detail::is_iterable<T>::value;
+
+  /// \see is_iterable
+  template <typename T>
+  using is_iterable_t = typename detail::is_iterable<T>::type;
+  // @}
+
+  // @{
+  /// \ingroup TypeTraitsGroup
+  /// \brief Check if type `T` is a template specialization of `U`
+  ///
+  /// \requires `U` is a class template
+  /// \effects If `T` is a template specialization of `U`, then inherits from
+  /// std::true_type, otherwise inherits from std::false_type
+  ///
+  /// \usage
+  /// For any type `T` and class template `U`
+  /// \code
+  /// using result = tt::is_a<U, T>;
+  /// \endcode
+  /// \metareturns
+  /// cpp17::bool_constant
+  ///
+  /// \semantics
+  /// If the type `T` is a template specialization of the type `U`, then
+  /// \code
+  /// typename result::type = std::true_type;
+  /// \endcode
+  /// otherwise
+  /// \code
+  /// typename result::type = std::false_type;
+  /// \endcode
+  ///
+  /// \example
+  /// \snippet Utilities/Test_TypeTraits.cpp is_a_example
+  /// \see is_std_array
+  /// \tparam T type to check
+  /// \tparam U the type that T might be a template specialization of
+  namespace detail {
+    template <template <typename...> class U, typename T>
+    struct is_a : std::false_type {};
+    /// \cond HIDDEN_SYMBOLS
+    template <template <typename...> class U, typename... Args>
+    struct is_a<U, U<Args...>> : std::true_type {};
+    /// \endcond
+  }  // namespace detail
+
+  /// \see is_a
+  template <template <typename...> class U, typename... Args>
+  constexpr bool is_a_v = detail::is_a<U, Args...>::value;
+
+  /// \see is_a
+  template <template <typename...> class U, typename... Args>
+  using is_a_t = typename detail::is_a<U, Args...>::type;
+  // @}
+
+  // @{
+  /// \ingroup TypeTraitsGroup
+  /// \brief Check if type `T` is like a std::map or std::unordored_map
+  ///
+  /// \details
+  /// Inherits from std::true_type if the type `T` has a type alias `key_type`,
+  /// type alias `mapped_type`, and `operator[](const typename T::key_type&)`
+  /// defined, otherwise inherits from std::false_type
+  ///
+  /// \usage
+  /// For any type `T`,
+  /// \code
+  /// using result = tt::is_maplike<T>;
+  /// \endcode
+  ///
+  /// \metareturns
+  /// cpp17::bool_constant
+  ///
+  /// \semantics
+  /// If the type `T` has a type alias `key_type`,
+  /// type alias `mapped_type`, and `operator[](const typename T::key_type&)`
+  /// defined, then
+  /// \code
+  /// typename result::type = std::true_type;
+  /// \endcode
+  /// otherwise
+  /// \code
+  /// typename result::type = std::false_type;
+  /// \endcode
+  ///
+  /// \example
+  /// \snippet Utilities/Test_TypeTraits.cpp is_maplike_example
+  /// \see std::map std::unordered_map is_a
+  /// \tparam T the type to check
+  namespace detail {
+    template <typename T, typename = cpp17::void_t<>>
+    struct is_maplike : std::false_type {};
+    /// \cond HIDDEN_SYMBOLS
+    template <typename T>
+    struct is_maplike<
+        T, cpp17::void_t<typename T::key_type, typename T::mapped_type,
+                         decltype(std::declval<T&>()[std::declval<
+                             const typename T::key_type&>()]),
+                         Requires<tt::is_iterable_v<T>>>> : std::true_type {};
+    /// \endcond
+  }  // namespace detail
+
+  /// \see is_maplike
+  template <typename T>
+  constexpr bool is_maplike_v = detail::is_maplike<T>::value;
+
+  /// \see is_maplike
+  template <typename T>
+  using is_maplike_t = typename detail::is_maplike<T>::type;
+  // @}
+
+  // @{
+  /// \ingroup TypeTraitsGroup
+  /// \brief Check if type `T` has operator<<(`S`, `T`) defined.
+  ///
+  /// \details
+  /// Inherits from std::true_type if the type `T` has operator<<(`S`, `T`)
+  /// defined for a stream `S`, otherwise inherits from std::false_type
+  ///
+  /// \usage
+  /// For any type `T` and stream type `S`,
+  /// \code
+  /// using result = tt::is_streamable<S, T>;
+  /// \endcode
+  ///
+  /// \metareturns
+  /// cpp17::bool_constant
+  ///
+  /// \semantics
+  /// If the type `T` has operator<<(`S`, `T`) defined for stream `S`, then
+  /// \code
+  /// typename result::type = std::true_type;
+  /// \endcode
+  /// otherwise
+  /// \code
+  /// typename result::type = std::false_type;
+  /// \endcode
+  ///
+  /// \example
+  /// \snippet Utilities/Test_TypeTraits.cpp is_streamable_example
+  /// \see std::cout std::ifstream std::sstream std::ostream
+  /// \tparam S the stream type, e.g. std::stringstream or std::ostream
+  /// \tparam T the type we want to know if it has operator<<
+  namespace detail {
+    template <typename S, typename T, typename = cpp17::void_t<>>
+    struct is_streamable : std::false_type {};
+    /// \cond HIDDEN_SYMBOLS
+    template <typename S, typename T>
+    struct is_streamable<
+        S, T,
+        cpp17::void_t<decltype(std::declval<std::add_lvalue_reference_t<S>>()
+                               << std::declval<T>()),
+                      Requires<not std::is_same<S, T>::value>>>
+        : std::true_type {};
+    /// \endcond
+  }  // namespace detail
+
+  /// \see is_streamable
+  template <typename S, typename T>
+  constexpr bool is_streamable_v = detail::is_streamable<S, T>::value;
+
+  /// \see is_streamable
+  template <typename S, typename T>
+  using is_streamable_t = typename detail::is_streamable<S, T>::type;
+
+  // @}
 }  // namespace tt
