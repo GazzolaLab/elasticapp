@@ -54,6 +54,7 @@ function(elastica_add_catch_tests TEST_TARGET)
         endif()
     endforeach()
 
+    log_info("${PYTHON_EXECUTABLE} at ${ABSOLUTE_SOURCE_FILES}")
     execute_process(COMMAND ${PYTHON_EXECUTABLE}
                             ${CMAKE_SOURCE_DIR}/cmake/ElasticaParseTests.py
                             ${ABSOLUTE_SOURCE_FILES}

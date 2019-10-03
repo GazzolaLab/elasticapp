@@ -43,7 +43,7 @@ include(SetBuildType)
 include(SetCxxStandard)
 include(SetupSafeInclude)
 include(EnableWarnings)
-include(SetupCXXFlags)
+include(SetupCxxFlags)
 include(ElasticaAddLibraries)
 # include(SetupBuildInfo) include(SetupCCache)
 
@@ -64,7 +64,9 @@ include(SetupCatch)
 # include(SetupVTK) include(SetupYamlCpp)
 
 enable_testing(true)
+include(ElasticaAddTestLibs)
 include(ElasticaAddCatchTests)
+include(SetupCompilationFailureTests)
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR})
