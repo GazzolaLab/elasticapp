@@ -8,8 +8,12 @@
 
 /*
  * TODO
- * Does making a hierarchy for Traits make sense?
+ * 1. Does making a hierarchy for Traits make sense?
  *  RealTrait <-- VectorTrait <-- MatrixTrait <-- StorageTrait?
+ * 2. Roll out own but simple CRTP based STDarray and matrices
+ *  - STDArray matrices should not be Arrays of Arrays but rather
+ *  one huge array of dimension Size*Dim
+ *  - Same goes for STDVectors too...
  */
 
 namespace storage_detail {

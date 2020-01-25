@@ -59,17 +59,29 @@ namespace tuples {
     using data_t = typename detail::SimpleTagTrait<Tag>::data_type;
   };
 
+  namespace detail {
+    // item_type function
+    // returns the underlying type of Tag
+    template <typename Tag, class MetaData>
+    struct item_type_impl {
+      using storage_type = typename detail::ContainerTagTrait<
+          Tag>::template store_type<MetaData::storage_option>;
+      using type = typename detail::ContainerTagTrait<Tag>::template data_type<
+          storage_type, typename Tag::value_type, MetaData::BlockSize,
+          MetaData::Dim>;
+    };
+
+  }  // namespace detail
+
+  template <typename Tag, typename MetaData>
+  using item_data_type = typename detail::item_type_impl<Tag, MetaData>::type;
+
   template <class MetaData>
   struct TagPolicy<TagType::Container, MetaData> {
     template <typename Tag>
     using tag_t = typename detail::ContainerTagTrait<Tag>::tag_type;
     template <typename Tag>
-    using storage_t = typename detail::ContainerTagTrait<
-        Tag>::template store_type<MetaData::storage_option>;
-    template <typename Tag>
-    using data_t = typename detail::ContainerTagTrait<Tag>::template data_type<
-        storage_t<Tag>, typename Tag::value_type, MetaData::BlockSize,
-        MetaData::Dim>;
+    using data_t = item_data_type<Tag, MetaData>;
   };
 
   // Definition

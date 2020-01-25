@@ -1,6 +1,7 @@
 #pragma once
 
 #include <type_traits>
+
 #include "Utilities/Requires.hpp"
 
 namespace cpp17 {

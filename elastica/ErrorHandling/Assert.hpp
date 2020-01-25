@@ -12,7 +12,6 @@
 #include "ErrorHandling/Abort.hpp"
 #include "ErrorHandling/AbortWithErrorMessage.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "Utilities/Literals.hpp"
 
 /*!
  * \ingroup ErrorHandlingGroup
@@ -25,7 +24,8 @@
  * \param a the expression that must be true
  * \param m the error message as an ostream
  */
-#ifdef ELASTICA_DEBUG
+//#ifdef ELASTICA_DEBUG
+#ifndef NDEBUG
 // isocpp.org recommends using an `if (true)` instead of a `do
 // while(false)` for macros because the latter can mess with inlining
 // in some (old?) compilers:

@@ -68,10 +68,10 @@ include(ElasticaAddTestLibs)
 include(ElasticaAddCatchTests)
 include(SetupCompilationFailureTests)
 
-include_directories(${CMAKE_SOURCE_DIR}/src)
+include_directories(${CMAKE_SOURCE_DIR}/elastica)
 include_directories(${CMAKE_SOURCE_DIR})
 
-add_subdirectory(src)
+add_subdirectory(elastica)
 add_subdirectory(tests)
 
 include(PrintUsefulCMakeInfo)

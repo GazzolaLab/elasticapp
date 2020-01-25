@@ -2,8 +2,6 @@
 
 set(executable RunTests)
 
-# set(ELASTICA_TESTS "RunTests.cpp")
-
 set(ELASTICA_COMPILATION_TESTS "TestCompilationFramework.cpp")
 
 set_property(GLOBAL PROPERTY ELASTICA_TESTS_LIB_FUNCTIONS_PROPERTY "")
@@ -12,15 +10,20 @@ set_property(GLOBAL PROPERTY ELASTICA_TESTS_LIBS_PROPERTY "")
 add_subdirectory(Utilities)
 
 write_test_registration_function(
-    "${CMAKE_BINARY_DIR}/tests/Unit/RunTestsRegister.hpp"
+    "${CMAKE_SOURCE_DIR}/tests/Unit/RunTestsRegister.hpp"
     "register_run_tests_libs")
 
 get_property(ELASTICA_TESTS_LIBRARIES GLOBAL
              PROPERTY ELASTICA_TESTS_LIBS_PROPERTY)
+message("${ELASTICA_TESTS_LIBRARIES}")
+get_property(ELASTICA_TESTS_LIB_FUNCTIONS GLOBAL
+        PROPERTY ELASTICA_TESTS_LIB_FUNCTIONS_PROPERTY)
+message("${ELASTICA_TESTS_LIB_FUNCTIONS}")
+message("HI")
 
 add_executable(${executable} ${executable}.cpp)
 
-elastica_add_catch_tests(${executable})
+elastica_add_catch_tests(${executable} "${ELASTICA_TESTS_LIBRARIES}")
 
 target_link_libraries(${executable} ${ELASTICA_TESTS_LIBRARIES}
                       ${ELASTICA_LIBRARIES})

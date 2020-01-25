@@ -51,12 +51,24 @@ namespace Blocks {
      */
     template <class BlockMetaData, class TagToBeConstructed>
     class BlockHelper
-        : public MetaTaggedTuple<BlockMetaData, TagToBeConstructed> {};
+        : public MetaTaggedTuple<BlockMetaData, TagToBeConstructed> {
+     public:
+      using MetaData = BlockMetaData;
+
+      template <typename _MetaData, typename _Tags>
+      using container_type = MetaTaggedTuple<_MetaData, _Tags>;
+    };
 
     template <class BlockMetaData, template <typename...> class TagList,
               typename... Tags>
     class BlockHelper<BlockMetaData, TagList<Tags...>>
-        : public MetaTaggedTuple<BlockMetaData, Tags...> {};
+        : public MetaTaggedTuple<BlockMetaData, Tags...> {
+     public:
+      using MetaData = BlockMetaData;
+
+      template <typename _MetaData, typename... _Tags>
+      using container_type = MetaTaggedTuple<_MetaData, _Tags...>;
+    };
   }  // namespace detail
 
   template <class GroupToBeConstructed, class BlockMetaData,
@@ -65,4 +77,17 @@ namespace Blocks {
   class Block
       : public detail::BlockHelper<
             BlockMetaData, typename GroupToBeConstructed::construct_tags> {};
+
+  namespace detail {
+    template <typename B, typename = cpp17::void_t<>>
+    struct IsValidBlock : std::false_type {};
+
+    template <typename B>
+    struct IsValidBlock<B, cpp17::void_t<typename B::MetaData>>
+        : std::true_type {};
+  }  // namespace detail
+
+  template <typename B>
+  constexpr bool is_valid_block_v = detail::IsValidBlock<B>::value;
+
 }  // namespace Blocks
