@@ -1,10 +1,13 @@
 #pragma once
+#include <algorithm>
 #include <functional>
+#include <limits>
 #include <memory>
 #include <sstream>
 #include <vector>
 
 #include "elastica/Simulator/Joints.hpp"
+#include "elastica/Utilities/Logging.hpp"
 #include "elastica/Utilities/NamedType.hpp"
 
 namespace elastica {
@@ -14,10 +17,6 @@ namespace elastica {
     template <class Sim,  // Simulator class, derived from this class using CRTP
               class SimTraits>  // Simulator options
     struct Connections {
-      // TODO : mark protected
-      Connections() = default;
-      ~Connections() = default;
-
       using SizeType = typename SimTraits::SizeType;
       using IndexType = typename SimTraits::IndexType;
       using TimeType = typename SimTraits::TimeType;
@@ -26,6 +25,34 @@ namespace elastica {
           typename SimTraits::template SystemInterfaceType<T>;
 
       using JointID = std::unique_ptr<joints::JointBase>;
+
+      //=================================================================================================
+      //
+      //  CONSTRUCTOR
+      //
+      //=================================================================================================
+
+      //*************************************************************************************************
+      /*!\brief Constructor of the Constraints class.
+       */
+      // TODO : mark protected
+      Connections(){
+        LOG_INFO_SECTION(log) {
+          log << "Successfully initialized the connection instance";
+        }
+      };
+
+      ~Connections(){
+        LOG_INFO_SECTION(log) {
+          log << "Successfully destroyed the connection instance";
+        }
+      };
+
+      Connections(Connections const&) = delete;
+      Connections& operator=(Connections const&) = delete;
+      Connections(Connections&&) = delete;
+      Connections& operator=(Connections&&) = delete;
+      //*************************************************************************************************
 
       struct PackedConnectionIndex_ {
         IndexType idx_first_sys_, idx_second_sys_;
@@ -174,7 +201,7 @@ namespace elastica {
                         "Given joint does not satisfy interface requirements, "
                         "did you forget to derive from JointBase?");
           return with_impl<JointType>(std::forward<Args>(args)...);
-        };
+        }
 
         template <typename... Args>
         auto with(const std::string& connection_type, Args&&... args) {
@@ -191,7 +218,7 @@ namespace elastica {
                    "the simulator.";
             throw std::runtime_error(s_stream.str());
           }
-        };
+        }
       };
 
       using ConnectionID = std::unique_ptr<ConnectImpl_>;

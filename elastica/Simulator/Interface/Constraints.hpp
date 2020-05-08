@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "elastica/Simulator/BoundaryConditions.hpp"
+#include "elastica/Utilities/Logging.hpp"
 
 namespace elastica {
 
@@ -20,11 +21,6 @@ namespace elastica {
     template <class Sim,  // Simulator class, derived from this class using CRTP
               class SimTraits>  // Simulator options
     struct Constraints {
-      // TODO : mark protected
-      Constraints() = default;
-      // Constraints() : constraint_id_(0UL){};
-      ~Constraints() = default;
-
       using SizeType = typename SimTraits::SizeType;
       using IndexType = typename SimTraits::IndexType;
       using TimeType = typename SimTraits::TimeType;
@@ -36,6 +32,32 @@ namespace elastica {
       using BoundaryConditionID =
           std::unique_ptr<boundary_conditions::BoundaryConditionBase>;
 
+      //=================================================================================================
+      //
+      //  CONSTRUCTOR
+      //
+      //=================================================================================================
+
+      //*************************************************************************************************
+      /*!\brief Constructor of the Constraints class.
+       */
+      // TODO : mark protected
+      Constraints(){
+        LOG_INFO_SECTION(log) {
+          log << "Successfully initialized the constraint instance";
+        }
+      };
+      ~Constraints(){
+        LOG_INFO_SECTION(log) {
+            log << "Successfully destroyed the constraint instance";
+          }
+      };
+      Constraints(Constraints const &) = delete;
+      Constraints& operator= (Constraints const&) = delete;
+      Constraints(Constraints &&) = delete;
+      Constraints& operator= (Constraints &&) = delete;
+      //*************************************************************************************************
+
       // template <class System>
       struct ConstraintImpl_
       // : public ConstraintImplBase_
@@ -45,9 +67,13 @@ namespace elastica {
         std::vector<IndexType> director_indices_;
         std::function<BoundaryConditionID()> f_;
 
-        ConstraintImpl_(IndexType idx) : idx_(idx), f_(nullptr){};
+        explicit ConstraintImpl_(IndexType idx) : idx_(idx), f_(nullptr){};
         // ConstraintImpl() = default;
         ~ConstraintImpl_() = default;
+        ConstraintImpl_(ConstraintImpl_ const& other) = delete;
+        ConstraintImpl_& operator=(ConstraintImpl_ const&) = delete;
+        ConstraintImpl_(ConstraintImpl_&& other) = delete;
+        ConstraintImpl_& operator=(ConstraintImpl_&&) = delete;
 
         IndexType id() { return idx_; };
 
@@ -100,7 +126,7 @@ namespace elastica {
               "requirements, "
               "did you forget to derive from BoundaryConditionBase?");
           return with_impl<BCType>(std::forward<Args>(args)...);
-        };
+        }
 
         // By default, only library boundary conditions can be specified as
         // options. This makes sense as if there are custom boundary conditions,
@@ -145,7 +171,7 @@ namespace elastica {
                    "of the simulator.";
             throw std::runtime_error(s_stream.str());
           }
-        };
+        }
 
         // Generate list of indices here
         // Only run-time vectors of positions and director indices
@@ -280,10 +306,11 @@ namespace elastica {
           throw std::runtime_error(s_stream.str());
         }
 
-        std::transform(
-            constraints_.begin(), constraints_.end(),
-            std::back_inserter(boundary_conditions_),
-            [](const ConstraintID& constraint) { return constraint->f_(); });
+        std::transform(constraints_.begin(), constraints_.end(),
+                       std::back_inserter(boundary_conditions_),
+                       [](const ConstraintID& constraint) {
+                         return std::move(constraint->f_());
+                       });
 
         // Iterate over the position and velocity indices and pass on copies to
         // the boundary conditions
@@ -300,10 +327,10 @@ namespace elastica {
         constrain_primitive_rates(time_v);
       }
 
-      void constrain_primitive_values(double time) {
+      void constrain_primitive_values(double time_v) {
         std::cout << "Constraining primitive values\n";
       };
-      void constrain_primitive_rates(double time) {
+      void constrain_primitive_rates(double time_v) {
         std::cout << "Constraining primitive rates\n";
       };
 
