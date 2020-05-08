@@ -27,8 +27,9 @@
 // Includes
 //*************************************************************************************************
 
-#include "../Time.h"
 #include <limits>
+
+#include "../TimeStamps.h"
 
 namespace elastica {
 
