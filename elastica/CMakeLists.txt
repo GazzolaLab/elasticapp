@@ -9,6 +9,7 @@ target_include_directories(elastica PRIVATE Time)
 add_subdirectory(DataStructures)
 add_subdirectory(ErrorHandling)
 add_subdirectory(Utilities)
+add_subdirectory(Simulator)
 
 target_link_libraries(elastica PUBLIC ${ELASTICA_LIBRARIES})
 target_link_libraries(elastica PUBLIC Utilities)
