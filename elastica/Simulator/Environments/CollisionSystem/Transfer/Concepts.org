@@ -1,0 +1,113 @@
+* Concepts
+
+    - BodyTags :
+    Each and every physical object (cosserat rod, sphere etc). should
+    be a typedef in a unique BodyTag
+    - BodyType :
+    The typedef of every physical entitiy in the system, added to the BodyTag
+    - PrimitiveType :
+    The type of primitive that each body corresponds to.
+        - SphereCollection <=> Sphere
+        - CosseratRod <=> Cylinder
+        ...
+
+* Storing the tags
+    - Assume we store the Tag in a tmpl::list<>, then one can construct
+    a tagged tuple that contains a collection of systems with mapping between
+    the BodyTag to std::vector<BodyType>, allowing for O(1) retrieval.
+    - The Tag also has the BodyType, which can be used for dispatch in the
+    CollisionSystem or other enviroments.
+
+
+* Implementing a generic, typesafe dispatch at compile time
+    - We do not want to touch the transfer function for each and every unique
+    system added to the Simulator.
+    - To divorce the transfer function from the class one can use a Transfer
+    struct statically as shown belwo
+
+    #+BEGIN_SRC cpp
+
+    struct SphereTag{
+        using BodyType = SphereCollection;
+        using PrimitiveType = Sphere;
+    };
+
+    // In user defined configuration
+    using AllowedSystems = tmpl::list<SphereTag>;
+
+    ////////////////
+    /// Downstream
+    ////////////////
+
+    // Determined based on the parallel strategy employed
+    template <typename T>
+    struct AddPrimitiveStorageType, AddSystemStorageType;
+
+    // Can be internally defined withis simulator too!
+    template <typename T>
+    struct StorageTag : public T {
+        using T::BodyType;
+        using T::PrimitiveType;
+        using type = AddSystemStorageType<BodyType>;
+    };
+
+    // Ends up giving list<StorageTag<TagType>>...
+    using AllowedSystemsXXX = tmpl::transform<AllowedSystems, StorageTag>;
+
+    using Storage = tmpl::as_tagged_tuple<AllowedSystemsXXX>;
+
+    // tmpl::transform<AllowedSystems, ADD vector to BodyType>;
+
+    // Give the iterator etc. implementations
+    template <typename BodyTag>
+    struct TransferTraits{
+        using from_t  = tags::from_t;
+        using to_t = tags::to_t;
+        using BodyType = typename BodyTag::BodyType;
+         // Can be iterator to vector, pointer, iterator to special vector
+         // Strategy can be defined in upper level config
+         //  <impl defined trait><PrimitiveType>;
+        using PrimitiveIteratorType =
+        std::iterator_traits<AddPrimtiveStorage<typename BodyTag::PrimitiveType>::iterator>::value_type;
+        using ConstPrimitiveIteratorType = <impl defined trait><PrimitiveType>
+    };
+
+
+    // Provide generic implementation here
+    template <typename BodyTag>
+    struct Transfer : public TransferTraits<BodyTag>{
+        static void transfer(from_t, const BodyType& , to_t,  PrimitiveIterator start, PrimitiveIterator end){
+            // Generic implementation to fall back to, can use public members
+        };
+        static void transfer(to_t, BodyType& , from_t,  ConstPrimitiveIterator start, ConstPrimitiveIterator end){
+            // Generic implementatino to fall back to, can use public members
+        };
+    };
+
+    // CPP file, detail specific Transfer
+    template <>
+    Transfer<SphereTag> : public TransferTraits<SphereTag>{
+        static void transfer(from_t, const BodyType& , to_t,  PrimitiveIterator start, PrimitiveIterator end);
+
+        static void transfer(to_t, BodyType& , from_t,  ConstPrimitiveIterator start, ConstPrimitiveIterator end);
+    }
+
+    // Interface, no frills, can even skip if needed
+    template <typename BodyTag>
+    inline void transfer(tags::from_t /* meta */,
+                         TransferTraits<BodyTag>::BodyType const & collection,
+                         tags::to_t /* meta */,
+                         TransferTraits<BodyTag>::PrimitiveIterator first,
+                         TransferTraits<BodyTag>::PrimitiveIterator last) {
+      Transfer<BodyTag>::transfer(from, collection, to , first, last);
+    }
+
+    #+END_SRC
+
+* Advantages
+    - NO typedef in the user class, so adheres to SRP even better.
+    - Better reflects symmetry between Environments (which are added using tags) and
+      systems
+    - Gives chance for non-physical systems to be added (with PrimtiveType = NoSuchType)
+    - Removes templates from low-level structs, maybe makes it faster?
+

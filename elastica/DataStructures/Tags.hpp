@@ -48,10 +48,11 @@ namespace Tags {
 /*
 Simple Tags for plain data types
 */
+/*
 namespace Tags {
 
   struct SimplePODTag {
-    using data_type = real;
+    using data_type = real_t;
     static std::string desc() { return "SimplePODTag"; }
   };
 
@@ -61,29 +62,30 @@ namespace Tags {
   };
 
 }  // namespace Tags
+*/
 
 /*
 Derived Tags for aggregating data
-*/
 namespace Tags {
 
-  struct Position : MatrixTag<real> {
+  struct Position : MatrixTag<real_t> {
     static std::string desc() { return "Position"; }
   };
 
-  struct Velocity : MatrixTag<real> {
+  struct Velocity : MatrixTag<real_t> {
     static std::string desc() { return "Velocity"; }
   };
 
-  struct OneDimension : VectorTag<real> {
+  struct OneDimension : VectorTag<real_t> {
     static std::string desc() { return "OneDimension"; }
   };
 
-  struct Dimension : MatrixTag<real> {
+  struct Dimension : MatrixTag<real_t> {
     static std::string desc() { return "Dimension"; }
   };
 
 }  // namespace Tags
+*/
 
 /*
  * Metafunctions to test validity of simple and complex tags

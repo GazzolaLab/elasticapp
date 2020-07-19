@@ -32,3 +32,4 @@
 #include "Timing/Timer.h"
 #include "Timing/WcPolicy.h"
 #include "Timing/WcTimer.h"
+#include "Timing/Tags.hpp"

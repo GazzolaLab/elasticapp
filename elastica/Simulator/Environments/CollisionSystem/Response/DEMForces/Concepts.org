@@ -1,0 +1,43 @@
+* Concepts
+
+    - uid : unique id
+    Each and every physical object (cosserat rod, sphere etc). should
+    be marked with a unique body ID, to keep track of components in
+    the different environments
+    - sid : subsystem id
+    The id of the component in the specific subsystem (for example the
+    third element of the Cosserat rod should have sid 3). If we propose
+    having union types, we can reutilize sid.
+    - Tracking objects
+    The third element of the fifth Cosserat rod has uid 5, sid 3. Based
+    on these two numbers we can have a hash thats unique to each and every
+    individual component
+
+** Implementing stiction
+    - We have access to sid, uid (TODO rename) that corresponds
+    to a component of the body. In the contact, we have access to
+    both the body members and hence their sid, uid.
+    - Based on the h1 = hash(sid_1, uid_1), and h2 = hash(sid_2, uid_2) we
+    can uniquely track the point of first contact and store it in a
+    LUT using
+    LUT[hash(h1, h2)] = position of first contact
+    The hash can be reutilized.
+    - Once we remember this location the force is simply just
+    f += k * (current position of same contact - LUT[hash(h1,h2)])
+    - Of course, as simulation progresses and bodies leave/start contacting
+    the LUT entry should be deleted/added.
+    - TODO : Hash map storage.
+    We need the hash map to be concurrent and exist between time-steps.
+    Currently we have a ContactResolver with std::reduce overlaps
+    over all contacts with a FM as a data member which gets copied
+    upon every reduce (TBB-wise) and so we cannot store the hash-map in the
+    contact resolver or the force model class. The storage is then delegated
+    to the Response class of DEM Solver. We can use a tmpl::list of wanted
+    types in Force Model, which gets propogated up the hierarchy. Hence the
+    FM receives as arguments (ContactID, pointers to hash map ) which can
+    then be manipulated.
+
+    - TODO : Parallelization with threads (concurrent_hash_map)
+
+
+** Implementing directional anisotopic friction

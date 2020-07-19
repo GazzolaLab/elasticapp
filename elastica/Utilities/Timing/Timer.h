@@ -63,7 +63,7 @@ namespace timing {
    ...  // Programm or code fragment to be measured
 
    // Stopping the time measurement
-   timer.end();
+   timer.stop();
 
    // Evaluation of the measured time
    double time = timer.last();
@@ -85,7 +85,7 @@ namespace timing {
    for( unsigned int i=0; i<10; ++i ) {
       timer.start();
       ...  // Programm or code fragment to be measured
-      timer.end();
+      timer.stop();
    }
 
    // After the measurements, the desired timing results can be calculated, as
@@ -118,7 +118,7 @@ public:
   /*!\name Timing functions */
   //@{
   inline void start();
-  inline void end();
+  inline void stop();
   inline void lap();
   inline void reset();
   //@}
@@ -147,7 +147,7 @@ public:
 private:
   size_t counter_; //!< Number of performed time measurements.
   double start_;   //!< Start of the current time measurement.
-  double end_;     //!< End of the current time measurement.
+  double stop_;     //!< End of the current time measurement.
   double time_;    //!< The total elapsed time of all measurements.
   double min_;     //!< The minimal time of all measurements.
   double max_;     //!< The maximal time of all measurements.
@@ -166,7 +166,8 @@ private:
  */
 template <typename TP> // Timing policy
 inline Timer<TP>::Timer()
-    : counter_(0), start_(0.0), end_(0.0), time_(0.0),
+    : counter_(0), start_(0.0),
+      stop_(0.0), time_(0.0),
       min_(std::numeric_limits<double>::max()), max_(0.0), last_(0.0) {}
 //*************************************************************************************************
 
@@ -199,15 +200,15 @@ inline void Timer<TP>::start() {
  * necessary statistical calculations.
  */
 template <typename TP> // Timing policy
-inline void Timer<TP>::end() {
+inline void Timer<TP>::stop() {
   // Stopping the time measurement and calculating a time stamp
-  end_ = TimingPolicy::get_time_stamp();
+  stop_ = TimingPolicy::get_time_stamp();
 
   // Increasing the counter
   ++counter_;
 
   // Calculating the wallclock and CPU time
-  const double diff(end_ - start_);
+  const double diff(stop_ - start_);
 
   // Average time measurement
   time_ += diff;
@@ -236,8 +237,8 @@ inline void Timer<TP>::end() {
  */
 template <typename TP> // Timing policy
 inline void Timer<TP>::lap() {
-  end();
-  start_ = end_;
+  stop();
+  start_ = stop_;
 }
 //*************************************************************************************************
 
@@ -254,7 +255,7 @@ template <typename TP> // Timing policy
 inline void Timer<TP>::reset() {
   counter_ = 0;
   start_ = 0.0;
-  end_ = 0.0;
+  stop_ = 0.0;
   time_ = 0.0;
   min_ = std::numeric_limits<double>::max();
   max_ = 0.0;

@@ -31,48 +31,48 @@
 
 namespace elastica {
 
-namespace timing {
+  namespace timing {
 
-//=================================================================================================
-//
-//  CLASS DEFINITION
-//
-//=================================================================================================
+    //=================================================================================================
+    //
+    //  CLASS DEFINITION
+    //
+    //=================================================================================================
 
-//*************************************************************************************************
-/*!\brief Timing policy for the measurement of the wall clock time.
- * \ingroup timing
- *
- * The WcPolicy class represents the timing policy for wall clock time
- * measurements that can be used in combination with the Timer class template.
- * This combination is realized with the WcTimer type definition.
- */
-struct WcPolicy {
-public:
-  //**Timing
-  // functions****************************************************************************
-  /*!\name Timing functions */
-  //@{
-  static inline double get_time_stamp();
-  //@}
-  //**********************************************************************************************
-};
-//*************************************************************************************************
+    //*************************************************************************************************
+    /*!\brief Timing policy for the measurement of the wall clock time.
+     * \ingroup timing
+     *
+     * The WcPolicy class represents the timing policy for wall clock time
+     * measurements that can be used in combination with the Timer class
+     * template. This combination is realized with the WcTimer type definition.
+     */
+    struct WcPolicy {
+     public:
+      //**Timing
+      // functions****************************************************************************
+      /*!\name Timing functions */
+      //@{
+      static inline double get_time_stamp();
+      //@}
+      //**********************************************************************************************
+    };
+    //*************************************************************************************************
 
-//=================================================================================================
-//
-//  TIMING FUNCTIONS
-//
-//=================================================================================================
+    //=================================================================================================
+    //
+    //  TIMING FUNCTIONS
+    //
+    //=================================================================================================
 
-//*************************************************************************************************
-/*!\brief Returns a timestamp of the current wall clock time in seconds.
- *
- * \return Wall clock timestamp in seconds.
- */
-inline double WcPolicy::get_time_stamp() { return get_wc_time(); }
-//*************************************************************************************************
+    //*************************************************************************************************
+    /*!\brief Returns a timestamp of the current wall clock time in seconds.
+     *
+     * \return Wall clock timestamp in seconds.
+     */
+    inline double WcPolicy::get_time_stamp() { return get_wc_time(); }
+    //*************************************************************************************************
 
-} // namespace timing
+  }  // namespace timing
 
-} // namespace elastica
+}  // namespace elastica

@@ -32,27 +32,27 @@
 
 namespace elastica {
 
-namespace timing {
+  namespace timing {
 
-//=================================================================================================
-//
-//  TYPE DEFINITION
-//
-//=================================================================================================
+    //=================================================================================================
+    //
+    //  TYPE DEFINITION
+    //
+    //=================================================================================================
 
-//*************************************************************************************************
-/*!\brief Progress timer for wall clock time measurements.
- * \ingroup timing
- *
- * The WcTimer combines the Timer class template with the WcPolicy timing
- * policy. It measures the amount of "wall clock" time elapsing for the
- * processing of a programm or code fragment. In contrast to the measurement of
- * CPU time, the wall clock time also contains waiting times such as
- * input/output operations.
- */
-using WcTimer = Timer<WcPolicy>;
-//*************************************************************************************************
+    //*************************************************************************************************
+    /*!\brief Progress timer for wall clock time measurements.
+     * \ingroup timing
+     *
+     * The WcTimer combines the Timer class template with the WcPolicy timing
+     * policy. It measures the amount of "wall clock" time elapsing for the
+     * processing of a programm or code fragment. In contrast to the measurement
+     * of CPU time, the wall clock time also contains waiting times such as
+     * input/output operations.
+     */
+    using WcTimer = Timer<WcPolicy>;
+    //*************************************************************************************************
 
-} // namespace timing
+  }  // namespace timing
 
-} // namespace elastica
+}  // namespace elastica

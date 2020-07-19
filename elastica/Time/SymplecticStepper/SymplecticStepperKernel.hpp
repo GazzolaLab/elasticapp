@@ -50,7 +50,7 @@ public:
       typename std::enable_if<(CurrentStage <= n_stages()), int>::type = 0>
   inline void kinematic_step(float k) {
     algorithm.template kinematic_step<CurrentStage>(k);
-  };
+  }
 
   // This does the part till : So K_{Stage-1}, ...     K1,
   // .............................Stage + 1, ... 2*Stage-1
@@ -64,7 +64,7 @@ public:
   inline void kinematic_step(float k) {
     algorithm.template kinematic_step<n_stages() - CurrentStage % n_stages()>(
         k);
-  };
+  }
 
   // CurrentStage : 2 * Stage
   template <
@@ -72,7 +72,7 @@ public:
       typename std::enable_if<CurrentStage == n_double_stages(), int>::type = 0>
   inline void kinematic_step(float k) {
     algorithm.template kinematic_step<0UL>(k);
-  };
+  }
 
   // This does the part till : So D0, D1, D2, ... D_order-1
   // Currentstage [0, Stage)
@@ -83,7 +83,7 @@ public:
             typename std::enable_if<(CurrentStage < n_stages()), int>::type = 0>
   inline void dynamic_step(float k) {
     algorithm.template dynamic_step<CurrentStage>(k);
-  };
+  }
 
   // This does the part till : So D_order-1, ...  D2,            D1,      D0,
   // .............................Stage , ... 2*Stage-3 , 2*Stage - 2,  2 *
@@ -99,7 +99,7 @@ public:
   inline void dynamic_step(float k) {
     algorithm
         .template dynamic_step<n_stages() - CurrentStage % n_stages() - 1UL>(k);
-  };
+  }
 
   // Null op
   // Currentstage : 2 * Stage
@@ -108,7 +108,7 @@ public:
   template <
       std::size_t CurrentStage,
       typename std::enable_if<CurrentStage == n_double_stages(), int>::type = 0>
-  inline void dynamic_step(float /*k*/){};
+  inline void dynamic_step(float /*k*/){}
 
   // TODO Testing logic. Sigma of all prefactors should sum up to one.
   // TODO Replace double by TimeType
@@ -118,7 +118,7 @@ public:
       typename std::enable_if<(CurrentStage <= n_stages()), int>::type = 0>
   inline double kinematic_prefactor() {
     return algorithm.template kinematic_prefactor<CurrentStage>();
-  };
+  }
 
   template <std::size_t CurrentStage,
             typename std::enable_if<((n_stages() < CurrentStage) &&
@@ -127,14 +127,14 @@ public:
   inline double kinematic_prefactor() {
     return algorithm
         .template kinematic_prefactor<n_stages() - CurrentStage % n_stages()>();
-  };
+  }
 
   template <
       std::size_t CurrentStage,
       typename std::enable_if<CurrentStage == n_double_stages(), int>::type = 0>
   inline double kinematic_prefactor() {
     return algorithm.template kinematic_prefactor<0UL>();
-  };
+  }
 
   SymplecticAlgorithm algorithm;
 };
@@ -146,14 +146,14 @@ public:
   using StepperCategoryTag = SymplecticTag;
   // This is the only thing that should be exposed to be used by the
   // timealgorithm class
-  static constexpr std::size_t n_steps() { return 2 * n_stages(); };
+  static constexpr std::size_t n_steps() { return 2 * n_stages(); }
   static constexpr std::size_t nfeval_per_step() {
     return 2 * n_stages() - 1UL;
-  };
-  static constexpr std::size_t n_double_stages() { return 2 * n_stages(); };
+  }
+  static constexpr std::size_t n_double_stages() { return 2 * n_stages(); }
   static constexpr std::size_t n_stages() {
     return SymplecticAlgorithm::n_stages();
-  };
+  }
   // static constexpr std::size_t Order = SymplecticAlgorithm::Order;
 
   // clang-format off
@@ -175,7 +175,7 @@ public:
             typename std::enable_if<(CurrentStage < n_stages()), int>::type = 0>
   inline void kinematic_step(System &k, double time_v, double dt) {
     algorithm.template kinematic_step<CurrentStage>(k, time_v, dt);
-  };
+  }
 
   // This does the part till : So K_{Stage-1}, ...     K0,
   // .............................Stage + 1, ... 2*Stage-1
@@ -190,7 +190,7 @@ public:
     algorithm
         .template kinematic_step<n_stages() - CurrentStage % n_stages() - 1UL>(
             k, time_v, dt);
-  };
+  }
 
   // This does the part till : So D0, D1, D2, ... D_order-1
   // Currentstage [0, Stage)
@@ -201,7 +201,7 @@ public:
             typename std::enable_if<(CurrentStage < n_stages()), int>::type = 0>
   inline void dynamic_step(System &k, double time_v, double dt) {
     algorithm.template dynamic_step<CurrentStage>(k, time_v, dt);
-  };
+  }
 
   // This does the part till : So D_order-1, ...  D2,            D1,      D0,
   // .............................Stage , ... 2*Stage-3 , 2*Stage - 2,  2 *
@@ -219,7 +219,7 @@ public:
     algorithm
         .template dynamic_step<n_stages() - CurrentStage % n_stages() - 2UL>(
             k, time_v, dt);
-  };
+  }
 
   // Null op
   // Currentstage : 2 * Stage
@@ -228,13 +228,13 @@ public:
   template <std::size_t CurrentStage, class System,
             typename std::enable_if<(CurrentStage + 1UL) == n_double_stages(),
                                     int>::type = 0>
-  inline void dynamic_step(System & /*k*/, double time_v, double dt){};
+  inline void dynamic_step(System & /*k*/, double time_v, double dt){}
 
   template <std::size_t CurrentStage,
             typename std::enable_if<(CurrentStage < n_stages()), int>::type = 0>
   inline double kinematic_prefactor() {
     return algorithm.template kinematic_prefactor<CurrentStage>();
-  };
+  }
 
   template <std::size_t CurrentStage,
             typename std::enable_if<((n_stages() <= CurrentStage) &&
@@ -243,7 +243,7 @@ public:
   inline double kinematic_prefactor() {
     return algorithm.template kinematic_prefactor<
         n_stages() - CurrentStage % n_stages() - 1UL>();
-  };
+  }
 
   SymplecticAlgorithm algorithm;
 };

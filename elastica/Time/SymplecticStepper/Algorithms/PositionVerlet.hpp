@@ -23,8 +23,8 @@ struct PositionVerlet {
             typename std::enable_if<(CurrentStage == 0UL), int>::type = 0>
   void kinematic_step(System &sys, double time_v, double dt) {
     // std::cout << "K : Order 0" << std::endl;
-    sys->kinematic_states +=
-        kinematic_prefactor<CurrentStage>() * dt * sys->kinematic_rates(time_v);
+    sys.kinematic_states() +=
+        kinematic_prefactor<CurrentStage>() * dt * sys.kinematic_rates(time_v);
   }
 
   template <std::size_t CurrentStage,
@@ -36,9 +36,9 @@ struct PositionVerlet {
   // template <std::size_t CurrentStage> double get_prefactor();
   template <std::size_t CurrentStage, typename System,
             typename std::enable_if<(CurrentStage == 0UL), int>::type = 0>
-  void dynamic_step(System &sys, double time_v, double dt) {
+  void dynamic_step(System& sys, double time_v, double dt) {
     // std::cout << "D : Order 0" << std::endl;
-    sys->dynamic_states += dt * sys->dynamic_rates(time_v);
+    sys.dynamic_states() += dt * sys.dynamic_rates(time_v);
   }
 };
 

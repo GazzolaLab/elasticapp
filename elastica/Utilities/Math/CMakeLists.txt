@@ -1,0 +1,21 @@
+set(LIBRARY Utilities)
+
+elastica_target_headers(
+        ${LIBRARY}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        HEADERS
+        Accuracy.hpp
+        Dot.hpp
+        Equal.hpp
+        Identity.hpp
+        Infinity.hpp
+        Invert.hpp
+        Limits.hpp
+        Normalize.hpp
+        Orthogonal.hpp
+        Rot3.hpp
+        SqrLength.hpp
+        Square.hpp
+        Trans.hpp
+        Vec3.hpp
+)

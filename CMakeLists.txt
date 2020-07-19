@@ -8,9 +8,9 @@ cmake_minimum_required(VERSION 3.3.2)
 # ##############################################################################
 # Set policies
 # ##############################################################################
-if(POLICY CMP0074)
+if (POLICY CMP0074)
     cmake_policy(SET CMP0074 NEW)
-endif()
+endif ()
 
 # ##############################################################################
 # Project and host details
@@ -37,6 +37,7 @@ include(ProhibitInSourceBuild)
 # include(AddSources) # Add function to add a set of source files.
 # include(ElasticaUtils)
 include(CheckCompilerVersion)
+include(ElasticaSetupFlagsTarget)
 include(SetGitVersion)
 include(SetOutputDirectory)
 include(SetBuildType)
@@ -44,6 +45,9 @@ include(SetCxxStandard)
 include(SetupSafeInclude)
 include(EnableWarnings)
 include(SetupCxxFlags)
+include(ElasticaAddInterfaceLibraryHeaders)
+include(ElasticaTargetHeaders)
+include(ElasticaTargetSources)
 include(ElasticaAddLibraries)
 # include(SetupBuildInfo) include(SetupCCache)
 
@@ -61,6 +65,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 include(SetupBlaze)
 include(SetupTBB)
 include(SetupCatch)
+include(SetupBrigand)
+include(SetupFilesystem)
 # include(SetupVTK) include(SetupYamlCpp)
 
 enable_testing(true)
@@ -69,7 +75,7 @@ include(ElasticaAddCatchTests)
 include(SetupCompilationFailureTests)
 
 include_directories(${CMAKE_SOURCE_DIR}/elastica)
-include_directories(${CMAKE_SOURCE_DIR})
+#include_directories(${CMAKE_SOURCE_DIR})
 
 add_subdirectory(elastica)
 add_subdirectory(tests)

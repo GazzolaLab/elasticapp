@@ -2,10 +2,11 @@
 // See LICENSE.txt for details.
 
 #include "ErrorHandling/AbortWithErrorMessage.hpp"
-#include "ErrorHandling/Abort.hpp"
 
 #include <cstdio>
 #include <sstream>
+
+#include "ErrorHandling/Abort.hpp"
 
 void abort_with_error_message(const char* expression, const char* file,
                               const int line, const char* pretty_function,
@@ -25,7 +26,7 @@ void abort_with_error_message(const char* expression, const char* file,
   // We use printf instead of abort to print the error message because in the
   // case of an executable not using Charm++'s main function the call to abort
   // will segfault before anything is printed.
-  //  printf("%s", os.c_str());
+  printf("%s", os.str().c_str());
   Parallel::abort("");
 }
 
@@ -46,6 +47,7 @@ void abort_with_error_message(const char* file, const int line,
   // We use printf instead of abort to print the error message because in the
   // case of an executable not using Charm++'s main function the call to abort
   // will segfault before anything is printed.
-  //  printf("%s", os.c_str());
+//    printf("%s", os.c_str());
+  printf("%s", os.str().c_str());
   Parallel::abort("");
 }

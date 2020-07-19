@@ -9,15 +9,15 @@ include(AddCxxFlag)
 # On systems where we can't use -isystem (Cray), we don't want all the warnings
 # enabled because we get flooded with system warnings.
 option(ENABLE_WARNINGS "Enable the default warning level" ON)
-if(${ENABLE_WARNINGS})
-    check_and_add_cxx_flags("-W;\
+if (${ENABLE_WARNINGS})
+    create_cxx_flags_target(
+            "-W;\
 -Wall;\
 -Wextra;\
 -Wpedantic;\
 -Wcast-align;\
 -Wcast-qual;\
 -Wdisabled-optimization;\
--Wdocumentation;\
 -Wformat=2;\
 -Wformat-nonliteral;\
 -Wformat-security;\
@@ -27,7 +27,6 @@ if(${ENABLE_WARNINGS})
 -Wmissing-format-attribute;\
 -Wmissing-include-dirs;\
 -Wmissing-noreturn;\
--Wnewline-eof;\
 -Wno-documentation-unknown-command;\
 -Wno-mismatched-tags;\
 -Wnon-virtual-dtor;\
@@ -41,11 +40,27 @@ if(${ENABLE_WARNINGS})
 -Wstack-protector;\
 -Wswitch-default;\
 -Wunreachable-code;\
--Wwrite-strings")
-endif()
+-Wwrite-strings" ElasticaWarnings)
+endif ()
+# Disabled these two because of errors
+#-Wdocumentation;\
+#-Wnewline-eof;\
 
-# GCC 7.1ish and newer warn about noexcept changing mangled names, but we don't
-# care
-check_and_add_cxx_flag("-Wno-noexcept-type")
+# GCC 7.1ish and newer warn about noexcept changing mangled names,
+# but we don't care
+create_cxx_flag_target("-Wno-noexcept-type" ElasticaWarnNoNoexceptType)
 
-check_and_add_cxx_link_flag("-Qunused-arguments")
+#check_and_add_cxx_link_flag("-Qunused-arguments")
+
+target_link_libraries(
+        ElasticaWarnings
+        INTERFACE
+        ElasticaWarnNoNoexceptType
+)
+
+target_link_libraries(
+        ElasticaFlags
+        INTERFACE
+        ElasticaWarnings
+)
+

@@ -2,6 +2,23 @@
 
 set(LIBRARY ErrorHandling)
 
-set(LIBRARY_SOURCES AbortWithErrorMessage.cpp FloatingPointExceptions.cpp)
+add_elastica_library(${LIBRARY})
 
-add_elastica_library(${LIBRARY} ${LIBRARY_SOURCES})
+elastica_target_sources(
+        ${LIBRARY}
+        PRIVATE
+        AbortWithErrorMessage.cpp
+        FloatingPointExceptions.cpp
+)
+
+elastica_target_headers(
+        ${LIBRARY}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        AbortWithErrorMessage.hpp
+        Abort.hpp
+        Assert.hpp
+        ExpectsAndEnsures.hpp
+        FloatingPointExceptions.hpp
+)
+
+#add_elastica_library(${LIBRARY} ${LIBRARY_SOURCES})

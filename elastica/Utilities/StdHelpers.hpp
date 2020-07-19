@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "DataStructures/TaggedTuple.hpp"
+//#include "DataStructures/TaggedTuple.hpp"
 #include "Utilities/PrintHelpers.hpp"
 
 namespace StdHelpers_detail {
@@ -65,6 +65,7 @@ inline std::ostream& operator<<(std::ostream& os,
 //  return os;
 //}
 
+/*
 template <tuples::TagType TT, class MetaData, typename... Tags>
 inline std::ostream& operator<<(
     std::ostream& os, tuples::TaggedTuple<TT, MetaData, Tags...>& tt) noexcept {
@@ -75,6 +76,7 @@ inline std::ostream& operator<<(
                0)...};
   return os << ")\n";
 }
+*/
 
 // template <typename... Args>
 // inline std::ostream& operator<<(std::ostream& os,
@@ -87,3 +89,15 @@ inline std::ostream& operator<<(
 //  os << ")\n";
 //  return os;
 //}
+
+template <class F, std::size_t... Is>
+constexpr decltype(auto) index_apply_impl(F && f,
+                                std::index_sequence<Is...> /* meta */) {
+    return f(std::integral_constant<size_t, Is> {}...);
+}
+
+template <std::size_t N, class F>
+constexpr auto index_apply(F&& f) {
+    return index_apply_impl(std::forward<F>(f), std::make_index_sequence<N>{});
+}
+

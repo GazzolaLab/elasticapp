@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "elastica/Systems/SystemBase.hpp"
@@ -12,7 +13,9 @@
 #include "elastica/Utilities/TypeTraits.hpp"
 
 namespace elastica {
+
   namespace interface {
+
     namespace detail {
       // Doesn't short-circuit by intention
       // If you pass a parameter pack <A,B,C,D,E> does compare of
@@ -51,9 +54,10 @@ namespace elastica {
 
       DefaultInterface() = default;
       ~DefaultInterface() = default;
-      // Anything default goes here
-      inline void constrain_primitive_values(TimeType /*time*/){};
+      // Anything default goes here, redundant as hell
+      __unused inline void constrain_primitive_values(TimeType /*time*/){};
       inline void constrain_primitive_rates(TimeType /*time*/){};
+      inline void resolve_effects(TimeType /*time*/){};
     };
 
     // DONE : Check for mixins to simulator class should always be default
@@ -63,14 +67,14 @@ namespace elastica {
               template <typename /*Simulator*/, typename /*SimTraits*/>
               class... Bases>
     class Simulator
-        : public DefaultInterface<SimTraits>,
-          public Singleton<Simulator<SimTraits, Bases...>, logging::Logger>,
+        : public Singleton<Simulator<SimTraits, Bases...>, logging::Logger>,
+          public DefaultInterface<SimTraits>,
           public Bases<Simulator<SimTraits, Bases...>, SimTraits>... {
      public:
       static_assert(
           cpp17::conjunction_v<
               std::is_default_constructible<Bases<int, SimTraits>>...>,
-          "Simulation options must have a default/empty constructor!");
+          "Simulation enhancements must have a default/empty constructor!");
 
       // Make all the bases friends by default
       // Awesome trick to do it, very clever
@@ -123,11 +127,21 @@ namespace elastica {
                                            constrain_primitive_rates)
       STAMP_OUT_SIMULATION_METHOD_CHOOSERS(HasConstraintValues,
                                            constrain_primitive_values)
+      STAMP_OUT_SIMULATION_METHOD_CHOOSERS(HasResolveEffects, resolve_effects)
 #undef STAMP_OUT_SIMULATION_METHOD_CHOOSERS
 #undef CONCAT
 #undef xxx
 
-      // Choose overloaded functions based on constructed sim
+      // TODO : Use tmpl::find_if to select overload of rates and values
+      //      // Choose overloaded functions based on constructed sim
+      //      using EnhancementsList =
+      //          tmpl::list<Bases<Simulator<SimTraits, Bases...>,
+      //          SimTraits>...>;
+      //      using EnhancementInterfaceList =
+      //          tmpl::push_front<DefaultInterface<SimTraits>,
+      //          EnhancementsList>;
+      //
+      //
       using HasConstraintRatesChooser<
           DefaultInterface<SimTraits>,
           Bases<Simulator<SimTraits, Bases...>,
@@ -136,39 +150,160 @@ namespace elastica {
           DefaultInterface<SimTraits>,
           Bases<Simulator<SimTraits, Bases...>,
                 SimTraits>...>::constrain_primitive_values;
+      using HasResolveEffectsChooser<
+          DefaultInterface<SimTraits>,
+          Bases<Simulator<SimTraits, Bases...>, SimTraits>...>::resolve_effects;
 
       //      USE_SIMULATOR_TRAITS(SimTraits)
       using SizeType = typename SimTraits::SizeType;
       using IndexType = typename SimTraits::IndexType;
       using TimeType = typename SimTraits::TimeType;
-      template <typename T>
-      using SystemInterfaceType =
-          typename SimTraits::template SystemInterfaceType<T>;
 
-      using SystemType = SystemInterfaceType<::elastica::SystemBase>;
-      using SystemID = ::elastica::SystemBase*;
+      //      template <typename T>
+      //      using AddSystemInterfaceType =
+      //          typename SimTraits::template AddSystemInterfaceType<T>;
+
+      //      template <typename T>
+      //      using SystemInterfaceType = typename
+      //      AddSystemInterfaceType<T>::type;
+
+//      template <typename ID>
+//      using AddSystemCollectionStorage =
+//          typename SimTraits::template AddSystemStorageType<ID>;
+//
+      template <typename SystemCollection>
+      using AddSystemCollectionStorageType =
+          typename SimTraits::template AddSystemStorageType<SystemCollection>;
+
+      // using SystemIDTypes =
+      //    tmpl::transform<AdmissibleSystems, std::add_pointer<tmpl::_1>>;
+
+      // Typelist of Admissible systems, say <RigidBodyBase, SystemBase>
+      using AdmissibleSystemCollections =
+          typename SimTraits::AdmissibleSystemCollections;
+
+      // Typelist of interfaces of these Admissible systems,
+      // say < std::shared_ptr<RigidBodyBase>, std::shared_ptr<SystemBase> >
+      //      using SystemInterfaceTypes =
+      //          tmpl::transform<AdmissibleSystems,
+      //          AddSystemInterfaceType<tmpl::_1>>;
+
+      // Typelist of collection of pointers of these Admissible systems,
+      // say < std::vector<RigidBodyBase*>, std::vector<SystemBase*> >
+      //      using SystemIDCollectionTypes =
+      //          tmpl::transform<AdmissibleSystems,
+      //          SystemIDCollectionType<tmpl::_1>>;
+
+      //      using SystemCollectionTypes =
+      //          tmpl::transform<AdmissibleSystems,
+      //          AddSystemStorageType<tmpl::_1>>;
+      // Tuple of collection of pointers of these Admissible systems,
+      // say std::tuple< std::vector<RigidBodyBase*>, std::vector<SystemBase*> >
+      using SystemCollectionStorage = tmpl::as_tuple<tmpl::transform<
+          AdmissibleSystemCollections,
+          tmpl::bind<AddSystemCollectionStorageType, tmpl::_1>>>;
+      //      using SystemIDCollection =
+      //          std::tuple<std::vector<SystemBase*>,
+      //                     std::vector<::elastica::rigidbody::Sphere*>>;
+
+      // Since this is an internal function, we give a reference and not a const
+      // reference So things like environments are allowed to change properties
+      // of the collection containers (they can add arbitrary forces to the
+      // bodies, for example) its up to the calling scope to determine whether a
+      // const ref or a non-const ref is needed
+      inline constexpr auto get_system_collection_storage() noexcept
+          -> SystemCollectionStorage& {
+        return system_collection_containers_;
+      }
+
+      inline constexpr auto get_system_collection_storage() const noexcept
+          -> SystemCollectionStorage const& {
+        return system_collection_containers_;
+      }
+
+      // TODO : Private (outside world has no business accessing the vector of
+      //        collections,
+      // Do not delcare rvalue gets
+      template <typename SystemCollection>
+      inline constexpr auto get_system_collection_container() noexcept
+          -> AddSystemCollectionStorageType<SystemCollection>& {
+        return std::get<AddSystemCollectionStorageType<SystemCollection>>(
+            system_collection_containers_);
+      }
+
+      template <typename SystemCollection>
+      inline constexpr auto get_system_collection_container() const noexcept
+          -> AddSystemCollectionStorageType<SystemCollection> const& {
+        return std::get<AddSystemCollectionStorageType<SystemCollection>>(
+            system_collection_containers_);
+      }
+
+      // TODO : Private
+      template <SizeType SystemCollectionIdx>
+      inline constexpr auto get_system_collection_container() noexcept
+          -> std::tuple_element_t<SystemCollectionIdx,
+                                  SystemCollectionStorage>& {
+        static_assert(SystemCollectionIdx < get_number_of_system_collections(),
+                      "Requested > present");
+        return std::get<SystemCollectionIdx>(system_collection_containers_);
+      }
+
+      //      using SystemType = SystemInterfaceType<::elastica::SystemBase>;
+      //      using SystemID = ::elastica::SystemBase*;
 
       // TODO : Make private, friends can still access!
-      template <typename System>
-      IndexType check(const SystemInterfaceType<System>& system) {
-        auto it = std::find(systems_.begin(), systems_.end(), system.get());
-        if (it == systems_.end())
+      //      template <typename System>
+      //      IndexType check(const SystemInterfaceType<System>& system) {
+      //        auto it = std::find(systems_.begin(), systems_.end(),
+      //        system.get()); if (it == systems_.end())
+      //          throw std::range_error("System is invalid");
+      //        return std::distance(systems_.begin(), it);
+      //      }
+
+      template <typename SystemCollection>
+      inline auto begin() {
+        return get_system_collection_container<SystemCollection>().begin();
+      }
+      template <typename SystemCollection>
+      inline auto end() {
+        return get_system_collection_container<SystemCollection>().end();
+      }
+
+      template <typename SystemCollection>
+      IndexType check(const SystemCollection& system) {
+        const auto _begin_ = begin<SystemCollection>();
+        const auto _end_ = end<SystemCollection>();
+
+        auto it = std::find(_begin_, _end_, system);
+
+        if (it == _end_)
           throw std::range_error("System is invalid");
-        return std::distance(systems_.begin(), it);
+
+        return std::distance(_begin_, it);
       }
 
       // TODO : Make private, friends can still access!
       SizeType dofs(IndexType sys_idx) {
-        if (sys_idx >= systems_.size())
-          throw std::range_error("System is invalid");
+        //        if (sys_idx >= systems_.size())
+        //          throw std::range_error("System is invalid");
         // return systems_[sys_idx]->dofs();
         return 6UL;
       }
 
       // TODO : Make private, friends can still access!
-      SystemID operator[](IndexType idx) { return systems_[idx]; }
+      // SystemID operator[](IndexType idx) { return systems_[idx]; }
+
+      template <class SystemCollection>
+      inline constexpr auto operator[](IndexType idx) -> SystemCollection& {
+        return get_system_collection_container<SystemCollection>()[idx];
+      }
+
+      static constexpr SizeType get_number_of_system_collections() noexcept {
+        return tmpl::size<AdmissibleSystemCollections>::value;
+      }
 
       // TODO : Make private
+      /*
       template <
           class System,
           typename std::enable_if<
@@ -183,33 +318,93 @@ namespace elastica {
       inline void push_back_impl(System* system_ptr) {
         double_systems_.push_back(system_ptr);
       }
+      */
+      /*
+      template <class SystemBaseType, class System>
+      inline void push_back_impl(System* system_ptr) {
+        get_system_collection<SystemBaseType>().push_back(
+            static_cast<SystemBaseType*>(system_ptr));
+      }
+       */
+      template <class SystemCollection>
+      inline auto push_back_impl(SystemCollection&& system)
+          -> SystemCollection* {
+        auto& system_collection_container =
+            get_system_collection_container<SystemCollection>();
+        system_collection_container.push_back(
+            std::forward<SystemCollection>(system));
+        // return non-owning handle to the System just pushed back
+        return &system_collection_container.back();
+      }
 
       // Vector like interface here, mixin?
-      template <class System>
-      inline void push_back(const SystemInterfaceType<System>& system) {
+      //      template <class System>
+      //      inline void push_back(const SystemInterfaceType<System>& system) {
+
+      // Only accepts forwarding references by design to own memory: don't push
+      // back a const&
+      template <class SystemCollection>
+      inline auto push_back(SystemCollection&& system) {
         // TODO Push back dispatch to different vectors based on admissible
-        // types
-        static_assert(std::is_base_of<SystemBase, System>::value ||
-                          std::is_same<double, System>::value,
-                      "Cannot add to simulator now boi");
-        push_back_impl(system.get());
+        // types (fixed, infinite: interact with Environment )
+        //        using find_result =
+        //            tmpl::find<AdmissibleSystems, std::is_base_of<tmpl::_1,
+        //            System>>;
+        //        using find_result =
+        //            tmpl::find<AdmissibleSystemCollections,
+        //                       std::is_same<SystemCollection, tmpl::_1>>;
+
+        static_assert(
+            tmpl::list_contains_v<AdmissibleSystemCollections,
+                                  SystemCollection> != 0,
+            "Cannot add the system to the simulator, as its type"
+            "is not recognized while searching the list of valid systems. "
+            "If this is not an error, consider extending the "
+            "DefaultSimulatorConfiguration to add your "
+            "system\n");
+
+        //        using SystemBaseType = tmpl::front<find_result>;
+        //        push_back_impl<SystemBaseType, System>(system.get());
+
+        return push_back_impl(std::forward<SystemCollection>(system));
+
+        //        static_assert(
+        //            std::is_base_of<SystemBase, System>::value ||
+        //                          std::is_same<double, System>::value,
+        //                      "Cannot add to simulator now boi");
+        //        push_back_impl(system.get());
       }
-      auto begin() { return systems_.begin(); }
-      auto end() { return systems_.end(); }
+
+      template <class... SystemCollectionsToBeAdded>
+      inline decltype(auto) push_back(SystemCollectionsToBeAdded&&... system) {
+        return std::make_tuple(
+            push_back(std::forward<SystemCollectionsToBeAdded>(system))...);
+      }
+
 
       void finalize(TimeType time_v = 0.0) {
         // Travel up the hierarchy and call finalize on all
-        using expander = int[];
-        (void)expander{
-            0,
-            ((void)Bases<Simulator<SimTraits, Bases...>, SimTraits>::finalize(
-                 time_v),
-             0)...};
+        EXPAND_PACK_LEFT_TO_RIGHT(
+            Bases<Simulator<SimTraits, Bases...>, SimTraits>::finalize(time_v));
+        ready_for_simulation_ = true;
+        //        using expander = int[];
+        //        (void)expander{
+        //            0,
+        //            ((void)Bases<Simulator<SimTraits, Bases...>,
+        //            SimTraits>::finalize(
+        //                 time_v),
+        //             0)...};
       }
+
+      auto ready() const noexcept -> bool { return ready_for_simulation_; }
+
       ~Simulator(){
-          LOG_INFO_SECTION(log) {
-              log << "Successfully destroyed the simulation instance";
-            }
+          // LOG_INFO_SECTION(log){
+          // log << "Successfully destroyed the simulation instance";
+          //}
+
+          // As we decide to own memory, we need to manually clear
+          // the pointers and references
       };
 
      private:
@@ -218,21 +413,26 @@ namespace elastica {
       //                        Bases...>, logging::Logger>, public
       //                        Bases<Simulator<SimTraits, Bases...>,
       //                        SimTraits>... {
+
+      // NOTE : Ensure singleton instance is constructed first to propagate
+      // instance to other base classes
       Simulator()
-          : DefaultInterface<SimTraits>(),
-            Singleton<Simulator<SimTraits, Bases...>, logging::Logger>(),
-            Bases<Simulator<SimTraits, Bases...>, SimTraits>()... {
-          LOG_INFO_SECTION(log) {
-            log << "Successfully initialized the simulation instance";
-          }
+          : Singleton<Simulator<SimTraits, Bases...>, logging::Logger>(),
+            DefaultInterface<SimTraits>(),
+            Bases<Simulator<SimTraits, Bases...>, SimTraits>()...,
+            ready_for_simulation_(false) {
+        //        LOG_INFO_SECTION(log) {
+        //          log << "Successfully initialized the simulation instance";
+        //        }
       }
 
-      BEFRIEND_SINGLETON
+      BEFRIEND_SINGLETON;
 
       template <template <typename /*Simulator*/, typename /*SimTraits*/>
                 class... AddOns,
-                typename SimulationOptions_>
-      friend auto make_simulator(SimulationOptions_);
+                typename SimulationOptions>
+      friend auto make_simulator(SimulationOptions);
+      // TODO Friend the get functions
 
       /*
       int get(std::size_t idx){
@@ -240,10 +440,34 @@ namespace elastica {
     }
       */
 
-      std::vector<SystemID> systems_;
+      SystemCollectionStorage system_collection_containers_;
+      bool ready_for_simulation_;
+      //  std::vector<SystemID> systems_;
       // TODO : Delete, purely for testing purposes
-      std::vector<double*> double_systems_;
-    };  // namespace interface
+      //  std::vector<double*> double_systems_;
+    };
 
   }  // namespace interface
+
 }  // namespace elastica
+
+namespace std {
+
+  template <typename System, typename SimTraits,
+            template <typename /*Simulator*/, typename /*SimTraits*/>
+            class... Bases>
+  inline constexpr auto& get(
+      ::elastica::interface::Simulator<SimTraits, Bases...>& simulator) {
+    return simulator.template get_system_collection_container<System>();
+  }
+
+  template <std::size_t SystemCollectionIdx, typename SimTraits,
+            template <typename /*Simulator*/, typename /*SimTraits*/>
+            class... Bases>
+  inline constexpr auto& get(
+      ::elastica::interface::Simulator<SimTraits, Bases...>& simulator) {
+    return simulator
+        .template get_system_collection_container<SystemCollectionIdx>();
+  }
+
+}  // namespace std

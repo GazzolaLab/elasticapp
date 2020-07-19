@@ -304,9 +304,10 @@ find_path(TBB_INCLUDE_DIR NAMES tbb/tbb.h PATHS ${TBB_INC_SEARCH_PATH})
 find_library(TBB_LIBRARY_RELEASE
              NAMES ${TBB_LIBRARY_NAMES}
              PATHS ${TBB_LIB_SEARCH_PATH})
-find_library(TBB_LIBRARY_DEBUG
-             NAMES ${TBB_LIBRARY_NAMES_DEBUG}
-             PATHS ${TBB_LIB_SEARCH_PATH})
+# Need not find debug libraries to pass on to INTERFACE_LINK_LIBRARIES
+#find_library(TBB_LIBRARY_DEBUG
+#             NAMES ${TBB_LIBRARY_NAMES_DEBUG}
+#             PATHS ${TBB_LIB_SEARCH_PATH})
 make_library_set(TBB_LIBRARY)
 
 findpkg_finish(TBB)
@@ -326,9 +327,10 @@ find_path(TBB_MALLOC_INCLUDE_DIR NAMES tbb/tbb.h PATHS ${TBB_INC_SEARCH_PATH})
 find_library(TBB_MALLOC_LIBRARY_RELEASE
              NAMES ${TBB_MALLOC_LIBRARY_NAMES}
              PATHS ${TBB_LIB_SEARCH_PATH})
-find_library(TBB_MALLOC_LIBRARY_DEBUG
-             NAMES ${TBB_MALLOC_LIBRARY_NAMES_DEBUG}
-             PATHS ${TBB_LIB_SEARCH_PATH})
+# Need not find debug libraries to pass on to INTERFACE_LINK_LIBRARIES
+#find_library(TBB_MALLOC_LIBRARY_DEBUG
+#             NAMES ${TBB_MALLOC_LIBRARY_NAMES_DEBUG}
+#             PATHS ${TBB_LIB_SEARCH_PATH})
 make_library_set(TBB_MALLOC_LIBRARY)
 
 findpkg_finish(TBB_MALLOC)
@@ -345,9 +347,10 @@ find_path(TBB_MALLOC_PROXY_INCLUDE_DIR
 find_library(TBB_MALLOC_PROXY_LIBRARY_RELEASE
              NAMES ${TBB_MALLOC_PROXY_LIBRARY_NAMES}
              PATHS ${TBB_LIB_SEARCH_PATH})
-find_library(TBB_MALLOC_PROXY_LIBRARY_DEBUG
-             NAMES ${TBB_MALLOC_PROXY_LIBRARY_NAMES_DEBUG}
-             PATHS ${TBB_LIB_SEARCH_PATH})
+# Need not find debug libraries to pass on to INTERFACE_LINK_LIBRARIES
+#find_library(TBB_MALLOC_PROXY_LIBRARY_DEBUG
+#             NAMES ${TBB_MALLOC_PROXY_LIBRARY_NAMES_DEBUG}
+#             PATHS ${TBB_LIB_SEARCH_PATH})
 make_library_set(TBB_MALLOC_PROXY_LIBRARY)
 
 findpkg_finish(TBB_MALLOC_PROXY)

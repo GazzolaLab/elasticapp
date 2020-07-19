@@ -52,7 +52,7 @@ namespace elastica {
       StreamType _log;
 
       friend class LoggingSection;
-      BEFRIEND_SINGLETON
+      BEFRIEND_SINGLETON;
     };
     //*************************************************************************************************
 

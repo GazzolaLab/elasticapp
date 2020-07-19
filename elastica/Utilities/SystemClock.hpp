@@ -42,7 +42,7 @@ namespace elastica {
    private:
     static time_t start_;  //!< Timestamp for the start of the process.
     friend std::shared_ptr<SystemClock> theSystemClock();
-    BEFRIEND_SINGLETON
+    BEFRIEND_SINGLETON;
   };
 
   inline std::shared_ptr<SystemClock> theSystemClock() {

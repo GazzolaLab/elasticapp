@@ -9,6 +9,7 @@
 
 /*
 TODO
+ General cleanup
 1. Forwarding arguments
 2. Utility namespace general
 3. Documentation
@@ -162,7 +163,7 @@ namespace std {
 namespace tuples {
   /*
    * If you feed in a tmpl::list of parameters, you get out a tuple containing
-   * those values in the TT
+   * those values in the TT. Not that useful.
    */
   template <typename... TagsToBeFound, tuples::TagType TT, class MetaData,
             typename... Tags>
@@ -180,6 +181,15 @@ using TaggedTuple = tuples::TaggedTuple<tuples::TagType::Simple, int, Args...>;
 template <class MetaData, typename... Args>
 using MetaTaggedTuple =
     tuples::TaggedTuple<tuples::TagType::Container, MetaData, Args...>;
+
+// Wrappers
+namespace brigand {
+  template <typename... T>
+  using tagged_tuple_wrapper = typename ::TaggedTuple<T...>;
+
+  template <typename L>
+  using as_tagged_tuple = wrap<L, tagged_tuple_wrapper>;
+}  // namespace brigand
 
 // TagToBeFound, tuples::TaggedTuple<TT, MetaData, Tags...>::policy_type::
 // retrieval

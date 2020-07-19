@@ -32,17 +32,17 @@ set_property(GLOBAL PROPERTY ELASTICA_TESTS_LIBS_PROPERTY "")
 # and the libraries that the test library needs to link to should be passed as
 # the last argument.
 function(add_test_library
-         LIBRARY
-         FOLDER
-         LIBRARY_SOURCES
-         LINK_LIBS)
-    foreach(SOURCE_FILE ${LIBRARY_SOURCES})
+        LIBRARY
+        FOLDER
+        LIBRARY_SOURCES
+        LINK_LIBS)
+    foreach (SOURCE_FILE ${LIBRARY_SOURCES})
         # We only add source files that actually call ELASTICA_TEST_CASE
         file(READ "${SOURCE_FILE}" SOURCE_FILE_CONTENTS)
         # Note: The result of find is -1 if not found
         string(FIND "${SOURCE_FILE_CONTENTS}" "ELASTICA_TEST_CASE("
-                    FOUND_ELASTICA_TEST_CASE)
-        if(NOT ${FOUND_ELASTICA_TEST_CASE} EQUAL -1)
+                FOUND_ELASTICA_TEST_CASE)
+        if (NOT ${FOUND_ELASTICA_TEST_CASE} EQUAL -1)
             # Get the name of the file without path and without extension
             get_filename_component(SOURCE_NAME ${SOURCE_FILE} NAME_WE)
             # We specify the macro ELASTICA_TEST_REGISTER_FUNCTION for each
@@ -51,10 +51,10 @@ function(add_test_library
             # from the main test executable to get static variables to be
             # initialized in the source file.
             set_source_files_properties(
-                ${SOURCE_FILE}
-                PROPERTIES
-                COMPILE_FLAGS
-                "-D ELASTICA_TEST_REGISTER_FUNCTION=${LIBRARY}_${SOURCE_NAME}")
+                    ${SOURCE_FILE}
+                    PROPERTIES
+                    COMPILE_FLAGS
+                    "-D ELASTICA_TEST_REGISTER_FUNCTION=${LIBRARY}_${SOURCE_NAME}")
             # We use the global "variable" (CMake doesn't really have global
             # variables but global properties are effectively the same)
             # ELASTICA_TESTS_LIB_FUNCTIONS_PROPERTY to keep track of all the
@@ -62,36 +62,53 @@ function(add_test_library
             # one test executable exists each should add their own libraries
             # independently so that the property can be reset to an empty string
             # after the first executable's libraries were added.
-            get_property(ELASTICA_TESTS_LIB_FUNCTIONS GLOBAL
-                         PROPERTY ELASTICA_TESTS_LIB_FUNCTIONS_PROPERTY)
+            get_property(
+                    ELASTICA_TESTS_LIB_FUNCTIONS
+                    GLOBAL
+                    PROPERTY
+                    ELASTICA_TESTS_LIB_FUNCTIONS_PROPERTY)
             set(ELASTICA_TESTS_LIB_FUNCTIONS
-                "${ELASTICA_TESTS_LIB_FUNCTIONS};${LIBRARY}_${SOURCE_NAME}")
+                    "${ELASTICA_TESTS_LIB_FUNCTIONS};${LIBRARY}_${SOURCE_NAME}")
             set_property(GLOBAL
-                         PROPERTY ELASTICA_TESTS_LIB_FUNCTIONS_PROPERTY
-                                  ${ELASTICA_TESTS_LIB_FUNCTIONS})
-        endif()
-    endforeach()
+                    PROPERTY ELASTICA_TESTS_LIB_FUNCTIONS_PROPERTY
+                    ${ELASTICA_TESTS_LIB_FUNCTIONS})
+        endif ()
+    endforeach ()
 
+    # We do not use `add_elastica_library` since that adds libraries
+    # to the `libs` target, which should not include tests.
     add_library(${LIBRARY} ${LIBRARY_SOURCES})
 
-    target_link_libraries(${LIBRARY}
-                          INTERFACE ${LINK_LIBS}
-                          INTERFACE ${PYTHON_LIBRARIES})
+    # Add link dependencies
+    target_link_libraries(
+            ${LIBRARY}
+            PRIVATE
+            ${LINK_LIBS}
+            ${PYTHON_LIBRARIES}
+            ElasticaFlags
+    )
 
-    set_target_properties(${LIBRARY} PROPERTIES FOLDER "${FOLDER}/")
+    set_target_properties(
+            ${LIBRARY}
+            PROPERTIES
+            FOLDER
+            "${FOLDER}/")
 
-    target_include_directories(${LIBRARY} SYSTEM
-                               PUBLIC ${NUMPY_INCLUDE_DIRS}
-                               PUBLIC ${PYTHON_INCLUDE_DIRS})
+    target_include_directories(
+            ${LIBRARY}
+            SYSTEM
+            PUBLIC ${NUMPY_INCLUDE_DIRS}
+            PUBLIC ${PYTHON_INCLUDE_DIRS}
+    )
 
     # We use a global variable to also make a list of all the libraries added so
     # far. Again, this is easier for users than needing to propagate the
     # libraries back up using PARENT_SCOPE in various calls to set().
     get_property(ELASTICA_TESTS_LIBS GLOBAL
-                 PROPERTY ELASTICA_TESTS_LIBS_PROPERTY)
+            PROPERTY ELASTICA_TESTS_LIBS_PROPERTY)
     set(ELASTICA_TESTS_LIBS "${ELASTICA_TESTS_LIBS};${LIBRARY}")
     set_property(GLOBAL
-                 PROPERTY ELASTICA_TESTS_LIBS_PROPERTY ${ELASTICA_TESTS_LIBS})
+            PROPERTY ELASTICA_TESTS_LIBS_PROPERTY ${ELASTICA_TESTS_LIBS})
 endfunction()
 
 # Writes a header file with a function named FUNCTION_NAME that in turn calls
@@ -101,22 +118,22 @@ endfunction()
 # "${CMAKE_BINARY_DIR}/tests/Unit/RunTestsRegister.hpp"
 function(write_test_registration_function FILENAME FUNCTION_NAME)
     get_property(TEST_FUNCTIONS GLOBAL
-                 PROPERTY ELASTICA_TESTS_LIB_FUNCTIONS_PROPERTY)
+            PROPERTY ELASTICA_TESTS_LIB_FUNCTIONS_PROPERTY)
     set(REGISTERING_FUNCTIONS_DECL "")
     set(REGISTERING_FUNCTIONS_CALL "")
-    foreach(TEST_FUNCTION ${TEST_FUNCTIONS})
+    foreach (TEST_FUNCTION ${TEST_FUNCTIONS})
         set(REGISTERING_FUNCTIONS_DECL
-            "${REGISTERING_FUNCTIONS_DECL}void ${TEST_FUNCTION}() noexcept;\n")
+                "${REGISTERING_FUNCTIONS_DECL}void ${TEST_FUNCTION}() noexcept;\n")
         set(REGISTERING_FUNCTIONS_CALL
-            "${REGISTERING_FUNCTIONS_CALL}  ${TEST_FUNCTION}();\n")
-    endforeach()
+                "${REGISTERING_FUNCTIONS_CALL}  ${TEST_FUNCTION}();\n")
+    endforeach ()
     # We write the file into a tmp and then configure it so we don't rebuild the
     # tests in the case where CMake is re-run but nothing changed.
     file(WRITE "${FILENAME}.tmp"
-         "#pragma once\n"
-         "${REGISTERING_FUNCTIONS_DECL}\n"
-         "inline void ${FUNCTION_NAME}() noexcept {\n"
-         "${REGISTERING_FUNCTIONS_CALL}"
-         "}\n")
+            "#pragma once\n"
+            "${REGISTERING_FUNCTIONS_DECL}\n"
+            "inline void ${FUNCTION_NAME}() noexcept {\n"
+            "${REGISTERING_FUNCTIONS_CALL}"
+            "}\n")
     configure_file("${FILENAME}.tmp" "${FILENAME}" COPYONLY)
 endfunction()

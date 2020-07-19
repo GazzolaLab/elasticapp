@@ -35,7 +35,7 @@
 // 20160415) can't figure out that the else branch and everything
 // after it is unreachable, causing warnings (and possibly suboptimal
 // code generation).
-#define ASSERT(a, m)                                                          \
+#define ELASTICA_ASSERT(a, m)                                                 \
   do {                                                                        \
     if (!(a)) {                                                               \
       disable_floating_point_exceptions();                                    \
@@ -48,7 +48,7 @@
     }                                                                         \
   } while (false)
 #else
-#define ASSERT(a, m)                                   \
+#define ELASTICA_ASSERT(a, m)                          \
   do {                                                 \
     if (false) {                                       \
       static_cast<void>(a);                            \

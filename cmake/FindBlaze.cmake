@@ -1,4 +1,5 @@
 # Distributed under the MIT License. See LICENSE.txt for details.
+# Obtained with thanks from https://github.com/sxs-collaboration/spectre
 
 # ===============================================
 # See if we have env vars to help us find tbb

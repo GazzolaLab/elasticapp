@@ -45,14 +45,14 @@ namespace timestepper {
 
     // constant or variable time-stepper?
     template <bool B>
-    struct TimeStepperStepSizeTrait {
+    struct TimeStepperStepSizeStrategyTrait {
       using type = integrate_detail::AdaptiveTimeStepperTag;
-    }
+    };
 
     template <>
-    struct TimeStepperStepSizeTrait<true> {
+    struct TimeStepperStepSizeStrategyTrait<true> {
       using type = integrate_detail::ConstantTimeStepperTag;
-    }
+    };
   }  // namespace traits
 
   template <typename T>
@@ -60,10 +60,11 @@ namespace timestepper {
       typename traits::IsSymplecticTimeStepper<T>::type;
 
   template <typename T>
-  using timestepper_step_size_t = typename traits::TimeStepperStepSizeTrait<
-      cpp17::bool_constant<IsExplicitTimeStepper<T>::value ||
-                           IsExplicitFSALTimeStepper<T>::value ||
-                           IsSymplecticTimeStepper<T>::value> >::type;
+  using timestepper_step_size_strategy_t =
+      typename traits::TimeStepperStepSizeStrategyTrait<cpp17::disjunction_v<
+          traits::IsExplicitTimeStepper<T>::value,
+          traits::IsExplicitFSALTimeStepper<T>::value,
+          traits::IsSymplecticTimeStepper<T>::value>>::type;
 
   namespace integrate_detail {
 
@@ -168,7 +169,7 @@ namespace timestepper {
                  std::tuple<Callables...> callables = {}) {
     return integrate_detail::integrate(
         time_stepper, rod, state, max_simulation_time, dt_, callables,
-        timestepper_step_size_t<TimeStepper>{},
+        timestepper_step_size_strategy_t<TimeStepper>{},
         std::make_index_sequence<sizeof...(Callables)>{});
   }
 

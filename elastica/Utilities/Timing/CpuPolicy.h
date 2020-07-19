@@ -31,48 +31,48 @@
 
 namespace elastica {
 
-namespace timing {
+  namespace timing {
 
-//=================================================================================================
-//
-//  CLASS DEFINITION
-//
-//=================================================================================================
+    //=================================================================================================
+    //
+    //  CLASS DEFINITION
+    //
+    //=================================================================================================
 
-//*************************************************************************************************
-/*!\brief Timing policy for the measurement of the CPU time.
- * \ingroup timing
- *
- * The CpuPolicy class represents the timing policy for CPU time measurements
- * that can be used in combination with the Timer class template. This
- * combination is realized with the CpuTimer type definition.
- */
-struct CpuPolicy {
-public:
-  //**Timing
-  // functions****************************************************************************
-  /*!\name Timing functions */
-  //@{
-  static inline double get_time_stamp();
-  //@}
-  //**********************************************************************************************
-};
-//*************************************************************************************************
+    //*************************************************************************************************
+    /*!\brief Timing policy for the measurement of the CPU time.
+     * \ingroup timing
+     *
+     * The CpuPolicy class represents the timing policy for CPU time
+     * measurements that can be used in combination with the Timer class
+     * template. This combination is realized with the CpuTimer type definition.
+     */
+    struct CpuPolicy {
+     public:
+      //**Timing
+      // functions****************************************************************************
+      /*!\name Timing functions */
+      //@{
+      static inline double get_time_stamp();
+      //@}
+      //**********************************************************************************************
+    };
+    //*************************************************************************************************
 
-//=================================================================================================
-//
-//  TIMING FUNCTIONS
-//
-//=================================================================================================
+    //=================================================================================================
+    //
+    //  TIMING FUNCTIONS
+    //
+    //=================================================================================================
 
-//*************************************************************************************************
-/*!\brief Returns a timestamp of the current CPU time in seconds.
- *
- * \return CPU timestamp in seconds.
- */
-inline double CpuPolicy::get_time_stamp() { return get_cpu_time(); }
-//*************************************************************************************************
+    //*************************************************************************************************
+    /*!\brief Returns a timestamp of the current CPU time in seconds.
+     *
+     * \return CPU timestamp in seconds.
+     */
+    inline double CpuPolicy::get_time_stamp() { return get_cpu_time(); }
+    //*************************************************************************************************
 
-} // namespace timing
+  }  // namespace timing
 
-} // namespace elastica
+}  // namespace elastica

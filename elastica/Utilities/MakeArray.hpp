@@ -92,59 +92,59 @@ ELASTICA_ALWAYS_INLINE constexpr auto make_array(T&& t) noexcept(noexcept(
       std::forward<T>(t));
 }
 
-/*!
- * \ingroup UtilitiesGroup
- * \brief Helper function to initialize a std::array with varying number of
- * arguments
- */
-template <typename T, typename... V, Requires<(sizeof...(V) > 0)> = nullptr>
-ELASTICA_ALWAYS_INLINE constexpr auto make_array(T&& t, V&&... values) noexcept(
-    noexcept(std::array<std::decay_t<T>, sizeof...(V) + 1>{
-        {std::forward<T>(t), std::forward<V>(values)...}}))
-    -> std::array<typename std::decay_t<T>, sizeof...(V) + 1> {
-  static_assert(
-      tmpl2::flat_all_v<cpp17::is_same_v<std::decay_t<T>, std::decay_t<V>>...>,
-      "all types to make_array(...) must be the same");
-  return std::array<std::decay_t<T>, sizeof...(V) + 1>{
-      {std::forward<T>(t), std::forward<V>(values)...}};
-}
-
-namespace MakeArray_detail {
-  template <typename Seq, typename T,
-            Requires<cpp17::is_rvalue_reference_v<Seq>> = nullptr>
-  constexpr T&& forward_element(T& t) noexcept {
-    return std::move(t);
-  }
-  template <typename Seq, typename T,
-            Requires<not cpp17::is_rvalue_reference_v<Seq>> = nullptr>
-  constexpr T& forward_element(T& t) noexcept {
-    return t;
-  }
-
-  template <typename T, size_t size, typename Seq, size_t... indexes>
-  constexpr std::array<T, size> make_array_from_iterator_impl(
-      Seq&& s,
-      std::integer_sequence<
-          size_t, indexes...> /*meta*/) noexcept(noexcept(std::array<T, size>{
-      {forward_element<decltype(s)>(*(std::begin(s) + indexes))...}})) {
-    // clang-tidy: do not use pointer arithmetic
-    return std::array<T, size>{{forward_element<decltype(s)>(
-        *(std::begin(s) + indexes))...}};  // NOLINT
-  }
-}  // namespace MakeArray_detail
-
-/*!
- * \ingroup UtilitiesGroup
- * \brief Create an `std::array<T, size>` from the first `size` values of `seq`
- *
- * \requires `Seq` has a `begin` function
- * \tparam T the type held by the array
- * \tparam size the size of the created array
- */
-template <typename T, size_t size, typename Seq>
-constexpr std::array<T, size> make_array(Seq&& seq) noexcept(
-    noexcept(MakeArray_detail::make_array_from_iterator_impl<T, size>(
-        std::forward<Seq>(seq), std::make_index_sequence<size>{}))) {
-  return MakeArray_detail::make_array_from_iterator_impl<T, size>(
-      std::forward<Seq>(seq), std::make_index_sequence<size>{});
-}
+///*!
+// * \ingroup UtilitiesGroup
+// * \brief Helper function to initialize a std::array with varying number of
+// * arguments
+// */
+//template <typename T, typename... V, Requires<(sizeof...(V) > 0)> = nullptr>
+//ELASTICA_ALWAYS_INLINE constexpr auto make_array(T&& t, V&&... values) noexcept(
+//    noexcept(std::array<std::decay_t<T>, sizeof...(V) + 1>{
+//        {std::forward<T>(t), std::forward<V>(values)...}}))
+//    -> std::array<typename std::decay_t<T>, sizeof...(V) + 1> {
+//  static_assert(
+//      tmpl2::flat_all_v<cpp17::is_same_v<std::decay_t<T>, std::decay_t<V>>...>,
+//      "all types to make_array(...) must be the same");
+//  return std::array<std::decay_t<T>, sizeof...(V) + 1>{
+//      {std::forward<T>(t), std::forward<V>(values)...}};
+//}
+//
+//namespace MakeArray_detail {
+//  template <typename Seq, typename T,
+//            Requires<cpp17::is_rvalue_reference_v<Seq>> = nullptr>
+//  constexpr T&& forward_element(T& t) noexcept {
+//    return std::move(t);
+//  }
+//  template <typename Seq, typename T,
+//            Requires<not cpp17::is_rvalue_reference_v<Seq>> = nullptr>
+//  constexpr T& forward_element(T& t) noexcept {
+//    return t;
+//  }
+//
+//  template <typename T, size_t size, typename Seq, size_t... indexes>
+//  constexpr std::array<T, size> make_array_from_iterator_impl(
+//      Seq&& s,
+//      std::integer_sequence<
+//          size_t, indexes...> /*meta*/) noexcept(noexcept(std::array<T, size>{
+//      {forward_element<decltype(s)>(*(std::begin(s) + indexes))...}})) {
+//    // clang-tidy: do not use pointer arithmetic
+//    return std::array<T, size>{{forward_element<decltype(s)>(
+//        *(std::begin(s) + indexes))...}};  // NOLINT
+//  }
+//}  // namespace MakeArray_detail
+//
+///*!
+// * \ingroup UtilitiesGroup
+// * \brief Create an `std::array<T, size>` from the first `size` values of `seq`
+// *
+// * \requires `Seq` has a `begin` function
+// * \tparam T the type held by the array
+// * \tparam size the size of the created array
+// */
+//template <typename T, size_t size, typename Seq>
+//constexpr std::array<T, size> make_array(Seq&& seq) noexcept(
+//    noexcept(MakeArray_detail::make_array_from_iterator_impl<T, size>(
+//        std::forward<Seq>(seq), std::make_index_sequence<size>{}))) {
+//  return MakeArray_detail::make_array_from_iterator_impl<T, size>(
+//      std::forward<Seq>(seq), std::make_index_sequence<size>{});
+//}

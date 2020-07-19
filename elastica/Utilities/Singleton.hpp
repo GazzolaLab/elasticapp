@@ -21,4 +21,5 @@
 // //=================================================================================================
 #pragma once
 
+#include "Singleton/Dependency.hpp"
 #include "Singleton/Singleton.hpp"

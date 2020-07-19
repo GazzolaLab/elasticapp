@@ -32,25 +32,25 @@
 
 namespace elastica {
 
-namespace timing {
+  namespace timing {
 
-//=================================================================================================
-//
-//  TYPE DEFINITION
-//
-//=================================================================================================
+    //=================================================================================================
+    //
+    //  TYPE DEFINITION
+    //
+    //=================================================================================================
 
-//*************************************************************************************************
-/*!\brief Progress timer for CPU time measurements.
- * \ingroup timing
- *
- * The CpuTimer combines the Timer class template with the CpuPolicy timing
- * policy. It measures the amount of time the measured program or code fragment
- * uses in processing central processing unit (CPU) instructions.
- */
-using CpuTimer = Timer<CpuPolicy>;
-//*************************************************************************************************
+    //*************************************************************************************************
+    /*!\brief Progress timer for CPU time measurements.
+     * \ingroup timing
+     *
+     * The CpuTimer combines the Timer class template with the CpuPolicy timing
+     * policy. It measures the amount of time the measured program or code
+     * fragment uses in processing central processing unit (CPU) instructions.
+     */
+    using CpuTimer = Timer<CpuPolicy>;
+    //*************************************************************************************************
 
-} // namespace timing
+  }  // namespace timing
 
-} // namespace elastica
+}  // namespace elastica

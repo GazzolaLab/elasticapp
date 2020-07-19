@@ -7,14 +7,16 @@
 
 //#include "blaze/Math.h"
 
-#include "DataStructures/Block.hpp"
-#include "DataStructures/StorageTraits.hpp"
-#include "DataStructures/TaggedTuple.hpp"
-#include "Time/History.hpp"
+//#include "DataStructures/Block.hpp"
+//#include "DataStructures/StorageTraits.hpp"
+//#include "DataStructures/TaggedTuple.hpp"
+//#include "Time/History.hpp"
 #include "Utilities/DefineTypes.h"
-#include "Utilities/Logging.hpp"
-#include "Utilities/Singleton.hpp"
-#include "Utilities/StdHelpers.hpp"
+//#include "Utilities/Logging.hpp"
+//#include "Utilities/Singleton.hpp"
+//#include "Utilities/StdHelpers.hpp"
+#include "Simulator/Environments/Primitives/PlanePrimitive.hpp"
+#include "Simulator/Materials.hpp"
 
 /*
 int main(int argc, char* argv[]) {
@@ -43,8 +45,7 @@ int main(int argc, char* argv[]) {
 }
 */
 
-using namespace elastica;
-
+/*
 class TestDep : public Singleton<TestDep> {
  private:
   explicit TestDep(){};
@@ -78,3 +79,172 @@ int main(int argc, char* argv[]) {
   LOG_INFO_SECTION(log) { log << "A IS " << ts->a << "BOIII"; }
   LOG_ERROR_SECTION(log) { log << "Thick BOIII"; }
 }
+*/
+#include <blaze/math/DynamicMatrix.h>
+#include <blaze/math/DynamicVector.h>
+#include <iomanip>
+
+#include "LocalSystems.hpp"
+#include "elastica/Simulator/Environments.hpp"
+// #include "elastica/Simulator/IO/csv/csv.hpp"
+#include "elastica/Simulator/IO/vtk.hpp"
+#include "elastica/Simulator/Simulator.hpp"
+#include "elastica/Simulator/Trigger.hpp"
+#include "elastica/Simulator/Visualization.hpp"
+#include "elastica/Systems/RigidBodyBase.hpp"
+#include "elastica/Time/integrate.hpp"
+#include "elastica/Time/symplectic.hpp"
+#include "elastica/Utilities/DefineTypes.h"
+#include "elastica/Utilities/TMPL.hpp"
+#include "elastica/Utilities/Timing/WcTimer.h"
+
+using namespace elastica;
+template <class TimeStepper, class SystemCollection, typename TimeType>
+void integrate(TimeStepper ts, SystemCollection& sys, TimeType final_time,
+               std::size_t n_steps = 1000UL) {
+  TimeType time_v(0.0);
+  TimeType dt(final_time / static_cast<TimeType>(n_steps));
+  std::vector<timing::WcTimer*> timers_;
+  timing::WcTimer timeDoStep_, timeDtIncrement_;
+  timers_.push_back(&timeDoStep_);
+  timers_.push_back(&timeDtIncrement_);
+  if (!sys.ready())
+    sys.finalize();
+  for (std::size_t i = 0UL; i < n_steps; ++i) {
+    timeDoStep_.start();
+    ts.do_step(sys, time_v, dt);
+    timeDoStep_.stop();
+    timeDtIncrement_.start();
+    time_v += dt;
+    timeDtIncrement_.stop();
+    // Triggering all registered trigger objects
+    Trigger::trigger_all(time_v, i);
+    std::cout << "Macha, one pass done dude at time " << time_v << std::endl;
+  }
+  // Profiling section
+  std::vector<double> minValues(timers_.size()), maxValues(timers_.size()),
+      totalValues(timers_.size());
+  std::vector<size_t> numValues(timers_.size());
+  for (std::size_t i = 0; i < minValues.size(); ++i) {
+    minValues[i] = timers_[i]->min();
+    maxValues[i] = timers_[i]->max();
+    totalValues[i] = timers_[i]->total();
+    numValues[i] = timers_[i]->getCounter();
+  }
+  LOG_INFO_SECTION(log) {
+    // clang-format off
+  log << "Timing results reduced over all time steps on current process:\n" << std::fixed << std::setprecision(4)
+	  << "code part              min time     max time     avg time     total time   executions\n"
+	  << "--------------------   ----------   ----------   ----------   ----------   ----------\n"
+	  << "simulation step        "   << std::setw(10) << minValues[0] << "   " << std::setw(10) << maxValues[0] << "   " << std::setw(10) << totalValues[0] / numValues[0] << " = " << std::setw(10) << totalValues[0] << " / " << std::setw(10) << numValues[0] << "\n"
+	  << "   dt. increment       "   << std::setw(10) << minValues[ 1] << "   " << std::setw(10) << maxValues[ 1] << "   " << std::setw(10) << totalValues[ 1] / numValues[ 1] << " = " << std::setw(10) << totalValues[ 1] << " / " << std::setw(10) << numValues[ 1] << "\n";
+    // clang-format on
+  }
+}
+
+// DONE : Traits class for simulator and all its Interface classes
+int main(int argc, char* argv[]) {
+  //  using namespace elastica::systems;
+  //  using namespace elastica::rigidbody;
+  //  auto sim(make_simulator<Constraints, Connections>());
+  auto sim(make_simulator<Environments>());
+
+  //  auto sho_one = std::make_shared<SHO<double>>(3.0);
+  //  sim->push_back(sho_one);
+  //  auto sho_two = std::make_shared<SHO<double>>(6.0);
+  //  sim->push_back(sho_two);
+  //  auto ark_one = std::make_shared<ARKAnalytic<double>>(-10.0);
+  //  sim->push_back(ark_one);
+
+  using MT = blaze::DynamicMatrix<real_t>;
+  using VT = blaze::DynamicVector<real_t>;
+  std::size_t n_x(50UL);
+  std::size_t n_y(50UL);
+
+  /*
+  std::size_t n_spheres(5UL);
+  MT positions(3UL, n_spheres, 0.0);
+  blaze::row(positions, 0UL) = blaze::linspace<blaze::rowVector>(n_spheres, 0.0,
+  0.4); blaze::row(positions, 1UL) =
+  blaze::linspace<blaze::rowVector>(n_spheres, 0.0, 0.5); blaze::row(positions,
+  2UL) = blaze::linspace<blaze::rowVector>(n_spheres, 0.0, 0.8);
+   */
+  std::size_t n_spheres(n_x * n_y);
+  MT positions(3UL, n_spheres, 0.0);
+
+  auto x_grid = blaze::linspace<blaze::rowVector>(n_x, -25.0, 25.0);
+  auto y_grid = blaze::linspace<blaze::rowVector>(n_y, -25.0, 25.0);
+  for (std::size_t i = 0; i < n_spheres; ++i) {
+    positions(0UL, i) = x_grid[i % n_x];
+    positions(1UL, i) = y_grid[i / n_y];
+  }
+
+  blaze::row(positions, 2UL) = 0.3;
+  MT velocities(3UL, n_spheres, 0.0);
+  //  VT radius(n_spheres, 0.5);
+  VT radius(blaze::linspace(n_spheres, 0.2, 0.7));
+  //  VT mass(n_spheres, 1.0);
+  VT mass = 1000.0 * radius * radius * radius;
+  //  auto sphere_collection =
+  //      std::make_shared<elastica::rigidbody::Sphere>(mass, positions,
+  //      velocities, radius);
+  //  sim->push_back<Sphere>(sphere_collection);
+  {
+    auto* sphere_collection =
+        new elastica::rigidbody::Sphere(mass, positions, velocities, radius);
+    sim->push_back(std::move(*sphere_collection));
+    delete sphere_collection;
+  }
+
+  {
+    auto plane_point = Vec3{0., 0., 0.};
+    auto plane_normal = Vec3{0.0, 0., 1.0};
+    using PP = elastica::collision::PlanePrimitive;
+    using Spans = typename PP::Spans;
+    Spans spans{100.0, 100.0};
+    auto* plane = new elastica::collision::PlanePrimitive(
+        0, 0, true, plane_point, plane_normal, spans, iron);
+    sim->push_back_imposed(std::move(*plane));
+    delete plane;
+  }
+
+  //  auto periodic_field = std::make_shared<environments::ExternalField>();
+  //  sim->add_environment(periodic_field);
+  //  auto n_system_collections(sim->get_number_of_system_collections());
+  //  auto sphere_vector = std::get<Sphere>(*sim);
+
+  sim->finalize();
+  auto vtk_writer = elastica::io::make_writer("output", 1, 10, 20, false);
+  // auto csv_writer = elastica::io::csv::make_writer("output", 1, 10, 20);
+  //  auto aabb_ = std::make_unique<AABB>(0.0, 0.0, 0.0, 1.0, 1.0, 1.0);
+  //  vtk_writer->add(aabb_.get());
+  integrate(timestepper::SystemCollectionStepper<timestepper::PositionVerlet>(),
+            *sim, 0.1, 20UL);
+}
+
+/*
+template <typename T>
+struct add_vector{
+  using type = std::vector<T>;
+};
+
+int main(int argc, char* argv[]) {
+  using my_list = tmpl::list<int, bool, char>;
+  using my_transformed_list = tmpl::transform<my_list,
+std::add_pointer<tmpl::_1>>;
+
+  using my_further_transformed_list = tmpl::transform<my_transformed_list,
+add_vector<tmpl::_1>>; using find_result =
+tmpl::find<my_further_transformed_list, std::is_same<tmpl::_1, int**> >;
+  // will print the types at runtime
+//  tmpl::for_each<my_further_transformed_list>([](auto x)
+//  {
+//      std::cout << typeid(decltype(x)).name() << std::endl;
+//  });
+
+  using int_ptr_to_ptr_found = tmpl::found<my_further_transformed_list,
+std::is_same<tmpl::_1, int**>>; static_assert(!int_ptr_to_ptr_found::value, "A
+bool was found and I don't want bools!");
+}
+
+*/

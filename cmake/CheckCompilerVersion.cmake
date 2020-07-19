@@ -1,6 +1,7 @@
 # Checks supported compiler versions for C++14
 
 # Distributed under the MIT License. See LICENSE for details.
+# Obtained with thanks from https://github.com/sxs-collaboration/spectre
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.2)

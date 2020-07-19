@@ -426,7 +426,7 @@ namespace elastica {
             typename G>  // Growth Policy
   typename PtrVector<T, D, G>::ReferenceType PtrVector<T, D, G>::operator[](
       PtrVector::SizeType index) {
-    ASSERT(index < _size, "PtrVector index exceeds size bounds");
+    ELASTICA_ASSERT(index < _size, "PtrVector index exceeds size bounds");
     return *(_begin + index);
   }
 
@@ -435,7 +435,7 @@ namespace elastica {
             typename G>  // Growth Policy
   typename PtrVector<T, D, G>::ConstReferenceType
       PtrVector<T, D, G>::operator[](PtrVector::SizeType index) const {
-    ASSERT(index < _size, "PtrVector index exceeds size bounds");
+    ELASTICA_ASSERT(index < _size, "PtrVector index exceeds size bounds");
     return *(_begin + index);
   }
 
@@ -443,7 +443,7 @@ namespace elastica {
             typename D,  // Deletion Policy
             typename G>  // Growth Policy
   typename PtrVector<T, D, G>::ReferenceType PtrVector<T, D, G>::front() {
-    ASSERT(_size > 0UL, "Invalid access to front using empty vector");
+    ELASTICA_ASSERT(_size > 0UL, "Invalid access to front using empty vector");
     return *_begin;
   }
 
@@ -452,7 +452,7 @@ namespace elastica {
             typename G>  // Growth Policy
   typename PtrVector<T, D, G>::ConstReferenceType PtrVector<T, D, G>::front()
       const {
-    ASSERT(_size > 0UL, "Invalid access to front using empty vector");
+    ELASTICA_ASSERT(_size > 0UL, "Invalid access to front using empty vector");
     return *_begin;
   }
 
@@ -460,7 +460,7 @@ namespace elastica {
             typename D,  // Deletion Policy
             typename G>  // Growth Policy
   typename PtrVector<T, D, G>::ReferenceType PtrVector<T, D, G>::back() {
-    ASSERT(_size > 0UL, "Invalid access to back using empty vector");
+    ELASTICA_ASSERT(_size > 0UL, "Invalid access to back using empty vector");
     return *(_end - 1);
   }
 
@@ -469,7 +469,7 @@ namespace elastica {
             typename G>  // Growth Policy
   typename PtrVector<T, D, G>::ConstReferenceType PtrVector<T, D, G>::back()
       const {
-    ASSERT(_size > 0UL, "Invalid access to back using empty vector");
+    ELASTICA_ASSERT(_size > 0UL, "Invalid access to back using empty vector");
     return *(_end - 1);
   }
 
@@ -644,9 +644,9 @@ namespace elastica {
             typename G>  // Growth policy
   inline typename PtrVector<T, D, G>::SizeType
   PtrVector<T, D, G>::calculate_capacity(SizeType req_capacity) const noexcept {
-    ASSERT(req_capacity > _capacity, "Invalid new vector capacity");
+    ELASTICA_ASSERT(req_capacity > _capacity, "Invalid new vector capacity");
     const size_t new_capacity(GrowthPolicy()(_capacity, req_capacity));
-    ASSERT(new_capacity > _capacity, "Invalid new vector capacity");
+    ELASTICA_ASSERT(new_capacity > _capacity, "Invalid new vector capacity");
     return new_capacity;
   }
 
