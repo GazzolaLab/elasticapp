@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 namespace elastica {
 
   namespace collision {
@@ -19,9 +21,9 @@ namespace elastica {
 
       template <typename FromOrToTag>
       struct SwitchTag {
-        static constexpr tags::from_t switch_tag(tags::to_t);
+        static constexpr tags::from_t switch_tag(tags::to_t); // NO LINT
         static constexpr tags::to_t switch_tag(tags::from_t);
-        // All other cases will return a compiler error
+        // All other cases should return a compiler error
         static constexpr void switch_tag(...);
         using type = decltype(switch_tag(std::declval<FromOrToTag>()));
       };

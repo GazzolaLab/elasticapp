@@ -242,7 +242,7 @@ namespace elastica {
       }
 
       // TODO Make private
-      void finalize(TimeType time_v) {
+      void finalize(TimeType /*time_v*/) {
         std::vector<std::reference_wrapper<ConnectionID>> faulty_connections;
         std::for_each(connections_.begin(), connections_.end(),
                       [&faulty_connections](ConnectionID& connection) {

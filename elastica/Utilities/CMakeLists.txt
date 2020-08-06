@@ -22,6 +22,7 @@ elastica_target_headers(
         HEADERS
         DefineTypes.h
         ForceInline.hpp
+        ListRequires.hpp
         Logging.hpp
         MakeArray.hpp
         MakeSignalingNan.hpp

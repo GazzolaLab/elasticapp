@@ -216,12 +216,12 @@ namespace elastica {
         // Given the BC upon construction and the system, pass
         // on copies of system's positions and directors to the BC
         template <class System>
-        void finalize(BoundaryConditionID& bc, System* system) {
+        void finalize(BoundaryConditionID& bc, System* /*system*/) {
           // Creates a new buffer of vectors everytime, seems wasteful
           std::vector<double> positions, velocities, omegas;
           std::vector<double> directors;
           std::size_t n_positions = position_indices_.size();
-          std::size_t n_directors = director_indices_.size();
+//          std::size_t n_directors = director_indices_.size();
 
           positions.reserve(n_positions);
           velocities.reserve(n_positions);
@@ -327,10 +327,10 @@ namespace elastica {
         constrain_primitive_rates(time_v);
       }
 
-      void constrain_primitive_values(double time_v) {
+      void constrain_primitive_values(double /*time_v*/) {
         std::cout << "Constraining primitive values\n";
       };
-      void constrain_primitive_rates(double time_v) {
+      void constrain_primitive_rates(double /*time_v*/) {
         std::cout << "Constraining primitive rates\n";
       };
 

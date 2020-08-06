@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
 
 #include "LocalSystems.hpp"
 #include "elastica/Simulator/Environments.hpp"
-// #include "elastica/Simulator/IO/csv/csv.hpp"
+#include "elastica/Simulator/IO/csv.hpp"
 #include "elastica/Simulator/IO/vtk.hpp"
 #include "elastica/Simulator/Simulator.hpp"
 #include "elastica/Simulator/Trigger.hpp"
@@ -156,10 +156,133 @@ int main(int argc, char* argv[]) {
   //  auto ark_one = std::make_shared<ARKAnalytic<double>>(-10.0);
   //  sim->push_back(ark_one);
 
+  constexpr int case_number = 0;
+
   using MT = blaze::DynamicMatrix<real_t>;
-  using VT = blaze::DynamicVector<real_t>;
-  std::size_t n_x(50UL);
-  std::size_t n_y(50UL);
+  using VT = blaze::DynamicVector<real_t, blaze::rowVector>;
+
+  if (case_number == 0) {
+    std::size_t n_x(5UL);
+    std::size_t n_y(5UL);
+
+    std::size_t n_spheres(n_x * n_y);
+    MT positions(3UL, n_spheres, 0.0);
+
+    // Bug in blaze, for linspacece(2UL, -25.0, 25.0) yields (25.0, 25.0)
+    VT x_grid = blaze::linspace<blaze::rowVector>(n_x, -25.0, 25.0);
+    VT y_grid = blaze::linspace<blaze::rowVector>(n_y, -25.0, 25.0);
+
+    //  VT x_grid{-25.0, 25.0};
+    //  VT y_grid{-25.0, 25.0};
+    std::cout << x_grid << std::endl;
+    std::cout << y_grid << std::endl;
+    for (std::size_t i = 0; i < n_spheres; ++i) {
+      positions(0UL, i) = x_grid[i % n_x];
+      positions(1UL, i) = y_grid[i / n_y];
+    }
+
+    blaze::row(positions, 2UL) = 1.0;
+    MT velocities(3UL, n_spheres, 0.0);
+
+    // TO test out hashgrid enlarge
+    VT radius(n_spheres, 0.5);
+    //    VT radius(blaze::linspace<blaze::rowVector>(n_spheres, 0.2, 0.5));
+
+    //  VT mass(n_spheres, 1.0);
+    VT mass = Material::getDensity(iron) * 4.0 / 3.0 * M_PI * radius * radius *
+              radius;
+
+    double final_time(24.0);
+    std::size_t n_time_steps(20000UL);
+    auto csv_writer =
+        elastica::io::csv::make_writer("output", 50UL, 0, n_time_steps);
+
+    {
+      MT new_positions(positions + 1.0);
+      VT new_mass(mass);
+      MT new_velocities(velocities);
+      VT new_radius(radius);
+      sim->emplace_back<elastica::rigidbody::Sphere>(
+          new_mass, new_positions, new_velocities, new_radius);
+    }
+
+    {
+      MT new_positions = positions + 2.0;
+      VT new_mass = mass + 0.0;
+      MT new_velocities = velocities + 0.0;
+      VT new_radius = radius + 0.0;
+      sim->emplace_back<elastica::rigidbody::Sphere>(
+          new_mass, new_positions, new_velocities, new_radius);
+    }
+
+    {
+      auto plane_point = Vec3{0., 0., 0.};
+      auto plane_normal = Vec3{0.0, 0., 1.0};
+      using PP = elastica::collision::PlanePrimitive;
+      using Spans = typename PP::Spans;
+      Spans spans{100.0, 100.0};
+      auto* plane = new elastica::collision::PlanePrimitive(
+          0, 0, true, plane_point, plane_normal, spans, iron);
+      sim->push_back_imposed(std::move(*plane));
+      delete plane;
+    }
+
+    sim->add_simple_environment<environments::GravityField>();
+
+    sim->finalize();
+
+    integrate(
+        timestepper::SystemCollectionStepper<timestepper::PositionVerlet>(),
+        *sim, final_time, n_time_steps);
+  } else if (case_number == 1) {
+    // Do a small sphere atop a larger sphere atop a plane in one collection
+    std::size_t n_spheres(2UL);
+    constexpr std::size_t SMALL_IDX = 0UL;
+    constexpr std::size_t BIG_IDX = 1UL;
+    MT positions(3UL, n_spheres, 0.0);
+    VT radius(n_spheres, 0.0);
+    MT velocities(3UL, n_spheres, 0.0);
+
+    // Big sphere characteristics
+    radius[BIG_IDX] = 0.4;
+    positions(2UL, BIG_IDX) = 0.1 + radius[BIG_IDX];
+
+    // Small sphere characteristics
+    const double offset(0.1);
+    radius[SMALL_IDX] = 0.1;
+    positions(2UL, SMALL_IDX) =
+        positions(2UL, BIG_IDX) + radius[BIG_IDX] + offset + radius[SMALL_IDX];
+
+    // Mass array
+    VT mass = Material::getDensity(iron) * 4.0 / 3.0 * M_PI * radius * radius *
+              radius;
+    // Make spheres
+    sim->emplace_back<elastica::rigidbody::Sphere>(mass, positions, velocities,
+                                                   radius);
+
+    // Plane charaacteristics
+    auto plane_point = Vec3{0., 0., 0.};
+    auto plane_normal = Vec3{0.0, 0., 1.0};
+    using PP = elastica::collision::PlanePrimitive;
+    using Spans = typename PP::Spans;
+    Spans spans{100.0, 100.0};
+    sim->emplace_back_imposed<PP>(0, 0, true, plane_point, plane_normal, spans,
+                                  iron);
+
+    // Add gravity field
+    sim->add_simple_environment<environments::GravityField>();
+
+    sim->finalize();
+
+    double final_time(24.0);
+    std::size_t n_time_steps(20000UL);
+    auto csv_writer =
+        elastica::io::csv::make_writer("output", 50UL, 0, n_time_steps);
+
+    integrate(
+        timestepper::SystemCollectionStepper<timestepper::PositionVerlet>(),
+        *sim, final_time, n_time_steps);
+  }
 
   /*
   std::size_t n_spheres(5UL);
@@ -169,57 +292,55 @@ int main(int argc, char* argv[]) {
   blaze::linspace<blaze::rowVector>(n_spheres, 0.0, 0.5); blaze::row(positions,
   2UL) = blaze::linspace<blaze::rowVector>(n_spheres, 0.0, 0.8);
    */
-  std::size_t n_spheres(n_x * n_y);
-  MT positions(3UL, n_spheres, 0.0);
 
-  auto x_grid = blaze::linspace<blaze::rowVector>(n_x, -25.0, 25.0);
-  auto y_grid = blaze::linspace<blaze::rowVector>(n_y, -25.0, 25.0);
-  for (std::size_t i = 0; i < n_spheres; ++i) {
-    positions(0UL, i) = x_grid[i % n_x];
-    positions(1UL, i) = y_grid[i / n_y];
-  }
-
-  blaze::row(positions, 2UL) = 0.3;
-  MT velocities(3UL, n_spheres, 0.0);
-  //  VT radius(n_spheres, 0.5);
-  VT radius(blaze::linspace(n_spheres, 0.2, 0.7));
-  //  VT mass(n_spheres, 1.0);
-  VT mass = 1000.0 * radius * radius * radius;
   //  auto sphere_collection =
   //      std::make_shared<elastica::rigidbody::Sphere>(mass, positions,
   //      velocities, radius);
   //  sim->push_back<Sphere>(sphere_collection);
-  {
-    auto* sphere_collection =
-        new elastica::rigidbody::Sphere(mass, positions, velocities, radius);
+
+  //  std::size_t n_collections(5UL);
+  //  for (std::size_t i_c = 0UL; i_c < n_collections; ++i_c) {
+  //    MT new_positions(positions + i_c * 0.2);
+  //    sim->push_back(std::move(*new elastica::rigidbody::Sphere(
+  //        mass, new_positions, velocities, radius)));
+  //  }
+  //
+
+  /*{
+    MT new_positions(positions + 1.0);
+    VT new_mass(mass);
+    MT new_velocities(velocities);
+    VT new_radius(radius);
+    auto* sphere_collection = new elastica::rigidbody::Sphere(
+        new_mass, new_positions, new_velocities, new_radius);
     sim->push_back(std::move(*sphere_collection));
     delete sphere_collection;
-  }
+  }*/
 
+  /*{
+    MT new_positions(positions);
+    auto* sphere_collection = new elastica::rigidbody::Sphere(
+        mass, new_positions, velocities, radius);
+    sim->push_back(std::move(*sphere_collection));
+    delete sphere_collection;
+  }*/
+
+  //  {
+  //    auto periodic_field = std::make_shared<environments::ExternalField>();
+  //    sim->add_simple_environment(environment(periodic_field));
+  //  }
   {
-    auto plane_point = Vec3{0., 0., 0.};
-    auto plane_normal = Vec3{0.0, 0., 1.0};
-    using PP = elastica::collision::PlanePrimitive;
-    using Spans = typename PP::Spans;
-    Spans spans{100.0, 100.0};
-    auto* plane = new elastica::collision::PlanePrimitive(
-        0, 0, true, plane_point, plane_normal, spans, iron);
-    sim->push_back_imposed(std::move(*plane));
-    delete plane;
+    //    auto* gravity_field = new environments::GravityField();
+    //    sim->add_simple_environment(std::move(*gravity_field));
+    //    delete gravity_field;
   }
 
-  //  auto periodic_field = std::make_shared<environments::ExternalField>();
-  //  sim->add_environment(periodic_field);
   //  auto n_system_collections(sim->get_number_of_system_collections());
   //  auto sphere_vector = std::get<Sphere>(*sim);
 
-  sim->finalize();
-  auto vtk_writer = elastica::io::make_writer("output", 1, 10, 20, false);
-  // auto csv_writer = elastica::io::csv::make_writer("output", 1, 10, 20);
-  //  auto aabb_ = std::make_unique<AABB>(0.0, 0.0, 0.0, 1.0, 1.0, 1.0);
+  //  auto vtk_writer = elastica::io::make_writer("output", 1000UL, 10, 20,
+  //  false); auto aabb_ = std::make_unique<AABB>(0.0, 0.0, 0.0, 1.0, 1.0, 1.0);
   //  vtk_writer->add(aabb_.get());
-  integrate(timestepper::SystemCollectionStepper<timestepper::PositionVerlet>(),
-            *sim, 0.1, 20UL);
 }
 
 /*

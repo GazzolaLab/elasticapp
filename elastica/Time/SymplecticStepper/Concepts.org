@@ -1,0 +1,13 @@
+* Concepts
+
+    -
+
+** System agnostic time-stepping
+    - The current way of stepping through the system is not generic and efficient. Some
+    systems have additional steps, in the symplectic stepper the last dynamic step is
+    usually unnecessary and requires extra code etc.
+    - Rather, a more ideal way to step is for the system itself to have information about
+    how it needs to be stepped in time. This for example can be a tmpl::list with types
+    (as operators) to apply on the system, which is passed on to the timestepper.
+    - Code generatino then happens at the innermost loop of the time-stepper rather than
+    the current way of explicit code.

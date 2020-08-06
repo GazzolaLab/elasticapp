@@ -217,7 +217,7 @@ namespace elastica {
         inline BoundingBox<Type>::BoundingBox(const Type& x1, const Type& y1,
                                               const Type& z1, const Type& x2,
                                               const Type& y2, const Type& z2) {
-          ELASTICA_ASSERT((x1 < x2 && y1 < y2 && z1 < z2),
+          ELASTICA_ASSERT((x1 < x2 and y1 < y2 and z1 < z2),
                           "Invalid bounding box values");
 
           v_[0] = x1;
@@ -450,7 +450,7 @@ namespace elastica {
         template <
             typename Type>  // Element type of the axis-aligned bounding box
         inline bool BoundingBox<Type>::isValid() const {
-          return !(v_[0] >= v_[3] || v_[1] >= v_[4] || v_[2] >= v_[5]);
+          return !(v_[0] >= v_[3] or v_[1] >= v_[4] or v_[2] >= v_[5]);
         }
         //*************************************************************************************************
 
@@ -487,11 +487,11 @@ namespace elastica {
                                    // bounding box
         inline bool BoundingBox<Type>::equal(
             const BoundingBox<Other>& rhs) const {
-          return !(!elastica::equal(v_[0], rhs.v_[0]) ||
-                   !elastica::equal(v_[1], rhs.v_[1]) ||
-                   !elastica::equal(v_[2], rhs.v_[2]) ||
-                   !elastica::equal(v_[3], rhs.v_[3]) ||
-                   !elastica::equal(v_[4], rhs.v_[4]) ||
+          return !(!elastica::equal(v_[0], rhs.v_[0]) or
+                   !elastica::equal(v_[1], rhs.v_[1]) or
+                   !elastica::equal(v_[2], rhs.v_[2]) or
+                   !elastica::equal(v_[3], rhs.v_[3]) or
+                   !elastica::equal(v_[4], rhs.v_[4]) or
                    !elastica::equal(v_[5], rhs.v_[5]));
         }
         //*************************************************************************************************
@@ -530,9 +530,9 @@ namespace elastica {
           ELASTICA_ASSERT(isValid(), "Invalid bounding box");
           ELASTICA_ASSERT(aabb.isValid(), "Invalid bounding box");
 
-          return !(aabb.v_[0] > v_[3] || aabb.v_[1] > v_[4] ||
-                   aabb.v_[2] > v_[5] || aabb.v_[3] < v_[0] ||
-                   aabb.v_[4] < v_[1] || aabb.v_[5] < v_[2]);
+          return !(aabb.v_[0] > v_[3] or aabb.v_[1] > v_[4] or
+                   aabb.v_[2] > v_[5] or aabb.v_[3] < v_[0] or
+                   aabb.v_[4] < v_[1] or aabb.v_[5] < v_[2]);
         }
         //*************************************************************************************************
 
@@ -557,9 +557,9 @@ namespace elastica {
           ELASTICA_ASSERT(isValid(), "Invalid bounding box");
           ELASTICA_ASSERT(aabb.isValid(), "Invalid bounding box");
 
-          return !(aabb.v_[0] > v_[3] + dx || aabb.v_[1] > v_[4] + dx ||
-                   aabb.v_[2] > v_[5] + dx || aabb.v_[3] < v_[0] - dx ||
-                   aabb.v_[4] < v_[1] - dx || aabb.v_[5] < v_[2] - dx);
+          return !(aabb.v_[0] > v_[3] + dx or aabb.v_[1] > v_[4] + dx or
+                   aabb.v_[2] > v_[5] + dx or aabb.v_[3] < v_[0] - dx or
+                   aabb.v_[4] < v_[1] - dx or aabb.v_[5] < v_[2] - dx);
         }
         //*************************************************************************************************
 
@@ -581,8 +581,8 @@ namespace elastica {
             typename Type>  // Element type of the axis-aligned bounding box
         inline bool BoundingBox<Type>::contains(real_t px, real_t py,
                                                 real_t pz) const {
-          return !(px < v_[0] || py < v_[1] || pz < v_[2] || px > v_[3] ||
-                   py > v_[4] || pz > v_[5]);
+          return !(px < v_[0] or py < v_[1] or pz < v_[2] or px > v_[3] or
+                   py > v_[4] or pz > v_[5]);
         }
         //*************************************************************************************************
 
@@ -601,8 +601,8 @@ namespace elastica {
         template <
             typename Type>  // Element type of the axis-aligned bounding box
         inline bool BoundingBox<Type>::contains(const Vec3& gpos) const {
-          return !(gpos[0] < v_[0] || gpos[1] < v_[1] || gpos[2] < v_[2] ||
-                   gpos[0] > v_[3] || gpos[1] > v_[4] || gpos[2] > v_[5]);
+          return !(gpos[0] < v_[0] or gpos[1] < v_[1] or gpos[2] < v_[2] or
+                   gpos[0] > v_[3] or gpos[1] > v_[4] or gpos[2] > v_[5]);
         }
         //*************************************************************************************************
 
@@ -627,9 +627,9 @@ namespace elastica {
           ELASTICA_ASSERT(isValid(), "Invalid bounding box");
           ELASTICA_ASSERT(aabb.isValid(), "Invalid bounding box");
 
-          return !(aabb.v_[0] < v_[0] || aabb.v_[1] < v_[1] ||
-                   aabb.v_[2] < v_[2] || aabb.v_[3] > v_[3] ||
-                   aabb.v_[4] > v_[4] || aabb.v_[5] > v_[5]);
+          return !(aabb.v_[0] < v_[0] or aabb.v_[1] < v_[1] or
+                   aabb.v_[2] < v_[2] or aabb.v_[3] > v_[3] or
+                   aabb.v_[4] > v_[4] or aabb.v_[5] > v_[5]);
         }
         //*************************************************************************************************
 
@@ -656,9 +656,9 @@ namespace elastica {
           ELASTICA_ASSERT(isValid(), "Invalid bounding box");
           ELASTICA_ASSERT(aabb.isValid(), "Invalid bounding box");
 
-          return !(aabb.v_[0] < v_[0] - dx || aabb.v_[1] < v_[1] - dx ||
-                   aabb.v_[2] < v_[2] - dx || aabb.v_[3] > v_[3] + dx ||
-                   aabb.v_[4] > v_[4] + dx || aabb.v_[5] > v_[5] + dx);
+          return !(aabb.v_[0] < v_[0] - dx or aabb.v_[1] < v_[1] - dx or
+                   aabb.v_[2] < v_[2] - dx or aabb.v_[3] > v_[3] + dx or
+                   aabb.v_[4] > v_[4] + dx or aabb.v_[5] > v_[5] + dx);
         }
         //*************************************************************************************************
 

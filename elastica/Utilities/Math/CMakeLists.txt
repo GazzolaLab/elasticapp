@@ -11,6 +11,7 @@ elastica_target_headers(
         Infinity.hpp
         Invert.hpp
         Limits.hpp
+        Length.hpp
         Normalize.hpp
         Orthogonal.hpp
         Rot3.hpp

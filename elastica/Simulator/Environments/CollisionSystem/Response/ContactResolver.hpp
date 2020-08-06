@@ -30,6 +30,8 @@ namespace elastica {
             overlap = std::max(overlap, force_model_(*c_id));
           }
 
+          //          std::cout << " Max overlap " << overlap;
+
           max_overlap_ = overlap;
         }
 

@@ -2,8 +2,8 @@
 
 #include <vector>
 
-#include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/BoundingBox.hpp"
 #include "elastica/ErrorHandling/Assert.hpp"
+#include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/BoundingBox.hpp"
 #include "elastica/Simulator/Trigger.hpp"
 #include "elastica/Utilities/DefineTypes.h"
 
@@ -18,26 +18,26 @@ namespace elastica {
     //**Type definitions********************************************************
     using Viewer =
         std::vector<Visualization*>;  //!< Container for active viewers.
-    using Spheres =
-        std::vector<rigidbody::Sphere*>;  //!< Container for active spheres.
+    using Spheres = std::vector<rigidbody::Sphere const*>;  //!< Container for
+                                                            //!< active spheres.
     using AABB = ::elastica::collision::detection::coarse::BoundingBox<real_t>;
     using BoundingBoxes =
-        std::vector<AABB*>;  //!< Container for active spheres.
+        std::vector<AABB const*>;  //!< Container for active spheres.
 
    public:
     //**Registration functions**************************************************
     /*!\name Registration functions */
     //@{
-    static void add(rigidbody::Sphere* sphere);
-    static void add(AABB* bounding_box);
+    static void add(rigidbody::Sphere const* sphere);
+    static void add(AABB const* bounding_box);
     //@}
     //**************************************************************************
 
     //**Deregistration functions************************************************
     /*!\name Deregistration functions */
     //@{
-    static void remove(rigidbody::Sphere* sphere);
-    static void remove(AABB* bounding_box);
+    static void remove(rigidbody::Sphere const* sphere);
+    static void remove(AABB const* bounding_box);
     //@}
 
    protected:

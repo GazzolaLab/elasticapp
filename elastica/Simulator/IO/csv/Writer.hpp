@@ -83,7 +83,7 @@ namespace elastica {
         /*!\name Add functions */
         //@{
         void add_sphere(rigidbody::Sphere const* sphere) final;
-        //        void add_bounding_box(AABB const* bounding_box) final;
+        void add_bounding_box(AABB const* bounding_box) final;
         //@}
         //**********************************************************************
 
@@ -92,7 +92,7 @@ namespace elastica {
         /*!\name remove functions */
         //@{
         void remove_sphere(rigidbody::Sphere const* sphere) final;
-        //        void remove_bounding_box(AABB const* bounding_box) final;
+        void remove_bounding_box(AABB const* bounding_box) final;
         //@}
         //**********************************************************************
 
@@ -162,8 +162,7 @@ namespace elastica {
       inline bool is_active();
       std::shared_ptr<Writer> make_writer(const std::string& filename,
                                           std::size_t spacing,
-                                          std::size_t tstart, std::size_t tend,
-                                          bool binary);
+                                          std::size_t tstart, std::size_t tend);
 
       inline bool is_active() { return Writer::active_; }
 

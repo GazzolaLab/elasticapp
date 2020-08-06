@@ -24,14 +24,16 @@
 
 #pragma once
 
-#include "GeomPrimitive.hpp"
-#include "Simulator/Environments/CollisionSystem/Types.hpp"
 #include "elastica/ErrorHandling/Assert.hpp"
+#include "elastica/Simulator/Environments/CollisionSystem/Types.hpp"
+#include "elastica/Simulator/Environments/Primitives/GeomPrimitive.hpp"
+#include "elastica/Simulator/Environments/Primitives/Protocols.hpp"
 #include "elastica/Simulator/Thresholds.hpp"
 #include "elastica/Utilities/DefineTypes.h"
 #include "elastica/Utilities/Math/Equal.hpp"
 #include "elastica/Utilities/Math/SqrLength.hpp"
 #include "elastica/Utilities/Math/Vec3.hpp"
+#include "elastica/Utilities/ProtocolHelpers.hpp"
 
 namespace elastica {
 
@@ -39,13 +41,14 @@ namespace elastica {
 
   namespace collision {
 
-    class SpherePrimitive final : public GeomPrimitive {
+    class SpherePrimitive final : public GeomPrimitive,
+                                  ::tt::ConformsTo<protocols::ConvexPrimitive> {
      public:
       // TODO Make the non-default constructors private
       explicit SpherePrimitive(id_t sid, id_t uid, bool finite,
                                MaterialID material);
-      SpherePrimitive(id_t sid, id_t uid, bool finite, const Vec3& gpos, real_t radius,
-                      MaterialID material);
+      SpherePrimitive(id_t sid, id_t uid, bool finite, const Vec3& gpos,
+                      real_t radius, MaterialID material);
       ~SpherePrimitive() noexcept final;
       SpherePrimitive(SpherePrimitive&&) noexcept;
 
@@ -181,6 +184,11 @@ namespace elastica {
 
       // Setting the axis-aligned bounding box
       SpherePrimitive::calculate_bounding_box();
+
+      // Set the forces and torques to be zero
+      // TODO : should be DRY here, put it in the struct in the new framework
+      force_ = 0.0;
+      torque_ = 0.0;
     }
 
   }  // namespace collision

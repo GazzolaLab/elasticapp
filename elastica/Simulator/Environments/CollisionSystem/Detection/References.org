@@ -1,0 +1,25 @@
+* References
+The following references are useful in understanding the scope of collision detection:
+
+** General references:
+These contain all and more information than needed. I would suggest doing them first to get a
+good history of the subject (including GJK, EPA, broad and narrow phase, fine-detection tests
+optimization etc.)
+    1) C. Ericson. Real-time collision detection. CRC Press, 2004.
+    2) G. Van Den Bergen. Collision detection in interactive 3D environments. CRC Press, 2003.
+A more condensed view on the topic:
+    1) https://www.toptal.com/game/video-game-physics-part-ii-collision-detection-for-solid-objects
+
+** GJK and EPA:
+    1) https://caseymuratori.com/blog_0003 (I should have seen this first, the best explanation of GJK I could find on the web)
+    2) http://www.dyn4j.org/2010/04/gjk-gilbert-johnson-keerthi/
+    3) http://vec3.ca/gjk/implementation/ : The only clear explanation of the possible cases in 3D
+    4) http://www.dyn4j.org/2010/05/epa-expanding-polytope-algorithm/
+    5) EPA in 3D : http://hacktank.net/blog/?p=119
+
+** HHG
+    1) F. Schornbaum. Hierarchical hash grids for coarse collision detection. Student Thesis, University of Erlangen-Nuremberg, 2009.
+
+** Other resources, might be useful
+    1) https://gist.github.com/vurtun/29727217c269a2fbf4c0ed9a1d11cb40
+    2) https://lggmonclar.github.io/2019/03/06/visualizing_gjk.html

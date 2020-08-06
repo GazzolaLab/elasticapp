@@ -193,6 +193,35 @@ namespace cpp17 {
 
 namespace tt {
 
+  /// \ingroup TypeTraitsGroup
+  /// \brief Given a set of templated types, returns `void`
+  ///
+  /// \details
+  /// Given a list of templated types, returns `void`. This is useful for
+  /// controlling name lookup resolution via partial template specialization.
+  ///
+  /// \usage
+  /// For any set of templated types `template <...> Ti`,
+  /// \code
+  /// using result = cpp17::void_t<T0, T1, T2, T3>;
+  /// \endcode
+  ///
+  /// \metareturns
+  /// void
+  ///
+  /// \semantics
+  /// For any set of types `Ti`,
+  /// \code
+  /// using result = void;
+  /// \endcode
+  ///
+  /// \example
+  /// \snippet Utilities/Test_TypeTraits.cpp void_t_example
+  /// \see std::void_t
+  /// \tparam Ts the set of types
+  template <template <class...> class...>
+  using templated_void_t = void;
+
   // Count number of types in the tagged tuple
   namespace detail {
     // Check whether a type is contained in the parameter pack
@@ -206,7 +235,7 @@ namespace tt {
     //
     template <typename ToBeChecked, typename Head, typename... Args>
     struct IsContained<ToBeChecked, Head, Args...> {
-      constexpr static bool value = std::is_same<ToBeChecked, Head>::value ||
+      constexpr static bool value = std::is_same<ToBeChecked, Head>::value or
                                     IsContained<ToBeChecked, Args...>::value;
     };
   }  // namespace detail
@@ -220,7 +249,7 @@ namespace tt {
 
     template <typename ToBeChecked, typename... Args>
     struct IsAllUnique<ToBeChecked, Args...> {
-      constexpr static bool value = not is_contained_v<ToBeChecked, Args...> &&
+      constexpr static bool value = not is_contained_v<ToBeChecked, Args...> and
                                     IsAllUnique<Args...>::value;
     };
 

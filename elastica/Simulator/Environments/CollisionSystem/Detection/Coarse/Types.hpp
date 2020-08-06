@@ -16,8 +16,8 @@ namespace elastica {
 
         template <typename>
         class ExhaustiveSearch;
-        //        template <typename>
-        //        class HashGrids;
+        template <typename>
+        class HashGrids;
         //        template <typename>
         //        class SweepAndPrune;
 

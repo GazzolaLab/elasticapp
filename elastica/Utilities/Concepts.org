@@ -1,0 +1,24 @@
+* Concepts
+
+    - MemoryPoolAllocator :
+    Rather than having a C-like overload of operator new and delete, we propose
+    to have an allocator that models the memory pool concepts for adding contacts
+    in parallel to the system.
+
+** Implementing a generic memory pool
+    - The core idea is to mock TBB's memorypool concept (which probably looks like
+    a scoped allocator?) rather than stick to the C-like static memory pool object.
+    - This involves
+        - Using an inner "allocator" to tell the MemoryPool how to allocate blocks
+        of memory (can even be std::allocator<char>, which allocates say sizeof(T)*
+        blocksize memory each time)
+        - Using an outer allocator that actually tells how many characters etc to
+        allocate. This allocator needs the other allocator as a constructor argument
+        which is usually templated.
+        - Finally using placement new to construct the actual object when requested.
+
+** Benefits
+    - Follows RAII closely : we do not have a static pool from which memory is allocated
+    Thus scopes and lifetimes are more constrained to the context. i.e. If the mem pool
+    is used in a part of the program, its found in that part : there isn't a global pool
+    object from which resources are shared.

@@ -131,7 +131,7 @@ namespace elastica {
           const ConstBodyID b2 = contact->getBody2();
 
           ELASTICA_ASSERT(
-              b1->isFixed() || b2->isFixed() || b1->getRoot() == b2->getRoot(),
+              b1->isFixed() or b2->isFixed() or b1->getRoot() == b2->getRoot(),
               "Conflicting root nodes in contacting bodies detected");
 
           ConstNodeID root(b1->isFixed() ? b2->getRoot() : b1->getRoot());

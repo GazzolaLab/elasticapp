@@ -1,0 +1,16 @@
+#pragma once
+
+namespace elastica {
+
+#if ((__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)) && \
+     defined(ELASTICA_GCC_CXX11))
+#define ELASTICA_HAS_CONSTEXPR_CMATH_FUNCTION
+#endif
+
+#ifdef ELASTICA_HAS_CONSTEXPR_CMATH_FUNCTION
+#define ELASTICA_USE_BUILTIN_CMATH_FUNCTION 1
+#else  // #ifndef ELASTICA_CONFIG_DISABLE_BUILTIN_CMATH_FUNCTION
+#define ELASTICA_USE_BUILTIN_CMATH_FUNCTION 0
+#endif  // #ifndef ELASTICA_CONFIG_DISABLE_BUILTIN_CMATH_FUNCTION
+
+}  // namespace elastica

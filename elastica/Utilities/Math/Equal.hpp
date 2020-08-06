@@ -23,10 +23,11 @@
 
 #pragma once
 
-#include <cmath>
+//#include <cmath>
 
 // Can use blaze's equal without any performance hits
 
+/*
 namespace elastica {
   constexpr bool relaxed = true;
 
@@ -57,5 +58,19 @@ namespace elastica {
   inline constexpr bool equal(const T1& a, const T2& b) {
     return equal<relaxed>(a, b);
   }
+
+}  // namespace elastica
+ */
+
+#include <blaze/math/shims/Equal.h>
+
+namespace elastica {
+
+  //*************************************************************************************************
+  /*!\brief Import of the blaze::equal() function into the elastica namespace.
+  // \ingroup math_shims
+  */
+  using blaze::equal;
+  //*************************************************************************************************
 
 }  // namespace elastica

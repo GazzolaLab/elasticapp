@@ -30,11 +30,8 @@
 
 #include <type_traits>
 
-//#include <pe/core/rigidbody/BodyStorage.h>
-//#include <pe/util/NonCopyable.h>
-//#include <pe/util/constraints/SameType.h>
-//#include <pe/util/logging/DebugSection.h>
-
+#include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/Tags.hpp"
+#include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/TypeTraits.hpp"
 #include "elastica/Utilities/Logging.hpp"
 #include "elastica/Utilities/NonCopyable.hpp"
 #include "elastica/Utilities/TMPL.hpp"
@@ -83,11 +80,57 @@ namespace elastica {
           //          using Primtives = typename EnhancedCollisionConfig
           //          ::Primitives;
 
+          /*
+          // For the primitive - imposed primitive matrix
+          // don't check only flips, also check for primitive ordering
+          // TODO : FIX this, don't think its possible to fix too
+          // WARNING : Not correct always
+          // Only gives correct answers when both the lists being
+          // cartesian product are same. In case one list is different
+          // and we don't there exists a (E1, E2) pair but we want (E2, E1)
+          // this doesn't even put it in the list and proceeds to compile
+          template <typename S, typename E>
+          struct OrderedCartesianHelper;
+
+          template <typename S, typename E1, typename E2>
+          struct OrderedCartesianHelper<S, tmpl::list<E1, E2>> {
+            // Don't use conjunction, causes issue
+            using type = typename std::conditional<
+                // If reverse exists, don't bother
+                std::is_same<tmpl::index_of<S, tmpl::list<E2, E1>>,
+                             tmpl::no_such_type_>::value and
+                    // If not in correct ordering don't bother
+                    tmpl::less_equal<
+                        tmpl::index_of<PrimitiveOrdering, E1>,
+                        tmpl::index_of<PrimitiveOrdering, E2>>::value,
+                tmpl::push_back<S, tmpl::list<E1, E2>>, S>::type;
+          };
+          */
+
+          // SEE WARNING Above : Fix by having imposed primtiives always
+          // trailing admissible primitives or making both equal and having
+          // empty vectors
+          //      TypeDisplayer<OrderedImposedPrimitiveCollection> td;
+          //          using LowerTriangularPrimitiveImposedPrimitiveMatrix =
+          //          tmpl::fold<
+          //              PrimitiveImposedPrimitiveMatrix, tmpl::list<>,
+          //              RemoveRepeatedCartesianHelper<tmpl::_state,
+          //              tmpl::_element>>;
+          using AdmissiblePrimitives =
+              typename EnhancedCollisionConfig::AdmissiblePrimitives;
+
           // Matrix types
+          //!< Type of the primitive-primitive collision matrix.
           using PrimitivePrimitiveMatrix =
               typename EnhancedCollisionConfig::PrimitivePrimitiveMatrix;
+          //!< Type of the primitive-imposed primitive collision matrix.
           using PrimitiveImposedPrimitiveMatrix =
               typename EnhancedCollisionConfig::PrimitiveImposedPrimitiveMatrix;
+          //!< Lower triangular part of the primitive-primitive collision
+          //!< matrix.
+          using LowerTriangularPrimitivePrimitiveMatrix =
+              typename EnhancedCollisionConfig::
+                  LowerTriangularPrimitivePrimitiveMatrix;
 
           //!< Type of the primitive storage.
           using PrimitiveStorage =
@@ -95,6 +138,17 @@ namespace elastica {
           //!< Type of the imposed primitive storage.
           using ImposedPrimitiveStorage =
               typename EnhancedCollisionConfig::ImposedPrimitiveStorage;
+
+          //!< Alias to add storage type given the primitive type
+          template <typename PrimitiveType>
+          using AddPrimitiveStorageType = typename EnhancedCollisionConfig::
+              template AddPrimitiveStorageType<PrimitiveType>;
+
+          //!< Alias to add storage type given the imposed primitive type
+          template <typename ImposedPrimitiveType>
+          using AddImposedPrimitiveStorageType =
+              typename EnhancedCollisionConfig::
+                  template AddImposedPrimitiveStorageType<ImposedPrimitiveType>;
 
           using BodyID =
               typename EnhancedCollisionConfig::BodyID;  //!< Handle for a rigid
@@ -112,14 +166,12 @@ namespace elastica {
           //@}
           //**********************************************************************************************
 
-          //**Add/remove
-          // functions************************************************************************
+          //**Add/remove functions**********************************************
           /*!\name Add/remove functions */
           //@{
-          inline void add(BodyID body);
-          inline void remove(BodyID body);
+          inline void add_all_primitives();
           //@}
-          //**********************************************************************************************
+          //********************************************************************
 
           //**Utility
           // functions***************************************************************************
@@ -128,23 +180,53 @@ namespace elastica {
           template <typename Contacts>
           void find_contacts(Contacts& contacts);
 
+          template <typename Contacts, typename... ListOfCollidingPrimitives>
+          void find_contacts(Contacts& contacts,
+                             tmpl::list<ListOfCollidingPrimitives...>);
+
+          template <typename Contacts,
+                    typename... ListOfCollidingMovingAndImposedPrimitives>
+          void find_contacts_with_imposed_primitives(
+              Contacts& contacts,
+              tmpl::list<ListOfCollidingMovingAndImposedPrimitives...>);
+
           void clear();
           //@}
           //**********************************************************************************************
 
          private:
-          template <typename Contacts, typename... ListOfCollidingPrimitives>
-          void find_contacts(Contacts& contacts,
-                             tmpl::list<ListOfCollidingPrimitives...>);
-          template <typename Contacts, typename FCP, typename SCP>
-          void find_contacts_impl(Contacts& contacts, tmpl::list<FCP, SCP>);
-          template <typename Contacts,
-                    typename... ListOfCollidingMovingAndImposedPrimitives>
-          void find_contacts_between_moving_and_imposed_primtives(
-              Contacts& contacts,
-              tmpl::list<ListOfCollidingMovingAndImposedPrimitives...>);
+          //**Add/remove functions**********************************************
+          /*!\name Add/remove functions */
+          //@{
+          template <typename PrimitiveType>
+          inline void add(PrimitiveType* primitive);
+
+          template <typename PrimitiveType>
+          inline void remove(PrimitiveType* primitive);
+          //@}
+          //********************************************************************
+
+          //**Get functions*****************************************************
+          /*!\name Get functions */
+          //@{
+          template <typename PrimitiveType>
+          inline constexpr auto get_collection() noexcept
+              -> AddPrimitiveStorageType<PrimitiveType>&;
+
+          template <typename ImposedPrimitiveType>
+          inline constexpr auto get_imposed_collection() noexcept
+              -> AddImposedPrimitiveStorageType<ImposedPrimitiveType>&;
+          //@}
+          //********************************************************************
+
           template <typename Contacts, typename FCPS, typename SCPS>
-          void find_contacts_between_moving_and_imposed_primtives_impl(
+          void find_contacts_impl(Contacts& contacts, tmpl::list<FCPS, SCPS>,
+                                  tags::SamePrimitivesTag);
+          template <typename Contacts, typename FCPS, typename SCPS>
+          void find_contacts_impl(Contacts& contacts, tmpl::list<FCPS, SCPS>,
+                                  tags::DifferentPrimitivesTag);
+          template <typename Contacts, typename FCPS, typename SCPS>
+          void find_contacts_with_imposed_primitives_impl(
               Contacts& contacts, tmpl::list<FCPS, SCPS>);
           // TODO : Noy symmetric the primitive and imposed primitive storages
           //        Make them symmeteric
@@ -165,12 +247,15 @@ namespace elastica {
           //**********************************************************************************************
 
           //**Compile time checks***********************************************
-          /*! \cond PE_INTERNAL */
-          static_assert(
-              std::is_same<
-                  This, typename CollisionConfig::template CoarseDetectorFamily<
-                            EnhancedCollisionConfig>>::value,
-              "Should not be reached!");
+          /*! \cond ELASTICA_INTERNAL */
+          // TODO : How to include Exhaustive search as a member of HashGrids
+          // while retaining the facility to check?
+          //          static_assert(
+          //              std::is_same<
+          //                  This, typename CollisionConfig::template
+          //                  CoarseDetectorFamily<
+          //                            EnhancedCollisionConfig>>::value,
+          //              "Should not be reached!");
           /*! \endcond */
           //********************************************************************
         };
@@ -204,6 +289,9 @@ namespace elastica {
         //
         //=================================================================================================
 
+        template <typename C>  // Type of the configuration
+        inline void ExhaustiveSearch<C>::add_all_primitives() {}
+
         //*************************************************************************************************
         /*!\brief Registering a rigid body with the coarse collision detector.
          *
@@ -215,7 +303,8 @@ namespace elastica {
          * simulation world.
          */
         template <typename C>  // Type of the configuration
-        void ExhaustiveSearch<C>::add(BodyID /*body*/) {}
+        template <typename PrimitiveType>
+        void ExhaustiveSearch<C>::add(PrimitiveType* /*primitive*/) {}
         //*************************************************************************************************
 
         //*************************************************************************************************
@@ -229,7 +318,8 @@ namespace elastica {
          * simulation world.
          */
         template <typename C>  // Type of the configuration
-        void ExhaustiveSearch<C>::remove(BodyID /*body*/) {}
+        template <typename PrimitiveType>
+        void ExhaustiveSearch<C>::remove(PrimitiveType* /*primitive*/) {}
         //*************************************************************************************************
 
         //=================================================================================================
@@ -237,6 +327,25 @@ namespace elastica {
         //  UTILITY FUNCTIONS
         //
         //=================================================================================================
+
+        template <typename C>              // Type of the configuration
+        template <typename PrimitiveType>  // Type of the primitive
+        inline constexpr auto ExhaustiveSearch<C>::get_collection() noexcept
+            -> AddPrimitiveStorageType<PrimitiveType>& {
+          using PrimitiveStorageType = AddPrimitiveStorageType<PrimitiveType>;
+          return std::get<PrimitiveStorageType>(primitives_);
+        }
+
+        template <typename C>  // Type of the configuration
+        template <
+            typename ImposedPrimitiveType>  // Type of the imposed primitive
+        inline constexpr auto
+        ExhaustiveSearch<C>::get_imposed_collection() noexcept
+            -> AddImposedPrimitiveStorageType<ImposedPrimitiveType>& {
+          using ImposedPrimitiveStorageType =
+              AddImposedPrimitiveStorageType<ImposedPrimitiveType>;
+          return std::get<ImposedPrimitiveStorageType>(*imposed_primitives_);
+        }
 
         //*************************************************************************************************
         /*!\brief Contact generation between colliding rigid bodies.
@@ -249,26 +358,62 @@ namespace elastica {
          * contact container \a contacts.
          */
         // TODO : Protocol check
+        // Overload for same primtive collision
         // NOTE : The routine is not const qualified because
         // FineDetector::collide stores pointers to the primitives involved in
         // the collision
         template <typename C>         // Type of the configuration
         template <typename Contacts,  // Contact container type
-                  typename FCPS,  // Storage type of first colliding primitive
-                  typename SCPS>  // Storage type of second colliding primitive
+                  typename FCP,       // First colliding primitive
+                  typename SCP>       // Second colliding primitive
         void ExhaustiveSearch<C>::find_contacts_impl(
-            Contacts& contacts, tmpl::list<FCPS, SCPS> /*meta*/) {
+            Contacts& contacts, tmpl::list<FCP, SCP> /*meta*/,
+            tags::SamePrimitivesTag /* meta */
+        ) {
+          static_assert(std::is_same<FCP, SCP>::value, "Oopsie!");
+
           // Colliding local rigid bodies
-          auto& first_collection = std::get<FCPS>(primitives_);
-          auto& second_collection = std::get<SCPS>(primitives_);
+          auto& first_collection = get_collection<FCP>();
 
           // No const iterators
           auto first_collection_begin(first_collection.begin());
           auto first_collection_end(first_collection.end());
 
-          // If they are of the same type, don't collide the object with itself
-          constexpr int offset = std::is_same<FCPS, SCPS>::value;
-          auto second_collection_begin(second_collection.begin() + offset);
+          // TODO This should be in a parallel loop, but at what level?
+          for (auto fb = first_collection_begin; fb != first_collection_end;
+               ++fb) {
+            for (auto sb = fb + 1; sb != first_collection_end; ++sb) {
+              if (
+                  // Testing for overlapping bounding boxes, more probable
+                  (fb->get_AABB().overlaps(sb->get_AABB())) and
+                  // Ignoring contacts between two fixed bodies
+                  (!fb->is_fixed() or !sb->is_fixed()))
+                FineDetector::collide(*fb, *sb, contacts);
+            }
+          }
+        }
+        //*************************************************************************************************
+
+        // Overload for different primitive collision
+        template <typename C>         // Type of the configuration
+        template <typename Contacts,  // Contact container type
+                  typename FCP,       // First colliding primitive
+                  typename SCP>       // Second colliding primitive
+        void ExhaustiveSearch<C>::find_contacts_impl(
+            Contacts& contacts, tmpl::list<FCP, SCP> /*meta*/,
+            tags::DifferentPrimitivesTag /* meta */
+        ) {
+          static_assert(!std::is_same<FCP, SCP>::value, "Oopsie!");
+
+          // Colliding local rigid bodies
+          auto& first_collection = get_collection<FCP>();
+          auto& second_collection = get_collection<SCP>();
+
+          // No const iterators
+          auto first_collection_begin(first_collection.begin());
+          auto first_collection_end(first_collection.end());
+
+          auto second_collection_begin(second_collection.begin());
           auto second_collection_end(second_collection.end());
 
           // TODO This should be in a parallel loop, but at what level?
@@ -278,9 +423,9 @@ namespace elastica {
                  ++sb) {
               if (
                   // Testing for overlapping bounding boxes, more probable
-                  (fb->get_AABB().overlaps(sb->get_AABB())) &&
+                  (fb->get_AABB().overlaps(sb->get_AABB())) and
                   // Ignoring contacts between two fixed bodies
-                  (!fb->is_fixed() || !sb->is_fixed()))
+                  (!fb->is_fixed() or !sb->is_fixed()))
                 FineDetector::collide(*fb, *sb, contacts);
             }
           }
@@ -294,28 +439,75 @@ namespace elastica {
         inline void ExhaustiveSearch<C>::find_contacts(
             Contacts& contacts,
             tmpl::list<ListOfCollidingPrimitives...> /*meta*/) {
+          /*
+           TODO : here we can do a gather operation
+           currently for each and every primitive pair we launch a loop
+           but rather we can take the first primitive and launch one
+           loop which does the processing for all its pairs
+           The roadblock is that the tag dispatch mechanism won't work
+           effectively which means we have to split into unique
+           e.g. say we have
+
+           tmpl::list<tmpl::list<Sphere, Sphere>,
+                      tmpl::list<Sphere, Cylinder>,
+                      tmpl::list<Sphere, Box>>
+
+           Then to process, we split into two lists
+
+           1) tmpl::list<tmpl::list<Sphere, Sphere>>
+
+           For this we call the same primitive loop like we already do
+
+           2) tmpl::list<tmpl::list<Sphere, Cylinder>, tmpl::list<Sphere, Box>>
+           For this we can modify the loop, extract the second primitives and
+           call it like so:
+
+           auto fb = first_collection_begin
+           auto reducer = [&fb](auto Is){
+                // Get second collection
+                // Loop over second collection using sb iterator
+                collide(*fb, *sb);
+           };
+
+            for (; fb != first_collection_end;
+                 ++fb) {
+                 index_apply<n_second_primitives>([&reducer](auto ...Is){
+                  EXPAND_PACK(reducer(Is));
+                 })
+            }
+
+          */
+
+          /*
+           using FCP = tmpl::at_c<Primitives, Is>;
+           using SecondPrimitives = tmpl::fold<
+               LowerTriangularPrimitivePrimitiveMatrix, tmpl::list<>,
+               typename tt::ExtractSecondPrimitive<FCP>::
+                   template apply<tmpl::_state, tmpl::_element>>;
+          */
+
           // You can do parallel stuff here
-          EXPAND_PACK_LEFT_TO_RIGHT(
-              find_contacts_impl(contacts, ListOfCollidingPrimitives{}));
+          EXPAND_PACK_LEFT_TO_RIGHT(find_contacts_impl(
+              contacts, ListOfCollidingPrimitives{},
+              tt::PrimitivesDispatchType<ListOfCollidingPrimitives>{}));
         }
 
         template <typename C>         // Type of the configuration
         template <typename Contacts,  // Contact container type
-                  typename FCPS,  // Storage type of first colliding primitive
-                  typename SCPS>  // Storage type of second colliding primitive
-        void ExhaustiveSearch<C>::
-            find_contacts_between_moving_and_imposed_primtives_impl(
-                Contacts& contacts, tmpl::list<FCPS, SCPS> /*meta*/) {
+                  typename FCP,       // First colliding primitive
+                  typename SCP>       // Second colliding primitive
+        void ExhaustiveSearch<C>::find_contacts_with_imposed_primitives_impl(
+            Contacts& contacts, tmpl::list<FCP, SCP> /*meta*/) {
           // Colliding local rigid bodies
-          auto& first_collection = std::get<FCPS>(primitives_);
+          auto& first_collection = get_collection<FCP>();
           // Get from collection of imposed primitives now
-          auto& second_collection = std::get<SCPS>(*imposed_primitives_);
+          auto& second_collection = get_imposed_collection<SCP>();
 
           // No const iterators
           auto first_collection_begin(first_collection.begin());
           auto first_collection_end(first_collection.end());
 
-          // No need to offset pts because the collections are different
+          // No need to offset because the collections are different
           auto second_collection_begin(second_collection.begin());
           auto second_collection_end(second_collection.end());
 
@@ -326,9 +518,9 @@ namespace elastica {
                  ++sb) {
               if (
                   // Testing for overlapping bounding boxes, more probable
-                  (fb->get_AABB().overlaps(sb->get_AABB())) &&
+                  (fb->get_AABB().overlaps(sb->get_AABB())) and
                   // Ignoring contacts between two fixed bodies
-                  (!fb->is_fixed() || !sb->is_fixed()))
+                  (!fb->is_fixed() or !sb->is_fixed()))
                 FineDetector::collide(*fb, *sb, contacts);
             }
           }
@@ -337,14 +529,12 @@ namespace elastica {
         template <typename C>  // Type of the configuration
         template <typename Contacts,
                   typename... ListOfCollidingMovingAndImposedPrimitives>
-        inline void
-        ExhaustiveSearch<C>::find_contacts_between_moving_and_imposed_primtives(
+        inline void ExhaustiveSearch<C>::find_contacts_with_imposed_primitives(
             Contacts& contacts,
             tmpl::list<ListOfCollidingMovingAndImposedPrimitives...> /*meta*/) {
           // You can do parallel stuff here
-          EXPAND_PACK_LEFT_TO_RIGHT(
-              find_contacts_between_moving_and_imposed_primtives_impl(
-                  contacts, ListOfCollidingMovingAndImposedPrimitives{}));
+          EXPAND_PACK_LEFT_TO_RIGHT(find_contacts_with_imposed_primitives_impl(
+              contacts, ListOfCollidingMovingAndImposedPrimitives{}));
         }
 
         //*************************************************************************************************
@@ -367,10 +557,10 @@ namespace elastica {
           }
 
           // Cannot use lambda to expand private info
-          find_contacts(contacts, PrimitivePrimitiveMatrix{});
+          find_contacts(contacts, LowerTriangularPrimitivePrimitiveMatrix{});
 
           // Find contacts between active primitives and imposed primitives
-          find_contacts_between_moving_and_imposed_primtives(
+          find_contacts_with_imposed_primitives(
               contacts, PrimitiveImposedPrimitiveMatrix{});
 
           // Serial
@@ -380,8 +570,8 @@ namespace elastica {
             else {
               for (auto const& c : contacts) {
                 log << "      State of the contacts:\n";
-                log << "         Contact " << c->get_ID() << " (" << c->get_contact_type()
-                    << "):"
+                log << "         Contact " << c->get_ID() << " ("
+                    << c->get_contact_type() << "):"
                     << " pos = " << c->get_position()
                     << " , n = " << c->get_normal()
                     << " , dist = " << c->get_distance()

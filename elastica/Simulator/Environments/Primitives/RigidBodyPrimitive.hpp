@@ -70,6 +70,7 @@ namespace elastica {
       //**********************************************************************************************
      public:
       inline bool is_fixed() const;
+      inline bool is_finite() const;
       //      inline void registerContact(ContactID contact);
 
       //**Get
@@ -87,7 +88,8 @@ namespace elastica {
       inline auto get_angular_velocity() const noexcept -> const Vec3&;
 
       // TODO : noexcept?
-      inline auto velocity_from_world_FOR(real_t px, real_t py, real_t pz) const -> Vec3;
+      inline auto velocity_from_world_FOR(real_t px, real_t py, real_t pz) const
+          -> Vec3;
       inline auto velocity_from_world_FOR(const Vec3& gpos) const -> Vec3;
       //      inline auto accFromWF(real_t px, real_t py, real_t pz) const ->
       //      Vec3; inline auto accFromWF(const Vec3& gpos) const -> Vec3;
@@ -97,20 +99,21 @@ namespace elastica {
 
       // For
       // TODO : Move overloads if possible, wont help much
-      inline void add_force_at_position(real_t fx, real_t fy, real_t fz, real_t px,
-                                real_t py, real_t pz);
+      inline void add_force_at_position(real_t fx, real_t fy, real_t fz,
+                                        real_t px, real_t py, real_t pz);
       inline void add_force_at_position(const Vec3& f, const Vec3& gpos);
       inline void add_force_at_position(Vec3&& f, const Vec3& gpos);
       inline void add_force_at_position(Vec3&& f, Vec3&& gpos);
 
-//      template <typename RigidBodyType, typename RigidBodyPrimitiveIterator>
-//      friend void transfer(RigidBodyType const&, RigidBodyPrimitiveIterator,
-//                           RigidBodyPrimitiveIterator, std::true_type);
-//      template <typename RigidBodyType,
-//                typename ConstRigidBodyPrimitiveIterator>
-//      friend void transfer(ConstRigidBodyPrimitiveIterator,
-//                           ConstRigidBodyPrimitiveIterator, RigidBodyType&,
-//                           std::true_type);
+      //      template <typename RigidBodyType, typename
+      //      RigidBodyPrimitiveIterator> friend void transfer(RigidBodyType
+      //      const&, RigidBodyPrimitiveIterator,
+      //                           RigidBodyPrimitiveIterator, std::true_type);
+      //      template <typename RigidBodyType,
+      //                typename ConstRigidBodyPrimitiveIterator>
+      //      friend void transfer(ConstRigidBodyPrimitiveIterator,
+      //                           ConstRigidBodyPrimitiveIterator,
+      //                           RigidBodyType&, std::true_type);
 
      protected:
       //**Member
@@ -178,6 +181,15 @@ namespace elastica {
     //*************************************************************************************************
 
     //*************************************************************************************************
+    /*!\brief Returns whether the rigid body is finite or not.
+     *
+     * \return \a true in case of a finite rigid body, \a false in case of a
+     * infinite rigid body.
+     */
+    inline bool RigidBodyPrimitive::is_finite() const { return finite_; }
+    //*************************************************************************************************
+
+    //*************************************************************************************************
     /*!\brief TODO Returns whether the rigid body's position is fixed or not.
      *
      * \return \a true in case of a fixed/stationary rigid body, \a false in
@@ -229,7 +241,8 @@ namespace elastica {
      * This function returns the angluar velocity of the center of mass in
      * reference to the global world frame.
      */
-    inline const Vec3& RigidBodyPrimitive::get_angular_velocity() const noexcept {
+    inline const Vec3& RigidBodyPrimitive::get_angular_velocity()
+        const noexcept {
       return w_;
     }
     //*************************************************************************************************
@@ -246,8 +259,9 @@ namespace elastica {
      * The function calculates the global velocity of a point in global
      * coordinates.
      */
-    inline Vec3 RigidBodyPrimitive::velocity_from_world_FOR(real_t px, real_t py,
-                                              real_t pz) const {
+    inline Vec3 RigidBodyPrimitive::velocity_from_world_FOR(real_t px,
+                                                            real_t py,
+                                                            real_t pz) const {
       return velocity_from_world_FOR(Vec3{px, py, pz});
     }
     //*************************************************************************************************
@@ -262,7 +276,8 @@ namespace elastica {
      * The function calculates the global velocity of a point in global
      * coordinates.
      */
-    inline Vec3 RigidBodyPrimitive::velocity_from_world_FOR(const Vec3& gpos) const {
+    inline Vec3 RigidBodyPrimitive::velocity_from_world_FOR(
+        const Vec3& gpos) const {
       // Not noexcept because blaze's static vector constructors are not marked
       // noexcept
       return v_ + w_ % (gpos - gpos_);
@@ -270,25 +285,28 @@ namespace elastica {
     //*************************************************************************************************
 
     inline void RigidBodyPrimitive::add_force_at_position(real_t fx, real_t fy,
-                                                  real_t fz, real_t px,
-                                                  real_t py, real_t pz) {
+                                                          real_t fz, real_t px,
+                                                          real_t py,
+                                                          real_t pz) {
       add_force_at_position(Vec3{fx, fy, fz}, Vec3{px, py, pz});
     }
 
     inline void RigidBodyPrimitive::add_force_at_position(const Vec3& f,
-                                                  const Vec3& gpos) {
+                                                          const Vec3& gpos) {
       // Increasing the force and torque on this rigid body
       force_ += f;
       torque_ += (gpos - gpos_) % f;
     }
 
-    inline void RigidBodyPrimitive::add_force_at_position(Vec3&& f, const Vec3& gpos) {
+    inline void RigidBodyPrimitive::add_force_at_position(Vec3&& f,
+                                                          const Vec3& gpos) {
       // Increasing the force and torque on this rigid body
       force_ += f;
       torque_ += (gpos - gpos_) % f;
     }
 
-    inline void RigidBodyPrimitive::add_force_at_position(Vec3&& f, Vec3&& gpos) {
+    inline void RigidBodyPrimitive::add_force_at_position(Vec3&& f,
+                                                          Vec3&& gpos) {
       // Increasing the force and torque on this rigid body
       force_ += f;
       torque_ += (gpos - gpos_) % f;

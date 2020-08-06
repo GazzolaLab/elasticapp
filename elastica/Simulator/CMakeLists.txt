@@ -1,5 +1,7 @@
 # Distributed under the MIT License. See LICENSE.txt for details.
 
+add_subdirectory(Domain)
+
 set(LIBRARY Simulator)
 
 add_elastica_library(${LIBRARY})
@@ -32,6 +34,7 @@ target_link_libraries(
         Blaze
         ErrorHandling
         Utilities
+        Domain
 )
 #set(LIBRARY_SOURCES Trigger.cpp Visualization.cpp Materials.cpp)
 

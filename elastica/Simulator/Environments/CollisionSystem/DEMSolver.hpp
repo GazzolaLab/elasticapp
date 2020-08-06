@@ -30,7 +30,7 @@
 #include "elastica/Utilities/Singleton.hpp"
 #include "elastica/Utilities/StdHelpers.hpp"
 #include "elastica/Utilities/TMPL.hpp"
-#include "elastica/Utilities/TMPLDebugging.hpp"
+//#include "elastica/Utilities/TMPLDebugging.hpp"
 #include "elastica/Utilities/Timing.h"
 
 // TODO : Replace primitives with a tagged tuple
@@ -131,41 +131,6 @@ namespace elastica {
 
       using PrimitiveOrdering = typename FineDetector::PrimitiveOrdering;
 
-      template <typename S, typename E>
-      struct RemoveRepeatedCartesianHelper;
-
-      template <typename S, typename E1, typename E2>
-      struct RemoveRepeatedCartesianHelper<S, tmpl::list<E1, E2>> {
-        using type = typename std::conditional<
-            std::is_same<tmpl::index_of<S, tmpl::list<E2, E1>>,
-                         tmpl::no_such_type_>::value,
-            tmpl::push_back<S, tmpl::list<E1, E2>>, S>::type;
-      };
-
-      // For the primitive - imposed primitive matrix
-      // don't check only flips, also check for primitive ordering
-      // TODO : FIX this, don't think its possible to fix too
-      // WARNING : Not correct always
-      // Only gives correct answers when both the lists being
-      // cartesian product are same. In case one list is different
-      // and we don't there exists a (E1, E2) pair but we want (E2, E1)
-      // this doesn't even put it in the list and proceeds to compile
-      template <typename S, typename E>
-      struct OrderedCartesianHelper;
-
-      template <typename S, typename E1, typename E2>
-      struct OrderedCartesianHelper<S, tmpl::list<E1, E2>> {
-        // Don't use conjunction, causes issue
-        using type = typename std::conditional<
-            // If reverse exists, don't bother
-            std::is_same<tmpl::index_of<S, tmpl::list<E2, E1>>,
-                         tmpl::no_such_type_>::value &&
-                // If not in correct ordering don't bother
-                tmpl::less_equal<tmpl::index_of<PrimitiveOrdering, E1>,
-                                 tmpl::index_of<PrimitiveOrdering, E2>>::value,
-            tmpl::push_back<S, tmpl::list<E1, E2>>, S>::type;
-      };
-
      public:
       // DONE : Removing duplicates to be done upstream
       // Get a stable ordering so that Fine detection works with the available
@@ -203,27 +168,25 @@ namespace elastica {
       using AddPrimitiveStorageType =
           typename SimulatorConfig::template AddPrimitiveStorageType<T>;
 
+      using OrderedPrimitives =
+          // Sort
+          tmpl::sort<
+              // Extract type
+              tmpl::transform<PrimitiveCollection,
+                              tmpl::bind<RemovePrimitiveStorageType, tmpl::_1>>
+              // End Extract type,
+              ,
+              // sort key
+              tmpl::less<tmpl::bind<tmpl::index_of,
+                                    tmpl::pin<PrimitiveOrdering>, tmpl::_1>,
+                         tmpl::bind<tmpl::index_of,
+                                    tmpl::pin<PrimitiveOrdering>, tmpl::_2>>
+              // End sort
+              >;
       using OrderedPrimitiveCollection =
           // Inject storage type
-          tmpl::transform<
-              // Sort
-              tmpl::sort<
-                  // Extract type
-                  tmpl::transform<
-                      PrimitiveCollection,
-                      tmpl::bind<RemovePrimitiveStorageType, tmpl::_1>>
-                  // End Extract type,
-                  ,
-                  // sort key
-                  tmpl::less<tmpl::bind<tmpl::index_of,
-                                        tmpl::pin<PrimitiveOrdering>, tmpl::_1>,
-                             tmpl::bind<tmpl::index_of,
-                                        tmpl::pin<PrimitiveOrdering>, tmpl::_2>>
-                  // End sort
-                  >,
-              tmpl::bind<AddPrimitiveStorageType, tmpl::_1>
-              // End inject storage
-              >;
+          tmpl::transform<OrderedPrimitives,
+                          tmpl::bind<AddPrimitiveStorageType, tmpl::_1>>;
 
       template <typename T>
       using RemoveImposedPrimitiveStorageType =
@@ -233,44 +196,104 @@ namespace elastica {
       using AddImposedPrimitiveStorageType =
           typename SimulatorConfig::template AddImposedPrimitiveStorageType<T>;
 
-      using OrderedImposedPrimitiveCollection =
-          // Inject storage type
-          tmpl::transform<
-              // Sort
-              tmpl::sort<
-                  // Extract type
-                  tmpl::transform<
-                      ImposedPrimitiveCollection,
-                      tmpl::bind<RemoveImposedPrimitiveStorageType, tmpl::_1>>
-                  // End Extract type,
-                  ,
-                  // sort key
-                  tmpl::less<tmpl::bind<tmpl::index_of,
-                                        tmpl::pin<PrimitiveOrdering>, tmpl::_1>,
-                             tmpl::bind<tmpl::index_of,
-                                        tmpl::pin<PrimitiveOrdering>, tmpl::_2>>
-                  // End sort
-                  >,
-              tmpl::bind<AddImposedPrimitiveStorageType, tmpl::_1>
-              // End inject storage
+      using OrderedImposedPrimitives =
+          // Sort
+          tmpl::sort<
+              // Extract type
+              tmpl::transform<
+                  ImposedPrimitiveCollection,
+                  tmpl::bind<RemoveImposedPrimitiveStorageType, tmpl::_1>>
+              // End Extract type,
+              ,
+              // sort key
+              tmpl::less<tmpl::bind<tmpl::index_of,
+                                    tmpl::pin<PrimitiveOrdering>, tmpl::_1>,
+                         tmpl::bind<tmpl::index_of,
+                                    tmpl::pin<PrimitiveOrdering>, tmpl::_2>>
+              // End sort
               >;
+
+      using OrderedImposedPrimitiveCollection =
+          tmpl::transform<OrderedImposedPrimitives,
+                          tmpl::bind<AddImposedPrimitiveStorageType, tmpl::_1>>;
 
       // Matrix types, its convenient to separate collision of imposed bodies
       // and non-imposed bodies for force reduction
-      using PrimitivePrimitiveMatrix = tmpl::fold<
+      // Store the entire matrix here, results in repeated entries
+      using PrimitivePrimitiveMatrix =
+          tmpl::cartesian_product<OrderedPrimitives, OrderedPrimitives>;
+      using PrimitiveImposedPrimitiveMatrix =
+          tmpl::cartesian_product<OrderedPrimitives, OrderedImposedPrimitives>;
+
+      using PrimitivePrimitiveCollectionMatrix =
           tmpl::cartesian_product<OrderedPrimitiveCollection,
-                                  OrderedPrimitiveCollection>,
-          tmpl::list<>,
-          RemoveRepeatedCartesianHelper<tmpl::_state, tmpl::_element>>;
-      // SEE WARNING Above : Fix by having imposed primtiives always
-      // trailing admissible primitives or making both equal and having
-      // empty vectors
-      //      TypeDisplayer<OrderedImposedPrimitiveCollection> td;
-      using PrimitiveImposedPrimitiveMatrix = tmpl::fold<
+                                  OrderedPrimitiveCollection>;
+      using PrimitiveImposedPrimitiveCollectionMatrix =
           tmpl::cartesian_product<OrderedPrimitiveCollection,
-                                  OrderedImposedPrimitiveCollection>,
-          tmpl::list<>,
-          RemoveRepeatedCartesianHelper<tmpl::_state, tmpl::_element>>;
+                                  OrderedImposedPrimitiveCollection>;
+
+      // Helper for removing matrix types
+      template <typename S, typename E>
+      struct RemoveUpperTriangularMatrixHelper;
+
+      template <typename S, typename E1, typename E2>
+      struct RemoveUpperTriangularMatrixHelper<S, tmpl::list<E1, E2>> {
+        using type = typename std::conditional<
+            std::is_same<tmpl::index_of<S, tmpl::list<E2, E1>>,
+                         tmpl::no_such_type_>::value,
+            tmpl::push_back<S, tmpl::list<E1, E2>>, S>::type;
+      };
+
+      /*
+        We use the lower-triangular matrix only since this
+        results in unique collision between primitives
+
+        Assume PrimitivePrimitiveMatrix is the following:
+
+        | Primitive | Cylinder | Box | Sphere |
+        |-----------|----------|-----|--------|
+        | Cylinder  | x        | x   | x      |
+        | Box       | x        | x   | x      |
+        | Sphere    | x        | x   | x      |
+
+        If we iterate over all entries of the matrix, then there
+        are repeated collision checks :  for example a Cylinder-Box
+        check is the same as a Box-Cylinder check for the registered
+        cylinder and box primitives. To avoid double-couting then
+        its easy to extract the lower triangular component of the
+        matrix above:
+
+        | Primitive | Cylinder | Box | Sphere |
+        |-----------|----------|-----|--------|
+        | Cylinder  | x        |     |        |
+        | Box       | x        | x   |        |
+        | Sphere    | x        | x   | x      |
+
+        Note that the Primitives are ordered according to the
+        FineDetector's preferred ordering, so it helps reduce
+        template instantiations.
+
+       */
+      using LowerTriangularPrimitivePrimitiveMatrix = tmpl::fold<
+          PrimitivePrimitiveMatrix, tmpl::list<>,
+          RemoveUpperTriangularMatrixHelper<tmpl::_state, tmpl::_element>>;
+
+      /*
+        In the case of the primitive-imposed primitive matrix, this
+        siutation doesn't arise as a collision between a
+        sphere primitive and an imposed box primitive is different
+        than a box primitive and an imposed sphere primitive, since
+        they correspond to different objects, although they use
+        the same fine-detection code i.e.
+
+        | P \ IP   | ImposedCyl | ImposedBox | ImposedSphere |
+        |----------|------------|------------|---------------|
+        | Cylinder | x          | x          | x             |
+        | Box      | x          | x          | x             |
+        | Sphere   | x          | x          | x             |
+
+        should all be processed as rows and columns are different
+       */
 
       //  Storage types
       ////// OLD
@@ -295,12 +318,23 @@ namespace elastica {
       struct CoarseDetectorCollisionConfig : public CollisionConfig {
         // ///// Unused, dont pass
         //        using Primitives = This::Primitives;
+
+        //!< Matrix Types
         using PrimitivePrimitiveMatrix = This::PrimitivePrimitiveMatrix;
         using PrimitiveImposedPrimitiveMatrix =
             This::PrimitiveImposedPrimitiveMatrix;
+        using LowerTriangularPrimitivePrimitiveMatrix =
+            This::LowerTriangularPrimitivePrimitiveMatrix;
+
         // Can add pointers here for a uniform interface
         using PrimitiveStorage = This::PrimitiveStorage;
         using ImposedPrimitiveStorage = This::ImposedPrimitiveStorage;
+        using AdmissiblePrimitives = This::AdmissiblePrimitives;
+        template <typename T>
+        using AddPrimitiveStorageType = This::AddPrimitiveStorageType<T>;
+        template <typename T>
+        using AddImposedPrimitiveStorageType =
+            This::AddImposedPrimitiveStorageType<T>;
       };
 
       /*! The type of the coarse collision detection algorithm is selected by
@@ -357,11 +391,11 @@ namespace elastica {
           -> std::size_t;
       // TODO : Functions seem common, maybe refactor?
       template <typename Primitive>
-      inline constexpr auto get_primitive_collection() noexcept ->
-          AddPrimitiveStorageType<Primitive>&;
+      inline constexpr auto get_primitive_collection() noexcept
+          -> AddPrimitiveStorageType<Primitive>&;
       template <typename Primitive>
-      inline constexpr auto get_primitive_collection() const noexcept ->
-          AddPrimitiveStorageType<Primitive> const&;
+      inline constexpr auto get_primitive_collection() const noexcept
+          -> AddPrimitiveStorageType<Primitive> const&;
       template <typename Primitive>
       inline constexpr auto get_offset_index() noexcept -> std::size_t&;
       template <typename Primitive>
@@ -732,8 +766,8 @@ namespace elastica {
     template <typename Primitive>
     inline constexpr auto
     CollisionSystem<SimulatorConfig, C<CD, FD, BG, response::DEMSolver>>::
-        get_primitive_collection() const noexcept ->
-        AddPrimitiveStorageType<Primitive> const& {
+        get_primitive_collection() const noexcept
+        -> AddPrimitiveStorageType<Primitive> const& {
       using PrimitiveCollectionType = AddPrimitiveStorageType<Primitive>;
       return std::get<PrimitiveCollectionType>(primitives_);
     }
@@ -993,9 +1027,17 @@ namespace elastica {
       // 2. Also initialize the fixed primitives_
       imposed_primitives_ = ips;
 
-      // 3. Pass the fixed prim
+      // 3. Transfer body contents to primitives
+      // This is for properly initializing the primtives before adding all to the
+      // coarse collision detector
+      EXPAND_PACK_LEFT_TO_RIGHT(
+          transfer_info(from, std::get<CollectionContainers>(cct)));
 
-      // 3. Once initialized, start the system by clearning all contacts
+      // 3. Now that all primitives are initialized, add them to the coarse
+      // detector
+      detector_.add_all_primitives();
+
+      // 4. Once initialized, start the system by clearning all contacts
       clear_contacts();
     }
 

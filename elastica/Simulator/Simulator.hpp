@@ -1,9 +1,9 @@
 #pragma once
 #include <utility>
 
+#include "Simulator/Interface/DefaultSimulatorConfiguration.hpp"
 #include "elastica/Simulator/Interface/Connections.hpp"
 #include "elastica/Simulator/Interface/Constraints.hpp"
-#include "elastica/Simulator/Interface/DefaultSimulatorConfiguration.hpp"
 #include "elastica/Simulator/Interface/Environments.hpp"
 #include "elastica/Simulator/Interface/Simulator.hpp"
 

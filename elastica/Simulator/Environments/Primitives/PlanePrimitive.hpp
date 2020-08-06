@@ -2,12 +2,15 @@
 
 #include <array>
 
-#include "GeomPrimitive.hpp"
-#include "Simulator/Environments/CollisionSystem/Types.hpp"
+#include "elastica/Simulator/Environments/CollisionSystem/Types.hpp"
+#include "elastica/Simulator/Environments/Primitives/GeomPrimitive.hpp"
+#include "elastica/Simulator/Environments/Primitives/Protocols.hpp"
 #include "elastica/Utilities/DefineTypes.h"
 #include "elastica/Utilities/Math/Equal.hpp"
 #include "elastica/Utilities/Math/SqrLength.hpp"
+#include "elastica/Utilities/Math/Trans.hpp"
 #include "elastica/Utilities/Math/Vec3.hpp"
+#include "elastica/Utilities/ProtocolHelpers.hpp"
 
 namespace elastica {
 
@@ -38,8 +41,8 @@ namespace elastica {
       PlanePrimitive(PlanePrimitive&&) noexcept;
 
      public:
-      inline auto get_normal() const noexcept -> decltype(blaze::row<1UL>(rot_mat_));
-      inline auto get_normal() noexcept -> decltype(blaze::row<1UL>(rot_mat_));
+      inline auto get_normal() const noexcept -> decltype(trans(blaze::row<1UL>(rot_mat_)));
+      inline decltype(auto) get_normal() noexcept;
       //      inline real_t get_displacement() const noexcept;
       //      inline real_t& get_displacement() noexcept;
 
@@ -63,7 +66,7 @@ namespace elastica {
       //            - < 0: The global origin is outside the plane\n
       //            - = 0: The global origin is on the surface of the plane */
       //      Tangents tangents_;
-      Spans spans_;  //!< Span of plane
+      Spans spans_{};  //!< Span of plane
       //@}
       //**********************************************************************************************
     };
@@ -81,8 +84,8 @@ namespace elastica {
      * \return The normal of the plane.
      */
     inline auto PlanePrimitive::get_normal() const noexcept
-        -> decltype(blaze::row<1UL>(rot_mat_)) {
-      return blaze::row<1UL>(rot_mat_);
+        -> decltype(trans(blaze::row<1UL>(rot_mat_))) {
+      return trans(blaze::row<1UL>(rot_mat_));
     }
     //*************************************************************************************************
 
@@ -92,9 +95,8 @@ namespace elastica {
      *
      * \return The normal of the plane.
      */
-    inline auto PlanePrimitive::get_normal() noexcept
-        -> decltype(blaze::row<1UL>(rot_mat_)) {
-      return blaze::row<1UL>(rot_mat_);
+    inline decltype(auto) PlanePrimitive::get_normal() noexcept {
+      return trans(blaze::row<1UL>(rot_mat_));
     }
     //*************************************************************************************************
 

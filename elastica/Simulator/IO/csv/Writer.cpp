@@ -93,9 +93,9 @@ namespace elastica {
       /*!\brief The destructor of the Writer class.
        */
       Writer::~Writer() {
-        // Logging the successful destruction of the VTK writer
+        // Logging the successful destruction of the CSV writer
         LOG_INFO_SECTION(log) {
-          log << "Successfully destroyed the VTK writer instance";
+          log << "Successfully destroyed the CSV writer instance";
         }
       }
       //*************************************************************************************************
@@ -139,6 +139,8 @@ namespace elastica {
       }
       //*************************************************************************************************
 
+      void Writer::add_bounding_box(const Visualization::AABB* bounding_box) {return;}
+
       //=================================================================================================
       //
       //  REMOVE FUNCTIONS
@@ -158,6 +160,8 @@ namespace elastica {
         spheres_.erase(pos);
       }
       //*************************************************************************************************
+
+      void Writer::remove_bounding_box(const Visualization::AABB* bounding_box) {return;}
 
       //=================================================================================================
       //
@@ -190,9 +194,8 @@ namespace elastica {
             ".csv";
 
         std::ostringstream spherefile;
-        spherefile << output_directory_ << "/sphere_csv_data" << fn_with_suffix;
+        spherefile << output_directory_ << "/sphere_csv_data_" << fn_with_suffix;
         write_spheres(spherefile.str().c_str());
-
       }
       //*************************************************************************************************
 
@@ -213,7 +216,7 @@ namespace elastica {
         const path file(filename.filename());
 
         // Checking the directory and the filename
-        if (!directory.empty() && !exists(directory))
+        if ((not directory.empty()) and (not exists(directory)))
           throw std::runtime_error(
               "Directory for VTK-Ray files does not exist");
         if (file.empty())
@@ -293,8 +296,74 @@ namespace elastica {
 
       void Writer::write_sphere_data_in_ascii(
           std::ostream& out, const rigidbody::Sphere* sphere_collection) const {
+        // write grid
+        std::size_t n_spheres(sphere_collection->size());
+        const char* tab = ",";
 
+        // Write the sphere positions
+        for (std::size_t i = 0UL; i < n_spheres; ++i) {
+          auto pos(sphere_collection->get_position(i));
+          out << pos[0] << tab << pos[1] << tab << pos[2] << "\n";
+        }
       }
+
+      //=================================================================================================
+      //
+      //  OUTPUT FUNCTIONS
+      //
+      //=================================================================================================
+
+      //*************************************************************************************************
+      /*!\brief Output of the current state of an VTK writer.
+       *
+       * \param os Reference to the output stream.
+       * \return void
+       */
+      void Writer::print(std::ostream& os) const {
+        os << " CSV file                                : '"
+           << output_directory_ << "'\n"
+           << " Number of time steps                    : " << counter_ << "\n"
+           << " Number of registered sphere collections : " << spheres_.size()
+           << "\n";
+      }
+      //*************************************************************************************************
+
+      //=================================================================================================
+      //
+      //  VTK WRITER SETUP FUNCTIONS
+      //
+      //=================================================================================================
+
+      //*************************************************************************************************
+      /*!\brief Activation of the VTK writer.
+       * \ingroup vtk
+       *
+       * \param filename File name for the VTK visualization file.
+       * \param spacing Spacing between two visualized time steps \f$
+       * [1..\infty) \f$. \return Handle to the active VTK writer. \exception
+       * std::invalid_argument Invalid spacing value. \exception
+       * std::invalid_argument Invalid file name.
+       *
+       * This function activates the VTK writer for an VTK visualization. The
+       * first call to this function will activate the VTK writer and return the
+       * handle to the active writer, subsequent calls will ignore the
+       * parameters and only return the handle to the VTK writer.
+       */
+      std::shared_ptr<Writer> make_writer(const std::string& filename,
+                                          std::size_t spacing,
+                                          std::size_t tstart,
+                                          std::size_t tend) {
+#ifdef HAVE_TBB
+        tbb::mutex::scoped_lock lock(_log_mutex);
+#else
+        std::lock_guard<std::mutex> lock(Writer::instance_mutex_,
+                                         std::adopt_lock);
+#endif
+        static std::shared_ptr<Writer> dx(
+            new Writer(filename, spacing, tstart, tend));
+        return dx;
+      }
+
 
     }  // namespace csv
 

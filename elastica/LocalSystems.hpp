@@ -23,7 +23,7 @@ namespace elastica {
 
       template <template <typename> class DerivType, typename StateType>
       DerivType<T> get_initial_derivative(const StateType& st,
-                                          const ValueType t = 0.0) {
+                                          const ValueType /*t = 0.0*/) {
         return DerivType<T>{st.get_velocity(),
                             compute_acceleration(st.get_position())};
       }
@@ -45,7 +45,7 @@ namespace elastica {
       T compute_acceleration(T pos) { return -omega_ * omega_ * pos; }
 
       template <class StateType, class DerivType>
-      void operator()(const StateType& state, DerivType& dxdt, const T t) {
+      void operator()(const StateType& state, DerivType& dxdt, const T /*t*/) {
         T pos = state.get_position();
         dxdt.set_velocity(state.get_velocity());
         dxdt.set_acceleration(compute_acceleration(pos));

@@ -103,7 +103,7 @@ namespace elastica {
         // emplace back leaks https://stackoverflow.com/a/15784813
         simple_envs_.push_back(
             std::make_unique<EnvironmentType>(std::forward<Args>(args)...));
-        return static_cast<EnvironmentType*>(simple_envs_.back());
+        return static_cast<EnvironmentType*>(simple_envs_.back().get());
         //        simple_envs_.push_back(
         //            static_cast<environments::EnvironmentBase*>(env.get()));
       }
@@ -139,7 +139,8 @@ namespace elastica {
      private:
       template <typename ImposedPrimitiveType>
       void apply_simple_environment_forces(
-          std::vector<ImposedPrimitiveType>& system_collection, TimeType time_v) {
+          std::vector<ImposedPrimitiveType>& system_collection,
+          TimeType time_v) {
         for (auto& simple_env : simple_envs_) {
           for (ImposedPrimitiveType& sys_ptr : system_collection)
             simple_env->template apply<ImposedPrimitiveType>(sys_ptr, time_v);
@@ -196,10 +197,10 @@ namespace elastica {
       }
 
       // TODO Make private?
-      void finalize(TimeType time_v) {
+      void finalize(TimeType /*time_v*/) {
         // 1. Call initialize on the more complex environments, passing the
         // current system storage and fixed primitives
-        index_apply<get_number_of_environments()>([this, time_v](auto... Is) {
+        index_apply<get_number_of_environments()>([this](auto... Is) {
           EXPAND_PACK_LEFT_TO_RIGHT(
               std::get<Is>(environments_)
                   ->initialize(
@@ -249,6 +250,27 @@ namespace elastica {
 
         return push_back_imposed_impl(
             std::forward<ImposedPrimitive>(imposed_primitive));
+      }
+
+      template <class ImposedPrimitive, class... Args>
+      inline auto emplace_back_imposed_impl(Args&&... args) -> ImposedPrimitive* {
+        auto& imposed_primitive_container =
+            get_imposed_primitive_container<ImposedPrimitive>();
+        imposed_primitive_container.emplace_back(std::forward<Args>(args)...);
+        // return non-owning handle to the System just pushed back
+        return &imposed_primitive_container.back();
+      }
+
+      template <class ImposedPrimitive, class... Args>
+      inline auto emplace_back_imposed(Args&&... args) {
+        // TODO proper error message
+        static_assert(tmpl::list_contains_v<
+                          typename SimulatorConfig::AdmissibleImposedPrimitives,
+                          ImposedPrimitive> != 0,
+                      " Oh no , not admitted!");
+
+        return emplace_back_imposed_impl<ImposedPrimitive>(
+            std::forward<Args>(args)...);
       }
 
      public:

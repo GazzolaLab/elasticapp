@@ -1,0 +1,205 @@
+* Concepts
+
+
+** Periodic domain
+    - To implement a periodic domain, even more work/customization is necessary.
+    - One approach is to modify the coarse collision, fine collision and response
+    routines to account for the periodicity and do a modulo operation eveywhere
+        - BAD!
+        - Code repeat, domain informatino carried everywhere
+    - The other approach is to create ghost primitives
+    - Strategy
+        - One additional data structure
+            - Type : PrimtiveStorage
+              Name : ghost_primitives_;
+
+        - Delete previous ghost primitives :
+            - Remove ghost primitives from the previous time-step first
+                Foreach PrimitiveType
+                    Iterate over primitive container
+                        grid = get(grid stored in the ghost)
+                        grid->remove(&ghost_primitive);
+                (These are pointer calculations and should be fast)
+            - Delete entries from the PrimitiveStorage
+                - We can be smart here to extract temporal coehrence
+                - Don't blindly delete we can reuse memory in the creation
+                  step
+                - Rather have an index buffer that keeps track of the freshly
+                updated ghosts. If the index runs past the sizeof(PrimitiveStorage)
+                then its time to push back a new entry, else reuse the same entries
+                as before.
+
+
+        - Update/add all "alive" primitive types to the grid cells.
+
+        - Create new ghost primitives
+        Iterate over grid
+            Foreach PrimitiveType
+                Iterate over occupied-cell list in primitive
+                    If cell is a "border" cells at [x == 0, x == Lx - 1]^3,
+                        Iterate over its CellPrimitives (of PrimitiveType)
+                            1. Create ghost primitives for every "live" primitive and add to
+                            the ghost_primitives_buffer
+                                - Careful in parallel when pushing back to the primitive
+                                buffer!
+                            !!!!!!!!!!! Depends on the ghosting strategy !!!!!!!! (see below)
+                            2. The number of ghosts can be upto 3 depending on whether
+                            the cell is in the corner (3), edge (2) or face (1), i.e one for
+                            each direction.
+                            3. For these ghost primitives
+                                - Set grid to current grid
+                                - Reuse previous time-steps ghosts and copy everything from "live"
+                                    - This can be painful given that the CopyConstructor and CopyAssigment is deleted
+                                - Update the AABB and position properly!
+                                - IMPORTANT : copy the live's ids too (for all practical purposes these things are the same as the source object is the same)
+                                - Set hash to parent's hash (hash doesn't change because its a geometric hash, ASSERT just in case)
+
+                4 Add to grid, to cell's CellPrimitives
+                    - Because we need to be careful when iterating over the structre and "adding" to it
+                    We do this in a separae step
+                    - Need to also update the count of primitive types in every grid
+                      given that the transfer buffer depends on it's size
+                        - We can use grid->add() but careful about the enlarging ratio and calculation of hash again
+                            - Refactor to two functinos:
+                                - Unsafe add
+                                    - gets hash from primitive
+                                    - adds to cell
+                                    - raises primitive index
+                                - add
+                                    - Checks for enlargement
+                                    - Calculates hash
+                                    - Calls unsafe add
+
+        - Finally do normal contact detection. This should work even for ghosts
+        created in the smaller grids with actual objects from the larger grids
+
+    - Ghosting Strategy
+        - We can have one of two strategies
+            - All "border" cells create ghosts
+                - This strategy means that if there are two bodies A and B belonging
+                to border cells at the end of domain
+                    - A's ghost intersects with B
+                    - B's ghost intesects with A
+                - This is fine, as long as we ignore ghost body forces (and don't reduce)
+                - Cost : More costly
+                    - Two ghosts are created
+                    - Two fine collision function calls
+                    - Two response function calls
+            - Only a subset of "borders" create ghosts
+                - i.e. ghosts can only be created from the lower half of a rectangular domain on
+                the faces with negative normals
+                - These ghosts will then be displaced in the positive direction always
+                - This strategy means that if there are two bodies A and B belonging
+                to border cells at the end of domain ( A being on the left end)
+                    - A's ghost intersects with B
+                - Need to reduce A's ghost forces onto A in a post-processing step (similar to parallel)
+                - Cost : less costly in terms of collisoin, but additional function call to reduce
+                - Might not be bad parallely since we need to reduce anyway!
+
+
+    - Impact on detection
+        - A ghost primitive and its "live" primitive can never intersect as the
+        AABB is defined "L: away, so coarse collision returns negative always between these primitives
+        - For a primtive in the same cell as the "live" primitive, all contacts are with live primitives and
+        there should be no difference
+        - For a primitive in the adjacent cell, it only detects positive collision with a ghost given its
+        AABB, so the purpose is served
+        - Fine collision has no issues as well, given the coarse collision doesn't let the improper ghosts through
+        - Response is also safe. Especially if the id types are same (for stictoin)
+        - Reduction after response needed based on strategy
+
+** Implementation and data structures
+
+    - Irrespective of the ghosting strategy employed, we need the additional ghost data structure
+    of PrimtiveStorage type /ghost_primitives_/, both in the contact detector and in the final
+    transfer stage
+
+    - This means we implement this as a member in a policy class like so
+    #+BEGIN_SRC cpp
+    template <typename SimulatorConfig, typename DomainType>
+    struct DomainPolicy;
+
+    template <typename SimulatorConfig>
+    struct DomainPolicy<SimulatorConfig, InfiniteDomain>{
+        // Getter/Setter method here with & and const&
+        // Fill.....
+        // Never used, no op, mark as ununsed
+
+        // Some cheap type, we will have a referene (8 bytes)
+        // to it in the contact detector anyway so that cost
+        // does not matter
+        using GhostPrimitives = void_;
+
+         // Cannot be No op and EBO doesn't apply because
+         // we need a member called ghost_primitives to
+         // pass on as a reference to the contact detector
+        GhostPrimitives ghost_primitives_;
+    };
+
+    template <typename SimulatorConfig>
+    struct DomainPolicy<PeriodicDomain>{
+        // Getter/Setter method here with & and const&
+        // Fill.....
+
+        using GhostPrimitives = typename SimulatorConfig::PrimitiveStorage;
+
+        // Can be delegated to the SolverClass as well, but
+        // increases code repeat
+        GhostPrimitives ghost_primitives_;
+    };
+
+    // Helper
+    template <typename SimulatorConfig>
+    struct DomainPolicyHelper : public DomainPolicy<SimulatorConfig, typename SimulatorConfig::DomainType>
+
+    #+END_SRC
+    - We then use it in DEMSolver
+    #+BEGIN_SRC cpp
+    class CollisionSystem<SimulatorConfig, C<CD, FD, BG, response::DEMSolver>>
+        : public Singleton<CollisionSystem<SimulatorConfig,
+                                           C<CD, FD, BG, response::DEMSolver>>,
+                           logging::Logger>
+                           DomainPolicyHelper<SimulatorConfig>{
+                           // Fill in
+                           }
+
+    #+END_SRC
+
+    - The constructor is modified to pass the ghost_primitives_ as reference to the
+    contact detector
+    - Then we can directly use it in a SFINAE context within the detector and solver class
+    #+BEGIN_SRC cpp
+      ENABLE_IF_PERIODIC
+      resolve_contacts(HeterogenousContainer<CollectionContainers...>& cct,
+                                       TimeType /* time*/){
+
+      // delegate perioidc impl to detector_
+
+
+      // Here transfer the contents of the ghost_primitives also to the
+      // simulation
+      // This needs additional code as we march through the ghosts
+      // use its collection_id and subcollection_id to resolve which rod its a
+      // part of and add its contribution only to that rod
+
+      // Problem : what if more than one system has the same primitive type?
+      // Tagged tuple to the rescue!
+      // Nice.
+      };
+
+      // Infinte version
+      ELSE
+      resolve_contacts(HeterogenousContainer<CollectionContainers...>& cct,
+                                                              TimeType /* time*/){
+
+      };
+    #+END_SRC
+    - We also need to have a Domain object built in to the CCD/ collision system with
+    defaults as -inf, inf
+    - The simulator can have a set domain method (and a stored Domain)
+    which can then propogate this domain information to the final level when `finalize`
+    is called
+    - This domain then is the only thing thats checked when need comes
+    - We should have X::periodic, Y::periodic and Z::periodic and configure the simulatino
+    accordingly, especially for detection
+    - Typetrait to give periodic if at least one is periodic (simple OR gate for example)

@@ -67,7 +67,7 @@ namespace elastica {
     {
       ELASTICA_ASSERT((real_t(1) - sqrLength(normal)) < accuracy,
                       "Invalid contact normal");
-      ELASTICA_ASSERT(!(b1_->is_fixed() && b2_->is_fixed()),
+      ELASTICA_ASSERT(!(b1_->is_fixed() and b2_->is_fixed()),
                       "Invalid contact between two fixed rigid bodies");
 
       // Calculating the relative velocity
@@ -114,7 +114,7 @@ namespace elastica {
       //        b2_->registerContact(this);
 
       // Merging the contact graph
-      if (!b1_->is_fixed() && !b2_->is_fixed())
+      if (!b1_->is_fixed() and !b2_->is_fixed())
         mergeNodes(b1_, b2_);
 
       // Debugging output
@@ -139,11 +139,11 @@ namespace elastica {
         : Parent(g1, g2, gpos, normal, e1, e2,
                  dist)  // Initialization of the parent class
     {
-      ELASTICA_ASSERT((real_t(1) - sqrLength(normal)) < real_t(1E-8),
+      ELASTICA_ASSERT((real_t(1) - sqrLength(normal)) < accuracy, /*real_t(1E-8),*/
                       "Invalid contact normal");
       ELASTICA_ASSERT(sqrLength(e1) > real_t(0), "Invalid colliding edge");
       ELASTICA_ASSERT(sqrLength(e2) > real_t(0), "Invalid colliding edge");
-      ELASTICA_ASSERT(!(Parent::b1_->is_fixed() && Parent::b2_->is_fixed()),
+      ELASTICA_ASSERT(!(Parent::b1_->is_fixed() and Parent::b2_->is_fixed()),
                       "Invalid contact between two fixed rigid bodies");
 
       // Calculating the relative velocity
@@ -183,7 +183,7 @@ namespace elastica {
       //        b2_->registerContact(this);
 
       // Merging the contact graph
-      if (!b1_->is_fixed() && !b2_->is_fixed())
+      if (!b1_->is_fixed() and !b2_->is_fixed())
         mergeNodes(b1_, b2_);
 
       // Debugging output

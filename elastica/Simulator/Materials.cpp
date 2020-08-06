@@ -233,7 +233,7 @@ namespace elastica {
       throw std::invalid_argument("Invalid material density!");
 
     // Checking the coefficient of restitution
-    if (cor < real_t(0) || cor > real_t(1))
+    if (cor < real_t(0) or cor > real_t(1))
       throw std::invalid_argument("Invalid coefficient of restitution!");
 
     // Checking the coefficient of static friction
@@ -245,7 +245,7 @@ namespace elastica {
       throw std::invalid_argument("Invalid coefficient of dynamic friction!");
 
     // Checking the Poisson's ratio
-    if (poisson < real_t(-1) || poisson > real_t(0.5))
+    if (poisson < real_t(-1) or poisson > real_t(0.5))
       throw std::invalid_argument("Invalid Poisson's ratio");
 
     // Checking the Young's modulus
@@ -257,7 +257,7 @@ namespace elastica {
       throw std::invalid_argument("Invalid stiffness");
 
     // Checking the damping coefficients
-    if (dampingN < real_t(0) || dampingT < real_t(0))
+    if (dampingN < real_t(0) or dampingT < real_t(0))
       throw std::invalid_argument("Invalid damping coefficients");
 
     // Registering the new material

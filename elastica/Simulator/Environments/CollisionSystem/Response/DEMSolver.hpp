@@ -102,6 +102,7 @@ namespace elastica {
             elastica::parallel::blocked_range<pointer>(
                 contacts.data(), contacts.data() + contacts.size()),
             force_model_);
+//        std::cout << " Max overlap " << force_model_.get_max_overlap();
         return force_model_.get_max_overlap();
       }
 

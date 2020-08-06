@@ -12,6 +12,8 @@
 #include "elastica/Systems/RigidBodyBase.hpp"
 #include "elastica/Utilities/Math/Trans.hpp"
 
+//#include <iostream>
+
 namespace elastica {
 
   namespace collision {
@@ -96,9 +98,9 @@ namespace elastica {
             // Does a column slice, need to then convert to rows for primitives
             sphere_primitive.transfer(
                 body_collection.get_radius(index),
-                trans(body_collection.get_position(index)),
-                trans(body_collection.get_velocity(index)),
-                trans(body_collection.get_angular_velocity(index)));
+                (body_collection.get_position(index)),
+                (body_collection.get_velocity(index)),
+                (body_collection.get_angular_velocity(index)));
             //            sphere_primitive.radius_ =
             //            body_collection.get_radius(index);
             //            sphere_primitive.gpos_ =
@@ -134,12 +136,17 @@ namespace elastica {
       std::for_each(
           first, last,
           [&sphere_collection, index = 0UL](auto& sphere_primitive) mutable {
-            sphere_collection.get_force(index) += trans(sphere_primitive.get_force());
+            sphere_collection.get_force(index) += (sphere_primitive.get_force());
             sphere_collection.get_torque(index) +=
-                trans(sphere_primitive.get_torque());
+                (sphere_primitive.get_torque());
             ++index;
           });
+
+//      std::cout << "Force : " << sphere_collection.get_force(0UL)[2] << " ";
+//      std::cout << "Velocity: " << sphere_collection.get_velocity(0UL)[2] << " ";
+//      std::cout << "Position: " << sphere_collection.get_position(0UL)[2] << " ";
     }
+
 
   }  // namespace collision
 

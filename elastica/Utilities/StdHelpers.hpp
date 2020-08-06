@@ -97,7 +97,7 @@ constexpr decltype(auto) index_apply_impl(F && f,
 }
 
 template <std::size_t N, class F>
-constexpr auto index_apply(F&& f) {
+constexpr decltype(auto) index_apply(F&& f) {
     return index_apply_impl(std::forward<F>(f), std::make_index_sequence<N>{});
 }
 

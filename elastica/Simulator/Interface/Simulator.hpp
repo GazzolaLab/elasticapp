@@ -11,6 +11,7 @@
 #include "elastica/Utilities/Logging/Logger.hpp"
 #include "elastica/Utilities/Singleton.hpp"
 #include "elastica/Utilities/TypeTraits.hpp"
+#include "elastica/Simulator/Domain/Domain.hpp"
 
 namespace elastica {
 
@@ -167,10 +168,10 @@ namespace elastica {
       //      using SystemInterfaceType = typename
       //      AddSystemInterfaceType<T>::type;
 
-//      template <typename ID>
-//      using AddSystemCollectionStorage =
-//          typename SimTraits::template AddSystemStorageType<ID>;
-//
+      //      template <typename ID>
+      //      using AddSystemCollectionStorage =
+      //          typename SimTraits::template AddSystemStorageType<ID>;
+      //
       template <typename SystemCollection>
       using AddSystemCollectionStorageType =
           typename SimTraits::template AddSystemStorageType<SystemCollection>;
@@ -205,6 +206,8 @@ namespace elastica {
       //      using SystemIDCollection =
       //          std::tuple<std::vector<SystemBase*>,
       //                     std::vector<::elastica::rigidbody::Sphere*>>;
+
+      using DomainType = typename SimTraits::DomainType;
 
       // Since this is an internal function, we give a reference and not a const
       // reference So things like environments are allowed to change properties
@@ -283,7 +286,7 @@ namespace elastica {
       }
 
       // TODO : Make private, friends can still access!
-      SizeType dofs(IndexType sys_idx) {
+      SizeType dofs(IndexType /*sys_idx*/) {
         //        if (sys_idx >= systems_.size())
         //          throw std::range_error("System is invalid");
         // return systems_[sys_idx]->dofs();
@@ -369,7 +372,7 @@ namespace elastica {
         return push_back_impl(std::forward<SystemCollection>(system));
 
         //        static_assert(
-        //            std::is_base_of<SystemBase, System>::value ||
+        //            std::is_base_of<SystemBase, System>::value or
         //                          std::is_same<double, System>::value,
         //                      "Cannot add to simulator now boi");
         //        push_back_impl(system.get());
@@ -381,6 +384,37 @@ namespace elastica {
             push_back(std::forward<SystemCollectionsToBeAdded>(system))...);
       }
 
+      template <class SystemCollection, class... Args>
+      inline auto emplace_back_impl(Args&&... args) -> SystemCollection* {
+        auto& system_collection_container =
+            get_system_collection_container<SystemCollection>();
+        system_collection_container.emplace_back(std::forward<Args>(args)...);
+        // return non-owning handle to the System just pushed back
+        return &system_collection_container.back();
+      }
+
+      // Preferred way of doing things
+      template <class SystemCollection, class... Args>
+      inline auto emplace_back(Args&&... args) {
+        static_assert(
+            tmpl::list_contains_v<AdmissibleSystemCollections,
+                                  SystemCollection> != 0,
+            "Cannot add the system to the simulator, as its type"
+            "is not recognized while searching the list of valid systems. "
+            "If this is not an error, consider extending the "
+            "DefaultSimulatorConfiguration to add your "
+            "system\n");
+
+        return emplace_back_impl<SystemCollection>(std::forward<Args>(args)...);
+      }
+
+      // TODO : Emplace multiple
+      //      template <class... SystemCollectionsToBeAdded>
+      //      inline decltype(auto) emplace_back(SystemCollectionsToBeAdded&&...
+      //      system) {
+      //        return std::make_tuple(
+      //            push_back(std::forward<SystemCollectionsToBeAdded>(system))...);
+      //      }
 
       void finalize(TimeType time_v = 0.0) {
         // Travel up the hierarchy and call finalize on all
@@ -403,6 +437,7 @@ namespace elastica {
           // log << "Successfully destroyed the simulation instance";
           //}
 
+          // TODO
           // As we decide to own memory, we need to manually clear
           // the pointers and references
       };

@@ -7,7 +7,7 @@
 #include "elastica/Simulator/Environments/Primitives/RigidBodyPrimitive.hpp"
 #include "elastica/Utilities/Logging.hpp"
 #include "elastica/Utilities/Math/Normalize.hpp"
-#include "elastica/Utilities/Math/SqrLength.hpp"
+#include "elastica/Utilities/Math/Length.hpp"
 #include "elastica/Utilities/Math/Vec3.hpp"
 
 namespace elastica {
@@ -31,7 +31,7 @@ namespace elastica {
           return 0;
         }
 
-        ELASTICA_ASSERT(!b1->is_fixed() || !b2->is_fixed(),
+        ELASTICA_ASSERT(!b1->is_fixed() or !b2->is_fixed(),
                         "Invalid contact between two fixed objects.");
 
         // Global position of contact
@@ -58,7 +58,7 @@ namespace elastica {
 
         // Calculating the tangential force based on the model by Haff and
         // Werner
-        const real_t fTabs(std::min(c->get_tangential_damping() * sqrLength(relVelT),
+        const real_t fTabs(std::min(c->get_tangential_damping() * length(relVelT),
                                     c->get_friction() * fNabs));
         const Vec3 fT(fTabs * normalize(relVelT));
 

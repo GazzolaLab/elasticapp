@@ -17,7 +17,7 @@ namespace elastica {
 
     namespace tags {
 
-      // TODO : protocol adherence to have a type member
+      // TODO : Type trait adherence to have a type member
       // Usage
       struct CollisionDetectionTag {
         template <typename SimulatorConfig>

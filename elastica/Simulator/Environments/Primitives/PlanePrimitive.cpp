@@ -8,6 +8,8 @@
 #include "elastica/Utilities/Math/Infinity.hpp"
 #include "elastica/Utilities/Math/Orthogonal.hpp"
 
+#include <iostream>
+
 namespace elastica {
 
   namespace collision {
@@ -37,7 +39,14 @@ namespace elastica {
         : GeomPrimitive(finite, sid, uid, material), spans_(spans) {
       gpos_ = gpos;
       rot_mat_ = make_orthogonal_bases(normal);
+      std::cout << rot_mat_ << std::endl;
+      std::cout << blaze::row<1UL>(rot_mat_) << std::endl;
+      std::cout << "Spans :" << spans_[0] << " " << spans_[1] << std::endl;
       PlanePrimitive::calculate_bounding_box();
+
+      // For now explicitly set velocities etc. for contact
+      v_ = 0.0;
+      w_ = 0.0;
     }
 
     PlanePrimitive::PlanePrimitive(id_t sid, id_t uid, bool finite,
@@ -57,16 +66,41 @@ namespace elastica {
       PlanePrimitive::calculate_bounding_box();
     }
 
+    // In this case, since we access it ourselves we need to call the
+    // appropriate move constructor including setting the parent variables
+    // Hacky but okay for now
+
+    //    PlanePrimitive::PlanePrimitive(PlanePrimitive&& other) noexcept
+    //        : GeomPrimitive(std::move(other)),
+    //#ifdef ELASTICA_DEBUG
+    //          spans_(make_array<std::tuple_size<Spans>::value>(
+    //              make_signaling_NaN<real_t>()))
+    //#else
+    //          spans_(make_array<std::tuple_size<Spans>::value>(0.0))
+    //#endif
+    //    {
+    //    }
+
     PlanePrimitive::PlanePrimitive(PlanePrimitive&& other) noexcept
-        : GeomPrimitive(std::move(other)),
-#ifdef ELASTICA_DEBUG
-          spans_(make_array<std::tuple_size<Spans>::value>(
-              make_signaling_NaN<real_t>()))
-#else
-          spans_(make_array<std::tuple_size<Spans>::value>(0.0))
-#endif
-    {
+        : GeomPrimitive(other.finite_, other.sid_, other.uid_,
+                        other.material_) {
+      spans_[0UL] = other.spans_[0UL];
+      spans_[1UL] = other.spans_[1UL];
+      gpos_ = other.gpos_;
+      rot_mat_ = other.rot_mat_;
+
+      std::cout << "Spans :" << spans_[0] << " " << spans_[1] << std::endl;
+      std::cout << blaze::row<1UL>(rot_mat_) << std::endl;
+
+      // For now put construction of AABB here
+      PlanePrimitive::calculate_bounding_box();
+
+
+      // For now explicitly set velocities etc.
+      v_ = 0.0;
+      w_ = 0.0;
     }
+
 
     //=================================================================================================
     //
@@ -99,27 +133,27 @@ namespace elastica {
      */
     void PlanePrimitive::calculate_bounding_box() {
       /*
-      aabb_[0] = (normal_[0] < real_t(0) && normal_[1] == real_t(0) &&
+      aabb_[0] = (normal_[0] < real_t(0) and normal_[1] == real_t(0) and
                   normal_[2] == real_t(0))
                      ? (-d_ - contact_threshold)
                      : (-inf);
-      aabb_[1] = (normal_[0] == real_t(0) && normal_[1] < real_t(0) &&
+      aabb_[1] = (normal_[0] == real_t(0) and normal_[1] < real_t(0) and
                   normal_[2] == real_t(0))
                      ? (-d_ - contact_threshold)
                      : (-inf);
-      aabb_[2] = (normal_[0] == real_t(0) && normal_[1] == real_t(0) &&
+      aabb_[2] = (normal_[0] == real_t(0) and normal_[1] == real_t(0) and
                   normal_[2] < real_t(0))
                      ? (-d_ - contact_threshold)
                      : (-inf);
-      aabb_[3] = (normal_[0] > real_t(0) && normal_[1] == real_t(0) &&
+      aabb_[3] = (normal_[0] > real_t(0) and normal_[1] == real_t(0) and
                   normal_[2] == real_t(0))
                      ? (d_ + contact_threshold)
                      : (inf);
-      aabb_[4] = (normal_[0] == real_t(0) && normal_[1] > real_t(0) &&
+      aabb_[4] = (normal_[0] == real_t(0) and normal_[1] > real_t(0) and
                   normal_[2] == real_t(0))
                      ? (d_ + contact_threshold)
                      : (inf);
-      aabb_[5] = (normal_[0] == real_t(0) && normal_[1] == real_t(0) &&
+      aabb_[5] = (normal_[0] == real_t(0) and normal_[1] == real_t(0) and
                   normal_[2] > real_t(0))
                      ? (d_ + contact_threshold)
                      : (inf);

@@ -43,15 +43,17 @@
 //#include <pe/util/NonCopyable.h>
 //#include <pe/util/Types.h>
 
+//#include <iostream>
+
 #include "elastica/Simulator/Environments/CollisionSystem/Batches/ContactTrait.hpp"
 #include "elastica/Simulator/Environments/CollisionSystem/Configuration.hpp"
 #include "elastica/Simulator/Environments/CollisionSystem/ContactType.hpp"
 #include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/ContactTrait.hpp"
 #include "elastica/Simulator/Environments/CollisionSystem/Detection/Fine/ContactTrait.hpp"
-#include "elastica/Simulator/Environments/Primitives/GeomPrimitive.hpp"
-#include "elastica/Simulator/Environments/Primitives/RigidBodyPrimitive.hpp"
 #include "elastica/Simulator/Environments/CollisionSystem/Response/ContactTrait.hpp"
 #include "elastica/Simulator/Environments/CollisionSystem/Types.hpp"
+#include "elastica/Simulator/Environments/Primitives/GeomPrimitive.hpp"
+#include "elastica/Simulator/Environments/Primitives/RigidBodyPrimitive.hpp"
 #include "elastica/Simulator/Thresholds.hpp"
 #include "elastica/Utilities/DefineTypes.h"
 #include "elastica/Utilities/Math/Dot.hpp"
@@ -154,8 +156,8 @@ namespace elastica {
 
       inline real_t get_normal_relative_velocity() const;
       inline const Vec3 get_relative_velocity() const;
-//      real_t get_normalRelAcc() const;
-//      real_t get_normalRelForce() const;
+      //      real_t get_normalRelAcc() const;
+      //      real_t get_normalRelForce() const;
       //@}
       //**********************************************************************************************
 
@@ -254,7 +256,7 @@ namespace elastica {
                            // contact region
           friction_(0.0)   // Coefficient of friction
     {}
-    //*************************************************************************************************
+    //**************************************************************************
 
     //*************************************************************************************************
     /*!\brief ContactBase constructor for an edge/edge contact.
@@ -310,7 +312,15 @@ namespace elastica {
     //*************************************************************************************************
     /*!\brief Destructor for the ContactBase class.
      */
-    inline ContactBase::~ContactBase() {}
+    inline ContactBase::~ContactBase() {
+      /*
+       * One needs to be careful here, and might want to decrement the global
+       * nextContact_ counter, however as it presently stands UINT_MAX can
+       * overflow and becomes 0, so the program is still technically correct
+       * (its not UB : https://stackoverflow.com/a/16188846)
+       */
+
+    }
     //*************************************************************************************************
 
     //=================================================================================================
@@ -330,7 +340,7 @@ namespace elastica {
     //   active.
     //   */
     //  inline bool ContactBase::isActive() const {
-    //    return b1_->isActive() || b2_->isActive();
+    //    return b1_->isActive() or b2_->isActive();
     //  }
     //  //*************************************************************************************************
     //
@@ -355,7 +365,7 @@ namespace elastica {
      * if not.
      */
     inline bool ContactBase::is_contacting(ConstBodyID body) const {
-      return (b1_ == body || b2_ == body);
+      return (b1_ == body or b2_ == body);
     }
     //*************************************************************************************************
 
@@ -466,7 +476,9 @@ namespace elastica {
      *
      * \return Damping coefficient in tangential direction of the contact.
      */
-    inline real_t ContactBase::get_tangential_damping() const { return dampingT_; }
+    inline real_t ContactBase::get_tangential_damping() const {
+      return dampingT_;
+    }
     //*************************************************************************************************
 
     //  //*************************************************************************************************
@@ -538,7 +550,8 @@ namespace elastica {
      * \return The relative velocity.
      */
     inline const Vec3 ContactBase::get_relative_velocity() const {
-      return b1_->velocity_from_world_FOR(gpos_) - b2_->velocity_from_world_FOR(gpos_);
+      return b1_->velocity_from_world_FOR(gpos_) -
+             b2_->velocity_from_world_FOR(gpos_);
     }
     //*************************************************************************************************
 

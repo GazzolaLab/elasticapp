@@ -56,7 +56,7 @@ namespace elastica {
    * \param sphere The sphere to be registered for visualization.
    * \return void
    */
-  void Visualization::add(rigidbody::Sphere* const sphere) {
+  void Visualization::add(rigidbody::Sphere const* const sphere) {
     spheres_.push_back(sphere);
 
     for (auto v : viewer_) {
@@ -71,7 +71,7 @@ namespace elastica {
    * \param bounding_box The bounding box to be registered for visualization.
    * \return void
    */
-  void Visualization::add(AABB* const bounding_box) {
+  void Visualization::add(AABB const* const bounding_box) {
     bounding_boxes_.push_back(bounding_box);
 
     for (auto v : viewer_) {
@@ -92,10 +92,10 @@ namespace elastica {
    * \param sphere The sphere to be deregistered from visualization.
    * \return void
    */
-  void Visualization::remove(rigidbody::Sphere* const sphere) {
+  void Visualization::remove(rigidbody::Sphere const* const sphere) {
     auto pos(std::find(spheres_.begin(), spheres_.end(), sphere));
     ELASTICA_ASSERT(pos != spheres_.end(),
-                       "Sphere is not registered for visualization");
+                    "Sphere is not registered for visualization");
     spheres_.erase(pos);
 
     for (auto v : viewer_) {
@@ -110,8 +110,9 @@ namespace elastica {
    * \param bounding_box The bounding box to be deregistered from visualization.
    * \return void
    */
-  void Visualization::remove(AABB* const bounding_box) {
-    auto pos(std::find(bounding_boxes_.begin(), bounding_boxes_.end(), bounding_box));
+  void Visualization::remove(AABB const* const bounding_box) {
+    auto pos(std::find(bounding_boxes_.begin(), bounding_boxes_.end(),
+                       bounding_box));
     ELASTICA_ASSERT(pos != bounding_boxes_.end(),
                     "Bounding box is not registered for visualization");
     bounding_boxes_.erase(pos);

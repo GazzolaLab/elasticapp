@@ -256,7 +256,7 @@ namespace elastica {
     for (typename Blocks::const_iterator it = blocks_.begin();
          it != blocks_.end(); ++it) {
       // Range check
-      if (toRelease >= it->rawMemory_ &&
+      if (toRelease >= it->rawMemory_ and
           toRelease < it->rawMemory_ + BlockSize) {
         // Alignment check
         const byte* const ptr1(reinterpret_cast<const byte*>(toRelease));
@@ -265,8 +265,8 @@ namespace elastica {
         if ((ptr1 - ptr2) % sizeof(FreeObject) != 0)
           return false;
 
-        // Duplicate free check : if memory to be released is located in the free
-        // pool of the blocks, then there's an issue
+        // Duplicate free check : if memory to be released is located in the
+        // free pool of the blocks, then there's an issue
         FreeObject* ptr(freeList_);
         while (ptr) {
           if (ptr == toRelease)

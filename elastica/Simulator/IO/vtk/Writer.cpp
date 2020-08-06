@@ -583,7 +583,7 @@ namespace elastica {
         const path file(filename.filename());
 
         // Checking the directory and the filename
-        if (!directory.empty() && !exists(directory))
+        if ((not directory.empty()) and (not exists(directory)))
           throw std::runtime_error(
               "Directory for VTK-Ray files does not exist");
         if (file.empty())

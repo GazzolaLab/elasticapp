@@ -842,10 +842,11 @@ namespace elastica {
       : Material("iron", static_cast<real_t>(7.874), static_cast<real_t>(0.5),
                  static_cast<real_t>(0.1), static_cast<real_t>(0.1),
                  static_cast<real_t>(0.24), static_cast<real_t>(200),
-                 static_cast<real_t>(200), static_cast<real_t>(0),
+                 static_cast<real_t>(200), static_cast<real_t>(1e-10),
                  static_cast<real_t>(
-                     0))  // Initialization of the Material base class
+                     1e-10))  // Initialization of the Material base class
   {
+    // Added small dampingN and damping T to prevent division by 0 in inv.
     static_assert(sizeof(Material) == sizeof(Iron), "Not same size");
   }
   //*************************************************************************************************

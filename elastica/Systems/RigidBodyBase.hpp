@@ -2,6 +2,7 @@
 
 #include <blaze/math/DynamicMatrix.h>
 #include <blaze/math/DynamicVector.h>
+#include <iostream>
 #include <utility>
 
 #include "elastica/ErrorHandling/Assert.hpp"
@@ -22,8 +23,8 @@ namespace elastica {
           ::elastica::collision::detection::coarse::BoundingBox<real_t>;
       using AABBCollection = std::vector<AABB>;
       using MaterialIDs = std::vector<MaterialID>;
-      using VectorCollection = blaze::DynamicVector<real_t>;
-      using MatrixCollection = blaze::DynamicMatrix<real_t>;
+      using VectorCollection = blaze::DynamicVector<real_t, blaze::rowVector>;
+      using MatrixCollection = blaze::DynamicMatrix<real_t, blaze::rowMajor>;
 
      protected:
       RigidBodyBase(const VectorCollection& mc, const MatrixCollection& pc,
@@ -154,9 +155,10 @@ namespace elastica {
              const MatrixCollection& vc, VectorCollection rc)
           : Parent(mc, pc, vc), radius_collection_(std::move(rc)) {
         Sphere::calculate_bounding_box();
-        std::printf("initalized a sphere from the const");
+        std::cout << "initalized a sphere from the const" << std::endl;
         // Registering the sphere for visualization
-        //        elastica::Visualization::add(this);
+        // Use for emplace back
+        elastica::Visualization::add(this);
       };
 
       Sphere(Sphere&& other)
@@ -165,6 +167,11 @@ namespace elastica {
         // Registering the sphere for visualization
         // Hacky, as the other constructor is immediately moved from
         // and the reference is lost?
+
+        // This seems to be somewhat brittle, as we explicitly need
+        // to remove the reference of ther other sphere
+        // TODO : New trigger framework without these statics
+        elastica::Visualization::remove(&other);
         elastica::Visualization::add(this);
       }
 
@@ -174,17 +181,17 @@ namespace elastica {
         return position_collection_;
       }
 
-      inline MatrixCollection& kinematic_rates(double time_v) {
+      inline MatrixCollection& kinematic_rates(double /*time_v*/) {
         return velocity_collection_;
       }
 
-      inline MatrixCollection const& kinematic_rates(double time_v) const {
+      inline MatrixCollection const& kinematic_rates(double /*time_v*/) const {
         return velocity_collection_;
       }
 
       inline MatrixCollection& dynamic_states() { return velocity_collection_; }
 
-      inline MatrixCollection& dynamic_rates(double time_v) {
+      inline MatrixCollection& dynamic_rates(double /*time_v*/) {
         // To be constexprified
         for (std::size_t dim = 0UL; dim < 3UL; ++dim) {
           //          blaze::row(acceleration_collection_, dim) =
@@ -231,6 +238,7 @@ namespace elastica {
       };
       VectorCollection radius_collection_;
     };
+
 
   }  // namespace rigidbody
 

@@ -28,11 +28,16 @@
 //*************************************************************************************************
 
 //#include <pe/math/Vector3.h>
-#include <pe/util/Limits.h>
+//#include <pe/util/Limits.h>
 #include <vector>
 
-#include "elastica/Utilities/Math/Vec3.hpp"
+#include "elastica/ErrorHandling/Assert.hpp"
 #include "elastica/Utilities/DefineTypes.h"
+#include "elastica/Utilities/Math/Accuracy.hpp"
+#include "elastica/Utilities/Math/Dot.hpp"
+#include "elastica/Utilities/Math/Normalize.hpp"
+#include "elastica/Utilities/Math/SqrLength.hpp"
+#include "elastica/Utilities/Math/Vec3.hpp"
 
 namespace elastica {
 
@@ -65,12 +70,14 @@ namespace elastica {
           // functions*****************************************************************************
           /*!\name Query functions */
           //@{
-          template <typename Type1, typename Type2>
-          inline real doGJK(Type1 geom1, Type2 geom2, Vec3& normal,
-                            Vec3& contactPoint);
+          template <typename FirstPrimitive, typename SecondPrimitive>
+          inline real_t doGJK(FirstPrimitive& first_primitive,
+                              SecondPrimitive& second_primitive, Vec3& normal,
+                              Vec3& contact_point);
 
-          template <typename Type1, typename Type2>
-          inline bool doGJKcontactThreshold(Type1 geom1, Type2 geom2);
+          template <typename FirstPrimitive, typename SecondPrimitive>
+          inline bool do_contact_threshold(FirstPrimitive& first_primitive,
+                                            SecondPrimitive& second_primitive);
 
           //@}
           //**********************************************************************************************
@@ -79,10 +86,12 @@ namespace elastica {
           // functions*******************************************************************************
           /*!\name Get functions */
           //@{
-          inline const std::vector<Vec3>& getSimplex() const;
-          inline size_t getSimplexSize() const;
-          inline const std::vector<Vec3>& getSupportA() const;
-          inline const std::vector<Vec3>& getSupportB() const;
+          inline const std::vector<Vec3>& getSimplex() const noexcept;
+          inline constexpr std::size_t getSimplexSize() const noexcept;
+          inline constexpr const std::vector<Vec3>& getSupportA()
+              const noexcept;
+          inline constexpr const std::vector<Vec3>& getSupportB()
+              const noexcept;
           //@}
           //**********************************************************************************************
 
@@ -96,9 +105,11 @@ namespace elastica {
           inline bool simplex3(Vec3& d);
           inline bool simplex4(Vec3& d);
 
-          inline bool sameDirection(const Vec3T& vec1, const Vec3& vec2) const;
-          inline bool zeroLengthVector(const Vec3& vec) const;
-          inline real calcDistance(Vec3& normal, Vec3& contactPoint);
+          template <typename Vec3T>
+          inline bool sameDirection(const Vec3T& vec1,
+                                    const Vec3& vec2) const noexcept;
+          inline bool zeroLengthVector(const Vec3& vec) const noexcept;
+          inline real_t calcDistance(Vec3& normal, Vec3& contact_point);
           //@}
           //**********************************************************************************************
 
@@ -130,7 +141,7 @@ namespace elastica {
          */
         inline GJK::GJK()
             : simplex_(4), supportA_(4), supportB_(4), numPoints_(0) {
-          d_ = Vec3(0.0, 0.6, 0.8);  // Vec3(0.0, 3.0, 4.0)/5.0 just start with
+          d_ = Vec3{0.0, 0.6, 0.8};  // Vec3(0.0, 3.0, 4.0)/5.0 just start with
                                      // any vector of length 1
         }
         //*************************************************************************************************
@@ -144,15 +155,18 @@ namespace elastica {
         //*************************************************************************************************
         /*!\brief TODO
          *
-         * returns distance between geom1 and geaom2 or 0.0 if they are
-         * intersecting
+         * returns distance between first_primitive and second_primitive or 0.0
+         * if they are intersecting
          */
-        template <typename Type1, typename Type2>
-        inline real GJK::doGJK(Type1 geom1, Type2 geom2, Vec3& normal,
-                               Vec3& contactPoint) {
+        template <typename FirstPrimitive,   // Type of the first primitive
+                  typename SecondPrimitive>  // Type of the second primitive
+        inline real_t GJK::doGJK(FirstPrimitive& first_primitive,
+                                 SecondPrimitive& second_primitive,
+                                 Vec3& normal, Vec3& contact_point) {
           // Variables
           Vec3 support;  // the current support point
-          real ret;      // return value aka distance between geom1 and geom2
+          real_t ret;  // return value aka distance between first_primitive and
+                       // second_primitive
 
           ////////////////////////////////////////////////////////////////////////
           // Initial initialisation step
@@ -163,17 +177,17 @@ namespace elastica {
 
           // get any first support point
           if (numPoints_ != 0) {
-            d_.normalize();
+            d_ = normalize(d_);
           }
-          supportA_[0] = geom1->support(d_);
-          supportB_[0] = geom2->support(-d_);
+          supportA_[0] = first_primitive.support(d_);
+          supportB_[0] = second_primitive.support(-d_);
           support = supportA_[0] - supportB_[0];
 
           // add this point to the simplex_
           simplex_[0] = support;
           numPoints_ = 1;
 
-          // first real search direction is in the opposite direction of the
+          // first real_t search direction is in the opposite direction of the
           // first support point
           d_ = -support;
 
@@ -192,18 +206,18 @@ namespace elastica {
           // GJK main loop
           while (true) {
             // get the support point in the current search direction
-            d_.normalize();
-            supportA_[numPoints_] = geom1->support(d_);
-            supportB_[numPoints_] = geom2->support(-d_);
+            d_ = normalize(d_);
+            supportA_[numPoints_] = first_primitive.support(d_);
+            supportB_[numPoints_] = second_primitive.support(-d_);
             support = supportA_[numPoints_] - supportB_[numPoints_];
 
             // check if "support" is passed the origin in search direction
-            if (trans(support) * d_ < 0.0) {
+            if (dot(support, d_) < real_t(0.0)) {
               // we went as far as we could in direction 'd' but not passed the
               // origin this means the triangle mashes don't overlap
 
               // calc distance simplex to Origin
-              ret = calcDistance(normal, contactPoint);
+              ret = calcDistance(normal, contact_point);
 
               return ret;
             }
@@ -245,7 +259,7 @@ namespace elastica {
 
               default: {
                 // std::cerr << "numPoints_="<< numPoints_ <<std::endl;
-                pe_INTERNAL_ASSERT(
+                ELASTICA_ASSERT(
                     false, "Number of points in the simplex is not 1<=n<=4");
               } break;
             }
@@ -258,8 +272,11 @@ namespace elastica {
         //*************************************************************************************************
         /*!\brief TODO
          */
-        template <typename Type1, typename Type2>
-        inline bool GJK::doGJKcontactThreshold(Type1 geom1, Type2 geom2) {
+        template <typename FirstPrimitive,   // Type of the first primitive
+                  typename SecondPrimitive>  // Type of the second primitive
+        inline bool GJK::do_contact_threshold(
+            FirstPrimitive& first_primitive,
+            SecondPrimitive& second_primitive) {
           // Variables
           Vec3 support;  // the current support point
 
@@ -271,17 +288,17 @@ namespace elastica {
 
           // get any first support point
           if (numPoints_ != 0) {
-            d_.normalize();
+            d_ = normalize(d_);
           }
-          supportA_[0] = geom1->supportContactThreshold(d_);
-          supportB_[0] = geom2->supportContactThreshold(-d_);
+          supportA_[0] = first_primitive.supportContactThreshold(d_);
+          supportB_[0] = second_primitive.supportContactThreshold(-d_);
           support = supportA_[0] - supportB_[0];
 
           // add this point to the simplex_
           simplex_[0] = support;
           numPoints_ = 1;
 
-          // first real search direction is in the opposite direction of the
+          // first real_t search direction is in the opposite direction of the
           // first support point
           d_ = -support;
 
@@ -300,13 +317,14 @@ namespace elastica {
           // GJK main loop
           while (true) {
             // get the support point in the current search direction
-            d_.normalize();
-            supportA_[numPoints_] = geom1->supportContactThreshold(d_);
-            supportB_[numPoints_] = geom2->supportContactThreshold(-d_);
+            d_ = normalize(d_);
+            supportA_[numPoints_] = first_primitive.supportContactThreshold(d_);
+            supportB_[numPoints_] =
+                second_primitive.supportContactThreshold(-d_);
             support = supportA_[numPoints_] - supportB_[numPoints_];
 
             // check if "support" is passed the origin in search direction
-            if (trans(support) * d_ < 0.0) {
+            if (dot(support, d_) < real_t(0.0)) {
               // we went as far as we could in direction 'd' but not passed the
               // origin this means the triangle mashes don't overlap and as the
               // support()-function extends the support point by
@@ -352,32 +370,13 @@ namespace elastica {
 
               default: {
                 // std::cerr << "numPoints_="<< numPoints_ <<std::endl;
-                pe_INTERNAL_ASSERT(
+                ELASTICA_ASSERT(
                     false, "Number of points in the simplex is not 1<=n<=4");
               } break;
             }
           }
 
           return false;  // never reach this point
-        }
-        //*************************************************************************************************
-
-        //*************************************************************************************************
-        /*!\brief TODO
-         */
-        inline bool GJK::doGJKcontactThreshold(TriangleMeshID mA,
-                                               TriangleMeshID mB) {
-          return doGJKcontactThreshold<TriangleMeshID, TriangleMeshID>(mA, mB);
-        }
-        //*************************************************************************************************
-
-        //*************************************************************************************************
-        /*!\brief TODO
-         */
-        template <typename Type>  // ID-Type of the geometry which is not a
-                                  // triangle mesh
-        inline bool GJK::doGJKcontactThreshold(Type geom, TriangleMeshID mesh) {
-          return doGJKcontactThreshold<Type, TriangleMeshID>(geom, mesh);
         }
         //*************************************************************************************************
 
@@ -390,7 +389,7 @@ namespace elastica {
         //*************************************************************************************************
         /*!\brief TODO
          */
-        inline const std::vector<Vec3>& GJK::getSimplex() const {
+        inline const std::vector<Vec3>& GJK::getSimplex() const noexcept {
           return simplex_;
         }
         //*************************************************************************************************
@@ -398,13 +397,16 @@ namespace elastica {
         //*************************************************************************************************
         /*!\brief TODO
          */
-        inline size_t GJK::getSimplexSize() const { return numPoints_; }
+        inline constexpr std::size_t GJK::getSimplexSize() const noexcept {
+          return numPoints_;
+        }
         //*************************************************************************************************
 
         //*************************************************************************************************
         /*!\brief TODO
          */
-        inline const std::vector<Vec3>& GJK::getSupportA() const {
+        inline constexpr const std::vector<Vec3>& GJK::getSupportA()
+            const noexcept {
           return supportA_;
         }
         //*************************************************************************************************
@@ -412,7 +414,8 @@ namespace elastica {
         //*************************************************************************************************
         /*!\brief TODO
          */
-        inline const std::vector<Vec3>& GJK::getSupportB() const {
+        inline constexpr const std::vector<Vec3>& GJK::getSupportB()
+            const noexcept {
           return supportB_;
         }
         //*************************************************************************************************
@@ -427,19 +430,27 @@ namespace elastica {
         /*!\brief TODO
          */
         inline bool GJK::simplex2(Vec3& d) {
-          // the simplex is a line
-          const Vec3& A = simplex_[1];  // The Point last added to the simplex
-          const Vec3& B =
-              simplex_[0];     // The Point that was already in the simplex
+          // The simplex is a line
+
+          // The Point last added to the simplex
+          const Vec3& A = simplex_[1];
+          // The Point that was already in the simplex
+          const Vec3& B = simplex_[0];
           const Vec3 AO = -A;  // The vector A->O with 0 the origin
-          const Vec3T AOt =
-              trans(AO);  // The transposed vector A->O with O the origin
+          // The transposed vector A->O with O the origin
+          const auto AOt = trans(AO);
           const Vec3 AB = B - A;  // The vector A->B
 
           if (sameDirection(AOt, AB)) {
             // The origin O is in the same direction as B is so the line AB is
             // closest to the origin
+            // aka O lies in the voronoi region of edge AB
             //=> keep A and B in the simplex
+
+            // In general (a x b) x c \neq a x (b x c) as seen below
+            // https://wikimedia.org/api/rest_v1/media/math/render/svg/021dc51c36f9318dbc7e248194f939addecc6d75
+            // in this special case however both are the same and we leave it
+            // to the compiler to decide the more optimal one for speed
             d = AB % AO % AB;
           } else {
             // The origin is not in the direction of B seen from A.
@@ -455,7 +466,7 @@ namespace elastica {
           // if the new search direction has zero length
           // than the origin is on the simplex
           if (zeroLengthVector(d)) {
-            d_ = Vec3(0.0, 0.6, 0.8);  // give the GJK a chance to rerun
+            d_ = Vec3{0.0, 0.6, 0.8};  // give the GJK a chance to rerun
             return true;
           }
           return false;
@@ -466,17 +477,21 @@ namespace elastica {
         /*!\brief TODO
          */
         inline bool GJK::simplex3(Vec3& d) {
-          // the simplex is a triangle
-          const Vec3& A = simplex_[2];  // The Point last added to the simplex
-          const Vec3& B =
-              simplex_[1];  // One Point that was already in the simplex
-          const Vec3& C =
-              simplex_[0];  // One Point that was already in the simplex
-          // ABC is a conterclockwise triangle
+          // The simplex is a triangle
 
-          const Vec3 AO = -A;  // The vector A->O with 0 the origin
-          const Vec3T AOt =
-              trans(AO);  // The transposed vector A->O with O the origin
+          // The Point last added to the simplex
+          const Vec3& A = simplex_[2];
+          // One Point that was already in the simplex
+          const Vec3& B = simplex_[1];
+          // One Point that was already in the simplex
+          const Vec3& C = simplex_[0];
+
+          // ABC is a conter-clockwise triangle
+
+          // The vector A->O with 0 the origin
+          const Vec3 AO = -A;
+          // The transposed vector A->O with O the origin
+          const auto AOt = trans(AO);
           const Vec3 AB = B - A;     // The vector A->B
           const Vec3 AC = C - A;     // The vector A->C
           const Vec3 ABC = AB % AC;  // The the normal pointing towards the
@@ -484,7 +499,7 @@ namespace elastica {
 
           if (sameDirection(AOt, (AB % ABC))) {
             // Origin is on the outside of the triangle of the line AB
-            if (AOt * AB > 0.0) {
+            if (dot(AOt, AB) > 0.0) {
               // Origin in the voronoi region of AB outside the triangle
               //=> AB is the new simplex
               simplex_[0] = B;  // aka simplex_[1]
@@ -497,7 +512,7 @@ namespace elastica {
               d = AB % AO % AB;
 
             } else {
-              // STAR
+              // STAR case in Casey's videos
               if (sameDirection(AOt, AC)) {
                 // Origin is on a subspace of the voronio region of AC
                 //=> AC is the new simplex
@@ -508,7 +523,7 @@ namespace elastica {
                 numPoints_ = 2;
                 d = AC % AO % AC;
               } else {
-                // Origin is in the voronio region of A
+                // Origin is in the voronoi region of A
                 //=> A is the new simplex
                 simplex_[0] = A;  // aka simplex_[2]
                 supportA_[0] = supportA_[2];
@@ -520,8 +535,8 @@ namespace elastica {
           } else {
             if (sameDirection(AOt, (ABC % AC))) {
               // Origin is on the outside of the triangle of the line AC
-              // STAR
-              if (AOt * AC > 0.0) {
+              // STAR case in Casey's videos
+              if (dot(AOt, AC) > 0.0) {
                 // Origin is on a subspace of the voronio region of AC
                 //=> AC is the new simplex
                 // simplex_[0] = C; //aka simplex_[0] already there
@@ -552,9 +567,13 @@ namespace elastica {
                   // Origin is below the triangle
                   //=>Keep triangle as simplex.
                   // seen from the origin ABC is CW so change the winding
+                  // From ABC -> ACB, swap C and B across data structures
+
+                  /*
                   Vec3 temp = B;    // aka simplex_[1]
                   simplex_[1] = C;  // aka simplex_[0]
                   simplex_[0] = temp;
+
                   // simplex_[2] = A; //aka simplex_[2] already there
                   // old simplex 2:A 1:B 0:C
                   // simplex now contains 2:A 1:C 0:B
@@ -565,10 +584,16 @@ namespace elastica {
                   temp = supportB_[1];
                   supportB_[1] = supportB_[0];
                   supportB_[0] = temp;
+                   */
+
+                  using std::swap;
+                  swap(simplex_[1], simplex_[0]);
+                  swap(supportA_[1], supportA_[0]);
+                  swap(supportB_[1], supportB_[0]);
 
                   d = -ABC;
                 } else {
-                  // Origin lies in the triangle
+                  // Origin lies in the triangle plane
                   return true;
                 }
               }
@@ -578,7 +603,7 @@ namespace elastica {
           // if the new search direction has zero length
           // than the origin is on the boundary of the simplex
           if (zeroLengthVector(d)) {
-            d_ = Vec3(0.0, 0.6, 0.8);  // give the GJK a chance to rerun
+            d_ = Vec3{0.0, 0.6, 0.8};  // give the GJK a chance to rerun
             return true;
           }
           return false;
@@ -589,47 +614,77 @@ namespace elastica {
         /*!\brief TODO
          */
         inline bool GJK::simplex4(Vec3& d) {
-          // the simplex is a tetrahedron
-          const Vec3& A =
-              simplex_[3];  // The Point last added to the tetrahedron
-          // t in front mens just a temp varialble
-          const Vec3& B =
-              simplex_[2];  // One Point that was already in the simplex
-          const Vec3& C =
-              simplex_[1];  // One Point that was already in the simplex
-          const Vec3& D = simplex_[0];
-          // BCD is a clockwise triangle wenn seen from A
+          // The simplex is a tetrahedron
+          // Three new edges + Three new faces + inside
 
-          const Vec3 AO = -A;  // The vector A->O with 0 the origin
-          const Vec3T AOt =
-              trans(AO);  // The transposed vector A->O with O the origin
-          const Vec3 AB = B - A;  // The vector A->B
-          const Vec3 AC = C - A;  // The vector A->C
-          const Vec3 AD = D - A;  // The vector A-D
+          /*
+           * 1. Check if in front of planes to reject max number of
+           * possibilities
+           * 2. If behind all faces, only possibility is to lie inside the tet,
+           * we're done
+           * 3. If in front of one plane, consider only it and its edges =>
+           * Triangle case!
+           * 4. If in front of two planes, consider both the planes and all its
+           * edges (ie. 2 planes, 3 edges => 5 possibilities)
+           * 5. If in front of all planes, simplex is very degenerate (probably
+           * along the line joining the center of BCD and the line A, in which
+           * case we check only the edges and point A
+           */
+
+          // The Point last added to the tetrahedron
+          const Vec3& A = simplex_[3];
+          // t in front mens just a temp varialble
+          // One Point that was already in the simplex
+          const Vec3& B = simplex_[2];
+          // One Point that was already in the simplex
+          const Vec3& C = simplex_[1];
+          const Vec3& D = simplex_[0];
+
+          // BCD is a clockwise triangle when seen from A
+
+          // The vector A->O with 0 the origin
+          const Vec3 AO = -A;
+          // The transposed vector A->O with O the origin
+          const auto AOt = trans(AO);
+          // The vector A->B
+          const Vec3 AB = B - A;
+          // The vector A->C
+          const Vec3 AC = C - A;
+          // The vector A-D
+          const Vec3 AD = D - A;
 
           // https://mollyrocket.com/forums/viewtopic.php?p=1829#1829
           unsigned char testWhere = 0;
 
-          const Vec3 ABC =
-              AB % AC;  // The the normal pointing out of the tetrahedron
-                        // towards the viewer if he sees a CCW triangle ABC
-          const Vec3 ACD =
-              AC % AD;  // The the normal pointing out of the tetrahedron
-                        // towards the viewer if he sees a CCW triangle ACD
-          const Vec3 ADB =
-              AD % AB;  // The the normal pointing out of the tetrahedron
-                        // towards the viewer if he sees a CCW triangle ADB
+          // The the normal pointing out of the tetrahedron
+          // towards the viewer if he sees a CCW triangle ABC
+          const Vec3 ABC = AB % AC;
+
+          // The the normal pointing out of the tetrahedron
+          // towards the viewer if he sees a CCW triangle ACD
+          const Vec3 ACD = AC % AD;
+
+          // The the normal pointing out of the tetrahedron
+          // towards the viewer if he sees a CCW triangle ADB
+          const Vec3 ADB = AD % AB;
+
+          constexpr unsigned char overABC = 0x1;
+          constexpr unsigned char overACD = 0x2;
+          constexpr unsigned char overADB = 0x4;
 
           if (sameDirection(AOt, ABC)) {
-            testWhere |= 0x1;
+            // set the first bit of testWhere to 1:
+            testWhere |= overABC;
           }
 
           if (sameDirection(AOt, ACD)) {
-            testWhere |= 0x2;
+            // set the second bit of testWhere to 1:
+            testWhere |= overACD;
           }
 
           if (sameDirection(AOt, ADB)) {
-            testWhere |= 0x4;
+            // set the third bit of testWhere to 1:
+            testWhere |= overADB;
           }
 
           switch (testWhere) {
@@ -641,10 +696,11 @@ namespace elastica {
               return true;
             } break;
 
-            case 1: {
+            case overABC: {
               // In front of ABC only
               // Origin is outside the tetrahedron above ABC
               //=> rearrange simplex to use the triangle case
+              // while chucking D out
               simplex_[0] = C;  // aka simplex_[1] 0:C
               simplex_[1] = B;  // aka simplex_[2] 1:B
               simplex_[2] = A;  // aka simplex_[3] 2:A
@@ -661,10 +717,12 @@ namespace elastica {
               return simplex3(d);
             } break;
 
-            case 2: {
+            case overACD: {
               // In front of ACD only
               // Origin is outside the tetrahedron above ACD
               //=> rearrange simplex to use the triangle case
+              // while chucking B out
+
               // simplex_[0] = D; //aka simplex_[0] 0:D already the case
               // simplex_[1] = C; //aka simplex_[1] 1:C already the case
               simplex_[2] = A;  // aka simplex_[3] 2:A
@@ -677,10 +735,14 @@ namespace elastica {
               return simplex3(d);
             } break;
 
-            case 4: {
+            case overADB: {
               // In front of ADB only
               // Origin is outside the tetrahedron above ADB
               //=> rearrange simplex to use the triangle case
+              // while chucking C out
+              // The origin however sees a CW winded triangle
+              // ABD, so we change the winding to make it ADB
+              // by swapping D and B
               simplex_[1] = D;  // aka simplex_[0] 1:D
               simplex_[0] = B;  // aka simplex_[2] 0:B already there
               simplex_[2] = A;  // aka simplex_[3] 2:A
@@ -697,10 +759,24 @@ namespace elastica {
               return simplex3(d);
             } break;
 
-            case 3: {
+            case (overABC | overACD): {
               // In front of ABC and ACD
+
+              // Can be in the voronoi regino of the edge AC
+              // point
+
               if (sameDirection(AOt, ABC % AC)) {
+                // Origin is beyond AC from ABC's persepective
+                // That means it cannot lie in the voronoi
+                // region corresponding to face ABC
+                // hence check only for face ACD, edge AC,
+                // edge AD or point A
+
                 if (sameDirection(AOt, AC % ACD)) {
+                  // Origin is beyond AC from ACD's perspective
+                  // so it cannot lie in the voronoi regino of
+                  // ACD, so check only edge AC or point A,
+
                   if (sameDirection(AOt, AC)) {
                     // AddEdgeSimplex(A, C);
                     simplex_[0] = C;  // aka simplex_[1] 0:C
@@ -724,6 +800,11 @@ namespace elastica {
                     d = AO;
                   }
                 } else {
+                  // Origin is not beyond AC from ACD's perspective
+                  // so it can lie in the voronoi region of ACD or
+                  // in the edge AD
+                  // so check edge AD or face ACD,
+
                   if (sameDirection(AOt, ACD % AD)) {
                     // AddEdgeSimplex(A, D);
                     // simplex_[0] = D; //aka simplex_[0] 0:D already there
@@ -748,7 +829,15 @@ namespace elastica {
                   }
                 }
               } else {
+                // Origin is not beyond AC from ABC's persepective
+                // That means it can lie in the voronoi
+                // region corresponding to face ABC or even edge AB
+                // or point A
+
                 if (sameDirection(AOt, AB % ABC)) {
+                  // Origin beyond AB from ABC's perspective
+                  // the only possible cases are edge AB and point A
+
                   if (sameDirection(AOt, AB)) {
                     // AddEdgeSimplex(A, B);
                     simplex_[0] = B;  // aka simplex_[2] 0:B
@@ -772,6 +861,9 @@ namespace elastica {
                     d = AO;
                   }
                 } else {
+                  // Origin not beyond AB from ABC's perspective
+                  // so add face ABC
+
                   // AddTriangleSimplex(A, B, C);
                   simplex_[0] = C;  // aka simplex_[1] 0:C
                   simplex_[1] = B;  // aka simplex_[2] 1:B
@@ -790,7 +882,8 @@ namespace elastica {
               }
             } break;
 
-            case 5: {
+              // If one understands the case above, this is very similar
+            case (overABC | overADB): {
               // In front of ADB and ABC
               if (sameDirection(AOt, ADB % AB)) {
                 if (sameDirection(AOt, AB % ABC)) {
@@ -870,6 +963,7 @@ namespace elastica {
                   }
                 } else {
                   // AddTriangleSimplex(A, D, B);
+                  // Rewind as seen from origin => swap D and B position
                   simplex_[1] = D;  // aka simplex[0] 1:D
                   simplex_[0] = B;  // aka simplex[2] 0:B
                   simplex_[2] = A;  // aka simplex[3] 2:A
@@ -889,7 +983,7 @@ namespace elastica {
               }
             } break;
 
-            case 6: {
+            case (overACD | overADB): {
               // In front of ACD and ADB
               if (sameDirection(AOt, ACD % AD)) {
                 if (sameDirection(AOt, AD % ADB)) {
@@ -984,7 +1078,7 @@ namespace elastica {
               }
             } break;
 
-            case 7: {
+            case (overABC | overACD | overADB): {
               // In front of ABC, ACD and ADB
               if (sameDirection(AOt, AB)) {
                 simplex_[0] = B;  // aka simplex_[2] 0:B
@@ -1044,11 +1138,12 @@ namespace elastica {
         //*************************************************************************************************
         /*!\brief TODO
          *
-         * Checks if tow vectors roughly point in the same direction
+         * Checks if two vectors roughly point in the same direction
          */
+        template <typename Vec3T>
         inline bool GJK::sameDirection(const Vec3T& vec1,
-                                       const Vec3& vec2) const {
-          return vec1 * vec2 > real(0.0);
+                                       const Vec3& vec2) const noexcept {
+          return dot(vec1, vec2) > real_t(0.0);
         }
         //*************************************************************************************************
 
@@ -1058,23 +1153,24 @@ namespace elastica {
          * Checks if the length of a vector is zero or as close to zero that it
          * can not be distinguished form zero
          */
-        inline bool GJK::zeroLengthVector(const Vec3& vec) const {
-          return vec.sqrLength() < Limits<real>::fpuAccuracy();
+        inline bool GJK::zeroLengthVector(const Vec3& vec) const noexcept {
+          //          return vec.sqrLength() < Limits<real_t>::fpuAccuracy();
+          return sqrLength(vec) < accuracy;
         }
         //*************************************************************************************************
 
         //*************************************************************************************************
         /*!\brief TODO
          */
-        inline real GJK::calcDistance(Vec3& normal, Vec3& contactPoint) {
+        inline real_t GJK::calcDistance(Vec3& normal, Vec3& contact_point) {
           // find the point in the simplex closest to the origin#
           // its distance to the origin is the distance of the two objects
-          double dist = 0.0;
+          real_t dist_squared = 0.0;
 
-          double barCoords[3] = {0.0, 0.0, 0.0};
-          double& u = barCoords[0];
-          double& v = barCoords[1];
-          double& w = barCoords[2];
+          real_t barCoords[3] = {0.0, 0.0, 0.0};
+          real_t& u = barCoords[0];
+          real_t& v = barCoords[1];
+          real_t& w = barCoords[2];
 
           Vec3& A = simplex_[0];
           Vec3& B = simplex_[1];
@@ -1083,7 +1179,7 @@ namespace elastica {
           switch (numPoints_) {
             case 1: {
               // the only point in simplex is closest to Origin
-              dist = A.sqrLength();
+              dist_squared = sqrLength(A);
               u = 1.0;
               break;
             }
@@ -1102,8 +1198,8 @@ namespace elastica {
               // compare "Real-Time Collision Detection" by Christer Ericson
               // page 129
               // double t = trans(ac)*ab;
-              double t = -1.0 * trans(A) * ab;
-              double denom = ab.sqrLength();
+              real_t t = -dot(A, ab);
+              real_t denom = sqrLength(ab);
               u = t / denom;
               v = 1.0 - u;
 
@@ -1112,7 +1208,7 @@ namespace elastica {
               // double& e = t;
               // double& f = denom;
               // dist = ac.sqrLength() -  e*e/f;
-              dist = A.sqrLength() - t * u;
+              dist_squared = sqrLength(A) - t * u;
 
               break;
             }
@@ -1122,46 +1218,48 @@ namespace elastica {
               // to be more precise it is also in normal direction.
               // compare "Real-Time Collision Detection" by Christer Ericson
               // page 139
-              // TODO: evlt kann man das berechnen ohne den projektionspunkt zu
-              // bestimmen
 
               // Vec3 ab= B - A;
               // Vec3 ac= C - A;
               // Vec3 bc= C - B;
               Vec3& n = d_;  // we already know the normal
-              Vec3T nT = trans(n);
+              auto nT = trans(n);
 
-              double vc = nT * (A % B);
-              double va = nT * (B % C);
-              double vb = nT * (C % A);
-              double denom = 1.0 / (va + vb + vc);
+              real_t vc = dot(nT, (A % B));
+              real_t va = dot(nT, (B % C));
+              real_t vb = dot(nT, (C % A));
+              real_t denom = 1.0 / (va + vb + vc);
               u = va * denom;
               v = vb * denom;
               w = 1.0 - u - v;
 
               Vec3 closestPoint = u * A + v * B + w * C;
-              dist = closestPoint.sqrLength();
+              dist_squared = sqrLength(closestPoint);
 
               break;
             }
             default: {
-              std::cout << "falsche anzahl an Punkten im simplex WTF"
-                        << std::endl;
+              // Source to source translation!
+              std::cout << "wrong number of points in the simplex" << std::endl;
               break;
             }
           }
 
-          Vec3 pointOnA = u * supportA_[0];
-          Vec3 pointOnB = u * supportB_[0];
-          for (int i = 1; i < numPoints_; ++i) {
+          Vec3 pointOnA(u * supportA_[0]);
+          Vec3 pointOnB(u * supportB_[0]);
+          for (unsigned short i = 1; i < numPoints_; ++i) {
             pointOnA += barCoords[i] * supportA_[i];
             pointOnB += barCoords[i] * supportB_[i];
           }
 
-          normal = (pointOnA - pointOnB).getNormalized();
-          contactPoint = (pointOnA + pointOnB) * 0.5;
+          normal = normalize(pointOnA - pointOnB);
+          contact_point = (pointOnA + pointOnB) * 0.5;
 
-          return dist;
+          // Note : while one needs to return the std::sqrt() of this guy,
+          // in practice we use EPA to find the exact distance and hence
+          // this is usually a upper bound (?!) to the actual distance,
+          // which means we can ignore the sqrt here for performance
+          return (dist_squared);
         }
         //*************************************************************************************************
 
