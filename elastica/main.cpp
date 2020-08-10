@@ -85,13 +85,14 @@ int main(int argc, char* argv[]) {
 #include <iomanip>
 
 #include "LocalSystems.hpp"
+#include "Systems/RigidBody/RigidBodyCollection.hpp"
+#include "Systems/RigidBody/SphereCollection.hpp"
 #include "elastica/Simulator/Environments.hpp"
 #include "elastica/Simulator/IO/csv.hpp"
 #include "elastica/Simulator/IO/vtk.hpp"
 #include "elastica/Simulator/Simulator.hpp"
 #include "elastica/Simulator/Trigger.hpp"
 #include "elastica/Simulator/Visualization.hpp"
-#include "elastica/Systems/RigidBodyBase.hpp"
 #include "elastica/Time/integrate.hpp"
 #include "elastica/Time/symplectic.hpp"
 #include "elastica/Utilities/DefineTypes.h"
@@ -202,7 +203,7 @@ int main(int argc, char* argv[]) {
       VT new_mass(mass);
       MT new_velocities(velocities);
       VT new_radius(radius);
-      sim->emplace_back<elastica::rigidbody::Sphere>(
+      sim->emplace_back<elastica::SphereCollection>(
           new_mass, new_positions, new_velocities, new_radius);
     }
 
@@ -211,7 +212,7 @@ int main(int argc, char* argv[]) {
       VT new_mass = mass + 0.0;
       MT new_velocities = velocities + 0.0;
       VT new_radius = radius + 0.0;
-      sim->emplace_back<elastica::rigidbody::Sphere>(
+      sim->emplace_back<elastica::SphereCollection>(
           new_mass, new_positions, new_velocities, new_radius);
     }
 
@@ -257,7 +258,7 @@ int main(int argc, char* argv[]) {
     VT mass = Material::getDensity(iron) * 4.0 / 3.0 * M_PI * radius * radius *
               radius;
     // Make spheres
-    sim->emplace_back<elastica::rigidbody::Sphere>(mass, positions, velocities,
+    sim->emplace_back<elastica::SphereCollection>(mass, positions, velocities,
                                                    radius);
 
     // Plane charaacteristics
@@ -294,14 +295,14 @@ int main(int argc, char* argv[]) {
    */
 
   //  auto sphere_collection =
-  //      std::make_shared<elastica::rigidbody::Sphere>(mass, positions,
+  //      std::make_shared<elastica::SphereCollection>(mass, positions,
   //      velocities, radius);
   //  sim->push_back<Sphere>(sphere_collection);
 
   //  std::size_t n_collections(5UL);
   //  for (std::size_t i_c = 0UL; i_c < n_collections; ++i_c) {
   //    MT new_positions(positions + i_c * 0.2);
-  //    sim->push_back(std::move(*new elastica::rigidbody::Sphere(
+  //    sim->push_back(std::move(*new elastica::SphereCollection(
   //        mass, new_positions, velocities, radius)));
   //  }
   //
@@ -311,7 +312,7 @@ int main(int argc, char* argv[]) {
     VT new_mass(mass);
     MT new_velocities(velocities);
     VT new_radius(radius);
-    auto* sphere_collection = new elastica::rigidbody::Sphere(
+    auto* sphere_collection = new elastica::SphereCollection(
         new_mass, new_positions, new_velocities, new_radius);
     sim->push_back(std::move(*sphere_collection));
     delete sphere_collection;
@@ -319,7 +320,7 @@ int main(int argc, char* argv[]) {
 
   /*{
     MT new_positions(positions);
-    auto* sphere_collection = new elastica::rigidbody::Sphere(
+    auto* sphere_collection = new elastica::SphereCollection(
         mass, new_positions, velocities, radius);
     sim->push_back(std::move(*sphere_collection));
     delete sphere_collection;

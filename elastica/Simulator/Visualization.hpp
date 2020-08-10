@@ -9,16 +9,14 @@
 
 namespace elastica {
 
-  namespace rigidbody {
-    class Sphere;
-  }
+  class SphereCollection;
 
   class Visualization : public Trigger {
    protected:
     //**Type definitions********************************************************
     using Viewer =
         std::vector<Visualization*>;  //!< Container for active viewers.
-    using Spheres = std::vector<rigidbody::Sphere const*>;  //!< Container for
+    using Spheres = std::vector<SphereCollection const*>;  //!< Container for
                                                             //!< active spheres.
     using AABB = ::elastica::collision::detection::coarse::BoundingBox<real_t>;
     using BoundingBoxes =
@@ -28,7 +26,7 @@ namespace elastica {
     //**Registration functions**************************************************
     /*!\name Registration functions */
     //@{
-    static void add(rigidbody::Sphere const* sphere);
+    static void add(SphereCollection const* sphere);
     static void add(AABB const* bounding_box);
     //@}
     //**************************************************************************
@@ -36,7 +34,7 @@ namespace elastica {
     //**Deregistration functions************************************************
     /*!\name Deregistration functions */
     //@{
-    static void remove(rigidbody::Sphere const* sphere);
+    static void remove(SphereCollection const* sphere);
     static void remove(AABB const* bounding_box);
     //@}
 
@@ -58,14 +56,14 @@ namespace elastica {
     //**Add functions***********************************************************
     /*!\name Add functions */
     //@{
-    virtual void add_sphere(rigidbody::Sphere const* sphere) = 0;
+    virtual void add_sphere(SphereCollection const* sphere) = 0;
     virtual void add_bounding_box(AABB const* bounding_box) = 0;
     //@}
 
     //**Remove functions********************************************************
     /*!\name Remove functions */
     //@{
-    virtual void remove_sphere(rigidbody::Sphere const* sphere) = 0;
+    virtual void remove_sphere(SphereCollection const* sphere) = 0;
     virtual void remove_bounding_box(AABB const* bounding_box) = 0;
     //@}
     //@}

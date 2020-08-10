@@ -17,7 +17,7 @@
 #include "Simulator/Environments/CollisionSystem/Response/DEMForces/TypeTraits.hpp"
 #include "Simulator/Environments/CollisionSystem/Response/DEMSolver.hpp"
 #include "Simulator/Environments/CollisionSystem/Tags.hpp"
-#include "Transfer.hpp"
+#include "Simulator/Environments/CollisionSystem/Transfer.hpp"
 #include "Types.hpp"
 #include "Utilities/MemoryMeter/MemoryMeter.hpp"
 #include "elastica/DataStructures/TaggedTuple.hpp"
@@ -114,6 +114,14 @@ namespace elastica {
 
       using AdmissiblePrimitives =
           typename SimulatorConfig::AdmissiblePrimitives;
+
+      template <typename Tag>
+      using GetSystemCollectionType =
+          typename SimulatorConfig::template GetSystemCollectionType<Tag>;
+
+      using AdmissibleSystemCollectionTags =
+          typename SimulatorConfig::AdmissibleSystemCollectionTags;
+
       //      using AdmissibleImposedPrimitives =
       //      typename SimulatorConfig::AdmissibleImposedPrimitives;
 
@@ -154,6 +162,14 @@ namespace elastica {
       //      using PrimitiveCollection =
       //          tmpl::transform<Primitives,
       //          AddPrimitiveStorageType<tmpl::_1>>;
+
+      //! Type of the simulation domain
+      using DomainType = typename SimulatorConfig::DomainType;
+
+      //!< Metafunction that returns type of the simulation boundaries
+      template <std::size_t N>
+      using BoundaryTypeAlong =
+          typename SimulatorConfig::template BoundaryTypeAlong<N>;
 
       using PrimitiveCollection = typename SimulatorConfig::PrimitiveCollection;
       using ImposedPrimitiveCollection =
@@ -259,7 +275,7 @@ namespace elastica {
         If we iterate over all entries of the matrix, then there
         are repeated collision checks :  for example a Cylinder-Box
         check is the same as a Box-Cylinder check for the registered
-        cylinder and box primitives. To avoid double-couting then
+        cylinder and box primitives. To avoid double-counting then
         its easy to extract the lower triangular component of the
         matrix above:
 
@@ -318,6 +334,13 @@ namespace elastica {
       struct CoarseDetectorCollisionConfig : public CollisionConfig {
         // ///// Unused, dont pass
         //        using Primitives = This::Primitives;
+
+        //!< Domain Type
+        using DomainType = This::DomainType;
+
+        //!< Metafunction that returns type of the simulation boundaries
+        template <std::size_t N>
+        using BoundaryTypeAlong = This::BoundaryTypeAlong<N>;
 
         //!< Matrix Types
         using PrimitivePrimitiveMatrix = This::PrimitivePrimitiveMatrix;
@@ -429,7 +452,8 @@ namespace elastica {
       inline void clear_contacts();
       template <template <typename...> class HeterogenousContainer,
                 typename... CollectionContainers>
-      void initialize(HeterogenousContainer<CollectionContainers...> const& cct,
+      void initialize(DomainType const* d,
+                      HeterogenousContainer<CollectionContainers...> const& cct,
                       ImposedPrimitiveStorage*);
       template <template <typename...> class HeterogenousContainer,
                 typename TimeType, typename... CollectionContainers>
@@ -455,6 +479,7 @@ namespace elastica {
       // variables****************************************************************************
       /*!\name Member variables */
       //@{
+      const DomainType* domain_;     //!< Pointer to the simulation domain
       PrimitiveStorage primitives_;  //!< The collection of primitives that are
                                      //!< updated as the simulation progresses
       ImposedPrimitiveStorage*
@@ -522,6 +547,8 @@ namespace elastica {
                     C<CD, FD, BG, response::DEMSolver>>::CollisionSystem()
         :  // Initialization of the Singleton  base object
           Singleton<CollisionSystem, logging::Logger>(),
+          // Pointer to the simulation domain
+          domain_(nullptr),
           // The list of primitives
           primitives_(),
           // Pointer to fixed primitives
@@ -533,7 +560,7 @@ namespace elastica {
           // The currently active contacts of the simulation world
           contacts_(5000),
           // The active collision detection algorithm
-          detector_(primitives_, imposed_primitives_),
+          detector_(domain_, primitives_, imposed_primitives_),
           // The active collision response algorithm
           solver_(),
           // TODO Does the tagged tuple constructor do the right thing?
@@ -952,7 +979,23 @@ namespace elastica {
         initialize_impl(CollectionContainer const& collection_container) {
       using CollectionType =
           std::remove_pointer_t<typename CollectionContainer::value_type>;
-      using PrimitiveType = typename CollectionType::PrimitiveType;
+
+      // Old way : intrusive in class, not extensible
+      //      using PrimitiveType = typename CollectionType::PrimitiveType;
+
+      // New way : Pay more in compile time to look up the tag, but helps
+      // in other aspects
+      using CollectionTag =
+          // Get result
+          tmpl::front<
+              // Find
+              tmpl::find<
+                  AdmissibleSystemCollectionTags,
+                  // Does it match the CollectionType?
+                  std::is_same<CollectionType,
+                               tmpl::bind<GetSystemCollectionType, tmpl::_1>>>>;
+
+      using PrimitiveType = typename CollectionTag::PrimitiveType;
 
       // 1. Get reference to a vector of primitives
       auto& primitive_collection_ = get_primitive_collection<PrimitiveType>();
@@ -1014,8 +1057,12 @@ namespace elastica {
     template <template <typename...> class HeterogenousContainer,
               typename... CollectionContainers>
     void CollisionSystem<SimulatorConfig, C<CD, FD, BG, response::DEMSolver>>::
-        initialize(HeterogenousContainer<CollectionContainers...> const& cct,
+        initialize(const DomainType* d,
+                   HeterogenousContainer<CollectionContainers...> const& cct,
                    ImposedPrimitiveStorage* ips) {
+      // 0. Initialize the domain
+      domain_ = d;
+
       // 1. Given the heterogenous container of a container of collections from
       // the main simulator, it can initialize all primitives for contact
       // detection NOTE: Expansion has to take place from left to right to
@@ -1028,8 +1075,8 @@ namespace elastica {
       imposed_primitives_ = ips;
 
       // 3. Transfer body contents to primitives
-      // This is for properly initializing the primtives before adding all to the
-      // coarse collision detector
+      // This is for properly initializing the primtives before adding all to
+      // the coarse collision detector
       EXPAND_PACK_LEFT_TO_RIGHT(
           transfer_info(from, std::get<CollectionContainers>(cct)));
 
@@ -1073,7 +1120,23 @@ namespace elastica {
                       CollectionContainer const& collection_container) {
       using CollectionType =
           std::remove_pointer_t<typename CollectionContainer::value_type>;
-      using PrimitiveType = typename CollectionType::PrimitiveType;
+
+      // Old way : intrusive in class, not extensible
+      //      using PrimitiveType = typename CollectionType::PrimitiveType;
+
+      // New way : Pay more in compile time to look up the tag, but helps
+      // in other aspects
+      using CollectionTag =
+          // Get result
+          tmpl::front<
+              // Find
+              tmpl::find<
+                  AdmissibleSystemCollectionTags,
+                  // Does it match the CollectionType?
+                  std::is_same<CollectionType,
+                               tmpl::bind<GetSystemCollectionType, tmpl::_1>>>>;
+
+      using PrimitiveType = typename CollectionTag::PrimitiveType;
 
       // 1. Get reference to a vector of primitives
       auto& primitive_collection_ = get_primitive_collection<PrimitiveType>();
@@ -1100,7 +1163,12 @@ namespace elastica {
                         "Invalid iterator beyond end of collection");
 
         // 3. Do transfer
-        transfer(from, collection, to, start_iterator, end_iterator);
+        // Old way
+        //        transfer(from, collection, to, start_iterator, end_iterator);
+
+        // New way
+        TransferHelper<CollectionTag>::transfer(from, collection, to,
+                                                start_iterator, end_iterator);
 
         // Update start iterator to point to the next element
         // Don't use next!
@@ -1133,7 +1201,23 @@ namespace elastica {
                       CollectionContainer& collection_container) const {
       using CollectionType =
           std::remove_pointer_t<typename CollectionContainer::value_type>;
-      using PrimitiveType = typename CollectionType::PrimitiveType;
+
+      // Old way : intrusive in class, not extensible
+      //      using PrimitiveType = typename CollectionType::PrimitiveType;
+
+      // New way : Pay more in compile time to look up the tag, but helps
+      // in other aspects
+      using CollectionTag =
+          // Get result
+          tmpl::front<
+              // Find
+              tmpl::find<
+                  AdmissibleSystemCollectionTags,
+                  // Does it match the CollectionType?
+                  std::is_same<CollectionType,
+                               tmpl::bind<GetSystemCollectionType, tmpl::_1>>>>;
+
+      using PrimitiveType = typename CollectionTag::PrimitiveType;
 
       // 1. Get reference to a vector of primitives
       auto& primitive_collection_ = get_primitive_collection<PrimitiveType>();
@@ -1161,7 +1245,12 @@ namespace elastica {
                         "Invalid iterator beyond end of collection");
 
         // 3. Do transfer
-        transfer(to, collection, from, start_iterator, end_iterator);
+        // Old way
+        //        transfer(to, collection, from, start_iterator, end_iterator);
+
+        // New way
+        TransferHelper<CollectionTag>::transfer(to, collection, from,
+                                                start_iterator, end_iterator);
 
         // Update start iterator to point to the next element
         // Don't use next!

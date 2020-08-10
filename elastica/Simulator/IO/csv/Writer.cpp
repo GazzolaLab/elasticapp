@@ -8,6 +8,9 @@
 #include "elastica/ErrorHandling/Assert.hpp"
 #include "elastica/Utilities/Logging.hpp"
 
+// Concrete types
+#include "Systems/RigidBody/SphereCollection.hpp"
+
 namespace elastica {
 
   namespace io {
@@ -134,12 +137,14 @@ namespace elastica {
        * \param sphere The sphere to be registered.
        * \return void
        */
-      void Writer::add_sphere(rigidbody::Sphere const* sphere) {
+      void Writer::add_sphere(SphereCollection const* sphere) {
         spheres_.push_back(sphere);
       }
       //*************************************************************************************************
 
-      void Writer::add_bounding_box(const Visualization::AABB* bounding_box) {return;}
+      void Writer::add_bounding_box(Visualization::AABB const* bounding_box) {
+        return;
+      }
 
       //=================================================================================================
       //
@@ -153,7 +158,7 @@ namespace elastica {
        * \param sphere The sphere to be removed.
        * \return void
        */
-      void Writer::remove_sphere(const rigidbody::Sphere* sphere) {
+      void Writer::remove_sphere(SphereCollection const* sphere) {
         auto pos(std::find(spheres_.begin(), spheres_.end(), sphere));
         ELASTICA_ASSERT(pos != spheres_.end(),
                         "Sphere is not registered for visualization");
@@ -161,7 +166,10 @@ namespace elastica {
       }
       //*************************************************************************************************
 
-      void Writer::remove_bounding_box(const Visualization::AABB* bounding_box) {return;}
+      void Writer::remove_bounding_box(
+          Visualization::AABB const* bounding_box) {
+        return;
+      }
 
       //=================================================================================================
       //
@@ -194,7 +202,8 @@ namespace elastica {
             ".csv";
 
         std::ostringstream spherefile;
-        spherefile << output_directory_ << "/sphere_csv_data_" << fn_with_suffix;
+        spherefile << output_directory_ << "/sphere_csv_data_"
+                   << fn_with_suffix;
         write_spheres(spherefile.str().c_str());
       }
       //*************************************************************************************************
@@ -207,7 +216,7 @@ namespace elastica {
        * This function creates a new file containing the sphere data of the
        * current timestep
        */
-      void Writer::write_spheres(const fs::path& filename) const {
+      void Writer::write_spheres(fs::path const& filename) const {
         using namespace fs;
 
         // Determining the directory and the filename for the POV-Ray
@@ -295,7 +304,7 @@ namespace elastica {
       //*************************************************************************************************
 
       void Writer::write_sphere_data_in_ascii(
-          std::ostream& out, const rigidbody::Sphere* sphere_collection) const {
+          std::ostream& out, SphereCollection const* sphere_collection) const {
         // write grid
         std::size_t n_spheres(sphere_collection->size());
         const char* tab = ",";
@@ -349,7 +358,7 @@ namespace elastica {
        * handle to the active writer, subsequent calls will ignore the
        * parameters and only return the handle to the VTK writer.
        */
-      std::shared_ptr<Writer> make_writer(const std::string& filename,
+      std::shared_ptr<Writer> make_writer(std::string const& filename,
                                           std::size_t spacing,
                                           std::size_t tstart,
                                           std::size_t tend) {
@@ -363,7 +372,6 @@ namespace elastica {
             new Writer(filename, spacing, tstart, tend));
         return dx;
       }
-
 
     }  // namespace csv
 

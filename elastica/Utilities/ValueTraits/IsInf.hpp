@@ -29,7 +29,7 @@ namespace elastica {
 
   template <typename IntType, typename std::enable_if_t<
                                   std::is_integral<IntType>::value, int> = 0>
-  inline constexpr bool is_inf(Int x) {
+  inline constexpr bool is_inf(IntType) {
     return false;
   }
 

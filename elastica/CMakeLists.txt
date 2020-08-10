@@ -13,6 +13,7 @@ add_executable(elastica main.cpp)
 add_subdirectory(ErrorHandling)
 add_subdirectory(Utilities)
 add_subdirectory(Simulator)
+add_subdirectory(Systems)
 add_subdirectory(Time)
 
 #target_link_libraries(elastica PUBLIC ${ELASTICA_LIBRARIES})
@@ -33,6 +34,7 @@ target_link_libraries(elastica
         Utilities
         ErrorHandling
         IO
+        Systems
         ElasticaFlags
         )
 #message(${ElasticaFlags})

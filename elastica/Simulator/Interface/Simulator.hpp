@@ -6,12 +6,13 @@
 #include <utility>
 #include <vector>
 
+#include "elastica/Simulator/Domain/Domain.hpp"
 #include "elastica/Systems/SystemBase.hpp"
 #include "elastica/Utilities/Logging.hpp"
 #include "elastica/Utilities/Logging/Logger.hpp"
 #include "elastica/Utilities/Singleton.hpp"
 #include "elastica/Utilities/TypeTraits.hpp"
-#include "elastica/Simulator/Domain/Domain.hpp"
+#include "elastica/Utilities/ValueTraits/IsInf.hpp"
 
 namespace elastica {
 
@@ -46,8 +47,6 @@ namespace elastica {
     // TODO : Mark it as unused for optimization
     template <typename SimTraits>
     struct DefaultInterface {
-      using SizeType = typename SimTraits::SizeType;
-      using IndexType = typename SimTraits::IndexType;
       using TimeType = typename SimTraits::TimeType;
       template <typename T>
       using SystemInterfaceType =
@@ -155,9 +154,8 @@ namespace elastica {
           DefaultInterface<SimTraits>,
           Bases<Simulator<SimTraits, Bases...>, SimTraits>...>::resolve_effects;
 
-      //      USE_SIMULATOR_TRAITS(SimTraits)
-      using SizeType = typename SimTraits::SizeType;
-      using IndexType = typename SimTraits::IndexType;
+      using SizeType = std::size_t;
+      using IndexType = std::size_t;
       using TimeType = typename SimTraits::TimeType;
 
       //      template <typename T>
@@ -207,6 +205,9 @@ namespace elastica {
       //          std::tuple<std::vector<SystemBase*>,
       //                     std::vector<::elastica::rigidbody::Sphere*>>;
 
+      template <std::size_t N>
+      using BoundaryTypeAlong =
+          typename SimTraits::template BoundaryTypeAlong<N>;
       using DomainType = typename SimTraits::DomainType;
 
       // Since this is an internal function, we give a reference and not a const
@@ -416,18 +417,50 @@ namespace elastica {
       //            push_back(std::forward<SystemCollectionsToBeAdded>(system))...);
       //      }
 
+      template <typename D = DomainType,
+                Requires<std::is_same<D, PeriodicDomain>::value> = nullptr>
+      void check_domain() {
+        // https://stackoverflow.com/questions/12958925/expand-macros-inside-quoted-string
+#define CHECK_DOMAIN_PERIODIC_ALONG(DIRECTION)                        \
+  if (std::is_same<BoundaryTypeAlong<domain_.DIRECTION>,              \
+                   PeriodicBoundary>::value and                       \
+      (is_inf(domain_.template get_lower_bound<domain_.DIRECTION>) or \
+       is_inf(domain_.template get_upper_bound<domain_.DIRECTION>)))  \
+    throw std::runtime_error(                                         \
+        "DomainType is set to be Periodic along " #DIRECTION          \
+        " yet span of the domain along is unset (or) infinite "       \
+        "Please call the simulators set_domain method with finite "   \
+        "values in the periodic direction "                           \
+        "before the call to integrate() or finalize()!");
+
+        CHECK_DOMAIN_PERIODIC_ALONG(X);
+        CHECK_DOMAIN_PERIODIC_ALONG(Y);
+        CHECK_DOMAIN_PERIODIC_ALONG(Z);
+
+#undef CHECK_DOMAIN_PERIODIC_ALONG
+      }
+
+      template <typename D = DomainType,
+                Requires<std::is_same<D, UnboundedDomain>::value> = nullptr>
+      void check_domain() {}
+
       void finalize(TimeType time_v = 0.0) {
         // Travel up the hierarchy and call finalize on all
         EXPAND_PACK_LEFT_TO_RIGHT(
             Bases<Simulator<SimTraits, Bases...>, SimTraits>::finalize(time_v));
+
+        // If domain is not set when the DomainType is periodic, cry for
+        // attention
+        check_domain();
+
+        // Set ready
         ready_for_simulation_ = true;
-        //        using expander = int[];
-        //        (void)expander{
-        //            0,
-        //            ((void)Bases<Simulator<SimTraits, Bases...>,
-        //            SimTraits>::finalize(
-        //                 time_v),
-        //             0)...};
+      }
+
+      // Set domain
+      template <typename... Args>
+      void set_domain(Args&&... args) noexcept {
+        domain_.set(std::forward<Args>(args)...);
       }
 
       auto ready() const noexcept -> bool { return ready_for_simulation_; }
@@ -455,7 +488,8 @@ namespace elastica {
           : Singleton<Simulator<SimTraits, Bases...>, logging::Logger>(),
             DefaultInterface<SimTraits>(),
             Bases<Simulator<SimTraits, Bases...>, SimTraits>()...,
-            ready_for_simulation_(false) {
+            ready_for_simulation_(false),
+            domain_() {
         //        LOG_INFO_SECTION(log) {
         //          log << "Successfully initialized the simulation instance";
         //        }
@@ -477,10 +511,11 @@ namespace elastica {
 
       SystemCollectionStorage system_collection_containers_;
       bool ready_for_simulation_;
+      DomainType domain_;
       //  std::vector<SystemID> systems_;
       // TODO : Delete, purely for testing purposes
       //  std::vector<double*> double_systems_;
-    };
+    };  // namespace interface
 
   }  // namespace interface
 

@@ -2,30 +2,32 @@
 #include <algorithm>
 
 #include "elastica/ErrorHandling/Assert.hpp"
-#include "elastica/Simulator/Environments/CollisionSystem/Transfer/TransferTraits.hpp"
-#include "elastica/Simulator/Environments/CollisionSystem/Transfer/TypeTraits.hpp"
 #include "elastica/Utilities/Requires.hpp"
 #include "elastica/Utilities/TypeTraits.hpp"
+
+//// Declare all types
+#include "elastica/Simulator/Environments/CollisionSystem/Transfer/Types.hpp"
+////
+#include "elastica/Simulator/Environments/CollisionSystem/Transfer/TransferTraits.hpp"
+#include "elastica/Simulator/Environments/CollisionSystem/Transfer/TypeTraits.hpp"
 
 namespace elastica {
 
   namespace collision {
 
-
     // Provide generic implementation here
     template <typename SystemTag>
     struct Transfer : public TransferTraits<SystemTag> {
       using Parent = TransferTraits<SystemTag>;
-      using typename Parent::SystemCollectionType;
       using typename Parent::from_t;
       using typename Parent::PrimitiveType;
+      using typename Parent::SystemCollectionType;
       using typename Parent::to_t;
 
       static_assert(
           tt::IsCollectionDefaultTransferable<SystemCollectionType>::value,
           "(Default) Transfer failed because the Collection fails to provide "
-          "suitable"
-          "members. Either provide all members necessary: -get_dimensions -"
+          "suitable members. Either provide all members necessary: -get_dimensions -"
           "get_position -get_velocity ... or "
           "provide a a specialization to the Transfer class");
 

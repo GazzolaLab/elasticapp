@@ -4,18 +4,18 @@
 #include "elastica/Simulator/Interface/SimulatorConfiguration.hpp"
 
 // The abilities
-#include "elastica/Simulator/Interface/Defaults/Systems.hpp"
-#include "elastica/Simulator/Interface/Defaults/Environments.hpp"
-
+#include "elastica/ModuleSettings/Domain.hpp"
+#include "elastica/ModuleSettings/Environments.hpp"
+#include "elastica/ModuleSettings/Systems.hpp"
 
 namespace elastica {
 
   namespace interface {
 
-
     using DefaultSimulatorConfiguration =
-        SimulatorConfiguration<SystemsConfiguration,
-                               EnvironmentConfiguration>;
+        SimulatorConfiguration<defaults::DomainConfiguration,
+                               defaults::SystemsConfiguration,
+                               defaults::EnvironmentConfiguration>;
 
   }  // namespace interface
 

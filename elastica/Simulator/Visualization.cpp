@@ -56,7 +56,7 @@ namespace elastica {
    * \param sphere The sphere to be registered for visualization.
    * \return void
    */
-  void Visualization::add(rigidbody::Sphere const* const sphere) {
+  void Visualization::add(SphereCollection const* const sphere) {
     spheres_.push_back(sphere);
 
     for (auto v : viewer_) {
@@ -92,7 +92,7 @@ namespace elastica {
    * \param sphere The sphere to be deregistered from visualization.
    * \return void
    */
-  void Visualization::remove(rigidbody::Sphere const* const sphere) {
+  void Visualization::remove(SphereCollection const* const sphere) {
     auto pos(std::find(spheres_.begin(), spheres_.end(), sphere));
     ELASTICA_ASSERT(pos != spheres_.end(),
                     "Sphere is not registered for visualization");

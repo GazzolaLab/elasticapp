@@ -38,9 +38,9 @@ namespace elastica {
                                    const Spans& spans, MaterialID material)
         : GeomPrimitive(finite, sid, uid, material), spans_(spans) {
       gpos_ = gpos;
-      rot_mat_ = make_orthogonal_bases(normal);
-      std::cout << rot_mat_ << std::endl;
-      std::cout << blaze::row<1UL>(rot_mat_) << std::endl;
+      Q_ = make_orthogonal_bases(normal);
+      std::cout << Q_ << std::endl;
+      std::cout << blaze::row<1UL>(Q_) << std::endl;
       std::cout << "Spans :" << spans_[0] << " " << spans_[1] << std::endl;
       PlanePrimitive::calculate_bounding_box();
 
@@ -62,7 +62,7 @@ namespace elastica {
           log << "Input rotation matrix is non-orthogonal\n";
         }
       }
-      rot_mat_ = is_rot_orthogonal ? rot : orthogonalize(rot);
+      Q_ = is_rot_orthogonal ? rot : orthogonalize(rot);
       PlanePrimitive::calculate_bounding_box();
     }
 
@@ -87,10 +87,10 @@ namespace elastica {
       spans_[0UL] = other.spans_[0UL];
       spans_[1UL] = other.spans_[1UL];
       gpos_ = other.gpos_;
-      rot_mat_ = other.rot_mat_;
+      Q_ = other.Q_;
 
       std::cout << "Spans :" << spans_[0] << " " << spans_[1] << std::endl;
-      std::cout << blaze::row<1UL>(rot_mat_) << std::endl;
+      std::cout << blaze::row<1UL>(Q_) << std::endl;
 
       // For now put construction of AABB here
       PlanePrimitive::calculate_bounding_box();
@@ -162,14 +162,14 @@ namespace elastica {
       // d_3 and d_1 are along spans, d_2 is the normal
       // TODO : Check indexing
       // TODO don't access one by one, rather get buffer?
-      const real_t xlength(real_t(0.5) * (fabs(rot_mat_(0, 0) * spans_[1]) +
-                                          fabs(rot_mat_(2, 0) * spans_[0])) +
+      const real_t xlength(real_t(0.5) * (fabs(Q_(0, 0) * spans_[1]) +
+                                          fabs(Q_(2, 0) * spans_[0])) +
                            contact_threshold);
-      const real_t ylength(real_t(0.5) * (fabs(rot_mat_(0, 1) * spans_[1]) +
-                                          fabs(rot_mat_(2, 1) * spans_[0])) +
+      const real_t ylength(real_t(0.5) * (fabs(Q_(0, 1) * spans_[1]) +
+                                          fabs(Q_(2, 1) * spans_[0])) +
                            contact_threshold);
-      const real_t zlength(real_t(0.5) * (fabs(rot_mat_(0, 2) * spans_[1]) +
-                                          fabs(rot_mat_(2, 2) * spans_[0])) +
+      const real_t zlength(real_t(0.5) * (fabs(Q_(0, 2) * spans_[1]) +
+                                          fabs(Q_(2, 2) * spans_[0])) +
                            contact_threshold);
 
       aabb_[0] = gpos_[0] - xlength;

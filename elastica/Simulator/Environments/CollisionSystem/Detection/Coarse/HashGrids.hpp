@@ -64,6 +64,14 @@ namespace elastica {
               HashGrids<EnhancedCollisionConfig>;  //!< Type of this HashGrids
                                                    //!< instance.
 
+          //!< Type of the simulation domain
+          using DomainType = typename EnhancedCollisionConfig::DomainType;
+
+          //!< Metafunction that returns type of the simulation boundaries
+          template <std::size_t N>
+          using BoundaryTypeAlong =
+              typename EnhancedCollisionConfig::template BoundaryTypeAlong<N>;
+
           //!< Types of primitives in the current simulation
           using AdmissiblePrimitives =
               typename EnhancedCollisionConfig::AdmissiblePrimitives;
@@ -579,7 +587,7 @@ namespace elastica {
           //**Constructor*******************************************************
           /*!\name Constructor */
           //@{
-          HashGrids(PrimitiveStorage& primitivestorage,
+          HashGrids(const DomainType*& domain, PrimitiveStorage& primitivestorage,
                     ImposedPrimitiveStorage*& imposed_primitive_storage);
           //@}
           //********************************************************************
@@ -686,6 +694,7 @@ namespace elastica {
           //@{
           // The lifetime of the referred variable will exceed the
           // CoarseDetectors lifetime Hence this operation is valid
+          const DomainType*& domain_;
           PrimitiveStorage&
               primitives_;  //!< Reference to the primitive storage.
           ImposedPrimitiveStorage*&
@@ -1183,7 +1192,8 @@ namespace elastica {
             primitive->set_cell_ID(0);
             primitives->push_back(primitive);
 
-            // TODO If parallel, these need to be concurrent vectors which may be
+            // TODO If parallel, these need to be concurrent vectors which may
+            // be
             //      simultaneously modified
             // TODO Else have a thread local buffer that reduces the cells need
             //      to be added
@@ -1223,7 +1233,8 @@ namespace elastica {
           auto* primitives = cell->template get_handle_of<PrimitiveType>();
 
           ELASTICA_ASSERT(primitives != nullptr, "Shouldn't reach this point!");
-          ELASTICA_ASSERT(primitives->size() > 0, "Shouldn't reach this point!");
+          ELASTICA_ASSERT(primitives->size() > 0,
+                          "Shouldn't reach this point!");
 
           // If the primitive is the last primitive that is stored in this cell
           // ...
@@ -1245,7 +1256,8 @@ namespace elastica {
             // it can be removed in constant time, O(1).
 
             // Get values from cache
-            // TODO If parallel, these need to be concurrent vectors which may be
+            // TODO If parallel, these need to be concurrent vectors which may
+            // be
             //      simultaneously modified
             // TODO Else have a thread local buffer that reduces what cells need
             //      to be removed and remove after the step
@@ -1335,7 +1347,8 @@ namespace elastica {
 
             for (Cell* cell : occupied_cells) {
               // Pointer to a vector of primitive pointers
-              auto* cell_primitives = cell->template get_handle_of<PrimitiveType>();
+              auto* cell_primitives =
+                  cell->template get_handle_of<PrimitiveType>();
 
               // Copy pointers
               for (auto* cell_primitive : *cell_primitives) {
@@ -1884,9 +1897,10 @@ namespace elastica {
          */
         template <typename C>  // Type of the configuration
         HashGrids<C>::HashGrids(
-            PrimitiveStorage& primitivestorage,
+            const DomainType*& domain, PrimitiveStorage& primitivestorage,
             ImposedPrimitiveStorage*& imposed_primitive_storage)
-            : primitives_(primitivestorage),
+            : domain_(domain),
+              primitives_(primitivestorage),
               imposed_primitives_(imposed_primitive_storage),
               exhaustive_search(primitivestorage, imposed_primitive_storage) {
           //          using namespace
@@ -2255,24 +2269,23 @@ namespace elastica {
            *  Bottlenecks and fixes:
                 1. grid->update and grid->remove methods
                   Fixes :
-                  1) mutex around the cell that is currently accessed (wont be that bad performance wise)
-                  2) To keep track of the cells removed from occupied cells we can have a
-                  thread local buffer that reduces what cells need to be removed and
-                  remove after the step (REFACTOR!)
+                  1) mutex around the cell that is currently accessed (wont be
+           that bad performance wise) 2) To keep track of the cells removed from
+           occupied cells we can have a thread local buffer that reduces what
+           cells need to be removed and remove after the step (REFACTOR!)
                 2. add_finite_primitives and grid->add
                   1) More problematic because grids can be added or removed
                   Fixes :
                   Invert dependency : instead of parallel over primitives and
                   adding over grids
-                  0) Have an addition buffer and removal buffer of size grid each
-                  where we put the primtives from each grid to be added/removed
-                  1) Scan through primitives, see which grid it is to be added
-                  removed, compute its corresponding hash, set its new grid and hash
-                  (in the primitives itself). If a new grid is needed, put these in
-                  a separate buffer
-                  2) Add new grids to the list location serially, pop items from the
-                  temporary buffer and process one-by-one (can be serial)
-                  3) Over the grids in parallel-invoke style : go through the respective
+                  0) Have an addition buffer and removal buffer of size grid
+           each where we put the primtives from each grid to be added/removed 1)
+           Scan through primitives, see which grid it is to be added removed,
+           compute its corresponding hash, set its new grid and hash (in the
+           primitives itself). If a new grid is needed, put these in a separate
+           buffer 2) Add new grids to the list location serially, pop items from
+           the temporary buffer and process one-by-one (can be serial) 3) Over
+           the grids in parallel-invoke style : go through the respective
                   addition/removal buffers and added primitive pointers
                   . Only limited parallelism here of n_grids
 
@@ -2285,7 +2298,7 @@ namespace elastica {
               auto& curr_primitives = this->get_primitive_collection<Is>();
               for (auto& primitive : curr_primitives) {
                 auto grid = static_cast<HashGrid*>(primitive.get_grid());
-                ELASTICA_ASSERT(grid!=nullptr, "Oopise, not assigned!");
+                ELASTICA_ASSERT(grid != nullptr, "Oopise, not assigned!");
                 if (grid != nullptr) {
                   real_t primitive_size = primitive.get_AABB_size();
                   real_t cell_span = grid->get_cell_span();
@@ -2325,10 +2338,10 @@ namespace elastica {
               // TODO : Parallel
               //  This can be made parallel WLO correctness and performant
               //  (provided that contacts
-              //  is a concurrent vector) since the grid and cells are not modified
-              //  But to be sure, we should revisit the const correctness of the
-              //  code to ensure that even the pointers/objects it points to
-              //  cannot be modified
+              //  is a concurrent vector) since the grid and cells are not
+              //  modified But to be sure, we should revisit the const
+              //  correctness of the code to ensure that even the
+              //  pointers/objects it points to cannot be modified
               grid->process_grid(contacts);
               total_primitives_in_grid[i_grid] =
                   grid->get_total_primitive_count();
@@ -2370,10 +2383,10 @@ namespace elastica {
                   // TODO : Parallel
                   //  This can be made parallel WLO correctness and performant
                   //  (provided that contacts
-                  //  is a concurrent vector) since the grid and cells are not modified
-                  //  But to be sure, we should revisit the const correctness of the
-                  //  code to ensure that even the pointers/objects it points to
-                  //  cannot be modified
+                  //  is a concurrent vector) since the grid and cells are not
+                  //  modified But to be sure, we should revisit the const
+                  //  correctness of the code to ensure that even the
+                  //  pointers/objects it points to cannot be modified
                   (*next_grid_it)
                       ->process_primitives_from_finer_grid(
                           all_primitives_from_current_grid,

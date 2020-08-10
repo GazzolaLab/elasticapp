@@ -61,9 +61,9 @@ namespace elastica {
       inline void
       calculate_bounding_box();  // Calculation of the axis-aligned bounding box
       template <typename Vec3Convertible>
-      inline void transfer(real_t radius, Vec3Convertible gpos,
-                           Vec3Convertible velocity,
-                           Vec3Convertible omega) noexcept;
+      inline void transfer(real_t radius, Vec3Convertible const& gpos,
+                           Vec3Convertible const& velocity,
+                           Vec3Convertible const& omega) noexcept;
 
      private:
       real_t radius_;
@@ -78,13 +78,13 @@ namespace elastica {
       //                           std::true_type);
     };
 
-    //=================================================================================================
+    //==========================================================================
     //
     //  GET FUNCTIONS
     //
-    //=================================================================================================
+    //==========================================================================
 
-    //*************************************************************************************************
+    //**************************************************************************
     /*!\brief Returns the radius of the sphere.
      *
      * \return The radius of the sphere.
@@ -92,15 +92,15 @@ namespace elastica {
     inline real_t SpherePrimitive::get_radius() const noexcept {
       return radius_;
     }
-    //*************************************************************************************************
+    //**************************************************************************
 
-    //=================================================================================================
+    //==========================================================================
     //
     //  UTILITY FUNCTIONS
     //
-    //=================================================================================================
+    //==========================================================================
 
-    //*************************************************************************************************
+    //**************************************************************************
     /*!\brief Calculation of the bounding box of the sphere.
      *
      * \return void
@@ -108,8 +108,9 @@ namespace elastica {
      * This function updates the axis-aligned bounding box of the sphere
      * primitive according to the current position and orientation of the
      * sphere. Note that the bounding box is increased in all dimensions by
-     * pe::contactThreshold to guarantee that rigid bodies in close proximity of
-     * the sphere are also considered during the collision detection process.
+     * elastica::contact_threshold to guarantee that rigid bodies in close
+     * proximity of the sphere are also considered during the collision
+     * detection process.
      */
     inline void SpherePrimitive::calculate_bounding_box() {
       const real_t length(radius_ + contact_threshold);
@@ -124,9 +125,9 @@ namespace elastica {
       ELASTICA_ASSERT(aabb_.isValid(), "Invalid bounding box detected");
       ELASTICA_ASSERT(aabb_.contains(gpos_), "Invalid bounding box detected");
     }
-    //*************************************************************************************************
+    //**************************************************************************
 
-    //*************************************************************************************************
+    //**************************************************************************
     /*!\brief Estimates the point which is farthest in direction \a d.
      *
      * \param d The normalized search direction in world-frame coordinates.
@@ -140,14 +141,15 @@ namespace elastica {
           "Search direction is not normalised");
       return gpos_ + radius_ * d;
     }
-    //*************************************************************************************************
+    //**************************************************************************
 
-    //*************************************************************************************************
+    //**************************************************************************
     /*!\brief Estimates the point which is farthest in direction \a d.
      *
      * \param d The normalized search direction in world-frame coordinates
      * \return The support point in world-frame coordinates in direction a\ d
-     * extended by a vector in direction \a d of length \a pe::contactThreshold.
+     * extended by a vector in direction \a d of length \a
+     * elastica::contact_threshold.
      */
     inline Vec3 SpherePrimitive::support_contact_threshold(
         const Vec3& d) const {
@@ -158,7 +160,7 @@ namespace elastica {
           "Search direction is not normalised");
       return gpos_ + d * (radius_ + contact_threshold);
     }
-    //*************************************************************************************************
+    //**************************************************************************
 
     // Unsafe function
     // DONE : How much effect does putting a struct here for transfer have?
@@ -166,14 +168,20 @@ namespace elastica {
     // Also pass by value seems to be faster, all these are stack variables
     // DONE : should we template Vec3Like for blaze's overload mechanism to kick
     // in?
+    //**************************************************************************
+    /*!\brief Transfers information from the super-ordinate entitry to the
+     * primitive
+     *
+     * TODO Fill in
+     */
     template <typename Vec3Like>
-    inline void SpherePrimitive::transfer(real_t radius, Vec3Like gpos,
-                                          Vec3Like velocity,
-                                          Vec3Like omega) noexcept {
+    inline void SpherePrimitive::transfer(real_t radius, Vec3Like const& gpos,
+                                          Vec3Like const& velocity,
+                                          Vec3Like const& omega) noexcept {
       radius_ = radius;
 
       // Checking the radius
-      // Since the sphere constructor is never directly called but only used in
+      // Since the sphere transfer is never directly called but only used in
       // a small number of internal functions,
       // only asserts are used here to double check the arguments.
       ELASTICA_ASSERT(radius > real_t(0), "Invalid sphere radius");
@@ -185,11 +193,10 @@ namespace elastica {
       // Setting the axis-aligned bounding box
       SpherePrimitive::calculate_bounding_box();
 
-      // Set the forces and torques to be zero
-      // TODO : should be DRY here, put it in the struct in the new framework
-      force_ = 0.0;
-      torque_ = 0.0;
+        // We can reset the forces and torques to be zero here, but its not SRP
+        // so shifted the functionality in the TransferHelper class
     }
+    //**************************************************************************
 
   }  // namespace collision
 

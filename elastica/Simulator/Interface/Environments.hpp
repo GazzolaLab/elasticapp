@@ -29,8 +29,7 @@ namespace elastica {
     template <class Sim,  // Simulator class, derived from this class using CRTP
               class SimulatorConfig>  // Simulator options
     struct Environments : public NonCopyable {
-      using SizeType = typename SimulatorConfig::SizeType;
-      using IndexType = typename SimulatorConfig::IndexType;
+      using SizeType = std::size_t;
       using TimeType = typename SimulatorConfig::TimeType;
       /*
       template <typename T>
@@ -47,9 +46,9 @@ namespace elastica {
                           environments::tt::GetEnvironmentType<
                               tmpl::pin<SimulatorConfig>, tmpl::_1>>;
       // Singletons, tuple of shared_ptrs of environments
-      using AdmissibleEnvironmentsStorage =
-          tmpl::as_tuple<tmpl::transform<AdmissibleEnvironments,
-                                         tt::AddSingletonStorage<tmpl::_1>>>;
+      using AdmissibleEnvironmentsStorage = tmpl::as_tuple<
+          tmpl::transform<AdmissibleEnvironments,
+                          ::elastica::tt::AddSingletonStorage<tmpl::_1>>>;
       //      using AdmissibleEnvironments = tmpl::as_tuple<tmpl::transform<
       //          AdmissibleEnvironmentTags,
       //          environments::tags::GetEnvironmentType<collision::CollisionConfig
@@ -203,9 +202,9 @@ namespace elastica {
         index_apply<get_number_of_environments()>([this](auto... Is) {
           EXPAND_PACK_LEFT_TO_RIGHT(
               std::get<Is>(environments_)
-                  ->initialize(
-                      static_cast<Sim*>(this)->get_system_collection_storage(),
-                      &imposed_primitives_));
+                  ->initialize(&self().domain_,
+                               self().get_system_collection_storage(),
+                               &imposed_primitives_));
         });
       }
 
@@ -253,7 +252,8 @@ namespace elastica {
       }
 
       template <class ImposedPrimitive, class... Args>
-      inline auto emplace_back_imposed_impl(Args&&... args) -> ImposedPrimitive* {
+      inline auto emplace_back_imposed_impl(Args&&... args)
+          -> ImposedPrimitive* {
         auto& imposed_primitive_container =
             get_imposed_primitive_container<ImposedPrimitive>();
         imposed_primitive_container.emplace_back(std::forward<Args>(args)...);

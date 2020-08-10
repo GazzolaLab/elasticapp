@@ -5,13 +5,14 @@
 namespace elastica {
 
   namespace collision {
-    //=================================================================================================
+
+    //==========================================================================
     //
     //  CONSTRUCTORS
     //
-    //=================================================================================================
+    //==========================================================================
 
-    //*************************************************************************************************
+    //**************************************************************************
     /*!\brief Constructor for the RigidBodyPrimitive class.
      *
      * \param body The body ID of this rigid body.
@@ -31,40 +32,40 @@ namespace elastica {
           mass_(make_signaling_NaN<real_t>()),  // Total mass of the rigid body
           gpos_(make_signaling_NaN<real_t>()),  // Global position of the center
                                                 // of mass
-          //          rot_mat_(make_signaling_NaN<real_t>()),  // Rotation
+          //          Q_(make_signaling_NaN<real_t>()),  // Rotation
           //          matrix
-          rot_mat_(real_t(0.0)),  // Rotation matrix
-          v_(make_signaling_NaN<real_t>()),        // Linear velocity
-          w_(make_signaling_NaN<real_t>()),        // Angular velocity
+          Q_(real_t(0.0)),                   // Rotation matrix
+          v_(make_signaling_NaN<real_t>()),  // Linear velocity
+          w_(make_signaling_NaN<real_t>()),  // Angular velocity
           // Forces and torques are always transferred to the final rigid body
           // so make sure they aren't nan-initialized
           force_(real_t(0.0)),   // Total force
           torque_(real_t(0.0)),  // Total torque
 #else
-          mass_(0),    // Total mass of the rigid body
-          gpos_(),     // Global position of the center of mass
-          rot_mat_(),  // Rotation matrix
-          v_(),        // Linear velocity
-          w_(),        // Angular velocity
-          force_(),    // Total force
-          torque_(),   // Total torque
+          mass_(0),   // Total mass of the rigid body
+          gpos_(),    // Global position of the center of mass
+          Q_(),       // Rotation matrix
+          v_(),       // Linear velocity
+          w_(),       // Angular velocity
+          force_(),   // Total force
+          torque_(),  // Total torque
 #endif
           finite_(finite),
           sid_(sid),
           uid_(uid) {
     }
 
-    //=================================================================================================
+    //==========================================================================
     //
     //  DESTRUCTOR
     //
-    //=================================================================================================
+    //==========================================================================
 
-    //*************************************************************************************************
+    //**************************************************************************
     /*!\brief Destructor for the RigidBodyBase class.
      */
     RigidBodyPrimitive::~RigidBodyPrimitive() = default;
-    //*************************************************************************************************
+    //**************************************************************************
 
   }  // namespace collision
 

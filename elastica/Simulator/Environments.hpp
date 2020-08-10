@@ -1,6 +1,6 @@
 #pragma once
 
-#include "elastica/Systems/RigidBodyBase.hpp"
+#include "elastica/Systems/Systems.hpp"
 
 namespace elastica {
   //  namespace rigidbody {
@@ -23,13 +23,13 @@ namespace elastica {
       template <typename System>
       inline void apply(System& system, TimeType time_v);
 
-      virtual void apply_sphere(::elastica::rigidbody::Sphere&,
+      virtual void apply_sphere(::elastica::SphereCollection&,
                                 TimeType time_v) const = 0;
     };
 
     template <>
-    inline void EnvironmentBase::apply<::elastica::rigidbody::Sphere>(
-        ::elastica::rigidbody::Sphere& sphere_collection, TimeType time_v) {
+    inline void EnvironmentBase::apply<::elastica::SphereCollection>(
+        ::elastica::SphereCollection& sphere_collection, TimeType time_v) {
       apply_sphere(sphere_collection, time_v);
     }
 
@@ -37,7 +37,7 @@ namespace elastica {
       ExternalField() : EnvironmentBase(){};
       ~ExternalField() override = default;
 
-      void apply_sphere(::elastica::rigidbody::Sphere& sphere_collection,
+      void apply_sphere(::elastica::SphereCollection& sphere_collection,
                         TimeType /*time_v*/) const override {
         auto& pos = sphere_collection.position_collection_;
         auto x = blaze::row(pos, 0UL);
@@ -69,7 +69,7 @@ namespace elastica {
       GravityField() : EnvironmentBase(){};
       ~GravityField() override = default;
 
-      void apply_sphere(::elastica::rigidbody::Sphere& sphere_collection,
+      void apply_sphere(::elastica::SphereCollection& sphere_collection,
                         TimeType /*time_v*/) const override {
         // In z dir
         auto gravity(-0.9801);

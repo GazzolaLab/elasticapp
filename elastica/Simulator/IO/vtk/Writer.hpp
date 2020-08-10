@@ -39,7 +39,6 @@
 #endif
 
 #include "elastica/Simulator/Visualization.hpp"
-#include "elastica/Systems/RigidBodyBase.hpp"
 #include "elastica/Utilities/Logging/Logger.hpp"
 #include "elastica/Utilities/Singleton/Dependency.hpp"
 
@@ -66,7 +65,7 @@ namespace elastica {
         //        using Visualization::Spheres;
         //        using Visualization::BoundingBoxes;
         using Spheres =
-            std::vector<const rigidbody::Sphere*>;  //!< Vector for registered
+            std::vector<const SphereCollection*>;  //!< Vector for registered
                                                     //!< sphere primitives.
         using BoundingBoxes =
             std::vector<const AABB*>;  //!< Vector for registered
@@ -115,7 +114,7 @@ namespace elastica {
         //**Add functions*******************************************************
         /*!\name Add functions */
         //@{
-        void add_sphere(rigidbody::Sphere const* sphere) final;
+        void add_sphere(SphereCollection const* sphere) final;
         void add_bounding_box(AABB const* bounding_box) final;
         //@}
         //**********************************************************************
@@ -124,7 +123,7 @@ namespace elastica {
         // functions*************************************************************
         /*!\name remove functions */
         //@{
-        void remove_sphere(rigidbody::Sphere const* sphere) final;
+        void remove_sphere(SphereCollection const* sphere) final;
         void remove_bounding_box(AABB const* bounding_box) final;
         //@}
         //**********************************************************************
@@ -138,7 +137,7 @@ namespace elastica {
         virtual void write_bounding_boxes(const fs::path& filename) const;
 
         virtual void write_sphere_data_in_ascii(
-            std::ostream& out, const rigidbody::Sphere* sph) const;
+            std::ostream& out, const SphereCollection* sph) const;
         virtual void write_bounding_box_data_in_ascii(std::ostream& out) const;
         /*
                 virtual void writeSphereDataAscii(std::ostream& out) const;

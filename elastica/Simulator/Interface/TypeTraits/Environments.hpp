@@ -13,6 +13,7 @@ namespace elastica {
 
     namespace tt {
 
+      // DONE Type trait for valid Environment Configuration
       // DONE Should be in a traits namespace somewhere
       template <typename C, typename = cpp17::void_t<>>
       struct IsEnvironmentConfiguration : std::false_type {};

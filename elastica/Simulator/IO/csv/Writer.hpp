@@ -15,8 +15,8 @@
 #include <mutex>
 #endif
 
+#include "Systems/RigidBody/RigidBodyCollection.hpp"
 #include "elastica/Simulator/Visualization.hpp"
-#include "elastica/Systems/RigidBodyBase.hpp"
 #include "elastica/Utilities/Logging/Logger.hpp"
 #include "elastica/Utilities/Singleton/Dependency.hpp"
 
@@ -39,7 +39,7 @@ namespace elastica {
         //        using Visualization::Spheres;
         //        using Visualization::BoundingBoxes;
         using Spheres =
-            std::vector<const rigidbody::Sphere*>;  //!< Vector for registered
+            std::vector<const SphereCollection*>;  //!< Vector for registered
         //!< sphere primitives.
         using BoundingBoxes =
             std::vector<const AABB*>;  //!< Vector for registered
@@ -82,7 +82,7 @@ namespace elastica {
         //**Add functions*******************************************************
         /*!\name Add functions */
         //@{
-        void add_sphere(rigidbody::Sphere const* sphere) final;
+        void add_sphere(SphereCollection const* sphere) final;
         void add_bounding_box(AABB const* bounding_box) final;
         //@}
         //**********************************************************************
@@ -91,7 +91,7 @@ namespace elastica {
         // functions*************************************************************
         /*!\name remove functions */
         //@{
-        void remove_sphere(rigidbody::Sphere const* sphere) final;
+        void remove_sphere(SphereCollection const* sphere) final;
         void remove_bounding_box(AABB const* bounding_box) final;
         //@}
         //**********************************************************************
@@ -101,12 +101,12 @@ namespace elastica {
         //@{
         void trigger(double time_v, std::size_t simulation_step) final;
 
-        virtual void write_spheres(const fs::path& filename) const;
+        virtual void write_spheres(fs::path const& filename) const;
         //        virtual void write_bounding_boxes(const fs::path& filename)
         //        const;
 
         virtual void write_sphere_data_in_ascii(
-            std::ostream& out, const rigidbody::Sphere* sph) const;
+            std::ostream& out, SphereCollection const* sph) const;
         //        virtual void write_bounding_box_data_in_ascii(std::ostream&
         //        out) const;
         /*
@@ -152,7 +152,7 @@ namespace elastica {
         /*! \cond PE_INTERNAL */
         friend bool is_active();
         // TODO : NamedTypes here instead of just types
-        friend std::shared_ptr<Writer> make_writer(const std::string& filename,
+        friend std::shared_ptr<Writer> make_writer(std::string const& filename,
                                                    std::size_t spacing,
                                                    std::size_t tstart,
                                                    std::size_t tend);
@@ -160,7 +160,7 @@ namespace elastica {
       };
 
       inline bool is_active();
-      std::shared_ptr<Writer> make_writer(const std::string& filename,
+      std::shared_ptr<Writer> make_writer(std::string const& filename,
                                           std::size_t spacing,
                                           std::size_t tstart, std::size_t tend);
 

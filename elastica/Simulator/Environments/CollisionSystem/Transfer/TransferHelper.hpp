@@ -3,6 +3,9 @@
 #include <iterator>
 #include <type_traits>
 
+//// Declare all types
+#include "elastica/Simulator/Environments/CollisionSystem/Transfer/Types.hpp"
+////
 #include "elastica/Simulator/Environments/CollisionSystem/Transfer/Transfer.hpp"
 #include "elastica/Simulator/Environments/CollisionSystem/Transfer/TransferTraits.hpp"
 
@@ -15,9 +18,9 @@ namespace elastica {
     template <typename SystemTag>
     struct TransferHelper : public TransferTraits<SystemTag> {
       using Parent = TransferTraits<SystemTag>;
-      using typename Parent::SystemCollectionType;
       using typename Parent::from_t;
       using typename Parent::PrimitiveType;
+      using typename Parent::SystemCollectionType;
       using typename Parent::to_t;
 
       // //// https://stackoverflow.com/a/10546077
@@ -29,6 +32,14 @@ namespace elastica {
       };
 
       template <typename PrimitiveIterator>
+      static void reset_forces_and_torques(PrimitiveIterator start,
+                                           PrimitiveIterator end) {
+        std::for_each(start, end, [](auto& primitive) -> void {
+          primitive.reset_forces_and_torques();
+        });
+      }
+
+      template <typename PrimitiveIterator>
       static void transfer(from_t /* meta */,
                            SystemCollectionType const& collection,
                            to_t /* meta */, PrimitiveIterator start,
@@ -38,6 +49,10 @@ namespace elastica {
                                    typename std::iterator_traits<
                                        PrimitiveIterator>::value_type>::value,
                       "Wrong transfer detected!");
+
+        // Reset previous time-steps effects
+        reset_forces_and_torques(start, end);
+
         // Generic implementation to fall back to, can use public members
         Transfer<SystemTag>::template do_transfer<PrimitiveIterator>(
             from, collection, to, start, end);

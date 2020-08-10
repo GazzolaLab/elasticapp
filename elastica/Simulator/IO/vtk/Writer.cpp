@@ -31,6 +31,9 @@
 #include "elastica/ErrorHandling/Assert.hpp"
 #include "elastica/Utilities/Logging.hpp"
 
+// Concrete types
+#include "Systems/RigidBody/SphereCollection.hpp"
+
 namespace elastica {
   namespace io {
     namespace vtk {
@@ -214,7 +217,7 @@ namespace elastica {
        * \param sphere The sphere to be registered.
        * \return void
        */
-      void Writer::add_sphere(rigidbody::Sphere const* sphere) {
+      void Writer::add_sphere(SphereCollection const* sphere) {
         spheres_.push_back(sphere);
       }
       //*************************************************************************************************
@@ -244,7 +247,7 @@ namespace elastica {
        * \param sphere The sphere to be removed.
        * \return void
        */
-      void Writer::remove_sphere(const rigidbody::Sphere* sphere) {
+      void Writer::remove_sphere(const SphereCollection* sphere) {
         auto pos(std::find(spheres_.begin(), spheres_.end(), sphere));
         ELASTICA_ASSERT(pos != spheres_.end(),
                         "Sphere is not registered for visualization");
@@ -403,7 +406,7 @@ namespace elastica {
       //*************************************************************************************************
 
       void Writer::write_sphere_data_in_ascii(
-          std::ostream& out, const rigidbody::Sphere* sphere_collection) const {
+          std::ostream& out, const SphereCollection* sphere_collection) const {
         // write grid
         std::size_t n_spheres(sphere_collection->size());
         out << "<?xml version=\"1.0\"?>\n";

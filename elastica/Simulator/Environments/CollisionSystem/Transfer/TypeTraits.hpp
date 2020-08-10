@@ -3,6 +3,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "elastica/Simulator/Environments/CollisionSystem/Transfer/Types.hpp"
 #include "elastica/Simulator/Environments/Primitives/TypeTraits.hpp"
 #include "elastica/Utilities/TypeTraits.hpp"
 
@@ -52,10 +53,22 @@ namespace elastica {
       template <typename PrimitiveType, typename = cpp17::void_t<>>
       struct IsPrimitiveDefaultTransferable : std::false_type {};
 
+      // https://stackoverflow.com/a/57132084
+      // but do not need to check for signatures at this point
       template <typename PrimitiveType>
       struct IsPrimitiveDefaultTransferable<
           PrimitiveType, cpp17::void_t<decltype(&PrimitiveType::transfer())>>
           : IsRigidPrimitive<PrimitiveType> {};
+
+      // Switch between from_t <=> to_t
+      template <typename FromOrToTag>
+      struct Switch {
+        static constexpr tags::from_t switch_tag(tags::to_t);  // NO LINT
+        static constexpr tags::to_t switch_tag(tags::from_t);
+        // All other cases should return a compiler error
+        static constexpr void switch_tag(...);
+        using type = decltype(switch_tag(std::declval<FromOrToTag>()));
+      };
 
     }  // namespace tt
 

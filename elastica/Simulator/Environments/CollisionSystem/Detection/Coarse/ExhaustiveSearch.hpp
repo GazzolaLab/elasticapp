@@ -30,6 +30,7 @@
 
 #include <type_traits>
 
+#include "elastica/Simulator/Domain/Types.hpp"
 #include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/Tags.hpp"
 #include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/TypeTraits.hpp"
 #include "elastica/Utilities/Logging.hpp"
@@ -155,13 +156,16 @@ namespace elastica {
                                                          //!< body.
           using FineDetector = typename EnhancedCollisionConfig::
               FineDetector;  //!< Type of the fine collision
-                             //!< detector.
+          //!< detector.
+
+          //!< Type of the simulation domain
+          using DomainType = typename EnhancedCollisionConfig::DomainType;
           //**********************************************************************************************
 
           //**Constructor*********************************************************************************
           /*!\name Constructor */
           //@{
-          explicit ExhaustiveSearch(PrimitiveStorage&,
+          explicit ExhaustiveSearch(const DomainType*&, PrimitiveStorage&,
                                     ImposedPrimitiveStorage*&);
           //@}
           //**********************************************************************************************
@@ -236,6 +240,7 @@ namespace elastica {
           //@{
           // The lifetime of the referred variable will exceed the
           // CoarseDetectors lifetime Hence this operation is valid
+          const DomainType*& domain_;
           PrimitiveStorage&
               primitives_;  //!< Reference to the primitive storage.
           ImposedPrimitiveStorage*&
@@ -248,6 +253,12 @@ namespace elastica {
 
           //**Compile time checks***********************************************
           /*! \cond ELASTICA_INTERNAL */
+
+          static_assert(
+              not std::is_same<DomainType, PeriodicDomain>::value,
+              "The exhaustive search algorithm cannot be used with a periodic "
+              "domain. Consider changing the fine-detection algorithm.");
+
           // TODO : How to include Exhaustive search as a member of HashGrids
           // while retaining the facility to check?
           //          static_assert(
@@ -277,9 +288,10 @@ namespace elastica {
          */
         template <typename C>  // Type of the configuration
         ExhaustiveSearch<C>::ExhaustiveSearch(
-            PrimitiveStorage& primitivestorage,
+            const DomainType*& domain, PrimitiveStorage& primitivestorage,
             ImposedPrimitiveStorage*& imposed_primitive_storage)
-            : primitives_(primitivestorage),
+            : domain_(domain),
+              primitives_(primitivestorage),
               imposed_primitives_(imposed_primitive_storage) {}
         //*************************************************************************************************
 

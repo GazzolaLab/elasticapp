@@ -1,6 +1,9 @@
 #pragma once
 
-#include "elastica/Simulator/Environments/CollisionSystem/TransferTags.hpp"
+//// Declare all types
+#include "elastica/Simulator/Environments/CollisionSystem/Transfer/Types.hpp"
+////
+#include "elastica/Simulator/Environments/CollisionSystem/Transfer/TransferTags.hpp"
 
 namespace elastica {
 

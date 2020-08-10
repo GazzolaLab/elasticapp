@@ -29,8 +29,7 @@ namespace elastica {
       //      using Contacts =
       //          std::vector<Contact*>;  //!< Vector for attached contacts.
      protected:
-      //**Type
-      // definitions****************************************************************************
+      //**Type definitions******************************************************
       //! Abbreviation for the coarse collision detection body trait base class.
       /*! This base class configures the type of the axis-aligned bounding box
        * of the rigid body. */
@@ -55,37 +54,45 @@ namespace elastica {
       using AABB = typename CCDBT::AABB;
 
      protected:
-      //**Constructor*********************************************************************************
+      //**Constructor***********************************************************
       /*!\name Constructor */
       //@{
       explicit RigidBodyPrimitive(BodyID body, bool finite, id_t sid, id_t uid);
       //@}
-      //**********************************************************************************************
+      //************************************************************************
 
-      //**Destructor**********************************************************************************
+      //**Destructor************************************************************
       /*!\name Destructor */
       //@{
       virtual ~RigidBodyPrimitive() = 0;
       //@}
-      //**********************************************************************************************
+      //************************************************************************
      public:
       inline bool is_fixed() const;
       inline bool is_finite() const;
       //      inline void registerContact(ContactID contact);
 
-      //**Get
-      // functions*******************************************************************************
+      //**Get functions*********************************************************
       /*!\name Get functions */
       //@{
 
       inline auto getSystemID() const noexcept -> id_t;
       inline auto getID() const noexcept -> id_t;
       inline auto get_position() const noexcept -> const Vec3&;
+      inline auto get_rotation() const noexcept -> const Rot3&;
       inline auto get_AABB() const noexcept -> const AABB&;
       inline auto get_force() const noexcept -> const Vec3&;
       inline auto get_torque() const noexcept -> const Vec3&;
 
       inline auto get_angular_velocity() const noexcept -> const Vec3&;
+
+      inline auto from_body_FOR_to_world_FOR(real_t vx, real_t vy,
+                                             real_t vz) const -> Vec3;
+      inline auto from_body_FOR_to_world_FOR(const Vec3& v) const -> Vec3;
+
+      inline auto from_world_FOR_to_body_FOR(real_t vx, real_t vy,
+                                             real_t vz) const -> Vec3;
+      inline auto from_world_FOR_to_body_FOR(const Vec3& v) const -> Vec3;
 
       // TODO : noexcept?
       inline auto velocity_from_world_FOR(real_t px, real_t py, real_t pz) const
@@ -95,7 +102,7 @@ namespace elastica {
       //      Vec3; inline auto accFromWF(const Vec3& gpos) const -> Vec3;
 
       //@}
-      //**********************************************************************************************
+      //************************************************************************
 
       // For
       // TODO : Move overloads if possible, wont help much
@@ -104,6 +111,8 @@ namespace elastica {
       inline void add_force_at_position(const Vec3& f, const Vec3& gpos);
       inline void add_force_at_position(Vec3&& f, const Vec3& gpos);
       inline void add_force_at_position(Vec3&& f, Vec3&& gpos);
+
+      inline void reset_forces_and_torques();
 
       //      template <typename RigidBodyType, typename
       //      RigidBodyPrimitiveIterator> friend void transfer(RigidBodyType
@@ -116,8 +125,7 @@ namespace elastica {
       //                           RigidBodyType&, std::true_type);
 
      protected:
-      //**Member
-      // variables****************************************************************************
+      //**Member variables******************************************************
       /*!\name Member variables */
       //@{
       bool fixed_;  //!< Fixation flag.
@@ -128,33 +136,34 @@ namespace elastica {
       real_t mass_;  //!< The total mass of the rigid body.
       Vec3 gpos_;  //!< The global position of the center of mass of this rigid
                    //!< body.
-      Rot3 rot_mat_;    //!< The rotation in reference to the global frame of
-                        //!< reference.
+      Rot3 Q_;     //!< The rotation in reference to the global frame of
+                   //!< reference.
       mutable Vec3 v_;  //!< The linear velocity of this rigid body.
       mutable Vec3 w_;  //!< Angular velocity of this rigid body.
       Vec3 force_;      //!< Total force (external+contact) acting in the body's
                         //!< center of mass.
       Vec3 torque_;  //!< Total torque (external+contact) acting in the body's
                      //!< center of mass.
-      //**********************************************************************************************
 
       bool finite_;  //!< Finiteness flag.
       /*!< The flag value indicates if the rigid body is finite (\a true)
            or infinite (\a false). */
       id_t sid_;  //!< The unique system-specific body ID.
       id_t uid_;  //!< The user-specific body ID.
+      //@}
+      //************************************************************************
 
       // TODO: determine if needed?
       //      Contacts contacts_;  //!< Vector for the currently attached
       //      contacts.
     };
-    //=================================================================================================
+    //==========================================================================
     //
     //  CONTACT FUNCTIONS
     //
-    //=================================================================================================
+    //==========================================================================
 
-    //*************************************************************************************************
+    //**************************************************************************
     /*!\brief Registering a single attached contact with the rigid body.
      *
      * \param contact The contact to be registered with the rigid body.
@@ -163,33 +172,33 @@ namespace elastica {
     //    inline void RigidBodyPrimitive::registerContact(ContactID contact) {
     //      contacts_.push_back(contact);
     //    }
-    //*************************************************************************************************
+    //**************************************************************************
 
-    //=================================================================================================
+    //==========================================================================
     //
     //  GET FUNCTIONS
     //
-    //=================================================================================================
+    //==========================================================================
 
-    //*************************************************************************************************
+    //**************************************************************************
     /*!\brief Returns whether the rigid body's position is fixed or not.
      *
      * \return \a true in case of a fixed/stationary rigid body, \a false in
      * case of a free body.
      */
     inline bool RigidBodyPrimitive::is_fixed() const { return fixed_; }
-    //*************************************************************************************************
+    //**************************************************************************
 
-    //*************************************************************************************************
+    //**************************************************************************
     /*!\brief Returns whether the rigid body is finite or not.
      *
      * \return \a true in case of a finite rigid body, \a false in case of a
      * infinite rigid body.
      */
     inline bool RigidBodyPrimitive::is_finite() const { return finite_; }
-    //*************************************************************************************************
+    //**************************************************************************
 
-    //*************************************************************************************************
+    //**************************************************************************
     /*!\brief TODO Returns whether the rigid body's position is fixed or not.
      *
      * \return \a true in case of a fixed/stationary rigid body, \a false in
@@ -198,9 +207,9 @@ namespace elastica {
     inline auto RigidBodyPrimitive::getSystemID() const noexcept -> id_t {
       return sid_;
     }
-    //*************************************************************************************************
+    //**************************************************************************
 
-    //*************************************************************************************************
+    //**************************************************************************
     /*!\brief TODO Returns whether the rigid body's position is fixed or not.
      *
      * \return \a true in case of a fixed/stationary rigid body, \a false in
@@ -209,9 +218,9 @@ namespace elastica {
     inline auto RigidBodyPrimitive::getID() const noexcept -> id_t {
       return uid_;
     }
-    //*************************************************************************************************
+    //**************************************************************************
 
-    //*************************************************************************************************
+    //**************************************************************************
     /*!\brief Returns the global position of the center of mass of the rigid
      * body.
      *
@@ -220,9 +229,23 @@ namespace elastica {
     inline const Vec3& RigidBodyPrimitive::get_position() const noexcept {
       return gpos_;
     }
-    //*************************************************************************************************
+    //**************************************************************************
 
-    //*************************************************************************************************
+    //**************************************************************************
+    /*!\brief Returns the rotation of the rigid body.
+     *
+     * \return The rotation of the rigid body.
+     *
+     * This function returns the rotation matrix of the rigid body, which
+     * represents the rotation of the body in reference to the global world
+     * frame.
+     */
+    inline const Rot3& RigidBodyPrimitive::get_rotation() const noexcept {
+      return Q_;
+    }
+    //**************************************************************************
+
+    //**************************************************************************
     /*!\brief Returns the axis-aligned bounding box of the rigid body.
      *
      * \return The axis-aligned bounding box of the rigid body.
@@ -231,9 +254,9 @@ namespace elastica {
         const noexcept {
       return aabb_;
     }
-    //*************************************************************************************************
+    //**************************************************************************
 
-    //*************************************************************************************************
+    //**************************************************************************
     /*!\brief Returns the global angular velocity.
      *
      * \return The global angular velocity.
@@ -245,9 +268,77 @@ namespace elastica {
         const noexcept {
       return w_;
     }
-    //*************************************************************************************************
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Transformation from a relative to a global vector.
+     *
+     * \param vx The x-component of the relative vector.
+     * \param vy The y-component of the relative vector.
+     * \param vz The z-component of the relative vector.
+     * \return The transformed global vector.
+     *
+     * The function calculates the transformation of a vector in body frame to a
+     * vector in global world frame.
+     */
+    inline auto RigidBodyPrimitive::from_body_FOR_to_world_FOR(real_t vx,
+                                                               real_t vy,
+                                                               real_t vz) const
+        -> Vec3 {
+      return trans(Q_) * Vec3{vx, vy, vz};
+    }
+    //**************************************************************************
 
     //*************************************************************************************************
+    /*!\brief Transformation from a relative to a global vector.
+     *
+     * \param v the relative vector.
+     * \return The transformed global vector.
+     *
+     * The function calculates the transformation of a vector in body frame to a
+     * vector in global world frame.
+     */
+    inline auto RigidBodyPrimitive::from_body_FOR_to_world_FOR(
+        const Vec3& v) const -> Vec3 {
+      return trans(Q_) * v;
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Transformation from a global to a relative vector.
+     *
+     * \param vx The x-component of the global vector.
+     * \param vy The y-component of the global vector.
+     * \param vz The z-component of the global vector.
+     * \return The transformed relative vector.
+     *
+     * The function calculates the transformation of a vector in global world
+     * frame to a vector in body frame.
+     */
+    inline auto RigidBodyPrimitive::from_world_FOR_to_body_FOR(real_t vx,
+                                                               real_t vy,
+                                                               real_t vz) const
+        -> Vec3 {
+      return Q_ * Vec3{vx, vy, vz};
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Transformation from a global to a relative vector.
+     *
+     * \param v The global vector.
+     * \return The transformed relative vector.
+     *
+     * The function calculates the transformation of a vector in global world
+     * frame to a vector in body frame.
+     */
+    inline auto RigidBodyPrimitive::from_world_FOR_to_body_FOR(
+        const Vec3& v) const -> Vec3 {
+      return Q_ * v;
+    }
+    //**************************************************************************
+
+    //**************************************************************************
     /*!\brief Calculation of the global velocity of a point in global
      * coordinates.
      *
@@ -264,9 +355,9 @@ namespace elastica {
                                                             real_t pz) const {
       return velocity_from_world_FOR(Vec3{px, py, pz});
     }
-    //*************************************************************************************************
+    //**************************************************************************
 
-    //*************************************************************************************************
+    //**************************************************************************
     /*!\brief Calculation of the global velocity of a point in global
      * coordinates.
      *
@@ -282,7 +373,7 @@ namespace elastica {
       // noexcept
       return v_ + w_ % (gpos - gpos_);
     }
-    //*************************************************************************************************
+    //**************************************************************************
 
     inline void RigidBodyPrimitive::add_force_at_position(real_t fx, real_t fy,
                                                           real_t fz, real_t px,
@@ -319,6 +410,17 @@ namespace elastica {
     auto RigidBodyPrimitive::get_torque() const noexcept -> const Vec3& {
       return torque_;
     }
+
+    //**************************************************************************
+    /*!\brief Resetting all acting forces and torques from the rigid body.
+     *
+     * \return void
+     */
+    void RigidBodyPrimitive::reset_forces_and_torques() {
+      force_ = real_t(0);
+      torque_ = real_t(0);
+    }
+    //**************************************************************************
 
     //    auto RigidBodyPrimitive::accFromWF(real_t px, real_t py, real_t pz)
     //    const

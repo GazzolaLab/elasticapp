@@ -23,6 +23,42 @@ namespace elastica {
           C, cpp17::void_t<typename C::AdmissibleSystemCollectionTags>>
           : std::true_type {};
 
+      // DONE Should be in a traits namespace somewhere
+
+      /*
+      // Version 1 : n instantiations, each with two types : makes it harder to
+      use.
+
+      template <typename SystemTag> struct SystemTagUnpacker { struct
+      GetPrimitiveType { using type = typename SystemTag::PrimitiveType;
+        };
+
+        struct GetSystemCollectionType {
+          using type = typename SystemTag::SystemCollectionType;
+        };
+      };
+
+        template <typename SystemTag>
+        struct IsValidSystemTag<
+            SystemTag,
+            cpp17::void_t<
+                typename SystemTagUnpacker<
+                    SystemTag>::GetSystemCollectionType::type,
+                typename SystemTagUnpacker<SystemTag>::GetPrimitiveType::type>>
+            : std::true_type {};
+       */
+
+      // Version 2 : 2n instantiations of single type, easier to use with TMPL
+      template <typename SystemTag>
+      struct GetPrimitive {
+        using type = typename SystemTag::PrimitiveType;
+      };
+
+      template <typename SystemTag>
+      struct GetSystemCollection {
+        using type = typename SystemTag::SystemCollectionType;
+      };
+
       namespace detail {
 
         // Helper struct to check if the environment tags are valid (aka should
@@ -32,8 +68,9 @@ namespace elastica {
 
         template <typename SystemTag>
         struct IsValidSystemTag<
-            SystemTag, cpp17::void_t<typename SystemTag::SystemCollectionType,
-                                     typename SystemTag::PrimitiveType>>
+            SystemTag,
+            cpp17::void_t<typename GetSystemCollection<SystemTag>::type,
+                          typename GetPrimitive<SystemTag>::type>>
             : std::true_type {};
 
       }  // namespace detail

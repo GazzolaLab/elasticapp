@@ -41,7 +41,7 @@ namespace elastica {
       PlanePrimitive(PlanePrimitive&&) noexcept;
 
      public:
-      inline auto get_normal() const noexcept -> decltype(trans(blaze::row<1UL>(rot_mat_)));
+      inline auto get_normal() const noexcept -> decltype(trans(blaze::row<1UL>(Q_)));
       inline decltype(auto) get_normal() noexcept;
       //      inline real_t get_displacement() const noexcept;
       //      inline real_t& get_displacement() noexcept;
@@ -84,8 +84,8 @@ namespace elastica {
      * \return The normal of the plane.
      */
     inline auto PlanePrimitive::get_normal() const noexcept
-        -> decltype(trans(blaze::row<1UL>(rot_mat_))) {
-      return trans(blaze::row<1UL>(rot_mat_));
+        -> decltype(trans(blaze::row<1UL>(Q_))) {
+      return trans(blaze::row<1UL>(Q_));
     }
     //*************************************************************************************************
 
@@ -96,7 +96,7 @@ namespace elastica {
      * \return The normal of the plane.
      */
     inline decltype(auto) PlanePrimitive::get_normal() noexcept {
-      return trans(blaze::row<1UL>(rot_mat_));
+      return trans(blaze::row<1UL>(Q_));
     }
     //*************************************************************************************************
 
