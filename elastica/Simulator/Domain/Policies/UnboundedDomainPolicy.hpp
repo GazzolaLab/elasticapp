@@ -23,16 +23,16 @@ namespace elastica {
 
     UnboundedDomainPolicy() = default;
 
-    ~UnboundedDomainPolicy() = default;
+    ~UnboundedDomainPolicy() override = default;
 
-    void set(SpanType&&, SpanType&&, SpanType&&) const noexcept{};
+    void set(SpanType&&, SpanType&&, SpanType&&) const noexcept{}
 
-    void set(Real, Real, Real, Real, Real, Real) const noexcept{};
+    void set(Real, Real, Real, Real, Real, Real) const noexcept{}
 
     template <typename VecLike>
-    void set(Span<VecLike> ) const noexcept{};
+    void set(Span<VecLike> ) const noexcept{}
 
-    void set(const Vec3& , const Vec3& ) const noexcept{};
+    void set(const Vec3& , const Vec3& ) const noexcept{}
 
     template <std::size_t Direction, Requires<(Direction < 3UL)> = nullptr>
     inline constexpr Real get_lower_bound() const noexcept {

@@ -422,10 +422,10 @@ namespace elastica {
       void check_domain() {
         // https://stackoverflow.com/questions/12958925/expand-macros-inside-quoted-string
 #define CHECK_DOMAIN_PERIODIC_ALONG(DIRECTION)                        \
-  if (std::is_same<BoundaryTypeAlong<domain_.DIRECTION>,              \
+  if (std::is_same<BoundaryTypeAlong<DomainType::DIRECTION>,              \
                    PeriodicBoundary>::value and                       \
-      (is_inf(domain_.template get_lower_bound<domain_.DIRECTION>) or \
-       is_inf(domain_.template get_upper_bound<domain_.DIRECTION>)))  \
+      (is_inf(domain_.template get_lower_bound<DomainType::DIRECTION>) or \
+       is_inf(domain_.template get_upper_bound<DomainType::DIRECTION>)))  \
     throw std::runtime_error(                                         \
         "DomainType is set to be Periodic along " #DIRECTION          \
         " yet span of the domain along is unset (or) infinite "       \

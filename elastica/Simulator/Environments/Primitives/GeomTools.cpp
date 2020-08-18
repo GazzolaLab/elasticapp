@@ -32,7 +32,6 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/Math/Dot.hpp"
 
-
 namespace elastica {
   //============================================================================
   //
@@ -58,9 +57,10 @@ namespace elastica {
    * line will be returned. This will also work correctly for zero length lines,
    * e.g. if \a a1 = \a a2 and/or \a b1 = \a b2.
    */
-  void get_closest_line_segment_points(const Vec3& a1, const Vec3& a2,
-                                       const Vec3& b1, const Vec3& b2,
-                                       Vec3& cp1, Vec3& cp2) {
+  GeomTools::ClosestLineSegmentPointsReturnType
+  GeomTools::get_closest_line_segment_points(const Vec3& a1, const Vec3& a2,
+                                             const Vec3& b1, const Vec3& b2,
+                                             Vec3& cp1, Vec3& cp2) {
     //----- Checking the vertex-vertex features -----
 
     const Vec3 a1a2(a2 - a1);
@@ -71,34 +71,34 @@ namespace elastica {
     if (da1 <= real_t(0) and db1 >= real_t(0)) {
       cp1 = a1;
       cp2 = b1;
-      return;
+      return ClosestLineSegmentPointsReturnType{LEFT, LEFT};
     }
 
     const Vec3 a1b2(b2 - a1);
-    const real_t da2(dot(a1a2 , a1b2));
-    const real_t db2(dot(b1b2 , a1b2));
+    const real_t da2(dot(a1a2, a1b2));
+    const real_t db2(dot(b1b2, a1b2));
     if (da2 <= real_t(0) and db2 <= real_t(0)) {
       cp1 = a1;
       cp2 = b2;
-      return;
+      return ClosestLineSegmentPointsReturnType{LEFT, RIGHT};
     }
 
     const Vec3 a2b1(b1 - a2);
-    const real_t da3(dot(a1a2 , a2b1));
-    const real_t db3(dot(b1b2 , a2b1));
+    const real_t da3(dot(a1a2, a2b1));
+    const real_t db3(dot(b1b2, a2b1));
     if (da3 >= real_t(0) && db3 >= real_t(0)) {
       cp1 = a2;
       cp2 = b1;
-      return;
+      return ClosestLineSegmentPointsReturnType{RIGHT, LEFT};
     }
 
     const Vec3 a2b2(b2 - a2);
-    const real_t da4(dot(a1a2 , a2b2));
-    const real_t db4(dot(b1b2 , a2b2));
+    const real_t da4(dot(a1a2, a2b2));
+    const real_t db4(dot(b1b2, a2b2));
     if (da4 >= real_t(0) && db4 <= real_t(0)) {
       cp1 = a2;
       cp2 = b2;
-      return;
+      return ClosestLineSegmentPointsReturnType{RIGHT, RIGHT};
     }
 
     //----- Checking the edge-vertex features -----
@@ -109,24 +109,24 @@ namespace elastica {
     // n => normal, k => projection of a_i b_j on a_1a_2 or b_1b_2
     Vec3 n, k;
 
-    const real_t la(dot(a1a2 , a1a2));
+    const real_t la(dot(a1a2, a1a2));
     if (da1 >= real_t(0) && da3 <= real_t(0)) {
       k = (da1 / la) * a1a2;
       n = a1b1 - k;
-      if (dot(b1b2 , n) >= real_t(0)) {
+      if (dot(b1b2, n) >= real_t(0)) {
         cp1 = a1 + k;
         cp2 = b1;
-        return;
+        return ClosestLineSegmentPointsReturnType{MIDDLE, LEFT};
       }
     }
 
     if (da2 >= real_t(0) && da4 <= real_t(0)) {
       k = (da2 / la) * a1a2;
       n = a1b2 - k;
-      if (dot(b1b2 , n) <= real_t(0)) {
+      if (dot(b1b2, n) <= real_t(0)) {
         cp1 = a1 + k;
         cp2 = b2;
-        return;
+        return ClosestLineSegmentPointsReturnType{MIDDLE, RIGHT};
       }
     }
 
@@ -134,20 +134,20 @@ namespace elastica {
     if (db1 <= real_t(0) && db2 >= real_t(0)) {
       k = (-db1 / lb) * b1b2;
       n = -a1b1 - k;
-      if (dot(a1a2 , n) >= real_t(0)) {
+      if (dot(a1a2, n) >= real_t(0)) {
         cp1 = a1;
         cp2 = b1 + k;
-        return;
+        return ClosestLineSegmentPointsReturnType{LEFT, MIDDLE};
       }
     }
 
     if (db3 <= real_t(0) && db4 >= real_t(0)) {
       k = (-db3 / lb) * b1b2;
       n = -a2b1 - k;
-      if (dot(a1a2 , n) <= real_t(0)) {
+      if (dot(a1a2, n) <= real_t(0)) {
         cp1 = a2;
         cp2 = b1 + k;
-        return;
+        return ClosestLineSegmentPointsReturnType{RIGHT, MIDDLE};
       }
     }
 
@@ -156,7 +156,7 @@ namespace elastica {
     // and b_1 + t * (b_2 - b_1) with 0 <= s, t <= 1
     // guaranteed, find the values of s and t
 
-    const real_t scale(dot(a1a2 , b1b2));
+    const real_t scale(dot(a1a2, b1b2));
     real_t div(la * lb - scale * scale);
 
     ELASTICA_ASSERT(div > real_t(0.0), "Invalid division");
@@ -167,6 +167,7 @@ namespace elastica {
 
     cp1 = a1 + s * a1a2;
     cp2 = b1 + t * b1b2;
+    return ClosestLineSegmentPointsReturnType{MIDDLE, MIDDLE};
   }
   //****************************************************************************
 }  // namespace elastica

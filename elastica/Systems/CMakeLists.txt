@@ -3,6 +3,7 @@ set(LIBRARY Systems)
 add_elastica_library(${LIBRARY})
 
 add_subdirectory(RigidBody)
+add_subdirectory(CosseratRods)
 
 elastica_target_headers(
         ${LIBRARY}

@@ -32,28 +32,33 @@ SOFTWARE.
 
 namespace utilities {
 
-template <typename T, typename Parameter, template <typename> class... Skills>
-class NamedType : public Skills<NamedType<T, Parameter, Skills...>>... {
-public:
-  using UnderlyingType = T;
+  template <typename T, typename Parameter, template <typename> class... Skills>
+  class NamedType : public Skills<NamedType<T, Parameter, Skills...>>... {
+   public:
+    using UnderlyingType = T;
 
-  // constructor
-  explicit constexpr NamedType(T const &value) : value_(value) {}
-  // Works for a reference T too
-  template <typename T_ = T,
-            typename std::enable_if<!std::is_reference<T_>::value, void>::type>
-  explicit constexpr NamedType(T &&value) : value_(std::move(value)) {}
+    // constructor
+    explicit constexpr NamedType(T const& value) : value_(value) {}
+    // Works for a reference T too
+    template <typename T_ = T, typename std::enable_if<
+                                   !std::is_reference<T_>::value, void>::type>
+    explicit constexpr NamedType(T&& value) : value_(std::move(value)) {}
 
-  // get
-  constexpr T &get() { return value_; }
-  constexpr std::remove_reference_t<T> const &get() const { return value_; }
+    // get
+    constexpr T& get() { return value_; }
+    constexpr std::remove_reference_t<T> const& get() const { return value_; }
 
-  // conversions
-  using ref = NamedType<T &, Parameter, Skills...>;
-  operator ref() { return ref(value_); }
+    // conversions
+    using ref = NamedType<T&, Parameter, Skills...>;
+    operator ref() { return ref(value_); }
 
-private:
-  T value_;
-};
+   private:
+    T value_;
+  };
 
-} // namespace utilities
+  template <template <typename T> class StrongType, typename T>
+  constexpr StrongType<T> make_named(T const& value) {
+    return StrongType<T>(value);
+  }
+
+}  // namespace utilities

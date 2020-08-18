@@ -1,0 +1,72 @@
+* Detecting collision between contiguous primitives
+
+** Algorithm
+
+   - For current contiguous primitive (ccp) + other primitive (op)
+    - if CACHE:
+        return ; // Already cached as done in some previous loop
+
+      dist = compute_dist()
+    - curr_status, _ = get_closest_point(cpp, op)
+    - if dist < threshold :
+        if (status == MIDDLE)
+           // continue, this primitive is closest
+        else
+            switch (status)
+                ContiguousPrimitive* neighbour_ptr = next or prev
+
+            // This situation arises when more than two neighbors
+            // are in contact
+            if CACHE:
+                return // Already cached as done in previous loop
+
+            CACHE next_status (needs more thinking)
+
+            np = *neigbour_ptr
+            neighbor_status, _ = get_closest_point(np, op)
+            next_dist = compute_dist()
+
+            if next_dist < threshold:
+                // Seems like next is also intersecting
+                if neighbor_status == MIDDLE
+                    // neighbor intersects more closer
+                    ASSERT(next_dist < dist)
+                    // only process that neighbor
+                    add_contact(neighbor_primitive, op)
+
+                // Both are intersecting but at the sphere
+                if neighbor_status | status
+                    add_contact(current_primitive, op, 0.5 * multiplier)
+                    add_contact(neighbor_primitive, op, 0.5 * multiplier)
+                    return;
+
+                // both are intersecting, but degenerate (one lying
+                // on top of another, say)
+                if neighbor status == status
+                    add_contact(
+
+
+            // else
+                // next doe not intersect, we are safe, no checks
+
+        // Next is not intersecting, safe
+        add_contact(current_primitive, op)
+
+
+    - No problem if both are contiguous types
+        - we only look for neighbors of one type
+        - because of HHG, the order in fine detector is assured (smallest collides with smallest
+        or largest, never the other way around)
+        - Even if thats the case, if we use a hash for a case st
+        HASH(a, b) = HASH(b, a)
+        then it assures that nothing will be processed twice
+    - What if three neighboring primitives intersect?
+    Assume withot loss of generality (Left (L), center (C) and right (R))
+    primitives are AABB intersecting
+        - cASE 1 : get closest poitn returns middle for all
+            - the respective primitives take care
+            - no issues
+        - case 2 ; gcp returns right for L, left for R
+            - C : middle
+                - L takes care, no issues (two contact points there)
+                - no added contacts for L or R

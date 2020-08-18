@@ -15,10 +15,14 @@
 namespace elastica {
 
   template <typename Real>
-  class PeriodicDomainPolicy : public NonCopyable, detail::Directions {
+  class PeriodicDomainPolicy : public NonCopyable{
    public:
     using SpanType = Span<Real>;
     using SpanStorage = std::array<SpanType, 3UL>;
+
+    static constexpr auto X = detail::Directions::X;
+    static constexpr auto Y = detail::Directions::Y;
+    static constexpr auto Z = detail::Directions::X;
 
     PeriodicDomainPolicy() {
 #ifdef ELASTICA_DEBUG
@@ -31,7 +35,7 @@ namespace elastica {
       spans_[Z] = SpanType(-inf, inf);
     }
 
-    ~PeriodicDomainPolicy() = default;
+    ~PeriodicDomainPolicy() override = default;
 
     void set(SpanType&& x_span, SpanType&& y_span,
                     SpanType&& z_span) noexcept {

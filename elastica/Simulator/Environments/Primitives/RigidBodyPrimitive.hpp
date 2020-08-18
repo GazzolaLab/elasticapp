@@ -64,7 +64,7 @@ namespace elastica {
       //**Destructor************************************************************
       /*!\name Destructor */
       //@{
-      virtual ~RigidBodyPrimitive() = 0;
+      ~RigidBodyPrimitive() override = 0;
       //@}
       //************************************************************************
      public:

@@ -23,7 +23,7 @@ namespace elastica {
 
     class CylinderPrimitive final
         : public ApproximateCylinderPrimitive,
-          ::tt::ConformsTo<protocols::ConvexPrimitive> {
+          public ::tt::ConformsTo<protocols::ConvexPrimitive> {
      public:
       //**Constructor***********************************************************
       /*!\name Constructor */

@@ -10,11 +10,11 @@ elastica_target_sources(
         ApproximateCylinderPrimitive.cpp
         RigidBodyPrimitive.cpp
         CapsulePrimitive.cpp
+        CylinderPrimitive.cpp
         GeomPrimitive.cpp
         GeomTools.cpp
         SpherePrimitive.cpp
         PlanePrimitive.cpp
-        CylinderPrimitive.cpp
 )
 
 elastica_target_headers(
@@ -22,13 +22,16 @@ elastica_target_headers(
         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
         ApproximateCylinderPrimitive.hpp
         CapsulePrimitive.hpp
+        ContiguousPrimitives.hpp
+        CylinderPrimitive.hpp
         RigidBodyPrimitive.hpp
         GeomPrimitive.hpp
         GeomTools.hpp
         SpherePrimitive.hpp
         PlanePrimitive.hpp
-        CylinderPrimitive.hpp
 )
+
+add_subdirectory(detail)
 
 #target_include_directories(${LIBRARY} Environments)
 

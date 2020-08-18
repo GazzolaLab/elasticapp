@@ -22,7 +22,8 @@ namespace elastica {
   namespace collision {
 
     class ApproximateCylinderPrimitive : public GeomPrimitive {
-     public:
+      // Now we never directly access Approximate cylinder
+     protected:
       //**Constructor***********************************************************
       /*!\name Constructor */
       //@{
@@ -184,11 +185,10 @@ namespace elastica {
      * TODO Fill in
      */
     template <typename Vec3Convertible, typename Rot3Convertible>
-    void ApproximateCylinderPrimitive::transfer(real_t radius, real_t length,
-                                     Vec3Convertible const& gpos,
-                                     Rot3Convertible const& rot_mat,
-                                     Vec3Convertible const& velocity,
-                                     Vec3Convertible const& omega) noexcept {
+    void ApproximateCylinderPrimitive::transfer(
+        real_t radius, real_t length, Vec3Convertible const& gpos,
+        Rot3Convertible const& rot_mat, Vec3Convertible const& velocity,
+        Vec3Convertible const& omega) noexcept {
       radius_ = radius;
       length_ = length;
 

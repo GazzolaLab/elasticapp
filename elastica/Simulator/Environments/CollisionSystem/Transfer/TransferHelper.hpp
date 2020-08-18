@@ -56,7 +56,7 @@ namespace elastica {
         // Generic implementation to fall back to, can use public members
         Transfer<SystemTag>::template do_transfer<PrimitiveIterator>(
             from, collection, to, start, end);
-      };
+      }
 
       template <typename ConstPrimitiveIterator>
       static void transfer(to_t /* meta */, SystemCollectionType& collection,
@@ -79,7 +79,7 @@ namespace elastica {
 
         Transfer<SystemTag>::template do_transfer<ConstPrimitiveIterator>(
             to, collection, from, start, end);
-      };
+      }
     };
 
   }  // namespace collision

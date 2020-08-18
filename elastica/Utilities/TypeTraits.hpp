@@ -369,21 +369,25 @@ namespace tt {
   /// \tparam T type to check
   /// \tparam U the type that T might be a template specialization of
   namespace detail {
-    template <template <typename...> class U, typename T>
-    struct is_a : std::false_type {};
     /// \cond HIDDEN_SYMBOLS
-    template <template <typename...> class U, typename... Args>
-    struct is_a<U, U<Args...>> : std::true_type {};
+    template <template <typename...> class U>
+    struct is_a {
+      template <typename ...>
+      struct check : std::false_type {};
+
+      template <typename ... Args>
+      struct check<U<Args...>> : std::true_type {};
+    };
     /// \endcond
   }  // namespace detail
 
   /// \see is_a
   template <template <typename...> class U, typename... Args>
-  constexpr bool is_a_v = detail::is_a<U, Args...>::value;
+  constexpr bool is_a_v = detail::is_a<U>::template check<Args...>::value;
 
   /// \see is_a
   template <template <typename...> class U, typename... Args>
-  using is_a_t = typename detail::is_a<U, Args...>::type;
+  using is_a_t = typename detail::is_a<U>::template check<Args...>::type;
   // @}
 
   // @{

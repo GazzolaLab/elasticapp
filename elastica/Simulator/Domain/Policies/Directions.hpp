@@ -2,15 +2,18 @@
 
 #include <cstddef>
 
+#include "Utilities/NonCreatable.hpp"
+
 namespace elastica {
 
-  namespace detail{
+  namespace detail {
 
-    struct Directions{
-      static constexpr std::size_t X = 0UL;
-      static constexpr std::size_t Y = 1UL;
-      static constexpr std::size_t Z = 2UL;
+    struct Directions  : public NonCreatable {
+      static constexpr unsigned char X = 0;
+      static constexpr unsigned char Y = 1;
+      static constexpr unsigned char Z = 2;
     };
 
-  }
-}
+  }  // namespace detail
+
+}  // namespace elastica

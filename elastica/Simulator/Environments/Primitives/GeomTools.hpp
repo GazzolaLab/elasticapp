@@ -26,10 +26,12 @@
 //******************************************************************************
 // Includes
 //******************************************************************************
+#include <tuple>
 
 #include "Utilities/DefineTypes.h"
 #include "Utilities/Math/Rot3.hpp"
 #include "Utilities/Math/Vec3.hpp"
+#include "Utilities/NonCreatable.hpp"
 
 namespace elastica {
   //============================================================================
@@ -44,13 +46,26 @@ namespace elastica {
    */
   //****************************************************************************
 
-  //****************************************************************************
-  /*!\name Geometry functions */
-  //@{
-  void get_closest_line_segment_points(const Vec3& a1, const Vec3& a2,
-                                       const Vec3& b1, const Vec3& b2,
-                                       Vec3& cp1, Vec3& cp2);
-  //@}
-  //****************************************************************************
+  struct GeomTools : private NonCreatable {
+    using ClosestLineSegmentPointsStatus = unsigned char;
+
+    // Can wrap in an enum, but makes it more harder at the call site
+    static constexpr ClosestLineSegmentPointsStatus LEFT = 0;
+    static constexpr ClosestLineSegmentPointsStatus RIGHT = 1;
+    static constexpr ClosestLineSegmentPointsStatus MIDDLE = 2;
+
+    using ClosestLineSegmentPointsReturnType =
+        std::pair<ClosestLineSegmentPointsStatus,
+                  ClosestLineSegmentPointsStatus>;
+
+    //****************************************************************************
+    /*!\name Geometry functions */
+    //@{
+    static ClosestLineSegmentPointsReturnType get_closest_line_segment_points(
+        const Vec3& a1, const Vec3& a2, const Vec3& b1, const Vec3& b2,
+        Vec3& cp1, Vec3& cp2);
+    //@}
+    //****************************************************************************
+  };
 
 }  // namespace elastica

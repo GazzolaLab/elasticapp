@@ -21,9 +21,10 @@ namespace elastica {
 
   namespace collision {
 
-    class CapsulePrimitive final
+    class CapsulePrimitive
         : public ApproximateCylinderPrimitive,
-          ::tt::ConformsTo<protocols::ConvexPrimitive> {
+          public ::tt::ConformsTo<protocols::ConvexPrimitive> {
+     public:
       //**Constructor***********************************************************
       /*!\name Constructor */
       //@{
@@ -39,7 +40,7 @@ namespace elastica {
       //**Destructor************************************************************
       /*!\name Destructor */
       //@{
-      ~CapsulePrimitive() noexcept final;
+      ~CapsulePrimitive() noexcept override;
       //@}
       //************************************************************************
 

@@ -2,6 +2,8 @@
 
 #include <type_traits>
 
+#include "elastica/Simulator/Environments/Primitives/RigidBodyPrimitive.hpp"
+
 namespace elastica {
 
   namespace collision {
@@ -12,7 +14,7 @@ namespace elastica {
     //
     //==========================================================================
 
-    class RigidBodyPrimitive;
+    //    class RigidBodyPrimitive;
 
     namespace tt {
 

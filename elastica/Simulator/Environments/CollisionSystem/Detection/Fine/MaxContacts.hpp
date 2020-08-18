@@ -88,8 +88,9 @@ namespace elastica {
           // order as specified
           // !NOTE : This is no longer necessary given our symmetric collide
           // functions below
+          /*ApproximateCylinderPrimitive,*/
           using PrimitiveOrdering =
-              tmpl::list<ApproximateCylinderPrimitive, SpherePrimitive,
+              tmpl::list<ContiguousCapsulePrimitive, SpherePrimitive,
                          CylinderPrimitive, CapsulePrimitive, PlanePrimitive>;
 
           //**Contact interface functions***********************************
@@ -133,6 +134,11 @@ namespace elastica {
           //@{
 
           // Specializations
+
+          /*
+           * Approximate cylinder specializations : DEPRECATED
+           */
+          /*
           template <typename CC>  // Type of the contact container
           static inline void do_collide(ApproximateCylinderPrimitive& c1,
                                         ApproximateCylinderPrimitive& c2,
@@ -141,6 +147,8 @@ namespace elastica {
           static inline void do_collide(ApproximateCylinderPrimitive& c,
                                         SpherePrimitive& s,
                                         CC& contacts) noexcept;
+          */
+
           /* GJK collision
           template <typename CC>  // Type of the contact container
           static inline void do_collide(ApproximateCylinderPrimitive& c1,
@@ -164,6 +172,24 @@ namespace elastica {
           template <typename CC>  // Type of the contact container
           static inline void do_collide(SpherePrimitive& s, PlanePrimitive& p,
                                         CC& contacts) noexcept;
+
+          /*
+           * Capsule specializations
+           */
+          template <typename CC>  // Type of the contact container
+          static inline void do_collide(CapsulePrimitive& c1,
+                                        CapsulePrimitive& c2,
+                                        CC& contacts) noexcept;
+
+          template <typename CC>  // Type of the contact container
+          static inline void do_collide(CapsulePrimitive& c, PlanePrimitive& p,
+                                        CC& contacts) noexcept;
+
+          /*
+           * Plane specializations
+           */
+          // Plane-plane case : never called. If it is, then this issues a
+          // compile time error
 
           // Default case, not marked noexcept because GJK and EPA can throw
           template <
@@ -298,7 +324,8 @@ namespace elastica {
          * parallel to each other and touch each other along their cylindrical
          * part, two contact points are generated. In all other cases, a single
          * contact point between the calculated closest points is generated.
-         */
+         *
+         * DEPRECATED!
         template <typename CC>  // Type of the contact container
         inline void MaxContacts::do_collide(ApproximateCylinderPrimitive& c1,
                                             ApproximateCylinderPrimitive& c2,
@@ -366,11 +393,11 @@ namespace elastica {
               }
 
               LOG_DEBUG_SECTION(log) {
-                  log << "      Second contact created between approximate "
-                         "cylinder "
-                      << c1.getID() << " and approximate cylinder " << c2.getID()
-                      << " (dist=" << dist << ")";
-                }
+                log << "      Second contact created between approximate "
+                       "cylinder "
+                    << c1.getID() << " and approximate cylinder " << c2.getID()
+                    << " (dist=" << dist << ")";
+              }
 
               // Creating the "lower" contact point in world coordinates
               if (-half_length_1 > c2x - half_length_2) {
@@ -399,6 +426,7 @@ namespace elastica {
             }
           }
         }
+        */
         //**********************************************************************
 
         //**********************************************************************
@@ -421,7 +449,9 @@ namespace elastica {
          * \image html collideSphereSphere.png
          * \image latex collideSphereSphere.eps "Collision between two
          * spheres" width=236pt
-         */
+         *
+         * DEPRECATED
+         *
         template <typename CC>  // Type of the contact container
         inline void MaxContacts::do_collide(ApproximateCylinderPrimitive& c,
                                             SpherePrimitive& s,
@@ -482,6 +512,7 @@ namespace elastica {
             contacts.addVertexFaceContact(&c, &s, gPos, normal, dist);
           }
         }
+         */
         //**********************************************************************
 
         //**********************************************************************
@@ -571,8 +602,223 @@ namespace elastica {
           }
         }
 
+        // TODO : Confirm change from pe (the definition of k is changed)
+        //**********************************************************************
+        /*!\brief Contact generation between two colliding capsule
+         * primitives.
+         * \ingroup contact_generation
+         *
+         * \param c1 The first colliding capsule.
+         * \param c2 The second colliding capsule.
+         * \param contacts Contact container for the generated contacts.
+         * \return void
+         *
+         * In case of two colliding capsules one or two contact
+         * points may be generated. In order to estimate if the two
+         * capsules are colliding, the closest points on both centerlines are
+         * calculated (see elastica::get_closest_line_segment_points). If the
+         * distance of these two points is smaller than the sum of their radii,
+         * the two capsules are colliding. In case they are lying
+         * parallel to each other and touch each other along their cylindrical
+         * part, two contact points are generated. In all other cases, a single
+         * contact point between the calculated closest points is generated.
+         */
+        template <typename CC>  // Type of the contact container
+        inline void MaxContacts::do_collide(CapsulePrimitive& c1,
+                                            CapsulePrimitive& c2,
+                                            CC& contacts) noexcept {
+          const Vec3& c1pos(c1.get_position());
+          const Vec3& c2pos(c2.get_position());
+
+          const Rot3& Q1(c1.get_rotation());
+          const Rot3& Q2(c2.get_rotation());
+
+          // Calculating the "up" direction for both capsules that
+          // points from the center of mass to the center of the upper disc of
+          // each capsule
+          const Vec3 c1_up_dir{Q1(2, 0), Q1(2, 1), Q1(2, 2)};
+          const Vec3 c2_up_dir{Q2(2, 0), Q2(2, 1), Q2(2, 2)};
+
+          // Calculating the displacement of the center of the upper cap-spheres
+          // in world space coordinates
+          const Vec3 c1_up(real_t(0.5) * c1.get_length() * c1_up_dir);
+          const Vec3 c2_up(real_t(0.5) * c2.get_length() * c2_up_dir);
+
+          // calculate the closest points of the two center lines
+          Vec3 cp1, cp2;
+          GeomTools::get_closest_line_segment_points(
+              c1pos + c1_up, c1pos - c1_up, c2pos + c2_up, c2pos - c2_up, cp1,
+              cp2);
+
+          Vec3 normal(cp1 - cp2);
+          const real_t dist(length(normal) - c1.get_radius() - c2.get_radius());
+          if (dist < contact_threshold) {
+            normal = normalize(normal);
+
+            // Calculating the relative x-position of the second capsule in the
+            // frame of the first capsule
+            const real_t c2x(dot(c1_up_dir, (c2pos - c1pos)));
+
+            // Creating two contact points if the capsules are parallel to each
+            // other
+            // No need to check for < parallel_threshold as its from the
+            // rotation matrix
+            if ((std::fabs(dot(c1_up_dir, c2_up_dir)) - real_t(1)) >
+                    -parallel_threshold and
+                std::fabs(c2x) < c1.get_length()) {
+              const real_t half_length_1(real_t(0.5) * c1.get_length());
+              const real_t half_length_2(real_t(0.5) * c2.get_length());
+
+              LOG_DEBUG_SECTION(log) {
+                log << "      First contact created between capsule "
+                    << c1.getID() << " and approximate cylinder " << c2.getID()
+                    << " (dist=" << dist << ")";
+              }
+
+              // Project everything onto the 1-dimensional parallel axis
+              // do intersection tests there
+              // and then reproject to global
+
+              // Creating the "upper" contact point in world coordinates
+              if (half_length_1 < c2x + half_length_2) {
+                const real_t k(c1.get_radius() + real_t(0.5) * dist);
+                contacts.addVertexFaceContact(
+                    &c1, &c2, c1pos + c1_up - k * normal, normal, dist);
+              } else {
+                // Cannot reuse c2_up as c2_up_dir and c1_up_dir can be
+                // antiparallel (if parallel there are no issues)
+                const real_t k(c2.get_radius() + real_t(0.5) * dist);
+                contacts.addVertexFaceContact(
+                    &c1, &c2, c2pos + half_length_2 * c1_up_dir + k * normal,
+                    normal, dist);
+              }
+
+              LOG_DEBUG_SECTION(log) {
+                log << "      Second contact created between capsule "
+                    << c1.getID() << " and approximate cylinder " << c2.getID()
+                    << " (dist=" << dist << ")";
+              }
+
+              // Creating the "lower" contact point in world coordinates
+              if (-half_length_1 > c2x - half_length_2) {
+                const real_t k(c1.get_radius() + real_t(0.5) * dist);
+                contacts.addVertexFaceContact(
+                    &c1, &c2, c1pos - c1_up - k * normal, normal, dist);
+              } else {
+                const real_t k(c2.get_radius() + real_t(0.5) * dist);
+                contacts.addVertexFaceContact(
+                    &c1, &c2, c2pos - half_length_2 * c1_up_dir + k * normal,
+                    normal, dist);
+              }
+
+            }
+            // Creating a single contact point
+            else {
+              const real_t k(c2.get_radius() + real_t(0.5) * dist);
+              const Vec3 gPos(cp2 + normal * k);
+
+              LOG_DEBUG_SECTION(log) {
+                log << "      Single contact created between capsule "
+                    << c1.getID() << " and approximate cylinder " << c2.getID()
+                    << " (dist=" << dist << ")";
+              }
+
+              contacts.addVertexFaceContact(&c1, &c2, gPos, normal, dist);
+            }
+          }
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Contact generation between a Capsule and a Plane.
+         * \ingroup contact_generation
+         *
+         * \param c The colliding capsule.
+         * \param p The colliding plane.
+         * \param contacts Contact container for the generated contacts.
+         * \return void
+         *
+         * The collision between a capsule and a plane is handled as two
+         * collisions between the two cap spheres and the plane: the contact
+         * points are calculated with a projection of the global positions of
+         * the spheres' center of mass on the plane's normal. If the length of
+         * the projection is smaller than the radius of the cap sphere, a
+         * contact point is generated, which results in a maximum of two contact
+         * points.
+         */
+        template <typename CC>  // Type of the contact container
+        inline void MaxContacts::do_collide(CapsulePrimitive& c,
+                                            PlanePrimitive& p,
+                                            CC& contacts) noexcept {
+          const Vec3& cpos(c.get_position());
+          const Rot3& Q(c.get_rotation());
+
+          // Calculating the displacement of the center of the upper cap-spheres
+          // in world space coordinates
+          const Vec3 c_up(real_t(0.5) * c.get_length() *
+                          Vec3{Q(2, 0), Q(2, 1), Q(2, 2)});
+          const Vec3 pos_upper_sphere(cpos + c_up);
+          const Vec3 pos_lower_sphere(cpos - c_up);
+
+          // Computing the distance between the sphere caps and the plane
+          const Vec3& normal(p.get_normal());
+          const real_t dist_upper_sphere(
+              std::abs(dot(normal, pos_upper_sphere - p.get_position())) -
+              c.get_radius());
+          const real_t dist_lower_sphere(
+              std::abs(dot(normal, pos_lower_sphere - p.get_position())) -
+              c.get_radius());
+
+          // Collision of the upper sphere with the plane
+          if (dist_upper_sphere < contact_threshold) {
+            LOG_DEBUG_SECTION(log) {
+              log << "      Contact created between capsule " << c.getID()
+                  << " and plane " << p.getID()
+                  << " (dist=" << dist_upper_sphere << ")";
+            }
+
+            contacts.addVertexFaceContact(
+                &c, &p, pos_upper_sphere - c.get_radius() * normal, normal,
+                dist_upper_sphere);
+          }
+
+          // Collision of the lower sphere with the plane
+          if (dist_lower_sphere < contact_threshold) {
+            LOG_DEBUG_SECTION(log) {
+              log << "      Contact created between capsule " << c.getID()
+                  << " and plane " << p.getID()
+                  << " (dist=" << dist_lower_sphere << ")";
+            }
+
+            contacts.addVertexFaceContact(
+                &c, &p, pos_lower_sphere - c.get_radius() * normal, normal,
+                dist_lower_sphere);
+          }
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Contact generation between two arbitrary convex primitives
+         * \ingroup contact_generation
+         *
+         * \tparam FirstPrimitive Type of the first colliding primitive
+         * \tparam SecondPrimitive Type of the second colliding primitive
+         * \tparam CC Type of the contact vector
+         *
+         * \param f The first colliding primitive.
+         * \param s The second colliding primitive.
+         * \param contacts Contact container for the generated contacts.
+         * \return void
+         *
+         * The collision between arbitrary convex primitives is handled
+         * using the GJK algorithm to check for intersections and then using
+         * the EPA algorithm to compute penetration depth, if large enough,
+         * else falling back to GJK's distance algorithm.
+         */
         template <
-            typename FirstPrimitive, typename SecondPrimitive, typename CC,
+            typename FirstPrimitive,   // Type of the first colliding primitive
+            typename SecondPrimitive,  // Type of the second colliding primitive
+            typename CC,               // Type of the contact vector
             Requires<cpp17::conjunction_v<
                 tt::is_rigid_primitive_v<FirstPrimitive>,
                 ::tt::conforms_to_v<FirstPrimitive, protocols::ConvexPrimitive>,

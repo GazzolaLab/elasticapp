@@ -58,7 +58,7 @@ namespace elastica {
                                  collection.get_angular_velocity(index));
               ++index;
             });
-      };
+      }
 
       template <typename ConstPrimIter>
       static void do_transfer(to_t /* meta */, SystemCollectionType& collection,
@@ -76,7 +76,7 @@ namespace elastica {
                         collection.get_torque(index) += primitive.get_torque();
                         ++index;
                       });
-      };
+      }
     };
 
   }  // namespace collision

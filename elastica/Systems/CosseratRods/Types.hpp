@@ -6,6 +6,6 @@ namespace elastica{
   // Forward declarations of cosserat rod types
   //////////////////////////////////////////////////////////////////////////////
 
-  class RigidBodyCollection;
-  class SphereCollection;
+//  class RigidBodyCollection;
+//  class SphereCollection;
 }
