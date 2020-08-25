@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "ErrorHandling/Assert.hpp"
-#include "Systems/CosseratRods/Policies/GeometryPolicies/Types.hpp"
+#include "Systems/CosseratRods/Policies/StrongTypes.hpp"
 #include "Utilities/DefineTypes.h"
 
 // smells, why here and not a static function?

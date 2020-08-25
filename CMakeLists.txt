@@ -79,5 +79,6 @@ include_directories(${CMAKE_SOURCE_DIR}/elastica)
 
 add_subdirectory(elastica)
 add_subdirectory(tests)
+add_subdirectory(examples)
 
 include(PrintUsefulCMakeInfo)

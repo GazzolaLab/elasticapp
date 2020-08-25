@@ -22,7 +22,7 @@ namespace elastica {
 
     namespace detail {
 
-      template <std::size_t>
+      template <::elastica::detail::Directions::DirectionType>
       struct BoundaryTypeAlongHelper;
 
       // Explicitly instantiate
@@ -44,9 +44,11 @@ namespace elastica {
     }  // namespace detail
 
     struct DomainConfiguration {
-      template <std::size_t N>
+      template <::elastica::detail::Directions::DirectionType N>
       using BoundaryTypeAlong =
           typename detail::BoundaryTypeAlongHelper<N>::type;
+
+      // Why not lazy?
 
       // if at least one (boundary_types) == periodic, then
       // periodic domain

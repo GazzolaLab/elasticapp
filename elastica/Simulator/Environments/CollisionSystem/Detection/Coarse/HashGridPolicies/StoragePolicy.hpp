@@ -2,8 +2,6 @@
 
 #include <vector>
 
-#include "elastica/Utilities/DefineTypes.h"
-
 namespace elastica {
 
   namespace collision {
@@ -14,7 +12,7 @@ namespace elastica {
 
         // TODO : Remove parallelization component for now add later
         // template <typename ParallelStrategy>
-        struct HashGridsStoragePolicy {
+        struct StoragePolicy {
           // Input :
           // AdmissiblePrimitives = tmpl::list<Sphere, Cylinder>
           // Output:

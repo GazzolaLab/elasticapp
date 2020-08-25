@@ -23,7 +23,7 @@ namespace elastica {
    protected:
     RigidBodyCollection(const VectorCollection& mc, const MatrixCollection& pc,
                         const MatrixCollection& vc);
-    virtual ~RigidBodyCollection();
+    ~RigidBodyCollection();
 
     // Virtual functions are not ideal since dynamic dispatch is involved
     // hence we don't use this. Rather we have a protocol to check if

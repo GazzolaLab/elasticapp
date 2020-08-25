@@ -11,15 +11,20 @@ namespace elastica {
 #define CONCAT(x, y) xxx(x, y)
 #define MAKE_PROFILE_TYPES(M, m)                                      \
   namespace tags {                                                    \
-    template <typename Func>                                          \
-    using CONCAT(M, Profile) =                                        \
-        utilities::NamedType<Func, struct CONCAT(M, ProfileTag)>;     \
+    struct CONCAT(M, ProfileTag) {};                                  \
+                                                                      \
+    namespace detail {                                                \
+      template <typename Func>                                        \
+      using CONCAT(M, ProfileTagInternal) =                           \
+          utilities::NamedType<Func, CONCAT(M, ProfileTag)>;          \
+    }                                                                 \
   }                                                                   \
                                                                       \
   template <typename Func>                                            \
-  constexpr tags::CONCAT(M, Profile)<Func> CONCAT(                    \
-      make, CONCAT(m, _profile))(Func && value) {                     \
-    return tags::CONCAT(M, Profile)<Func>(std::forward<Func>(value)); \
+  constexpr tags::detail::CONCAT(M, ProfileTagInternal)<Func> CONCAT( \
+      make_, CONCAT(m, _profile))(Func && value) {                    \
+    return tags::detail::CONCAT(                                      \
+        M, ProfileTagInternal)<Func>(std::forward<Func>(value));      \
   }
 
     /* This macro generates a strong type and a make_function
@@ -45,7 +50,7 @@ namespace elastica {
     MAKE_PROFILE_TYPES(Density, density);
     MAKE_PROFILE_TYPES(Velocity, velocity);
     MAKE_PROFILE_TYPES(Omega, omega);
-#undef STAMP_OUT_SIMULATION_METHOD_CHOOSERS
+#undef MAKE_PROFILE_TYPES
 #undef CONCAT
 #undef xxx
 

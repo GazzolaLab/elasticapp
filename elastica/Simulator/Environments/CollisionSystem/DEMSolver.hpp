@@ -14,6 +14,7 @@
 //"Simulator/Environments/CollisionSystem/Primitives/SpherePrimitive.hpp"
 #include "Simulator/Environments/CollisionSystem/Detection/Coarse/Detectors.hpp"
 #include "Simulator/Environments/CollisionSystem/Detection/Fine/Detectors.hpp"
+#include "Simulator/Environments/CollisionSystem/Policies/DomainPolicy.hpp"
 #include "Simulator/Environments/CollisionSystem/Response/DEMForces/TypeTraits.hpp"
 #include "Simulator/Environments/CollisionSystem/Response/DEMSolver.hpp"
 #include "Simulator/Environments/CollisionSystem/Tags.hpp"
@@ -81,7 +82,8 @@ namespace elastica {
     class CollisionSystem<SimulatorConfig, C<CD, FD, BG, response::DEMSolver>>
         : public Singleton<CollisionSystem<SimulatorConfig,
                                            C<CD, FD, BG, response::DEMSolver>>,
-                           logging::Logger> {
+                           logging::Logger>,
+          public DomainPolicy<SimulatorConfig> {
      public:
       //**Type definitions******************************************************
       using CollisionConfig =
@@ -163,11 +165,13 @@ namespace elastica {
       //          tmpl::transform<Primitives,
       //          AddPrimitiveStorageType<tmpl::_1>>;
 
-      //! Type of the simulation domain
-      using DomainType = typename SimulatorConfig::DomainType;
+      //!< Type of the domain policy
+      using DomainPolicy = DomainPolicy<SimulatorConfig>;
+      //!< Type of the simulation domain
+      using typename DomainPolicy::DomainType;
 
       //!< Metafunction that returns type of the simulation boundaries
-      template <std::size_t N>
+      template <::elastica::detail::Directions::DirectionType N>
       using BoundaryTypeAlong =
           typename SimulatorConfig::template BoundaryTypeAlong<N>;
 
@@ -475,11 +479,9 @@ namespace elastica {
       //**********************************************************************************************
 
      private:
-      //**Member
-      // variables****************************************************************************
+      //**Member  variables*****************************************************
       /*!\name Member variables */
       //@{
-      const DomainType* domain_;     //!< Pointer to the simulation domain
       PrimitiveStorage primitives_;  //!< The collection of primitives that are
                                      //!< updated as the simulation progresses
       ImposedPrimitiveStorage*
@@ -548,7 +550,7 @@ namespace elastica {
         :  // Initialization of the Singleton  base object
           Singleton<CollisionSystem, logging::Logger>(),
           // Pointer to the simulation domain
-          domain_(nullptr),
+          DomainPolicy(nullptr),
           // The list of primitives
           primitives_(),
           // Pointer to fixed primitives
@@ -560,7 +562,8 @@ namespace elastica {
           // The currently active contacts of the simulation world
           contacts_(5000),
           // The active collision detection algorithm
-          detector_(domain_, primitives_, imposed_primitives_),
+          detector_(DomainPolicy::domain_, primitives_,
+                    DomainPolicy::ghost_primitives_, imposed_primitives_),
           // The active collision response algorithm
           solver_(),
           // TODO Does the tagged tuple constructor do the right thing?
@@ -1057,11 +1060,11 @@ namespace elastica {
     template <template <typename...> class HeterogenousContainer,
               typename... CollectionContainers>
     void CollisionSystem<SimulatorConfig, C<CD, FD, BG, response::DEMSolver>>::
-        initialize(const DomainType* d,
+        initialize(DomainType const* d,
                    HeterogenousContainer<CollectionContainers...> const& cct,
                    ImposedPrimitiveStorage* ips) {
       // 0. Initialize the domain
-      domain_ = d;
+      DomainPolicy::domain_ = d;
 
       // 1. Given the heterogenous container of a container of collections from
       // the main simulator, it can initialize all primitives for contact

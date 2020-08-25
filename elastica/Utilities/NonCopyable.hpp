@@ -32,7 +32,7 @@ namespace elastica {
 
    protected:
     inline NonCopyable() = default;
-    virtual inline ~NonCopyable() = default;
+    inline ~NonCopyable() = default;
     NonCopyable(NonCopyable&&) = default;
     NonCopyable& operator=(NonCopyable&&) = default;
   };

@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-#include "Systems/CosseratRods/Policies/GeometryPolicies/Types.hpp"
+#include "Systems/CosseratRods/Policies/StrongTypes.hpp"
 #include "Utilities/DefineTypes.h"
 
 namespace elastica {

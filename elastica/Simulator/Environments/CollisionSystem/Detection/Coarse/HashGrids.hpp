@@ -35,7 +35,6 @@
 #include "elastica/ErrorHandling/Assert.hpp"
 #include "elastica/ModuleSettings/HashGrids.hpp"
 #include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/ExhaustiveSearch.hpp"
-#include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/HashGridPolicies/HashGridsStoragePolicy.hpp"
 #include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/Tags.hpp"
 #include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/TypeTraits.hpp"
 #include "elastica/Utilities/DefineTypes.h"
@@ -43,6 +42,11 @@
 #include "elastica/Utilities/StdHelpers.hpp"
 #include "elastica/Utilities/TMPL.hpp"
 #include "elastica/Utilities/TMPLDebugging.hpp"
+
+/// Customization
+#include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/HashGridPolicies/DomainPolicy.hpp"
+#include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/HashGridPolicies/StoragePolicy.hpp"
+///
 
 namespace elastica {
 
@@ -54,9 +58,8 @@ namespace elastica {
 
         template <typename C>  // Type of the configuration
         class HashGrids : private NonCopyable,
-                          HashGridsStoragePolicy /*,
-                            HashGridsSpanPolicy<typename C::DomainType> */
-        {
+                          public DomainPolicy<C>,
+                          public StoragePolicy {
          public:
           //**Type definitions**************************************************
           using EnhancedCollisionConfig = C;  //!< Type of the configuration.
@@ -64,11 +67,17 @@ namespace elastica {
               HashGrids<EnhancedCollisionConfig>;  //!< Type of this HashGrids
                                                    //!< instance.
 
+          //!< Type of the domain policy
+          using DomainPolicy = DomainPolicy<C>;
           //!< Type of the simulation domain
-          using DomainType = typename EnhancedCollisionConfig::DomainType;
+          using DomainType = typename DomainPolicy::DomainType;
+          using GhostPrimitives = typename DomainPolicy::GhostPrimitives;
+          static_assert(
+              std::is_same<typename C::DomainType, DomainType>::value,
+              "This should not be reached, please contact the developers!");
 
           //!< Metafunction that returns type of the simulation boundaries
-          template <std::size_t N>
+          template <::elastica::detail::Directions::DirectionType N>
           using BoundaryTypeAlong =
               typename EnhancedCollisionConfig::template BoundaryTypeAlong<N>;
 
@@ -587,7 +596,8 @@ namespace elastica {
           //**Constructor*******************************************************
           /*!\name Constructor */
           //@{
-          HashGrids(const DomainType*& domain, PrimitiveStorage& primitivestorage,
+          HashGrids(DomainType const*& domain,
+                    PrimitiveStorage& primitivestorage, GhostPrimitives& ghosts,
                     ImposedPrimitiveStorage*& imposed_primitive_storage);
           //@}
           //********************************************************************
@@ -677,8 +687,9 @@ namespace elastica {
           //@}
           //********************************************************************
          private:
-          // TODO : Put in policy class
-          real_t adjust_span(real_t requested_cell_span) const noexcept;
+          // DONE : Put in policy class
+          //          using DomainPolicy::adjust_span;
+          /* real_t adjust_span(real_t requested_cell_span) const noexcept; */
 
           template <typename PrimitiveType>  // Type of the primitive
           void add_finite_primitives(PrimitiveType* primitive,
@@ -694,7 +705,6 @@ namespace elastica {
           //@{
           // The lifetime of the referred variable will exceed the
           // CoarseDetectors lifetime Hence this operation is valid
-          const DomainType*& domain_;
           PrimitiveStorage&
               primitives_;  //!< Reference to the primitive storage.
           ImposedPrimitiveStorage*&
@@ -746,9 +756,13 @@ namespace elastica {
           using namespace elastica::collision::detection::coarse::hhg;
 
           // Initialization of all member variables and ...
+          std::tie(xCellCount_, yCellCount_, zCellCount_) =
+              DomainPolicy::initial_cell_counts();
+          /*
           xCellCount_ = initial_x_cell_count();
           yCellCount_ = initial_y_cell_count();
           zCellCount_ = initial_z_cell_count();
+          */
 
           xHashMask_ = xCellCount_ - 1;
           yHashMask_ = yCellCount_ - 1;
@@ -854,7 +868,8 @@ namespace elastica {
           // If adding the primitive will cause the total number of primitives
           // assigned to this grid to exceed the enlargement threshold, the size
           // of this hash grid must be increased.
-          if (get_total_primitive_count() == enlargementThreshold_)
+          if (DomainPolicy::should_enlarge(get_total_primitive_count(),
+                                           enlargementThreshold_))
             HashGrid::enlarge();
 
           // Calculate (and store) the hash value (= the primitive's cell
@@ -1378,9 +1393,12 @@ namespace elastica {
 
           // ... the number of cells is doubled in each coordinate direction,
           // ...
-          xCellCount_ *= 2;
-          yCellCount_ *= 2;
-          zCellCount_ *= 2;
+          DomainPolicy::enlarge(xCellCount_, yCellCount_, zCellCount_);
+          /*
+            xCellCount_ *= 2;
+            yCellCount_ *= 2;
+            zCellCount_ *= 2;
+          */
 
           xHashMask_ = xCellCount_ - 1;
           yHashMask_ = yCellCount_ - 1;
@@ -1533,6 +1551,7 @@ namespace elastica {
           // these other primitives in one go without iterating over the
           // first primitives list again However due to heterogenous
           // instructions, ILP may suffer.
+          // TODO : Replace with a tmpl::filter from remove.hpp
           using SecondCollidingPrimitives =
               tmpl::fold<LowerTriangularPrimitivePrimitiveMatrix, tmpl::list<>,
                          typename tt::ExtractSecondPrimitive<FCP>::
@@ -1898,8 +1917,10 @@ namespace elastica {
         template <typename C>  // Type of the configuration
         HashGrids<C>::HashGrids(
             const DomainType*& domain, PrimitiveStorage& primitivestorage,
+            GhostPrimitives& ghosts,
             ImposedPrimitiveStorage*& imposed_primitive_storage)
-            : domain_(domain),
+            : DomainPolicy(domain, ghosts),
+              StoragePolicy(),
               primitives_(primitivestorage),
               imposed_primitives_(imposed_primitive_storage),
               exhaustive_search(primitivestorage, imposed_primitive_storage) {
@@ -2120,8 +2141,8 @@ namespace elastica {
             // If no hash grid yet exists in the hierarchy, an initial hash
             // grid is created based on the primitive's primitive_size.
 
-            grid = new HashGrid(
-                adjust_span(primitive_size * std::sqrt(hierarchy_factor())));
+            grid = new HashGrid(DomainPolicy::adjust_cell_span(
+                primitive_size * std::sqrt(hierarchy_factor())));
           } else {
             // Check the hierarchy for a hash grid with suitably
             // primitive_sized cells - if such a grid does not yet exist, it
@@ -2450,37 +2471,6 @@ namespace elastica {
           exhaustive_search.clear();
         }
         //**********************************************************************
-
-        // TODO : Can be a policy class
-        template <typename C>  // Type of the configuration
-        real_t HashGrids<C>::adjust_span(
-            real_t requested_cell_span) const noexcept {
-          // TODO
-          // The hash calculation, for an infinite grid, always puts
-          // the object in a domain of [0, cell_count * cell_size]
-          // where cell_size is determined from the inserted object
-
-          // However, for a periodic domain, one can enforce strict
-          // requirements for the cell spans in the x, y or z directions
-          // (requiring that the grid fits snugly within the domain)
-
-          // If x, y and z have different dimensions, then in an ideal
-          // world we will have three different cell_spans which we use
-          // in the hash calculation. So the hashed grids are not cubes
-          // but cuboids. We skip this anisotropy for now, but rather
-          // enforce that if someone gives a periodic domain in two or
-          // three directions, their lengths mus be equal (square domain)
-
-          // If thats the case, then the cell span is min(requested_cell_span,
-          // l_x / 2**k) with L / 2**k < requested_cell_span < L / 2**(k-1)
-          // ie. k = ceil(log2(L / requested_cell_span))
-          // return L / 2**k
-          // This is because every object is assigned to one single grid in
-          // the hierarchy only, which happens to be the first grid with a
-          // cell size larger than the size of the object.
-
-          return requested_cell_span;
-        }
 
       }  // namespace coarse
 

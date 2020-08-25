@@ -36,6 +36,7 @@ namespace utilities {
   class NamedType : public Skills<NamedType<T, Parameter, Skills...>>... {
    public:
     using UnderlyingType = T;
+    using ParameterType = Parameter;
 
     // constructor
     explicit constexpr NamedType(T const& value) : value_(value) {}
@@ -60,5 +61,14 @@ namespace utilities {
   constexpr StrongType<T> make_named(T const& value) {
     return StrongType<T>(value);
   }
+
+  namespace tt {
+
+    template <typename T>
+    struct GetTagType {
+      using type = typename T::ParameterType;
+    };
+
+  }  // namespace tt
 
 }  // namespace utilities

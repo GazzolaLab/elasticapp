@@ -8,26 +8,26 @@ namespace elastica {
 
   namespace detail_cosserat_rod {
 
-    struct NodeTag {
+    struct NodeTagImpl {
       static inline auto get_dofs(std::size_t n_elems) noexcept -> std::size_t {
         ELASTICA_ASSERT(n_elems > 0UL,
-                        "presribed number of elements incorrect");
+                        "prescribed number of elements incorrect");
         return (n_elems + 1UL);
       }
     };
 
-    struct ElementTag {
+    struct ElementTagImpl {
       inline static auto get_dofs(std::size_t n_elems) noexcept -> std::size_t {
         ELASTICA_ASSERT(n_elems > 0UL,
-                        "presribed number of elements incorrect");
+                        "prescribed number of elements incorrect");
         return n_elems;
       }
     };
 
-    struct VoronoiTag {
+    struct VoronoiTagImpl {
       inline static auto get_dofs(std::size_t n_elems) noexcept -> std::size_t {
         ELASTICA_ASSERT(n_elems > 0UL,
-                        "presribed number of elements incorrect");
+                        "prescribed number of elements incorrect");
         return (n_elems - 1UL);
       }
     };

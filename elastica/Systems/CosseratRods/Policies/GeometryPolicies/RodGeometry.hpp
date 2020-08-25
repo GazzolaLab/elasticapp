@@ -3,12 +3,10 @@
 #include <cstddef>
 #include <utility>
 
-#include "DataStructures/TaggedTuple.hpp"
 #include "ErrorHandling/Assert.hpp"
-#include "Systems/CosseratRods/Math/Tags.hpp"
-#include "Systems/CosseratRods/Policies/GeometryPolicies/Types.hpp"
+#include "Systems/CosseratRods/Policies/StrongTypes.hpp"
+#include "Systems/CosseratRods/TypeTraits/detail.hpp"
 #include "Utilities/DefineTypes.h"
-#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 // final
@@ -20,7 +18,7 @@ namespace elastica {
 
     // TODO Check for EBO
     template <typename RodTraits>
-    struct RodGeometry : RodGeometryBase<RodTraits>{
+    struct RodGeometry : RodGeometryBase<RodTraits> {
      protected:
       using Parent = RodGeometryBase<RodTraits>;
       using This = RodGeometry<RodTraits>;
@@ -35,106 +33,197 @@ namespace elastica {
       /*
        * Generative Tags : To be filled in by generators
        */
-      struct ReferenceLengthsTag : Traits::ElementVector {
-        using This = ReferenceLengthsTag;
+      struct ReferenceElementLengthCollectionTag : Traits::ElementVector {
+        using This = ReferenceElementLengthCollectionTag;
         using Parent = typename Traits::ElementVector;
         using SliceType = typename Parent::template Slice<This>;
-        template <typename Func>
-        using InitializerType = tags::ReferenceLengthProfile<Func>;
+        using InitializerTag = tags::ReferenceLengthProfileTag;
+
+        // Override ghosts as reference lengths should be +ve
+        static inline constexpr auto ghost_value() -> real_t {
+          return real_t(1.0);
+        }
       };
 
-      struct ReferenceCurvaturesTag : Traits::VoronoiVector {
-        using This = ReferenceCurvaturesTag;
-        using Parent = typename Traits::ElementVector;
+      struct ReferenceCurvatureCollectionTag : Traits::VoronoiVector {
+        using This = ReferenceCurvatureCollectionTag;
+        using Parent = typename Traits::VoronoiVector;
         using SliceType = typename Parent::template Slice<This>;
-        template <typename Func>
-        using InitializerType = tags::ReferenceCurvatureProfile<Func>;
+        using InitializerTag = tags::ReferenceCurvatureProfileTag;
+        //        template <typename Func>
+        //        using InitializerType = tags::ReferenceCurvatureProfile<Func>;
       };
 
       /*
        * Computed Tags : Can be filled in
        */
-      struct ReferenceVoronoiLengthsTag : Traits::VoronoiVector {
-          using This = ReferenceVoronoiLengthsTag;
-          using Parent = typename Traits::VoronoiVector;
-          using SliceType = typename Parent::template Slice<This>;
-      };
-      struct ElementLengthsTag : Traits::ElementVector {
-          using This = ElementLengthsTag;
-          using Parent = typename Traits::ElementVector;
-          using SliceType = typename Parent::template Slice<This>;
+      struct ReferenceVoronoiLengthCollectionTag : Traits::VoronoiVector {
+        using This = ReferenceVoronoiLengthCollectionTag;
+        using Parent = typename Traits::VoronoiVector;
+        using SliceType = typename Parent::template Slice<This>;
+
+        // Override ghosts as reference lengths should be +ve
+        static inline constexpr auto ghost_value() -> real_t {
+          return real_t(100.0);
+        }
       };
 
-      /*
-      VoronoiLengths reference_voronoi_lengths_;
+      struct ElementLengthCollectionTag : Traits::ElementVector {
+        using This = ElementLengthCollectionTag;
+        using Parent = typename Traits::ElementVector;
+        using SliceType = typename Parent::template Slice<This>;
+      };
 
-      // Current configuration
-      ElementLengths lengths_, dilatations_;
-      VoronoiLengths voronoi_lengths_, voronoi_dilatations_;
-      Curvatures curvature_;
-      Tangents tangents_;
-       */
+      struct ElementDilatationCollectionTag : Traits::ElementVector {
+        using This = ElementDilatationCollectionTag;
+        using Parent = typename Traits::ElementVector;
+        using SliceType = typename Parent::template Slice<This>;
+      };
+
+      struct VoronoiLengthCollectionTag : Traits::VoronoiVector {
+        using This = VoronoiLengthCollectionTag;
+        using Parent = typename Traits::VoronoiVector;
+        using SliceType = typename Parent::template Slice<This>;
+      };
+
+      struct VoronoiDilatationCollectionTag : Traits::VoronoiVector {
+        using This = VoronoiDilatationCollectionTag;
+        using Parent = typename Traits::VoronoiVector;
+        using SliceType = typename Parent::template Slice<This>;
+      };
+
+      struct CurvatureCollectionTag : Traits::VoronoiMatrix {
+        using This = CurvatureCollectionTag;
+        using Parent = typename Traits::VoronoiMatrix;
+        using SliceType = typename Parent::template Slice<This>;
+      };
+
+      struct TangentCollectionTag : Traits::ElementMatrix {
+        using This = TangentCollectionTag;
+        using Parent = typename Traits::ElementMatrix;
+        using SliceType = typename Parent::template Slice<This>;
+      };
 
      private:
       // Can be generated, but whatever
+      using ThisMemberTags =
+          tmpl::list<ReferenceElementLengthCollectionTag,
+                     ReferenceCurvatureCollectionTag,
+                     ReferenceVoronoiLengthCollectionTag,
+                     ElementLengthCollectionTag, ElementDilatationCollectionTag,
+                     VoronoiLengthCollectionTag, VoronoiDilatationCollectionTag,
+                     CurvatureCollectionTag, TangentCollectionTag>;
+
       using GeneratedTags =
-          tmpl::list<ReferenceLengthsTag, ReferenceCurvaturesTag>;
-      using ComputedTags =
-          tmpl::list<ReferenceVoronoiLengthsTag, ElementLengthsTag>;
+          tmpl::filter<ThisMemberTags,
+                       tt::CheckForInitializerTagType<tmpl::_1>>;
+      using ComputedTags = tmpl::list_difference<ThisMemberTags, GeneratedTags>;
 
       using ParentMemberTags = typename Parent::MemberTags;
-      using ThisMemberTags = tmpl::append<GeneratedTags, ComputedTags>;
 
+      /*
       using ParentSliceTags = typename Parent::SliceTags;
       using ThisSliceTags =
           tmpl::transform<ThisMemberTags,
                           tmpl::bind<Traits::template AddSliceType, tmpl::_1>>;
+      */
 
+      /*
       static constexpr std::size_t get_number_of_generated_tags() noexcept {
         return tmpl::size<GeneratedTags>::value;
       }
+      */
 
      protected:
       using MemberTags = tmpl::append<ParentMemberTags, ThisMemberTags>;
-      using SliceTags = tmpl::append<ParentSliceTags, ThisSliceTags>;
+      //      using SliceTags = tmpl::append<ParentSliceTags, ThisSliceTags>;
 
+      /*
       RodGeometry() = default;
-      inline virtual ~RodGeometry() = default;
+      inline ~RodGeometry() = default;
+      using Parent::print;
+      */
 
-      template <typename... Members, typename... Initializers>
-      RodGeometry(std::size_t n_elems, TaggedTuple<Members...>& members_,
-                  std::tuple<Initializers...>&& initializers)
-          : Parent(n_elems, members_,
-                   std::forward<std::tuple<Initializers...>>(initializers)) {
-        // First initialize generators always
-        auto init = [n_elems, &members_,
-                     initializers = std::forward<std::tuple<Initializers...>>(
-                         initializers)](auto Is) {
-          using Tag = tmpl::at_c<ThisMemberTags, Is>;
-          auto& member = Traits::template get_slice<Tag>(members_);
-          auto& initializer =
-              Traits::template get_initializer<Tag>(initializers);
-          for (std::size_t i = 0; i < Tag::get_size(n_elems); ++i) {
-            // TODO : This doesn't work on slices, consider having the slice
-            // member in the initializer itself
-            Tag::slice(member, i) = initializer(i);
-          }
+      template <class InitializerTuple, typename... Members>
+      void initialize(std::size_t n_elems, std::tuple<Members...>& members_,
+                      InitializerTuple&& initializers) {
+        // 0. using slice class
+        auto get_slice = [&members_](auto tag) -> decltype(auto) {
+          return Traits::template get_slice<decltype(tag)>(members_);
         };
 
-        index_apply<get_number_of_generated_tags()>(
-            [&init](auto... Is) { EXPAND_PACK_LEFT_TO_RIGHT(init(Is)); });
+        // 1. Initialize parent
+        Parent::initialize(n_elems, members_,
+                           std::forward<InitializerTuple>(initializers));
 
-        // Next do the computed tags
+        // 2. Initialize generators first
+        struct {
+          InitializerTuple value;
+        } cap{std::forward<InitializerTuple>(initializers)};
+        tmpl::for_each<GeneratedTags>(
+            [n_elems, &members_,
+             cap = std::move(cap)](auto generated_member_tag) mutable -> void {
+              using GeneratedMemberTag =
+                  tmpl::type_from<decltype(generated_member_tag)>;
+
+              auto& member =
+                  Traits::template get_slice<GeneratedMemberTag>(members_);
+              auto&& initializer =
+                  Traits::template get_initializer<GeneratedMemberTag>(
+                      std::forward<InitializerTuple>(cap.value));
+
+              auto dofs = GeneratedMemberTag::get_dofs(n_elems);
+              for (std::size_t i = 0; i < dofs; ++i) {
+                // TODO : This doesn't work on slices, consider having the
+                // slice member in the initializer itself
+                GeneratedMemberTag::slice(member, i) = initializer(i);
+              }
+            });
+
+        // 3. Finally do the computed tags
+
+        //            TangentCollectionTag>;
         {
-          auto& reference_voronoi_lengths =
-              Traits::template get_slice<ReferenceVoronoiLengthsTag>(members_);
-          reference_voronoi_lengths = 1.0;
+          auto& reference_voronoi_length_collection =
+              get_slice(ReferenceVoronoiLengthCollectionTag{});
+          reference_voronoi_length_collection =
+              Traits::calculate_voronoi_length(
+                  get_slice(ReferenceElementLengthCollectionTag{}));
         }
 
         {
-          auto& reference_curvatures =
-              Traits::template get_slice<ReferenceCurvaturesTag>(members_);
-          reference_curvatures = 1.0;
+          auto& element_length_collection =
+              get_slice(ElementLengthCollectionTag{});
+          element_length_collection = 1.0;
+        }
+
+        //        {
+        //          //          dilatations_ = lengths_ / reference_lengths_;
+        //          get_slice(ElementDilatationCollectionTag{}) =
+        //              get_slice(ElementLengthCollectionTag{}) /
+        //              get_slice(ReferenceElementLengthCollectionTag{});
+        //        }
+        //
+        {
+          auto& voronoi_length_collection =
+              get_slice(VoronoiLengthCollectionTag{});
+          voronoi_length_collection = 1.0;
+        }
+
+        //        {
+        //          get_slice(VoronoiDilatationCollectionTag{}) =
+        //              get_slice(VoronoiLengthCollectionTag{}) /
+        //              get_slice(ReferenceVoronoiLengthCollectionTag{});
+        //        }
+        //
+        {
+          auto& curvature_collection = get_slice(CurvatureCollectionTag{});
+          curvature_collection = 1.0;
+        }
+
+        {
+          auto& tangent_collection = get_slice(TangentCollectionTag{});
+          tangent_collection = 1.0;
         }
       }
     };

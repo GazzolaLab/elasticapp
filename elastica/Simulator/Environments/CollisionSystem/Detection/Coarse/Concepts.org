@@ -203,3 +203,32 @@
     - We should have X::periodic, Y::periodic and Z::periodic and configure the simulatino
     accordingly, especially for detection
     - Typetrait to give periodic if at least one is periodic (simple OR gate for example)
+
+** Hashgrid customization
+    - If the domain is periodic, we cannot arbitrarily grow cell-sizes and nor can we
+    guarantee that all cell sizes make sense. So for this we have to specialize the Domain
+    policy
+    - `adjust_cell_size`
+        - All cells are equally sized in all directions (X, Y, Z) : essentially cubes
+        - For infinite domain, return the requested cell size back out
+        - For periodic domain (irrespective of which direction is periodic), one needs
+        to consider the minimal span among all three domains and adjust cell size
+        accordingly.
+
+     - `cell_count`
+        - For infinite domain, no limitations (16 x 16 x 16 will be fine)
+        - For periodic domain,
+            - there are no limitatinos in the non-periodic directions
+            - however in the periodic direction, we constrain the number of cells to be
+             log_2(span / cell_size)
+
+     - `enlarge`
+        - Checks (first method)
+            - Infinite domain : grid density check
+            - For mixed infinite/periodic domain : grid density check
+            - For purely periodic domain : nothing can be done here, continue without enlargement
+        - Enlargement (second method)
+            - For infinite domain, no limitations (enlarge by factor of 2)
+            - For mixed infinite/periodic domain, enlarge only non-periodic directions by a favor
+            of 2
+            - Perioidic : this will never be reached as the check is always positive

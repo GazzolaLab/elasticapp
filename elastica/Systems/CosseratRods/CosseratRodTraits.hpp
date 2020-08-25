@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 ///
 #include "Utilities/DefineTypes.h"
 ///
@@ -7,10 +9,11 @@
 #include <blaze/math/DynamicMatrix.h>
 #include <blaze/math/DynamicVector.h>
 
-#include "Math.hpp"
-#include "Systems/CosseratRods/Math/Tags.hpp"
+#include "Systems/CosseratRods/Math.hpp"
 //#include "Systems/CosseratRods/Policies/Policies.hpp"
+#include "ErrorHandling/Assert.hpp"
 #include "Systems/CosseratRods/TypeTraits/detail.hpp"
+#include "Utilities/NonCreatable.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -21,13 +24,21 @@ namespace elastica {
     // The default traits for the CosseratRod class
     // should not need much customziation, but it is possible
     // to customize if needed
-    struct CosseratRodTraits {
+    struct CosseratRodTraits : private NonCreatable {
+      using NodeTag = NodeTagImpl;
+      using ElementTag = ElementTagImpl;
+      using VoronoiTag = VoronoiTagImpl;
+
+      static constexpr std::size_t get_dimensions() noexcept { return 3UL; }
+
       template <typename IdType, typename TagType>
       struct MatrixSlice;
 
       // can be in traits class
-      template <typename TagType>
+      template <typename StaggeredTag>
       struct MatrixTag {
+        using TagType = StaggeredTag;
+
         //
         template <typename IdType>
         using Slice = MatrixSlice<IdType, TagType>;
@@ -35,20 +46,55 @@ namespace elastica {
         // To prevent cross operations
         using data_type =
             blaze::DynamicMatrix<real_t, blaze::rowMajor,
-                                 blaze::AlignedAllocator<real_t>, TagType>;
+                                 blaze::AlignedAllocator<real_t>/*, TagType*/>;
+        using slice_type = blaze::Submatrix_<data_type>;
 
         // Why can't I just use get
-        static inline constexpr auto get_dofs(std::size_t i) {
-          return TagType::get_dofs(i);
+        static inline constexpr auto get_dofs(std::size_t n_elems) {
+          return TagType::get_dofs(n_elems);
+        }
+
+        // Default ghosts have this value, can be overriden
+        static inline constexpr auto ghost_value() -> real_t {
+          return real_t(0.0);
         }
 
         // should really be in the Slice Tag class, but it ends up being
         // confusing as what we are really doing is taking a slice of a
         // slice but its abstracted away
-        template <typename MT>
-        static inline constexpr decltype(auto) slice(MT& matrix,
-                                                     std::size_t i) {
-          return blaze::column(matrix, i);
+        //        template <typename MT>
+        //        static inline constexpr decltype(auto) slice(MT& matrix,
+        //                                                     std::size_t i) {
+
+        // TODO decltype expression is same as SliceType
+        // TODO This is internal function, need not be exposed
+        // This overload is used in the block to generate slices to be
+        // filled in by the upper hierarchy of classes
+        static inline constexpr decltype(auto) slice(data_type& matrix,
+                                                     std::size_t start,
+                                                     std::size_t size) {
+          return blaze::submatrix(matrix, 0UL, start, get_dimensions(), size);
+        }
+
+        // How to slice the data-type?
+        // This overload is used in the upper hierarchy of classes
+        static inline constexpr decltype(auto) slice(slice_type& slice,
+                                                     std::size_t idx) {
+          return blaze::column(slice, idx);
+        }
+
+        // This overload is used in the block to generate slices to be
+        // used when filling the ghosts for example
+        static inline constexpr decltype(auto) slice(data_type& matrix,
+                                                     std::size_t idx) {
+          return blaze::column(matrix, idx);
+        }
+
+        // How much to resize the data-type?
+        static inline void resize(data_type& matrix, std::size_t new_dofs) {
+          ELASTICA_ASSERT(matrix.columns() <= new_dofs,
+                          "Contract violation, block shrinks");
+          return matrix.resize(get_dimensions(), new_dofs, true);
         }
       };
 
@@ -57,9 +103,12 @@ namespace elastica {
       using VoronoiMatrix = MatrixTag<VoronoiTag>;
       using ElementMatrix = MatrixTag<ElementTag>;
 
-      template <typename IdType, typename TagType>
+      template <typename IdType, typename StaggeredTag>
       struct MatrixSlice {
-        using data_type = blaze::Columns_<typename MatrixTag<TagType>::type>;
+        using TagType = StaggeredTag;
+        using type = typename MatrixTag<StaggeredTag>::slice_type;
+        constexpr type& get() noexcept { return d_; }
+        type d_;
       };
 
       //      // Useful aliases
@@ -72,25 +121,54 @@ namespace elastica {
       template <typename IdType, typename TagType>
       struct VectorSlice;
 
-      template <typename TagType>
+      template <typename StaggeredTag>
       struct VectorTag {
+        using TagType = StaggeredTag;
+
         template <typename IdType>
         using Slice = VectorSlice<IdType, TagType>;
 
         // To prevent cross operations
         using data_type =
             blaze::DynamicVector<real_t, blaze::columnVector,
-                                 blaze::AlignedAllocator<real_t>, TagType>;
-
+                                 blaze::AlignedAllocator<real_t>/*, TagType*/>;
+        using slice_type = blaze::Subvector_<data_type>;
         // Why can't I just use get
-        static inline constexpr auto get_dofs(std::size_t i) {
-          return TagType::get_dofs(i);
+        static inline constexpr auto get_dofs(std::size_t n_elems) {
+          return TagType::get_dofs(n_elems);
         }
 
-        template <typename VT>
-        static inline constexpr decltype(auto) slice(VT& vector,
+        // Default ghosts have this value, can be overriden
+        static inline constexpr auto ghost_value() -> real_t {
+          return real_t(0.0);
+        }
+
+        // TODO decltype expression is same as SliceType
+        // TODO This is internal function, need not be exposed
+        static inline constexpr decltype(auto) slice(data_type& vector,
+                                                     std::size_t start,
+                                                     std::size_t size) {
+          return blaze::subvector(vector, start, size);
+        }
+
+        //        template <typename VT>
+        //        static inline constexpr decltype(auto) slice(VT& vector,
+        //                                                     std::size_t i) {
+        static inline constexpr decltype(auto) slice(data_type& vector,
                                                      std::size_t i) {
           return vector[i];
+        }
+
+        static inline constexpr decltype(auto) slice(slice_type& slice,
+                                                     std::size_t idx) {
+          return slice[idx];
+        }
+
+        // How much to resize the data-type?
+        static inline void resize(data_type& vector, std::size_t new_dofs) {
+          ELASTICA_ASSERT(vector.size() <= new_dofs,
+                          "Contract violation, block shrinks");
+          return vector.resize(new_dofs, true);
         }
       };
 
@@ -99,10 +177,56 @@ namespace elastica {
       using VoronoiVector = VectorTag<VoronoiTag>;
       using ElementVector = VectorTag<ElementTag>;
 
-      template <typename IdType, typename TagType>
+      template <typename IdType, typename StaggeredTag>
       struct VectorSlice {
-        using data_type = blaze::Subvector_<typename VectorTag<TagType>::type>;
+        using TagType = StaggeredTag;
+        using type = typename VectorTag<StaggeredTag>::slice_type;
+        constexpr type& get() noexcept { return d_; }
+        type d_;
       };
+
+      /*
+      template <blaze::AlignmentFlag AF,  // Alignment flag
+                size_t I,          // Index of the first subvector element
+                size_t N,          // Size of the subvector
+                typename VT,       // Type of the vector
+                bool TF,           // Transpose flag
+                typename... RSAs>  // Optional subvector arguments
+      inline decltype(auto) custom_subvector(ElementVector::data_type& vector,
+                                             RSAs... args) {
+        using ReturnType = Subvector_<VT, AF, I, N>;
+        return ReturnType(*vector, args...);
+      }
+        */
+      //*************************************************************************************************
+
+      /*
+      template <typename... RSAs>  // Optional subvector arguments
+      static inline decltype(auto) custom_subvector(
+          blaze::Vector<typename ElementVector::data_type,
+                        blaze::columnVector> const& vector,
+          std::size_t index, std::size_t size, RSAs... args) {
+        using ReturnType =
+            const blaze::Subvector_<const VoronoiVector::data_type,
+                                    blaze::unaligned>;
+        return ReturnType(*vector, index, size, args...);
+      }
+       */
+      //*************************************************************************************************
+
+      // TODO: Having different tag types seem painful for conversion of
+      //  operators from node->element->voronoi and vice-versa. Postpone for now.
+
+      template <typename InputTagType = ElementVector,
+                typename OutputTagType = VoronoiVector>
+      static inline auto calculate_voronoi_length(
+          typename InputTagType::data_type const& phys) ->
+          typename OutputTagType::data_type {
+        // convolve with weights 0.5, 0.5
+        auto n_voronoi(OutputTagType::get_dofs(phys.size()));
+        return real_t(0.5) * (blaze::subvector(phys, 1UL, n_voronoi) +
+                              blaze::subvector(phys, 0UL, n_voronoi));
+      }
 
       //      // Useful aliases
       //      using NodeVectorSlice = VectorSliceTag<NodeTag>;
@@ -131,31 +255,106 @@ namespace elastica {
       };
 
       template <typename T>
-      using AddSliceType = typename tt::AddSliceType<T>::type;
+      using GetSliceType = typename tt::GetSliceType<T>::type;
 
+      template <typename T>
+      using GetInitializerTagType = typename tt::GetInitializerTagType<T>::type;
+
+      template <typename T>
+      using IsNodeStaggered = tt::IsNodeStaggered<T>;
+
+      template <typename T>
+      using IsElementStaggered = tt::IsElementStaggered<T>;
+
+      template <typename T>
+      using IsVoronoiStaggered = tt::IsVoronoiStaggered<T>;
+
+      // CRMT :-> CosseratRodMemberTag
       // Can be free functions, but better to restrict scope here
       template <typename CRMT, template <typename...> class Tuple,
                 typename... Slices>
       static constexpr decltype(auto) get_slice(Tuple<Slices...>& t) noexcept {
-        return std::get<AddSliceType<CRMT>>(t);
+        return std::get<GetSliceType<CRMT>>(t).get();
       }
 
-      template <typename CRMT, template <typename...> class Tuple,
-                typename... Initializers>
-      static constexpr decltype(auto) get_initializer(
-          Tuple<Initializers...>& t) noexcept {
-        // TODO Is there no alternative than doing an O(n) search here?
-        using InitializerTuple = Tuple<Initializers...>;
-        using Checker = ::tt::detail::is_a<CRMT::template InitializerType>;
+      // Couple of lessons learnt here:
+      /*
+       * Initially the design was to use an alias template inside the tags
+       * to look at the initializer type, simply like so:
+       *
+       *
+        struct MemberTag : Traits::VoronoiVector {
+
+        template <typename Func>
+        using InitializerType = tags::ReferenceCurvatureProfile<Func>;
+        }
+
+        And then in the call site, where we are passed in a tuple of
+        these (instantiated initializer types with some lambda function
+        Func), one can compare whether its an instantiation of the MemberTags
+        Initializer template type
+        like so
+
+        // Alias for checking whether a tpye is an instantiaion of
+       InitializerType using Checker = ::tt::detail::is_a<CRMT::template
+       InitializerType>;
+
+        // The templated check struct checks for an instantiation
         using Initializer = tmpl::front<
             // Find
             tmpl::find<InitializerTuple,
                        // Does it match the template?
                        tmpl::bind<Checker::template check, tmpl::_1>>
+            //                       typename Checker::template check<tmpl::_1>>
             // End find
             >;
 
-        return std::get<Initializer>(t);
+        This approach is volatile and causes an issue if CRMT::template
+        InitializerType is an alias type as documented here :
+
+        https://gcc.gnu.org/bugzilla/show_bug.cgi?id=59498
+
+        While there is no clear fix (and I don't know what the standard
+        says about this), one  fix is to not use an alias iniside the class
+        but rather a struct itself. This leads to a counter intutive design
+        as we initialize the struct inside the Tag, which the initializer
+       factory (for creating cosserat rods) needs to know about, which is less
+       than ideal.
+
+
+        The alternate route which I have gone below is to simply mark the
+       MemberTag with an initializer Tag like so: struct PositionTag :
+       Traits::NodeMatrix{ usign InitializerTag = tags::PositionProfileTag;
+        }
+
+        Then when make the NamedGenerator with the same Tag
+        ####### stands for some demangled name which we dont care about
+        template <typename Func>
+        aka PositionProgile##### = NamedType<Func, PositionProfileTag>;
+
+        Now its possible to compare MemberTag::InitialzierTag to
+        Initializer::ParameterType for a match
+       */
+
+      template <typename CRMT, template <typename...> class Tuple,
+                typename... Initializers>
+      static constexpr decltype(auto) get_initializer(
+          Tuple<Initializers...>&& t) noexcept {
+        // Here initializers can be a ref too (in the case its not an
+        // immediate lambda, hence we first remove reference here
+
+        // TODO Is there no alternative than doing an O(n) search here?
+        using InitializerTuple = Tuple<Initializers...>;
+        using CRMTInitializer = tmpl::front<
+            tmpl::find<InitializerTuple,
+                       std::is_same<tmpl::pin<GetInitializerTagType<CRMT>>,
+                                    tt::GetParameterType<
+                                        std::remove_reference<tmpl::_1>>>>>;
+
+        // The trailing get is to return the generator from the enclosing
+        // strong type
+        return std::get<CRMTInitializer>(std::forward<InitializerTuple>(t))
+            .get();
       }
 
       /*

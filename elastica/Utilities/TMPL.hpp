@@ -26,6 +26,11 @@ namespace brigand {
   template <typename Sequence, typename Item>
   constexpr const bool list_contains_v = list_contains<Sequence, Item>::value;
 
+  /// Obtain the elements of `Sequence1` that are not in `Sequence2`.
+  template <typename Sequence1, typename Sequence2>
+  using list_difference =
+      fold<Sequence2, Sequence1, lazy::remove<_state, _element>>;
+
 }  // namespace brigand
 
 namespace brigand {

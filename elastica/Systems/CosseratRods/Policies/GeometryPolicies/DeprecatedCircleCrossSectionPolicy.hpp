@@ -3,7 +3,7 @@
 #include <utility>
 
 ///// Types always first
-#include "Systems/CosseratRods/Policies/GeometryPolicies/Types.hpp"
+#include "Systems/CosseratRods/Policies/StrongTypes.hpp"
 /////
 #include "Systems/CosseratRods/Policies/GeometryPolicies/DeprecatedRodGeometry.hpp"
 #include "Systems/CosseratRods/Policies/GeometryPolicies/DeprecatedRodKinematics.hpp"
