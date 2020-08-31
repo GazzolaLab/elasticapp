@@ -17,6 +17,8 @@ int main(int argc, char* argv[]) {
       [](std::size_t i) { return 1.0 + real_t(i); });
   auto second_position_generator =
       make_position_profile([](std::size_t i) { return 10.0 + real_t(i); });
+  auto radius_generator =
+      make_dimension_profile([](std::size_t i) { return i; });
 
   CosseratRodBlock block{};
   /*
@@ -44,12 +46,16 @@ int main(int argc, char* argv[]) {
   block.emplace_back(
       make_cosserat_rod(20UL, position_generator, director_generator,
                         reference_length_generator,
-                        reference_curvature_generator),
+                        reference_curvature_generator, radius_generator),
       make_cosserat_rod(10UL, second_position_generator, director_generator,
                         reference_length_generator,
-                        reference_curvature_generator));
+                        reference_curvature_generator, radius_generator));
 
+  auto& cur = block.get_lengths();
   auto& pos = block.get_reference_lengths();
 
+  std::cout << cur << std::endl;
   std::cout << pos << std::endl;
+
+  std::cout << block.get_force() << std::endl;
 }

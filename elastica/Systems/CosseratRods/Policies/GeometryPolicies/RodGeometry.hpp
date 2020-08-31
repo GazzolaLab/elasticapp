@@ -18,7 +18,7 @@ namespace elastica {
 
     // TODO Check for EBO
     template <typename RodTraits>
-    struct RodGeometry : RodGeometryBase<RodTraits> {
+    class RodGeometry : RodGeometryBase<RodTraits> {
      protected:
       using Parent = RodGeometryBase<RodTraits>;
       using This = RodGeometry<RodTraits>;
@@ -45,9 +45,9 @@ namespace elastica {
         }
       };
 
-      struct ReferenceCurvatureCollectionTag : Traits::VoronoiVector {
+      struct ReferenceCurvatureCollectionTag : Traits::VoronoiMatrix {
         using This = ReferenceCurvatureCollectionTag;
-        using Parent = typename Traits::VoronoiVector;
+        using Parent = typename Traits::VoronoiMatrix;
         using SliceType = typename Parent::template Slice<This>;
         using InitializerTag = tags::ReferenceCurvatureProfileTag;
         //        template <typename Func>
@@ -104,15 +104,20 @@ namespace elastica {
         using SliceType = typename Parent::template Slice<This>;
       };
 
+      struct ShearStretchStrainCollectionTag : Traits::ElementVector {
+        using This = ShearStretchStrainCollectionTag;
+        using Parent = typename Traits::ElementVector;
+        using SliceType = typename Parent::template Slice<This>;
+      };
+
      private:
       // Can be generated, but whatever
-      using ThisMemberTags =
-          tmpl::list<ReferenceElementLengthCollectionTag,
-                     ReferenceCurvatureCollectionTag,
-                     ReferenceVoronoiLengthCollectionTag,
-                     ElementLengthCollectionTag, ElementDilatationCollectionTag,
-                     VoronoiLengthCollectionTag, VoronoiDilatationCollectionTag,
-                     CurvatureCollectionTag, TangentCollectionTag>;
+      using ThisMemberTags = tmpl::list<
+          ReferenceElementLengthCollectionTag, ReferenceCurvatureCollectionTag,
+          ReferenceVoronoiLengthCollectionTag, ElementLengthCollectionTag,
+          ElementDilatationCollectionTag, VoronoiLengthCollectionTag,
+          VoronoiDilatationCollectionTag, CurvatureCollectionTag,
+          TangentCollectionTag, ShearStretchStrainCollectionTag>;
 
       using GeneratedTags =
           tmpl::filter<ThisMemberTags,
@@ -160,7 +165,7 @@ namespace elastica {
         struct {
           InitializerTuple value;
         } cap{std::forward<InitializerTuple>(initializers)};
-        tmpl::for_each<GeneratedTags>(
+        tmpl::for_each<This::GeneratedTags>(
             [n_elems, &members_,
              cap = std::move(cap)](auto generated_member_tag) mutable -> void {
               using GeneratedMemberTag =
@@ -194,7 +199,7 @@ namespace elastica {
         {
           auto& element_length_collection =
               get_slice(ElementLengthCollectionTag{});
-          element_length_collection = 1.0;
+          element_length_collection = 2.0;
         }
 
         //        {
@@ -224,6 +229,11 @@ namespace elastica {
         {
           auto& tangent_collection = get_slice(TangentCollectionTag{});
           tangent_collection = 1.0;
+        }
+
+        {
+          auto& shear_stretch_strains_collection = get_slice(ShearStretchStrainCollectionTag{});
+          shear_stretch_strains_collection = 1.0;
         }
       }
     };

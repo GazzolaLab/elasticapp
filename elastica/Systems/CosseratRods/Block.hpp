@@ -1,5 +1,7 @@
 #pragma once
 
+#include <tuple>
+
 /// Forward declarations
 #include "Systems/CosseratRods/Types.hpp"
 ///
@@ -14,37 +16,90 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TMPLDebugging.hpp"
 
 namespace elastica {
+
+  //    template <typename CRT,                 // Cosserat Rod Traits
+  //              template <typename> ComputationalBlock,  // Block with
+  //              implementation
+  //            template <typename /*CRT*/, typename /* CosseratRodPlugin */>
+  //            class... Layers>  // Skills
+  //  class CosseratRodPlugin;
+
+  // template <typename> Block
+
+  //  template <template <typename /*Traits*/, typename /* Block */,
+  //                      template <typename /*Traits*/, typename /* Block */>
+  //                      class... /* Skills*/>
+  //            class Plugin>
+  //  class Block;
 
   // Specialization of blocks for the cosserat rods class
   // TODO : Blocking strategy :
   //  1. Default : free blocks
   //  2. fixed size blocks (compile time-parameter)
-  template <>
-  class Block<CosseratRodPlugin>
-      : public CosseratRodPlugin<Block<CosseratRodPlugin>>,
-        private NonCopyable {
+
+  //  template <template <typename, typename...> class TT, typename SENDER,
+  //            typename... ARGS>
+  //  class CRTPBase<TT<SENDER, ARGS...>> {
+  //    // ...
+  //  };
+
+  // Specialization for a Cosserat Rod plugin
+  //  template <template <typename /*Traits*/, typename /* Block */,
+  //                      template <typename /*Traits*/, typename /* Block */>
+  //                      class... /* Skills*/>
+  //            class CRPlugin,
+  //            typename CRT, template <typename, typename> class... Skills>
+  //  class Block<CRPlugin<CRT, Block>>;
+
+  template <typename CRT,                  // Cosserat Rod Traits
+            template <typename, typename>  // Skills
+            class... Layers>
+  class Block<CosseratRodPlugin<CRT, Block, Layers...>>
+      : public CosseratRodPlugin<CRT, Block, Layers...>, private NonCopyable {
     // Friend it to prevent annoying private member messages
     //    template <typename B>
     //    friend class CosseratRodPlugin;
 
-    using Parent = CosseratRodPlugin<Block<CosseratRodPlugin>>;
+    using Parent = CosseratRodPlugin<CRT, Block, Layers...>;
     friend Parent;
-    using This = Block<CosseratRodPlugin>;
+    using This = Block<Parent>;
+#define REPEAT_2(M, N) M(N) M(N + 1)
+#define REPEAT_4(M, N) REPEAT_2(M, N) REPEAT_2(M, N + 2)
+#define REPEAT_8(M, N) REPEAT_4(M, N) REPEAT_4(M, N + 4)
+#define FRIEND(N)                                                       \
+  friend std::tuple_element_t<std::min(static_cast<std::size_t>(N + 1), \
+                                       sizeof...(Layers)),              \
+                              std::tuple<void, Layers<CRT, This>...>>;
+
+    // Friend also all the layers called in parents
+    REPEAT_8(FRIEND, 0)
+
+#undef FRIEND
+#undef REPEAT_8
+#undef REPEAT_4
+#undef REPEAT_2
+
     template <typename... Args>
     using InitializerType = CosseratBlockInitializer<Args...>;
 
-    //
-    using MemberTags = typename Parent::MemberTags;
-    using NodeMemberTags = typename Parent::NodeMemberTags;
-    using ElementMemberTags = typename Parent::ElementMemberTags;
-    using VoronoiMemberTags = typename Parent::VoronoiMemberTags;
+    // Import staggering tags
+    using typename Parent::ElementTag;
+    using typename Parent::NodeTag;
+    using typename Parent::VoronoiTag;
 
     //
-    using SliceTags = typename Parent::SliceTags;
+    using typename Parent::ElementMemberTags;
+    using typename Parent::MemberTags;
+    using typename Parent::NodeMemberTags;
+    using typename Parent::VoronoiMemberTags;
+
+    //
+    using typename Parent::SliceTags;
     template <typename T>
-    using GetSliceType = typename Parent::GetSliceType<T>;
+    using GetSliceType = typename Parent::template GetSliceType<T>;
     using Slices = tmpl::as_tagged_tuple<SliceTags>;
 
     using CosseratRodProperties = tmpl::as_tagged_tuple<MemberTags>;
@@ -54,6 +109,11 @@ namespace elastica {
     using TotalElementCount = SizeType;
     using GhostNodeIndices = std::vector<SizeType>;
     using ElementCounts = std::vector<SizeType>;
+
+    // Import from parent
+    using Parent::n_elements;
+    using Parent::n_nodes;
+    using Parent::n_voronois;
 
     /* Really needed?
     static constexpr std::size_t get_number_of_node_members() {
@@ -97,6 +157,15 @@ namespace elastica {
     static inline constexpr auto n_ghosts(VoronoiTag /* meta */) noexcept
         -> SizeType {
       return n_ghosts(ElementTag{}) + 1UL;
+    };
+
+    inline constexpr auto data() noexcept -> CosseratRodProperties& {
+      return rod_properties_;
+    };
+
+    inline constexpr auto data() const noexcept
+        -> CosseratRodProperties const& {
+      return rod_properties_;
     };
 
     // TODO : Unused
@@ -144,14 +213,15 @@ namespace elastica {
     template <typename StaggeredTag>
     void resize_members_marked_with() {
       using StaggeredMemberTags = get_members_marked_with<StaggeredTag>;
-      tmpl::for_each<StaggeredMemberTags>([this,
-                                           resized = get_dofs<StaggeredTag>()](
-                                              auto staggered_member_tag) {
-        using StaggeredMemberTag =
-            tmpl::type_from<decltype(staggered_member_tag)>;
-        auto& staggered_member = std::get<StaggeredMemberTag>(rod_properties_);
-        StaggeredMemberTag::resize(staggered_member, resized);
-      });
+      tmpl::for_each<StaggeredMemberTags>(
+          [this, resized = Parent::template get_dofs<StaggeredTag>()](
+              auto staggered_member_tag) {
+            using StaggeredMemberTag =
+                tmpl::type_from<decltype(staggered_member_tag)>;
+            auto& staggered_member =
+                std::get<StaggeredMemberTag>(rod_properties_);
+            StaggeredMemberTag::resize(staggered_member, resized);
+          });
     }
 
     template <typename StaggeredTag>
@@ -320,7 +390,7 @@ namespace elastica {
     auto make_slices(SizeType const unit) {
       ELASTICA_ASSERT(not element_counts_.empty(),
                       "No elements to make slices for in the Block!");
-
+//      TypeDisplayer<decltype(make_slices_of_members_marked_with<ElementTag>(unit))> td{};
       return std::tuple_cat(
           make_slices_of_members_marked_with<NodeTag>(unit),
           make_slices_of_members_marked_with<ElementTag>(unit),
@@ -411,10 +481,8 @@ namespace elastica {
         //                block_initializer.initializers));
 
         // ... and initialize them ...
-        Parent::initialize(
-            block_initializer.n_elems, slices,
-            std::forward<decltype(block_initializer.initializers)>(
-                block_initializer.initializers));
+        Parent::initialize(block_initializer.n_elems, slices,
+                           std::move(block_initializer.initializers));
       };
 
       // by going through the rods that are just added
@@ -425,7 +493,8 @@ namespace elastica {
 
     // TODO : Check for initializer requirements here
     template <typename... UnitInitializers>
-    void emplace_back(std::size_t n_elems, UnitInitializers&&... unit_initializers) {
+    void emplace_back(std::size_t n_elems,
+                      UnitInitializers&&... unit_initializers) {
       /*
       // A.
       prepare_for_resize(n_elems);
@@ -459,7 +528,7 @@ namespace elastica {
     }
     */
 
-    ~Block() override = default;
+    ~Block() = default;
 
    private:
     //**Member variables********************************************************
@@ -467,6 +536,7 @@ namespace elastica {
     //@{
     //!< All members of CosseratRod
     CosseratRodProperties rod_properties_;
+    //    TypeDisplayer<CosseratRodProperties> td{};
     //@}
     //**************************************************************************
 

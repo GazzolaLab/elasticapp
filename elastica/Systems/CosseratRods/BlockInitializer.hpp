@@ -19,7 +19,6 @@ namespace elastica{
   template <typename... Initializers>
   constexpr auto make_cosserat_rod(std::size_t n_elems,
                                    Initializers&&... initializers) {
-    using InitializerTuple = std::tuple<Initializers...>;
     return CosseratBlockInitializer<Initializers...>{
         n_elems, std::forward_as_tuple(initializers...)};
   }

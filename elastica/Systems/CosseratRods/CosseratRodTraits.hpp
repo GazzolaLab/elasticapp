@@ -46,7 +46,7 @@ namespace elastica {
         // To prevent cross operations
         using data_type =
             blaze::DynamicMatrix<real_t, blaze::rowMajor,
-                                 blaze::AlignedAllocator<real_t>/*, TagType*/>;
+                                 blaze::AlignedAllocator<real_t> /*, TagType*/>;
         using slice_type = blaze::Submatrix_<data_type>;
 
         // Why can't I just use get
@@ -131,7 +131,7 @@ namespace elastica {
         // To prevent cross operations
         using data_type =
             blaze::DynamicVector<real_t, blaze::columnVector,
-                                 blaze::AlignedAllocator<real_t>/*, TagType*/>;
+                                 blaze::AlignedAllocator<real_t> /*, TagType*/>;
         using slice_type = blaze::Subvector_<data_type>;
         // Why can't I just use get
         static inline constexpr auto get_dofs(std::size_t n_elems) {
@@ -215,7 +215,8 @@ namespace elastica {
       //*************************************************************************************************
 
       // TODO: Having different tag types seem painful for conversion of
-      //  operators from node->element->voronoi and vice-versa. Postpone for now.
+      //  operators from node->element->voronoi and vice-versa. Postpone for
+      //  now.
 
       template <typename InputTagType = ElementVector,
                 typename OutputTagType = VoronoiVector>
@@ -345,11 +346,16 @@ namespace elastica {
 
         // TODO Is there no alternative than doing an O(n) search here?
         using InitializerTuple = Tuple<Initializers...>;
-        using CRMTInitializer = tmpl::front<
+        using find_result =
             tmpl::find<InitializerTuple,
                        std::is_same<tmpl::pin<GetInitializerTagType<CRMT>>,
                                     tt::GetParameterType<
-                                        std::remove_reference<tmpl::_1>>>>>;
+                                        std::remove_reference<tmpl::_1>>>>;
+
+        // TODO : Better display of failed component
+        static_assert(tmpl::size<find_result>::value, "Initializer not found!");
+
+        using CRMTInitializer = tmpl::front<find_result>;
 
         // The trailing get is to return the generator from the enclosing
         // strong type

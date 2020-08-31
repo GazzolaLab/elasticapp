@@ -46,7 +46,8 @@ namespace elastica {
     MAKE_PROFILE_TYPES(Director, director);
     MAKE_PROFILE_TYPES(ReferenceLength, reference_length);
     MAKE_PROFILE_TYPES(ReferenceCurvature, reference_curvature);
-    MAKE_PROFILE_TYPES(Radius, radius);
+    // Stand in for radius / square edge
+    MAKE_PROFILE_TYPES(Dimension, dimension);
     MAKE_PROFILE_TYPES(Density, density);
     MAKE_PROFILE_TYPES(Velocity, velocity);
     MAKE_PROFILE_TYPES(Omega, omega);

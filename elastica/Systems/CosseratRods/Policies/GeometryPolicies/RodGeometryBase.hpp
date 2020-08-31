@@ -15,7 +15,7 @@ namespace elastica {
 
     // EBO should apply
     template <typename RodTraits>
-    struct RodGeometryBase {
+    class RodGeometryBase {
      protected:
       using This = RodGeometryBase<RodTraits>;
       using Traits = RodTraits;
@@ -91,7 +91,7 @@ namespace elastica {
           InitializerTuple value;
         } cap{std::forward<InitializerTuple>(initializers)};
         // Note : need a mutable lambda as we can now "move" from cap
-        tmpl::for_each<MemberTags>([this, n_elems, &members_, cap = std::move(cap)](
+        tmpl::for_each<MemberTags>([n_elems, &members_, cap = std::move(cap)](
                                        auto member_tag) mutable -> void {
           using MemberTag = tmpl::type_from<decltype(member_tag)>;
           auto& member = Traits::template get_slice<MemberTag>(members_);
