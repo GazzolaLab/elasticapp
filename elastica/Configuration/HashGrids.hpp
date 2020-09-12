@@ -1,4 +1,4 @@
-//=================================================================================================
+//==============================================================================
 /*!
  *  \file pe/config/HashGrids.h
  *  \brief Configuration of the hierarchical hash grids coarse collision
@@ -20,11 +20,11 @@
  *  You should have received a copy of the GNU General Public License along with
  * pe. If not, see <http://www.gnu.org/licenses/>.
  */
-//=================================================================================================
+//==============================================================================
 
 #pragma once
 
-//*************************************************************************************************
+//******************************************************************************
 /*!\brief The initial number of cells in x-direction of a newly created hash
  * grid. \ingroup config
  *
@@ -41,9 +41,9 @@
  * coordinate directions.
  */
 constexpr std::size_t initial_x_cell_count() { return 4UL; /*16UL;*/ }
-//*************************************************************************************************
+//******************************************************************************
 
-//*************************************************************************************************
+//******************************************************************************
 /*!\brief The initial number of cells in y-direction of a newly created hash
  * grid. \ingroup config
  *
@@ -60,9 +60,9 @@ constexpr std::size_t initial_x_cell_count() { return 4UL; /*16UL;*/ }
  * coordinate directions.
  */
 constexpr std::size_t initial_y_cell_count() { return 4UL; /*16UL;*/ }
-//*************************************************************************************************
+//******************************************************************************
 
-//*************************************************************************************************
+//******************************************************************************
 /*!\brief The initial number of cells in z-direction of a newly created hash
  * grid. \ingroup config
  *
@@ -79,9 +79,9 @@ constexpr std::size_t initial_y_cell_count() { return 4UL; /*16UL;*/ }
  * coordinate directions.
  */
 constexpr std::size_t initial_z_cell_count() { return 4UL; /*16UL;*/ }
-//*************************************************************************************************
+//******************************************************************************
 
-//*************************************************************************************************
+//******************************************************************************
 /*!\brief The initial storage capaciy of a newly created grid cell body
  * container. \ingroup config
  *
@@ -97,9 +97,9 @@ constexpr std::size_t initial_z_cell_count() { return 4UL; /*16UL;*/ }
  *                        \f$ cellVectorSize = 2 \cdot hierarchyFactor^3 \f$
  */
 constexpr std::size_t initial_cell_vector_size() { return 16UL; }
-//*************************************************************************************************
+//******************************************************************************
 
-//*************************************************************************************************
+//******************************************************************************
 /*!\brief The initial storage capacity of the grid-global vector.
  * \ingroup config
  *
@@ -111,9 +111,9 @@ constexpr std::size_t initial_cell_vector_size() { return 16UL; }
  * addressed.
  */
 constexpr std::size_t initial_occupied_cells_vector_size() { return 256UL; }
-//*************************************************************************************************
+//******************************************************************************
 
-//*************************************************************************************************
+//******************************************************************************
 /*!\brief The minimal ratio of cells to bodies that must be maintained at any
  * time. \ingroup config
  *
@@ -130,9 +130,9 @@ constexpr std::size_t initial_occupied_cells_vector_size() { return 256UL; }
  * Possible settings: any integral value greater than 0.
  */
 constexpr std::size_t minimal_grid_density() { return 8UL; }
-//*************************************************************************************************
+//******************************************************************************
 
-//*************************************************************************************************
+//******************************************************************************
 /*!\brief Activation threshold for the hierarchical hash grids coarse collision
  * detection algorithm. \ingroup config
  *
@@ -150,9 +150,9 @@ constexpr std::size_t minimal_grid_density() { return 8UL; }
  * Possible settings: any integral value greater-or-equal to 0.
  */
 constexpr std::size_t hashgrid_activation_threshold() { return 0UL; }
-//*************************************************************************************************
+//******************************************************************************
 
-//*************************************************************************************************
+//******************************************************************************
 /*!\brief The constant factor by which the cell size of any two successive grids
  * differs. \ingroup config
  *
@@ -185,4 +185,4 @@ constexpr std::size_t hashgrid_activation_threshold() { return 0UL; }
  * Possible settings: any floating point value that is greater than 1.0.
  */
 constexpr real_t hierarchy_factor() { return real_t(2); }
-//*************************************************************************************************
+//******************************************************************************
