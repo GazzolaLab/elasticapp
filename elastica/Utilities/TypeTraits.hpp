@@ -3,6 +3,7 @@
 #include <type_traits>
 
 #include "Utilities/Requires.hpp"
+#include "Utilities/TypeTraits/Void.hpp"
 
 namespace cpp17 {
   /*!
@@ -153,35 +154,6 @@ namespace cpp17 {
   template <class B>
   struct negation : bool_constant<!B::value> {};
 
-  /// \ingroup TypeTraitsGroup
-  /// \brief Given a set of types, returns `void`
-  ///
-  /// \details
-  /// Given a list of types, returns `void`. This is very useful for controlling
-  /// name lookup resolution via partial template specialization.
-  ///
-  /// \usage
-  /// For any set of types `Ti`,
-  /// \code
-  /// using result = cpp17::void_t<T0, T1, T2, T3>;
-  /// \endcode
-  ///
-  /// \metareturns
-  /// void
-  ///
-  /// \semantics
-  /// For any set of types `Ti`,
-  /// \code
-  /// using result = void;
-  /// \endcode
-  ///
-  /// \example
-  /// \snippet Utilities/Test_TypeTraits.cpp void_t_example
-  /// \see std::void_t
-  /// \tparam Ts the set of types
-  template <typename... Ts>
-  using void_t = void;
-
   /*!
    * \ingroup TypeTraitsGroup
    * \brief Variable template for is_same
@@ -190,6 +162,27 @@ namespace cpp17 {
   constexpr bool is_same_v = std::is_same<T, U>::value;
 
 }  // namespace cpp17
+
+namespace cpp20 {
+
+  /// \ingroup TypeTraitsGroup
+  /// \brief Given a type T, removes reference and cv-qualifiers
+  ///
+  /// \details
+  /// If the type T is a reference type, provides the member typedef type which
+  /// is the type referred to by T with its topmost cv-qualifiers removed.
+  /// Otherwise type is T with its topmost cv-qualifiers removed. Useful for
+  /// metaprogramming within expression templates
+
+  template <class T>
+  struct remove_cvref {
+    using type = std::remove_cv_t<std::remove_reference_t<T>>;
+  };
+
+  template <class T>
+  using remove_cvref_t = typename remove_cvref<T>::type;
+
+}  // namespace cpp20
 
 namespace tt {
 
@@ -372,10 +365,10 @@ namespace tt {
     /// \cond HIDDEN_SYMBOLS
     template <template <typename...> class U>
     struct is_a {
-      template <typename ...>
+      template <typename...>
       struct check : std::false_type {};
 
-      template <typename ... Args>
+      template <typename... Args>
       struct check<U<Args...>> : std::true_type {};
     };
     /// \endcond

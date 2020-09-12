@@ -1,5 +1,9 @@
 #pragma once
 
+//******************************************************************************
+// Includes
+//******************************************************************************
+
 #include "elastica/Utilities/DefineTypes.h"
 #include "elastica/Utilities/ValueTraits/IsPowerOf.hpp"
 
@@ -15,7 +19,7 @@ namespace elastica {
 
           //====================================================================
           //
-          //  HIERARCHICAL HASH GRID COARSE COLLISION DETECTION SETTINGS
+          //  HIERARCHICAL HASH GRID COARSE COLLISION DETECTION CONFIGURATION
           //
           //====================================================================
 
