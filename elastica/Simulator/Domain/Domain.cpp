@@ -1,4 +1,8 @@
-#include "elastica/Simulator/Domain/Domain.hpp"
+//******************************************************************************
+// Includes
+//******************************************************************************
+
+#include "Simulator/Domain/Domain.hpp"
 
 namespace elastica {
 

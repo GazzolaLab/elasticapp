@@ -1,25 +1,31 @@
 #pragma once
 
+//******************************************************************************
+// Includes
+//******************************************************************************
+
 #include <type_traits>
 
-#include "elastica/Utilities/Requires.hpp"
-
-//#include "elastica/Simulator/Domain/BoundaryType.hpp"
-#include "elastica/Utilities/DefineTypes.h"
+#include "Utilities/DefineTypes.h"
+#include "Utilities/Requires.hpp"
 
 namespace elastica {
 
   //////////////////////////////////////////////////////////////////////////////
+  //
   // Forward declarations of domain types
+  //
   //////////////////////////////////////////////////////////////////////////////
 
   // Boundary Types
   struct UnboundedBoundary;
   struct PeriodicBoundary;
 
+  // Span
   template <typename Real>
   struct Span;
 
+  // Policy types
   template <typename Real>
   class PeriodicDomainPolicy;
   template <typename Real>
@@ -34,4 +40,5 @@ namespace elastica {
   using PeriodicDomain = typename detail::Domain<real_t, PeriodicDomainPolicy>;
   using UnboundedDomain =
       typename detail::Domain<real_t, UnboundedDomainPolicy>;
+
 }  // namespace elastica
