@@ -27,16 +27,16 @@ namespace elastica {
       /*!\brief Domain configuration protocol.
       // \ingroup protocols
       //
-      // Class to enforce adherence to Domain protocol. Any valid domain
+      // Class to enforce adherence to Domain config protocol. Any valid domain
       // configuration within the Elastica++ library should (publicly) inherit
       // from this class to indicate it qualifies as a Domain. Only in case a
       // class is derived publicly from this base class, the
-      // `tt::conforms_to` and `tt::assert_conforms_to` type traits recognizes
+      // \c tt::conforms_to and \c tt::assert_conforms_to type traits recognizes
       // the class as valid Domain.
       //
       // Requires that conforming type has these nested types:
-      // - `DomainType`: Type of the domain
-      // - `BoundaryTypeAlong`: Type of boundary along one direction
+      // - \a DomainType : Type of the domain
+      // - \a BoundaryTypeAlong : Type of boundary along one direction
       */
       struct DomainConfiguration {
         //**********************************************************************

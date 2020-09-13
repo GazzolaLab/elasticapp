@@ -26,15 +26,15 @@ namespace elastica {
       /*!\brief Systems configuration protocol.
       // \ingroup protocols
       //
-      // Class to enforce adherence to Systems protocol. Any valid
+      // Class to enforce adherence to Systems configuration protocol. Any valid
       // system configuration within the Elastica++ library should
       // (publicly) inherit from this class to indicate it qualifies as a
       // System Configuration. Only in case a class is derived publicly from
-      // this base class, the `tt::conforms_to` and `tt::assert_conforms_to`
+      // this base class, the \c tt::conforms_to and \c tt::assert_conforms_to
       // type traits recognizes the class as valid System Configuration.
       //
       // Requires that conforming type has these nested types:
-      // - `AdmissibleSystemTags`: List of tags of admissible systems
+      // - \a AdmissibleSystemTags : List of tags of admissible systems
       */
       struct SystemsConfiguration {
         //**********************************************************************

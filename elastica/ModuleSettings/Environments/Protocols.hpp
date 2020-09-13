@@ -26,16 +26,17 @@ namespace elastica {
       /*!\brief Environments configuration protocol.
       // \ingroup protocols
       //
-      // Class to enforce adherence to Environments protocol. Any valid
-      // environment configuration within the Elastica++ library should
+      // Class to enforce adherence to Environments configuration protocol. Any
+      // valid environment configuration within the Elastica++ library should
       // (publicly) inherit from this class to indicate it qualifies as a
       // Environment. Only in case a class is derived publicly from this base
-      // class, the `tt::conforms_to` and `tt::assert_conforms_to` type traits
+      // class, the \c tt::conforms_to and \c tt::assert_conforms_to type traits
       // recognizes the class as valid Environments.
       //
       // Requires that conforming type has these nested types:
-      // - `AdmissibleEnvironmentTags`: List of tags of admissible environments
-      // - `AdmissibleImposedPrimitives`: List of non-evolving primitives
+      // - \a AdmissibleEnvironmentTags : List of tags of admissible
+      //                                  environments
+      // - \a AdmissibleImposedPrimitives : List of non-evolving primitives
       */
       struct EnvironmentsConfiguration {
         //**********************************************************************
