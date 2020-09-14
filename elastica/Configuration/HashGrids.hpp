@@ -1,8 +1,21 @@
 //==============================================================================
 /*!
- *  \file pe/config/HashGrids.h
- *  \brief Configuration of the hierarchical hash grids coarse collision
- * detection algorithm
+//  \file
+//  \brief Configuration of the hierarchical hash grids coarse collision
+//  detection algorithm
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
+//==============================================================================
+/*!
+ *  Original copyright
+ *  ------------------
  *
  *  Copyright (C) 2009 Klaus Iglberger
  *
