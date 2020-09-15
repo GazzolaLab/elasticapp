@@ -19,6 +19,7 @@
 
 #include <type_traits>
 
+#include "ModuleSettings/Environments/Aliases.hpp"
 #include "ModuleSettings/Environments/Protocols.hpp"
 #include "Utilities/ListRequires.hpp"
 #include "Utilities/ProtocolHelpers.hpp"

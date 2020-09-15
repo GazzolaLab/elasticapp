@@ -17,6 +17,7 @@
 // Includes
 //******************************************************************************
 
+#include "ModuleSettings/Domain/Aliases.hpp"
 #include "ModuleSettings/Domain/Protocols.hpp"
 #include "Simulator/Domain/Protocols.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
