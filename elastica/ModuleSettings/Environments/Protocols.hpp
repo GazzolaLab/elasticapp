@@ -34,9 +34,10 @@ namespace elastica {
       // recognizes the class as valid Environments.
       //
       // Requires that conforming type has these nested types:
-      // - \a AdmissibleEnvironmentTags : List of tags of admissible
-      //                                  environments
-      // - \a AdmissibleImposedPrimitives : List of non-evolving primitives
+      // - \a AdmissibleEnvironmentTags : A (strictly) tmpl::list of tags of
+      //                                  admissible environments
+      // - \a AdmissibleImposedPrimitives : A (strictly) tmpl::list of
+      //                                    temporally non-evolving primitives
       */
       struct EnvironmentsConfiguration {
         //**********************************************************************
@@ -51,14 +52,25 @@ namespace elastica {
           static_assert(
               ::tt::is_detected_v<::elastica::tt::admissible_environment_tags_t,
                                   ConformingType>,
-              "Not a conforming domain configuration, doesn't have a "
+              "Not a conforming environments configuration, doesn't have a "
               "nested AdmissibleEnvironmentTags member");
+          static_assert(
+              ::tt::is_a_v<tmpl::list,
+                           ::elastica::tt::admissible_environment_tags_t<
+                               ConformingType>>,
+              "Admissible environment tags should belong in a typelist!");
 
-          static_assert(::tt::is_detected_v<
-                            ::elastica::tt::admissible_imposed_primitives_t,
-                            ConformingType>,
-                        "Not a conforming domain configuration, doesn't have a "
-                        "nested AdmissibleImposedPrimitives member");
+          static_assert(
+              ::tt::is_detected_v<
+                  ::elastica::tt::admissible_imposed_primitives_t,
+                  ConformingType>,
+              "Not a conforming environments configuration, doesn't have a "
+              "nested AdmissibleImposedPrimitives member");
+          static_assert(
+              ::tt::is_a_v<tmpl::list,
+                           ::elastica::tt::admissible_imposed_primitives_t<
+                               ConformingType>>,
+              "Admissible imposed primitives should belong in a typelist!");
         };
         /*! \endcond */
         //**********************************************************************
