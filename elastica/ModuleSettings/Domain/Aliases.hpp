@@ -12,7 +12,7 @@ namespace elastica {
 
     //**************************************************************************
     /*!\brief Alias declaration for nested \c DomainType type definitions.
-    // \ingroup aliases
+    // \ingroup type_traits
     //
     // The domain_type_t alias declaration provides a convenient shortcut to
     // access the nested \a DomainType type definition of the given type \a T.

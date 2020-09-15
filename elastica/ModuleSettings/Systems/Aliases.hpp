@@ -13,9 +13,9 @@ namespace elastica {
     //**************************************************************************
     /*!\brief Alias declaration for nested \c AdmissibleSystemTags type
     // definitions.
-    // \ingroup aliases
+    // \ingroup type_traits
     //
-    // The admissible_environment_tags_t alias declaration provides a convenient
+    // The admissible_system_tags_t alias declaration provides a convenient
     // shortcut to access the nested \a AdmissibleSystemTags type definition
     // of the given type \a T. The following code example shows both ways to
     // access the nested type definition:

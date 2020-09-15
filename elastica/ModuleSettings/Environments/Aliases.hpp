@@ -13,7 +13,7 @@ namespace elastica {
     //**************************************************************************
     /*!\brief Alias declaration for nested \c AdmissibleEnvironmentTags type
     // definitions.
-    // \ingroup aliases
+    // \ingroup type_traits
     //
     // The admissible_environment_tags_t alias declaration provides a convenient
     // shortcut to access the nested \a AdmissibleEnvironmentTags type
@@ -33,7 +33,7 @@ namespace elastica {
     //**************************************************************************
     /*!\brief Alias declaration for nested \c AdmissibleImposedPrimitives type
     // definitions.
-    // \ingroup aliases
+    // \ingroup type_traits
     //
     // The admissible_imposed_primitives_t alias declaration provides a
     // convenient shortcut to access the nested \a AdmissibleImposedPrimitives
