@@ -1,10 +1,31 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Type traits for the Systems configuration and interfaces
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
+
+//******************************************************************************
+// Includes
+//******************************************************************************
 
 #include <type_traits>
 
-#include "elastica/Utilities/ListRequires.hpp"
-#include "elastica/Utilities/TMPL.hpp"
-#include "elastica/Utilities/TypeTraits.hpp"
+#include "ModuleSettings/Systems/Protocols.hpp"
+#include "Utilities/ListRequires.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/IsDetected.hpp"
+
+// DONE Should be in a traits namespace somewhere
 
 namespace elastica {
 
@@ -12,80 +33,172 @@ namespace elastica {
 
     namespace tt {
 
-      // DONE Should be in a traits namespace somewhere
-      template <typename C, typename = void>
-      struct IsSystemConfiguration : std::false_type {};
+      //========================================================================
+      //
+      //  CLASS DEFINITION
+      //
+      //========================================================================
 
-      // Check for
-      // 1. Existence of members
-      template <typename C>
-      struct IsSystemConfiguration<
-          C, cpp17::void_t<typename C::AdmissibleSystemCollectionTags>>
-          : std::true_type {};
-
-      // DONE Should be in a traits namespace somewhere
-
-      /*
-      // Version 1 : n instantiations, each with two types : makes it harder to
-      use.
-
-      template <typename SystemTag> struct SystemTagUnpacker { struct
-      GetPrimitiveType { using type = typename SystemTag::PrimitiveType;
-        };
-
-        struct GetSystemCollectionType {
-          using type = typename SystemTag::SystemCollectionType;
-        };
-      };
-
-        template <typename SystemTag>
-        struct IsValidSystemTag<
-            SystemTag,
-            cpp17::void_t<
-                typename SystemTagUnpacker<
-                    SystemTag>::GetSystemCollectionType::type,
-                typename SystemTagUnpacker<SystemTag>::GetPrimitiveType::type>>
-            : std::true_type {};
-       */
-
-      // Version 2 : 2n instantiations of single type, easier to use with TMPL
-      template <typename SystemTag>
-      struct GetPrimitive {
-        using type = typename SystemTag::PrimitiveType;
-      };
-
-      template <typename SystemTag>
-      struct GetSystemCollection {
-        using type = typename SystemTag::SystemCollectionType;
-      };
-
-      namespace detail {
-
-        // Helper struct to check if the environment tags are valid (aka should
-        // have a valid SystemCollectionType and PrimitiveType members)
-        template <typename SystemTag, typename = cpp17::void_t<>>
-        struct IsValidSystemTag : std::false_type {};
-
-        template <typename SystemTag>
-        struct IsValidSystemTag<
-            SystemTag,
-            cpp17::void_t<typename GetSystemCollection<SystemTag>::type,
-                          typename GetPrimitive<SystemTag>::type>>
-            : std::true_type {};
-
-      }  // namespace detail
-
-      // Check for
-      // 1. The system tag should be valid ()
+      //************************************************************************
+      /*!\brief Compile time check for conformance to Systems configuration
+      // requirements.
+      // \ingroup type_traits
+      //
+      // This type trait class tests whether or not the given type \a SC is a
+      // Elastica++ SystemsConfiguration. In order to qualify as a valid
+      // SystemsConfiguration the given type has to derive publicly from
+      // the SystemsConfiguration protocol class. In case the given type is
+      // a valid SystemsConfiguration type, the \a value member constant is
+      // set to \a true, the nested type definition \a type is \a std::true_type
+      // ,and the class derives from \a std::true_type. Otherwise \a value is
+      // set to \a false, \a type is \a std::false_type, and the class derives
+      // from \a std::false_type.
+      */
       template <typename SC>
-      struct IsValidSystemConfiguration : std::true_type {
+      struct IsSystemsConfiguration
+          : public ::tt::conforms_to<
+                SC, ::elastica::defaults::protocols::SystemsConfiguration> {};
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Auxiliary variable template for the IsSystemsConfiguration
+      // type trait.
+      // \ingroup type_traits
+      //
+      // The is_systems_configuration_v variable template provides a
+      // convenient shortcut to access the nested \a value of the
+      // IsSystemConfiguration class template. For instance, given the type
+      // \a T the following two statements are identical:
+
+         \code
+         using namespace elastica::interface::tt;
+         constexpr bool value1 = IsSystemsConfiguration<T>::value;
+         constexpr bool value2 = is_systems_configuration_v<T>;
+         \endcode
+      */
+      template <typename EC>
+      constexpr bool is_systems_configuration_v =
+          IsSystemsConfiguration<EC>::value;
+      //************************************************************************
+
+      namespace {
+
+        //======================================================================
+        //
+        //  ALIAS DECLARATIONS
+        //
+        //======================================================================
+
+        //**********************************************************************
+        /*! \cond ELASTICA_INTERNAL */
+        /*!\brief Alias declaration for nested \c PrimitiveType type
+        // definitions.
+        // \ingroup type_traits
+        //
+        // The primitive_type_t alias declaration provides a convenient
+        // shortcut to access the nested \a PrimitiveType type definition
+        // of the given type \a T. The following code example shows both ways to
+        // access the nested type definition:
+
+           \code
+           using Type1 = typename T::PrimitiveType;
+           using Type2 = primitive_type_t<T>;
+           \endcode
+        */
+        template <typename SystemTag>
+        using primitive_type_t = typename SystemTag::PrimitiveType;
+        /*! \endcond */
+        //**********************************************************************
+
+        //**********************************************************************
+        /*! \cond ELASTICA_INTERNAL */
+        /*!\brief Alias declaration for nested \c SystemType type definitions.
+        // \ingroup type_traits
+        //
+        // The system_type_t alias declaration provides a convenient
+        // shortcut to access the nested \a SystemType type definition
+        // of the given type \a T. The following code example shows both ways to
+        // access the nested type definition:
+
+           \code
+           using Type1 = typename T::SystemType;
+           using Type2 = system_type_t<T>;
+           \endcode
+        */
+        template <typename SystemTag>
+        using system_type_t = typename SystemTag::SystemType;
+        /*! \endcond */
+        //**********************************************************************
+
+        //======================================================================
+        //
+        //  CLASS DEFINITION
+        //
+        //======================================================================
+
+        //**********************************************************************
+        /*! \cond ELASTICA_INTERNAL */
+        /*!\brief Compile time check for System Tag
+        // \ingroup type_traits
+        //
+        // This type trait class tests whether or not the given type \a Tag is a
+        // valid Elastica++ system. In order to qualify as a valid
+        // system the given type should have two nested typedefs called
+        // \a PrimitiveType and \a SystemType. In case the given type is a valid
+        // environment type, the \a value member constant is set to \a true, the
+        // nested type definition \a type is \a std::true_type, and the class
+        // derives from \a std::true_type. Otherwise \a value is set to \a false
+        // \a type is \a std::false_type, and the class derives from \a
+        // std::false_type.
+        */
+        template <typename SystemTag>
+        struct IsSystemTag : public cpp17::conjunction<
+                                 ::tt::is_detected<primitive_type_t, SystemTag>,
+                                 ::tt::is_detected<system_type_t, SystemTag>> {
+        };
+        /*! \endcond */
+        //**********************************************************************
+
+      }  // namespace
+
+      //========================================================================
+      //
+      //  CLASS DEFINITION
+      //
+      //========================================================================
+
+      //************************************************************************
+      /*!\brief Compile time check for strict conformance to Environment
+      // requirements.
+      // \ingroup type_traits
+      //
+      // This type trait class asserts whether or not the given type \a EC can
+      // be used as an Elastica++ EnvironmentConfiguration in the current
+      // simulation. In order to be safely used as a valid Environment
+      // Configuration the given type has to derive publicly from
+      // the EnvironmentConfiguration protocol class and satisfy all its
+      // requirements. Furthermore, all nested tags need to satisfy the
+      // \c IsEnvironmentTag predicate for \a EC to qualify as safe for use in
+      // the current simulation. In case the given type is a safe
+      // EnvironmentConfiguration type, the \a value member constant is set to
+      // \a true, the nested type definition \a type is \a std::true_type
+      // , and the class derives from \a std::true_type. Otherwise, a compiler-
+      // error is thrown indicating the mode of failure and remedial measures.
+      */
+      template <typename SC>
+      struct AssertValidSystemConfiguration
+          // 1. strict check for conformance
+          : public ::tt::detail::AssertConformsToImpl<
+                SC, ::elastica::defaults::protocols::SystemsConfiguration> {
         using AdmissibleSystemCollectionTags =
-            typename SC::AdmissibleSystemCollectionTags;
-        using Constraint = ListRequires<detail::IsValidSystemTag>;
-        using RequiresType =
+            ::elastica::tt::admissible_system_tags_t<SC>;
+        using Constraint = ListRequires<IsSystemTag>;
+        // The system tag should be valid ()
+        using ConstraintPassed =
             tmpl::transform<AdmissibleSystemCollectionTags,
                             Constraint::template apply<tmpl::_1>>;
       };
+      //************************************************************************
 
     }  // namespace tt
 
