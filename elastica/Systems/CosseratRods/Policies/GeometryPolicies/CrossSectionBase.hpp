@@ -6,6 +6,7 @@
 #include "Systems/CosseratRods/Policies/StrongTypes.hpp"
 #include "Utilities/DefineTypes.h"
 /////
+#include "Systems/CosseratRods/CosseratRodTraitMacros.hpp"
 #include "Systems/CosseratRods/Policies/GeometryPolicies/RodGeometry.hpp"
 #include "Systems/CosseratRods/TypeTraits/detail.hpp"
 #include "Utilities/Math/Vec3.hpp"
@@ -68,21 +69,15 @@ namespace elastica {
       /*
        * Generative Tags : To be filled in by generators
        */
-      struct DimensionCollectionTag : Traits::ElementVector {
-        using Current = DimensionCollectionTag;
-        using Parent = typename Traits::ElementVector;
-        using SliceType = typename Parent::template Slice<Current>;
-        using InitializerTag = tags::DimensionProfileTag;
-      };
+      ELASTICA_BLOCK_REGISTER_INITIALIZED_TYPE(DimensionCollectionTag,
+                                               ElementTag, VectorTag,
+                                               tags::DimensionProfileTag);
 
       /*
        * Computed Tags : Can be filled in
        */
-      struct VolumeCollectionTag : Traits::ElementVector {
-        using Current = VolumeCollectionTag;
-        using Parent = typename Traits::ElementVector;
-        using SliceType = typename Parent::template Slice<Current>;
-      };
+      ELASTICA_BLOCK_REGISTER_COMPUTED_TYPE(VolumeCollectionTag, ElementTag,
+                                            VectorTag);
 
      protected:
       using MemberTags =
@@ -193,13 +188,22 @@ namespace elastica {
      public:
       using float_type = real_t;
 
+      // DONE : Should really be an enum class to prevent clashes with lab frame
+      // from domain types X, Y, Z
       // Some static typedefs for ease of use in the Cosserat Rod class
-      using DirectionType = unsigned char;
-      static constexpr DirectionType D1 = 0;
-      static constexpr DirectionType D2 = 1;
-      static constexpr DirectionType D3 = 2;
+      //**Type definitions******************************************************
+      //! The type of director ID
+      enum class DirectorType : std::uint8_t { d1, d2, d3 };
+      //************************************************************************
+      static constexpr DirectorType D1 = DirectorType::d1;
+      static constexpr DirectorType D2 = DirectorType::d2;
+      static constexpr DirectorType D3 = DirectorType::d3;
 
       // These are all interface functions
+      inline constexpr auto get_dimension() const noexcept {
+        return std::get<DimensionCollectionTag>(self().data());
+      }
+
       inline constexpr decltype(auto) get_dimension() noexcept {
         return std::get<DimensionCollectionTag>(self().data());
       }
@@ -221,21 +225,21 @@ namespace elastica {
       inline constexpr auto get_area() const noexcept {
         // Should give out a VecVecExpr rather than Dimensions object
         // for expression template mechanisms
-        return self().get_area_impl(This::get_dimension());
+        return self().area_impl(This::get_dimension());
       }
 
       inline constexpr auto get_area(std::size_t i) const noexcept
           -> float_type {
-        return self().get_area_impl(This::get_dimension(i));
+        return self().area_impl(This::get_dimension(i));
       }
 
-      template <DirectionType Dim, Requires<(Dim < This::D3)> = nullptr>
+      template <DirectorType Dim, Requires<(Dim < This::D3)> = nullptr>
       inline constexpr auto get_second_moment_of_area(
           std::size_t i) const noexcept -> float_type {
         return self().second_moment_of_area_impl(This::get_dimension(i));
       }
 
-      template <DirectionType Dim, Requires<(Dim == This::D3)> = nullptr>
+      template <DirectorType Dim, Requires<(Dim == This::D3)> = nullptr>
       inline constexpr auto get_second_moment_of_area(
           std::size_t i) const noexcept -> float_type {
         // Perpendicular axis theorem
@@ -243,14 +247,14 @@ namespace elastica {
                self().second_moment_of_area_impl(This::get_dimension(i));
       }
 
-      template <DirectionType Dim, Requires<(Dim < This::D3)> = nullptr>
+      template <DirectorType Dim, Requires<(Dim < This::D3)> = nullptr>
       inline constexpr auto get_second_moment_of_area() const noexcept {
         // Should give out a VecVecExpr rather than Dimensions object
         // for expression template mechanisms
         return self().second_moment_of_area_impl(This::get_dimension());
       }
 
-      template <DirectionType Dim, Requires<(Dim == This::D3)> = nullptr>
+      template <DirectorType Dim, Requires<(Dim == This::D3)> = nullptr>
       inline constexpr auto get_second_moment_of_area() const noexcept {
         // Should give out a VecVecExpr rather than Dimensions object
         // for expression template mechanisms
@@ -279,6 +283,11 @@ namespace elastica {
       inline constexpr decltype(auto) get_reference_lengths() noexcept {
         return std::get<
             typename GeometryParent::ReferenceElementLengthCollectionTag>(
+            self().data());
+      }
+
+      inline constexpr decltype(auto) get_directors() noexcept {
+        return std::get<typename GeometryParent::DirectorCollectionTag>(
             self().data());
       }
 
@@ -315,8 +324,9 @@ namespace elastica {
       void compute_curvature() noexcept {
         // kappa is the only rotational diagnostic, so we direcelty compute
         // that here
-        std::get<typename GeometryParent::CurvatureCollectionTag>(
-            self().data()) = 1.0;
+        // std::get<typename GeometryParent::CurvatureCollectionTag>(
+        // self().data()) = 1.0;
+        // get_curvature() = log(get_rotation_matrices());
       }
     };
 

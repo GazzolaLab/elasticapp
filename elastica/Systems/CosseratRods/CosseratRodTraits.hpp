@@ -6,9 +6,24 @@
 #include "Utilities/DefineTypes.h"
 ///
 
-#include <blaze/math/DynamicMatrix.h>
+// Vector types
 #include <blaze/math/DynamicVector.h>
+#include <blaze/math/StaticVector.h>
+#include <blaze/math/views/Subvector.h>
 
+// matrix types
+#include <blaze/math/DynamicMatrix.h>
+//#include <blaze/math/StaticMatrix.h>
+#include <blaze/math/views/Column.h>
+#include <blaze/math/views/Submatrix.h>
+
+// Tensor types
+#include <blaze_tensor/math/DynamicTensor.h>
+#include <blaze_tensor/math/StaticTensor.h>
+#include <blaze_tensor/math/SubTensor.h>
+#include <blaze_tensor/math/views/ColumnSlice.h>
+
+// Elastica
 #include "Systems/CosseratRods/Math.hpp"
 //#include "Systems/CosseratRods/Policies/Policies.hpp"
 #include "ErrorHandling/Assert.hpp"
@@ -29,7 +44,122 @@ namespace elastica {
       using ElementTag = ElementTagImpl;
       using VoronoiTag = VoronoiTagImpl;
 
-      static constexpr std::size_t get_dimensions() noexcept { return 3UL; }
+      //      static constexpr std::size_t get_dimensions() noexcept { return
+      //      3UL; }
+
+      /* Initialization helpers */
+      template <typename IdType, typename StaggeredTag,
+                template <typename> class RankTag>
+      struct RegisterComputedType : public RankTag<StaggeredTag> {
+        using This = RegisterComputedType<IdType, StaggeredTag, RankTag>;
+        using Parent = RankTag<StaggeredTag>;
+        using SliceType = typename Parent::template Slice<This>;
+      };
+
+      template <typename IdType, typename StaggeredTag,
+                template <typename> class RankTag, typename InitTag>
+      struct RegisterInitializedType : public RankTag<StaggeredTag> {
+        using This = RegisterComputedType<IdType, StaggeredTag, RankTag>;
+        using Parent = RankTag<StaggeredTag>;
+        using SliceType = typename Parent::template Slice<This>;
+        using InitializerTag = InitTag;
+      };
+
+      template <typename IdType, typename TagType>
+      struct TensorSlice;
+
+      // can be in traits class
+      template <typename StaggeredTag>
+      struct TensorTag {
+        static constexpr std::size_t get_dimensions() noexcept { return 3UL; }
+
+        using TagType = StaggeredTag;
+
+        //
+        template <typename IdType>
+        using Slice = TensorSlice<IdType, TagType>;
+
+        // To prevent cross operations
+        using data_type = blaze::DynamicTensor<real_t>;
+        using slice_type = blaze::Subtensor_<data_type>;
+        // A concrete slice type
+        // NOTE : blaze tensor cant initialize with a matrix type
+        // so the ghosts for now are tensor types which involve
+        // more work than necessary
+        using ghost_type = blaze::StaticTensor<real_t, get_dimensions(),
+                                               get_dimensions(), 1UL>;
+        // blaze::DynamicMatrix<real_t, blaze::rowMajor>;
+        //        blaze::StaticMatrix<real_t, 3UL, 3UL, blaze::rowMajor>;
+
+        // Why can't I just use get
+        static inline constexpr auto get_dofs(std::size_t n_elems) {
+          return TagType::get_dofs(n_elems);
+        }
+
+        // Default ghosts have this value, can be overriden
+        // This should not be a real_t (implicit conversion) but
+        // rather a slice_t object (like a matrix for example)
+        static inline constexpr auto ghost_value() -> ghost_type {
+          // cannot be constexpr as it involves allocation :/
+          return ghost_type{{{1.0}, {0.0}, {0.0}}, {{0.0}, {1.0}, {0.0}},
+                 {{0.0}, {0.0}, {1.0}}};
+        }
+
+        // should really be in the Slice Tag class, but it ends up being
+        // confusing as what we are really doing is taking a slice of a
+        // slice but its abstracted away
+        //        template <typename MT>
+        //        static inline constexpr decltype(auto) slice(MT& matrix,
+        //                                                     std::size_t i) {
+
+        // TODO decltype expression is same as SliceType
+        // TODO This is internal function, need not be exposed
+        // This overload is used in the block to generate slices to be
+        // filled in by the upper hierarchy of classes
+        static inline constexpr decltype(auto) slice(data_type& tensor,
+                                                     std::size_t start,
+                                                     std::size_t size) {
+          // (page, row, column), (o, m, n)
+          return blaze::subtensor(tensor, 0UL, 0UL, start, get_dimensions(),
+                                  get_dimensions(), size);
+        }
+
+        // How to slice the data-type?
+        // This overload is used in the upper hierarchy of classes for
+        // initialization
+        static inline constexpr decltype(auto) slice(slice_type& tensor_slice,
+                                                     std::size_t idx) {
+          return blaze::subtensor(tensor_slice, 0UL, 0UL, idx, get_dimensions(),
+                                  get_dimensions(), 1UL);
+          //          return blaze::columnslice(tensor_slice, idx);
+        }
+
+        // This overload is used in the block to generate slices to be
+        // used when filling the ghosts for example
+        static inline constexpr decltype(auto) slice(data_type& tensor,
+                                                     std::size_t idx) {
+          return blaze::subtensor(tensor, 0UL, 0UL, idx, get_dimensions(),
+                                  get_dimensions(), 1UL);
+          //          return blaze::columnslice(tensor, idx);
+        }
+
+        // How much to resize the data-type?
+        static inline void resize(data_type& tensor, std::size_t new_dofs) {
+          ELASTICA_ASSERT(tensor.columns() <= new_dofs,
+                          "Contract violation, block shrinks");
+          // (o, m, n)
+          return tensor.resize(get_dimensions(), get_dimensions(), new_dofs,
+                               true);
+        }
+      };
+
+      template <typename IdType, typename StaggeredTag>
+      struct TensorSlice {
+        using TagType = StaggeredTag;
+        using type = typename TensorTag<StaggeredTag>::slice_type;
+        constexpr type& get() noexcept { return d_; }
+        type d_;
+      };
 
       template <typename IdType, typename TagType>
       struct MatrixSlice;
@@ -37,6 +167,7 @@ namespace elastica {
       // can be in traits class
       template <typename StaggeredTag>
       struct MatrixTag {
+        static constexpr std::size_t get_dimensions() noexcept { return 3UL; }
         using TagType = StaggeredTag;
 
         //
@@ -48,6 +179,9 @@ namespace elastica {
             blaze::DynamicMatrix<real_t, blaze::rowMajor,
                                  blaze::AlignedAllocator<real_t> /*, TagType*/>;
         using slice_type = blaze::Submatrix_<data_type>;
+        // A concrete slice type
+        using ghost_type =
+            blaze::StaticVector<real_t, 3UL, blaze::columnVector>;
 
         // Why can't I just use get
         static inline constexpr auto get_dofs(std::size_t n_elems) {
@@ -55,8 +189,8 @@ namespace elastica {
         }
 
         // Default ghosts have this value, can be overriden
-        static inline constexpr auto ghost_value() -> real_t {
-          return real_t(0.0);
+        static inline constexpr auto ghost_value() -> ghost_type {
+          return {0.0, 0.0, 0.0};
         }
 
         // should really be in the Slice Tag class, but it ends up being
@@ -133,15 +267,16 @@ namespace elastica {
             blaze::DynamicVector<real_t, blaze::columnVector,
                                  blaze::AlignedAllocator<real_t> /*, TagType*/>;
         using slice_type = blaze::Subvector_<data_type>;
+        // A concrete slice type
+        using ghost_type = real_t;
+
         // Why can't I just use get
         static inline constexpr auto get_dofs(std::size_t n_elems) {
           return TagType::get_dofs(n_elems);
         }
 
         // Default ghosts have this value, can be overriden
-        static inline constexpr auto ghost_value() -> real_t {
-          return real_t(0.0);
-        }
+        static inline constexpr auto ghost_value() -> real_t { return 0.0; }
 
         // TODO decltype expression is same as SliceType
         // TODO This is internal function, need not be exposed

@@ -13,6 +13,17 @@ namespace elastica {
     //    template <typename /* Cosserat Rod Traits */, typename /* Block */>
     //    class LinearViscoHyperelasticModel;
 
+    template <
+        typename /* Cosserat Rod Traits */, typename /* Block */,
+        template <typename /* Cosserat Rod Traits */, typename /* Block */>
+        class ElasticityModel>
+    class ExplicitDampingAdapter;
+
+    template <typename CRT, typename ComputationalBlock>
+    using DampedLinearHyperelasticModel =
+        ExplicitDampingAdapter<CRT, ComputationalBlock,
+                               LinearHyperelasticModel>;
+
   }  // namespace detail_cosserat_rod
 
 }  // namespace elastica

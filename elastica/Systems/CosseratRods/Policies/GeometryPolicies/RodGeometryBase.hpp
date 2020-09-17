@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "ErrorHandling/Assert.hpp"
+#include "Systems/CosseratRods/CosseratRodTraitMacros.hpp"
 #include "Systems/CosseratRods/Policies/StrongTypes.hpp"
 #include "Utilities/DefineTypes.h"
 #include "Utilities/TMPL.hpp"
@@ -20,37 +21,17 @@ namespace elastica {
       using This = RodGeometryBase<RodTraits>;
       using Traits = RodTraits;
 
-     private:
-      /* The final implementation need not know about this guy*/
-      //      struct PositionSliceTag : Traits::NodeMatrixSlice {};
-      //      struct DirectorSliceTag : Traits::ElementMatrixSlice {};
-
      protected:
-      struct PositionCollectionTag : Traits::NodeMatrix {
-        //        using SliceType = PositionCollectionSliceTag;
-        using This = PositionCollectionTag;
-        using Parent = typename Traits::NodeMatrix;
-        using SliceType = typename Parent::template Slice<This>;
-        using InitializerTag = tags::PositionProfileTag;
-        /*
-        //        template <typename Func>
-        //        using InitializerType = tags::PositionProfile<Func>;
-         */
-      };
+      ELASTICA_BLOCK_REGISTER_INITIALIZED_TYPE(PositionCollectionTag, NodeTag,
+                                               MatrixTag,
+                                               tags::PositionProfileTag);
+      // DONE : Complete with Rank3 (tensor)
+      ELASTICA_BLOCK_REGISTER_INITIALIZED_TYPE(DirectorCollectionTag,
+                                               ElementTag, TensorTag,
+                                               tags::DirectorProfileTag);
 
-      struct DirectorCollectionTag : Traits::ElementMatrix {
-        using This = DirectorCollectionTag;
-        using Parent = typename Traits::ElementMatrix;
-        using SliceType = typename Parent::template Slice<This>;
-        using InitializerTag = tags::DirectorProfileTag;
-
-        /*
-        //        template <typename Func>
-        //        using InitializerType = tags::DirectorProfile<Func>;
-        */
-      };
-
-      using MemberTags = tmpl::list<PositionCollectionTag, DirectorCollectionTag>;
+      using MemberTags =
+          tmpl::list<PositionCollectionTag, DirectorCollectionTag>;
       /*
       using SliceTags =
           tmpl::transform<MemberTags,

@@ -51,6 +51,10 @@ namespace elastica {
     MAKE_PROFILE_TYPES(Density, density);
     MAKE_PROFILE_TYPES(Velocity, velocity);
     MAKE_PROFILE_TYPES(Omega, omega);
+    MAKE_PROFILE_TYPES(BendTwistRigidity, bend_twist_rigidity);
+    MAKE_PROFILE_TYPES(ShearStretchRigidity, shear_stretch_rigidity);
+    MAKE_PROFILE_TYPES(ForceDamping, force_damping);
+    MAKE_PROFILE_TYPES(TorqueDamping, torque_damping);
 #undef MAKE_PROFILE_TYPES
 #undef CONCAT
 #undef xxx

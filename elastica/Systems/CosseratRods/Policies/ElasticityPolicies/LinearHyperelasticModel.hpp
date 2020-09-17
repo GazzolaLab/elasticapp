@@ -19,15 +19,24 @@ namespace elastica {
     template <typename CRT,                 // Cosserat Rod Traits
               typename ComputationalBlock>  // Block
     class LinearHyperelasticModel
-        : public HyperElasticityBase<
-              CRT, LinearHyperelasticModel<CRT, ComputationalBlock>>,
+        : public HyperElasticityBase<CRT, ComputationalBlock>,
           public ::tt::ConformsTo<protocols::Elastic1D> {
      private:
       using Traits = CRT;
       using This = LinearHyperelasticModel<Traits, ComputationalBlock>;
-      using Parent = HyperElasticityBase<Traits, This>;
+      using Parent = HyperElasticityBase<Traits, ComputationalBlock>;
       // Friend it to gain access to data() and area_impl() classes
-      friend Parent;
+      //      friend Parent;
+
+      // Unfortunately here explicit damping adapter is used like a
+      // regular inheritance class rather than a CRTP class
+      // so we need to friend it. This is not a sustainable design
+      friend ExplicitDampingAdapter<Traits, ComputationalBlock,
+                                    LinearHyperelasticModel>;
+
+     protected:
+      using Base = typename Parent::Base;
+      friend Base;
 
      private:
       using Self = ComputationalBlock;
@@ -43,30 +52,20 @@ namespace elastica {
         return static_cast<ConstReference>(*this);
       }
 
-      // Interface to the CrossSection Base class
-      inline constexpr decltype(auto) data() noexcept { return self().data(); }
-
-      inline constexpr decltype(auto) data() const noexcept {
-        return self().data();
-      }
-
-     private:
-      // These need to be there to feed in stuff to hyper-elasticity base
-      inline auto get_moment_of_inertia_along_principal_directions(
-          std::size_t i) const noexcept {
-        return self().get_second_moment_of_area(i);
-      }
-
-      inline auto get_effective_area_along_principal_directions(
-          std::size_t i) const noexcept {
-        return self().get_area() * Vec3{self().get_shape_factor(),
-                                        self().get_shape_factor(), real_t(1.0)};
+     protected:
+      // These are protected to give access to derived classes
+      // TODO Implementation functions
+      inline auto compute_internal_modeled_loads_impl() const noexcept {
+        std::cout << "Adding hyperelastic forces";
+        // Geometry interface function
+        //        self().compute_shear_strains();
       }
 
       // TODO Implementation functions
-      inline auto compute_internal_modeled_loads_impl() const noexcept {
+      inline auto compute_internal_modeled_torques_impl() const noexcept {
         // Geometry interface function
-        self().compute_shear_strains();
+        std::cout << "Adding hyperelastic torques";
+        //        self().compute_shear_strains();
       }
 
      public:
@@ -76,14 +75,6 @@ namespace elastica {
 
      protected:
       using Parent::initialize;
-
-     public:
-      constexpr decltype(auto) get_force() noexcept {
-        return std::get<typename Self::ElementLengthCollectionTag>(
-                   self().data()) *
-               std::get<typename Self::ReferenceElementLengthCollectionTag>(
-                   self().data());
-      }
     };
 
   }  // namespace detail_cosserat_rod

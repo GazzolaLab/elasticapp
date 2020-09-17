@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "ErrorHandling/Assert.hpp"
+#include "Systems/CosseratRods/CosseratRodTraitMacros.hpp"
 #include "Systems/CosseratRods/Policies/StrongTypes.hpp"
 #include "Systems/CosseratRods/TypeTraits/detail.hpp"
 #include "Utilities/DefineTypes.h"
@@ -18,7 +19,7 @@ namespace elastica {
 
     // TODO Check for EBO
     template <typename RodTraits>
-    class RodGeometry : RodGeometryBase<RodTraits> {
+    class RodGeometry : public RodGeometryBase<RodTraits> {
      protected:
       using Parent = RodGeometryBase<RodTraits>;
       using This = RodGeometry<RodTraits>;
@@ -45,14 +46,9 @@ namespace elastica {
         }
       };
 
-      struct ReferenceCurvatureCollectionTag : Traits::VoronoiMatrix {
-        using This = ReferenceCurvatureCollectionTag;
-        using Parent = typename Traits::VoronoiMatrix;
-        using SliceType = typename Parent::template Slice<This>;
-        using InitializerTag = tags::ReferenceCurvatureProfileTag;
-        //        template <typename Func>
-        //        using InitializerType = tags::ReferenceCurvatureProfile<Func>;
-      };
+      ELASTICA_BLOCK_REGISTER_INITIALIZED_TYPE(
+          ReferenceCurvatureCollectionTag, VoronoiTag, MatrixTag,
+          tags::ReferenceCurvatureProfileTag);
 
       /*
        * Computed Tags : Can be filled in
@@ -68,47 +64,20 @@ namespace elastica {
         }
       };
 
-      struct ElementLengthCollectionTag : Traits::ElementVector {
-        using This = ElementLengthCollectionTag;
-        using Parent = typename Traits::ElementVector;
-        using SliceType = typename Parent::template Slice<This>;
-      };
-
-      struct ElementDilatationCollectionTag : Traits::ElementVector {
-        using This = ElementDilatationCollectionTag;
-        using Parent = typename Traits::ElementVector;
-        using SliceType = typename Parent::template Slice<This>;
-      };
-
-      struct VoronoiLengthCollectionTag : Traits::VoronoiVector {
-        using This = VoronoiLengthCollectionTag;
-        using Parent = typename Traits::VoronoiVector;
-        using SliceType = typename Parent::template Slice<This>;
-      };
-
-      struct VoronoiDilatationCollectionTag : Traits::VoronoiVector {
-        using This = VoronoiDilatationCollectionTag;
-        using Parent = typename Traits::VoronoiVector;
-        using SliceType = typename Parent::template Slice<This>;
-      };
-
-      struct CurvatureCollectionTag : Traits::VoronoiMatrix {
-        using This = CurvatureCollectionTag;
-        using Parent = typename Traits::VoronoiMatrix;
-        using SliceType = typename Parent::template Slice<This>;
-      };
-
-      struct TangentCollectionTag : Traits::ElementMatrix {
-        using This = TangentCollectionTag;
-        using Parent = typename Traits::ElementMatrix;
-        using SliceType = typename Parent::template Slice<This>;
-      };
-
-      struct ShearStretchStrainCollectionTag : Traits::ElementVector {
-        using This = ShearStretchStrainCollectionTag;
-        using Parent = typename Traits::ElementVector;
-        using SliceType = typename Parent::template Slice<This>;
-      };
+      ELASTICA_BLOCK_REGISTER_COMPUTED_TYPE(ElementLengthCollectionTag,
+                                            ElementTag, VectorTag);
+      ELASTICA_BLOCK_REGISTER_COMPUTED_TYPE(ElementDilatationCollectionTag,
+                                            ElementTag, VectorTag);
+      ELASTICA_BLOCK_REGISTER_COMPUTED_TYPE(VoronoiLengthCollectionTag,
+                                            VoronoiTag, VectorTag);
+      ELASTICA_BLOCK_REGISTER_COMPUTED_TYPE(VoronoiDilatationCollectionTag,
+                                            VoronoiTag, VectorTag);
+      ELASTICA_BLOCK_REGISTER_COMPUTED_TYPE(CurvatureCollectionTag, VoronoiTag,
+                                            MatrixTag);
+      ELASTICA_BLOCK_REGISTER_COMPUTED_TYPE(TangentCollectionTag, ElementTag,
+                                            MatrixTag);
+      ELASTICA_BLOCK_REGISTER_COMPUTED_TYPE(ShearStretchStrainCollectionTag,
+                                            ElementTag, VectorTag);
 
      private:
       // Can be generated, but whatever
@@ -232,7 +201,8 @@ namespace elastica {
         }
 
         {
-          auto& shear_stretch_strains_collection = get_slice(ShearStretchStrainCollectionTag{});
+          auto& shear_stretch_strains_collection =
+              get_slice(ShearStretchStrainCollectionTag{});
           shear_stretch_strains_collection = 1.0;
         }
       }

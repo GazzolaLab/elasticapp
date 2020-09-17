@@ -5,6 +5,7 @@
 #include "Utilities/DefineTypes.h"
 /////
 
+#include "Systems/CosseratRods/Policies/ElasticityPolicies/ElasticityBase.hpp"
 #include "Systems/CosseratRods/TypeTraits/detail.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -30,46 +31,18 @@ namespace elastica {
       /*
        * Generative Tags : To be filled in by generators
        */
-      struct BendingTwistRigidityMatrixCollectionTag : Traits::VoronoiMatrix {
-        // should ideally be a voronoi tensor, but we are always aligned with
-        // the principal shear/stretch/twist directions
-        using This = BendingTwistRigidityMatrixCollectionTag;
-        using Parent = typename Traits::VoronoiMatrix;
-        using SliceType = typename Parent::template Slice<This>;
-        using InitializerType = int;
-      };
-
-      struct ShearStretchRigidityMatrixCollectionTag : Traits::ElementMatrix {
-        // should ideally be a voronoi tensor, but we are always aligned with
-        // the principal shear/stretch/twist directions
-        using This = ShearStretchRigidityMatrixCollectionTag;
-        using Parent = typename Traits::ElementMatrix;
-        using SliceType = typename Parent::template Slice<This>;
-        using InitializerType = int;
-      };
-
-      /*
-       * Computed Tags : Can be filled in
-       */
-      struct InternalModeledLoadsTag : Traits::ElementMatrix {
-        using This = InternalModeledLoadsTag;
-        using Parent = typename Traits::ElementMatrix;
-        using SliceType = typename Parent::template Slice<This>;
-      };
-
-      struct InternalModeledTorquesTag : Traits::VoronoiMatrix {
-        using This = InternalModeledTorquesTag;
-        using Parent = typename Traits::VoronoiMatrix;
-        using SliceType = typename Parent::template Slice<This>;
-      };
+      // TODO : Fill initializer
+      ELASTICA_BLOCK_REGISTER_INITIALIZED_TYPE(
+          BendingTwistRigidityMatrixCollectionTag, VoronoiTag, MatrixTag,
+          tags::BendTwistRigidityProfileTag);
+      ELASTICA_BLOCK_REGISTER_INITIALIZED_TYPE(
+          ShearStretchRigidityMatrixCollectionTag, ElementTag, MatrixTag,
+          tags::ShearStretchRigidityProfileTag);
 
      protected:
-      using MemberTags =
-          tmpl::list<BendingTwistRigidityMatrixCollectionTag,
-                     ShearStretchRigidityMatrixCollectionTag,
-                     InternalModeledLoadsTag, InternalModeledTorquesTag>;
+      using MemberTags = tmpl::list<BendingTwistRigidityMatrixCollectionTag,
+                                    ShearStretchRigidityMatrixCollectionTag>;
     };
-
 
     /*
      * The following CRTP relies on a trick. Normally one uses
@@ -167,33 +140,41 @@ namespace elastica {
      *
      * While this seems beneficial from OCP, this gives too much freedom.
      * Quoting Sutter,
-     * However, in this case one has to distinguish between "protecting against Murphy,
-     * versus protecting against Machiavelli". However, whereas the intentional misuse
-     * cannot be prevented (Machiavelli), the accidental misuse via inheritance is
-     * rather improbable (Murphy). aka people need to know about CRTP first.
-     * Techniques are possible to prevent deriving
+     * However, in this case one has to distinguish between "protecting against
+     * Murphy, versus protecting against Machiavelli". However, whereas the
+     * intentional misuse cannot be prevented (Machiavelli), the accidental
+     * misuse via inheritance is rather improbable (Murphy). aka people need to
+     * know about CRTP first. Techniques are possible to prevent deriving
      * https://stackoverflow.com/questions/18174441/crtp-and-multilevel-inheritance
      * but is overkill at this point.
+     *
+     * NICE: There's a simple fix for this, just by making the implementation
+     * private and not giving access to the final classes, we can still make it
+     * closed for extension.
+     *
      */
-    // For all purposes, this behaves as an ABC instead of enforcing protocols
-    template <typename CRT,                            // Cosserat Rod Traits
-              typename HyperElasticConstitutiveModel>  // Constitutive Model
-    class HyperElasticityBase : public HyperElasticityBaseTraits<CRT> {
+    // For all purposes, this behaves as an ABC derived from another ABC
+    // instead of enforcing protocols
+    template <typename CRT,                 // Cosserat Rod Traits
+              typename ComputationalBlock>  // Constitutive Model
+    class HyperElasticityBase : public HyperElasticityBaseTraits<CRT>,
+                                public ElasticityBase<CRT, ComputationalBlock> {
      private:
       using Traits = CRT;
-      using HECM = HyperElasticConstitutiveModel;
-      using This = HyperElasticityBase<Traits, HECM>;
+      using This = HyperElasticityBase<Traits, ComputationalBlock>;
+      using Parent = ElasticityBase<Traits, ComputationalBlock>;
       using HEBT = HyperElasticityBaseTraits<CRT>;
 
-     protected:
-      using MemberTags = typename HEBT::MemberTags;
-
      private:
-      using GeneratedTags =
-          tmpl::filter<MemberTags, tt::CheckForInitializerTagType<tmpl::_1>>;
-      using ComputedTags = tmpl::list_difference<MemberTags, GeneratedTags>;
+      using ParentMemberTags = typename Parent::MemberTags;
+      using ThisMemberTags = typename HEBT::MemberTags;
 
-      using Self = HECM;
+      using GeneratedTags =
+          tmpl::filter<ThisMemberTags,
+                       tt::CheckForInitializerTagType<tmpl::_1>>;
+      using ComputedTags = tmpl::list_difference<ThisMemberTags, GeneratedTags>;
+
+      using Self = ComputationalBlock;
       using Reference = Self&;
       using ConstReference = Self const&;
 
@@ -208,14 +189,32 @@ namespace elastica {
      protected:
       // Curse templates!
       using typename HEBT::BendingTwistRigidityMatrixCollectionTag;
-      using typename HEBT::InternalModeledLoadsTag;
-      using typename HEBT::InternalModeledTorquesTag;
       using typename HEBT::ShearStretchRigidityMatrixCollectionTag;
+      using MemberTags = tmpl::append<ParentMemberTags, ThisMemberTags>;
+      using Base = Parent;
 
+     private:
+      // These need to be there to feed in stuff to hyper-elasticity base
+      inline auto get_moment_of_inertia_along_principal_directions(
+          std::size_t i) const noexcept {
+        return self().get_second_moment_of_area(i);
+      }
+
+      inline auto get_effective_area_along_principal_directions(
+          std::size_t i) const noexcept {
+        return self().get_area(i) * Vec3{self().shape_factor(),
+                                        self().shape_factor(), real_t(1.0)};
+      }
+
+     protected:
       // Initializer always protected
       template <class InitializerTuple, typename... Members>
       void initialize(std::size_t n_elems, std::tuple<Members...>& members_,
                       InitializerTuple&& initializers) {
+        // 0. Initializer parent's first (almost no-op) in this case
+        Parent::initialize(n_elems, members_,
+                           std::forward<InitializerTuple>(initializers));
+
         // 1. Initialize generators first
 
         // In this case, the generator expressions are customized to only
@@ -236,7 +235,7 @@ namespace elastica {
             // (E, E, G) * (I_1, I_2, I_3)
             Tag::slice(member, i) =
                 stiffness_along_principal_directions_initializer(i) *
-                self().get_moment_of_inertia_along_principal_directions(i);
+                This::get_moment_of_inertia_along_principal_directions(i);
           }
         }
 
@@ -255,31 +254,9 @@ namespace elastica {
             // (E, E, G) * (I_1, I_2, I_3)
             Tag::slice(member, i) =
                 stiffness_along_principal_directions_initializer(i) *
-                self().get_effective_area_along_principal_directions(i);
+                This::get_effective_area_along_principal_directions(i);
           }
         }
-
-        // Computed tags
-
-        {
-          using Tag = InternalModeledLoadsTag;
-          Traits::template get_slice<Tag>(members_) = 0.0;
-        }
-
-        {
-          using Tag = InternalModeledTorquesTag;
-          Traits::template get_slice<Tag>(members_) = 0.0;
-        }
-      }
-
-     public:
-      // TODO
-      inline void compute_internal_forces(){
-        self().compute_internal_modeled_loads_impl();
-      }
-
-      inline void compute_internal_torques(){
-        self().compute_internal_modeled_torques_impl();
       }
     };
 

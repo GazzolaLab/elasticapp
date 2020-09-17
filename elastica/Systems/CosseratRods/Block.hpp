@@ -10,6 +10,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Systems/Block/Block.hpp"
 #include "Systems/CosseratRods/BlockInitializer.hpp"
+#include "Systems/CosseratRods/BlockSlice.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
 #include "Systems/CosseratRods/TypeTraits/BlockInitializer.hpp"
 #include "Utilities/NonCopyable.hpp"
@@ -103,6 +104,7 @@ namespace elastica {
     using Slices = tmpl::as_tagged_tuple<SliceTags>;
 
     using CosseratRodProperties = tmpl::as_tagged_tuple<MemberTags>;
+    using BlockSlice = BlockSlice<Parent>;
 
     // No need scalable allocator
     using SizeType = std::size_t;
@@ -450,7 +452,7 @@ namespace elastica {
     template <typename... BlockInitializers,
               Requires<cpp17::conjunction_v<
                   tt::IsBlockInitializer<BlockInitializers>...>> = nullptr>
-    void emplace_back(BlockInitializers&&... block_initializers) {
+    auto emplace_back(BlockInitializers&&... block_initializers) -> BlockSlice {
       // 0. number of preexisting rods
       const auto n_units = size();
       constexpr auto n_units_added = sizeof...(BlockInitializers);
@@ -489,11 +491,13 @@ namespace elastica {
       index_apply<n_units_added>([&initializer](auto... Is) {
         EXPAND_PACK_LEFT_TO_RIGHT(initializer(Is));
       });
+
+      // return BlockSlice(slices);
     }
 
     // TODO : Check for initializer requirements here
     template <typename... UnitInitializers>
-    void emplace_back(std::size_t n_elems,
+    auto emplace_back(std::size_t n_elems,
                       UnitInitializers&&... unit_initializers) {
       /*
       // A.
@@ -516,7 +520,7 @@ namespace elastica {
       // At this point the total number of elements and the accumulate
       // of individual elements should match
        */
-      emplace_back(make_cosserat_rod(
+      return emplace_back(make_cosserat_rod(
           n_elems, std::forward<UnitInitializers>(unit_initializers)...));
     }
 
