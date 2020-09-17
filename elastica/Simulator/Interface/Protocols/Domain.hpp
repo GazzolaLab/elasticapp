@@ -13,7 +13,7 @@
 
 namespace elastica {
 
-  namespace defaults {
+  namespace configuration {
 
     namespace protocols {
 
@@ -85,6 +85,6 @@ namespace elastica {
 
     }  // namespace protocols
 
-  }  // namespace defaults
+  }  // namespace configuration
 
 }  // namespace elastica

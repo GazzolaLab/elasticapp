@@ -12,7 +12,7 @@
 
 namespace elastica {
 
-  namespace defaults {
+  namespace configuration {
 
     namespace protocols {
 
