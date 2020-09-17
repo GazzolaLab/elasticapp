@@ -9,6 +9,7 @@
 
 #include "ModuleSettings/Environments/Aliases.hpp"
 #include "Utilities/TypeTraits/IsDetected.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace elastica {
 
