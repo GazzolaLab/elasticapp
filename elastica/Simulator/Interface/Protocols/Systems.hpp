@@ -7,7 +7,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "ModuleSettings/Systems/Aliases.hpp"
+#include "Simulator/Interface/TypeTraits/Aliases/Systems.hpp"
 #include "Utilities/TypeTraits/IsDetected.hpp"
 
 namespace elastica {

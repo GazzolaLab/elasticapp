@@ -6,8 +6,8 @@
 
 #include <type_traits>
 
-#include "ModuleSettings/Domain/Protocols.hpp"
 #include "Simulator/Domain/Types.hpp"
+#include "Simulator/Interface/Protocols/Domain.hpp"
 // HEALTH WARNING : We need a complete implementation of Domain here to let
 // the compiler know that it conforms to the protocol (the types header only
 // forward declares it without conformance)

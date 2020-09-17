@@ -4,9 +4,9 @@
 // Includes
 //******************************************************************************
 
-#include "ModuleSettings/Environments/Protocols.hpp"
 #include "Simulator/Environments/Primitives/Types.hpp"
 #include "Simulator/Environments/Tags.hpp"
+#include "Simulator/Interface/Protocols/Environments.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 

@@ -17,9 +17,9 @@
 // Includes
 //******************************************************************************
 
-#include "ModuleSettings/Domain/Aliases.hpp"
-#include "ModuleSettings/Domain/Protocols.hpp"
 #include "Simulator/Domain/Protocols.hpp"
+#include "Simulator/Interface/Protocols/Domain.hpp"
+#include "Simulator/Interface/TypeTraits/Aliases/Domain.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 
 namespace elastica {

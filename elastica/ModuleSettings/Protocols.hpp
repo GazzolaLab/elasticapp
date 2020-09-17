@@ -3,5 +3,5 @@
 //******************************************************************************
 // Includes
 //******************************************************************************
-#include "ModuleSettings/Domain/Protocols.hpp"
-#include "ModuleSettings/Environments/Protocols.hpp"
+#include "Simulator/Interface/Protocols/Domain.hpp"
+#include "Simulator/Interface/Protocols/Environments.hpp"

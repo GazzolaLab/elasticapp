@@ -19,8 +19,8 @@
 
 #include <type_traits>
 
-#include "ModuleSettings/Environments/Aliases.hpp"
-#include "ModuleSettings/Environments/Protocols.hpp"
+#include "Simulator/Interface/Protocols/Environments.hpp"
+#include "Simulator/Interface/TypeTraits/Aliases/Environments.hpp"
 #include "Utilities/ListRequires.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"

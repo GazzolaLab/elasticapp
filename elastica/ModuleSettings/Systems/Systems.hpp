@@ -7,7 +7,7 @@
 ////////// Forward declarations come first
 #include "Systems/RigidBody/Types.hpp"
 //////////
-#include "ModuleSettings/Systems/Protocols.hpp"
+#include "Simulator/Interface/Protocols/Systems.hpp"
 #include "Systems/Tags.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"

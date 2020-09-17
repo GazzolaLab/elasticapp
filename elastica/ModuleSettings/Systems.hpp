@@ -4,6 +4,6 @@
 // Includes
 //******************************************************************************
 
-#include "ModuleSettings/Systems/Aliases.hpp"
 #include "ModuleSettings/Systems/Systems.hpp"
-#include "ModuleSettings/Systems/Protocols.hpp"
+#include "Simulator/Interface/Protocols/Systems.hpp"
+#include "Simulator/Interface/TypeTraits/Aliases/Systems.hpp"

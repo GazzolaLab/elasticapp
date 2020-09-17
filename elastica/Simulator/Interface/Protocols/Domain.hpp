@@ -7,8 +7,8 @@
 #include <type_traits>
 #include <utility>
 
-#include "ModuleSettings/Domain/Aliases.hpp"
 #include "Simulator/Domain/Policies/Directions.hpp"
+#include "Simulator/Interface/TypeTraits/Aliases/Domain.hpp"
 #include "Utilities/TypeTraits/IsDetected.hpp"
 
 namespace elastica {
