@@ -18,7 +18,7 @@
  * \ingroup config
  *
  * This macro selects the default environment modules. The purpose of this
- * typelist is to add tags indicating the environments in the simulation. The
+ * \a typelist is to add tags indicating the environments in the simulation. The
  * following module tags are available:
  *
  *   - elastica::environments::tags::CollisionDetectionTag
@@ -36,7 +36,7 @@
  * \ingroup config
  *
  * This macro selects the default imposed primitives. The purpose of this
- * typelist is to add primitives that comprise the environment in the
+ * \a typelist is to add primitives that comprise the environment in the
  * simulation, which do not comprise the degrees of freedom (being temporally
  * integrated) in the simulator. Usually, but no necessarily, these correspond
  * to infinite objects. The following primitives are available:

@@ -17,10 +17,10 @@
 /*!\brief Selection of the default admissible systems
  * \ingroup config
  *
- * This macro selects the default admissible systems. The purpose of this
- * typelist is to add tags indicating the admissible systems in the simulation
- * that comprise the degrees of freedom. The following system tags are
- * available:
+ * This macro selects the default admissible \systems. The purpose of this
+ * \a typelist is to add tags indicating the admissible \systems in the
+ * simulation that comprise the degrees of freedom. The following \system tags
+ * are available:
  *
  *   - elastica::SphereCollectionTag
  *

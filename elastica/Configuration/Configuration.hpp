@@ -22,7 +22,7 @@
 //******************************************************************************
 /*!\defgroup config Configuration
  *
- * The configuration module offers the possibility to tune Elastica++ to the
+ * The configuration module offers the possibility to tune \elastica to the
  * individual needs and requirements.
  */
 //******************************************************************************
