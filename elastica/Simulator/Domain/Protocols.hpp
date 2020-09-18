@@ -1,3 +1,16 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Domain protocols
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
 
 //******************************************************************************
@@ -32,7 +45,8 @@ namespace elastica {
     // Requires that conforming class has these nested types:
     // - \a bound_type : Type of upper/lower bound
     //
-    // Requires that the conforming class has these member functions:
+    // Requires that the conforming class has these templated member functions,
+    // templated on the directions
     // - \c get_lower_bound : Returns the lower bound of the domain
     // - \c get_upper_bound : Returns the upper bound of the domain
     // - \c get_span : Returns the span of the domain
@@ -46,18 +60,35 @@ namespace elastica {
       template <typename ConformingType>
       struct test {
        public:
-        //**Type definitions**************************************************
-        // Try calling the `ConformingType::get_lower_bound` member function
-        using lower_domain_return_type =
-            decltype(std::declval<ConformingType&>().get_lower_bound());
+        //**Type definitions****************************************************
+        // Try calling the `ConformingType::get_lower_bound` templated member
+        // function
+        using lower_domain_return_type = typename std::common_type<
+            decltype(std::declval<ConformingType&>()
+                         .template get_lower_bound<ConformingType::X>()),
+            decltype(std::declval<ConformingType&>()
+                         .template get_lower_bound<ConformingType::Y>()),
+            decltype(std::declval<ConformingType&>()
+                         .template get_lower_bound<ConformingType::Z>())>::type;
 
-        // Try calling the `ConformingType::get_lower_bound` member function
-        using upper_domain_return_type =
-            decltype(std::declval<ConformingType&>().get_upper_bound());
+        // Try calling the `ConformingType::get_lower_bound` templated member
+        // function
+        using upper_domain_return_type = typename std::common_type<
+            decltype(std::declval<ConformingType&>()
+                         .template get_upper_bound<ConformingType::X>()),
+            decltype(std::declval<ConformingType&>()
+                         .template get_upper_bound<ConformingType::Y>()),
+            decltype(std::declval<ConformingType&>()
+                         .template get_upper_bound<ConformingType::Z>())>::type;
 
-        // Try calling the `ConformingType::get_span` member function
-        using span_return_type =
-            decltype(std::declval<ConformingType&>().get_span());
+        // Try calling the `ConformingType::get_span` templated member function
+        using span_return_type = typename std::common_type<
+            decltype(std::declval<ConformingType&>()
+                         .template get_span<ConformingType::X>()),
+            decltype(std::declval<ConformingType&>()
+                         .template get_span<ConformingType::Y>()),
+            decltype(std::declval<ConformingType&>()
+                         .template get_span<ConformingType::Z>())>::type;
 
         using bound_type = typename ConformingType::bound_type;
         //**********************************************************************

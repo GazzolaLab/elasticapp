@@ -9,6 +9,7 @@
 
 #include "Simulator/Interface/TypeTraits/Aliases/Systems.hpp"
 #include "Utilities/TypeTraits/IsDetected.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace elastica {
 
@@ -24,7 +25,7 @@ namespace elastica {
 
       //************************************************************************
       /*!\brief Systems configuration protocol.
-      // \ingroup protocols
+      // \ingroup configuration protocols
       //
       // Class to enforce adherence to Systems configuration protocol. Any valid
       // system configuration within the Elastica++ library should
@@ -51,6 +52,11 @@ namespace elastica {
                                   ConformingType>,
               "Not a conforming domain configuration, doesn't have a "
               "nested AdmissibleSystemTags member");
+          static_assert(
+              ::tt::is_a_v<tmpl::list,
+                  ::elastica::tt::admissible_system_tags_t<
+                      ConformingType>>,
+              "Admissible system tags should belong in a typelist!");
         };
         /*! \endcond */
         //**********************************************************************

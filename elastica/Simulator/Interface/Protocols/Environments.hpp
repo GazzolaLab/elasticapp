@@ -25,7 +25,7 @@ namespace elastica {
 
       //************************************************************************
       /*!\brief Environments configuration protocol.
-      // \ingroup protocols
+      // \ingroup configuration protocols
       //
       // Class to enforce adherence to Environments configuration protocol. Any
       // valid environment configuration within the Elastica++ library should

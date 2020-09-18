@@ -25,7 +25,7 @@ namespace elastica {
 
       //************************************************************************
       /*!\brief Domain configuration protocol.
-      // \ingroup protocols
+      // \ingroup configuration protocols
       //
       // Class to enforce adherence to Domain config protocol. Any valid domain
       // configuration within the Elastica++ library should (publicly) inherit
