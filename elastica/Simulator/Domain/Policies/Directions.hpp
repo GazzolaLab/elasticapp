@@ -1,3 +1,16 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Directions implementation
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
 
 //******************************************************************************
@@ -20,7 +33,7 @@ namespace elastica {
 
     //**************************************************************************
     /*! \cond ELASTICA_INTERNAL */
-    /*!\brief Trait definiing unique ID for different directions
+    /*!\brief Trait definiing unique IDs for different directions
     // \ingroup domain
     //
     // Directions is a Trait defining the type and number of directions in 3D.
@@ -29,14 +42,22 @@ namespace elastica {
     struct Directions : public NonCreatable {
      public:
       //**Type definitions******************************************************
-      using DirectionType = std::uint8_t;  //!< The type of direction ID
+      //! The type of direction ID
+      enum class DirectionType : std::uint8_t { x, y, z };
       //************************************************************************
 
       //**Static members********************************************************
-      static constexpr DirectionType X = 0;  //!< unique ID for X direction
-      static constexpr DirectionType Y = 1;  //!< unique ID for Y direction
-      static constexpr DirectionType Z = 2;  //!< unique ID for Z direction
-      static constexpr DirectionType Dimension = 3; //!< Dimension of simulation
+      //! unique ID for X direction
+      static constexpr DirectionType X = DirectionType::x;
+
+      //! unique ID for Y direction
+      static constexpr DirectionType Y = DirectionType::y;
+
+      //! unique ID for Z direction
+      static constexpr DirectionType Z = DirectionType::z;
+
+      //! Dimension of simulation
+      static constexpr std::uint8_t Dimension = 3;
       //************************************************************************
     };
     /*! \endcond */

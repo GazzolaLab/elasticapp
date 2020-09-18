@@ -1,3 +1,16 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Unbounded domain policy class
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
 
 //******************************************************************************
@@ -44,12 +57,17 @@ namespace elastica {
     //**************************************************************************
 
     //**Static members**********************************************************
-    //! Dimension of simulations
-    static constexpr DirectionType Dimension = detail::Directions::Dimension;
+    //! unique ID for X direction
+    static constexpr DirectionType X = detail::Directions::X;
 
-    /* We do not define X, Y and Z (or derived from Directions)
-     * as it is easier to debug and detect errors early
-     */
+    //! unique ID for Y direction
+    static constexpr DirectionType Y = detail::Directions::Y;
+
+    //! unique ID for Z direction
+    static constexpr DirectionType Z = detail::Directions::Z;
+
+    //! Dimension of simulations
+    static constexpr auto Dimension = detail::Directions::Dimension;
     //**************************************************************************
 
    protected:
@@ -128,8 +146,7 @@ namespace elastica {
     //
     // \tparam Direction Direction to get lower bound, one of X, Y or Z
     */
-    template <DirectionType Direction,
-              Requires<(Direction < Dimension)> = nullptr>
+    template <DirectionType Direction>
     inline constexpr Real get_lower_bound() const noexcept {
       return -inf;
     }
@@ -142,8 +159,7 @@ namespace elastica {
     //
     // \tparam Direction Direction to get upper bound, one of X, Y or Z
     */
-    template <DirectionType Direction,
-              Requires<(Direction < Dimension)> = nullptr>
+    template <DirectionType Direction>
     inline constexpr Real get_upper_bound() const noexcept {
       return inf;
     }

@@ -1,3 +1,16 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Periodic domain policy class
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
 
 //******************************************************************************
@@ -15,7 +28,6 @@
 #include "Utilities/Math/Infinity.hpp"
 #include "Utilities/Math/Vec3.hpp"
 #include "Utilities/NonCopyable.hpp"
-#include "Utilities/Requires.hpp"
 
 namespace elastica {
 
@@ -56,7 +68,7 @@ namespace elastica {
     static constexpr DirectionType Z = detail::Directions::Z;
 
     //! Dimension of simulations
-    static constexpr DirectionType Dimension = detail::Directions::Dimension;
+    static constexpr auto Dimension = detail::Directions::Dimension;
     //**************************************************************************
 
    protected:
@@ -150,8 +162,7 @@ namespace elastica {
     //
     // \tparam Direction Direction to get lower bound, one of X, Y or Z
     */
-    template <DirectionType Direction,
-              Requires<(Direction < Dimension)> = nullptr>
+    template <DirectionType Direction>
     inline constexpr Real get_lower_bound() const noexcept {
       return spans_[Direction][SpanType::min_idx];
     }
@@ -164,8 +175,7 @@ namespace elastica {
     //
     // \tparam Direction Direction to get upper bound, one of X, Y or Z
     */
-    template <DirectionType Direction,
-              Requires<(Direction < Dimension)> = nullptr>
+    template <DirectionType Direction>
     inline constexpr Real get_upper_bound() const noexcept {
       return spans_[Direction][SpanType::max_idx];
     }
