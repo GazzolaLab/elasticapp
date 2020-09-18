@@ -30,12 +30,11 @@ namespace elastica {
   //============================================================================
 
   //****************************************************************************
-  /*!\brief Struct representing an unbounded boundary condition.
+  /*!\brief struct representing an unbounded boundary condition.
   // \ingroup domain
   //
-  // The UnboundedBoundary is a struct that marks a particular direction within
-  // the Domain as having an unbounded boundary condition within the \elastica
-  // library.
+  // UnboundedBoundary marks a particular direction as having an unbounded
+  // boundary condition within the Domain of the \elastica library.
   //
   // \note This class is derived from std::false_type for ease in implementing
   // and/or logic when needed
@@ -44,12 +43,11 @@ namespace elastica {
   //****************************************************************************
 
   //****************************************************************************
-  /*!\brief Struct representing a periodic boundary condition.
+  /*!\brief struct representing a periodic boundary condition.
   // \ingroup domain
   //
-  // The UnboundedBoundary is a struct that marks a particular direction within
-  // the Domain as having an periodic boundary condition within the \elastica
-  // library.
+  // PeriodicBoundary marks a particular direction as having a periodic boundary
+  // condition within the Domain of the \elastica library.
   //
   // \note This class is derived from std::true_type for ease in implementing
   // and/or logic when needed
