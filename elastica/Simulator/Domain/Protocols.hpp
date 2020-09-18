@@ -33,10 +33,10 @@ namespace elastica {
 
     //**************************************************************************
     /*!\brief Domain protocol.
-    // \ingroup protocols
+    // \ingroup protocols domain
     //
     // Class to enforce adherence to Domain protocol. Any valid Domain within
-    // the Elastica++ library should (publicly) inherit from this class to
+    // the \elastica library should (publicly) inherit from this class to
     // indicate it qualifies as a Domain. Only in case a class is derived
     // publicly from this base class, the \c tt::conforms_to and
     // \c tt::assert_conforms_to type traits recognizes the class as valid

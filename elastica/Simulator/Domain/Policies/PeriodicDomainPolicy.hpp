@@ -40,9 +40,11 @@ namespace elastica {
   /*!\brief Class template implementing a periodic domain policy
   // \ingroup domain
   //
-  // The PeriodicDomainPolicy class template is a policy used by Elastica++'s
+  // The PeriodicDomainPolicy class template is a policy used by \elastica 's
   // Domain class. It implements the logic for implementing periodic domains
-  // in the context of Elastica++ simulations.
+  // in the context of \elastica simulations.
+  //
+  // \tparam Real Any floating point type
   */
   template <typename Real>  // Any real type
   class PeriodicDomainPolicy : public NonCopyable {
@@ -132,6 +134,8 @@ namespace elastica {
     //
     // \param span A span of Vector like elements
     // \return void
+    //
+    // \tparam VecLike Any vector like type
     */
     template <typename VecLike>  // Vec3 like
     void set(Span<VecLike> span) noexcept {

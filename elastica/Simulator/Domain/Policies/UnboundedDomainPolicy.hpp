@@ -39,9 +39,11 @@ namespace elastica {
   /*!\brief Class template implementing a unbounded domain policy
   // \ingroup domain
   //
-  // The UnboundedDomainPolicy class template is a policy used by Elastica++'s
+  // The UnboundedDomainPolicy class template is a policy used by \elastica 's
   // Domain class. It implements the logic for implementing unbounded domains
-  // in the context of Elastica++ simulations.
+  // in the context of \elastica simulations.
+  //
+  // \tparam Real Any floating point type
   */
   template <typename Real>  // Any real type
   class UnboundedDomainPolicy : public NonCopyable {
@@ -123,6 +125,8 @@ namespace elastica {
     //
     // \param span A span of Vector like elements
     // \return void
+    //
+    // \tparam VecLike Any vector like type
     */
     template <typename VecLike>  // Vec3 like
     void set(Span<VecLike>) const noexcept {}

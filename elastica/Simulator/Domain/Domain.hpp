@@ -1,3 +1,16 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Domain implementation
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
 
 //******************************************************************************
@@ -36,8 +49,9 @@ namespace elastica {
     */
     template <typename Real,                           // Real type
               template <typename> class DomainPolicy,  // Policy of the domain
-              Requires<std::is_floating_point<Real>::value>>  // Restriction
-    class Domain
+              Requires<std::is_floating_point<Real>::value>>  // Restricting
+                                                              // condition
+                                                              class Domain
         : public ::tt::ConformsTo<::elastica::protocols::ComputationalDomain>,
           public DomainPolicy<Real> {
      private:

@@ -33,11 +33,12 @@ namespace elastica {
 
     //**************************************************************************
     /*! \cond ELASTICA_INTERNAL */
-    /*!\brief Trait definiing unique IDs for different directions
+    /*!\brief Trait defining unique IDs for different directions
     // \ingroup domain
     //
-    // Directions is a Trait defining the type and number of directions in 3D.
-    // It serves as a strong type for Directions within the Elastica++ library.
+    // Directions is a trait defining the type and number of directions in 3D.
+    // It serves as a strong type for all directions within the \elastica
+    // library.
     */
     struct Directions : public NonCreatable {
      public:

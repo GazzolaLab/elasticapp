@@ -1,3 +1,16 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Span implementation
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
 
 //******************************************************************************
@@ -22,10 +35,14 @@ namespace elastica {
   //
   // The Span class template represents a physical span extending up to the
   // domain in one-dimension. It stores the values of the minimum and maximum
-  // position for this dimension. Its implementation is similar to std::array
-  // and semantically, it is meant to reside on the stack.
+  // position for this dimension.
+  //
+  // \note Its implementation is similar to std::array and semantically, it also
+  // resides on the stack.
+  //
+  // \tparam Numeric Any numeral type
   */
-  template <typename Real>  // Real
+  template <typename Numeric>  // Numeric
   struct Span {
    public:
     //**Static members**********************************************************
@@ -39,7 +56,7 @@ namespace elastica {
     //**Constructors************************************************************
     /*!\name Constructors */
     //@{
-    explicit Span(Real arg_min, Real arg_max);
+    explicit Span(Numeric arg_min, Numeric arg_max);
     Span(const Span& other) = default;
     //@}
     //**************************************************************************
@@ -59,7 +76,7 @@ namespace elastica {
     //**************************************************************************
 
     //**Member variables********************************************************
-    Real span_[2UL];  //!< Storage of spans
+    Numeric span_[2UL];  //!< Storage of spans
     //**************************************************************************
   };
   //****************************************************************************
@@ -76,8 +93,8 @@ namespace elastica {
   // \param arg_min Minimum value of the span
   // \param arg_max Maximum value of the span
   */
-  template <typename Real>
-  Span<Real>::Span(Real arg_min, Real arg_max) {
+  template <typename Numeric>
+  Span<Numeric>::Span(Numeric arg_min, Numeric arg_max) {
     // TODO : No assert in constructor
     ELASTICA_ASSERT(
         arg_min < arg_max,
