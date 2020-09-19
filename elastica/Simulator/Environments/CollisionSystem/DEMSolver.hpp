@@ -1170,7 +1170,7 @@ namespace elastica {
         //        transfer(from, collection, to, start_iterator, end_iterator);
 
         // New way
-        TransferHelper<CollectionTag>::transfer(from, collection, to,
+        TransferWizard<CollectionTag>::transfer(from, collection, to,
                                                 start_iterator, end_iterator);
 
         // Update start iterator to point to the next element
@@ -1252,7 +1252,7 @@ namespace elastica {
         //        transfer(to, collection, from, start_iterator, end_iterator);
 
         // New way
-        TransferHelper<CollectionTag>::transfer(to, collection, from,
+        TransferWizard<CollectionTag>::transfer(to, collection, from,
                                                 start_iterator, end_iterator);
 
         // Update start iterator to point to the next element
