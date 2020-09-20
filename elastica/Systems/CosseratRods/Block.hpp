@@ -9,10 +9,11 @@
 #include "DataStructures/TaggedTuple.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Systems/Block/Block.hpp"
+#include "Systems/Block/BlockSlice.hpp"
 #include "Systems/CosseratRods/BlockInitializer.hpp"
 #include "Systems/CosseratRods/BlockSlice.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
-#include "Systems/CosseratRods/TypeTraits/BlockInitializer.hpp"
+#include "Systems/CosseratRods/TypeTraits/Initializers.hpp"
 #include "Utilities/NonCopyable.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -83,8 +84,6 @@ namespace elastica {
 #undef REPEAT_4
 #undef REPEAT_2
 
-    template <typename... Args>
-    using InitializerType = CosseratBlockInitializer<Args...>;
 
     // Import staggering tags
     using typename Parent::ElementTag;
@@ -100,11 +99,16 @@ namespace elastica {
     //
     using typename Parent::SliceTags;
     template <typename T>
-    using GetSliceType = typename Parent::template GetSliceType<T>;
+    using slice_type_t = typename Parent::template slice_type_t<T>;
     using Slices = tmpl::as_tagged_tuple<SliceTags>;
 
     using CosseratRodProperties = tmpl::as_tagged_tuple<MemberTags>;
-    using BlockSlice = BlockSlice<Parent>;
+
+    template <typename... Initializers>
+    using CosseratInitializer =
+    typename CosseratBlockInitializer<CRT>::template Initializer<Initializers...>;
+    using CosseratSlice =
+        BlockSlice<CosseratRodPlugin<CRT, BlockSlice, Layers...>>;
 
     // No need scalable allocator
     using SizeType = std::size_t;
@@ -169,6 +173,16 @@ namespace elastica {
         -> CosseratRodProperties const& {
       return rod_properties_;
     };
+
+    template <typename PropertyTag>
+    inline constexpr decltype(auto) get() noexcept {
+      return std::get<PropertyTag>(data());
+    }
+
+    template <typename PropertyTag>
+    inline constexpr decltype(auto) get() const noexcept {
+      return std::get<PropertyTag>(data());
+    }
 
     // TODO : Unused
     // metafunction behaves as associative array of TagTypes and Members
@@ -275,7 +289,7 @@ namespace elastica {
           [this, &slices, start_slice, size_slice](auto staggered_member_tag) {
             using StaggeredMemberTag =
                 tmpl::type_from<decltype(staggered_member_tag)>;
-            using StaggeredMemberSliceTag = GetSliceType<StaggeredMemberTag>;
+            using StaggeredMemberSliceTag = slice_type_t<StaggeredMemberTag>;
 
             // Unsliced
             auto& full = std::get<StaggeredMemberTag>(rod_properties_);
@@ -318,7 +332,7 @@ namespace elastica {
 
       auto applier = [this, start_slice, size_slice](auto Is) {
         using StaggeredMemberTag = tmpl::at_c<StaggeredMemberTags, Is>;
-        using StaggeredMemberSliceTag = GetSliceType<StaggeredMemberTag>;
+        using StaggeredMemberSliceTag = slice_type_t<StaggeredMemberTag>;
 
         // Unsliced
         auto& full = std::get<StaggeredMemberTag>(rod_properties_);
@@ -392,7 +406,8 @@ namespace elastica {
     auto make_slices(SizeType const unit) {
       ELASTICA_ASSERT(not element_counts_.empty(),
                       "No elements to make slices for in the Block!");
-//      TypeDisplayer<decltype(make_slices_of_members_marked_with<ElementTag>(unit))> td{};
+      //      TypeDisplayer<decltype(make_slices_of_members_marked_with<ElementTag>(unit))>
+      //      td{};
       return std::tuple_cat(
           make_slices_of_members_marked_with<NodeTag>(unit),
           make_slices_of_members_marked_with<ElementTag>(unit),
@@ -449,15 +464,22 @@ namespace elastica {
           n_elements_(other.n_elements_){};
 
     // TODO : Check if all are valid blocks
-    template <typename... BlockInitializers,
+    // The implementation is variadic because resizing every time is inefficient
+    // rather we can add all dofs in one go. Of course, by putting in one block
+    // initializer, we get the regular implementation
+    template <typename... FirstBlockInitializers, typename... BlockInitializers,
               Requires<cpp17::conjunction_v<
-                  tt::IsBlockInitializer<BlockInitializers>...>> = nullptr>
-    auto emplace_back(BlockInitializers&&... block_initializers) -> BlockSlice {
+                  detail_cosserat_rod::tt::IsBlockInitializer<
+                      CRT, BlockInitializers>...>> = nullptr>
+    auto emplace_back(
+        CosseratInitializer<FirstBlockInitializers...>&& first_block_initializer,
+        BlockInitializers&&... block_initializers) {
       // 0. number of preexisting rods
       const auto n_units = size();
-      constexpr auto n_units_added = sizeof...(BlockInitializers);
+      constexpr auto n_units_added = 1 + sizeof...(BlockInitializers);
 
       // 1. Increase units count, linear
+      prepare_for_resize(first_block_initializer.n_elems);
       EXPAND_PACK_LEFT_TO_RIGHT(prepare_for_resize(block_initializers.n_elems));
 
       // 2. Bulk resize
@@ -467,14 +489,15 @@ namespace elastica {
       initialize_ghosts();
 
       auto initializer = [n_units, this,
-                          cap = std::forward_as_tuple(block_initializers...)](
+                          cap = std::forward_as_tuple(first_block_initializer,
+                                                      block_initializers...)](
                              auto Is) {
         auto&& block_initializer(std::get<Is>(cap));
 
         const SizeType unit = n_units + Is;
 
         // 4. Make slices for each rod
-        auto slices(make_slices(unit));
+        CosseratSlice slices(make_slices(unit));
 
         ELASTICA_ASSERT(element_counts_[unit] == (block_initializer.n_elems),
                         "Invariant violation detected, contact the developers");
@@ -483,16 +506,17 @@ namespace elastica {
         //                block_initializer.initializers));
 
         // ... and initialize them ...
-        Parent::initialize(block_initializer.n_elems, slices,
-                           std::move(block_initializer.initializers));
+        Parent::initialize(slices,
+                           std::move(block_initializer));
+
+        // TODO : Returning a copy, is it okay?
+        return slices;
       };
 
       // by going through the rods that are just added
-      index_apply<n_units_added>([&initializer](auto... Is) {
-        EXPAND_PACK_LEFT_TO_RIGHT(initializer(Is));
+      return index_apply<n_units_added>([&initializer](auto... Is) {
+        return std::make_tuple(initializer(Is)...);
       });
-
-      // return BlockSlice(slices);
     }
 
     // TODO : Check for initializer requirements here
@@ -520,8 +544,10 @@ namespace elastica {
       // At this point the total number of elements and the accumulate
       // of individual elements should match
        */
-      return emplace_back(make_cosserat_rod(
-          n_elems, std::forward<UnitInitializers>(unit_initializers)...));
+      // For this case, directly return the view/slice rather than a tuple
+      // of them
+      return std::get<0UL>(emplace_back(make_cosserat_rod(
+          n_elems, std::forward<UnitInitializers>(unit_initializers)...)));
     }
 
     /*

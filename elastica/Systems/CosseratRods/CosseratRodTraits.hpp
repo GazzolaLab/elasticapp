@@ -25,9 +25,10 @@
 
 // Elastica
 #include "Systems/CosseratRods/Math.hpp"
+#include "Systems/CosseratRods/Types.hpp"
 //#include "Systems/CosseratRods/Policies/Policies.hpp"
 #include "ErrorHandling/Assert.hpp"
-#include "Systems/CosseratRods/TypeTraits/detail.hpp"
+#include "Systems/CosseratRods/TypeTraits.hpp"
 #include "Utilities/NonCreatable.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -390,11 +391,17 @@ namespace elastica {
         }
       };
 
+      // useful typedefs
       template <typename T>
-      using GetSliceType = typename tt::GetSliceType<T>::type;
+      using slice_type_t = tt::slice_type_t<T>;
+//      template <typename T>
+//      using get_slice_ty = typename tt::GetSliceType<T>::type;
 
       template <typename T>
-      using GetInitializerTagType = typename tt::GetInitializerTagType<T>::type;
+      using initializer_tag_t = typename tt::initializer_tag_t<T>;
+
+      template <typename T>
+      using parameter_type_t = typename tt::parameter_type_t<T>;
 
       template <typename T>
       using IsNodeStaggered = tt::IsNodeStaggered<T>;
@@ -404,14 +411,15 @@ namespace elastica {
 
       template <typename T>
       using IsVoronoiStaggered = tt::IsVoronoiStaggered<T>;
+      //
 
       // CRMT :-> CosseratRodMemberTag
       // Can be free functions, but better to restrict scope here
-      template <typename CRMT, template <typename...> class Tuple,
-                typename... Slices>
-      static constexpr decltype(auto) get_slice(Tuple<Slices...>& t) noexcept {
-        return std::get<GetSliceType<CRMT>>(t).get();
-      }
+//      template <typename CRMT, template <typename...> class Tuple,
+//                typename... Slices>
+//      static constexpr decltype(auto) get_slice(Tuple<Slices...>& t) noexcept {
+//        return std::get<GetSliceType<CRMT>>(t).get();
+//      }
 
       // Couple of lessons learnt here:
       /*
@@ -472,31 +480,31 @@ namespace elastica {
         Initializer::ParameterType for a match
        */
 
-      template <typename CRMT, template <typename...> class Tuple,
-                typename... Initializers>
-      static constexpr decltype(auto) get_initializer(
-          Tuple<Initializers...>&& t) noexcept {
-        // Here initializers can be a ref too (in the case its not an
-        // immediate lambda, hence we first remove reference here
-
-        // TODO Is there no alternative than doing an O(n) search here?
-        using InitializerTuple = Tuple<Initializers...>;
-        using find_result =
-            tmpl::find<InitializerTuple,
-                       std::is_same<tmpl::pin<GetInitializerTagType<CRMT>>,
-                                    tt::GetParameterType<
-                                        std::remove_reference<tmpl::_1>>>>;
-
-        // TODO : Better display of failed component
-        static_assert(tmpl::size<find_result>::value, "Initializer not found!");
-
-        using CRMTInitializer = tmpl::front<find_result>;
-
-        // The trailing get is to return the generator from the enclosing
-        // strong type
-        return std::get<CRMTInitializer>(std::forward<InitializerTuple>(t))
-            .get();
-      }
+//      template <typename CRMT, template <typename...> class Tuple,
+//                typename... Initializers>
+//      static constexpr decltype(auto) get_initializer(
+//          Tuple<Initializers...>&& t) noexcept {
+//        // Here initializers can be a ref too (in the case its not an
+//        // immediate lambda, hence we first remove reference here
+//
+//        // TODO Is there no alternative than doing an O(n) search here?
+//        using InitializerTuple = Tuple<Initializers...>;
+//        using find_result =
+//            tmpl::find<InitializerTuple,
+//                       std::is_same<tmpl::pin<GetInitializerTagType<CRMT>>,
+//                                    tt::GetParameterType<
+//                                        std::remove_reference<tmpl::_1>>>>;
+//
+//        // TODO : Better display of failed component
+//        static_assert(tmpl::size<find_result>::value, "Initializer not found!");
+//
+//        using CRMTInitializer = tmpl::front<find_result>;
+//
+//        // The trailing get is to return the generator from the enclosing
+//        // strong type
+//        return std::get<CRMTInitializer>(std::forward<InitializerTuple>(t))
+//            .get();
+//      }
 
       /*
       using NodeVector = blaze::DynamicVector<real_t, blaze::columnVector,

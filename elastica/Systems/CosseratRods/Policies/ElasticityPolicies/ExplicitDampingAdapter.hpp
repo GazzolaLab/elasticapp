@@ -6,7 +6,7 @@
 #include "Utilities/DefineTypes.h"
 /////
 #include "Systems/CosseratRods/CosseratRodTraitMacros.hpp"
-#include "Systems/CosseratRods/TypeTraits/detail.hpp"
+#include "Systems/CosseratRods/TypeTraits/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace elastica {
@@ -38,9 +38,9 @@ namespace elastica {
     template <typename CRT,                 // Cosserat Rod Traits
               typename ComputationalBlock,  // Block
               template <typename, typename> class ElasticityModel>
-    class ExplicitDampingAdapter :
-        public ElasticityModel<CRT, ComputationalBlock>,
-        public ExplicitDampingAdapterTraits<CRT> {
+    class ExplicitDampingAdapter
+        : public ElasticityModel<CRT, ComputationalBlock>,
+          public ExplicitDampingAdapterTraits<CRT> {
      private:
       using Traits = CRT;
       using This =
@@ -67,6 +67,11 @@ namespace elastica {
       inline constexpr ConstReference self() const noexcept {
         return static_cast<ConstReference>(*this);
       }
+
+      //      template <typename... Initializers>
+      //      using CosseratInitializer =
+      //      typename Self::template CosseratInitializer<Initializers...>;
+      //      using CosseratSlice = typename Self::CosseratSlice;
 
      private:
       //
@@ -100,30 +105,29 @@ namespace elastica {
 
      protected:
       // Initializer always protected
-      template <class InitializerTuple, typename... Members>
-      void initialize(std::size_t n_elems, std::tuple<Members...>& members_,
-                      InitializerTuple&& initializers) {
+      template <typename CosseratSlice, typename CosseratInitializer>
+      void initialize(CosseratSlice& property_slices,
+                      CosseratInitializer&& initializers) {
         // 1. Initializer parent's first (almost no-op) in this case
-        Parent::initialize(n_elems, members_,
-                           std::forward<InitializerTuple>(initializers));
+        Parent::initialize(
+            property_slices,
+            std::forward<CosseratInitializer>(initializers));
 
         // 2. Initialize generators first
         struct {
-          InitializerTuple value;
-        } cap{std::forward<InitializerTuple>(initializers)};
+          CosseratInitializer value;
+        } cap{std::forward<CosseratInitializer>(initializers)};
         tmpl::for_each<This::GeneratedTags>(
-            [n_elems, &members_,
+            [&property_slices,
              cap = std::move(cap)](auto generated_member_tag) mutable -> void {
               using GeneratedMemberTag =
                   tmpl::type_from<decltype(generated_member_tag)>;
 
-              auto& member =
-                  Traits::template get_slice<GeneratedMemberTag>(members_);
-              auto&& initializer =
-                  Traits::template get_initializer<GeneratedMemberTag>(
-                      std::forward<InitializerTuple>(cap.value));
+              auto& member(property_slices.template get<GeneratedMemberTag>());
+              // TODO proper move semantics
+              auto&& initializer(cap.value.template get<GeneratedMemberTag>());
 
-              auto dofs = GeneratedMemberTag::get_dofs(n_elems);
+              auto dofs = GeneratedMemberTag::get_dofs(cap.value.n_elems);
               for (std::size_t i = 0; i < dofs; ++i) {
                 // TODO : This doesn't work on slices, consider having the
                 // slice member in the initializer itself

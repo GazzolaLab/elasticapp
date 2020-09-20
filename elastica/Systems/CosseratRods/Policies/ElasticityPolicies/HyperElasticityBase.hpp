@@ -6,8 +6,9 @@
 /////
 
 #include "Systems/CosseratRods/Policies/ElasticityPolicies/ElasticityBase.hpp"
-#include "Systems/CosseratRods/TypeTraits/detail.hpp"
+#include "Systems/CosseratRods/TypeTraits/Tags.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/Math/Vec3.hpp"
 
 namespace elastica {
 
@@ -178,6 +179,11 @@ namespace elastica {
       using Reference = Self&;
       using ConstReference = Self const&;
 
+//      template <typename... Initializers>
+//      using CosseratInitializer =
+//      typename Self::template CosseratInitializer<Initializers...>;
+//      using CosseratSlice = typename Self::CosseratSlice;
+
       inline constexpr Reference self() noexcept {
         return static_cast<Reference>(*this);
       }
@@ -208,12 +214,12 @@ namespace elastica {
 
      protected:
       // Initializer always protected
-      template <class InitializerTuple, typename... Members>
-      void initialize(std::size_t n_elems, std::tuple<Members...>& members_,
-                      InitializerTuple&& initializers) {
+      template <typename CosseratSlice, typename CosseratInitializer>
+      void initialize(CosseratSlice& property_slices,
+                      CosseratInitializer&& initializers) {
         // 0. Initializer parent's first (almost no-op) in this case
-        Parent::initialize(n_elems, members_,
-                           std::forward<InitializerTuple>(initializers));
+        Parent::initialize(property_slices,
+                           std::forward<CosseratInitializer>(initializers));
 
         // 1. Initialize generators first
 
@@ -224,13 +230,15 @@ namespace elastica {
         // shear and stretch only
         {
           using Tag = ShearStretchRigidityMatrixCollectionTag;
-          auto& member = Traits::template get_slice<Tag>(members_);
 
-          auto&& stiffness_along_principal_directions_initializer =
-              Traits::template get_initializer<Tag>(
-                  std::forward<InitializerTuple>(initializers));
+          auto& member(property_slices.template get<Tag>());
 
-          auto dofs = Tag::get_dofs(n_elems);
+          // TODO : proper move semantics
+          auto&& stiffness_along_principal_directions_initializer(
+              initializers.template get<Tag>());
+
+
+          auto dofs = Tag::get_dofs(initializers.n_elems);
           for (std::size_t i = 0; i < dofs; ++i) {
             // (E, E, G) * (I_1, I_2, I_3)
             Tag::slice(member, i) =
@@ -243,13 +251,14 @@ namespace elastica {
         // bending and twisting only
         {
           using Tag = BendingTwistRigidityMatrixCollectionTag;
-          auto& member = Traits::template get_slice<Tag>(members_);
 
-          auto&& stiffness_along_principal_directions_initializer =
-              Traits::template get_initializer<Tag>(
-                  std::forward<InitializerTuple>(initializers));
+          auto& member(property_slices.template get<Tag>());
 
-          auto dofs = Tag::get_dofs(n_elems);
+          // TODO : proper move semantics
+          auto&& stiffness_along_principal_directions_initializer(
+              initializers.template get<Tag>());
+
+          auto dofs = Tag::get_dofs(initializers.n_elems);
           for (std::size_t i = 0; i < dofs; ++i) {
             // (E, E, G) * (I_1, I_2, I_3)
             Tag::slice(member, i) =

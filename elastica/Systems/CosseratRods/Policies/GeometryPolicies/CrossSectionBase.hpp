@@ -8,7 +8,7 @@
 /////
 #include "Systems/CosseratRods/CosseratRodTraitMacros.hpp"
 #include "Systems/CosseratRods/Policies/GeometryPolicies/RodGeometry.hpp"
-#include "Systems/CosseratRods/TypeTraits/detail.hpp"
+#include "Systems/CosseratRods/TypeTraits/Tags.hpp"
 #include "Utilities/Math/Vec3.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -126,12 +126,21 @@ namespace elastica {
       //      tmpl::as_tuple<ParentMemberTags>>::type;
 
       // internal
-      using Self = CrossSection&;
-      using ConstSelf = CrossSection const&;
-      inline constexpr Self self() noexcept { return static_cast<Self>(*this); }
-      inline constexpr ConstSelf self() const noexcept {
-        return static_cast<ConstSelf>(*this);
+      using Self = CrossSection;
+      using Reference = Self&;
+      using ConstReference = Self const&;
+      inline constexpr Reference self() noexcept {
+        return static_cast<Reference>(*this);
       }
+      inline constexpr ConstReference self() const noexcept {
+        return static_cast<ConstReference>(*this);
+      }
+
+      template <typename PropertyTag>
+      inline constexpr decltype(auto) get() noexcept{return self().template get<PropertyTag>();}
+
+      template <typename PropertyTag>
+      inline constexpr decltype(auto) get() const noexcept{return self().template get<PropertyTag>();}
 
      protected:
       using MemberTags = tmpl::append<ParentMemberTags, ThisMemberTags>;
@@ -141,30 +150,28 @@ namespace elastica {
 
      protected:
       // Initializer always protected
-      template <class InitializerTuple, typename... Members>
-      void initialize(std::size_t n_elems, std::tuple<Members...>& members_,
-                      InitializerTuple&& initializers) {
+      template <typename CosseratSlice, typename CosseratInitializer>
+      void initialize(CosseratSlice& property_slices,
+                      CosseratInitializer&& initializers) {
         // 1. Initialize parent
         GeometryParent::initialize(
-            n_elems, members_, std::forward<InitializerTuple>(initializers));
+            property_slices, std::forward<CosseratInitializer>(initializers));
 
         // 2. Initialize generators first
         struct {
-          InitializerTuple value;
-        } cap{std::forward<InitializerTuple>(initializers)};
+          CosseratInitializer value;
+        } cap{std::forward<CosseratInitializer>(initializers)};
         tmpl::for_each<This::GeneratedTags>(
-            [n_elems, &members_,
+            [&property_slices,
              cap = std::move(cap)](auto generated_member_tag) mutable -> void {
               using GeneratedMemberTag =
                   tmpl::type_from<decltype(generated_member_tag)>;
 
-              auto& member =
-                  Traits::template get_slice<GeneratedMemberTag>(members_);
-              auto&& initializer =
-                  Traits::template get_initializer<GeneratedMemberTag>(
-                      std::forward<InitializerTuple>(cap.value));
+              auto& member(property_slices.template get<GeneratedMemberTag>());
+              // TODO : proper move semantics
+              auto&& initializer(cap.value.template get<GeneratedMemberTag>());
 
-              auto dofs = GeneratedMemberTag::get_dofs(n_elems);
+              auto dofs = GeneratedMemberTag::get_dofs(cap.value.n_elems);
               for (std::size_t i = 0; i < dofs; ++i) {
                 // TODO : This doesn't work on slices, consider having the
                 // slice member in the initializer itself
@@ -173,15 +180,15 @@ namespace elastica {
             });
 
         // 3. Computed tags
-        // 0. using slice class
-        auto get_slice = [&members_](auto tag) -> decltype(auto) {
-          return Traits::template get_slice<decltype(tag)>(members_);
-        };
 
         {
-          get_slice(VolumeCollectionTag{}) =
-              get_slice(DimensionCollectionTag{}) *
-              get_slice(typename GeometryParent::ElementLengthCollectionTag{});
+          auto& volumes(property_slices.template get<VolumeCollectionTag>());
+          auto& dimensions(
+              property_slices.template get<DimensionCollectionTag>());
+          auto& lengths(property_slices.template get<
+                        typename GeometryParent::ElementLengthCollectionTag>());
+
+          volumes = dimensions * lengths;
         }
       }
 
@@ -201,25 +208,25 @@ namespace elastica {
 
       // These are all interface functions
       inline constexpr auto get_dimension() const noexcept {
-        return std::get<DimensionCollectionTag>(self().data());
+        return This::get<DimensionCollectionTag>();
       }
 
       inline constexpr decltype(auto) get_dimension() noexcept {
-        return std::get<DimensionCollectionTag>(self().data());
+        return This::get<DimensionCollectionTag>();
       }
 
       inline constexpr auto get_dimension(std::size_t i) const noexcept
           -> float_type {
-        return std::get<DimensionCollectionTag>(self().data())[i];
+        return get_dimension()[i];
       }
 
       inline constexpr decltype(auto) get_volumes() noexcept {
-        return std::get<VolumeCollectionTag>(self().data());
+        return This::get<VolumeCollectionTag>();
       }
 
       inline constexpr auto get_volumes(std::size_t i) const noexcept
           -> float_type {
-        return std::get<VolumeCollectionTag>(self().data())[i];
+        return This::get<VolumeCollectionTag>()[i];
       }
 
       inline constexpr auto get_area() const noexcept {
@@ -262,12 +269,12 @@ namespace elastica {
                self().second_moment_of_area_impl(This::get_dimension());
       }
 
-      inline constexpr auto get_second_moment_of_area() const noexcept {
-        return Vec3{get_second_moment_of_area<D1>(),
-                    get_second_moment_of_area<D2>(),
-                    get_second_moment_of_area<D3>()};
-      }
-
+//      inline constexpr auto get_second_moment_of_area() const noexcept {
+//        return Vec3{get_second_moment_of_area<D1>(),
+//                    get_second_moment_of_area<D2>(),
+//                    get_second_moment_of_area<D3>()};
+//      }
+//
       inline constexpr auto get_second_moment_of_area(
           std::size_t i) const noexcept {
         return Vec3{get_second_moment_of_area<D1>(i),
@@ -276,19 +283,15 @@ namespace elastica {
       }
 
       inline constexpr decltype(auto) get_lengths() noexcept {
-        return std::get<typename GeometryParent::ElementLengthCollectionTag>(
-            self().data());
+        return This::get<typename GeometryParent::ElementLengthCollectionTag>();
       }
 
       inline constexpr decltype(auto) get_reference_lengths() noexcept {
-        return std::get<
-            typename GeometryParent::ReferenceElementLengthCollectionTag>(
-            self().data());
+        return This::get<typename GeometryParent::ReferenceElementLengthCollectionTag>();
       }
 
       inline constexpr decltype(auto) get_directors() noexcept {
-        return std::get<typename GeometryParent::DirectorCollectionTag>(
-            self().data());
+        return This::get<typename GeometryParent::DirectorCollectionTag>();
       }
 
       // Technically these can be put in an interface class that has
@@ -317,8 +320,7 @@ namespace elastica {
         // Q is always latest, only e and t need to be computed
         compute_translation_diagnostics();
 
-        std::get<typename GeometryParent::ShearStretchStrainCollectionTag>(
-            self().data()) = 1.0;
+        This::get<typename GeometryParent::ShearStretchStrainCollectionTag>() = 1.0;
       }
 
       void compute_curvature() noexcept {

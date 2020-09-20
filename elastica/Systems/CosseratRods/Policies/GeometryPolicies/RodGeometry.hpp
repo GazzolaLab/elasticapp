@@ -6,7 +6,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Systems/CosseratRods/CosseratRodTraitMacros.hpp"
 #include "Systems/CosseratRods/Policies/StrongTypes.hpp"
-#include "Systems/CosseratRods/TypeTraits/detail.hpp"
+#include "Systems/CosseratRods/TypeTraits/Tags.hpp"
 #include "Utilities/DefineTypes.h"
 #include "Utilities/TMPL.hpp"
 
@@ -118,35 +118,29 @@ namespace elastica {
       using Parent::print;
       */
 
-      template <class InitializerTuple, typename... Members>
-      void initialize(std::size_t n_elems, std::tuple<Members...>& members_,
-                      InitializerTuple&& initializers) {
-        // 0. using slice class
-        auto get_slice = [&members_](auto tag) -> decltype(auto) {
-          return Traits::template get_slice<decltype(tag)>(members_);
-        };
-
+      template <typename CosseratSlice, typename CosseratInitializer>
+      void initialize(CosseratSlice& property_slices,
+                      CosseratInitializer&& initializers) {
         // 1. Initialize parent
-        Parent::initialize(n_elems, members_,
-                           std::forward<InitializerTuple>(initializers));
+        Parent::initialize(property_slices,
+                           std::forward<CosseratInitializer>(initializers));
 
         // 2. Initialize generators first
         struct {
-          InitializerTuple value;
-        } cap{std::forward<InitializerTuple>(initializers)};
+          CosseratInitializer value;
+        } cap{std::forward<CosseratInitializer>(initializers)};
         tmpl::for_each<This::GeneratedTags>(
-            [n_elems, &members_,
+            [&property_slices,
              cap = std::move(cap)](auto generated_member_tag) mutable -> void {
               using GeneratedMemberTag =
                   tmpl::type_from<decltype(generated_member_tag)>;
 
-              auto& member =
-                  Traits::template get_slice<GeneratedMemberTag>(members_);
-              auto&& initializer =
-                  Traits::template get_initializer<GeneratedMemberTag>(
-                      std::forward<InitializerTuple>(cap.value));
+              auto& member(property_slices.template get<GeneratedMemberTag>());
 
-              auto dofs = GeneratedMemberTag::get_dofs(n_elems);
+              // TODO : proper move semantics
+              auto&& initializer(cap.value.template get<GeneratedMemberTag>());
+
+              auto dofs = GeneratedMemberTag::get_dofs(cap.value.n_elems);
               for (std::size_t i = 0; i < dofs; ++i) {
                 // TODO : This doesn't work on slices, consider having the
                 // slice member in the initializer itself
@@ -155,19 +149,20 @@ namespace elastica {
             });
 
         // 3. Finally do the computed tags
-
         //            TangentCollectionTag>;
         {
           auto& reference_voronoi_length_collection =
-              get_slice(ReferenceVoronoiLengthCollectionTag{});
+              property_slices
+                  .template get<ReferenceVoronoiLengthCollectionTag>();
           reference_voronoi_length_collection =
               Traits::calculate_voronoi_length(
-                  get_slice(ReferenceElementLengthCollectionTag{}));
+                  property_slices
+                      .template get<ReferenceElementLengthCollectionTag>());
         }
 
         {
           auto& element_length_collection =
-              get_slice(ElementLengthCollectionTag{});
+              property_slices.template get<ElementLengthCollectionTag>();
           element_length_collection = 2.0;
         }
 
@@ -180,7 +175,7 @@ namespace elastica {
         //
         {
           auto& voronoi_length_collection =
-              get_slice(VoronoiLengthCollectionTag{});
+              property_slices.template get<VoronoiLengthCollectionTag>();
           voronoi_length_collection = 1.0;
         }
 
@@ -191,18 +186,20 @@ namespace elastica {
         //        }
         //
         {
-          auto& curvature_collection = get_slice(CurvatureCollectionTag{});
+          auto& curvature_collection =
+              property_slices.template get<CurvatureCollectionTag>();
           curvature_collection = 1.0;
         }
 
         {
-          auto& tangent_collection = get_slice(TangentCollectionTag{});
+          auto& tangent_collection =
+              property_slices.template get<TangentCollectionTag>();
           tangent_collection = 1.0;
         }
 
         {
           auto& shear_stretch_strains_collection =
-              get_slice(ShearStretchStrainCollectionTag{});
+              property_slices.template get<ShearStretchStrainCollectionTag>();
           shear_stretch_strains_collection = 1.0;
         }
       }

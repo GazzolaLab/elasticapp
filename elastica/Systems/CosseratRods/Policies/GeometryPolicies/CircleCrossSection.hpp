@@ -55,24 +55,35 @@ namespace elastica {
       using typename Parent::float_type;
 
      private:
-      using Block = ComputationalBlock&;
-      using ConstBlock = ComputationalBlock const&;
+      using Self = ComputationalBlock;
+      using Reference = Self&;
+      using ConstReference = Self const&;
 
       // For own use
-      inline constexpr Block self() noexcept {
-        return static_cast<Block>(*this);
+      inline constexpr Reference self() noexcept {
+        return static_cast<Reference>(*this);
       }
 
-      inline constexpr ConstBlock self() const noexcept {
-        return static_cast<ConstBlock>(*this);
+      inline constexpr ConstReference self() const noexcept {
+        return static_cast<ConstReference>(*this);
       }
 
-      // Interface to the CrossSection Base class
-      inline constexpr decltype(auto) data() noexcept { return self().data(); }
-
-      inline constexpr decltype(auto) data() const noexcept {
-        return self().data();
+      template <typename PropertyTag>
+      inline constexpr decltype(auto) get() noexcept {
+        return self().template get<PropertyTag>();
       }
+
+      template <typename PropertyTag>
+      inline constexpr decltype(auto) get() const noexcept {
+        return self().template get<PropertyTag>();
+      }
+
+//      // Interface to the CrossSection Base class
+//      inline constexpr decltype(auto) data() noexcept { return self().data(); }
+//
+//      inline constexpr decltype(auto) data() const noexcept {
+//        return self().data();
+//      }
 
       template <typename Radius>
       inline static constexpr auto area_impl(Radius const& r) noexcept {

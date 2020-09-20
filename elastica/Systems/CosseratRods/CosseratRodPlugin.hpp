@@ -210,7 +210,7 @@ namespace elastica {
     /* using SliceTags = typename Parent::SliceTags; */
 
     template <typename T>
-    using GetSliceType = typename Traits::template GetSliceType<T>;
+    using slice_type_t = typename Traits::template slice_type_t<T>;
 
     using NodeMemberTags =
         tmpl::filter<InternalMemberTags,
@@ -226,7 +226,7 @@ namespace elastica {
         tmpl::append<NodeMemberTags, ElementMemberTags, VoronoiMemberTags>;
     /* using SliceTags = typename Parent::SliceTags; */
     using SliceTags =
-        tmpl::transform<MemberTags, tmpl::bind<GetSliceType, tmpl::_1>>;
+        tmpl::transform<MemberTags, tmpl::bind<slice_type_t, tmpl::_1>>;
 
    protected:
     //    using Parent::print;
@@ -242,14 +242,14 @@ namespace elastica {
     }
 
     // Initializer always protected, initialize parent class one-by-one
-    template <class InitializerTuple, typename... Members>
-    void initialize(std::size_t n_elems, std::tuple<Members...>& members_,
-                    InitializerTuple&& initializers) {
+    template <class Slice, class Initializer>
+    void initialize(Slice& slices,
+                    Initializer&& initializers) {
       EXPAND_PACK_LEFT_TO_RIGHT(
           Layers<CRT, ComputationalBlock<CosseratRodPlugin<
                           CRT, ComputationalBlock, Layers...>>>::
-              initialize(n_elems, members_,
-                         std::forward<InitializerTuple>(initializers)));
+              initialize(slices,
+                         std::forward<Initializer>(initializers)));
     }
 
    public:

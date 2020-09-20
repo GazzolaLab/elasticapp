@@ -64,23 +64,23 @@ namespace elastica {
         std::cout << "&&" << std::endl;
       }
 
-      template <class InitializerTuple, typename... Members>
-      void initialize(std::size_t n_elems, std::tuple<Members...>& members_,
-                      InitializerTuple&& initializers) {
+      template <typename CosseratSlice, typename CosseratInitializer>
+      void initialize(CosseratSlice& property_slices,
+                      CosseratInitializer&& initializers) {
         //        https://stackoverflow.com/a/53144382
         struct {
-          InitializerTuple value;
-        } cap{std::forward<InitializerTuple>(initializers)};
+          CosseratInitializer value;
+        } cap{std::forward<CosseratInitializer>(initializers)};
         // Note : need a mutable lambda as we can now "move" from cap
-        tmpl::for_each<MemberTags>([n_elems, &members_, cap = std::move(cap)](
+        tmpl::for_each<MemberTags>([&property_slices, cap = std::move(cap)](
                                        auto member_tag) mutable -> void {
           using MemberTag = tmpl::type_from<decltype(member_tag)>;
-          auto& member = Traits::template get_slice<MemberTag>(members_);
-          // TODO initializer here is never a &&, but rather a &
-          //  is it because of wrapping it in a NamedType?
-          auto initializer = Traits::template get_initializer<MemberTag>(
-              std::forward<InitializerTuple>(cap.value));
-          const auto dofs = MemberTag::get_dofs(n_elems);
+
+          auto& member(property_slices.template get<MemberTag>());
+          // TODO : proper move semantics
+          auto&& initializer(cap.value.template get<MemberTag>());
+
+          const auto dofs = MemberTag::get_dofs(cap.value.n_elems);
           for (std::size_t i = 0; i < dofs; ++i) {
             // TODO : This doesn't work on slices, consider having the slice
             // member in the initializer itself

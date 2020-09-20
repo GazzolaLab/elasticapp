@@ -1,6 +1,8 @@
 #pragma once
 
 ///// Types always first
+#include <Systems/CosseratRods/BlockSlice.hpp>
+
 #include "Systems/CosseratRods/Policies/StrongTypes.hpp"
 #include "Utilities/DefineTypes.h"
 /////
@@ -54,23 +56,30 @@ namespace elastica {
         return static_cast<ConstReference>(*this);
       }
 
+      //      template <typename... Initializers>
+      //      using CosseratInitializer =
+      //          typename Self::template CosseratInitializer<Initializers...>;
+      //      using CosseratSlice = typename Self::CosseratSlice;
+
      protected:
       // Curse templates!
       using typename Parent::InternalModeledLoadsTag;
       using typename Parent ::InternalModeledTorquesTag;
 
       // Initializer always protected
-      template <class InitializerTuple, typename... Members>
-      void initialize(std::size_t /*n_elems*/, std::tuple<Members...>& members_,
-                      InitializerTuple&& /*initializers*/) {
+
+      template <typename CosseratSlice, typename CosseratInitializer>
+      void initialize(CosseratSlice& property_slices,
+                      CosseratInitializer&& /*unused*/) {
         {
           using Tag = InternalModeledLoadsTag;
-          Traits::template get_slice<Tag>(members_) = 0.0;
+          property_slices.template get<Tag>() = 0.0;
         }
 
         {
           using Tag = InternalModeledTorquesTag;
-          Traits::template get_slice<Tag>(members_) = 0.0;
+          property_slices.template get<Tag>() = 0.0;
+          //          get<Tag>(property_slices) = 0.0;
         }
       }
 
