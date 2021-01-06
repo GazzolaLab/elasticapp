@@ -19,7 +19,7 @@
 #include "Utilities/TypeTraits/Void.hpp"
 
 namespace tt {
-  
+
   /// \note
   /// Developers use this variable template with caution as it leads to
   /// weird ODR violations :
