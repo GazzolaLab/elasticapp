@@ -27,6 +27,6 @@
    \code
      auto demangled_name = demangle(typeid(int).name());
    \endcode
- */
+*/
 std::string demangle(char const* name);
 //******************************************************************************
