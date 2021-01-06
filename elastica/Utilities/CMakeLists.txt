@@ -6,34 +6,54 @@ add_elastica_library(${LIBRARY})
 
 add_subdirectory(Logging)
 add_subdirectory(Math)
+add_subdirectory(MemoryMeter)
+add_subdirectory(NamedType)
 add_subdirectory(Singleton)
 add_subdirectory(Timing)
-add_subdirectory(MemoryMeter)
+add_subdirectory(TypeTraits)
+add_subdirectory(ValueTraits)
 
 elastica_target_sources(
         ${LIBRARY}
         PRIVATE
+        Demangle.cpp
         SystemClock.cpp
+        PrettyType.cpp
+        WrapText.cpp
 )
 
 elastica_target_headers(
         ${LIBRARY}
         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
         HEADERS
+        Byte.hpp
+        CRTP.hpp
         DefineTypes.h
+        Demangle.hpp
+        FakeVirtual.hpp
         ForceInline.hpp
+        IgnoreUnused.hpp
+        Invoke.hpp
         ListRequires.hpp
         Logging.hpp
         MakeArray.hpp
+        MakeCopyable.hpp
         MakeSignalingNan.hpp
+        MakeString.hpp
         Math.hpp
         MemoryMeter.hpp
         MemoryPool.hpp
+        NamedTemplate.hpp
         NamedType.hpp
         NonCopyable.hpp
         NonCreatable.hpp
+        NoSuchType.hpp
+        Overloader.hpp
+        PrettyType.hpp
         PrintHelpers.hpp
         ProfilingSection.hpp
+        ProtocolHelpers.hpp
+        Registration.hpp
         Requires.hpp
         Singleton.hpp
         StdHelpers.hpp
@@ -43,6 +63,7 @@ elastica_target_headers(
         TMPL.hpp
         TMPLDebugging.hpp
         TypeTraits.hpp
+        WrapText.hpp
 )
 
 target_link_libraries(
