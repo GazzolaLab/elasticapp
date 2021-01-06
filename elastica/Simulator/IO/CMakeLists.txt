@@ -5,6 +5,8 @@ set(LIBRARY IO)
 
 add_elastica_library(${LIBRARY})
 
+add_subdirectory(Serialization)
+
 elastica_target_sources(
         ${LIBRARY}
         PRIVATE
@@ -18,6 +20,7 @@ elastica_target_headers(
         vtk.hpp
         vtk/Writer.hpp
         csv/Writer.hpp
+        Serialization.hpp
 )
 
 target_link_libraries(
