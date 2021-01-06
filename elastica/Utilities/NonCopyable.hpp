@@ -1,40 +1,70 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Defines the NonCopyable mixin
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
 
 namespace elastica {
 
-  //*************************************************************************************************
+  //============================================================================
+  //
+  //  CLASS DEFINITION
+  //
+  //============================================================================
+
+  //****************************************************************************
   /*!\brief Base class for non-copyable class instances.
-   * \ingroup util
-   *
-   * The NonCopyable class is intended to work as a base class for non-copyable
-   classes. Both the
-   * copy constructor and the copy assignment operator are declared private and
-   left undefined in
-   * order to prohibit copy operations of the derived classes.\n
-   *
-   * \b Note: It is not necessary to publicly derive from this class. It is
-   sufficient to derive
-   * privately to prevent copy operations on the derived class.
-
+  // \ingroup util
+  //
+  // The NonCopyable class is intended to work as a base class for non-copyable
+  //lasses. Both the
+  // copy constructor and the copy assignment operator are declared private and
+  //eft undefined in
+  // order to prohibit copy operations of the derived classes.\n
+  //
+  // \b Note: It is not necessary to publicly derive from this class. It is
+  // sufficient to derive privately to prevent copy operations on the derived
+  // class.
+  //
+  // \example
      \code
-     class A : private NonCopyable
-     { ... };
+       class A : private NonCopyable
+       { ... };
      \endcode
-
-     https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Non-copyable_Mixin
-   */
+  // https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Non-copyable_Mixin
+  */
   class NonCopyable {
    public:
+    //==========================================================================
+    //
+    //  DELETED CONSTRUCTORS
+    //
+    //==========================================================================
     NonCopyable(const NonCopyable&) = delete;
     NonCopyable& operator=(const NonCopyable&) = delete;
-    //    NonCopyable(NonCopyable&&) = delete;
-    //    NonCopyable& operator=(const NonCopyable&&) = delete;
+    //**************************************************************************
 
    protected:
-    inline NonCopyable() = default;
+    //==========================================================================
+    //
+    //  CONSTRUCTORS and DESTRUCTOR
+    //
+    //==========================================================================
+    inline NonCopyable() noexcept = default;
     inline ~NonCopyable() = default;
-    NonCopyable(NonCopyable&&) = default;
-    NonCopyable& operator=(NonCopyable&&) = default;
+    NonCopyable(NonCopyable&&) noexcept = default;
+    NonCopyable& operator=(NonCopyable&&) noexcept = default;
+    //**************************************************************************
   };
+  //****************************************************************************
 
 }  // namespace elastica
