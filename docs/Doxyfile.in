@@ -1,0 +1,222 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Last updated for Doxygen 1.8.10
+# See https://www.stack.nl/~dimitri/doxygen/manual/config.html
+# for documentation on the commands in this file.
+
+#---------------------------------------------------------------------------
+# Project related configuration options
+#---------------------------------------------------------------------------
+
+PROJECT_NAME           = Elastica++
+
+PROJECT_NUMBER         = @ELASTICA_VERSION@
+
+OUTPUT_DIRECTORY       = @PROJECT_BINARY_DIR@/docs
+
+STRIP_FROM_PATH        = @PROJECT_SOURCE_DIR@
+
+BRIEF_MEMBER_DESC      = YES
+
+REPEAT_BRIEF           = YES
+
+ALWAYS_DETAILED_SEC    = NO
+
+JAVADOC_AUTOBRIEF      = NO
+
+MULTILINE_CPP_IS_BRIEF = NO
+
+TAB_SIZE               = 2
+
+ALIASES                = "elastica=<b>Elastica++</b>" \
+                         "system=<i>system</i>" \
+                         "systems=<i>systems</i>" \
+                         "primitive=<i>primitive</i>" \
+                         "primitives=<i>primitives</i>" \
+                         "connection=<i>connection</i>" \
+                         "semantics=<p></p><i>Semantics:</i>" \
+                         "metareturns=<p></p><i>Returns:</i> " \
+                         "return=<p></p><i>Returns:</i> " \
+                         "requires=<p></p><i>Requires:</i> " \
+                         "effects=<p></p><i>Effects:</i> " \
+                         "synchronization=<p></p><i>Synchronization:</i> " \
+                         "postconditions=<p></p><i>Postconditions:</i> " \
+                         "returns=<p></p><i>Returns:</i> " \
+                         "throws=<p></p><i>Throws:</i> " \
+                         "complexity=<p></p><i>Complexity:</i> " \
+                         "remarks=<p></p><i>Remarks:</i> " \
+                         "errorconditions=<p></p><i>Error Conditions:</i> " \
+                         "notes=<p></p><i>Notes:</i> " \
+                         "details=<p></p><h3>Details</h3>" \
+                         "usage=<p></p><h3>Usage</h3>" \
+                         "example=<p></p><h3>Example</h3>" \
+                         "derivedrequires=<p></p><i>Derived Class Requires:</i>"
+
+DISTRIBUTE_GROUP_DOC   = YES
+
+SUBGROUPING            = YES
+
+#---------------------------------------------------------------------------
+# Build related configuration options
+#---------------------------------------------------------------------------
+
+EXTRACT_ALL            = NO
+
+EXTRACT_PRIVATE        = NO
+
+EXTRACT_STATIC         = NO
+
+EXTRACT_LOCAL_CLASSES  = NO
+
+# We want to be able to have undocumented members, such as size() that show
+# up but what they do is rather obvious.
+WARN_IF_UNDOCUMENTED   = NO
+
+CASE_SENSE_NAMES       = YES
+
+GENERATE_TODOLIST      = NO
+
+GENERATE_TESTLIST      = NO
+
+GENERATE_BUGLIST       = NO
+
+STRIP_CODE_COMMENTS    = NO
+
+# CITE_BIB_FILES         = @PROJECT_SOURCE_DIR@/docs/References.bib
+
+#---------------------------------------------------------------------------
+# configuration options related to the input files
+#---------------------------------------------------------------------------
+
+INPUT = @PROJECT_SOURCE_DIR@/elastica
+
+# Add tutorials directory
+INPUT += @PROJECT_SOURCE_DIR@/docs
+
+FILE_PATTERNS          = *.cpp \
+                         *.hpp \
+                         *.md
+
+RECURSIVE              = YES
+
+EXCLUDE                =
+
+EXCLUDE_SYMLINKS       = NO
+
+EXCLUDE_PATTERNS       =
+
+EXCLUDE_SYMBOLS        = *brigand*                                    \
+                         charm_init_*                                 \
+                         *detail*                                     \
+                         PUP*                                         \
+                         ELASTICA_TEST_CASE*                          \
+                         std*                                         \
+                         YAML*
+
+EXAMPLE_PATH           = @PROJECT_SOURCE_DIR@/tests/ \
+                         @PROJECT_SOURCE_DIR@/examples
+
+EXAMPLE_PATTERNS       =
+
+EXAMPLE_RECURSIVE      = NO
+
+#---------------------------------------------------------------------------
+# configuration options related to the output
+#---------------------------------------------------------------------------
+
+GENERATE_HTML          = @ELASTICA_DOX_GENERATE_HTML@
+
+#HTML_HEADER            = @PROJECT_SOURCE_DIR@/docs/config/header.html
+
+#HTML_FOOTER            = @PROJECT_SOURCE_DIR@/docs/config/footer.html
+
+#IMAGE_PATH             = @PROJECT_SOURCE_DIR@/docs/images/
+
+GENERATE_LATEX         = NO
+
+GENERATE_RTF           = NO
+
+GENERATE_XML           = @SPECTRE_DOX_GENERATE_XML@
+
+XML_OUTPUT             = xml
+
+#---------------------------------------------------------------------------
+# Configuration options related to the preprocessor
+#---------------------------------------------------------------------------
+
+ENABLE_PREPROCESSING   = YES
+
+MACRO_EXPANSION        = YES
+
+# Macros we actually want to expand during preprocessing
+# EXPAND_AS_DEFINED      = MAKE_BINARY_FUNCTIONAL \
+                         MAKE_BINARY_INPLACE_OPERATOR \
+                         MAKE_BINARY_OPERATOR \
+                         MAKE_UNARY_FUNCTIONAL
+
+EXPAND_ONLY_PREDEF     = YES
+
+SEARCH_INCLUDES        = YES
+
+PREDEFINED             = ELASTICA_ALWAYS_INLINE
+
+#---------------------------------------------------------------------------
+# Configuration options related to the dot tool
+#---------------------------------------------------------------------------
+
+CLASS_DIAGRAMS         = NO
+
+HAVE_DOT               = NO
+
+CLASS_GRAPH            = NO
+
+COLLABORATION_GRAPH    = NO
+
+GROUP_GRAPHS           = NO
+
+UML_LOOK               = NO
+
+TEMPLATE_RELATIONS     = NO
+
+INCLUDE_GRAPH          = NO
+
+INCLUDED_BY_GRAPH      = NO
+
+CALL_GRAPH             = NO
+
+CALLER_GRAPH           = NO
+
+GRAPHICAL_HIERARCHY    = NO
+
+DIRECTORY_GRAPH        = NO
+
+DOT_IMAGE_FORMAT       = png
+
+MAX_DOT_GRAPH_DEPTH    = 0
+
+GENERATE_LEGEND        = NO
+
+#---------------------------------------------------------------------------
+# HTML layout file
+#---------------------------------------------------------------------------
+
+FORMULA_MACROFILE = @PROJECT_SOURCE_DIR@/docs/config/commands.tex
+
+USE_MATHJAX = NO
+
+# MATHJAX_RELPATH ultimately links to docs/config/MathJax.js, which is
+# copied to docs/html/MathJax.js with the HTML_EXTRA_FILES
+MATHJAX_RELPATH = ./
+
+# Since Doxygen doesn't support MathJax 3 yet, we configure all the
+# extensions/packages through the docs/config/MathJax.js file.
+MATHJAX_EXTENSIONS =
+
+MATHJAX_CODEFILE =
+
+#---------------------------------------------------------------------------
+# Configuration::additions related to the search engine
+#---------------------------------------------------------------------------
+
+SEARCHENGINE           = YES
