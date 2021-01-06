@@ -3,7 +3,6 @@
 //  \file
 //  \brief Defines NoSuchType
 //
-//
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
 //
@@ -26,7 +25,7 @@
 
 //******************************************************************************
 /*!\brief Used to mark "no type" or "bad state" for metaprogramming
- * \ingroup util
+ * \ingroup UtilitiesGroup
  *
  */
 struct NoSuchType {};
