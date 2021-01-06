@@ -6,4 +6,6 @@ elastica_target_headers(
         HEADERS
         Dependency.hpp
         Singleton.hpp
+        Types.hpp
+        TypeTraits.hpp
 )
