@@ -1,51 +1,16 @@
 //==============================================================================
 /*!
-//  \file blaze/util/typetraits/is_detected.h
-//  \brief Header file for the is_detected type trait
+//  \file
+//  \brief Implementation of is_detected type trait
 //
-//  Copyright (C) 2012-2020 Klaus Iglberger - All Rights Reserved
+//  https://en.cppreference.com/w/cpp/experimental/is_detected
 //
-//  This file is part of the Blaze library. You can redistribute it and/or
-modify it under
-//  the terms of the New (Revised) BSD License. Redistribution and use in source
-and binary
-//  forms, with or without modification, are permitted provided that the
-following conditions
-//  are met:
 //
-//  1. Redistributions of source code must retain the above copyright notice,
-this list of
-//     conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice,
-this list
-//     of conditions and the following disclaimer in the documentation and/or
-other materials
-//     provided with the distribution.
-//  3. Neither the names of the Blaze development group nor the names of its
-contributors
-//     may be used to endorse or promote products derived from this software
-without specific
-//     prior written permission.
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
 //
-//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY
-//  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES
-//  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN
-NO EVENT
-//  SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
-INDIRECT,
-//  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED
-//  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-PROFITS; OR
-//  BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-WHETHER IN
-//  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-ARISING IN
-//  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
-OF SUCH
-//  DAMAGE.
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
 */
 //==============================================================================
 
@@ -57,6 +22,7 @@ OF SUCH
 #include <type_traits>
 
 #include "Utilities/TypeTraits/Void.hpp"
+#include "Utilities/NoSuchType.hpp"
 
 namespace tt {
 
@@ -70,7 +36,7 @@ namespace tt {
   /*!\brief Default result type for the detected_t type trait.
   // \ingroup type_traits
   */
-  struct NoSuchType {};
+  using ::NoSuchType;
   //****************************************************************************
 
   //****************************************************************************
@@ -205,8 +171,8 @@ namespace tt {
   // following two statements are identical:
 
      \code
-     constexpr bool value1 = elastica::tt::is_detected<OP,T1,T2>::value;
-     constexpr bool value2 = elastica::tt::is_detected_v<OP,T1,T2>;
+     constexpr bool value1 = tt::is_detected<OP,T1,T2>::value;
+     constexpr bool value2 = tt::is_detected_v<OP,T1,T2>;
      \endcode
   */
   template <template <typename...> class OP, typename... Ts>
@@ -223,8 +189,8 @@ namespace tt {
   // \a T2 the following two statements are identical:
 
      \code
-     using type1 = typename blaze::detected_or<Default,OP,T1,T2>::type;
-     using type2 = blaze::detected_or_t<Default,OP,T1,T2>;
+     using type1 = typename tt::detected_or<Default,OP,T1,T2>::type;
+     using type2 = tt::detected_or_t<Default,OP,T1,T2>;
      \endcode
   */
   template <typename Default, template <typename...> class OP, typename... Ts>
