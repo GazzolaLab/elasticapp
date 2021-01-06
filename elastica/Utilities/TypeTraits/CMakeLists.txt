@@ -17,5 +17,6 @@ elastica_target_headers(
         IsMaplike.hpp
         IsStdArray.hpp
         IsStdArrayOfSize.hpp
+        IsStreamable.hpp
         Void.hpp
 )
