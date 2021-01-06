@@ -1,22 +1,7 @@
 # Distributed under the MIT License. See LICENSE.txt for details.
 # Obtained with thanks from https://github.com/sxs-collaboration/spectre
 
-# ===============================================
-# See if we have env vars to help us find tbb
-# ===============================================
-macro(getenv_path VAR)
-    set(ENV_${VAR} $ENV{${VAR}})
-    # replace won't work if var is blank
-    if(ENV_${VAR})
-        string(REGEX
-               REPLACE "\\\\"
-                       "/"
-                       ENV_${VAR}
-                       ${ENV_${VAR}})
-    endif()
-endmacro()
-
-# Get path, convert backslashes as ${ENV_${var}}
+include(GetEnvPath)
 getenv_path(BLAZE_ROOT)
 
 find_path(BLAZE_INCLUDE_DIR

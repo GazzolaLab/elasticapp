@@ -1,9 +1,9 @@
 # Distributed under the MIT License. See LICENSE.txt for details.
 
 # The functions in this file are used to set up test libraries. The way to use
-# these functions is to first set the global properties: set_property(GLOBAL
-# PROPERTY ELASTICA_TESTS_LIB_FUNCTIONS_PROPERTY "") set_property(GLOBAL
-# PROPERTY ELASTICA_TESTS_LIBS_PROPERTY "")
+# these functions is to first set the global properties:
+# set_property(GLOBAL PROPERTY ELASTICA_TESTS_LIB_FUNCTIONS_PROPERTY "")
+# set_property(GLOBAL PROPERTY ELASTICA_TESTS_LIBS_PROPERTY "")
 #
 # Then have various add_subdirectory commands, normally one per library. Each
 # library must compile a list of source files, which is then passed to
@@ -38,13 +38,19 @@ function(add_test_library
         LINK_LIBS)
     foreach (SOURCE_FILE ${LIBRARY_SOURCES})
         # We only add source files that actually call ELASTICA_TEST_CASE
-        file(READ "${SOURCE_FILE}" SOURCE_FILE_CONTENTS)
+        file(READ
+                "${SOURCE_FILE}"
+                SOURCE_FILE_CONTENTS)
         # Note: The result of find is -1 if not found
-        string(FIND "${SOURCE_FILE_CONTENTS}" "ELASTICA_TEST_CASE("
+        string(FIND
+                "${SOURCE_FILE_CONTENTS}"
+                "ELASTICA_TEST_CASE("
                 FOUND_ELASTICA_TEST_CASE)
         if (NOT ${FOUND_ELASTICA_TEST_CASE} EQUAL -1)
             # Get the name of the file without path and without extension
-            get_filename_component(SOURCE_NAME ${SOURCE_FILE} NAME_WE)
+            get_filename_component(SOURCE_NAME
+                    ${SOURCE_FILE}
+                    NAME_WE)
             # We specify the macro ELASTICA_TEST_REGISTER_FUNCTION for each
             # source file in the library which is used by the
             # TestingFramework.hpp file to create a function that can be called
@@ -70,14 +76,18 @@ function(add_test_library
             set(ELASTICA_TESTS_LIB_FUNCTIONS
                     "${ELASTICA_TESTS_LIB_FUNCTIONS};${LIBRARY}_${SOURCE_NAME}")
             set_property(GLOBAL
-                    PROPERTY ELASTICA_TESTS_LIB_FUNCTIONS_PROPERTY
+                    PROPERTY
+                    ELASTICA_TESTS_LIB_FUNCTIONS_PROPERTY
                     ${ELASTICA_TESTS_LIB_FUNCTIONS})
         endif ()
     endforeach ()
 
     # We do not use `add_elastica_library` since that adds libraries
     # to the `libs` target, which should not include tests.
-    add_library(${LIBRARY} ${LIBRARY_SOURCES})
+    add_library(
+            ${LIBRARY}
+            ${LIBRARY_SOURCES}
+    )
 
     # Add link dependencies
     target_link_libraries(
@@ -104,11 +114,18 @@ function(add_test_library
     # We use a global variable to also make a list of all the libraries added so
     # far. Again, this is easier for users than needing to propagate the
     # libraries back up using PARENT_SCOPE in various calls to set().
-    get_property(ELASTICA_TESTS_LIBS GLOBAL
-            PROPERTY ELASTICA_TESTS_LIBS_PROPERTY)
-    set(ELASTICA_TESTS_LIBS "${ELASTICA_TESTS_LIBS};${LIBRARY}")
-    set_property(GLOBAL
-            PROPERTY ELASTICA_TESTS_LIBS_PROPERTY ${ELASTICA_TESTS_LIBS})
+    get_property(
+            ELASTICA_TESTS_LIBS
+            GLOBAL
+            PROPERTY
+            ELASTICA_TESTS_LIBS_PROPERTY)
+    set(ELASTICA_TESTS_LIBS
+            "${ELASTICA_TESTS_LIBS};${LIBRARY}")
+    set_property(
+            GLOBAL
+            PROPERTY
+            ELASTICA_TESTS_LIBS_PROPERTY
+            ${ELASTICA_TESTS_LIBS})
 endfunction()
 
 # Writes a header file with a function named FUNCTION_NAME that in turn calls
@@ -116,9 +133,13 @@ endfunction()
 # files are registered with Catch. The FILENAME should be the absolute path to
 # where the hpp file should be written. For example,
 # "${CMAKE_BINARY_DIR}/tests/Unit/RunTestsRegister.hpp"
-function(write_test_registration_function FILENAME FUNCTION_NAME)
-    get_property(TEST_FUNCTIONS GLOBAL
-            PROPERTY ELASTICA_TESTS_LIB_FUNCTIONS_PROPERTY)
+function(write_test_registration_function
+        FILENAME
+        FUNCTION_NAME)
+    get_property(TEST_FUNCTIONS
+            GLOBAL
+            PROPERTY
+            ELASTICA_TESTS_LIB_FUNCTIONS_PROPERTY)
     set(REGISTERING_FUNCTIONS_DECL "")
     set(REGISTERING_FUNCTIONS_CALL "")
     foreach (TEST_FUNCTION ${TEST_FUNCTIONS})
@@ -135,5 +156,8 @@ function(write_test_registration_function FILENAME FUNCTION_NAME)
             "inline void ${FUNCTION_NAME}() noexcept {\n"
             "${REGISTERING_FUNCTIONS_CALL}"
             "}\n")
-    configure_file("${FILENAME}.tmp" "${FILENAME}" COPYONLY)
+    configure_file(
+            "${FILENAME}.tmp"
+            "${FILENAME}"
+            COPYONLY)
 endfunction()

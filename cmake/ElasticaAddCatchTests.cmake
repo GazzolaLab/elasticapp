@@ -8,34 +8,40 @@
 # https://github.com/philsquared/Catch It supports a variety of different styles
 # of tests including BDD and fixture tests.
 #
-# Usage ===== To run the tests, type 'ctest' in the build directory. You can
+# Usage
+# =====
+# To run the tests, type 'ctest' in the build directory. You can
 # specify a regex to match the test name using 'ctest -R Unit.Blah', or run all
 # tests with a certain tag using 'ctest -L tag'
 #
 # Attributes
 # ==========
 # Attributes allow you to modify properties of the test. Attributes are
-# specified as follows: // [[TimeOut, 10]] // [[OutputRegex, A regular
-# expression that is expected to match the output //   from the test]]
-# TEST_CASE("Unit.Blah", "[Unit]") {
+# specified as follows:
+# // [[TimeOut, 10]]
+# // [[OutputRegex, A regular expression that is expected to match the output
+# //   from the test]]
+# ELASTICA_TEST_CASE("Unit.Blah", "[Unit]") {
 #
 # Note the space after the comma!
 #
-# Available attributes are: TimeOut - override the default timeout and set the
-# timeout to N seconds. This should be set very sparingly since unit tests are
-# designed to be short. If your test is too long you should consider testing
-# smaller portions of the code if possible, or writing an integration test
-# instead. OutputRegex - When testing failure modes the exact error message must
-# be tested, not just that the test failed. Since the string passed is a regular
-# expression you must escape any regex tokens. For example, to match "some
-# (word) and" you must specify the string "some \(word\) and".
+# Available attributes are:
+# TimeOut - override the default timeout and set the timeout to N seconds. This
+#           should be set very sparingly sinc e unit tests are  designed to be
+#           short. If your test is too long you should consider testing smaller
+#           portions of the code if possible, or writing an integration test
+#           instead.
+# OutputRegex - When testing failure modes the exact error message must
+#               be tested, not just that the test failed. Since the string
+#               passed is a regular expression you must escape any regex tokens.
+#               For example, to match "some (word) and" you must specify the
+#               string "some \(word\) and".
 
 option(ELASTICA_UNIT_TEST_TIMEOUT_FACTOR
         "Multiply timeout for unit tests by this factor"
         1)
 
-
-find_package(PythonInterp REQUIRED)
+find_package(Python REQUIRED)
 
 # Main function - the only one designed to be called from outside this module.
 function(elastica_add_catch_tests TEST_TARGET TEST_LIBS)
@@ -74,8 +80,8 @@ function(elastica_add_catch_tests TEST_TARGET TEST_LIBS)
         endif ()
     endforeach ()
 
-    log_debug("From ElasticaAddCatchTests")
-    log_debug("${PYTHON_EXECUTABLE} at ${ABSOLUTE_SOURCE_FILES}")
+    #    log_debug("From ElasticaAddCatchTests")
+    #    log_debug("${PYTHON_EXECUTABLE} at ${ABSOLUTE_SOURCE_FILES}")
 
     execute_process(
             COMMAND
@@ -95,7 +101,7 @@ function(elastica_add_catch_tests TEST_TARGET TEST_LIBS)
             ELASTICA_FAILURE_TESTS
             GLOBAL
             PROPERTY
-            SPECTRE_FAILURE_TESTS_PROPERTY)
+            ELASTICA_FAILURE_TESTS_PROPERTY)
     set_property(GLOBAL PROPERTY ELASTICA_FAILURE_TESTS_PROPERTY "")
 
     # Generate shell script that runs all non-failure tests manually
@@ -235,7 +241,7 @@ function(elastica_parse_file SOURCE_FILE TEST_TARGET)
 
         # Check if the test is supposed to fail. If so then let ctest know that
         # a failed test is actually a pass.
-        if (NOT "${OUTPUT_REGEX}" STREQUAL "None")
+        if (NOT "${OUTPUT_REGEX}" STREQUAL "")
             if (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
                 set(OUTPUT_REGEX
                         "${OUTPUT_REGEX}|### No ASSERT tests in release mode ###")
@@ -248,9 +254,10 @@ function(elastica_parse_file SOURCE_FILE TEST_TARGET)
                     PASS_REGULAR_EXPRESSION
                     "${OUTPUT_REGEX}"
                     LABELS
-                    "${TAGS}"
-                    ENVIRONMENT
-                    "ASAN_OPTIONS=detect_leaks=0")
+                    "${TAGS}")
+#                    ENVIRONMENT
+#                    "ASAN_OPTIONS=detect_leaks=0")
+            set(FAILURE_TESTS "\"~${CTEST_NAME}\";${FAILURE_TESTS}")
         else ()
             set_tests_properties("\"${CTEST_NAME}\""
                     PROPERTIES FAIL_REGULAR_EXPRESSION
