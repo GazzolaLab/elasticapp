@@ -1,18 +1,40 @@
-// Code obtained with thanks from SpecTRE
-// Distributed under the MIT License.
-// See LICENSE.txt for details.
+//==============================================================================
+/*!
+//  \file
+//  \brief Helpers for enforcing compile-time protocols in \elastica
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+//
+//  Reused with thanks from SpECTRE : https://spectre-code.org/
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
 
 #pragma once
 
+//******************************************************************************
+// Includes
+//******************************************************************************
 #include <type_traits>
 
 #include "Utilities/TypeTraits.hpp"
 
 namespace tt {
 
-  /*!
-   * \ingroup ProtocolsGroup
-   * \brief Indicate a class conforms to the `Protocol`.
+  //============================================================================
+  //
+  //  CLASS DEFINITION
+  //
+  //============================================================================
+
+  //****************************************************************************
+  /*!\brief Indicate a class conforms to the `Protocol`.
+   * \ingroup protocols
    *
    * (Publicly) inherit classes from this class to indicate they conform to the
    * `Protocol`.
@@ -21,14 +43,11 @@ namespace tt {
    */
   template <typename Protocol>
   struct ConformsTo {};
+  //****************************************************************************
 
-  // Note that std::is_convertible is used in the following type aliases as it
-  // will not match private base classes (unlike std::is_base_of)
-
-  // @{
-  /*!
-   * \ingroup ProtocolsGroup
-   * \brief Checks if the `ConformingType` conforms to the `Protocol`.
+  //****************************************************************************
+  /*!\brief Checks if the `ConformingType` conforms to the `Protocol`.
+   * \ingroup protocols
    *
    * This metafunction is SFINAE-friendly. See `tt::assert_conforms_to` for a
    * metafunction that is not SFINAE-friendly but that triggers static asserts
@@ -39,16 +58,20 @@ namespace tt {
    * reduce compile time. Protocol conformance is tested rigorously in the unit
    * tests instead.
    *
+   * \note std::is_convertible is used in the following type aliases as it
+   * will not match private base classes (unlike std::is_base_of)
+   *
    * \see Documentation on \ref protocols
    * \see tt::assert_conforms_to
    */
   template <typename ConformingType, typename Protocol>
   using conforms_to =
       typename std::is_convertible<ConformingType*, ConformsTo<Protocol>*>;
+
   template <typename ConformingType, typename Protocol>
   constexpr bool conforms_to_v =
       std::is_convertible<ConformingType*, ConformsTo<Protocol>*>::value;
-  // @}
+  //****************************************************************************
 
   namespace detail {
 
@@ -66,9 +89,9 @@ namespace tt {
 
   }  // namespace detail
 
-  /*!
-   * \ingroup ProtocolsGroup
-   * \brief Assert that the `ConformingType` conforms to the `Protocol`.
+  //****************************************************************************
+  /*!\brief Assert that the `ConformingType` conforms to the `Protocol`.
+   * \ingroup protocols
    *
    * Similar to `tt::conforms_to`, but not SFINAE-friendly. Instead, triggers
    * static asserts with diagnostic messages to understand why the
@@ -80,5 +103,6 @@ namespace tt {
   template <typename ConformingType, typename Protocol>
   static constexpr bool assert_conforms_to =
       detail::AssertConformsToImpl<ConformingType, Protocol>::value;
+  //****************************************************************************
 
 }  // namespace tt
