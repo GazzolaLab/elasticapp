@@ -51,7 +51,7 @@ namespace MakeArray_detail {
 #ifndef HAVE_BROKEN_ARRAY0
       expand_pack(args...);  // Used in other preprocessor branch
       return std::array<T, 0>{{}};
-#else   // HAVE_BROKEN_ARRAY0
+#else  // HAVE_BROKEN_ARRAY0
       // https://bugs.llvm.org/show_bug.cgi?id=35491
       return {{T(std::forward<Args>(args)...)}};
 #endif  // HAVE_BROKEN_ARRAY0
@@ -92,24 +92,31 @@ ELASTICA_ALWAYS_INLINE constexpr auto make_array(T&& t) noexcept(noexcept(
       std::forward<T>(t));
 }
 
-///*!
-// * \ingroup UtilitiesGroup
-// * \brief Helper function to initialize a std::array with varying number of
-// * arguments
-// */
-//template <typename T, typename... V, Requires<(sizeof...(V) > 0)> = nullptr>
-//ELASTICA_ALWAYS_INLINE constexpr auto make_array(T&& t, V&&... values) noexcept(
-//    noexcept(std::array<std::decay_t<T>, sizeof...(V) + 1>{
-//        {std::forward<T>(t), std::forward<V>(values)...}}))
-//    -> std::array<typename std::decay_t<T>, sizeof...(V) + 1> {
-//  static_assert(
-//      tmpl2::flat_all_v<cpp17::is_same_v<std::decay_t<T>, std::decay_t<V>>...>,
-//      "all types to make_array(...) must be the same");
-//  return std::array<std::decay_t<T>, sizeof...(V) + 1>{
-//      {std::forward<T>(t), std::forward<V>(values)...}};
-//}
-//
-//namespace MakeArray_detail {
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Helper function to initialize a std::array with varying number of
+ * arguments
+ */
+template <typename T, typename... V, Requires<(sizeof...(V) > 0)> = nullptr>
+ELASTICA_ALWAYS_INLINE constexpr auto make_array(T&& t, V&&... values) noexcept(
+    noexcept(std::array<std::decay_t<T>, sizeof...(V) + 1>{
+        {std::forward<T>(t), std::forward<V>(values)...}}))
+    -> std::array<typename std::decay_t<T>, sizeof...(V) + 1> {
+  static_assert(
+      cpp17::conjunction_v<std::is_same<std::decay_t<T>, std::decay_t<V>>...>,
+      "all types to make_array(...) must be the same");
+  return std::array<std::decay_t<T>, sizeof...(V) + 1>{
+      {std::forward<T>(t), std::forward<V>(values)...}};
+}
+
+template <typename T>
+ELASTICA_ALWAYS_INLINE constexpr auto make_array(T&& t) noexcept(
+    noexcept(std::array<std::decay_t<T>, 1UL>{{std::forward<T>(t)}}))
+    -> std::array<typename std::decay_t<T>, 1UL> {
+  return std::array<std::decay_t<T>, 1UL>{{std::forward<T>(t)}};
+}
+
+// namespace MakeArray_detail {
 //  template <typename Seq, typename T,
 //            Requires<cpp17::is_rvalue_reference_v<Seq>> = nullptr>
 //  constexpr T&& forward_element(T& t) noexcept {
@@ -135,14 +142,15 @@ ELASTICA_ALWAYS_INLINE constexpr auto make_array(T&& t) noexcept(noexcept(
 //
 ///*!
 // * \ingroup UtilitiesGroup
-// * \brief Create an `std::array<T, size>` from the first `size` values of `seq`
+// * \brief Create an `std::array<T, size>` from the first `size` values of
+// `seq`
 // *
 // * \requires `Seq` has a `begin` function
 // * \tparam T the type held by the array
 // * \tparam size the size of the created array
 // */
-//template <typename T, size_t size, typename Seq>
-//constexpr std::array<T, size> make_array(Seq&& seq) noexcept(
+// template <typename T, size_t size, typename Seq>
+// constexpr std::array<T, size> make_array(Seq&& seq) noexcept(
 //    noexcept(MakeArray_detail::make_array_from_iterator_impl<T, size>(
 //        std::forward<Seq>(seq), std::make_index_sequence<size>{}))) {
 //  return MakeArray_detail::make_array_from_iterator_impl<T, size>(
