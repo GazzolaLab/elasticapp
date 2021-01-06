@@ -10,6 +10,7 @@
 
 //#include "DataStructures/TaggedTuple.hpp"
 #include "Utilities/PrintHelpers.hpp"
+#include "Utilities/TypeTraits/IsStreamable.hpp"
 
 namespace StdHelpers_detail {
   // Helper classes for operator<< for tuples
@@ -42,6 +43,21 @@ namespace StdHelpers_detail {
   };
 }  // namespace StdHelpers_detail
 
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Output the items of a std::list
+ */
+template <typename T>
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::list<T>& v) noexcept {
+  sequence_print_helper(os, std::begin(v), std::end(v));
+  return os;
+}
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Output the items of a std::vector
+ */
 template <typename T>
 inline std::ostream& operator<<(std::ostream& os,
                                 const std::vector<T>& v) noexcept {
@@ -49,6 +65,21 @@ inline std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Output the items of a std::deque
+ */
+template <typename T>
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::deque<T>& v) noexcept {
+  sequence_print_helper(os, std::begin(v), std::end(v));
+  return os;
+}
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Output the items of a std::array
+ */
 template <typename T, size_t N>
 inline std::ostream& operator<<(std::ostream& os,
                                 const std::array<T, N>& a) noexcept {
@@ -56,14 +87,101 @@ inline std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-// template <typename... Args>
-// inline std::ostream& operator<<(std::ostream& os,
-//                                const std::tuple<Args...>& t) noexcept {
-//  os << "(";
-//  StdHelpers_detail::TuplePrinter<sizeof...(Args)>::print(os, t);
-//  os << ")";
-//  return os;
-//}
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Stream operator for tuples
+ */
+template <typename... Args>
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::tuple<Args...>& t) noexcept {
+  os << "(";
+  StdHelpers_detail::TuplePrinter<sizeof...(Args)>::print(os, t);
+  os << ")";
+  return os;
+}
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Output all the key, value pairs of a std::unordered_map
+ */
+template <typename K, typename V, typename H>
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::unordered_map<K, V, H>& m) noexcept {
+  unordered_print_helper(
+      os, begin(m), end(m),
+      [](std::ostream& out,
+         typename std::unordered_map<K, V, H>::const_iterator it) {
+        out << "[" << it->first << "," << it->second << "]";
+      });
+  return os;
+}
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Output all the key, value pairs of a std::map
+ */
+template <typename K, typename V, typename C>
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::map<K, V, C>& m) noexcept {
+  sequence_print_helper(
+      os, begin(m), end(m),
+      [](std::ostream& out, typename std::map<K, V, C>::const_iterator it) {
+        out << "[" << it->first << "," << it->second << "]";
+      });
+  return os;
+}
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Output the items of a std::unordered_set
+ */
+template <typename T, typename H>
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::unordered_set<T, H>& v) noexcept {
+  unordered_print_helper(os, std::begin(v), std::end(v));
+  return os;
+}
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Output the items of a std::set
+ */
+template <typename T, typename C>
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::set<T, C>& v) noexcept {
+  sequence_print_helper(os, std::begin(v), std::end(v));
+  return os;
+}
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Stream operator for std::unique_ptr
+ */
+template <typename T, Requires<tt::is_streamable<std::ostream, T>::value>>
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::unique_ptr<T>& t) noexcept {
+  return os << *t;
+}
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Stream operator for std::shared_ptr
+ */
+template <typename T, Requires<tt::is_streamable<std::ostream, T>::value>>
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::shared_ptr<T>& t) noexcept {
+  return os << *t;
+}
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Stream operator for std::pair
+ */
+template <typename T, typename U>
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::pair<T, U>& t) noexcept {
+  return os << "(" << t.first << ", " << t.second << ")";
+}
 
 /*
 template <tuples::TagType TT, class MetaData, typename... Tags>
@@ -89,15 +207,3 @@ inline std::ostream& operator<<(
 //  os << ")\n";
 //  return os;
 //}
-
-template <class F, std::size_t... Is>
-constexpr decltype(auto) index_apply_impl(F && f,
-                                std::index_sequence<Is...> /* meta */) {
-    return f(std::integral_constant<size_t, Is> {}...);
-}
-
-template <std::size_t N, class F>
-constexpr decltype(auto) index_apply(F&& f) {
-    return index_apply_impl(std::forward<F>(f), std::make_index_sequence<N>{});
-}
-
