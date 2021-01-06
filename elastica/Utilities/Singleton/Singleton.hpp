@@ -87,14 +87,14 @@ namespace elastica {
 // Need to add Dependency to the list too, as dependencies rely
 // on instantiating the dependent singleton derived class using the static
 // instance method()
-#define BEFRIEND_SINGLETON                           \
-  template <typename, class...>                      \
-  friend class ::elastica::Singleton;                \
-  template <typename, typename, bool>                \
-  friend struct ::elastica::tt::HasCyclicDependency; \
-  template <typename>                                \
-  friend struct ::elastica::tt::IsSingleton;         \
-  template <typename>                                \
+#define BEFRIEND_SINGLETON                                             \
+  template <typename, class...>                                        \
+  friend class ::elastica::Singleton;                                  \
+  template <typename, typename, bool>                                  \
+  friend struct ::elastica::tt::singleton_detail::HasCyclicDependency; \
+  template <typename>                                                  \
+  friend struct ::elastica::tt::IsSingleton;                           \
+  template <typename>                                                  \
   friend class ::elastica::Dependency
 
   //****************************************************************************
