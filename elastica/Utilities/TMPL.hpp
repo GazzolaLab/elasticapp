@@ -59,6 +59,26 @@ namespace brigand {
 
 }
 
+namespace brigand {
+  template <bool>
+  struct conditional;
+
+  template <>
+  struct conditional<true> {
+    template <typename T, typename F>
+    using type = T;
+  };
+
+  template <>
+  struct conditional<false> {
+    template <typename T, typename F>
+    using type = F;
+  };
+
+  template <bool B, typename T, typename F>
+  using conditional_t = typename conditional<B>::template type<T, F>;
+}  // namespace brigand
+
 /*!
  * \ingroup UtilitiesGroup
  * \brief Allows zero-cost unordered expansion of a parameter
