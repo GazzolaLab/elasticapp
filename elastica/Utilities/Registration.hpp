@@ -25,7 +25,7 @@
 /// \ingroup UtilitiesGroup
 /// \brief Helpers for derived class registration
 ///
-/// SpECTRE's factory mechanism requires that the base class contain a
+/// \elastica's factory mechanism requires that the base class contain a
 /// list of all derived classes (in the special nested type alias
 /// `creatable_classes`).  This can be problematic when the desired
 /// list of derived classes can vary with use of the base class.
