@@ -26,14 +26,12 @@ namespace elastica {
   // \ingroup util
   //
   // The NonCopyable class is intended to work as a base class for non-copyable
-  //lasses. Both the
-  // copy constructor and the copy assignment operator are declared private and
-  //eft undefined in
-  // order to prohibit copy operations of the derived classes.\n
+  // classes. Both the copy constructor and the copy assignment operator are
+  // deleted in order to prohibit copy operations of the derived classes.
   //
-  // \b Note: It is not necessary to publicly derive from this class. It is
-  // sufficient to derive privately to prevent copy operations on the derived
-  // class.
+  // \note
+  // It is not necessary to publicly derive from this class. It is sufficient to
+  // derive privately to prevent copy operations on the derived class.
   //
   // \example
      \code
@@ -41,6 +39,8 @@ namespace elastica {
        { ... };
      \endcode
   // https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Non-copyable_Mixin
+  //
+  // \see NonCreatable
   */
   class NonCopyable {
    public:
