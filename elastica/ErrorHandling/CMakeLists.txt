@@ -17,7 +17,9 @@ elastica_target_headers(
         AbortWithErrorMessage.hpp
         Abort.hpp
         Assert.hpp
+        Error.hpp
         ExpectsAndEnsures.hpp
+        Exit.hpp
         FloatingPointExceptions.hpp
 )
 
