@@ -1,0 +1,586 @@
+//
+// Created by Tejaswin Parthasarathy on 12/29/20.
+//
+
+#include <iostream>
+#include <type_traits>
+#include <utility>
+
+#include "Framework/TestingFramework.hpp"
+#include "Framework/TestHelpers.hpp"
+#include "Simulator/Interface/Constraints/Constraint.hpp"
+#include "Simulator/Interface/Constraints/ConstraintBase.hpp"
+#include "Utilities/TMPL.hpp"
+
+// make a constraint
+#include "Simulator/Constraints/Constraint.hpp"
+#include "Simulator/Constraints/Registration.hpp"
+#include "Utilities/Registration.hpp"
+
+namespace {
+
+  using namespace ::elastica::interface::constraints;
+
+  namespace {
+
+    using RegistrarListCheck = tmpl::list<int, float, char>;
+    using SystemType = float;
+    static_assert(
+        std::is_base_of<ConstraintBase<RegistrarListCheck>,
+                        Constraint<SystemType, RegistrarListCheck>>::value,
+        "Base violation!");
+  }  // namespace
+
+  ELASTICA_TEST_CASE(
+      "Unit.Simulator.Interface.Constraints.Constraint.constructor",
+      "[Unit][Simulator][Interface][Constraints]") {
+    {
+      using RegistrarList = tmpl::list<>;
+      using ConcreteConstraint = Constraint<int, RegistrarList>;
+      int i(2);
+      std::size_t index(6UL);
+      const std::size_t n_dofs(20UL);
+      ConcreteConstraint cc(index, i, 4, "test");
+    }
+
+    {
+      using RegistrarList = tmpl::list<int, float, char>;
+      using ConcreteConstraint = Constraint<float, RegistrarList>;
+      float f(4.0F);
+      ConcreteConstraint cc(6UL, f, 20UL, "test");
+    }
+
+    {
+      using RegistrarList = tmpl::list<char>;
+      using ConcreteConstraint = Constraint<double, RegistrarList>;
+      auto sink = [](auto&&...) {};
+      double d{5.12312};
+      sink(ConcreteConstraint(8UL, d, 22UL, "testing"));
+    }
+  }
+
+}  // namespace
+
+namespace elastica {
+  namespace constraints {
+    ELASTICA_DEFINE_CONSTRAINT(ConstraintDefaulted) {
+     public:
+      ConstraintDefaulted() = default;
+      ConstraintDefaulted(ConstraintDefaulted &&) noexcept {};
+      // move constructor is deleted if a destructor is defined
+      //      ~ConstraintDefaulted(){
+      //        std::cout << "Destructor caleld!" << std::endl;
+      //      }
+
+      template <typename System, typename TimeType>
+      void constrain_rates(System&, TimeType, int idx) const {}
+
+      template <typename System, typename TimeType>
+      void constrain_values(System&, TimeType, int idx) const {}
+
+      static std::string name() { return "ConstraintDefault"; }
+    };
+  }  // namespace constraints
+}  // namespace elastica
+
+struct ObjectCount : counter<ObjectCount> {
+  /*  ReferenceCount() = default;
+    ReferenceCount(ReferenceCount const& other) : count(other.count + 1) {}
+    ReferenceCount(ReferenceCount&& other) noexcept : count(other.count + 1) {}
+    unsigned int count = 0U;*/
+};
+
+namespace elastica {
+  namespace constraints {
+    ELASTICA_DEFINE_CONSTRAINT(ConstraintReferenceCounted) {
+     public:
+      explicit ConstraintReferenceCounted() : r(){};
+      ConstraintReferenceCounted(ConstraintReferenceCounted && other) noexcept
+          : r(std::move(other.r)){};
+      // move constructor is deleted if a destructor is defined
+      ~ConstraintReferenceCounted() override = default;
+      template <typename System, typename TimeType>
+      void constrain_rates(System&, TimeType, int idx) const {}
+
+      template <typename System, typename TimeType>
+      void constrain_values(System&, TimeType, int idx) const {}
+
+      static std::string name() { return "ConstraintRefCounted"; }
+
+      ObjectCount r;
+    };
+  }  // namespace constraints
+}  // namespace elastica
+
+namespace elastica {
+  namespace constraints {
+    ELASTICA_DEFINE_CONSTRAINT(ConstraintWithFundamentalTypes) {
+     public:
+      ConstraintWithFundamentalTypes(int a, float b, char c, int& d, int* p)
+          : a_(a), b_(b), c_(c), d_(d), p_(p){};
+      ConstraintWithFundamentalTypes(ConstraintWithFundamentalTypes &&
+                                     other) noexcept
+          : a_(other.a_),
+            b_(other.b_),
+            c_(other.c_),
+            d_(other.d_),
+            p_(other.p_) {}
+      ~ConstraintWithFundamentalTypes() override = default;
+
+      template <typename System, typename TimeType>
+      void constrain_rates(System&, TimeType, int idx) const {}
+
+      template <typename System, typename TimeType>
+      void constrain_values(System&, TimeType, int idx) const {}
+
+      static std::string name() noexcept { return "FundamentalConstraint"; }
+
+     private:
+      int a_;
+      float b_;
+      char c_;
+      int& d_;
+      int* p_;
+    };
+  }  // namespace constraints
+}  // namespace elastica
+
+namespace elastica {
+  namespace constraints {
+
+    ELASTICA_DEFINE_CONSTRAINT(ConstraintWithAggregateTypes) {
+     public:
+      using ST = std::string;
+      ConstraintWithAggregateTypes(ST s1, ST s2, ST s3)
+          : s_{std::move(s1), std::move(s2), std::move(s3)} {};
+      ConstraintWithAggregateTypes(ConstraintWithAggregateTypes &&
+                                   other) noexcept
+          : s_(std::move(other.s_)) {}
+      ~ConstraintWithAggregateTypes() override = default;
+
+      template <typename System, typename TimeType>
+      void constrain_rates(System&, TimeType, int idx) const {}
+
+      template <typename System, typename TimeType>
+      void constrain_values(System&, TimeType, int idx) const {}
+
+      static std::string name() { return "AggregateConstraint"; }
+
+     private:
+      std::vector<ST> s_;
+    };
+
+  }  // namespace constraints
+}  // namespace elastica
+
+namespace elastica {
+  namespace constraints {
+
+    ELASTICA_DEFINE_CONSTRAINT(ConstraintWithNonCopyableTypes) {
+     public:
+      using ST = std::unique_ptr<float>;
+      ConstraintWithNonCopyableTypes(ST && s1, ST && s2, ST && s3) {
+        s_.emplace_back(std::move(s1));
+        s_.emplace_back(std::move(s2));
+        s_.emplace_back(std::move(s3));
+      }
+      ConstraintWithNonCopyableTypes(ConstraintWithNonCopyableTypes &&
+                                     other) noexcept
+          : s_(std::move(other.s_)) {}
+      ~ConstraintWithNonCopyableTypes() override = default;
+
+      template <typename System, typename TimeType>
+      void constrain_rates(System&, TimeType, int idx) const {}
+
+      template <typename System, typename TimeType>
+      void constrain_values(System&, TimeType, int idx) const {}
+
+      static std::string name() { return "AggregateConstraint"; }
+
+     private:
+      std::vector<ST> s_;
+    };
+
+  }  // namespace constraints
+}  // namespace elastica
+
+namespace {
+
+  void test_constraint_with_default() {
+    using RegistrarList = tmpl::list<>;
+    using ConcreteConstraint = Constraint<float, RegistrarList>;
+    float f(4.0F);
+    ConcreteConstraint cc(6UL, f, 20UL, "test");
+    {  // rvalue
+      ::elastica::constraints::ConstraintDefaulted<> constraint{};
+      CHECK(cc.is_not_valid());
+      cc.with(std::move(constraint), ::elastica::interface::at(1));
+      CHECK(f == approx(4.0F));
+      CHECK(not cc.is_not_valid());
+    }
+
+    {  // xvalue
+      cc.with(::elastica::constraints::ConstraintDefaulted<>{},
+              ::elastica::interface::at(2));
+      CHECK(f == approx(4.0F));
+      CHECK(not cc.is_not_valid());
+    }
+  }
+
+  void test_constraint_with_object_counts() {
+    using RegistrarList = tmpl::list<>;
+    using ConcreteConstraint = Constraint<float, RegistrarList>;
+    float f(4.0F);
+    {  // prvalue
+      {
+        ConcreteConstraint cc(6UL, f, 20UL, "test");
+        CHECK(cc.is_not_valid());
+        cc.with(::elastica::constraints::ConstraintReferenceCounted<>{},
+                ::elastica::interface::at(2));
+        CHECK(f == approx(4.0F));
+        CHECK(not cc.is_not_valid());
+        // While the contents are moved around, three empty constraints are
+        // created and destroyed, 1 more constraint is within
+
+        CHECK(counter<ObjectCount>::objects_alive ==
+              1);  // 1 object is alive within cc
+        CHECK(counter<ObjectCount>::objects_created ==
+              4);                                          // 4 objects in total
+        CHECK(counter<ObjectCount>::objects_copied == 0);  // ensure no copies
+        CHECK(counter<ObjectCount>::objects_moved == 3);   // 4 -1 ?
+      }
+
+      CHECK(counter<ObjectCount>::objects_alive ==
+            0);  // After cc dies, the object should too!
+    }
+
+    {  // xvalue
+      {
+        ConcreteConstraint cc(6UL, f, 20UL, "test");
+        ::elastica::constraints::ConstraintReferenceCounted<> constraint{};
+        CHECK(cc.is_not_valid());
+        cc.with(std::move(constraint), ::elastica::interface::at(1));
+        CHECK(f == approx(4.0F));
+        CHECK(not cc.is_not_valid());
+        // While the contents are moved around, three empty constraints are
+        // created and destroyed, 1 more constraint is within
+
+        CHECK(counter<ObjectCount>::objects_alive ==
+              2);  // 1 object is alive within cc, 1 is in the current scope
+        CHECK(counter<ObjectCount>::objects_created ==
+              4 + 4);  // 4 objects in total, adding on to the previous 4
+        CHECK(counter<ObjectCount>::objects_copied == 0);  // ensure no copies
+        CHECK(counter<ObjectCount>::objects_moved == 3 + 3);  // 4 -1 ?
+      }
+
+      CHECK(counter<ObjectCount>::objects_alive ==
+            0);  // After cc dies, the object should too!
+    }
+  }
+
+  void test_constraint_with_fundamental_types() {
+    using RegistrarList = tmpl::list<>;
+    using ConcreteConstraint = Constraint<float, RegistrarList>;
+    float f(4.0F);
+    {  // rvalue
+      int i(2);
+      int j(4);
+      ConcreteConstraint cc(6UL, f, 20UL, "test");
+      CHECK(cc.is_not_valid());
+      ::elastica::constraints::ConstraintWithFundamentalTypes<> constraint{
+          1, 2.0F, 'c', i, &j};
+      CHECK(f == approx(4.0F));
+      cc.with(std::move(constraint), ::elastica::interface::at(1, 4, 3));
+      CHECK(not cc.is_not_valid());
+    }
+
+    {  // xvalue
+      int i(2);
+      int j(4);
+      ConcreteConstraint cc(6UL, f, 20UL, "test");
+      cc.with(
+          ::elastica::constraints::ConstraintWithFundamentalTypes<>{1, 2.0F,
+                                                                    'c', i, &j},
+          ::elastica::interface::at(3, 2, 1));
+      CHECK(f == approx(4.0F));
+      CHECK(not cc.is_not_valid());
+    }
+  }
+
+  void test_constraint_with_aggregate_types() {
+    using RegistrarList = tmpl::list<>;
+    using ConcreteConstraint = Constraint<float, RegistrarList>;
+    float f(4.0F);
+    {  // rvalue
+      ConcreteConstraint cc(6UL, f, 20UL, "test");
+      CHECK(cc.is_not_valid());
+      ::elastica::constraints::ConstraintWithAggregateTypes<> constraint{
+          "ODIs", "are", "good"};
+      CHECK(f == approx(4.0F));
+      cc.with(std::move(constraint), ::elastica::interface::at(1, 4, 3));
+      CHECK(not cc.is_not_valid());
+    }
+
+    {  // xvalue
+      ConcreteConstraint cc(6UL, f, 20UL, "test");
+      cc.with(
+          ::elastica::constraints::ConstraintWithAggregateTypes<>{
+              "Tests", "are", "better"},
+          ::elastica::interface::at(3, 2, 1));
+      CHECK(f == approx(4.0F));
+      CHECK(not cc.is_not_valid());
+    }
+  }
+
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Constraints.Constraint.with",
+                     "[Unit][Simulator][Interface][Constraints]") {
+    test_constraint_with_default();
+    test_constraint_with_object_counts();
+    test_constraint_with_fundamental_types();
+    test_constraint_with_aggregate_types();
+  }
+
+  void test_constraint_with_fundamental_types_via_forwarding_with() {
+    using RegistrarList = tmpl::list<>;
+    using ConcreteConstraint = Constraint<float, RegistrarList>;
+    float f(4.0F);
+    {  // rvalue
+      int i(2);
+      int j(4);
+      ConcreteConstraint cc(6UL, f, 20UL, "test");
+      CHECK(cc.is_not_valid());
+      ::elastica::constraints::ConstraintWithFundamentalTypes<> constraint{
+          1, 2.0F, 'c', i, &j};
+      CHECK(f == approx(4.0F));
+      auto x = cc.with(std::move(constraint));
+      // shouldnt be valid in this intermediate state
+      CHECK(cc.is_not_valid());
+      // but has a valid name
+      CHECK(cc.concrete_type() == "ConstraintWithFundamentalTypes");
+      x.at(1, 2, 3, 4);
+      CHECK(not cc.is_not_valid());
+      CHECK(f == approx(4.0F));
+    }
+
+    {  // rvalue
+      int i(2);
+      int j(4);
+      ConcreteConstraint cc(6UL, f, 20UL, "test");
+      CHECK(cc.is_not_valid());
+      ::elastica::constraints::ConstraintWithFundamentalTypes<> constraint{
+          1, 2.0F, 'c', i, &j};
+      // intended usage
+      cc.with(std::move(constraint)).at(1, 2, 3, 4);
+      CHECK(not cc.is_not_valid());
+      CHECK(cc.concrete_type() == "ConstraintWithFundamentalTypes");
+      CHECK(f == approx(4.0F));
+    }
+
+    {  // xvalue
+      int i(2);
+      int j(4);
+      ConcreteConstraint cc(6UL, f, 20UL, "test");
+      cc.with(::elastica::constraints::ConstraintWithFundamentalTypes<>{
+                  1, 2.0F, 'c', i, &j})
+          .at(1, 2, 3);
+      CHECK(not cc.is_not_valid());
+      CHECK(cc.concrete_type() == "ConstraintWithFundamentalTypes");
+    }
+  }
+
+  void test_constraint_with_aggregate_types_via_forwarding_with() {
+    using RegistrarList = tmpl::list<>;
+    using ConcreteConstraint = Constraint<float, RegistrarList>;
+    float f(4.0F);
+    {  // rvalue
+      ConcreteConstraint cc(6UL, f, 20UL, "test");
+      CHECK(cc.is_not_valid());
+      ::elastica::constraints::ConstraintWithAggregateTypes<> constraint{
+          "ODIs", "are", "good"};
+      cc.with(std::move(constraint)).at(1, 4, 3);
+      CHECK(not cc.is_not_valid());
+      CHECK(cc.concrete_type() == "ConstraintWithAggregateTypes");
+      CHECK(f == approx(4.0F));
+    }
+
+    {  // xvalue
+      ConcreteConstraint cc(6UL, f, 20UL, "test");
+      cc.with(::elastica::constraints::ConstraintWithAggregateTypes<>{
+                  "Tests", "are", "better"})
+          .at(3, 2, 1);
+      CHECK(cc.concrete_type() == "ConstraintWithAggregateTypes");
+      CHECK(f == approx(4.0F));
+      CHECK(not cc.is_not_valid());
+    }
+  }
+
+  ELASTICA_TEST_CASE(
+      "Unit.Simulator.Interface.Constraints.Constraint.forwarding_with",
+      "[Unit][Simulator][Interface][Constraints]") {
+    test_constraint_with_fundamental_types_via_forwarding_with();
+    test_constraint_with_aggregate_types_via_forwarding_with();
+  }
+
+  void test_constraint_with_fundamental_types_via_forwarded_arguments() {
+    using RegistrarList = tmpl::list<>;
+    using ConcreteConstraint = Constraint<float, RegistrarList>;
+    float f(4.0F);
+
+    {  // rvalue
+      int i(2);
+      int j(4);
+      ConcreteConstraint cc(6UL, f, 20UL, "test");
+      CHECK(cc.is_not_valid());
+      CHECK(f == approx(4.0F));
+      auto x =
+          cc.with<::elastica::constraints::ConstraintWithFundamentalTypes<>>(
+              1, 2.0F, 'c', i, &j);
+      // shouldnt be valid in this intermediate state
+      CHECK(cc.is_not_valid());
+      // but has a valid name
+      CHECK(cc.concrete_type() == "ConstraintWithFundamentalTypes");
+      x.at(1, 2, 3, 4);
+      CHECK(not cc.is_not_valid());
+      CHECK(f == approx(4.0F));
+    }
+
+    {  // rvalue
+      int i(2);
+      int j(4);
+      ConcreteConstraint cc(6UL, f, 20UL, "test");
+      CHECK(cc.is_not_valid());
+      // intended usage
+      cc.with<::elastica::constraints::ConstraintWithFundamentalTypes<>>(
+            1, 2.0F, 'c', i, &j)
+          .at(1, 2, 3, 4);
+      CHECK(not cc.is_not_valid());
+      CHECK(cc.concrete_type() == "ConstraintWithFundamentalTypes");
+      CHECK(f == approx(4.0F));
+    }
+  }
+
+  void test_constraint_with_aggregate_types_via_forwarded_arguments() {
+    using RegistrarList = tmpl::list<>;
+    using ConcreteConstraint = Constraint<float, RegistrarList>;
+    float f(4.0F);
+    {  // rvalue
+      ConcreteConstraint cc(6UL, f, 20UL, "test");
+      CHECK(cc.is_not_valid());
+      cc.with<::elastica::constraints::ConstraintWithAggregateTypes<>>(
+            "ODIs", "are", "good")
+          .at(1, 4, 3);
+      CHECK(not cc.is_not_valid());
+      CHECK(cc.concrete_type() == "ConstraintWithAggregateTypes");
+      CHECK(f == approx(4.0F));
+    }
+
+    {  // xvalue
+      ConcreteConstraint cc(6UL, f, 20UL, "test");
+      auto x = cc.with<::elastica::constraints::ConstraintWithAggregateTypes<>>(
+          "Tests", "are", "better");
+      CHECK(cc.is_not_valid());
+      CHECK(cc.concrete_type() == "ConstraintWithAggregateTypes");
+      x.at(3, 2, 1);
+      CHECK(f == approx(4.0F));
+      CHECK(not cc.is_not_valid());
+    }
+  }
+
+  void test_constraint_with_noncopyable_types_via_forwarded_arguments() {
+    using RegistrarList = tmpl::list<>;
+    using ConcreteConstraint = Constraint<float, RegistrarList>;
+    float f(4.0F);
+    {  // rvalue
+      ConcreteConstraint cc(6UL, f, 20UL, "test");
+      CHECK(cc.is_not_valid());
+      // float r(2.0F), p(5.000F), q(8.000F);
+      cc.with<::elastica::constraints::ConstraintWithNonCopyableTypes<>>(
+            std::make_unique<float>(2.0F), std::make_unique<float>(5.0F),
+            std::make_unique<float>(80.0F))
+          .at(1, 4, 3);
+      CHECK(not cc.is_not_valid());
+      CHECK(cc.concrete_type() == "ConstraintWithNonCopyableTypes");
+      CHECK(f == approx(4.0F));
+    }
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE(
+      "Unit.Simulator.Interface.Constraints.Constraint.with_forwarded_arguments",
+      "[Unit][Simulator][Interface][Constraints]") {
+    // clang-format on
+    test_constraint_with_fundamental_types_via_forwarded_arguments();
+    test_constraint_with_aggregate_types_via_forwarded_arguments();
+    test_constraint_with_noncopyable_types_via_forwarded_arguments();
+  }
+
+  // clang-format off
+  // [[OutputRegex, "Attempts to constrain system of type float with a ConstraintWithNonCopyableTypes at the following indices failed: 43, as the number of degrees of freedom is only 20"]]
+  ELASTICA_TEST_CASE(
+      "Unit.Simulator.Interface.Constraints.Constraint.throws_for_incorrect_indices",
+      "[Unit][Simulator][Interface][Constraints]") {
+    ERROR_TEST();
+    // clang-format on
+    using RegistrarList = tmpl::list<>;
+    using ConcreteConstraint = Constraint<float, RegistrarList>;
+    float f(4.0F);
+    {  // rvalue
+      ConcreteConstraint cc(6UL, f, 20UL, "test");
+
+      //      cc.with<::elastica::constraints::ConstraintWithNonCopyableTypes<>>(
+      //            std::make_unique<float>(2.0F),
+      //            std::make_unique<float>(5.0F),
+      //            std::make_unique<float>(80.0F))
+      //          .at(1, 4, 43);
+      //
+      CHECK_THROWS_AS(
+          cc.with<::elastica::constraints::ConstraintWithNonCopyableTypes<>>(
+                std::make_unique<float>(2.0F), std::make_unique<float>(5.0F),
+                std::make_unique<float>(80.0F))
+              .at(1, 4, 43),
+          std::range_error);
+    }
+  }
+
+  template <template <typename> class ConstraintType, typename... Args>
+  std::unique_ptr<::elastica::constraints::detail::ConstraintBase<int>>
+  make_constraint(Args&&... args) {
+    return std::make_unique<ConstraintType<int>>(std::forward<Args>(args)...);
+  }
+
+  template <typename... Ints>
+  std::unique_ptr<::elastica::interface::detail::at_base_t> make_at(
+      int x, Ints&&... ints) {
+    using at_t =
+        decltype(::elastica::interface::at(x, std::forward<Ints>(ints)...));
+    return std::unique_ptr<at_t>(
+        new at_t(::elastica::interface::at(x, std::forward<Ints>(ints)...)));
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE(
+      "Unit.Simulator.Interface.Constraints.Constraint.with_unique_ptr",
+      "[Unit][Simulator][Interface][Constraints]") {
+    // clang-format on
+    using RegistrarList = tmpl::list<>;
+    using ConcreteConstraint = Constraint<float, RegistrarList>;
+    float f(4.0F);
+    {  // rvalue
+      int i(2);
+      int j(4);
+      ConcreteConstraint cc(6UL, f, 20UL, "test");
+      CHECK(cc.is_not_valid());
+      // registar type doesnt really matter here
+      //      std::unique_ptr<::elastica::constraints::detail::ConstraintBase<int>>
+      //          runtime_constraint = std::make_unique<
+      //              ::elastica::constraints::ConstraintWithFundamentalTypes<int>>(
+      //              1, 2.0F, 'c', i, &j);
+      auto runtime_constraint = make_constraint<
+          ::elastica::constraints::ConstraintWithFundamentalTypes>(1, 2.0F, 'c',
+                                                                   i, &j);
+      CHECK(f == approx(4.0F));
+      cc.with(std::move(runtime_constraint), make_at(1, 4, 3));
+      CHECK(not cc.is_not_valid());
+    }
+  }
+}  // namespace

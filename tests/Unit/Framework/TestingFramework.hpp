@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <catch.hpp>
 #include <complex>
 #include <csignal>
 #include <cstddef>
@@ -16,9 +17,11 @@
 #include <string>
 #include <unordered_set>
 
+#include "ErrorHandling/Exit.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/TypeTraits.hpp"
-#include "catch.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
+#include "Utilities/TypeTraits/IsIterable.hpp"
+#include "Utilities/TypeTraits/IsMaplike.hpp"
 
 /// \cond
 // The macro ELASTICA_TEST_REGISTER_FUNCTION is defined inside the
@@ -129,8 +132,6 @@ template <typename T, typename = std::nullptr_t>
 struct check_iterable_approx {
   // clang-tidy: non-const reference
   static void apply(const T& a, const T& b, Approx& appx = approx) {  // NOLINT
-    CAPTURE_PRECISE(a);
-    CAPTURE_PRECISE(b);
     CHECK(a == appx(b));
   }
 };
@@ -151,8 +152,8 @@ struct check_iterable_approx<
                 not tt::is_a_v<std::unordered_set, T>>> {
   // clang-tidy: non-const reference
   static void apply(const T& a, const T& b, Approx& appx = approx) {  // NOLINT
-    CAPTURE_PRECISE(a);
-    CAPTURE_PRECISE(b);
+    CAPTURE(a);
+    CAPTURE(b);
     auto a_it = a.begin();
     auto b_it = b.begin();
     CHECK(a_it != a.end());
@@ -179,8 +180,6 @@ struct check_iterable_approx<T, Requires<tt::is_a_v<std::unordered_set, T>>> {
   // clang-tidy: non-const reference
   static void apply(const T& a, const T& b,
                     Approx& /*appx*/ = approx) {  // NOLINT
-    CAPTURE_PRECISE(a);
-    CAPTURE_PRECISE(b);
     // Approximate comparison of unordered sets is difficult
     CHECK(a == b);
   }
@@ -191,8 +190,8 @@ struct check_iterable_approx<
     T, Requires<tt::is_maplike_v<T> and tt::is_iterable_v<T>>> {
   // clang-tidy: non-const reference
   static void apply(const T& a, const T& b, Approx& appx = approx) {  // NOLINT
-    CAPTURE_PRECISE(a);
-    CAPTURE_PRECISE(b);
+    CAPTURE(a);
+    CAPTURE(b);
     for (const auto& kv : a) {
       const auto& key = kv.first;
       try {
@@ -246,8 +245,8 @@ struct check_matrix_approx {
     // column, and takes its index as argument.
     CHECK(a.columns() == b.columns());
     for (size_t j = 0; j < a.columns(); j++) {
-      CAPTURE_PRECISE(a);
-      CAPTURE_PRECISE(b);
+      CAPTURE(a);
+      CAPTURE(b);
       auto a_it = a.cbegin(j);
       auto b_it = b.cbegin(j);
       CHECK(a_it != a.cend(j));
@@ -277,7 +276,7 @@ struct check_matrix_approx {
 
 /// \cond HIDDEN_SYMBOLS
 [[noreturn]] inline void elastica_testing_signal_handler(int /*signal*/) {
-  //  Parallel::exit();
+  Parallel::exit();
 }
 /// \endcond
 
@@ -331,3 +330,20 @@ struct check_matrix_approx {
     std::terminate();                                \
   } while (false)
 #endif
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Mark a test as checking the output with a regular expression
+ *
+ * \details
+ * The OUTPUT_TEST() macro should be the first line in the SPECTRE_TEST_CASE.
+ * Catch requires at least one CHECK in each test to pass, so we add one in
+ * case nothing but the output is checked.
+ *
+ * \example
+ * \snippet Test_Parallel.cpp output_test_example
+ */
+#define OUTPUT_TEST() \
+  do {                \
+    CHECK(true);      \
+  } while (false)

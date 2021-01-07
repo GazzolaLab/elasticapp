@@ -1,6 +1,52 @@
 #pragma once
+void Test_Framework_Test_TestCreation() noexcept;
+void Test_Framework_Test_TestingFramework() noexcept;
+void Test_Constraints_Test_MakeConstraint() noexcept;
+void Test_Serialization_Test_Serialize() noexcept;
+void Test_Interface_Constraints_Test_Constraint() noexcept;
+void Test_Interface_Constraints_Test_ConstraintBase() noexcept;
+void Test_Interface_Constraints_Test_ConstraintUUID() noexcept;
+void Test_Interface_Wrappers_Test_WithWrapper() noexcept;
+void Test_Interface_Wrappers_Test_AtWrapper() noexcept;
+void Test_Interface_Test_At() noexcept;
+void Test_Utilities_Test_CRTP() noexcept;
+void Test_Utilities_Test_FakeVirtual() noexcept;
+void Test_Utilities_Test_Invoke() noexcept;
+void Test_Utilities_Test_Overloader() noexcept;
+void Test_Utilities_Test_ProtocolHelpers() noexcept;
 void Test_Utilities_Test_PtrVector() noexcept;
+void Test_Utilities_Test_PrettyType() noexcept;
+void Test_Utilities_Test_Registration() noexcept;
+void Test_Utilities_Test_Requires() noexcept;
+void Test_Utilities_Test_TMPL() noexcept;
+void Test_Utilities_NamedType_Test_Affordances() noexcept;
+void Test_Utilities_NamedType_Test_NamedType() noexcept;
+void Test_Utilities_NamedType_Test_MakeNamed() noexcept;
+void Test_Options_Test_Parameter() noexcept;
 
 inline void register_run_tests_libs() noexcept {
+  Test_Framework_Test_TestCreation();
+  Test_Framework_Test_TestingFramework();
+  Test_Constraints_Test_MakeConstraint();
+  Test_Serialization_Test_Serialize();
+  Test_Interface_Constraints_Test_Constraint();
+  Test_Interface_Constraints_Test_ConstraintBase();
+  Test_Interface_Constraints_Test_ConstraintUUID();
+  Test_Interface_Wrappers_Test_WithWrapper();
+  Test_Interface_Wrappers_Test_AtWrapper();
+  Test_Interface_Test_At();
+  Test_Utilities_Test_CRTP();
+  Test_Utilities_Test_FakeVirtual();
+  Test_Utilities_Test_Invoke();
+  Test_Utilities_Test_Overloader();
+  Test_Utilities_Test_ProtocolHelpers();
   Test_Utilities_Test_PtrVector();
+  Test_Utilities_Test_PrettyType();
+  Test_Utilities_Test_Registration();
+  Test_Utilities_Test_Requires();
+  Test_Utilities_Test_TMPL();
+  Test_Utilities_NamedType_Test_Affordances();
+  Test_Utilities_NamedType_Test_NamedType();
+  Test_Utilities_NamedType_Test_MakeNamed();
+  Test_Options_Test_Parameter();
 }

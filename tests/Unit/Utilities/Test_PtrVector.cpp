@@ -3,9 +3,9 @@
 #include <string>
 #include <tuple>
 
+#include "Framework/TestingFramework.hpp"
 #include "Utilities/Policies/NoDelete.hpp"
 #include "Utilities/PtrVector.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 using namespace elastica;
 using namespace std;
@@ -249,8 +249,7 @@ ELASTICA_TEST_CASE("Unit.Utilities.PtrVector.ReleaseBack",
   MAKE_POP_RELEASE_TEST_CASE(release_back);
 }
 
-ELASTICA_TEST_CASE("Unit.Utilities.PtrVector.Erase",
-                   "[Unit][Utilities]") {
+ELASTICA_TEST_CASE("Unit.Utilities.PtrVector.Erase", "[Unit][Utilities]") {
   using TestType = float;
   constexpr std::size_t test_capacity = 5UL;
   TestType* resources = new TestType[test_capacity];
@@ -274,7 +273,6 @@ ELASTICA_TEST_CASE("Unit.Utilities.PtrVector.Erase",
   CHECK(pv[offset] != (resources + offset));
   CHECK(pv[offset] == (resources + offset + 1UL));
   CHECK(*new_it == pv[offset]);
-
 
   delete[] resources;
 }

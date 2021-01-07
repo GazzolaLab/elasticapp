@@ -3,14 +3,16 @@
 
 #define CATCH_CONFIG_RUNNER
 #include <cstdio>
-#include "catch.hpp"
 
-#include "tests/Unit/TestingFramework.hpp"
-#include "tests/Unit/RunTestsRegister.hpp" // Auto-generated file
+#include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Framework/TestingFramework.hpp"
+#include "RunTestsRegister.hpp"  // Auto-generated file
+#include "catch.hpp"
 
 int main(int argc, char* argv[]) {
   // global setup...
-  register_run_tests_libs(); // From RunTestsRegister
+  register_run_tests_libs();  // From RunTestsRegister
+  enable_floating_point_exceptions();
 
   int result = Catch::Session().run(argc, argv);
 
@@ -19,5 +21,8 @@ int main(int argc, char* argv[]) {
   return result;
 }
 
-// [[OutputRegex, I failed]]
-ELASTICA_TEST_CASE("TestFramework.Hello", "[Unit]") { printf("I failed"); }
+// [[OutputRegex, I passed]]
+ELASTICA_TEST_CASE("TestFramework.Hello", "[Unit]") {
+  OUTPUT_TEST();
+  printf("I failed");
+}
