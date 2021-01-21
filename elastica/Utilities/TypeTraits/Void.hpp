@@ -15,6 +15,7 @@
 
 namespace cpp17 {
 
+  //****************************************************************************
   /*!\brief Given a set of types, returns `void`
   // \ingroup type_traits
   //
@@ -38,13 +39,14 @@ namespace cpp17 {
      \endcode
   //
   // \example
-  // \snippet Utilities/Test_TypeTraits.cpp void_t_example
+  // \snippet TypeTraits/Test_Void.cpp void_t_example
+  //
+  // \tparam Ts... A set of types
   //
   // \see std::void_t
-  //
-  // \tparam Ts the set of types
   */
   template <typename... Ts>
   using void_t = void;
+  //****************************************************************************
 
 }  // namespace cpp17
