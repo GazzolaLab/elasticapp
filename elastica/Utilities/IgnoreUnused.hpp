@@ -87,7 +87,7 @@ namespace elastica {
 
   //****************************************************************************
   /*!\brief Suppression of unused parameter warnings.
-  // \ingroup UtilitiesGroup
+  // \ingroup utils
   //
   // \details
   // The ignore_unused function provides the functionality to suppress warnings
@@ -121,12 +121,10 @@ namespace elastica {
 
   //****************************************************************************
   /*!\brief Suppression of unused parameter warnings.
-  // \ingroup UtilitiesGroup
-  //
-  // \return void
+  // \ingroup utils
   //
   // This version takes in no parameters an is intended for ignored aliases. To
-  // suppress unused typedef/aliase warnings, one can simply
+  // suppress unused typedef/aliases warnings, one can simply
      \code
      void f(){
         using type = int;
@@ -141,27 +139,44 @@ namespace elastica {
   //****************************************************************************
 
   //****************************************************************************
-  // ELASTICA_UNUSED macro
+  /*!\brief Mark a unused type to be ignored
+  // \ingroup utils
+  //
+  // \details
+  // Helper macro for marking types and aliases as unused, used like:
+  //
+  // \code
+      using range_type IGNORE_UNUSED = decltype(range(2,4));
+      // range_type is not used below
+     \endcode
+  //
+  // This is quite useful in compile-time metaprogramming when you want to check
+  // whether a list of types meet a particular requirement. As opposed to
+  // ignore_unused(), you can use this macro even in a non-main() context.
+  //
+  // \note
   // Newer gcc, clang need special treatment to suppress unused typedef
   // warnings.
+  */
+  //****************************************************************************
 #if defined(__clang__)
 #if defined(__apple_build_version__)
 #if (__clang_major__ >= 7)
-#define ELASTICA_UNUSED __attribute__((__unused__))
+#define IGNORE_UNUSED __attribute__((__unused__))
 #endif  // (__clang_major__ >= 7)
 #elif ((__clang_major__ == 3) && (__clang_minor__ >= 6)) || \
     (__clang_major__ > 3)
-#define ELASTICA_UNUSED __attribute__((__unused__))
+#define IGNORE_UNUSED __attribute__((__unused__))
 #endif  // ((__clang_major__ == 3) && (__clang_minor__ >= 6))
         //   || (__clang_major__ > 3)
 #elif defined(__GNUC__)
 #if ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 8)) || (__GNUC__ > 4)
-#define ELASTICA_UNUSED __attribute__((__unused__))
+#define IGNORE_UNUSED __attribute__((__unused__))
 #endif  // ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 8)) || (__GNUC__ > 4)
 #endif  // defined(__GNUC__)
-#if !defined(ELASTICA_UNUSED)
-#define ELASTICA_UNUSED
-#endif  // !defined(ELASTICA_UNUSED_TYPEDEF)
+#if !defined(IGNORE_UNUSED)
+#define IGNORE_UNUSED
+#endif  // !defined(IGNORE_UNUSED_TYPEDEF)
   //****************************************************************************
 
 }  // namespace elastica
