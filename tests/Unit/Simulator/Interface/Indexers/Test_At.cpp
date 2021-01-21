@@ -1,0 +1,208 @@
+//
+// Created by Tejaswin Parthasarathy on 1/12/21.
+//
+
+#include <array>
+#include <utility>
+
+#include "Framework/TestingFramework.hpp"
+#include "MockSystems.hpp"
+#include "Simulator/Interface/Indexers/At.hpp"
+#include "Simulator/Interface/Indexers/Range.hpp"
+#include "Utilities/End.hpp"
+#include "Utilities/MakeArray.hpp"
+
+namespace {
+
+  using namespace elastica::interface::detail;
+  using namespace elastica::interface;
+  using elastica::end;
+  using elastica::from_end;
+
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Indexers.At.constructor",
+                     "[Unit][Simulator][Interface]") {
+    constexpr auto Nints = 1U;
+    constexpr auto Nends = 1U;
+    {  // pair constructor
+      std::array<int, Nints> first{1};
+      std::array<from_end, Nints> second{(end - 2)};
+      At_t<Nints, Nends> at{std::make_pair(first, second)};
+      CHECK(at.indices_.first[0] == 1);
+      CHECK(at.indices_.second[0].i == 2);
+    }
+
+    {
+      // piecewise
+      std::array<int, Nints> first{3};
+      std::array<from_end, Nints> second{(end - 5)};
+      At_t<Nints, Nends> at(first, second);
+      CHECK(at.indices_.first[0] == 3);
+      CHECK(at.indices_.second[0].i == 5);
+    }
+  }
+
+  template <std::uint8_t Nints, std::uint8_t Nends>
+  bool check(
+      elastica::interface::detail::At_t<Nints, Nends> const& first,
+      elastica::interface::detail::At_t<Nints, Nends> const& second) noexcept {
+    bool passed = true;
+    for (std::uint8_t i = 0; i < Nints; ++i) {
+      passed &= (first.indices_.first[i] == second.indices_.first[i]);
+    }
+    for (std::uint8_t i = 0; i < Nends; ++i) {
+      passed &= (first.indices_.second[i].i == second.indices_.second[i].i);
+    }
+    return passed;
+  }
+
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Indexers.At.at",
+                     "[Unit][Simulator][Interface]") {
+    {  // no ends
+      auto first = make_array(1, 3, 5);
+      constexpr auto Nints = std::tuple_size<decltype(first)>::value;
+      constexpr auto Nends = 0UL;
+      {  // prvalue
+        auto x = at(1, 3, 5);
+        CHECK(check(x, At_t<Nints, Nends>(first, {})));
+      }
+
+      {  // lvalue
+        int a = 1, b = 3, c = 5;
+        auto x = at(a, b, c);
+        CHECK(check(x, At_t<Nints, Nends>(first, {})));
+      }
+    }
+
+    {  // no ends
+      auto second = make_array(end - 2, end - 4, end - 6);
+      constexpr auto Nints = 0UL;
+      constexpr auto Nends = std::tuple_size<decltype(second)>::value;
+      {  // prvalue
+        auto x = at(end - 2, end - 4, end - 6);
+        CHECK(check(x, At_t<Nints, Nends>({}, second)));
+      }
+      {  // lvalue
+        auto a = end - 2;
+        auto b = end - 4;
+        auto c = end - 6;
+        auto x = at(a, b, c);
+        CHECK(check(x, At_t<Nints, Nends>({}, second)));
+      }
+    }
+
+    {  // both
+      auto first = make_array(1, 3, 5);
+      auto second = make_array(end - 2, end - 4, end - 6);
+      constexpr auto Nints = std::tuple_size<decltype(first)>::value;
+      constexpr auto Nends = std::tuple_size<decltype(second)>::value;
+      /// [at_example]
+      auto x = at(1, end - 2, end - 4, 3, 5, end - 6);
+      /// [at_example]
+      CHECK(check(x, At_t<Nints, Nends>(first, second)));
+    }
+  }
+
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Indexers.At.at_for_range",
+                     "[Unit][Simulator][Interface]") {
+    {  // constepxr
+      /// [at_range_example]
+      auto r = range(1, 10, 1);
+      static_assert(&r == &at(r), "Invariant violated!");
+      /// [at_range_example]
+    }
+
+    {
+      // lvalue
+      auto r = range(1, 10, 1);
+      CHECK(&r == &at(r));
+    }
+
+    {
+      // const lvalue
+      auto const r = range(1, 10, 1);
+      CHECK(&r == &at(r));
+    }
+
+    {
+      // prvalue
+      CHECK(1 == at(range(1, 10, 1)).start_);
+      CHECK(10 == at(range(1, 10, 1)).stop_);
+      CHECK(1 == at(range(1, 10, 1)).start_);
+    }
+
+    {  // constexpr
+      static_assert(1 == at(range(1, 10, 1)).start_,
+                    "constexpr range forwarding failure");
+      static_assert(10 == at(range(1, 10, 1)).stop_,
+                    "constexpr range forwarding failure");
+    }
+
+    {
+      // xrvalue
+      auto r = range(1, 10, 1);
+      CHECK(10 == at(std::move(r)).stop_);
+    }
+  }
+
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Indexers.At.to_numeric",
+                     "[Unit][Simulator][Interface]") {
+    auto sys = NoThrowSystem{};
+    {  // good types
+      /// [to_numeric_example]
+      auto x = at(1, 3, 5);
+      auto numerical_indices = to_numeric(x, sys);
+      /// [to_numeric_example]
+      CHECK(numerical_indices.args == make_array(2, 4, 6));
+    }
+
+    {  // good types
+      auto x = at(end - 1, end - 3, end - 5);
+      auto numerical_indices = to_numeric(x, sys);
+      CHECK(numerical_indices.args == make_array(2, 4, 6));
+    }
+
+    {  // good types
+      auto x = at(1, end - 2, end - 4, 3, 5, end - 6);
+      auto numerical_indices = to_numeric(x, sys);
+      // returns an ordered index of (1, 3, 5, end - 2 , end -4 , end - 6);
+      CHECK(numerical_indices.args == make_array(2, 4, 6, 3, 5, 7));
+    }
+  }
+
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Indexers.At.to_numeric_runtime",
+                     "[Unit][Simulator][Interface]") {
+    auto sys = NoThrowSystem{};
+    using concrete_at_type = decltype(at(1, end - 2, end - 4, 3, 5, end - 6));
+    /// [to_numeric_runtime_example]
+    auto at_ptr = std::unique_ptr<At_base_t>(
+        new concrete_at_type(at(1, end - 2, end - 4, 3, 5, end - 6)));
+    auto numerical_indices_ptr = to_numeric(std::move(at_ptr), sys);
+    // access like a ptr with At_base_t interface
+    auto const size = numerical_indices_ptr->size();
+    /// [to_numeric_runtime_example]
+    auto x = make_array(2, 4, 6, 3, 5, 7);
+    CHECK(size == 6);
+    for (int i = 0; i < size; ++i) {
+      CHECK(numerical_indices_ptr->data()[i] == x[i]);
+    }
+  }
+
+  // [[OutputRegex, "as the number of degrees of freedom is only 100"]]
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Indexers.At.to_numeric_throws",
+                     "[Unit][Simulator][Interface]") {
+    ERROR_TEST();
+    auto sys = ThrowSystem{};
+    {  //
+      auto x = at(1, 3, 5);
+      CHECK_THROWS_WITH(to_numeric(x, sys),
+                        Catch::Contains("as the number of degrees of freedom"));
+    }
+
+    {  //
+      auto x = at(end - 2, end - 5, end - 10);
+      CHECK_THROWS_WITH(to_numeric(x, sys),
+                        Catch::Contains("as the number of degrees of freedom"));
+    }
+  }
+
+}  // namespace
