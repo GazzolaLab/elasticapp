@@ -69,6 +69,8 @@ EXTRACT_STATIC         = NO
 
 EXTRACT_LOCAL_CLASSES  = NO
 
+EXTRACT_ANON_NSPACES   = YES
+
 # We want to be able to have undocumented members, such as size() that show
 # up but what they do is rather obvious.
 WARN_IF_UNDOCUMENTED   = NO
@@ -83,7 +85,9 @@ GENERATE_BUGLIST       = NO
 
 STRIP_CODE_COMMENTS    = NO
 
-# CITE_BIB_FILES         = @PROJECT_SOURCE_DIR@/docs/References.bib
+# CITE_BIB_FILES       = @PROJECT_SOURCE_DIR@/docs/References.bib
+
+# ENABLED_SECTIONS       = ELASTICA_INTERNAL
 
 #---------------------------------------------------------------------------
 # configuration options related to the input files
