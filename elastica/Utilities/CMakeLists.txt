@@ -4,6 +4,7 @@ set(LIBRARY Utilities)
 
 add_elastica_library(${LIBRARY})
 
+add_subdirectory(Geometry)
 add_subdirectory(Logging)
 add_subdirectory(Math)
 add_subdirectory(MemoryMeter)
@@ -30,8 +31,11 @@ elastica_target_headers(
         CRTP.hpp
         DefineTypes.h
         Demangle.hpp
+        Defer.hpp
+        End.hpp
         FakeVirtual.hpp
         ForceInline.hpp
+        # Geometry.hpp
         IgnoreUnused.hpp
         Invoke.hpp
         ListRequires.hpp
@@ -45,6 +49,8 @@ elastica_target_headers(
         MemoryPool.hpp
         NamedTemplate.hpp
         NamedType.hpp
+        NumericAt.hpp
+        NumericRange.hpp
         NonCopyable.hpp
         NonCreatable.hpp
         NoSuchType.hpp
@@ -56,6 +62,7 @@ elastica_target_headers(
         Registration.hpp
         Requires.hpp
         Singleton.hpp
+        StaticConst.hpp
         StdHelpers.hpp
         SystemClock.hpp
         TimeStamps.h
