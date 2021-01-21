@@ -4,6 +4,7 @@
 
 #include <functional>
 
+#include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsCallable.hpp"
 
@@ -43,13 +44,13 @@ namespace {
   enum class StrongTypeEnum {};
 
   template <typename T>
-  struct CheckPositive {
+  struct CheckNotCallable : std::true_type {
     static_assert(not tt::is_callable<T>::value,
                   "A non-callable was recognized as callable");
   };
 
   template <typename T>
-  struct CheckNegative {
+  struct CheckCallable : std::true_type {
     static_assert(tt::is_callable<T>::value,
                   "A callable was recognized as a non-callable");
   };
@@ -79,17 +80,13 @@ namespace {
       tmpl::append<expected_negative_references, expected_negative_types,
                    expected_negative_functions>;
   using positives =
-      tmpl::list<expected_positive_references, expected_positive_functions>;
+      tmpl::append<expected_positive_references, expected_positive_functions>;
 
-  template <typename T>
-  using negative_checker = CheckNegative<T>;
-  using negative_checks =
-      tmpl::transform<negatives, tmpl::bind<negative_checker, tmpl::_1>>;
+  using negative_checks IGNORE_UNUSED =
+      tmpl::transform<negatives, CheckNotCallable<tmpl::_1>>;
 
-  template <typename T>
-  using positive_checker = CheckNegative<T>;
-  using positive_checks =
-      tmpl::transform<positives, tmpl::bind<positive_checker, tmpl::_1>>;
+  using positive_checks IGNORE_UNUSED =
+      tmpl::transform<positives, CheckCallable<tmpl::_1>>;
 
   /// [is_callable_example]
   static_assert(tt::is_callable<std::function<int()>>::value,
