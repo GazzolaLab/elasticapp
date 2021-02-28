@@ -24,7 +24,7 @@ namespace {
   }
 
   void test_at_with_lvalue_inputs() {
-    int x = 1, y = 2, z = 3;
+    std::size_t x = 1, y = 2, z = 3;
     auto b{numeric_at(x, y, z)};
     static_assert(std::is_same<decltype(b), numeric_at_t<3>>::value, "Oops!");
     // invariance in inputs
@@ -43,7 +43,7 @@ namespace {
 
   void test_at_with_prvalue_inputs() {
     /// [numeric_at_example]
-    auto b(numeric_at(1, 2, 3, 4));
+    auto b(numeric_at(1UL, 2UL, 3UL, 4UL));
     /// [numeric_at_example]
     static_assert(std::is_same<decltype(b), numeric_at_t<4>>::value, "Oops!");
     CHECK(b.args[0] == 1);
@@ -53,8 +53,8 @@ namespace {
   }
 
   void test_at_with_xvalue_inputs() {
-    int y = 2;
-    int z = 3;
+    std::size_t y = 2;
+    std::size_t z = 3;
     auto b{numeric_at(std::move(y), std::move(z))}; /* NOLINT*/
     static_assert(std::is_same<decltype(b), numeric_at_t<2>>::value, "Oops!");
     CHECK(b.args[0] == 2);
@@ -68,8 +68,24 @@ namespace {
     test_at_with_xvalue_inputs();
   }
 
+  ELASTICA_TEST_CASE("Unit.Simulator.Utilities.At.sort_and_check_duplicates",
+                     "[Unit][Simulator][Utilities]") {
+    {
+      // No throw
+      /// [scd_example]
+      auto b = sort_and_check_duplicates(numeric_at(124UL, 22UL, 34UL, 42UL));
+      /// [scd_example]
+    }
+    {
+      // throw
+      CHECK_THROWS_WITH(sort_and_check_duplicates(numeric_at(22UL, 22UL, 1UL, 42UL)),
+                        Catch::Contains("Repeated elements"));
+    }
+  }
+
+  /*
   void test_sanitize_for_lvalues() {
-    auto b{numeric_at(124, 22, 34, 42)};
+    auto b{numeric_at(124UL, 22UL, 34Ul, 42UL)};
     auto c(sanitize(b, 100));
     CHECK(b.args[0] == 124);
     CHECK(b.args[1] == 22);
@@ -80,7 +96,7 @@ namespace {
   }
 
   void test_sanitize_for_prvalues() {
-    auto c(sanitize(numeric_at(124, 22, 34, 42), 100));
+    auto c(sanitize(numeric_at(124UL, 22UL, 34UL, 42UL), 100));
     CHECK(c.args[0] == 124);
     CHECK(c.args[1] == 22);
     CHECK(c.args[2] == 34);
@@ -88,7 +104,7 @@ namespace {
   }
 
   void test_sanitize_for_xvalues() {
-    auto b(numeric_at(124, 22, 34, 42));
+    auto b(numeric_at(124UL, 22UL, 34UL, 42UL));
     auto c(sanitize(std::move(b), 100));
     CHECK(c.args[0] == 124);
     CHECK(c.args[1] == 22);
@@ -102,6 +118,7 @@ namespace {
     test_sanitize_for_prvalues();
     test_sanitize_for_xvalues();
   }
+
 
   void test_negative_indices_in_sanitize_for_lvalues() {
     auto b{numeric_at(124, -22, -34, 42, -1, -2, -3)};
@@ -143,7 +160,7 @@ namespace {
   ELASTICA_TEST_CASE(
       "Unit.Simulator.Utilities.At.sanitize_check_range_invariance",
       "[Unit][Simulator][Utilities]") {
-    auto c(check_range(numeric_at(24, 32, 1, 99), 100));
+    auto c(check_range(numeric_at(24UL, 32UL, 1UL, 99UL), 100));
     CHECK(c.args[0] == 24);
     CHECK(c.args[1] == 32);
     CHECK(c.args[2] == 1);
@@ -183,5 +200,6 @@ namespace {
                     std::range_error);
     //    auto c(check_range(numeric_at(124, -32, 1, 199), 100));
   }
+  */
 
 }  // namespace

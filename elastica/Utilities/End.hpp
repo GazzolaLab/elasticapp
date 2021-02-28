@@ -103,7 +103,7 @@ namespace elastica {
   // \ingroup utils
   */
   struct from_end {
-    int i;
+    std::size_t i;
   };
   //****************************************************************************
 
@@ -130,7 +130,7 @@ namespace elastica {
 // \snippet Test_End.cpp end_indexing_example
 */
 ELASTICA_ALWAYS_INLINE constexpr elastica::from_end operator-(
-    decltype(elastica::end) /* meta */, int i) {
+    decltype(elastica::end) /* meta */, std::size_t i) {
   assert(i >= 0);
   return {i};
 }
@@ -151,7 +151,7 @@ ELASTICA_ALWAYS_INLINE constexpr elastica::from_end operator-(
 // \snippet Test_End.cpp end_indexing_example
 */
 ELASTICA_ALWAYS_INLINE constexpr elastica::from_end operator-(
-    elastica::from_end end_marker, int i) {
+    elastica::from_end end_marker, std::size_t i) {
   assert(i >= 0);
   return {end_marker.i + i};
 }

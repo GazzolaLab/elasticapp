@@ -18,8 +18,10 @@
 //******************************************************************************
 #include <type_traits>
 
+#include "ErrorHandling/Assert.hpp"
 #include "Utilities/NonCopyable.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/TypeTraits/Cpp17.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 
 namespace elastica {
@@ -43,7 +45,7 @@ namespace elastica {
     //
     // \tparam F The arithmetic type of the range
     */
-    template <typename F>
+    template <typename F, typename Step = F>
     struct NumericRangeImpl : public NonCopyable {
       //**Constructors**********************************************************
       /*!\name Constructors */
@@ -52,7 +54,7 @@ namespace elastica {
       //************************************************************************
       /*!\brief Default constructor.
        */
-      constexpr NumericRangeImpl(F st, F so, F se) noexcept(
+      constexpr NumericRangeImpl(F st, F so, Step se) noexcept(
           std::is_nothrow_move_constructible<F>::value)
           : start_(std::move(st)), stop_(std::move(so)), step_(std::move(se)){};
       //************************************************************************
@@ -85,7 +87,7 @@ namespace elastica {
       //! The stop index of range
       F const stop_;
       //! The step of range
-      F const step_;
+      Step const step_;
       //************************************************************************
     };
     /*! \endcond */
@@ -102,7 +104,7 @@ namespace elastica {
     /*!\brief Alias declaration for an integer NumericRangeImpl.
     // \ingroup utils
     */
-    using NumericRange = NumericRangeImpl<int>;
+    using NumericRange = NumericRangeImpl<std::size_t, int>;
     /*! \endcond */
     //**************************************************************************
 
@@ -120,6 +122,34 @@ namespace elastica {
     struct IsNumericRange : ::tt::is_a<detail::NumericRangeImpl, T> {};
     //**************************************************************************
   }  // namespace tt
+
+  namespace detail {
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    /*!\brief Idiomatic way to construct a half-open numeric range
+    //
+    // \details
+    // The range is closed from left and open from right and models
+    // \f$ [a, b) \f$, where \f$ a \f$ is the start and \f$ b \f$ is the stop.
+    //
+    // \example
+    // \snippet Test_NumericRange.cpp numeric_range_example
+    //
+    // \param start Start of the range
+    // \param stop Stop of the range
+    // \param step Step of the range
+    */
+    template <typename F, typename Step>
+    inline constexpr auto numeric_range(F start, F stop, Step step = 1) noexcept(
+        noexcept(NumericRangeImpl<F, Step>{start, stop, step}))
+        -> NumericRangeImpl<F, Step> {
+      return detail::NumericRangeImpl<F, Step>{start, stop, step};
+    };
+    /*! \endcond */
+    //**************************************************************************
+
+  }  // namespace detail
 
   //============================================================================
   //
@@ -144,14 +174,24 @@ namespace elastica {
   // \note
   // - while the name is more verbose, it differentiates itself from interface::
   // range().
-  // - The parameters are restricted to C++ arithmetic types
+  // - The parameters are restricted to C++ integral but non-boolean types
   */
-  template <typename F, Requires<std::is_arithmetic<F>::value> = nullptr>
-  inline constexpr auto make_numeric_range(
-      F start, F stop,
-      F step = 1) noexcept(noexcept(detail::NumericRangeImpl<F>{
-      start, stop, step})) -> detail::NumericRangeImpl<F> {
-    return detail::NumericRangeImpl<F>{start, stop, step};
+  template <typename F, typename Step = int>
+  inline decltype(auto) numeric_range(F start, F stop, Step step = 1) {
+    static_assert(
+        std::is_integral<F>::value && not std::is_same<F, bool>::value,
+        "Type must be an arithmetic, non-boolean type");
+    static_assert(
+        std::is_integral<Step>::value && not std::is_same<Step, bool>::value,
+        "Step must be an arithmetic, non-boolean type");
+
+    ELASTICA_ASSERT(start != stop, "Range start and end cannot be equal");
+    ELASTICA_ASSERT(step != Step(0), "Step size cannot be zero");
+    const bool has_positive_step(step > Step(0));
+    ELASTICA_ASSERT(((has_positive_step && start <= stop) ||
+                     (!has_positive_step && start >= stop)),
+                    "Step moves away from end");
+    return detail::numeric_range(start, stop, step);
   }
   //****************************************************************************
 

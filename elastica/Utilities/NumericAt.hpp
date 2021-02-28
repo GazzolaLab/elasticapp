@@ -18,6 +18,7 @@
 //******************************************************************************
 #include <array>
 #include <cstdint>
+#include <sstream>
 
 #include "Utilities/Invoke.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -70,13 +71,13 @@ namespace elastica {
       //************************************************************************
       /*!\brief Gets the indices buffer
        */
-      virtual int* data() noexcept = 0;
+      virtual std::size_t* data() noexcept = 0;
       //************************************************************************
 
       //************************************************************************
       /*!\brief Gets the number of indices
        */
-      virtual int size() const noexcept = 0;
+      virtual std::size_t size() const noexcept = 0;
       //************************************************************************
 
       //@}
@@ -94,7 +95,7 @@ namespace elastica {
     struct numeric_at_t final : numeric_at_base_t {
       //**Type definitions******************************************************
       //! Type of array for integral indices
-      using type = std::array<int, N>;
+      using type = std::array<std::size_t, N>;
       //************************************************************************
 
       //**Constructors**********************************************************
@@ -133,13 +134,13 @@ namespace elastica {
       //************************************************************************
       /*!\brief Gets the indices buffer
        */
-      int* data() noexcept override { return args.data(); }
+      std::size_t* data() noexcept override { return args.data(); }
       //************************************************************************
 
       //************************************************************************
       /*!\brief Gets the number of indices
        */
-      int size() const noexcept override { return N; }
+      std::size_t size() const noexcept override { return N; }
       //************************************************************************
 
       //@}
@@ -161,7 +162,7 @@ namespace elastica {
     struct runtime_numeric_at_t final : numeric_at_base_t {
       //**Type definitions******************************************************
       //! Type of storage for integral indices
-      using type = std::vector<int>;
+      using type = std::vector<std::size_t>;
       //************************************************************************
 
       //**Constructors**********************************************************
@@ -180,7 +181,7 @@ namespace elastica {
       /*!\brief Move constructor.
        */
       runtime_numeric_at_t(runtime_numeric_at_t&& other) noexcept
-          : args{std::move(other.args)} {};
+          : args(std::move(other.args)){};
       //************************************************************************
 
       //@}
@@ -208,19 +209,19 @@ namespace elastica {
       //************************************************************************
       /*!\brief Gets the indices buffer
        */
-      int* data() noexcept override { return args.data(); }
+      std::size_t* data() noexcept override { return args.data(); }
       //************************************************************************
 
       //************************************************************************
       /*!\brief Gets the number of indices
        */
-      int size() const noexcept override { return args.size(); }
+      std::size_t size() const noexcept override { return args.size(); }
       //@}
       //************************************************************************
 
       //**Member variables******************************************************
       //! The runtime indices
-      type args;
+      type args{};
       //************************************************************************
     };
     /*! \endcond */
@@ -236,16 +237,17 @@ namespace elastica {
 
   //****************************************************************************
   /*!\brief Constructs a compact set of integral indices from parameters
-  //
-  // \example
-  // \snippet Test_NumericAt.cpp numeric_at_example
-  //
-  //
-  // \param x An integral index
-  // \param ...indices Other integral indices
+   * \ingroup utils
+   *
+   * \example
+   * \snippet Test_NumericAt.cpp numeric_at_example
+   *
+   *
+   * \param x An integral index
+   * \param ...indices Other integral indices
   */
   template <typename... Ints>
-  auto numeric_at(int x, Ints... ints)
+  inline constexpr auto numeric_at(std::size_t x, Ints... ints)
       -> detail::numeric_at_t<sizeof...(Ints) + 1UL> {
     return detail::numeric_at_t<sizeof...(Ints) + 1UL>{make_array(x, ints...)};
     //      sizeof...(Ints) > 0 ? make_array(x, ints...) : make_array<1UL,
@@ -254,9 +256,59 @@ namespace elastica {
   }
   //****************************************************************************
 
+  //****************************************************************************
+  /*!\brief Sorts and checks duplicates within a compact set of integral indices
+   * \ingroup utils
+   *
+   * \details
+   * Sorts and checks for duplicates. If duplicates exist, an exception is
+   * raised
+   *
+   * \example
+   * \snippet Test_NumericAt.cpp scd_example
+   *
+   * \param ats Numeric indices to be sorted and checked
+   * \return ats
+   */
+  template <std::uint8_t N>
+  inline auto sort_and_check_duplicates(detail::numeric_at_t<N>&& ats)
+      -> detail::numeric_at_t<N> {
+    std::sort(std::begin(ats.args), std::end(ats.args));
+    if (std::adjacent_find(std::begin(ats.args), std::end(ats.args)) !=
+        std::end(ats.args)) {
+      throw std::logic_error("Repeated elements in the set");
+    }
+    return std::move(ats);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Sorts and checks duplicates within a compact set of integral indices
+   * \ingroup utils
+   *
+   * \details
+   * Runtime equivalent of sort_and_check_duplicates()
+   *
+   * \param ats A unique pointer to numeric indices to be sorted and checked
+   * \return ats
+   */
+  template <typename D>
+  inline auto sort_and_check_duplicates(
+      std::unique_ptr<detail::numeric_at_base_t, D>&& ats)
+      -> std::unique_ptr<detail::numeric_at_base_t, D> {
+    std::sort(ats->data(), ats->data() + ats->size());
+    if (std::adjacent_find(ats->data(), ats->data() + ats->size()) !=
+        (ats->data() + ats->size())) {
+      throw std::logic_error("Repeated elements in the set");
+    }
+    return std::move(ats);
+  }
+  //****************************************************************************
+
   /////////// The following functions are no longer used ///////////////////////
   //****************************************************************************
   /*! \cond ELASTICA_INTERNAL */
+  /*
   template <std::uint8_t N>
   auto sanitize(detail::numeric_at_t<N> const& index_set,
                 std::size_t n_dofs) noexcept -> detail::numeric_at_t<N> {
@@ -381,6 +433,7 @@ namespace elastica {
       std::size_t n_dofs) -> std::unique_ptr<detail::numeric_at_base_t, D> {
     return check_range(sanitize(std::move(index_set), n_dofs), n_dofs);
   }
+  */
   /*! \endcond */
   //****************************************************************************
 
