@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "Utilities/TMPL.hpp"
+
 template <typename T>
 struct counter {
   static int objects_created;
@@ -46,3 +48,19 @@ template <typename T>
 int counter<T>::objects_copied = 0;
 template <typename T>
 int counter<T>::objects_moved = 0;
+
+namespace lists {
+
+  using arithmetics =
+      tmpl::list<char, signed char, unsigned char, wchar_t, char16_t, char32_t,
+                 int, unsigned int, long, unsigned long, long long,
+                 unsigned long long, short, unsigned short, float, double,
+                 long double, bool>;
+  using signed_integers = tmpl::list<signed char, int, long, long long, short>;
+  using unsigned_integers =
+      tmpl::list<bool, char, unsigned char, unsigned int, unsigned long,
+                 unsigned long long, unsigned short>;
+  using integers = tmpl::append<unsigned_integers, signed_integers>;
+  using floating_points = tmpl::list<float, double, long double>;
+
+}  // namespace lists
