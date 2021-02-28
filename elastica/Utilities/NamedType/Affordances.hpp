@@ -36,7 +36,7 @@ namespace named_type {
   // \ingroup named_type
   //
   // \example
-  // \snippet TO
+  // \snippet TODO
   //
   // \tparam T Any NamedType
   */
@@ -71,9 +71,8 @@ namespace named_type {
     //**Get method**************************************************************
     /*!\brief Access to the underlying value
     //
-    // returns mutable reference to the stored value
+    // returns mutable reference to the stored value, see NamedType::get_value()
     */
-    template <typename... Args>
     inline constexpr decltype(auto) get() & noexcept {
       return self().get_value();
     }
@@ -82,11 +81,32 @@ namespace named_type {
     //**Get method**************************************************************
     /*!\brief Access to the underlying value
     //
-    // returns constant reference to the stored value
+    // returns constant reference to the stored value, see
+    // NamedType::get_value()
     */
-    template <typename... Args>
     inline constexpr decltype(auto) get() const& noexcept {
       return self().get_value();
+    }
+    //**************************************************************************
+
+    //**Get method**************************************************************
+    /*!\brief Access to the underlying value
+    //
+    // returns mutable reference to the stored value, see NamedType::get_value()
+    */
+    inline constexpr decltype(auto) get() && noexcept {
+      return static_cast<T&&>(self()).get_value();
+    }
+    //**************************************************************************
+
+    //**Get method**************************************************************
+    /*!\brief Access to the underlying value
+    //
+    // returns constant reference to the stored value,
+    // see NamedType::get_value()
+    */
+    inline constexpr decltype(auto) get() const&& noexcept {
+      return static_cast<T const&&>(self()).get_value();
     }
     //**************************************************************************
   };
@@ -111,7 +131,7 @@ namespace named_type {
   // \ingroup named_type
   //
   // \example
-  // \snippet TO
+  // \snippet TODO
   //
   // \tparam T Any NamedType
   */
