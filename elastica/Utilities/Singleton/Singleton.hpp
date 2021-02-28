@@ -84,9 +84,31 @@ namespace elastica {
 
   }  // namespace tt
 
-// Need to add Dependency to the list too, as dependencies rely
-// on instantiating the dependent singleton derived class using the static
-// instance method()
+//******************************************************************************
+/*!\brief Helper for establishing friendships with the base Singleton
+ * \ingroup singleton
+ *
+ * \details
+ * Helper macro for establishing friendships with the base Singleton and other
+ * helpers (type traits, dependencies)
+ *
+ * \usage
+ * While defining the class deriving from Singleton, use this macro as shown
+ * below. The access specifier does not matter (the macro can be placed within
+ * the private, protected or public context.
+   \code
+   class MySingleton : private Singleton<MySingleton>{
+        //  ...details...
+        BEFRIEND_SINGLETON;
+   };
+   \endcode
+ * which hides the details of Singleton implementation from the user.
+ *
+ * \note
+ * We add Dependency to the list too, as dependencies rely
+ * on instantiating the dependent singleton derived class using the static
+ * instance method()
+ */
 #define BEFRIEND_SINGLETON                                             \
   template <typename, class...>                                        \
   friend class ::elastica::Singleton;                                  \
