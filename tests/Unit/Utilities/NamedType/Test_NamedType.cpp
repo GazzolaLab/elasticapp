@@ -290,7 +290,7 @@ namespace {
 
     tmpl::for_each<basic_types>([](auto t) {
       using basic_type = tmpl::type_from<decltype(t)>;
-      using P = NamedType<basic_type, struct Parameter>;
+      // using P = NamedType<basic_type, struct Parameter>;
       using SettableP = NamedType<basic_type, struct Parameter, Gettable>;
       {  // lvalue constructor
         auto val(static_cast<basic_type>(3.14159));
@@ -323,8 +323,8 @@ namespace {
 
   // https://github.com/joboccara/NamedType/blob/master/test/tests.cpp
   struct throw_on_construction {
-    throw_on_construction() { throw 42; }
-    explicit throw_on_construction(int) { throw "exception"; }
+    [[noreturn]] throw_on_construction() { throw 42; }
+    [[noreturn]] explicit throw_on_construction(int) { throw "exception"; }
   };
 
   ELASTICA_TEST_CASE("Unit.Utilities.NamedType.noexcept", "[Unit][Utilities]") {

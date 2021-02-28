@@ -14,8 +14,10 @@ namespace {
 
   using namespace named_type;
 
+  /// [arithmetic_example]
   template <typename Arith>
   using Arithmetic = NamedType<Arith, struct ArithmeticParameter, Gettable>;
+  /// [arithmetic_example]
 
   // UDC
   struct D {
@@ -31,7 +33,11 @@ namespace {
       using basic_type = tmpl::type_from<decltype(t)>;
       {  // lvalue constructor
         auto val(static_cast<basic_type>(3.14159));
+
+        /// [make_arithmetic_example]
         auto n = make_named<Arithmetic>(val);
+        /// [make_arithmetic_example]
+
         CHECK(approx(n.get()) == val);
         static_assert(
             cpp17::is_same_v<basic_type, typename decltype(n)::UnderlyingType>,
@@ -98,8 +104,8 @@ namespace {
   }
 
   struct throw_on_construction {
-    throw_on_construction() { throw 42; }
-    explicit throw_on_construction(int) { throw "exception"; }
+    [[noreturn]] throw_on_construction() { throw 42; }
+    [[noreturn]] explicit throw_on_construction(int) { throw "exception"; }
   };
 
   ELASTICA_TEST_CASE("Unit.Utilities.NamedType.named_factory_noexcept",
