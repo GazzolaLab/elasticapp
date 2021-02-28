@@ -23,6 +23,7 @@
 #include "Utilities/NamedType/Types.hpp"
 ///
 #include "Utilities/NamedType/Affordances.hpp"
+#include "Utilities/NamedType/Aliases.hpp"
 #include "Utilities/NamedType/MakeNamed.hpp"
 #include "Utilities/NamedType/NamedType.hpp"
 #include "Utilities/NamedType/Traits.hpp"
