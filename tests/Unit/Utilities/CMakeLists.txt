@@ -11,15 +11,18 @@ set(LIBRARY_SOURCES
         Test_End.cpp
         Test_FakeVirtual.cpp
         Test_Invoke.cpp
+        Test_MakeNamedFunctor.cpp
         Test_NumericAt.cpp
         Test_NumericRange.cpp
         Test_Overloader.cpp
         Test_ProtocolHelpers.cpp
-        Test_PtrVector.cpp
+        # Test_PtrVector.cpp
         Test_PrettyType.cpp
         Test_Registration.cpp
         Test_Requires.cpp
         Test_StaticConst.cpp
+        Test_SystemClock.cpp
+        Test_TaggedTuple.cpp
         Test_TMPL.cpp
         Test_TypeTraits.cpp)
 

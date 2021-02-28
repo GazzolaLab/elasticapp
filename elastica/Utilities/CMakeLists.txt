@@ -42,6 +42,7 @@ elastica_target_headers(
         Logging.hpp
         MakeArray.hpp
         MakeCopyable.hpp
+        MakeNamedFunctor.hpp
         MakeSignalingNan.hpp
         MakeString.hpp
         Math.hpp
@@ -63,8 +64,10 @@ elastica_target_headers(
         Requires.hpp
         Singleton.hpp
         StaticConst.hpp
+        StaticWarning.hpp
         StdHelpers.hpp
         SystemClock.hpp
+        TaggedTuple.hpp
         TimeStamps.h
         Timing.h
         TMPL.hpp
