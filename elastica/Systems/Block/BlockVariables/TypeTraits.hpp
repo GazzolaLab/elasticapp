@@ -1,0 +1,182 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Block variable type traits
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
+#pragma once
+
+//******************************************************************************
+// Includes
+//******************************************************************************
+
+#include "Aliases.hpp"
+#include "Protocols.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/TMPL.hpp"
+
+namespace blocks {
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\brief Check whether a given type `Var` conforms to
+  // blocks::protocols::Variable
+  // \ingroup blocks
+  //
+  // \details
+  // Inherits from std::true_type if `Var` conforms to
+  // blocks::protocols::Variable, otherwise inherits from std::false_type.
+  //
+  // \usage
+  // For any type `Var`,
+     \code
+     using result = IsVariable<Var>;
+     \endcode
+  //
+  // \metareturns
+  // cpp17::bool_constant
+  //
+  // \semantics
+  // If the type `Var` conforms to protocols::Variable, then
+     \code
+     typename result::type = std::true_type;
+     \endcode
+  // otherwise
+     \code
+     typename result::type = std::false_type;
+     \endcode
+  //
+  // \example
+  // \snippet BlockVariables/Test_TypeTraits.cpp is_variable_example
+  //
+  // \tparam Var : the type to check
+  //
+  // \see blocks::protocols::Variable, blocks::Variable
+  */
+  template <typename Var>
+  struct IsVariable : public ::tt::conforms_to<Var, protocols::Variable> {};
+  /*! \endcond */
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Helper to form associations between a list of types `L` and the
+  // result of applying metafunction `Op` to types in `L`
+  // \ingroup blocks
+  //
+  // \details
+  // Forms associations (both-ways) between a types `T` belonging to a list `L`
+  // and the result type of applying metafunction `Op` to `T`
+  //
+  // \usage
+  // 1. For any metafunction `Op` and a list of types `L`
+     \code
+     using result = FormMap::from<Op>::to<L>;
+     \endcode
+  // forms an associative type map from `Op<T>` to `T` for `T` in `L`.
+  //
+  // 2. For any metafunction `Op` and a list of types `L`
+     \code
+     using result = FormMap::to<Op>::from<L>;
+     \endcode
+  // forms an associative type map from `T` to `Op<T>` for `T` in `L`.
+  //
+  // \metareturns
+  // A type `A` which is a map from `Op<T>` to `T` when invoked with signature
+  // (1) above and from `T` to `Op<T>` when invoked with signature (2), for all
+  // types `T` in the typelist `L`
+  //
+  // \example
+  // With the following setup
+  // \snippet BlockVariables/Test_TypeTraits.cpp map_setup
+  // we form `Op<T>` to `T` association using
+  // \snippet BlockVariables/Test_TypeTraits.cpp map_from_to_eg
+  // and we form `T` to `Op<T>` association using
+  // \snippet BlockVariables/Test_TypeTraits.cpp map_to_from_eg
+  //
+  // \tparam Op : meta-function to act on `T` in `L`
+  // \tparam L :  list of types
+  */
+  struct FormMap {
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    /*!\brief Helper for associating from `Op<T>` to `T`
+     * \ingroup blocks
+     */
+    template <template <typename> class Op>
+    struct from {
+      //**Type definitions******************************************************
+      //! Wrapper type to generate map
+      template <typename... T>
+      using TemplateMap_t = tmpl::map<tmpl::pair<Op<T>, T>...>;
+
+      //! Wrapped map type
+      template <typename L>
+      using to = tmpl::wrap<L, TemplateMap_t>;
+      //************************************************************************
+    };
+    /*! \endcond */
+    //**************************************************************************
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    /*!\brief Helper for associating from `T` to `Op<T>`
+     * \ingroup blocks
+     */
+    template <template <typename> class Op>
+    struct to {
+      //**Type definitions******************************************************
+      //! Wrapper type to generate map
+      template <typename... T>
+      using TemplateMap_t = tmpl::map<tmpl::pair<T, Op<T>>...>;
+
+      //! Wrapped map type
+      template <typename L>
+      using from = tmpl::wrap<L, TemplateMap_t>;
+      //************************************************************************
+    };
+    /*! \endcond */
+    //**************************************************************************
+  };
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Helper to form associations between Variables and Parameters
+  // \ingroup blocks
+  //
+  // \details
+  // Forms associations between underlying parameters `T` of a list of block
+  // variables `L`.
+  //
+  // \usage
+  // For a list of block variable types `L`
+     \code
+     using VariableMapping = blocks::VariableMapping<L>;
+     \endcode
+  // sets up the map from parameter_t<T> to `T` for `T` in `L`.
+  //
+  // \example
+  // With the following setup
+  // \snippet BlockVariables/Test_TypeTraits.cpp variable_mapping_eg
+  //
+  // \tparam TypeListOfVariables: A tmpl::list of Variables
+  */
+  template <typename TypeListOfVariables>
+  struct VariableMapping {
+    //**Type definitions********************************************************
+    //! Map from the underlying tag parameters to the variables
+    using Mapping = FormMap::from<parameter_t>::to<TypeListOfVariables>;
+    //! Lookup for the parameter
+    template <typename ParameterTag>
+    using variable_from = tmpl::lookup<Mapping, ParameterTag>;
+    //**************************************************************************
+  };
+  //****************************************************************************
+
+}  // namespace blocks

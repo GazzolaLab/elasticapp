@@ -1,7 +1,7 @@
 //==============================================================================
 /*!
 //  \file
-//  \brief Block definition
+//  \brief The Blocks module in \elastica
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
@@ -13,51 +13,141 @@
 
 #pragma once
 
-namespace elastica {
+//******************************************************************************
+// Includes
+//******************************************************************************
+////
+#include "TypeTraits.hpp"
+#include "Types.hpp"
+////
+//// include implementations now
+#include "Block/Block.hpp"
+#include "Block/BlockFacade.hpp"
+#include "Block/BlockSlice.hpp"
+#include "BlockVariables/BlockInitializer.hpp"
+#include "BlockVariables/BlockVariables.hpp"
 
-  //============================================================================
-  //
-  //  CLASS DEFINITION
-  //
-  //============================================================================
+//==============================================================================
+//
+//  DOXYGEN DOCUMENTATION
+//
+//==============================================================================
+
+//******************************************************************************
+/*!\defgroup blocks Blocks
+ * \ingroup systems
+ *
+ * The blocks module contains the interface for efficiently programming
+ * different \elastica entities (such as rods, rigid bodies etc.) and more
+ * generally, Lagrangian data-structures.
+ */
+//******************************************************************************
+
+/*!\brief Block data-structures and routines
+// \ingroup blocks
+*/
+namespace blocks {}
+
+namespace blocks {
+
+  namespace detail {
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    struct tag {
+      //**Type definitions******************************************************
+      //! Tag for marking a block variable
+      using is_a_block_variable = std::true_type;
+      //! Tag for marking a not block variable
+      using is_not_a_block_variable = std::false_type;
+      //! Variable template for determining if VarTag is a block variable
+      template <typename VarTag>
+      using is_block_variable = IsVariable<VarTag>;
+      //************************************************************************
+    };
+
+    // Implementation for a block variable inside the hierarchy, can use
+    // SFINAE too instead of overloads. We use tuples::get() directly, since
+    // I don't see any point in customizing the tag tuples
+    template <typename BlockVariableTag, template <typename> class B,
+              typename Plugin>
+    inline constexpr decltype(auto) get_impl(
+        B<Plugin>& block, tag::is_a_block_variable /* meta*/) noexcept {
+      return tuples::get<BlockVariableTag>(block.data());
+    }
+
+    template <typename BlockVariableTag, template <typename> class B,
+              typename Plugin>
+    inline constexpr decltype(auto) get_impl(
+        B<Plugin> const& block, tag::is_a_block_variable /* meta*/) noexcept {
+      // return block.template get<BlockVariableTag>();
+      return tuples::get<BlockVariableTag>(block.data());
+    }
+
+    template <typename BlockVariableTag, template <typename> class B,
+              typename Plugin>
+    inline constexpr decltype(auto) get_impl(
+        B<Plugin>&& block, tag::is_a_block_variable /* meta*/) noexcept {
+      return tuples::get<BlockVariableTag>(
+          static_cast<B<Plugin>&&>(block).data());
+    }
+
+    template <typename BlockVariableTag, template <typename> class B,
+              typename Plugin>
+    inline constexpr decltype(auto) get_impl(
+        B<Plugin> const&& block, tag::is_a_block_variable /* meta*/) noexcept {
+      return tuples::get<BlockVariableTag>(
+          static_cast<B<Plugin> const&&>(block).data());
+    }
+
+    template <typename Tag, typename BlockLike>
+    inline constexpr decltype(auto) get_impl(
+        BlockLike&& block_like,
+        tag::is_not_a_block_variable /* meta*/) noexcept {
+      using Block_t = std::decay_t<BlockLike>;
+      // here we need to make sure that all blocks give a templated type trait
+      // to recover block variables from a given "outside" Tag
+      // using BlockVariableTag = typename Block_t::template variable_from<Tag>;
+      using BlockVariableTag =
+          typename Block_t::VariableMap::template variable_from<Tag>;
+      return get_impl<BlockVariableTag>(std::forward<BlockLike>(block_like),
+                                        tag::is_a_block_variable{});
+    }
+    /*! \endcond */
+    //**************************************************************************
+
+  }  // namespace detail
 
   //****************************************************************************
-  /*!\brief Implementation of \c ComputationalBlock concept in \elastica
-  // \ingroup simulator
-  //
-  // The Block template class is \elastica 's implementation of the
-  // computational \a block concept---it fits all the requirements of a
-  // \c ComputationalBlock concept and is used throughout the code base. It IS
-  // the gateway to perform efficient inter-element operations for (m)any
-  // Lagrangian-based simulation codes, and is used primarily to implement
-  // efficient intra-rod operations within \elastica. The fundamental idea is
-  // to separate out \a data and \a operations on data into different orthogonal
-  // modules (usually implemented as \a policy classes), but facilitate their
-  // interaction, within the contained hierarchy, using Block. This then turns
-  // conventional top-down class hierarchy into a \a star hierarchy, the Block
-  // being the central \a hub in this topology. The hub serves as a central spot
-  // for storing all \a data, to be used by \a operations from the nodes.
-  //
-  // Block heavily relies on some patterns used in modern C++---Curiously
-  // Recurring Template Pattern (CRTP, across multiple hierarchies),
-  // policy-based class hierarchy design, trait and type based customization.
-  //
-  // The Block is intended to be customized (specialized) for any Lagrangian
-  // entity with complex data inter-communication patterns, for a concrete
-  // example, please refer to the cosserat_rod module of \elastica.
-  //
-  // From a first look, the usage of block is very similar to an implementation
-  // class of a conventional pattern CRTP, and hence is used as a template
-  // parameter in most cases. Its intended usage is however more closer to a
-  // CRTP class used as a policy class! While confusing at a first glance, this
-  // pattern lets us imbibe the SOLID design principles in class design.
-  //
-  // \tparam Plugin The computational plugin modeling a Lagrangian entity
-  //
-  // \see BlockSlice
-  */
-  template <class Plugin>  // The computational plugin type
-  class Block;
+  /*!\brief Extract element from a type modeling the `Block` concept
+   * \ingroup blocks
+   *
+   * \details
+   * Extracts the element of the `BlockLike` type modeling the `Block` concept
+   * `block_like` whose tag type is `Tag`. Fails to compile unless the block has
+   * the `Tag` being extracted. Additionally, it chooses the correct overload
+   * for (const) lvalue and rvalue blocks.
+   *
+   * \usage
+   * The usage is similar to std::get(), shown below
+   * \code
+     Block<...> b;
+     auto my_tag_data = blocks::get<tags::MyTag>(b);
+   * \endcode
+   *
+   * \tparam Tag Tag to extract
+   *
+   * \param block_like any object modeling the `block` concept
+   */
+  template <typename Tag, typename BlockLike>
+  inline constexpr decltype(auto) get(BlockLike&& block_like) noexcept {
+    using Block_t = std::decay_t<BlockLike>;
+    static_assert(
+        ModelsBlockConcept<Block_t>::value,
+        "Could not retrieve Tag from Block as the type passed in is not"
+        "a valid elastica Block type.");
+    return detail::get_impl<Tag>(std::forward<BlockLike>(block_like),
+                                 detail::tag::is_block_variable<Tag>{});
+  }
   //****************************************************************************
 
-}  // namespace elastica
+}  // namespace blocks
