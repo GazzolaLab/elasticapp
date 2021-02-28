@@ -36,12 +36,16 @@ namespace named_type {
   /*!\brief Makes a named parameter with the given value
   //
   // \example
-  // \snippet TODO
+  // Say we have a strong type called `Arithmetic` below
+  // \snippet Test_MakeNamed.cpp arithmetic_example
+  //
+  // then we can use make_named() to create strong types as follows
+  // \snippet Test_MakeNamed.cpp make_arithmetic_example
   //
   // \tparam StrongType The named parameter type
   // \param value Value to initialize StrongType with
   // \return Instance of StrongType
-   */
+  */
   template <template <typename> class StrongType, typename T>
   constexpr auto make_named(T&& value) noexcept(
       noexcept(StrongType<std::decay_t<T>>(std::forward<T>(value))))
@@ -112,4 +116,5 @@ namespace named_type {
         std::forward<T>(value));
   }
   //****************************************************************************
+
 }  // namespace named_type
