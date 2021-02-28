@@ -6,9 +6,10 @@ set_property(GLOBAL PROPERTY ELASTICA_TESTS_LIB_FUNCTIONS_PROPERTY "")
 set_property(GLOBAL PROPERTY ELASTICA_TESTS_LIBS_PROPERTY "")
 
 add_subdirectory(Framework)
-add_subdirectory(Simulator)
-add_subdirectory(Utilities)
 add_subdirectory(Options)
+add_subdirectory(Simulator)
+add_subdirectory(Systems)
+add_subdirectory(Utilities)
 
 write_test_registration_function(
         "${CMAKE_SOURCE_DIR}/tests/Unit/RunTestsRegister.hpp"
