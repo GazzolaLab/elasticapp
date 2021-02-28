@@ -1,4 +1,21 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief The implemention of a logger class, managing all logging resources
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
+
+//******************************************************************************
+// Includes
+//******************************************************************************
 
 #include <fstream>
 #ifdef HAVE_TBB
@@ -7,69 +24,125 @@
 #include <mutex>
 #endif
 
-#include "Utilities/Requires.hpp"
+///
+#include "Utilities/Logging/Types.hpp"
+///
 #include "Utilities/Singleton/Singleton.hpp"
 #include "Utilities/SystemClock.hpp"
-#include "Utilities/TypeTraits.hpp"
-
-#include "Utilities/Logging/LoggingSection.hpp"
 
 namespace elastica {
+
   namespace logging {
-      /*
-       *  Logger singleton class
-       *
-       *  The Logger class is responsible for writing the
-       *  contents of any LoggingSection into the elastic log
-       *  file (owned uniquely) by the Logger.
-       *
-       *  LoggingSections in turn call the logger (using its
-       *  instance method)'s log function, which it can access
-       *  through friendship.
-       */
+
+    //==========================================================================
+    //
+    //  CLASS DEFINITION
+    //
+    //==========================================================================
+
+    //**************************************************************************
+    /*!\brief Logging facilities
+     * \ingroup logging
+     *
+     * \details
+     * Logger is responsible for writing the contents of any LoggingSection
+     * into the elastic log file (owned and managed solely) by the Logger.
+     * LoggingSection then in turns call into the logger (using its instance
+     * method) having filled the message with sufficient context.
+     *, which it can access
+     * through friendship.
+     *
+     * \see log(), LoggingSection
+     */
     class Logger : private Singleton<Logger, SystemClock> {
      private:
+      //**Friendships***********************************************************
+      //! Friends for the singleton pattern
+      BEFRIEND_SINGLETON;
+      //! Friends for the logging facility
+      friend class LoggingSection;
+      //************************************************************************
+
+     protected:
+      //**Constructors**********************************************************
+      /*!\name Constructors */
+      //@{
       explicit Logger();
+      //@}
+      //************************************************************************
 
      public:
+      //**Destructor************************************************************
+      /*!\name Destructor */
+      //@{
       ~Logger();
+      //@}
+      //************************************************************************
 
      private:
+      //**Type definitions******************************************************
+      //! Type of singleton
+      using Singleton<Logger, SystemClock>::SingletonType;
+      //! Type of the stream to be logged in
       using StreamType = std::ofstream;
-      template <typename Type,  // Type of message with overloaded << operator
-                Requires<::tt::is_streamable_v<StreamType, Type>> =
-                    nullptr>  // Concept check
-      void log(const Type& message);
-      void openLogFile();
-
-      // Synchronization mutex for thread-parallel logging.
+      //! Type of the mutex for the stream type
 #ifdef HAVE_TBB
-      tbb::mutex _log_mutex;
+      using MutexType = tbb::mutex;
 #else
-      std::mutex _log_mutex;
+      using MutexType = std::mutex;
 #endif
-      // The log file.
+      //************************************************************************
+
+      //**Utility functions*****************************************************
+      /*!\name Utility functions */
+      //@{
+
+      //************************************************************************
+      /*!\brief Logs a string message to the underlying streams
+       *
+       * \param message Message to log
+       *
+       * \see log_to_stream(), tee()
+       */
+      void log(std::string const& message) {
+#ifdef HAVE_TBB
+        tbb::mutex::scoped_lock lock(_log_mutex);
+#else
+        // scoped lock from C++17 onwards
+        std::lock_guard<std::mutex> lock(_log_mutex);
+#endif
+        if (not _log.is_open())
+          open_logfile();
+        _log << message;
+        _log.flush();
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Opens the underlying log file for logging
+       */
+      void open_logfile();
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Affixes prefix and postfix in the log file
+       *
+       * \param opt optional character for pre/post-fixing
+       */
+      void pre_post(const char* const /* opt */) noexcept;
+      //************************************************************************
+
+      //@}
+      //************************************************************************
+
+      //**Member variables******************************************************
+      //! Synchronization mutex for thread-parallel logging.
+      MutexType _log_mutex;
+      //! The log file.
       StreamType _log;
-
-      friend class LoggingSection;
-      BEFRIEND_SINGLETON;
+      //************************************************************************
     };
-    //*************************************************************************************************
-
-    template <typename Type,  // Type of message with overloaded << operator
-              Requires<::tt::is_streamable_v<Logger::StreamType,
-                                             Type>>>  // Concept check
-    void Logger::log(const Type& message) {
-#ifdef HAVE_TBB
-      tbb::mutex::scoped_lock lock(_log_mutex);
-#else
-      std::lock_guard<std::mutex> lock(_log_mutex, std::adopt_lock);
-#endif
-      if (!_log.is_open())
-        openLogFile();
-      _log << message;
-      _log.flush();
-    }
+    //**************************************************************************
 
   }  // namespace logging
 

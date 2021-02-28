@@ -1,30 +1,64 @@
-#include "LoggingSection.hpp"
+//==============================================================================
+/*!
+//  \file
+//  \brief A helper class for logging
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
+//******************************************************************************
+// Includes
+//******************************************************************************
+
+#include "Utilities/Logging/LoggingSection.hpp"
 
 #include <iomanip>
 #include <string>
 
-#include "Logger.hpp"
-
-// TODO : Replace time_t by chrono, too much guesswork :(
+#include "ErrorHandling/Assert.hpp"
+#include "Utilities/Logging/Logger.hpp"
 
 namespace elastica {
+
   namespace logging {
 
+    //**************************************************************************
+    /*!\brief Level constructor.
+     *
+     * \details
+     * Allows implicit conversion of level to a LoggingSection for use in
+     * Singleton Macros
+     *
+     * \param level The level of logging
+     */
     LoggingSection::LoggingSection(LoggingLevel level)
-        : _logging_level(level), _message() {}
+        : logging_level_(level), message_() {}
+    //**************************************************************************
 
+    //**************************************************************************
+    /*!\brief Destructor
+     */
     LoggingSection::~LoggingSection() { commit(); }
+    //**************************************************************************
 
+    //**************************************************************************
+    /*!\brief Commits the log(message), when finished, to the underlying Logger
+     */
     void LoggingSection::commit() {
       // Early exit in case the log message is empty
-      if (_message.str().empty())
+      if (message_.str().empty())
         return;
 
       std::string line;
       std::ostringstream oss;
 
       // Writing the log level information
-      switch (_logging_level) {
+      switch (logging_level_) {
         case LoggingLevel::inactive:
           oss << "[INACTIVE]";
           break;
@@ -41,21 +75,19 @@ namespace elastica {
           oss << "[DEBUG   ]";
           break;
         default:
-          // TODO : Define assert
-          // ASSERT(false, "Unknown logging level");
+          ELASTICA_ASSERT(false, "Unknown logging level");
           break;
       }
 
       // Writing the elapsed time
-      const time_t elapsed(theSystemClock()->elapsed());
-      std::tm* localTime(std::localtime(&elapsed));
-      oss << "[" << std::put_time(localTime, "%H:%M:%S") << "] ";
+      const time_t elapsed(the_system_clock()->elapsed());
+      oss << "[" << std::put_time(std::localtime(&elapsed), "%H:%M:%S") << "] ";
 
       // Committing the log message
-      std::getline(_message, line);
+      std::getline(message_, line);
       oss << line << "\n";
 
-      while (std::getline(_message, line)) {
+      while (std::getline(message_, line)) {
         if (!line.empty())
           oss << "                      " << line << "\n";
       }
@@ -65,8 +97,11 @@ namespace elastica {
       logger->log(oss.str());
 
       // Resetting the message buffer
-      _message.str("");
-      _message.clear();
+      message_.str("");
+      message_.clear();
     }
+    //**************************************************************************
+
   }  // namespace logging
+
 }  // namespace elastica
