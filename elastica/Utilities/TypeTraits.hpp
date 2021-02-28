@@ -1,4 +1,21 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief A collection of type traits
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
+
+//******************************************************************************
+// Includes
+//******************************************************************************
 
 #include <type_traits>
 
@@ -14,6 +31,25 @@
 #include "Utilities/TypeTraits/IsStdArray.hpp"
 #include "Utilities/TypeTraits/IsStreamable.hpp"
 #include "Utilities/TypeTraits/Void.hpp"
+
+//==============================================================================
+//
+//  DOXYGEN DOCUMENTATION
+//
+//==============================================================================
+
+//******************************************************************************
+/*!\defgroup type_traits Type Traits
+ *
+ * A collection of useful type traits for metaprogramming including C++14, C++17
+ * and C++20 additions to the standard library.
+ */
+//******************************************************************************
+
+/*!\brief Contains all typetraits functionality
+// \ingroup type_traits
+*/
+namespace tt {}
 
 namespace tt {
 
