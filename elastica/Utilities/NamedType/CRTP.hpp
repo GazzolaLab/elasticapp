@@ -36,9 +36,11 @@ namespace named_type {
   //
   // \tparam Derived The final derived class
   // \tparam Mixin The interface mixed-in class, templated to prevent diamond
-  // hierarchies with multiple inheritance
+  // hierarchies with multiple inheritance. Constraint : At least one of the
+  // templated types needs to be Derived
   */
-  template <typename Derived, template <typename> class Mixin>
+  template <typename Derived,
+            template <typename /* Derived */, typename...> class Mixin>
   class CRTPHelper {
    protected:
     //**Constructors************************************************************
@@ -72,7 +74,7 @@ namespace named_type {
     // Safely down-casts this module to the underlying derived type, using
     // the Curiously Recurring Template Pattern (CRTP).
     */
-    inline constexpr auto self() noexcept -> Reference {
+    inline constexpr auto self() & noexcept -> Reference {
       return static_cast<Reference>(*this);
     }
     //**************************************************************************
@@ -85,10 +87,19 @@ namespace named_type {
     // Safely down-casts this module to the underlying derived type, using
     // the Curiously Recurring Template Pattern (CRTP).
     */
-    inline constexpr auto self() const noexcept -> ConstReference {
+    inline constexpr auto self() const & noexcept -> ConstReference {
       return static_cast<ConstReference>(*this);
     }
     //**************************************************************************
+
+   public:
+    //**Deleted Self method*****************************************************
+    // They can never be called anyway since they do not participate in overload
+    // resolution (since the `this` pointer is always a & type)
+    inline constexpr auto self() && = delete;
+    inline constexpr auto self() const && = delete;
+    //**************************************************************************
+
   };
   //****************************************************************************
 
