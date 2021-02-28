@@ -83,7 +83,7 @@ namespace named_type {
     //**************************************************************************
     /*!\brief The default constructor.
      *
-     * \param f reference to the underlying callable, copied into func
+     * \param value reference to the underlying callable, copied into func
      */
     explicit constexpr NamedType(T const& value) noexcept(
         std::is_nothrow_copy_constructible<T>::value)
@@ -123,8 +123,8 @@ namespace named_type {
    private:
     //**************************************************************************
     /*!\brief swap function
-     *
-     */
+    //
+    */
     friend void swap(NamedType& first, NamedType& second) noexcept {
       using std::swap;
       swap(first.value_, second.value_);
@@ -137,9 +137,9 @@ namespace named_type {
     //@{
     //**************************************************************************
     /*!\brief Copy/move assignment using the copy/move-and-swap idiom, maybe
-     * inefficient.
-     *
-     */
+    // inefficient.
+    //
+    */
     NamedType& operator=(NamedType other) noexcept {
       swap(*this, other);
       return *this;
@@ -156,20 +156,45 @@ namespace named_type {
     //**************************************************************************
 
    private:
+    //**Access function*********************************************************
+    /*!\name Access functions */
+    //@{
+
     //**************************************************************************
     /*!\brief Access to the underlying value
     //
-    // \return Mutable reference to the underlying value
-     */
+    // \return Mutable lvalue reference to the underlying value
+    */
     constexpr T& get_value() & noexcept { return value_; }
     //**************************************************************************
 
     //**************************************************************************
     /*!\brief Access to the underlying value
     //
-    // \return Constant reference to the underlying value
-     */
+    // \return Constant lvalue reference to the underlying value
+    */
     constexpr T const& get_value() const& noexcept { return value_; }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Access to the underlying value
+    //
+    // \return Mutable rvalue reference to the underlying value
+    */
+    constexpr T&& get_value() && noexcept { return static_cast<T&&>(value_); }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Access to the underlying value
+    //
+    // \return Const rvalue reference to the underlying value
+    */
+    constexpr T const&& get_value() const&& noexcept {
+      return static_cast<T const&&>(value_);
+    }
+    //**************************************************************************
+
+    //@}
     //**************************************************************************
 
    private:
@@ -178,15 +203,5 @@ namespace named_type {
     //**************************************************************************
   };
   //****************************************************************************
-
-
-  namespace tt {
-
-    template <typename T>
-    struct GetTagType {
-      using type = typename T::TagType;
-    };
-
-  }  // namespace tt
 
 }  // namespace named_type
