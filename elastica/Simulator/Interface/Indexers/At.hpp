@@ -54,7 +54,7 @@ namespace elastica {
       struct At_base_t : NonCopyable {
         //**Type definitions****************************************************
         //! Type of integral index
-        using IntegralIndexType = int;
+        using IntegralIndexType = std::size_t;
         //! Type of integral indices from the end
         using EndIntegralIndexType = from_end;
         //**********************************************************************
@@ -298,11 +298,11 @@ namespace elastica {
     constexpr auto at(T&& x, Indices&&... indices) noexcept {
       using Args = tmpl::list<std::decay_t<T>, std::decay_t<Indices>...>;
 
+      // count ends first
+      constexpr std::uint8_t n_ends =
+          tmpl::count_if<Args, std::is_same<tmpl::_1, from_end>>::value;
       // count indices
-      constexpr std::uint8_t n_indices =
-          tmpl::count_if<Args, std::is_same<tmpl::_1, int>>::value;
-      // count ends
-      constexpr std::uint8_t n_ends = tmpl::size<Args>::value - n_indices;
+      constexpr std::uint8_t n_indices = tmpl::size<Args>::value - n_ends;
 
       // separately construct arrays from them
       using AtType = detail::At_t<n_indices, n_ends>;
@@ -380,40 +380,45 @@ namespace elastica {
                     System const& sys)
         -> ::elastica::detail::numeric_at_t<Nints + Nends> {
       // there may be overflow here, but its less likely
-      std::array<int, Nints + Nends> numerical_indices{};
+      std::array<std::size_t, Nints + Nends> numerical_indices{};
       std::ostringstream s_stream;
       using AtType = detail::At_t<Nints, Nends>;
       bool failed = false;
       auto check = make_overloader(
           [&failed, &s_stream,
-           &sys](typename AtType::IntegralIndexType src_idx) mutable -> int {
+           &sys](typename AtType::IntegralIndexType src_idx) mutable
+          -> std::size_t {
             try {
               return sys.check(src_idx);
             } catch (const std::out_of_range& exc) {
               s_stream << src_idx << ", ";
               failed = true;
-              return std::numeric_limits<int>::max();
+              return std::numeric_limits<std::size_t>::max();
             }
           },
           [&failed, &s_stream,
-           &sys](typename AtType::EndIntegralIndexType src_idx) mutable -> int {
+           &sys](typename AtType::EndIntegralIndexType src_idx) mutable
+          -> std::size_t {
             try {
               return sys.check(src_idx);
             } catch (const std::out_of_range& exc) {
               s_stream << src_idx.i << ", ";
               failed = true;
-              return std::numeric_limits<int>::max();
+              return std::numeric_limits<std::size_t>::max();
             }
           });
 
-      s_stream << "Integer indices:\n" << "[ ";
+      s_stream << "Integer indices:\n"
+               << "[ ";
       index_apply<Nints>(
           [&check, &numerical_indices, &ints = index_set.ints()](auto... Is) {
             // Is : 0 -> Nints
             EXPAND_PACK_LEFT_TO_RIGHT(std::get<Is>(numerical_indices) =
                                           check(std::get<Is>(ints)));
           });
-      s_stream << " ]\n" << "End indices:\n" << "[ ";
+      s_stream << " ]\n"
+               << "End indices:\n"
+               << "[ ";
       index_apply<Nends>(
           [&check, &numerical_indices, &ends = index_set.ends()](auto... Is) {
             EXPAND_PACK_LEFT_TO_RIGHT(std::get<Nints + Is>(numerical_indices) =
@@ -465,7 +470,7 @@ namespace elastica {
       using AtType = detail::At_base_t;
 
       // drop int vector
-      std::vector<int> numerical_indices;
+      std::vector<std::size_t> numerical_indices;
       numerical_indices.reserve(index_set->integer_indices_size() +
                                 index_set->end_indices_size());
 
@@ -492,12 +497,15 @@ namespace elastica {
           });
 
       // reserve
-      s_stream << "Integer indices:\n" << "[ ";
+      s_stream << "Integer indices:\n"
+               << "[ ";
       std::transform(
           index_set->integer_indices(),
           index_set->integer_indices() + index_set->integer_indices_size(),
           std::back_inserter(numerical_indices), check);
-      s_stream << " ]\n" << "End indices:\n" << "[ ";
+      s_stream << " ]\n"
+               << "End indices:\n"
+               << "[ ";
       // do ends next
       std::transform(index_set->end_indices(),
                      index_set->end_indices() + index_set->end_indices_size(),

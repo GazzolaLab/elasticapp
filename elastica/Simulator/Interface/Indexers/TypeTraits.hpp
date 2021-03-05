@@ -55,7 +55,20 @@ namespace elastica {
 
       //************************************************************************
       /*! \cond ELASTICA_INTERNAL */
-      /*!\brief Helper to check whether a given type is an inteface Range
+      /*!\brief Helper to check whether a given type is an interface At type
+      // \ingroup interface
+      //
+      // \example
+      // \snippet Indexers/Test_TypeTraits.cpp is_at_example
+      */
+      template <typename T>
+      struct IsAt : std::is_base_of<detail::At_base_t, T> {};
+      /*! \endcond */
+      //************************************************************************
+
+      //************************************************************************
+      /*! \cond ELASTICA_INTERNAL */
+      /*!\brief Helper to check whether a given type is an interface Range
       // \ingroup interface
       //
       // \example
@@ -63,6 +76,19 @@ namespace elastica {
       */
       template <typename T>
       struct IsRange : ::tt::is_a<detail::Range, T> {};
+      /*! \endcond */
+      //************************************************************************
+
+      //************************************************************************
+      /*! \cond ELASTICA_INTERNAL */
+      /*!\brief Helper to check whether a given type is an interface Pair
+      // \ingroup interface
+      //
+      // \example
+      // \snippet Indexers/Test_TypeTraits.cpp is_pair_example
+      */
+      template <typename T>
+      struct IsPair : ::tt::is_a<detail::Pair_t, T> {};
       /*! \endcond */
       //************************************************************************
 

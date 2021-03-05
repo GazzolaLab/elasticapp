@@ -56,8 +56,8 @@ namespace {
     {  // endss
       auto r = range(end - 40, end - 10, 1);
       auto numerical_indices = to_numeric(r, sys);
-      CHECK(numerical_indices.start_ == 41);
-      CHECK(numerical_indices.stop_ == 11);
+      CHECK(numerical_indices.start_ == (200 - 40));
+      CHECK(numerical_indices.stop_ == (200 - 10));
       // step will always be untouched
       CHECK(numerical_indices.step_ == 1);
     }
@@ -67,7 +67,7 @@ namespace {
       auto r = range(1, end - 2, 2);
       auto numerical_indices = to_numeric(r, system);
       CHECK(numerical_indices.start_ == 2);
-      CHECK(numerical_indices.stop_ == 3);
+      CHECK(numerical_indices.stop_ == (200 - 2));
       // step will always be untouched
       CHECK(numerical_indices.step_ == 2);
       /// [range_to_numeric]

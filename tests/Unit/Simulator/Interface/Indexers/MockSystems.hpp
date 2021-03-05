@@ -10,14 +10,14 @@
 
 /// [nothrow_mock_system]
 struct NoThrowSystem {
-  int check(int i) const noexcept { return i + 1; };
-  int check(elastica::from_end f) const noexcept { return f.i + 1; };
+  std::size_t check(std::size_t i) const noexcept { return i + 1; };
+  std::size_t check(elastica::from_end f) const noexcept { return 200 - f.i; };
 };
 /// [nothrow_mock_system]
 
 struct ThrowSystem {
   // Assume we have b indices
-  int check(int i) const {
+  std::size_t check(std::size_t i) const {
     if (i < n_indices) {
       return i;
     } else {
@@ -25,7 +25,7 @@ struct ThrowSystem {
     }
   };
 
-  int check(elastica::from_end fe) const {
+  std::size_t check(elastica::from_end fe) const {
     if (fe.i < n_indices) {
       return n_indices - fe.i;
     } else {
@@ -33,5 +33,5 @@ struct ThrowSystem {
     }
   };
 
-  int n_indices = {4};
+  std::size_t n_indices = {4};
 };

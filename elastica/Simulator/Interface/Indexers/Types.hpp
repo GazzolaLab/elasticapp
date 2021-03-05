@@ -33,10 +33,15 @@ namespace elastica {
 
       //************************************************************************
       /*! \cond ELASTICA_INTERNAL */
-      template <std::uint8_t Nints, std::uint8_t Nends>
+      struct At_base_t;
+
+      template <std::uint8_t /*Nints*/, std::uint8_t /*Nends*/>
       struct At_t;
 
-      template <typename StartType, typename StopType>
+      template <typename /*FirstType*/, typename /*SecondType*/>
+      struct Pair_t;
+
+      template <typename /*StartType*/, typename /*StopType*/>
       struct Range;
 
       /*! \endcond */

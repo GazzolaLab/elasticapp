@@ -24,7 +24,7 @@ namespace {
     constexpr auto Nints = 1U;
     constexpr auto Nends = 1U;
     {  // pair constructor
-      std::array<int, Nints> first{1};
+      std::array<std::size_t, Nints> first{1};
       std::array<from_end, Nints> second{(end - 2)};
       At_t<Nints, Nends> at{std::make_pair(first, second)};
       CHECK(at.indices_.first[0] == 1);
@@ -33,7 +33,7 @@ namespace {
 
     {
       // piecewise
-      std::array<int, Nints> first{3};
+      std::array<std::size_t, Nints> first{3};
       std::array<from_end, Nints> second{(end - 5)};
       At_t<Nints, Nends> at(first, second);
       CHECK(at.indices_.first[0] == 3);
@@ -58,7 +58,7 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Indexers.At.at",
                      "[Unit][Simulator][Interface]") {
     {  // no ends
-      auto first = make_array(1, 3, 5);
+      auto first = make_array(1UL, 3UL, 5UL);
       constexpr auto Nints = std::tuple_size<decltype(first)>::value;
       constexpr auto Nends = 0UL;
       {  // prvalue
@@ -91,7 +91,7 @@ namespace {
     }
 
     {  // both
-      auto first = make_array(1, 3, 5);
+      auto first = make_array(1UL, 3UL, 5UL);
       auto second = make_array(end - 2, end - 4, end - 6);
       constexpr auto Nints = std::tuple_size<decltype(first)>::value;
       constexpr auto Nends = std::tuple_size<decltype(second)>::value;
@@ -152,20 +152,21 @@ namespace {
       auto x = at(1, 3, 5);
       auto numerical_indices = to_numeric(x, sys);
       /// [to_numeric_example]
-      CHECK(numerical_indices.args == make_array(2, 4, 6));
+      CHECK(numerical_indices.args == make_array(2UL, 4UL, 6UL));
     }
 
     {  // good types
       auto x = at(end - 1, end - 3, end - 5);
       auto numerical_indices = to_numeric(x, sys);
-      CHECK(numerical_indices.args == make_array(2, 4, 6));
+      CHECK(numerical_indices.args == make_array((200UL - 1), 200UL - 3, 200UL - 5));
     }
 
     {  // good types
       auto x = at(1, end - 2, end - 4, 3, 5, end - 6);
       auto numerical_indices = to_numeric(x, sys);
       // returns an ordered index of (1, 3, 5, end - 2 , end -4 , end - 6);
-      CHECK(numerical_indices.args == make_array(2, 4, 6, 3, 5, 7));
+      CHECK(numerical_indices.args ==
+            make_array(2UL, 4UL, 6UL, 200UL - 2, 200UL - 4, 200UL - 6));
     }
   }
 
@@ -180,9 +181,9 @@ namespace {
     // access like a ptr with At_base_t interface
     auto const size = numerical_indices_ptr->size();
     /// [to_numeric_runtime_example]
-    auto x = make_array(2, 4, 6, 3, 5, 7);
+    auto x = make_array(2, 4, 6, 200  - 2, 200 - 4, 200 - 6);
     CHECK(size == 6);
-    for (int i = 0; i < size; ++i) {
+    for (std::size_t i = 0; i < size; ++i) {
       CHECK(numerical_indices_ptr->data()[i] == x[i]);
     }
   }

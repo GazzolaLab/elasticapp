@@ -183,29 +183,29 @@ namespace elastica {
       bool failed = false;
 
       auto check = make_overloader(
-          [&failed, &s_stream, &sys](int src_idx) -> int {
+          [&failed, &s_stream, &sys](std::size_t src_idx) -> std::size_t {
             try {
               return sys.check(src_idx);
             } catch (const std::out_of_range& exc) {
               s_stream << src_idx;
               failed = true;
-              return std::numeric_limits<int>::max();
+              return std::numeric_limits<std::size_t>::max();
             }
           },
-          [&failed, &s_stream, &sys](from_end src_idx) -> int {
+          [&failed, &s_stream, &sys](from_end src_idx) -> std::size_t {
             try {
               return sys.check(src_idx);
             } catch (const std::out_of_range& exc) {
               s_stream << src_idx.i;
               failed = true;
-              return std::numeric_limits<int>::max();
+              return std::numeric_limits<std::size_t>::max();
             }
           });
 
       s_stream << "[ ";
-      const int start = check(index_range.start_);
+      const std::size_t start = check(index_range.start_);
       s_stream << ", ";
-      const int stop = check(index_range.stop_);
+      const std::size_t stop = check(index_range.stop_);
       s_stream << " ]\n";
 
       if (failed) {
@@ -213,7 +213,7 @@ namespace elastica {
         throw std::out_of_range(s_stream.str());
       }
 
-      return make_numeric_range(start, stop, index_range.step_);
+      return numeric_range(start, stop, index_range.step_);
     }
     //**************************************************************************
 

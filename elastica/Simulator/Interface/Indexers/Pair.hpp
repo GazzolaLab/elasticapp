@@ -254,10 +254,11 @@ namespace elastica {
     template <typename FirstType, typename SecondType,
               Requires<tt::IsAdmissibleIndex<FirstType>::value> = nullptr,
               Requires<tt::IsAdmissibleIndex<SecondType>::value> = nullptr>
-    inline constexpr auto pair(FirstType start, SecondType stop) noexcept
+    inline constexpr auto pair(FirstType first_index,
+                               SecondType second_index) noexcept
         -> detail::Pair_t<FirstType, SecondType> {
       // if end_from is passed in, we have an overloaded operator for that too
-      return detail::Pair_t<FirstType, SecondType>{start, stop};
+      return detail::Pair_t<FirstType, SecondType>{first_index, second_index};
     }
     //**************************************************************************
 
@@ -322,29 +323,32 @@ namespace elastica {
       bool failed = false;
 
       auto check = make_overloader(
-          [&failed, &s_stream](auto const& sys, int src_idx) -> int {
+          [&failed, &s_stream](auto const& sys,
+                               std::size_t src_idx) -> std::size_t {
             try {
               return sys.check(src_idx);
             } catch (const std::out_of_range& exc) {
               s_stream << src_idx;
               failed = true;
-              return std::numeric_limits<int>::max();
+              return std::numeric_limits<std::size_t>::max();
             }
           },
-          [&failed, &s_stream](auto const& sys, from_end src_idx) -> int {
+          [&failed, &s_stream](auto const& sys,
+                               from_end src_idx) -> std::size_t {
             try {
               return sys.check(src_idx);
             } catch (const std::out_of_range& exc) {
               s_stream << src_idx.i;
               failed = true;
-              return std::numeric_limits<int>::max();
+              return std::numeric_limits<std::size_t>::max();
             }
           });
 
       s_stream << "( ";
-      const int first_idx = check(first_sys, index_pair.first_index_);
+      const std::size_t first_idx = check(first_sys, index_pair.first_index_);
       s_stream << ", ";
-      const int second_idx = check(second_sys, index_pair.second_index_);
+      const std::size_t second_idx =
+          check(second_sys, index_pair.second_index_);
       s_stream << ")";
 
       if (failed) {

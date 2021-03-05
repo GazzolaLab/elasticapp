@@ -46,7 +46,7 @@ namespace {
     auto first_sys = NoThrowSystem{};
     auto second_sys = NoThrowSystem{};
     {  // purely numeric
-      auto p = pair(2, 10);
+      auto p = pair(2UL, 10UL);
       auto numerical_indices = to_numeric(p, first_sys, second_sys);
       CHECK(numerical_indices.first == 3);
       CHECK(numerical_indices.second == 11);
@@ -54,17 +54,17 @@ namespace {
     {  // endss
       auto p = pair(end - 40, end - 10);
       auto numerical_indices = to_numeric(p, first_sys, second_sys);
-      CHECK(numerical_indices.first == 41);
-      CHECK(numerical_indices.second == 11);
+      CHECK(numerical_indices.first == (200 - 40));
+      CHECK(numerical_indices.second == (200 - 10));
     }
     {  // mixed
       /// [pair_to_numeric]
       auto first_system = NoThrowSystem{};
       auto second_system = NoThrowSystem{};
-      auto p = pair(1, end - 2);
+      auto p = pair(1UL, end - 2);
       auto numerical_indices = to_numeric(p, first_system, second_system);
       CHECK(numerical_indices.first == 2);
-      CHECK(numerical_indices.second == 3);
+      CHECK(numerical_indices.second == (200 - 2));
       /// [pair_to_numeric]
     }
     {
@@ -84,7 +84,7 @@ namespace {
     auto first_sys = ThrowSystem{};
     auto second_sys = ThrowSystem{};
     {  //
-      auto p = pair(1, 5);
+      auto p = pair(1UL, 5UL);
       CHECK_THROWS_WITH(to_numeric(p, first_sys, second_sys),
                         Catch::Contains("as the number of degrees of freedom"));
     }
