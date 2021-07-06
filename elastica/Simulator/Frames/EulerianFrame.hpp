@@ -1,7 +1,7 @@
 //==============================================================================
 /*!
 //  \file
-//  \brief Directions implementation
+//  \brief Type marking lab-frame in \elastica
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
@@ -17,7 +17,7 @@
 // Includes
 //******************************************************************************
 
-#include <cstddef>
+#include <cstdint>
 
 #include "Utilities/NonCreatable.hpp"
 
@@ -32,36 +32,51 @@ namespace elastica {
     //==========================================================================
 
     //**************************************************************************
-    /*! \cond ELASTICA_INTERNAL */
-    /*!\brief Trait defining unique IDs for different directions
-    // \ingroup domain
-    //
-    // Directions is a trait defining the type and number of directions in 3D.
-    // It serves as a strong type for all directions within the \elastica
-    // library.
-    */
-    struct Directions : public NonCreatable {
+    /*!\brief Trait defining unique IDs for directions in Eulerian frame
+     * \ingroup simulator
+     *
+     * EulerianFrame is a trait defining the type and number of directions in
+     * 3D. It serves as a strong type for all directions within the \elastica
+     * library.
+     */
+    struct EulerianFrame : public NonCreatable {
      public:
       //**Type definitions******************************************************
       //! The type of direction ID
-      enum class DirectionType : std::uint8_t { x, y, z };
+      enum class DirectionType : std::uint8_t { x = 0, y, z, Count };
       //************************************************************************
 
       //**Static members********************************************************
       //! unique ID for X direction
       static constexpr DirectionType X = DirectionType::x;
-
       //! unique ID for Y direction
       static constexpr DirectionType Y = DirectionType::y;
-
       //! unique ID for Z direction
       static constexpr DirectionType Z = DirectionType::z;
-
       //! Dimension of simulation
-      static constexpr std::uint8_t Dimension = 3;
+      static constexpr auto Dimension =
+          static_cast<std::uint8_t>(DirectionType::Count);
       //************************************************************************
     };
-    /*! \endcond */
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Casts a Eulerian frame direction into an index value
+     * \ingroup simulator
+     *
+     * \details
+     * Converts a EulerianFrame::DirectionType into an index value in
+     * associative arrays.
+     *
+     * \example
+     * \snippet Test_EulerianFrame.cpp cast_along_eg
+     *
+     * \param Dir A Direction to cast as index to
+     */
+    inline constexpr auto cast_along(EulerianFrame::DirectionType Dir)
+        -> std::size_t {
+      return static_cast<std::size_t>(Dir);
+    }
     //**************************************************************************
 
   }  // namespace detail

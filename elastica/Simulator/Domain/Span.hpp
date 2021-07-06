@@ -17,12 +17,29 @@
 // Includes
 //******************************************************************************
 
+#include <array>
 #include <cstddef>
 
-#include "ErrorHandling/Assert.hpp"
 #include "Simulator/Domain/Types.hpp"
 
 namespace elastica {
+
+  //============================================================================
+  //
+  //  FORWARD DECLARATIONS
+  //
+  //============================================================================
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  template <typename Numeric>
+  struct Span;
+
+  template <typename Numeric>
+  inline auto make_span(Numeric arg_min, Numeric arg_max) noexcept
+      -> Span<Numeric>;
+  /*! \endcond */
+  //****************************************************************************
 
   //============================================================================
   //
@@ -30,25 +47,25 @@ namespace elastica {
   //
   //============================================================================
 
+  //****************************************************************************
   /*!\brief Class template representing a span of physical length
-  // \ingroup domain
-  //
-  // The Span class template represents a physical span extending up to the
-  // domain in one-dimension. It stores the values of the minimum and maximum
-  // position for this dimension.
-  //
-  // \note Its implementation is similar to std::array and semantically, it also
-  // resides on the stack.
-  //
-  // \tparam Numeric Any numeral type
-  */
+   * \ingroup domain
+   *
+   * The Span class template represents a physical span extending up to the
+   * domain in one-dimension. It stores the values of the minimum and maximum
+   * position for this dimension.
+   *
+   * \note Its implementation is similar to std::array and semantically, it also
+   * resides on the stack.
+   *
+   * \tparam Numeric Any numeral type
+   */
   template <typename Numeric>  // Numeric
   struct Span {
    public:
     //**Static members**********************************************************
     //! Minimum index accessible in this span
     static constexpr std::size_t min_idx = 0UL;
-
     //! Maxmimum index accessible in this span
     static constexpr std::size_t max_idx = 1UL;
     //**************************************************************************
@@ -56,9 +73,27 @@ namespace elastica {
     //**Constructors************************************************************
     /*!\name Constructors */
     //@{
-    explicit Span(Numeric arg_min, Numeric arg_max);
+   protected:
+    //**************************************************************************
+    /*!\brief Constructor for the Span class.
+     *
+     * \param arg_min Minimum value of the span
+     * \param arg_max Maximum value of the span
+     */
+    explicit Span(Numeric arg_min, Numeric arg_max) noexcept
+        : span_{arg_min, arg_max} {};
+    //**************************************************************************
+
+   public:
     Span(const Span& other) = default;
     //@}
+    //**************************************************************************
+
+    //**Friendships*************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    //! Friendship with make_span
+    friend auto make_span<Numeric>(Numeric, Numeric) noexcept -> Span<Numeric>;
+    /*! \endcond */
     //**************************************************************************
 
     //**Destructor**************************************************************
@@ -75,32 +110,45 @@ namespace elastica {
     //@}
     //**************************************************************************
 
+    //**Subscript operator******************************************************
+    /*!\name Subscript operator */
+    //@{
+    inline auto operator[](std::size_t idx) & noexcept -> Numeric& {
+      return span_[idx];
+    };
+    inline auto operator[](std::size_t idx) const& noexcept -> Numeric const& {
+      return span_[idx];
+    };
+    //@}
+    //**************************************************************************
+
     //**Member variables********************************************************
-    Numeric span_[2UL];  //!< Storage of spans
+    //! The storage type of all spans
+    using Storage = std::array<Numeric, 2UL>;
+    //!< Storage of spans
+    Storage span_;
     //**************************************************************************
   };
   //****************************************************************************
 
-  //============================================================================
-  //
-  //  CONSTRUCTORS
-  //
-  //============================================================================
-
-  //**Constructor***************************************************************
-  /*!\brief Constructor for the Group class.
-  //
-  // \param arg_min Minimum value of the span
-  // \param arg_max Maximum value of the span
-  */
+  //****************************************************************************
+  /*!\brief Makes a span idiomatically
+   *
+   * \example
+   * \snippet Test_Span.cpp make_span_eg
+   *
+   * \param arg_min (expected) minimum value of the span
+   * \param arg_max (expected) maximum value of the span
+   * \return Span
+   *
+   * \note
+   * The arguments may be switched depending on whether arg_min < arg_max
+   */
   template <typename Numeric>
-  Span<Numeric>::Span(Numeric arg_min, Numeric arg_max) {
-    // TODO : No assert in constructor
-    ELASTICA_ASSERT(
-        arg_min < arg_max,
-        "Wrong span of simulation, please provide min first and max second!");
-    span_[min_idx] = arg_min;
-    span_[max_idx] = arg_max;
+  inline auto make_span(Numeric arg_min, Numeric arg_max) noexcept
+      -> Span<Numeric> {
+    using RT = Span<Numeric>;
+    return (arg_min < arg_max) ? RT(arg_min, arg_max) : RT(arg_max, arg_min);
   }
   //****************************************************************************
 

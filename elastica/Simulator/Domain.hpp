@@ -17,7 +17,13 @@
 // Includes
 //******************************************************************************
 
+///
+#include "Simulator/Domain/Types.hpp"
+///
 #include "Simulator/Domain/Domain.hpp"
+#include "Simulator/Domain/Span.hpp"
+#include "Simulator/Domain/BoundaryAlong.hpp"
+#include "Simulator/Domain/TypeTraits.hpp"
 
 //==============================================================================
 //
@@ -28,6 +34,7 @@
 //******************************************************************************
 /*!\defgroup domain Domain
  *
- * The domain module implements a valid \elastica computational domain.
+ * The domain module contains an extent of physical space marking the
+ * computational domain.
  */
 //******************************************************************************

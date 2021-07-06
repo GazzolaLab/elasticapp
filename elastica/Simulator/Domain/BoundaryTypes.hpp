@@ -20,6 +20,7 @@
 #include <type_traits>
 
 #include "Simulator/Domain/Types.hpp"
+#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace elastica {
 
@@ -31,28 +32,28 @@ namespace elastica {
 
   //****************************************************************************
   /*!\brief struct representing an unbounded boundary condition.
-  // \ingroup domain
-  //
-  // UnboundedBoundary marks a particular direction as having an unbounded
-  // boundary condition within the Domain of the \elastica library.
-  //
-  // \note This class is derived from std::false_type for ease in implementing
-  // and/or logic when needed
-  */
-  struct UnboundedBoundary : std::false_type {};
+   * \ingroup domain
+   *
+   * IsUnbounded marks a particular direction as having an unbounded
+   * boundary condition within the Domain of the \elastica library.
+   *
+   * \note This class is derived from std::false_type for ease in implementing
+   * and/or logic when needed, see tt::SimulationDomainType
+   */
+  struct IsUnbounded : std::false_type {};
   //****************************************************************************
 
   //****************************************************************************
   /*!\brief struct representing a periodic boundary condition.
-  // \ingroup domain
-  //
-  // PeriodicBoundary marks a particular direction as having a periodic boundary
-  // condition within the Domain of the \elastica library.
-  //
-  // \note This class is derived from std::true_type for ease in implementing
-  // and/or logic when needed
-  */
-  struct PeriodicBoundary : std::true_type {};
+   * \ingroup domain
+   *
+   * IsPeriodic marks a particular direction as having a periodic boundary
+   * condition within the Domain of the \elastica library.
+   *
+   * \note This class is derived from std::true_type for ease in implementing
+   * and/or logic when needed, see tt::SimulationDomainType
+   */
+  struct IsPeriodic : std::true_type {};
   //****************************************************************************
 
 }  // namespace elastica

@@ -19,6 +19,9 @@
 
 #include <type_traits>
 
+///
+#include "Simulator/Frames/EulerianFrame.hpp"
+///
 #include "Utilities/DefineTypes.h"
 #include "Utilities/Requires.hpp"
 
@@ -33,8 +36,8 @@ namespace elastica {
   //****************************************************************************
   /*! \cond ELASTICA_INTERNAL */
   // Boundary Types
-  struct UnboundedBoundary;
-  struct PeriodicBoundary;
+  struct IsUnbounded;
+  struct IsPeriodic;
 
   // Span
   template <typename Real>
@@ -51,6 +54,13 @@ namespace elastica {
               Requires<std::is_floating_point<Real>::value> = nullptr>
     class Domain;
   }
+
+  namespace detail {
+    template <detail::EulerianFrame::DirectionType Dir, typename BoundaryType,
+              typename Real>
+    struct BoundaryAlongWrapper;
+  }  // namespace detail
+
   /*! \endcond */
   //****************************************************************************
 
@@ -62,23 +72,23 @@ namespace elastica {
 
   //****************************************************************************
   /*!\brief Alias declaration for a PeriodicDomain
-  // \ingroup domain
-  //
-  // PeriodicDomain is \elastica 's implementation of a computational domain
-  // with periodic boundary conditions. The intent for using this class is not
-  // to enforce all boundary conditions are periodic : a subset of the direction
-  // can be unbounded. The \elastica simulator takes care of these details.
-  */
+   * \ingroup domain
+   *
+   * PeriodicDomain is \elastica 's implementation of a computational domain
+   * with periodic boundary conditions. The intent for using this class is not
+   * to enforce all boundary conditions are periodic : a subset of the direction
+   * can be unbounded. The \elastica simulator takes care of these details.
+   */
   using PeriodicDomain = typename detail::Domain<real_t, PeriodicDomainPolicy>;
   //****************************************************************************
 
   //****************************************************************************
   /*!\brief Alias declaration for an UnboundedDomain
-  // \ingroup domain
-  //
-  // UnboundedDomain is \elastica 's implementation of a computational domain
-  // with strictly unbounded boundary conditions in all three directions.
-  */
+   * \ingroup domain
+   *
+   * UnboundedDomain is \elastica 's implementation of a computational domain
+   * with strictly unbounded boundary conditions in all three directions.
+   */
   using UnboundedDomain =
       typename detail::Domain<real_t, UnboundedDomainPolicy>;
   //****************************************************************************

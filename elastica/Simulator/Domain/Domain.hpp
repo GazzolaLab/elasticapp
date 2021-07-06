@@ -27,6 +27,8 @@
 #include "Simulator/Domain/Protocols.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Requires.hpp"
+/// Serialization support
+#include "Simulator/IO/Serialization/Types.hpp"
 
 namespace elastica {
 
@@ -41,22 +43,29 @@ namespace elastica {
     //**************************************************************************
     /*! \cond ELASTICA_INTERNAL */
     /*!\brief Class template representing the Domain of the simulation
-    // \ingroup domain
-    //
-    // The Domain class template represents an instantiation of the simulation
-    // domain. Its behavior is customized by the type of the span (\tparam Real)
-    // the policy of the domain (periodic, unbounded etc.).
-    */
-    template <typename Real,                           // Real type
-              template <typename> class DomainPolicy,  // Policy of the domain
-              Requires<std::is_floating_point<Real>::value>>  // Restricting
-                                                              // condition
-                                                              class Domain
+     * \ingroup domain
+     *
+     * The Domain class template represents an instantiation of the simulation
+     * domain. Its behavior is customized by the type of the span (\tparam Real)
+     * the policy of the domain (periodic, unbounded etc.).
+     *
+     * \tparam Real The real type (float or double)
+     * \tparam DomainPolicy Policy template of the domain, one of
+     * UnboundedPolicy or PeriodicPolicy
+     */
+    template <typename Real, template <typename> class DomainPolicy,
+              Requires<std::is_floating_point<Real>::value>>
+    class Domain
         : public ::tt::ConformsTo<::elastica::protocols::ComputationalDomain>,
           public DomainPolicy<Real> {
      private:
       //**Type definitions******************************************************
       using Policy = DomainPolicy<Real>;
+      //************************************************************************
+
+      //**Friendships***********************************************************
+      //! Friendship with Serialize
+      friend struct ::elastica::io::Serialize<Domain<Real, DomainPolicy>>;
       //************************************************************************
 
      public:
@@ -67,7 +76,10 @@ namespace elastica {
       //**Constructors**********************************************************
       /*!\name Constructors */
       //@{
-      using Policy::Policy;
+      template <typename... Args>
+      explicit Domain(Args&&... args) : Policy(std::forward<Args>(args)...) {}
+      Domain(Domain&&) noexcept = default;
+      Domain& operator=(Domain&&) noexcept = default;
       //@}
       //************************************************************************
     };

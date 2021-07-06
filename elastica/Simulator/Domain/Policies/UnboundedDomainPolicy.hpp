@@ -19,9 +19,9 @@
 
 #include <array>
 
-#include "Simulator/Domain/Policies/Directions.hpp"
 #include "Simulator/Domain/Span.hpp"
 #include "Simulator/Domain/Types.hpp"
+#include "Simulator/Frames/EulerianFrame.hpp"
 #include "Utilities/MakeSignalingNan.hpp"
 #include "Utilities/Math/Infinity.hpp"
 #include "Utilities/Math/Vec3.hpp"
@@ -36,47 +36,50 @@ namespace elastica {
   //
   //============================================================================
 
+  //****************************************************************************
   /*!\brief Class template implementing a unbounded domain policy
-  // \ingroup domain
-  //
-  // The UnboundedDomainPolicy class template is a policy used by \elastica 's
-  // Domain class. It implements the logic for implementing unbounded domains
-  // in the context of \elastica simulations.
-  //
-  // \tparam Real Any floating point type
-  */
+   * \ingroup domain
+   *
+   * The UnboundedDomainPolicy class template is a policy used by \elastica 's
+   * Domain class. It implements the logic for implementing unbounded domains
+   * in the context of \elastica simulations.
+   *
+   * \tparam Real Any floating point type
+   */
   template <typename Real>  // Any real type
   class UnboundedDomainPolicy : public NonCopyable {
    public:
     //**Type definitions********************************************************
-    using SpanType = Span<Real>;  //!< The type of spans in each direction
-
-    //! The storage type of all spans
-    using SpanStorage = std::array<SpanType, 3UL>;
-
     //! The type of direction ID
-    using DirectionType = typename detail::Directions::DirectionType;
+    using DirectionType = typename detail::EulerianFrame::DirectionType;
     //**************************************************************************
 
     //**Static members**********************************************************
     //! unique ID for X direction
-    static constexpr DirectionType X = detail::Directions::X;
-
+    static constexpr DirectionType X = detail::EulerianFrame::X;
     //! unique ID for Y direction
-    static constexpr DirectionType Y = detail::Directions::Y;
-
+    static constexpr DirectionType Y = detail::EulerianFrame::Y;
     //! unique ID for Z direction
-    static constexpr DirectionType Z = detail::Directions::Z;
-
+    static constexpr DirectionType Z = detail::EulerianFrame::Z;
     //! Dimension of simulations
-    static constexpr auto Dimension = detail::Directions::Dimension;
+    static constexpr auto Dimension = detail::EulerianFrame::Dimension;
+    //**************************************************************************
+
+    //**Type definitions********************************************************
+    //! The type of spans in each direction
+    using SpanType = Span<Real>;
+    //! The storage type of all spans
+    using SpanStorage = std::array<SpanType, Dimension>;
     //**************************************************************************
 
    protected:
     //**Constructors************************************************************
     /*!\name Constructors */
     //@{
-    UnboundedDomainPolicy() = default;
+    explicit UnboundedDomainPolicy(...) {}
+    UnboundedDomainPolicy(UnboundedDomainPolicy&&) noexcept = default;
+    UnboundedDomainPolicy& operator=(UnboundedDomainPolicy&&) noexcept =
+        default;
     //@}
     //**************************************************************************
 
@@ -88,96 +91,146 @@ namespace elastica {
     //**************************************************************************
 
    public:
-    //**Set function************************************************************
+    //**Set functions***********************************************************
+    /*!\name Sets span of domain*/
+    //@{
+
+    //**************************************************************************
     /*!\brief Set span of domain.
-    //
-    // Sets the simulation domain after creation. Unimplemented.
-    //
-    // \param x_span The span in the X direction
-    // \param y_span The span in the Y direction
-    // \param z_span The span in the Z direction
-    //
-    // \return void
-    */
+     *
+     * Sets the simulation domain after creation. Unimplemented.
+     *
+     * \param x_span The span in the X direction
+     * \param y_span The span in the Y direction
+     * \param z_span The span in the Z direction
+     *
+     * \return void
+     */
     void set(SpanType&&, SpanType&&, SpanType&&) const noexcept {}
     //**************************************************************************
 
-    //**Set function************************************************************
+    //**************************************************************************
     /*!\brief Set span of domain.
-    //
-    // Sets the simulation domain after creation. Unimplemented.
-    //
-    // \param min_x The minimum coordinate in the X direction
-    // \param max_x The maximum coordinate in the X direction
-    // \param min_y The minimum coordinate in the Y direction
-    // \param max_y The maximum coordinate in the Y direction
-    // \param min_z The minimum coordinate in the Z direction
-    // \param max_z The maximum coordinate in the Z direction
-    // \return void
-    */
+     *
+     * Sets the simulation domain after creation. Unimplemented.
+     *
+     * \param min_x The minimum coordinate in the X direction
+     * \param max_x The maximum coordinate in the X direction
+     * \param min_y The minimum coordinate in the Y direction
+     * \param max_y The maximum coordinate in the Y direction
+     * \param min_z The minimum coordinate in the Z direction
+     * \param max_z The maximum coordinate in the Z direction
+     * \return void
+     */
     void set(Real, Real, Real, Real, Real, Real) const noexcept {}
     //**************************************************************************
 
-    //**Set function************************************************************
+    //**************************************************************************
     /*!\brief Set span of domain.
-    //
-    // Sets the simulation domain after creation. Unimplemented.
-    //
-    // \param span A span of Vector like elements
-    // \return void
-    //
-    // \tparam VecLike Any vector like type
-    */
+     *
+     * Sets the simulation domain after creation. Unimplemented.
+     *
+     * \param span A span of Vector like elements
+     * \return void
+     *
+     * \tparam VecLike Any vector like type
+     */
     template <typename VecLike>  // Vec3 like
     void set(Span<VecLike>) const noexcept {}
     //**************************************************************************
 
-    //**Set function************************************************************
+    //**************************************************************************
     /*!\brief Set span of domain.
-    //
-    // Sets the simulation domain after creation. Unimplemented.
-    //
-    // \param mins The minimum coordinates in all directions
-    // \param maxs The maximum coordinates in all directions
-    */
+     *
+     * Sets the simulation domain after creation. Unimplemented.
+     *
+     * \param mins The minimum coordinates in all directions
+     * \param maxs The maximum coordinates in all directions
+     */
     void set(const Vec3&, const Vec3&) const noexcept {}
     //**************************************************************************
 
-    //**Get function************************************************************
+    //**Get functions***********************************************************
+    /*!\name Gets domain bounds*/
+    //@{
+
+    //**************************************************************************
     /*!\brief Get lower bound of domain.
-    //
-    // Gets the lower bound of the domain in a particular Direction.
-    //
-    // \tparam Direction Direction to get lower bound, one of X, Y or Z
-    */
+     *
+     * Gets the lower bound of the domain in a particular Direction.
+     *
+     * \tparam Direction Direction to get lower bound, one of X, Y or Z
+     */
     template <DirectionType Direction>
-    inline constexpr Real get_lower_bound() const noexcept {
+    inline constexpr decltype(auto) get_lower_bound() const noexcept {
+      // TODO : -inf constructor is private, maybe copy into elastica and change
+      // only the copy
+      return get_lower_bound(Direction);
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Get lower bound of domain.
+     *
+     * Gets the lower bound of the domain in a particular Direction.
+     *
+     * \param Direction Direction to get lower bound, one of X, Y or Z
+     */
+    inline constexpr Real get_lower_bound(
+        DirectionType ) const noexcept {
+      // TODO : -inf constructor is private, maybe copy into elastica and change
+      // only the copy
       return -inf;
     }
     //**************************************************************************
 
-    //**Get function************************************************************
+    //**************************************************************************
     /*!\brief Get upper bound of domain.
-    //
-    // Gets the upper bound of the domain in a particular Direction.
-    //
-    // \tparam Direction Direction to get upper bound, one of X, Y or Z
-    */
+     *
+     * Gets the upper bound of the domain in a particular Direction.
+     *
+     * \tparam Direction Direction to get upper bound, one of X, Y or Z
+     */
     template <DirectionType Direction>
-    inline constexpr Real get_upper_bound() const noexcept {
+    inline constexpr decltype(auto) get_upper_bound() const noexcept {
+      return get_upper_bound(Direction);
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Get upper bound of domain.
+     *
+     * Gets the upper bound of the domain in a particular Direction.
+     *
+     * \param Direction Direction to get upper bound, one of X, Y or Z
+     */
+    inline constexpr Real get_upper_bound(
+        DirectionType ) const noexcept {
       return inf;
     }
     //**************************************************************************
 
-    //**Get function************************************************************
+    //**************************************************************************
     /*!\brief Get span of domain.
-    //
-    // Gets the span of the domain in a particular Direction.
-    //
-    // \tparam Direction Direction to get span, one of X, Y or Z
-    */
+     *
+     * Gets the span of the domain in a particular Direction.
+     *
+     * \tparam Direction Direction to get span, one of X, Y or Z
+     */
     template <DirectionType Direction>
-    inline Real get_span() const noexcept {
+    inline decltype(auto) get_span() const noexcept {
+      return get_span(Direction);
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Get span of domain.
+     *
+     * Gets the span of the domain in a particular Direction.
+     *
+     * \param Direction Direction to get span, one of X, Y or Z
+     */
+    inline Real get_span(DirectionType ) const noexcept {
       return inf;
     }
     //**************************************************************************
