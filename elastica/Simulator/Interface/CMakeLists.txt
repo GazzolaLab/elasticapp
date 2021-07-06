@@ -1,4 +1,17 @@
+# Distributed under the MIT License. See LICENSE.txt for details.
+
 set(LIBRARY Simulator)
+
+add_subdirectory(Connections)
+add_subdirectory(Constraints)
+add_subdirectory(Environments)
+add_subdirectory(Forcing)
+add_subdirectory(Indexers)
+add_subdirectory(Protocols)
+add_subdirectory(Systems)
+add_subdirectory(TypeTraits)
+add_subdirectory(TimeSteppers)
+add_subdirectory(Wrappers)
 
 elastica_target_headers(
         ${LIBRARY}
@@ -6,23 +19,13 @@ elastica_target_headers(
         HEADERS
         Connections.hpp
         Constraints.hpp
-        DefaultSimulatorConfiguration.hpp
-        Environments.hpp
+        # Environments.hpp
+        Forcing.hpp
+        Indexers.hpp
+        Protocols.hpp
         Simulator.hpp
-        SimulatorConfiguration.hpp
+        Serialize.hpp
+        Types.hpp
+        TypeTraits.hpp
 )
 
-elastica_target_sources(
-        ${LIBRARY}
-        PRIVATE
-        DefaultSimulatorConfiguration.cpp
-)
-
-add_subdirectory(TypeTraits)
-
-#target_link_libraries(
-#        ${LIBRARY}
-#        PUBLIC
-#        ErrorHandling
-#        Utilities
-#)
