@@ -2,11 +2,17 @@
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/IO/Serialization/Archives.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/IgnoreUnused.hpp"
 
 // all test routines
+#include "detail/Test_Array.hpp"
+#include "detail/Test_BlazeDynamicMatrix.hpp"
+#include "detail/Test_BlazeDynamicTensor.hpp"
+#include "detail/Test_BlazeDynamicVector.hpp"
 #include "detail/Test_CustomStructs.hpp"
 #include "detail/Test_POD.hpp"
 #include "detail/Test_String.hpp"
+#include "detail/Test_TaggedTuple.hpp"
 #include "detail/Test_Tuple.hpp"
 #include "detail/Test_Vector.hpp"
 
@@ -60,7 +66,7 @@ namespace {
   // sugar without too much functionality
   using namespace elastica::io;
 
-  void test_binary_archive() {
+  void IGNORE_UNUSED test_binary_archive() {
     /// [binary_archive]
     std::stringstream ss;  // any stream can be used
     int o_i{2};
@@ -127,6 +133,31 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.tuple",
                      "[Unit][Simulator][IO][Serialization]") {
     run_for_archives<TestTuple>();
+  }
+
+  ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.array",
+                     "[Unit][Simulator][IO][Serialization]") {
+    run_for_archives<TestArray>();
+  }
+
+  ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.tagged_tuple",
+                     "[Unit][Simulator][IO][Serialization]") {
+    run_for_archives<TestTaggedTuple>();
+  }
+
+  ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.blaze_dynamic_vector",
+                     "[Unit][Simulator][IO][Serialization]") {
+    run_for_archives<TestBlazeDynamicVector>();
+  }
+
+  ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.blaze_dynamic_matrix",
+                     "[Unit][Simulator][IO][Serialization]") {
+    run_for_archives<TestBlazeDynamicMatrix>();
+  }
+
+  ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.blaze_dynamic_tensor",
+                     "[Unit][Simulator][IO][Serialization]") {
+    run_for_archives<TestBlazeDynamicTensor>();
   }
 
 }  // namespace

@@ -17,7 +17,7 @@
 // Includes
 //******************************************************************************
 
-/// Types first
+// Types first
 #include "Simulator/IO/Serialization/Types.hpp"
 ///
 #include "Simulator/IO/Serialization/Serialization.hpp"
@@ -27,6 +27,7 @@
 #include "Simulator/IO/Serialization/Archives.hpp"
 ///
 #include "Simulator/IO/Serialization/STL.hpp"
+#include "Simulator/IO/Serialization/Custom.hpp"
 
 //==============================================================================
 //
@@ -36,8 +37,10 @@
 
 //******************************************************************************
 /*!\defgroup serialization Serialization
- *\ingroup Simulator
+ * \ingroup simulator
+ * \brief Machinery to serialize and deserialize data
  *
+ * \details
  * The serialization module component implements machinery to serialize and
  * deserialize types in \elastica, mainly for checkpointing.
  */

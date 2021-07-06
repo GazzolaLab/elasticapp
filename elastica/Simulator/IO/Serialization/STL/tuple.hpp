@@ -49,12 +49,7 @@ namespace elastica {
                   EXPAND_PACK_LEFT_TO_RIGHT(ar(std::get<Is>(tuple)));
                 });
         */
-
-        cpp17::apply(
-            [&](Types&... tuple_args) {
-              EXPAND_PACK_LEFT_TO_RIGHT(ar(tuple_args));
-            },
-            tuple);
+        cpp17::apply([&](Types&... tuple_args) { ar(tuple_args...); }, tuple);
       }
 
       template <typename OutArchive>
@@ -65,11 +60,8 @@ namespace elastica {
         });
         */
 
-        cpp17::apply(
-            [&](Types const&... tuple_args) {
-              EXPAND_PACK_LEFT_TO_RIGHT(ar(tuple_args));
-            },
-            tuple);
+        cpp17::apply([&](Types const&... tuple_args) { ar(tuple_args...); },
+                     tuple);
       }
     };
     /*! \endcond */

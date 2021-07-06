@@ -37,41 +37,39 @@ namespace elastica {
 
     //**************************************************************************
     /*!\brief The base output archive class
-    // \ingroup serialization
-    //
-    // \details
-    // Base class archive for all output archives. It provides the expected
-    // interface and support functions, and allows extension to different
-    // archive formats using the Curiously Recurring Template Pattern (CRTP).
-    //
-    // This class provides all of the functionality necessary to
-    // properly forward data to the correct serialization functions.
-    //
-    // Individual archives can use a combination of prologue and
-    // epilogue functions together with specializations of save, and load to
-    // alter the functionality of their serialization.
-    //
-    // \subsection Customization
-    // If you create a custom archive class, it should derive from this, passing
-    // itself as a template parameter for the ArchiveType.
-    //
-       \code
-         using namespace elastica::io;
-         class MyOwnArchive : public OutputArchive<MyOwnArchive>{
-         // implementation details //
-         }
-       \endcode
-    //
-    // Each custom output archive should be accompanied by a specialization of
-    // the save_internal free function with the following signature.
-    //
-       \code
-         template <typename T>
-         void save_internal(MyOwnArchive& ar, T const& t){ // implementation //}
-       \endcode
-    //
-    // \tparam ArchiveType The archive type that derives from OutputArchive
-    */
+     * \ingroup serialization
+     *
+     * \details
+     * Base class archive for all output archives. It provides the expected
+     * interface and support functions, and allows extension to different
+     * archive formats using the Curiously Recurring Template Pattern (CRTP).
+     *
+     * This class provides all of the functionality necessary to
+     * properly forward data to the correct serialization functions.
+     *
+     * Individual archives can use a combination of prologue and
+     * epilogue functions together with specializations of save, and load to
+     * alter the functionality of their serialization.
+     *
+     * \section custom Customization
+     * If you create a custom archive class, it should derive from this, passing
+     * itself as a template parameter for the ArchiveType.
+     * \code
+     *   using namespace elastica::io;
+     *   class MyOwnArchive : public OutputArchive<MyOwnArchive>{
+     *   // implementation details //
+     *   }
+     * \endcode
+     *
+     * Each custom output archive should be accompanied by a specialization of
+     * the save_internal free function with the following signature.
+     * \code
+     *   template <typename T>
+     *   void save_internal(MyOwnArchive& ar, T const& t){ // implementation //}
+     * \endcode
+     *
+     * \tparam ArchiveType The archive type that derives from OutputArchive
+     */
     template <class ArchiveType>
     class OutputArchive : public NonCopyable,
                           public CRTPHelper<ArchiveType, OutputArchive> {
@@ -83,31 +81,59 @@ namespace elastica {
 
      protected:
       //**Constructors**********************************************************
+      /*!\name Constructors */
+      //@{
+
+      //************************************************************************
       /*!\brief Default Constructor for the OutputArchive class.
        */
       OutputArchive() = default;
+      //************************************************************************
+
+      //@}
       //************************************************************************
 
      public:
       //**Destructor************************************************************
       /*!\name Destructor */
       //@{
+
+      //************************************************************************
+      /*!\brief Destructor
+       */
       ~OutputArchive() = default;
+      //************************************************************************
+
       //@}
       //************************************************************************
 
      public:
       //**Functor interface*****************************************************
       /*!\brief Serializes all passed in data
-      //
-      // \details
-      // This is the primary interface for serializing data with an archive.
-      //
-      // \return ArchiveType& the reference to the archive type
-      */
+       *
+       * \details
+       * This is the primary interface for serializing data with an archive.
+       *
+       * \example
+       * \code
+       *  int i; float f; double d; std::string s;
+       *
+       *  auto output_archive = // your favorite archive //;
+       *
+       *  // save all data
+       *  output_archive(i, f, d, s);
+       * \endcode
+       *
+       * \param to_be_serialized parameters to be serialized
+       * \return ArchiveType& the reference to the archive type
+       */
       template <class... Args>
-      inline ArchiveType& operator()(Args&&... args) {
-        EXPAND_PACK_LEFT_TO_RIGHT(self().process(std::forward<Args>(args)));
+      inline ArchiveType& operator()(Args&&... to_be_serialized) {
+        // Do NOT abort here, the callning scope might be further up the chain
+        // and so context will be lost
+        EXPAND_PACK_LEFT_TO_RIGHT(
+            self().process(std::forward<Args>(to_be_serialized)));
+
         return self();
       }
       //************************************************************************
@@ -115,13 +141,13 @@ namespace elastica {
      private:
       //**Serialization processing**********************************************
       /*!\brief Serializes all passed in data
-      //
-      // \details
-      // Serializes \c data based on the downcasted implementation after calling
-      // prologue, then calls epilogue.
-      //
-      // \return void
-      */
+       *
+       * \details
+       * Serializes \c data based on the downcasted implementation after calling
+       * prologue, then calls epilogue.
+       *
+       * \return void
+       */
       template <class T>
       inline void process(T&& data) {
         using ActualType = cpp20::remove_cvref_t<T>;
@@ -141,41 +167,41 @@ namespace elastica {
 
     //**************************************************************************
     /*!\brief The base input archive class
-    // \ingroup serialization
-    //
-    // \details
-    // Base class archive for all input archives. It provides the expected
-    // interface and support functions, and allows extension to different
-    // archive formats using the Curiously Recurring Template Pattern (CRTP).
-    //
-    // This class provides all of the functionality necessary to
-    // properly forward data to the correct serialization functions.
-    //
-    // Individual archives can use a combination of prologue and
-    // epilogue functions together with specializations of load, and load to
-    // alter the functionality of their serialization.
-    //
-    // \subsection Customization
-    // If you create a custom archive class, it should derive from this, passing
-    // itself as a template parameter for the ArchiveType.
-    //
-       \code
-         using namespace elastica::io;
-         class MyOwnArchive : public InputArchive<MyOwnArchive>{
-         // implementation details //
-         }
-       \endcode
-    //
-    // Each custom input archive should be accompanied by a specialization of
-    // the load_internal free function with the following signature.
-    //
-       \code
-         template <typename T>
-         void load_internal(MyOwnArchive& ar, T const& t){ // implementation //}
-       \endcode
-    //
-    // \tparam ArchiveType The archive type that derives from InputArchive
-    */
+     * \ingroup serialization
+     *
+     * \details
+     * Base class archive for all input archives. It provides the expected
+     * interface and support functions, and allows extension to different
+     * archive formats using the Curiously Recurring Template Pattern (CRTP).
+     *
+     * This class provides all of the functionality necessary to
+     * properly forward data to the correct serialization functions.
+     *
+     * Individual archives can use a combination of prologue and
+     * epilogue functions together with specializations of load, and load to
+     * alter the functionality of their serialization.
+     *
+     * \section custom Customization
+     * If you create a custom archive class, it should derive from this, passing
+     * itself as a template parameter for the ArchiveType.
+     *
+     * \code
+     *   using namespace elastica::io;
+     *   class MyOwnArchive : public InputArchive<MyOwnArchive>{
+     *   // implementation details //
+     *   }
+     * \endcode
+     *
+     * Each custom input archive should be accompanied by a specialization of
+     * the load_internal free function with the following signature.
+     *
+     * \code
+     *   template <typename T>
+     *   void load_internal(MyOwnArchive& ar, T const& t){ // implementation //}
+     * \endcode
+     *
+     * \tparam ArchiveType The archive type that derives from InputArchive
+     */
     template <class ArchiveType>
     class InputArchive : public NonCopyable,
                          public CRTPHelper<ArchiveType, InputArchive> {
@@ -187,31 +213,58 @@ namespace elastica {
 
      protected:
       //**Constructors**********************************************************
+      /*!\name Constructors */
+      //@{
+      //************************************************************************
       /*!\brief Default Constructor for the InputArchive class.
        */
       InputArchive() = default;
+      //************************************************************************
+
+      //@}
       //************************************************************************
 
      public:
       //**Destructor************************************************************
       /*!\name Destructor */
       //@{
+
+      //************************************************************************
+      /*!\brief Destructor
+       */
       ~InputArchive() = default;
+      //************************************************************************
+
       //@}
       //************************************************************************
 
      public:
       //**Functor interface*****************************************************
       /*!\brief Serializes all passed in data
-      //
-      // \details
-      // This is the primary interface for serializing data with an archive.
-      //
-      // \return ArchiveType& the reference to the archive type
-      */
-      template <class... Types>
-      inline ArchiveType& operator()(Types&&... args) {
-        EXPAND_PACK_LEFT_TO_RIGHT(self().process(std::forward<Types>(args)));
+       *
+       * \details
+       * This is the primary interface for serializing data with an archive.
+       *
+       * \example
+       * \code
+       *  int i; float f; double d; std::string s;
+       *
+       *  auto input_archive = // your favorite archive //;
+       *
+       *  // load all data
+       *  input_archive(i, f, d, s);
+       * \endcode
+       *
+       * \param to_be_serialized parameters to be serialized
+       * \return ArchiveType& the reference to the archive type
+       */
+      template <class... Args>
+      inline ArchiveType& operator()(Args&&... to_be_serialized) {
+        // Do NOT abort here, the calling scope might be further up the chain
+        // and so context will be lost
+
+        EXPAND_PACK_LEFT_TO_RIGHT(
+            self().process(std::forward<Args>(to_be_serialized)));
         return self();
       }
       //************************************************************************
@@ -219,13 +272,13 @@ namespace elastica {
      private:
       //**Serialization processing**********************************************
       /*!\brief Serializes all passed in data
-      //
-      // \details
-      // Serializes \c data based on the downcasted implementation after calling
-      // prologue, then calls epilogue.
-      //
-      // \return void
-      */
+       *
+       * \details
+       * Serializes \c data based on the downcasted implementation after calling
+       * prologue, then calls epilogue.
+       *
+       * \return void
+       */
       template <class T>
       inline void process(T&& data) {
         using ActualType = cpp20::remove_cvref_t<T>;
@@ -235,6 +288,7 @@ namespace elastica {
       }
       //************************************************************************
     };
+    //**************************************************************************
 
   }  // namespace io
 

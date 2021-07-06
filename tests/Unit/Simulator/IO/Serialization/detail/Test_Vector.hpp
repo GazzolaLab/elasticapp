@@ -14,6 +14,9 @@
 #include "Simulator/IO/Serialization/Types.hpp"
 #include "Simulator/IO/Serialization/STL/vector.hpp"
 
+// catch wants << declared and defined, so we inlcude STD helpers
+#include "Utilities/StdHelpers.hpp"
+
 template <typename IArchive, typename OArchive>
 struct TestVector {
   static inline void run() {

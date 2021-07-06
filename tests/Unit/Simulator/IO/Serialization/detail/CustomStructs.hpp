@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <sstream>  // for catch to have << defined
+
 #include "Simulator/IO/Serialization/Serialize.hpp"
 #include "Simulator/IO/Serialization/Types.hpp"
 
@@ -17,6 +19,15 @@ struct TestA {
   }
 };
 
+/*!
+ * \brief Output the items of a TestA
+ */
+inline std::ostream& operator<<(std::ostream& os,
+                                const TestA& test_a) noexcept {
+  os << "( " << test_a.x << ", " << test_a.y << " )";
+  return os;
+}
+
 struct TestB {
   int x;
   std::string y;
@@ -27,6 +38,15 @@ struct TestB {
     return x != other.x || y != other.y;
   }
 };
+
+/*!
+ * \brief Output the items of a TestA
+ */
+inline std::ostream& operator<<(std::ostream& os,
+                                const TestB& test_b) noexcept {
+  os << "( " << test_b.x << ", " << test_b.y << " )";
+  return os;
+}
 
 template <>
 struct elastica::io::Serialize<TestA> {

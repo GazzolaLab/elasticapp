@@ -87,13 +87,13 @@ namespace elastica {
     // and `save` static functions, as shown in the code snippet below.
     //
     // \example
-    // \snippet Test_Serialize.cpp custom_serialize
+    // \snippet Serialization/Test_Serialize.cpp custom_serialize
     //
     // which can then be used in any serialization archive supported by
     // \elastica like shown below
     //
     // \example
-    // \snippet Test_Serialize.cpp custom_serialize_usage
+    // \snippet Serialization/Test_Serialize.cpp custom_serialize_usage
     //
     // \tparam T The type that needs to be serialized
     //

@@ -16,10 +16,12 @@
 //******************************************************************************
 // Includes
 //******************************************************************************
+#include <exception>
 #include <utility>
 
 #include "Simulator/IO/Serialization/Serialize.hpp"
 #include "Utilities/NonCreatable.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TypeTraits/IsDefined.hpp"
 
 namespace elastica {
@@ -77,7 +79,14 @@ void load(Archive & ar, T& t)
 {
   ar( t.member1, t.member2, t.member3 );
 } )error");
-        Serialize<T>::load(ar, data);
+        // this executes if f() throws std::overflow_error (same type rule)
+
+        try {
+          Serialize<T>::load(ar, data);
+        } catch (...) {
+          std::throw_with_nested(std::runtime_error(
+              "Loading " + pretty_type::short_name<T>() + " failed :"));
+        }
       }
       //************************************************************************
 
@@ -102,10 +111,16 @@ void save(Archive & ar, T const& t)
 {
   ar( t.member1, t.member2, t.member3 );
 } )error");
-        Serialize<T>::save(ar, data);
+        try {
+          Serialize<T>::save(ar, data);
+        } catch (...) {
+          std::throw_with_nested(std::runtime_error(
+              "Saving " + pretty_type::short_name<T>() + "failed"));
+        }
       }
       //************************************************************************
     };
+    //**************************************************************************
 
   }  // namespace io
 

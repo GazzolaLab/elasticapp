@@ -55,7 +55,7 @@ namespace elastica {
     // inadvertently.
     //
     // \example
-    // \snippet Test_Serialize.cpp binary_archive
+    // \snippet Serialization/Test_Serialize.cpp binary_archive
     //
     // \see OutputArchive, BinaryInputArchive
     */
@@ -133,7 +133,7 @@ namespace elastica {
     // inadvertently.
     //
     // \example
-    // \snippet Test_Serialize.cpp binary_archive
+    // \snippet Serialization/Test_Serialize.cpp binary_archive
     //
     // \see InputArchive, BinaryOutputArchive
     */
