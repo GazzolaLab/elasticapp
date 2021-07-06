@@ -1,0 +1,107 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Constraints interface protocols
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
+#pragma once
+
+//******************************************************************************
+// Includes
+//******************************************************************************
+
+#include <type_traits>
+#include <utility>
+
+namespace elastica {
+
+  namespace interface {
+
+    namespace protocols {
+
+      //========================================================================
+      //
+      //  CLASS DEFINITION
+      //
+      //========================================================================
+
+      //************************************************************************
+      /*!\brief Constraint interface protocol.
+       * \ingroup interface_protocols
+       *
+       * Class to enforce adherence to a Constraint interface protocol. Any
+       * valid Constraint interface class within the \elastica library
+       * should (publicly) inherit from this class to indicate it qualifies as a
+       * Constraint interface. Only in case a class is derived publicly from
+       * this base class, the tt::conforms_to and tt::assert_conforms_to type
+       * traits recognizes the class as valid constraints module.
+       *
+       * Requires that a conforming type `ConformingType` has these nested types
+       * \snippet this expected_types
+       * and these member functions,
+       * \snippet this expected_functions
+       *
+       * \example
+       * The following shows an example of minimal conformance to this protocol.
+       * \snippet Interface/Protocols/Test_Constraints.cpp constraints_eg
+       */
+      struct Constraints {
+        //**********************************************************************
+        /*! \cond ELASTICA_INTERNAL */
+        /*!\brief Auxiliary helper struct for enforcing protocols.
+        // \ingroup interface_protocols
+        */
+        template <typename ConformingType>
+        struct test {
+          /// [expected_types]
+          //**Type definitions**************************************************
+          //! Time type of the configured module
+          using time_type = typename ConformingType::TimeType;
+          //********************************************************************
+          /// [expected_types]
+
+          /// [expected_functions]
+          using p_return_type = decltype(std::declval<ConformingType const&>()
+                                             .apply_constraints_on_primitives(
+                                                 std::declval<time_type>()));
+          static_assert(cpp17::is_same_v<p_return_type, void>,
+                        R"error(
+Not a conforming data trait, doesn't properly implement static function
+`void apply_constraints_on_primitives(time_type time_v) const`
+)error");
+
+          using r_return_type = decltype(std::declval<ConformingType const&>()
+                                             .apply_constraints_on_rates(
+                                                 std::declval<time_type>()));
+          // Confirm that there are no side effects upon calling this function
+          // by comparing strictly against void
+          static_assert(cpp17::is_same_v<r_return_type, void>,
+                        R"error(
+Not a conforming Constraint, doesn't properly implement function
+`void apply_constraints_on_rates(time_type time_v) const`
+)error");
+
+          using SystemType = NoSuchType;
+          using Name = std::string;
+          using constrain_return_type =
+              decltype(std::declval<ConformingType&>().constrain(
+                  std::declval<SystemType const&>(), std::declval<Name>()));
+          /// [expected_functions]
+        };
+        /*! \endcond */
+        //**********************************************************************
+      };
+      //************************************************************************
+
+    }  // namespace protocols
+
+  }  // namespace interface
+
+}  // namespace elastica

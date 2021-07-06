@@ -6,7 +6,8 @@ elastica_target_headers(
         ${LIBRARY}
         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
         HEADERS
-        Domain.hpp
+        Connections.hpp
+        Constraints.hpp
         Environments.hpp
-        Simulator.hpp
+        Forcing.hpp
 )

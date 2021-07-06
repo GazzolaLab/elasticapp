@@ -17,7 +17,22 @@
 // Includes
 //******************************************************************************
 
-#include "Simulator/Interface/Protocols/Domain.hpp"
+#include "Simulator/Interface/Protocols/Connections.hpp"
+#include "Simulator/Interface/Protocols/Constraints.hpp"
 #include "Simulator/Interface/Protocols/Environments.hpp"
-#include "Simulator/Interface/Protocols/Systems.hpp"
+#include "Simulator/Interface/Protocols/Forcing.hpp"
 
+//==============================================================================
+//
+//  DOXYGEN DOCUMENTATION
+//
+//==============================================================================
+
+//******************************************************************************
+/*!\defgroup interface_protocols Interface Protocols
+ * \ingroup interface
+ *
+ * This module contains all protocols expected from a Module's interface to the
+ * \elastica Simulator
+ */
+//******************************************************************************

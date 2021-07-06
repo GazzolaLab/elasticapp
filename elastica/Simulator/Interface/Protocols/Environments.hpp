@@ -1,3 +1,16 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Environments interface protocols
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
 
 //******************************************************************************
@@ -7,13 +20,9 @@
 #include <type_traits>
 #include <utility>
 
-#include "Simulator/Interface/TypeTraits/Aliases/Environments.hpp"
-#include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/IsDetected.hpp"
-
 namespace elastica {
 
-  namespace configuration {
+  namespace interface {
 
     namespace protocols {
 
@@ -24,54 +33,52 @@ namespace elastica {
       //========================================================================
 
       //************************************************************************
-      /*!\brief Environments configuration protocol.
-      // \ingroup configuration protocols
-      //
-      // Class to enforce adherence to Environments configuration protocol. Any
-      // valid environment configuration within the Elastica++ library should
-      // (publicly) inherit from this class to indicate it qualifies as a
-      // Environment. Only in case a class is derived publicly from this base
-      // class, the \c tt::conforms_to and \c tt::assert_conforms_to type traits
-      // recognizes the class as valid Environments.
-      //
-      // Requires that conforming type has these nested types:
-      // - \a AdmissibleEnvironmentTags : A (strictly) tmpl::list of tags of
-      //                                  admissible environments
-      // - \a AdmissibleImposedPrimitives : A (strictly) tmpl::list of
-      //                                    temporally non-evolving primitives
-      */
-      struct EnvironmentsConfiguration {
+      /*!\brief Environment interface protocol.
+       * \ingroup interface_protocols
+       *
+       * Class to enforce adherence to a Environment interface protocol. Any
+       * valid Environment interface class within the \elastica library
+       * should (publicly) inherit from this class to indicate it qualifies as a
+       * Environment interface. Only in case a class is derived publicly from
+       * this base class, the tt::conforms_to and tt::assert_conforms_to type
+       * traits recognizes the class as valid environments module.
+       *
+       * Requires that a conforming type `ConformingType` has these nested types
+       * \snippet this expected_types
+       * and these member functions,
+       * \snippet this expected_functions
+       *
+       * \example
+       * The following shows an example of minimal conformance to this protocol.
+       * \snippet Interface/Protocols/Test_Environments.cpp environments_eg
+       */
+      struct Environments {
         //**********************************************************************
         /*! \cond ELASTICA_INTERNAL */
         /*!\brief Auxiliary helper struct for enforcing protocols.
-        // \ingroup protocols
+        // \ingroup interface_protocols
         */
         template <typename ConformingType>
         struct test {
-         public:
-          // Check for nested types of the ConfirmingType
-          static_assert(
-              ::tt::is_detected_v<::elastica::tt::admissible_environment_tags_t,
-                                  ConformingType>,
-              "Not a conforming environments configuration, doesn't have a "
-              "nested AdmissibleEnvironmentTags member");
-          static_assert(
-              ::tt::is_a_v<tmpl::list,
-                           ::elastica::tt::admissible_environment_tags_t<
-                               ConformingType>>,
-              "Admissible environment tags should belong in a typelist!");
+          /// [expected_types]
+          //**Type definitions**************************************************
+          //! Time type of the configured module
+          using time_type = typename ConformingType::TimeType;
+          //********************************************************************
+          /// [expected_types]
 
-          static_assert(
-              ::tt::is_detected_v<
-                  ::elastica::tt::admissible_imposed_primitives_t,
-                  ConformingType>,
-              "Not a conforming environments configuration, doesn't have a "
-              "nested AdmissibleImposedPrimitives member");
-          static_assert(
-              ::tt::is_a_v<tmpl::list,
-                           ::elastica::tt::admissible_imposed_primitives_t<
-                               ConformingType>>,
-              "Admissible imposed primitives should belong in a typelist!");
+          /// [expected_functions]
+          using return_type = decltype(std::declval<ConformingType const&>()
+                                           .apply_environmental_effects(
+                                               std::declval<time_type>()));
+          // Confirm that there are no side effects upon calling this function
+          // by comparing strictly against void
+          static_assert(cpp17::is_same_v<return_type, void>,
+                        R"error(
+Not a conforming Environment, doesn't properly implement function
+`void apply_environmental_effects(time_type time_v) const`
+)error");
+          /// [expected_functions]
         };
         /*! \endcond */
         //**********************************************************************
@@ -80,6 +87,6 @@ namespace elastica {
 
     }  // namespace protocols
 
-  }  // namespace defaults
+  }  // namespace interface
 
 }  // namespace elastica
