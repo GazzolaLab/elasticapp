@@ -1,7 +1,5 @@
 # Distributed under the MIT License. See LICENSE.txt for details.
 
-add_subdirectory(Domain)
-
 set(LIBRARY Simulator)
 
 add_elastica_library(${LIBRARY})
@@ -14,13 +12,30 @@ elastica_target_sources(
         Visualization.cpp
 )
 
+add_subdirectory(Configuration)
+add_subdirectory(Connections)
+add_subdirectory(Constraints)
+add_subdirectory(Domain)
+add_subdirectory(Environments)
+add_subdirectory(Forcing)
+add_subdirectory(Frames)
+add_subdirectory(Interface)
+add_subdirectory(IO)
+
 elastica_target_headers(
         ${LIBRARY}
         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
-        BoundaryConditions.hpp
+        Configuration.hpp
+        Connections.hpp
+        Constraints.hpp
+        Domain.hpp
         Environments.hpp
-        Joints.hpp
+        Forcing.hpp
+        Frames.hpp
+        Indexers.hpp
         Materials.hpp
+        Modules.hpp
+        Protocols.hpp
         Simulator.hpp
         Thresholds.hpp
         Trigger.hpp
@@ -41,10 +56,6 @@ target_link_libraries(
 #target_include_directories(${LIBRARY} PRIVATE Interface)
 #target_include_directories(${LIBRARY} PRIVATE CollisionSystem)
 #target_include_directories(${LIBRARY} PRIVATE IO)
-
-add_subdirectory(Environments)
-add_subdirectory(IO)
-add_subdirectory(Interface)
 
 #add_elastica_library(${LIBRARY} ${LIBRARY_SOURCES})
 #
