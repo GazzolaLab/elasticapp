@@ -9,6 +9,7 @@ elastica_target_sources(
         PRIVATE
         AbortWithErrorMessage.cpp
         FloatingPointExceptions.cpp
+        NestedExceptions.cpp
 )
 
 elastica_target_headers(
@@ -21,6 +22,7 @@ elastica_target_headers(
         ExpectsAndEnsures.hpp
         Exit.hpp
         FloatingPointExceptions.hpp
+        NestedExceptions.hpp
 )
 
 #add_elastica_library(${LIBRARY} ${LIBRARY_SOURCES})
