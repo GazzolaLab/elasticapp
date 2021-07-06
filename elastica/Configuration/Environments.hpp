@@ -15,7 +15,7 @@
 
 //******************************************************************************
 /*!\brief Selection of the default environment modules
- * \ingroup config
+ * \ingroup default_config
  *
  * This macro selects the default environment modules. The purpose of this
  * \a typelist is to add tags indicating the environments in the simulation. The
@@ -33,7 +33,7 @@
 
 //******************************************************************************
 /*!\brief Selection of the default imposed primitives
- * \ingroup config
+ * \ingroup default_config
  *
  * This macro selects the default imposed primitives. The purpose of this
  * \a typelist is to add primitives that comprise the environment in the
@@ -49,4 +49,20 @@
  */
 #define ELASTICA_DEFAULT_ADMISSIBLE_IMPOSED_PRIMITIVES \
   tmpl::list<elastica::collision::PlanePrimitive>
+//******************************************************************************
+
+//******************************************************************************
+/*!\brief Selection of the default execution type for Environment algorithms
+ * \ingroup default_config
+ *
+ * This macro select the default execution type for Environment algorithms. The
+ * following execution policies are available:
+ *
+ *   - elastica::configuration::sequential_policy
+ *   - elastica::configuration::parallel_policy
+ *
+ * This can be customized if needed in the client file.
+ */
+#define ELASTICA_DEFAULT_EXECUTION_POLICY_FOR_ENVIRONMENTS \
+  ::elastica::configuration::sequential_policy
 //******************************************************************************

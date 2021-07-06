@@ -95,8 +95,9 @@ constexpr std::size_t initial_z_cell_count() { return 4UL; /*16UL;*/ }
 //******************************************************************************
 
 //******************************************************************************
-/*!\brief The initial storage capaciy of a newly created grid cell body
- * container. \ingroup config
+/*!\brief The initial storage capacity of a newly created grid cell body
+ * container.
+ * \ingroup config
  *
  * This value specifies the initial storage capacity reserved for every grid
  * cell body container, i.e., the number of bodies that can initially be
