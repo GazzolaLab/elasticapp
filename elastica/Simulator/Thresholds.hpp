@@ -80,7 +80,7 @@ namespace elastica {
      if( dist < Thresholds<double>::surface_threshold ) {...}
      \endcode
 
-   * \b Note: The Thresholds class is not defined for integral data tyelasticas.
+   * \b Note: The Thresholds class is not defined for integral data types.
    */
   template <typename Float>
   struct Thresholds {};
