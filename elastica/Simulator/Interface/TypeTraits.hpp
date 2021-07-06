@@ -1,7 +1,7 @@
 //==============================================================================
 /*!
 //  \file
-//  \brief Inclusion of all interface type traits
+//  \brief Interface type traits
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
@@ -17,6 +17,7 @@
 // Includes
 //******************************************************************************
 
-#include "Simulator/Interface/TypeTraits/Domain.hpp"
+#include "Simulator/Interface/TypeTraits/Connections.hpp"
+#include "Simulator/Interface/TypeTraits/Constraints.hpp"
 #include "Simulator/Interface/TypeTraits/Environments.hpp"
-#include "Simulator/Interface/TypeTraits/Systems.hpp"
+
