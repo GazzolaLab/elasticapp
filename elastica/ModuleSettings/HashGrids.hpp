@@ -23,7 +23,7 @@ namespace elastica {
           //
           //====================================================================
 
-#include "elastica/Configuration/HashGrids.hpp"
+#include "Configuration/HashGrids.hpp"
 
           namespace {
 
