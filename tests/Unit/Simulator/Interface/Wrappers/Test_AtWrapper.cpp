@@ -4,19 +4,41 @@
 #include <algorithm>
 #include <iostream>
 #include <type_traits>
+#include <utility>
 
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Interface/Wrappers/AtWrapper.hpp"
+#include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/Utilities/NamedType/TraitsTesters.hpp"
+#include "Utilities/MakeString.hpp"
 
 namespace {
 
   using namespace ::elastica::interface;
 
+  namespace {
+
+    /// [AtWrapper_example]
+    template <typename Callable>
+    using AtWrappedType =
+        named_type::NamedType<Callable, struct ParamTag, named_type::AtWrapper>;
+    struct AnyCallable {
+      constexpr int operator()(int x) const noexcept { return x; }
+    };
+    auto at_wrapped_callable = AtWrappedType<AnyCallable>(AnyCallable{});
+    static_assert(at_wrapped_callable.at(2) == 2, "at wrapped failure!");
+    /// [AtWrapper_example]
+
+  }  // namespace
+
   decltype(auto) test_at_with_lvalue_func(int i) {
-    auto x = [i](int j) noexcept { return j + i; };
-    return make_wrapped_at(x);
+    /// [make_wrapped_at_example]
+    auto some_callable = [i](int j) noexcept { return j + i; };
+    auto callable_as_at = make_wrapped_at(some_callable);
+    // use as callable_as_at.at(2);
+    /// [make_wrapped_at_example]
+    return callable_as_at;
   }
 
   decltype(auto) test_at_with_mutable_lvalue_func(int i) {
@@ -81,24 +103,23 @@ namespace {
     char c;
   };
 
-  // [[OutputRegex, 1 2.14 c]]
   ELASTICA_TEST_CASE(
       "Unit.Simulator.Interface.Wrappers.At.constructed_arguments",
       "[Unit][Simulator][Interface]") {
-    OUTPUT_TEST();
     auto a_wrapper(make_wrapped_at([](A a) {
-      std::cout << a.x << " " << a.f << " " << a.c << std::endl;
+      return std::string(MakeString{} << a.x << " " << a.f << " " << a.c);
     }));
     char c = 'c';
     float f(2.14F);
-    a_wrapper.at<A>(1, std::move(f), c);
+    auto test = std::string("1 2.14 c");
+    CHECK(a_wrapper.at<A>(1, std::move(f), c) == test);
   }
 
   using testing::_1;
   using testing::CheckGuarantees;
   using AtAffordances = tmpl::list<named_type::AtWrapper<_1>>;
-  auto lambda = [](int x) { return x; };
-  auto mut_lambda = [i = 0]() mutable { return i; };
+  auto lambda IGNORE_UNUSED = [](int x) { return x; };
+  auto mut_lambda IGNORE_UNUSED = [i = 0]() mutable { return i; };
   struct MyCallable {
     int operator()(int x) { return 2 * x; }
   };
