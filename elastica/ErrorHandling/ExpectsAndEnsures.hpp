@@ -15,6 +15,15 @@
 #endif
 #endif
 
+// part of GSL, but GSL depends on Expects and Ensures...
+#ifndef LIKELY
+#if defined(__clang__) || defined(__GNUC__)
+#define LIKELY(x) __builtin_expect(!!(x), 1)
+#else
+#define LIKELY(x) (x)
+#endif
+#endif
+
 ///*!
 // * \ingroup ErrorHandlingGroup
 // * \brief check expectation of pre-conditions of a function
