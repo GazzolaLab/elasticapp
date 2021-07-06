@@ -19,7 +19,7 @@
 
 #include "ErrorHandling/Exit.hpp"
 #include "Utilities/Requires.hpp"
-//#include "Utilities/StlStreamDeclarations.hpp"
+#include "Utilities/StlStreamDeclarations.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 #include "Utilities/TypeTraits/IsIterable.hpp"
 #include "Utilities/TypeTraits/IsMaplike.hpp"
@@ -134,6 +134,16 @@ struct check_iterable_approx {
   // clang-tidy: non-const reference
   static void apply(const T& a, const T& b, Approx& appx = approx) {  // NOLINT
     CHECK(a == appx(b));
+  }
+};
+
+template <typename T>
+struct check_iterable_approx<std::reference_wrapper<T>, std::nullptr_t> {
+  // clang-tidy: non-const reference
+  static void apply(const std::reference_wrapper<T>& a,
+                    const std::reference_wrapper<T>& b,
+                    Approx& appx = approx) {  // NOLINT
+    CHECK(a.get() == appx(b.get()));
   }
 };
 

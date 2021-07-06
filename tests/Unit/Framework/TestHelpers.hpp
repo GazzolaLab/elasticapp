@@ -7,7 +7,11 @@
 
 #pragma once
 
+#include <sstream>
+
+#include "Simulator/IO/Serialization/Archives.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/HasEquivalence.hpp"
 
 template <typename T>
 struct counter {
@@ -64,3 +68,42 @@ namespace lists {
   using floating_points = tmpl::list<float, double, long double>;
 
 }  // namespace lists
+
+template <typename T>
+std::stringstream serialize(T const& t) {
+  std::stringstream ss;                            // any stream can be used
+  elastica::io::BinaryOutputArchive oarchive(ss);  //  Create an output archive
+  oarchive(t);
+  return ss;
+}
+
+template <typename T>
+T deserialize(std::stringstream ss) {
+  elastica::io::BinaryInputArchive iarchive(ss);  //  Create an output archive
+  T result{};
+  iarchive(result);
+  return result;
+}
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Serializes and deserializes an object `t` of type `T`
+ */
+template <typename T>
+T serialize_and_deserialize(const T& t) {
+  static_assert(
+      std::is_default_constructible<T>::value,
+      "Cannot use serialize_and_deserialize if a class is not default "
+      "constructible.");
+  return deserialize<T>(serialize<T>(t));
+}
+
+/// \ingroup TestingFrameworkGroup
+/// \brief Tests the serialization of comparable types
+/// \example
+/// \snippet Test_PupStlCpp11.cpp example_serialize_comparable
+template <typename T>
+void test_serialization(const T& t) {
+  static_assert(::tt::has_equivalence_v<T>, "No operator== for T");
+  CHECK(t == serialize_and_deserialize(t));
+}

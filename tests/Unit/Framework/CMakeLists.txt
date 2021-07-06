@@ -10,6 +10,7 @@ add_elastica_library(${LIBRARY} INTERFACE)
 set(STRING_LIBRARY StringAlgorithm)
 set(STRING_LIBRARY_SOURCES
         StringAlgorithm.cpp
+        TestNestedExceptions.cpp
         )
 add_library(${STRING_LIBRARY} ${STRING_LIBRARY_SOURCES})
 
