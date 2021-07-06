@@ -454,7 +454,7 @@ namespace Options {
     struct get_impl<Tag, Metavariables, Tag> {
       template <typename LocalTag = Tag, typename OptionList, typename Group,
                 Requires<Options_detail::has_suggested<LocalTag>::value> = nullptr>
-      static void check_suggested_value(const typename LocalTag::type& t,
+      static void check_suggested_value(const typename LocalTag::type&,
                                         const Parser<OptionList, Group>& opts) {
         static_assert(cpp17::is_same_v<decltype(LocalTag::suggested_value()),
                                        typename LocalTag::type>,
@@ -495,7 +495,7 @@ namespace Options {
                 Requires<not Options_detail::has_suggested<LocalTag>::value> = nullptr>
       static void check_suggested_value(
           const typename LocalTag::type& /*t*/,
-          const Parser<OptionList, Group>& /*opts*/) noexcept {};
+          const Parser<OptionList, Group>& /*opts*/) noexcept {}
 
       template <typename OptionList, typename Group>
       static typename Tag::type apply(const Parser<OptionList, Group>& opts) {
@@ -772,3 +772,4 @@ struct YAML::convert<Options::Options_detail::CreateWrapper<T, Metavariables>> {
 };
 
 #include "Options/Factory.hpp"
+#include "Options/CustomTypes.hpp"
