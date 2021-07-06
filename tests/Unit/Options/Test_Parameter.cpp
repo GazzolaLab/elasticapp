@@ -8,6 +8,7 @@
 #include "Framework/TestingFramework.hpp"
 #include "Options/Options.hpp"
 #include "Options/Parameter.hpp"
+#include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/NonCopyable.hpp"
 
 namespace {
@@ -15,14 +16,15 @@ namespace {
   /// [parameter_example]
   struct RealParameter : Options::Parameter<float> {
     using Parameter::Parameter;
-    static constexpr Options::String help = {"real parameter"};
+    static constexpr IGNORE_UNUSED Options::String help = {"real parameter"};
   };
   /// [parameter_example]
 
   /// [parameter_extra_example]
   struct AnotherRealParameter : Options::Parameter<float> {
     using Parameter::Parameter;
-    static constexpr Options::String help = {"another real parameter"};
+    static constexpr IGNORE_UNUSED Options::String help = {
+        "another real parameter"};
     // These are optional
     // you have access to typename "type"  from Parameter
     static type suggested_value() noexcept { return 3.0F; }

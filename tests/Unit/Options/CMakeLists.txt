@@ -4,9 +4,10 @@
 set(LIBRARY "Test_Options")
 
 set(LIBRARY_SOURCES
-        #  Test_CustomTypeConstruction.cpp
-        #  Test_Factory.cpp
-        #  Test_Options.cpp
+        # TODO : Uncomment the following after you have corrected for ERROR_TEST()
+        # Test_CustomTypeConstruction.cpp
+        # Test_Factory.cpp
+        # Test_Options.cpp
         Test_Parameter.cpp
         )
 

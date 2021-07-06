@@ -452,8 +452,9 @@ namespace Options {
 
     template <typename Tag, typename Metavariables>
     struct get_impl<Tag, Metavariables, Tag> {
-      template <typename LocalTag = Tag, typename OptionList, typename Group,
-                Requires<Options_detail::has_suggested<LocalTag>::value> = nullptr>
+      template <
+          typename LocalTag = Tag, typename OptionList, typename Group,
+          Requires<Options_detail::has_suggested<LocalTag>::value> = nullptr>
       static void check_suggested_value(const typename LocalTag::type&,
                                         const Parser<OptionList, Group>& opts) {
         static_assert(cpp17::is_same_v<decltype(LocalTag::suggested_value()),
@@ -492,7 +493,8 @@ namespace Options {
       }
 
       template <typename LocalTag = Tag, typename OptionList, typename Group,
-                Requires<not Options_detail::has_suggested<LocalTag>::value> = nullptr>
+                Requires<not Options_detail::has_suggested<LocalTag>::value> =
+                    nullptr>
       static void check_suggested_value(
           const typename LocalTag::type& /*t*/,
           const Parser<OptionList, Group>& /*opts*/) noexcept {}
@@ -727,11 +729,21 @@ namespace Options {
   struct create_from_yaml<std::unordered_map<K, V, H, P>> {
     template <typename Metavariables>
     static std::unordered_map<K, V, H, P> create(const Option& options) {
-      auto ordered = options.parse_as<std::map<K, V>, Metavariables>();
+      // This shared_ptr stuff is a hack to work around the inability to
+      // extract keys from maps before C++17.  Once we require C++17
+      // this function and the conversion code for maps in
+      // OptionsDetails.hpp can be updated to use the map `extract`
+      // method and the shared_ptr conversion below can be removed.
+      auto ordered =
+          options.parse_as<std::map<std::shared_ptr<K>, V>, Metavariables>();
+      // auto ordered = options.parse_as<std::map<K, V>, Metavariables>();
       std::unordered_map<K, V, H, P> result;
-      for (auto it = ordered.begin(); it != ordered.end();) {
-        auto node = ordered.extract(it++);
-        result.emplace(std::move(node.key()), std::move(node.mapped()));
+      for (auto& kv : ordered) {
+        result.emplace(std::move(*kv.first), std::move(kv.second));
+        //      for (auto it = ordered.begin(); it != ordered.end();) {
+        //        auto node = ordered.extract(it++);
+        //        result.emplace(std::move(node.key()),
+        //        std::move(node.mapped()));
       }
       return result;
     }
@@ -771,5 +783,5 @@ struct YAML::convert<Options::Options_detail::CreateWrapper<T, Metavariables>> {
   }
 };
 
-#include "Options/Factory.hpp"
 #include "Options/CustomTypes.hpp"
+#include "Options/Factory.hpp"
