@@ -349,6 +349,26 @@ namespace elastica {
     //**************************************************************************
 
     //**************************************************************************
+    /*!\brief Constructs a pair of indices from a pair
+    //
+    // \example
+    // \snippet Test_At.cpp at_pair_example
+    //
+    // \note
+    // This is a specialization for a pair type which just returns the same pair
+    // out. SFINAE is the only way to achieve this with forwarding references.
+    //
+    // \param pair An index pair
+    // \return pair
+    */
+    template <typename T,
+        Requires<tt::IsPair<std::decay_t<T>>::value> = nullptr>
+    constexpr decltype(auto) at(T&& pair) noexcept {
+      return std::forward<T>(pair);
+    }
+    //**************************************************************************
+
+    //**************************************************************************
     /*!\brief Converts a symbolic set of indices to a numeric set
     //
     // \details
@@ -382,6 +402,8 @@ namespace elastica {
       // there may be overflow here, but its less likely
       std::array<std::size_t, Nints + Nends> numerical_indices{};
       std::ostringstream s_stream;
+      s_stream << "Number of degrees of freedom exceeded at ";
+
       using AtType = detail::At_t<Nints, Nends>;
       bool failed = false;
       auto check = make_overloader(
@@ -408,26 +430,22 @@ namespace elastica {
             }
           });
 
-      s_stream << "Integer indices:\n"
-               << "[ ";
+      s_stream << "Integer indices: [ ";
       index_apply<Nints>(
           [&check, &numerical_indices, &ints = index_set.ints()](auto... Is) {
             // Is : 0 -> Nints
             EXPAND_PACK_LEFT_TO_RIGHT(std::get<Is>(numerical_indices) =
                                           check(std::get<Is>(ints)));
           });
-      s_stream << " ]\n"
-               << "End indices:\n"
-               << "[ ";
+      s_stream << " ], End indices: [ ";
       index_apply<Nends>(
           [&check, &numerical_indices, &ends = index_set.ends()](auto... Is) {
             EXPAND_PACK_LEFT_TO_RIGHT(std::get<Nints + Is>(numerical_indices) =
                                           check(std::get<Is>(ends)));
           });
-      s_stream << "]\n";
+      s_stream << "]";
 
       if (failed) {
-        s_stream << "as the number of degrees of freedom is exceeded";
         throw std::out_of_range(s_stream.str());
       }
       return ::elastica::detail::numeric_at_t<Nints + Nends>{numerical_indices};
@@ -466,6 +484,7 @@ namespace elastica {
                     System const& sys)
         -> std::unique_ptr<::elastica::detail::numeric_at_base_t> {
       std::ostringstream s_stream;
+      s_stream << "Number of degrees of freedom exceeded at ";
       bool failed = false;
       using AtType = detail::At_base_t;
 
@@ -497,23 +516,19 @@ namespace elastica {
           });
 
       // reserve
-      s_stream << "Integer indices:\n"
-               << "[ ";
+      s_stream << "Integer indices: [ ";
       std::transform(
           index_set->integer_indices(),
           index_set->integer_indices() + index_set->integer_indices_size(),
           std::back_inserter(numerical_indices), check);
-      s_stream << " ]\n"
-               << "End indices:\n"
-               << "[ ";
+      s_stream << " ], End indices: [ ";
       // do ends next
       std::transform(index_set->end_indices(),
                      index_set->end_indices() + index_set->end_indices_size(),
                      std::back_inserter(numerical_indices), check);
-      s_stream << "]\n";
+      s_stream << "]";
 
       if (failed) {
-        s_stream << "\n as the number of degrees of freedom is exceeded";
         throw std::out_of_range(s_stream.str());
       }
 

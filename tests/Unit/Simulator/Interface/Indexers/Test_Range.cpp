@@ -3,8 +3,8 @@
 //
 
 #include "Framework/TestingFramework.hpp"
-#include "MockSystems.hpp"
 #include "Simulator/Interface/Indexers/Range.hpp"
+#include "Simulator/Interface/MockSystems.hpp"
 
 namespace {
 
@@ -12,6 +12,8 @@ namespace {
   using namespace elastica::interface;
   using elastica::end;
   using elastica::from_end;
+  using mock::NoThrowSystem;
+  using mock::ThrowSystem;
 
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Indexers.Range.range",
                      "[Unit][Simulator][Interface]") {
@@ -46,7 +48,7 @@ namespace {
                      "[Unit][Simulator][Interface]") {
     auto sys = NoThrowSystem{};
     {  // purely numeric
-      auto r = range(2, 10, 2);
+      auto r = range(2UL, 10UL, 2UL);
       auto numerical_indices = to_numeric(r, sys);
       CHECK(numerical_indices.start_ == 3);
       CHECK(numerical_indices.stop_ == 11);
@@ -64,7 +66,7 @@ namespace {
     {  // mixed
       /// [range_to_numeric]
       auto system = NoThrowSystem{};
-      auto r = range(1, end - 2, 2);
+      auto r = range(1UL, end - 2, 2UL);
       auto numerical_indices = to_numeric(r, system);
       CHECK(numerical_indices.start_ == 2);
       CHECK(numerical_indices.stop_ == (200 - 2));
@@ -81,15 +83,15 @@ namespace {
     ERROR_TEST();
     auto sys = ThrowSystem{};
     {  //
-      auto r = range(1, 5, 1);
+      auto r = range(1UL, 5UL, 1UL);
       CHECK_THROWS_WITH(to_numeric(r, sys),
-                        Catch::Contains("as the number of degrees of freedom"));
+                        Catch::Contains("Number of degrees of freedom"));
     }
 
     {  //
       auto r = range(end - 2, end - 5, 2);
       CHECK_THROWS_WITH(to_numeric(r, sys),
-                        Catch::Contains("as the number of degrees of freedom"));
+                        Catch::Contains("Number of degrees of freedom"));
     }
   }
 

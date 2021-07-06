@@ -2,7 +2,7 @@
 // Created by Tejaswin Parthasarathy on 1/20/21.
 //
 #include "Framework/TestingFramework.hpp"
-#include "MockSystems.hpp"
+#include "Simulator/Interface/MockSystems.hpp"
 #include "Simulator/Interface/Indexers/Pair.hpp"
 #include "Utilities/End.hpp"
 #include "Utilities/Defer.hpp"
@@ -14,6 +14,8 @@ namespace {
   using elastica::end;
   using elastica::from_end;
   using elastica::defer;
+  using mock::NoThrowSystem;
+  using mock::ThrowSystem;
 
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Indexers.Pair.pair",
                      "[Unit][Simulator][Interface]") {
@@ -86,13 +88,13 @@ namespace {
     {  //
       auto p = pair(1UL, 5UL);
       CHECK_THROWS_WITH(to_numeric(p, first_sys, second_sys),
-                        Catch::Contains("as the number of degrees of freedom"));
+                        Catch::Contains("Number of degrees of freedom"));
     }
 
     {  //
       auto p = pair(end - 2, end - 5);
       CHECK_THROWS_WITH(to_numeric(p, first_sys, second_sys),
-                        Catch::Contains("as the number of degrees of freedom"));
+                        Catch::Contains("Number of degrees of freedom"));
     }
   }
 

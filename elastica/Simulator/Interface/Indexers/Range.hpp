@@ -16,8 +16,8 @@
 //******************************************************************************
 // Includes
 //******************************************************************************
-#include <sstream>
 #include <limits>
+#include <sstream>
 
 ///
 #include "Simulator/Interface/Indexers/Types.hpp"
@@ -180,6 +180,7 @@ namespace elastica {
     auto to_numeric(detail::Range<StartType, StopType> const& index_range,
                     System const& sys) -> ::elastica::detail::NumericRange {
       std::ostringstream s_stream;
+      s_stream << "Number of degrees of freedom exceeded at range ";
       bool failed = false;
 
       auto check = make_overloader(
@@ -202,14 +203,13 @@ namespace elastica {
             }
           });
 
-      s_stream << "[ ";
+      s_stream << "[ start: ";
       const std::size_t start = check(index_range.start_);
-      s_stream << ", ";
+      s_stream << ", stop: ";
       const std::size_t stop = check(index_range.stop_);
-      s_stream << " ]\n";
+      s_stream << "]";
 
       if (failed) {
-        s_stream << "as the number of degrees of freedom is exceeded";
         throw std::out_of_range(s_stream.str());
       }
 

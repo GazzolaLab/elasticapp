@@ -154,13 +154,17 @@ namespace elastica {
         //**********************************************************************
         /*!\brief Gets the integer indices
          */
-        FirstType first() const noexcept { return first_index_; }
+        inline constexpr auto first() const noexcept -> FirstType {
+          return first_index_;
+        }
         //**********************************************************************
 
         //**********************************************************************
         /*!\brief Gets the end integral indices
          */
-        SecondType second() const noexcept { return second_index_; }
+        inline constexpr auto second() const noexcept -> SecondType {
+          return second_index_;
+        }
         //**********************************************************************
 
         //@}
@@ -320,6 +324,7 @@ namespace elastica {
                     FirstSystem const& first_sys,
                     SecondSystem const& second_sys) -> std::pair<int, int> {
       std::ostringstream s_stream;
+      s_stream << "Number of degrees of freedom exceeded at ";
       bool failed = false;
 
       auto check = make_overloader(
@@ -344,7 +349,7 @@ namespace elastica {
             }
           });
 
-      s_stream << "( ";
+      s_stream << "(";
       const std::size_t first_idx = check(first_sys, index_pair.first_index_);
       s_stream << ", ";
       const std::size_t second_idx =
@@ -352,7 +357,6 @@ namespace elastica {
       s_stream << ")";
 
       if (failed) {
-        s_stream << "\n as the number of degrees of freedom is exceeded";
         throw std::out_of_range(s_stream.str());
       }
 
