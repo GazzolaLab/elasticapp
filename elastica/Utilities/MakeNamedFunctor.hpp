@@ -72,7 +72,7 @@ namespace named_type {
                           std::forward<Funcs>(funcs)...)))) {
     return ::named_type::make_named<StrongType>(make_overloader(
         std::forward<F>(f), std::forward<G>(g), std::forward<Funcs>(funcs)...));
-  };
+  }
   /*! \endcond */
   //****************************************************************************
 
