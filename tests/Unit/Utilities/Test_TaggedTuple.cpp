@@ -11,8 +11,9 @@
 #include "Framework/TestHelpers.hpp"
 #include "Framework/TestingFramework.hpp"
 /// needs to be declared before for having stream operators for a vector
-#include "Utilities/StdHelpers.hpp"
 #include "Utilities/StlStreamDeclarations.hpp"
+///
+#include "Utilities/StdHelpers.hpp"
 ///
 #include "Utilities/TaggedTuple.hpp"
 

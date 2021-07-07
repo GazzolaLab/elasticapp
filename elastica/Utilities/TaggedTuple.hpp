@@ -747,7 +747,7 @@ namespace tuples {
             const auto& element,
             const std::integral_constant<bool, true> /*meta*/) {
           // TODO why is this bugging out?
-          // using ::operator<<;
+          using ::operator<<;
           os << element;
           current_value++;
           if (current_value < sizeof...(Tags)) {
