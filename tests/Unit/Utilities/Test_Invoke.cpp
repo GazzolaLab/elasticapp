@@ -8,7 +8,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-  int simple_static_function(){};
+  // int simple_static_function() { return int{}; };
   int simple_static_function_r() { return 42; }
   int simple_static_function_r_with_arg(int v) { return v; }
   const int& simple_static_function_r_with_ref_arg(const int& v) { return v; }
