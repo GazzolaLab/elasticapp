@@ -81,11 +81,11 @@ namespace tt {
   template <typename T, typename U, typename... Args>
   struct is_callable<T (&)(Args...), U> : std::true_type {};
   template <typename T, typename U, typename... Args>
-  struct is_callable<T(Args......), U> : std::true_type {};
+  struct is_callable<T(Args..., ...), U> : std::true_type {};
   template <typename T, typename U, typename... Args>
-  struct is_callable<T (*)(Args......), U> : std::true_type {};
+  struct is_callable<T (*)(Args..., ...), U> : std::true_type {};
   template <typename T, typename U, typename... Args>
-  struct is_callable<T (&)(Args......), U> : std::true_type {};
+  struct is_callable<T (&)(Args..., ...), U> : std::true_type {};
   template <typename T, typename U, typename... Args>
   struct is_callable<T(Args...) const, U> : std::true_type {};
   template <typename T, typename U, typename... Args>
@@ -93,11 +93,11 @@ namespace tt {
   template <typename T, typename U, typename... Args>
   struct is_callable<T(Args...) const volatile, U> : std::true_type {};
   template <typename T, typename U, typename... Args>
-  struct is_callable<T(Args......) const, U> : std::true_type {};
+  struct is_callable<T(Args..., ...) const, U> : std::true_type {};
   template <typename T, typename U, typename... Args>
-  struct is_callable<T(Args......) volatile, U> : std::true_type {};
+  struct is_callable<T(Args..., ...) volatile, U> : std::true_type {};
   template <typename T, typename U, typename... Args>
-  struct is_callable<T(Args......) const volatile, U> : std::true_type {};
+  struct is_callable<T(Args..., ...) const volatile, U> : std::true_type {};
   template <typename T, typename U, typename... Args>
   struct is_callable<T(Args...)&, U> : std::true_type {};
   template <typename T, typename U, typename... Args>
@@ -107,13 +107,13 @@ namespace tt {
   template <typename T, typename U, typename... Args>
   struct is_callable<T(Args...) const volatile&, U> : std::true_type {};
   template <typename T, typename U, typename... Args>
-  struct is_callable<T(Args......)&, U> : std::true_type {};
+  struct is_callable<T(Args..., ...)&, U> : std::true_type {};
   template <typename T, typename U, typename... Args>
-  struct is_callable<T(Args......) const&, U> : std::true_type {};
+  struct is_callable<T(Args..., ...) const&, U> : std::true_type {};
   template <typename T, typename U, typename... Args>
-  struct is_callable<T(Args......) volatile&, U> : std::true_type {};
+  struct is_callable<T(Args..., ...) volatile&, U> : std::true_type {};
   template <typename T, typename U, typename... Args>
-  struct is_callable<T(Args......) const volatile&, U> : std::true_type {};
+  struct is_callable<T(Args..., ...) const volatile&, U> : std::true_type {};
   template <typename T, typename U, typename... Args>
   struct is_callable<T(Args...)&&, U> : std::true_type {};
   template <typename T, typename U, typename... Args>
@@ -123,13 +123,13 @@ namespace tt {
   template <typename T, typename U, typename... Args>
   struct is_callable<T(Args...) const volatile&&, U> : std::true_type {};
   template <typename T, typename U, typename... Args>
-  struct is_callable<T(Args......)&&, U> : std::true_type {};
+  struct is_callable<T(Args..., ...)&&, U> : std::true_type {};
   template <typename T, typename U, typename... Args>
-  struct is_callable<T(Args......) const&&, U> : std::true_type {};
+  struct is_callable<T(Args..., ...) const&&, U> : std::true_type {};
   template <typename T, typename U, typename... Args>
-  struct is_callable<T(Args......) volatile&&, U> : std::true_type {};
+  struct is_callable<T(Args..., ...) volatile&&, U> : std::true_type {};
   template <typename T, typename U, typename... Args>
-  struct is_callable<T(Args......) const volatile&&, U> : std::true_type {};
+  struct is_callable<T(Args..., ...) const volatile&&, U> : std::true_type {};
 
   template <typename T>
   struct is_callable<T, int> {

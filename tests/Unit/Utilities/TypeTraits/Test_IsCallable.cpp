@@ -17,7 +17,7 @@ namespace {
   struct PrivateCallable {
    private:
     void operator()(int) {}
-    double operator()(bool, char*) {}
+    double operator()(bool, char*) { return 2.0; }
     PrivateCallable(int, int) {}
   };
 
@@ -27,16 +27,20 @@ namespace {
     int mInt;
   };
 
-  int foo() {}
+  int foo() { return int{}; }
 
   template <typename... Args>
-  void bar(Args&&... args, ...) {}
+  void bar(Args&&..., ...) {}
 
-  auto lamb = [](char**) -> decltype(auto) { return "Hello World!"; };
-  auto templated_lamb = [](auto x, auto y) -> decltype(auto) {
+  auto IGNORE_UNUSED lamb = [](char**) -> decltype(auto) {
     return "Hello World!";
   };
-  auto variadic_templated_lamb = [](auto... Is) -> decltype(auto) {
+
+  auto IGNORE_UNUSED templated_lamb = [](auto, auto) -> decltype(auto) {
+    return "Hello World!";
+  };
+
+  auto IGNORE_UNUSED variadic_templated_lamb = [](auto...) -> decltype(auto) {
     return "Hello World!";
   };
 
@@ -66,7 +70,7 @@ namespace {
                  decltype(&NotCallable::mConstFoo)>;
 
   int (&rfoo)() = foo;
-  auto pfoo = &foo;
+  auto IGNORE_UNUSED pfoo = &foo;
   using expected_positive_references =
       tmpl::list<Callable&, Callable const&, decltype(rfoo)>;
   using expected_positive_functions =
@@ -91,10 +95,10 @@ namespace {
   /// [is_callable_example]
   static_assert(tt::is_callable<std::function<int()>>::value,
                 "Failed testing type trait is_callable<function>");
-  auto my_lambda = [](int x) { return x + 1; };
+  auto IGNORE_UNUSED my_lambda = [](int x) { return x + 1; };
   static_assert(tt::is_callable<decltype(my_lambda)>::value,
                 "Failed testing type trait is_callable<lambda>");
-  auto my_templated_lambda = [](auto x, auto y) { return x * y; };
+  auto IGNORE_UNUSED my_templated_lambda = [](auto x, auto y) { return x * y; };
   static_assert(tt::is_callable<decltype(my_templated_lambda)>::value,
                 "Failed testing type trait is_callable<templated_lambda>");
   /// [is_callable_example]

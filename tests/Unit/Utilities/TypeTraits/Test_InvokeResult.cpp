@@ -2,6 +2,7 @@
 // Created by Tejaswin Parthasarathy on 1/6/21.
 //
 
+#include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/TypeTraits/InvokeResult.hpp"
 
 namespace {
@@ -27,20 +28,24 @@ namespace {
       "invoke_result_t failure");
   /// [invoke_result_t_example]
 
-  void simple_static_function() {}
+  IGNORE_UNUSED void simple_static_function() {}
 
-  int simple_static_function_r() { return 42; }
+  IGNORE_UNUSED int simple_static_function_r() { return 42; }
 
-  int simple_static_function_r_with_arg(int v) { return v; }
+  IGNORE_UNUSED int simple_static_function_r_with_arg(int v) { return v; }
 
-  const int& simple_static_function_r_with_ref_arg(const int& v) { return v; }
+  IGNORE_UNUSED const int& simple_static_function_r_with_ref_arg(const int& v) {
+    return v;
+  }
 
-  static_assert(std::is_same<void, cpp17::tt::invoke_result_t<decltype(
-                                       simple_static_function)>>::value,
-                "invoke_result failure");
-  static_assert(std::is_same<int, cpp17::tt::invoke_result_t<decltype(
-                                      simple_static_function_r)>>::value,
-                "invoke_result failure");
+  static_assert(
+      std::is_same<void, cpp17::tt::invoke_result_t<
+                             decltype(simple_static_function)>>::value,
+      "invoke_result failure");
+  static_assert(
+      std::is_same<int, cpp17::tt::invoke_result_t<
+                            decltype(simple_static_function_r)>>::value,
+      "invoke_result failure");
   static_assert(
       std::is_same<
           int, cpp17::tt::invoke_result_t<

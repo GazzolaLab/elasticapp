@@ -21,6 +21,7 @@
 
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits/Void.hpp"
+#include "Utilities/StlStreamDeclarations.hpp"
 
 namespace tt {
 

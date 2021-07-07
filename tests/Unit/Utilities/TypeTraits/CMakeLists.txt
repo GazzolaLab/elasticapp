@@ -6,8 +6,10 @@ set(LIBRARY "Test_Utilities_TypeTraits")
 set(LIBRARY_SOURCES
         Test_ArraySize.cpp
         Test_Cpp17.cpp
+        Test_IsCRTP.cpp
         Test_InvokeResult.cpp
         Test_IsCallable.cpp
+        Test_IsConvertibleToA.cpp
         Test_IsDetected.cpp
         Test_IsInvokable.cpp
         Test_IsStdArray.cpp

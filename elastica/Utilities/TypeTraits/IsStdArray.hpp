@@ -58,7 +58,7 @@ namespace tt {
   struct is_std_array : std::false_type {};
 
   /// \cond HIDDEN_SYMBOLS
-  template <typename T, size_t N>
+  template <typename T, std::size_t N>
   struct is_std_array<std::array<T, N>> : std::true_type {};
   /// \endcond
 
