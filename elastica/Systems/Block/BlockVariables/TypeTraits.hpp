@@ -17,8 +17,12 @@
 // Includes
 //******************************************************************************
 
-#include "Aliases.hpp"
-#include "Protocols.hpp"
+//
+#include "Systems/Block/BlockVariables/Types.hpp"
+//
+#include "Systems/Block/BlockVariables/Aliases.hpp"
+#include "Systems/Block/BlockVariables/Protocols.hpp"
+//
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -44,7 +48,7 @@ namespace blocks {
   // cpp17::bool_constant
   //
   // \semantics
-  // If the type `Var` conforms to protocols::Variable, then
+  // If the type `Var` inherits from protocols::Variable, then
      \code
      typename result::type = std::true_type;
      \endcode
@@ -63,6 +67,44 @@ namespace blocks {
   template <typename Var>
   struct IsVariable : public ::tt::conforms_to<Var, protocols::Variable> {};
   /*! \endcond */
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Check whether a given type `B` is a BlockInitializer
+  // \ingroup blocks
+  //
+  // \details
+  // Inherits from std::true_type if `B` is a template specialization of a
+  // blocks::BlockInitializer, otherwise inherits from std::false_type.
+  //
+  // \usage
+  // For any type `B`,
+     \code
+     using result = IsBlockInitializer<B>;
+     \endcode
+  //
+  // \metareturns
+  // cpp17::bool_constant
+  //
+  // \semantics
+  // If the type `B` is an instantiation of elastica::BlockInitializer, then
+     \code
+     typename result::type = std::true_type;
+     \endcode
+  // otherwise
+     \code
+     typename result::type = std::false_type;
+     \endcode
+  //
+  // \example
+  // \snippet BlockVariables/Test_TypeTraits.cpp is_block_initializer_example
+  //
+  // \tparam B : the type to check
+  //
+  // \see Block
+  */
+  template <typename B>
+  struct IsBlockInitializer : ::tt::is_a<BlockInitializer, B> {};
   //****************************************************************************
 
   //****************************************************************************
