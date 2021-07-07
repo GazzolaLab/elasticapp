@@ -19,9 +19,12 @@
 
 #include <utility>  // move
 
-#include "Protocols.hpp"
-#include "TypeTraits.hpp"
-#include "Types.hpp"
+//
+#include "Systems/Block/BlockVariables/Types.hpp"
+//
+#include "Systems/Block/BlockVariables/Protocols.hpp"
+#include "Systems/Block/BlockVariables/TypeTraits.hpp"
+//
 #include "Utilities/ProtocolHelpers.hpp"
 
 namespace blocks {
@@ -41,7 +44,8 @@ namespace blocks {
   // \usage
   // For any type `Var`,
      \code
-     using result = Variable<ParameterTag, RankTag, OtherTagOne, OtherTagTwo>;
+     using result = blocks::Variable<ParameterTag, RankTag,
+                                     OtherTagOne, OtherTagTwo>;
      \endcode
   //
   // As seen above, an instantiation of Variable requires at least two types.
@@ -71,8 +75,8 @@ namespace blocks {
   //
   // While the example above indicates how to instantiate a Variable, the
   // actual instantiation inside a class hierarchy can be customized further by
-  // inheritance to provide more context to the user. For one such example,
-  // please refer to CosseratRodVariable.
+  // inheritance to provide more context to the user. For example,
+  // \snippet BlockVariables/Test_BlockVariables.cpp block_variable_derived_eg
   //
   // \note
   // Here we just declare the Variable and its data type, but the actual
@@ -133,6 +137,9 @@ namespace blocks {
   //
   // the following code demonstrates the use of InitializedVariable
   // \snippet BlockVariables/Test_BlockVariables.cpp init_block_variable_eg
+  //
+  // Similar to Variable, InitializedVariable can also be used by deriving as
+  // opposed to aliasing for more context.
   //
   // \tparam ParameterTag A unique type parameter to mark the Variable with
   // \tparam RankTag      A type(class) for customizing the data implementation
@@ -210,7 +217,7 @@ namespace blocks {
     // \ingroup blocks
     */
     template <typename Variable, template <typename> class SliceImplementation>
-    struct VariableSlice : public tt::ConformsTo<protocols::Variable>,
+    struct VariableSlice : /*public tt::ConformsTo<protocols::Variable>,*/
                            SliceImplementation<typename Variable::Rank> {
       //**Type definitions******************************************************
       //! Parent type
@@ -251,7 +258,7 @@ namespace blocks {
   // For any valid (aka conforming to protocols) variable type `Var`, we declare
   // a VariableSlice like so
      \code
-     using result = VariableSlice<Var>;
+     using result = blocks::VariableSlice<Var>;
      \endcode
   //
   // The VariableSlice depends predominantly on the `RankTag` passed to the
@@ -305,7 +312,7 @@ namespace blocks {
   // For any valid (aka conforming to protocols) variable type `Var`, we declare
   // a ConstVariableSlice like so
      \code
-     using result = ConstVariableSlice<Var>;
+     using result = blocks::ConstVariableSlice<Var>;
      \endcode
   //
   // The ConstVariableSlice depends predominantly on the `RankTag` passed to the
@@ -343,6 +350,106 @@ namespace blocks {
     //**Type definitions********************************************************
     //! This type
     using This = ConstVariableSlice<Variable>;
+    //**************************************************************************
+  };
+  //****************************************************************************
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\brief Specialization of same_as for Variable
+  // \ingroup blocks
+  */
+  template <typename SourceTag, typename RankTag, typename... Tags>
+  struct same_as<Variable<SourceTag, RankTag, Tags...>> {
+    //**************************************************************************
+    template <typename ParameterTag>
+    struct with : public Variable<ParameterTag, RankTag, Tags...> {};
+    //**************************************************************************
+  };
+  /*! \endcond */
+  //****************************************************************************
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\brief Specialization of same_as for InitializedVariable
+  // \ingroup blocks
+  */
+  template <typename SourceTag, typename RankTag, typename... Tags>
+  struct same_as<InitializedVariable<SourceTag, RankTag, Tags...>> {
+    //**************************************************************************
+    template <typename ParameterTag>
+    struct with : public InitializedVariable<ParameterTag, RankTag, Tags...> {};
+    //**************************************************************************
+  };
+  /*! \endcond */
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Marks a new Variable with the same attributes as another Variable
+  // \ingroup blocks
+  //
+  // \details
+  // same_as eases the creation of new Variable in blocks hierarchy by reusing
+  // attributes from another Variable. It takes in a valid Variable as a
+  // template and creates a new Variable using the nested with struct.
+  //
+  // \usage
+  // For any valid (aka conforming to protocols) variable type
+  // `VariableOrDerivedVariable`, we declare a new Variable, with some tag `T`,
+  // like so
+     \code
+     using result = blocks::same_as<Var>::with<T>;
+     \endcode
+  //
+  // In the code above `result` has the same attributes as the source Variable
+  // `VariableOrDerivedVariable` and can be used seamlessly as a variable in the
+  // blocks hierarchy.
+  //
+  // \example
+  // For the example provided for Variable and InitializedVariable,
+  // repeated below for convenience,
+  // \snippet BlockVariables/Test_BlockVariables.cpp block_variable_eg
+  // the following code marks a new variable type
+  // \snippet BlockVariables/Test_BlockVariables.cpp block_variable_same_as_eg
+  //
+  // Similar to Variable, the actual instantiation of a same_as variable
+  // inside a class hierarchy can be customized further by inheritance to
+  // provide more context to the user. For example, the following also works and
+  // can be customized by the user
+  // \snippet BlockVariables/Test_BlockVariables.cpp bv_same_as_derived_eg
+  //
+  // We remark that VariableOrDerivedVariable need not be a block Variable, but
+  // can also be derived from it. For the example provided for a derived
+  // Variable repeated below for convenience,
+  // \snippet BlockVariables/Test_BlockVariables.cpp block_variable_derived_eg
+  // the following code also marks a new variable type
+  // \snippet BlockVariables/Test_BlockVariables.cpp bv_same_as_from_derived_eg
+  //
+  // \tparam VariableOrDerivedVariable Either a valid block variable or any type
+  //                                   deriving fom a valid block variable
+  //
+  // \see Variable, InitializedVariable
+   */
+  template <typename VariableOrDerivedVariable>
+  struct same_as {
+    static_assert(::tt::assert_conforms_to<VariableOrDerivedVariable,
+                                           protocols::Variable>,
+                  R"error(
+Variable passed into same_as fails to conform to the Variable protocol. Are you
+sure that it is a valid Variable/InitializedVariable in the blocks
+infrastructure?
+)error");
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    /*!\brief Specialization of same_as for InitializedVariable
+    // \ingroup blocks
+    */
+    template <typename ParameterTag>
+    struct with
+        : same_as<typename VariableOrDerivedVariable::This>::template with<
+              ParameterTag> {};
+    /*! \endcond */
     //**************************************************************************
   };
   //****************************************************************************
