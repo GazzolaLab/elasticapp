@@ -37,6 +37,20 @@ namespace {
       tt::assert_conforms_to<ExampleBlockVariable, blocks::protocols::Variable>,
       "Failure!");
 
+  /// [block_variable_derived_eg]
+  struct ExampleBlockVariableDerived
+      : public blocks::Variable<ExampleParameter, ExampleRank, ExampleExtra> {};
+
+  static_assert(
+      std::is_same<ExampleBlockVariableDerived::type, std::vector<int>>::value,
+      "Block variable inheritance failure!");
+  static_assert(ExampleBlockVariableDerived::give_me_5() == 5,
+                "Block variable inheritance failure!");
+  /// [block_variable_derived_eg]
+  static_assert(tt::assert_conforms_to<ExampleBlockVariableDerived,
+                                       blocks::protocols::Variable>,
+                "Failure!");
+
   /// [init_block_variable_eg]
   using ExampleInitializedBlockVariable =
       blocks::InitializedVariable<ExampleParameter, ExampleRank, ExampleExtra>;
@@ -68,12 +82,13 @@ namespace {
       "Block variable failure!");
   /// [variable_slice_eg]
 
-  static_assert(tt::assert_conforms_to<ExampleBlockVariableSlice,
-                                       blocks::protocols::Variable>,
-                "Failure!");
-  static_assert(tt::assert_conforms_to<ExampleInitializedBlockVariableSlice,
-                                       blocks::protocols::Variable>,
-                "Failure!");
+  // TODO : does this need to have variable semantics?
+  //  static_assert(tt::assert_conforms_to<ExampleBlockVariableSlice,
+  //                                       blocks::protocols::Variable>,
+  //                "Failure!");
+  //  static_assert(tt::assert_conforms_to<ExampleInitializedBlockVariableSlice,
+  //                                       blocks::protocols::Variable>,
+  //                "Failure!");
 
   /// [const_variable_slice_eg]
   using ExampleBlockVariable =
@@ -94,12 +109,72 @@ namespace {
                 "Block variable failure!");
   /// [const_variable_slice_eg]
 
-  static_assert(tt::assert_conforms_to<ExampleBlockConstVariableSlice,
+  // TODO : does this need to have variable semantics?
+  //  static_assert(tt::assert_conforms_to<ExampleBlockConstVariableSlice,
+  //                                       blocks::protocols::Variable>,
+  //                "Failure!");
+  //  static_assert(
+  //      tt::assert_conforms_to<ExampleInitializedBlockConstVariableSlice,
+  //                             blocks::protocols::Variable>,
+  //      "Failure!");
+
+  /// [block_variable_same_as_eg]
+  using SameAsExampleBlockVariable =
+      blocks::same_as<ExampleBlockVariable>::with<struct SomeTag>;
+
+  static_assert(
+      std::is_same<SameAsExampleBlockVariable::type, std::vector<int>>::value,
+      "Block variable inheritance failure!");
+  static_assert(SameAsExampleBlockVariable::give_me_5() == 5,
+                "Block variable inheritance failure!");
+
+  /// [block_variable_same_as_eg]
+
+  static_assert(std::is_same<SameAsExampleBlockVariable::This,
+                             blocks::Variable<struct SomeTag, ExampleRank,
+                                              ExampleExtra>>::value,
+                "Block variable inheritance failure!");
+  static_assert(tt::assert_conforms_to<SameAsExampleBlockVariable,
                                        blocks::protocols::Variable>,
                 "Failure!");
-  static_assert(
-      tt::assert_conforms_to<ExampleInitializedBlockConstVariableSlice,
-                             blocks::protocols::Variable>,
-      "Failure!");
+
+  /// [bv_same_as_derived_eg]
+  struct SameAsExampleBlockVariableButDerived
+      : public blocks::same_as<ExampleBlockVariable>::with<struct SomeTag> {};
+
+  static_assert(std::is_same<SameAsExampleBlockVariableButDerived::type,
+                             std::vector<int>>::value,
+                "Block variable inheritance failure!");
+  static_assert(SameAsExampleBlockVariableButDerived::give_me_5() == 5,
+                "Block variable inheritance failure!");
+  /// [bv_same_as_derived_eg]
+
+  static_assert(std::is_same<SameAsExampleBlockVariableButDerived::This,
+                             blocks::Variable<struct SomeTag, ExampleRank,
+                                              ExampleExtra>>::value,
+                "Block variable inheritance failure!");
+  static_assert(tt::assert_conforms_to<SameAsExampleBlockVariableButDerived,
+                                       blocks::protocols::Variable>,
+                "Failure!");
+
+  /// [bv_same_as_from_derived_eg]
+  struct SameAsExampleBlockVariableDerived
+      : public blocks::same_as<ExampleBlockVariableDerived>::with<
+            struct SomeTag> {};
+
+  static_assert(std::is_same<SameAsExampleBlockVariableDerived::type,
+                             std::vector<int>>::value,
+                "Block variable inheritance failure!");
+  static_assert(SameAsExampleBlockVariableDerived::give_me_5() == 5,
+                "Block variable inheritance failure!");
+  /// [bv_same_as_from_derived_eg]
+
+  static_assert(std::is_same<SameAsExampleBlockVariableDerived::This,
+                             blocks::Variable<struct SomeTag, ExampleRank,
+                                              ExampleExtra>>::value,
+                "Block variable inheritance failure!");
+  static_assert(tt::assert_conforms_to<SameAsExampleBlockVariableDerived,
+                                       blocks::protocols::Variable>,
+                "Failure!");
 
 }  // namespace

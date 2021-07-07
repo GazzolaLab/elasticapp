@@ -5,6 +5,7 @@ set(LIBRARY "Test_BlocksFramework")
 
 set(LIBRARY_SOURCES
         Test_BlocksFramework.cpp
+        Test_BlockFacadeSerialize.cpp
         )
 
 add_test_library(

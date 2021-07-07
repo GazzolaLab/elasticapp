@@ -178,7 +178,7 @@ namespace {
         tmpl::list<ExamplePosition, ExampleVelocity, ExampleAcceleration>;
 
     // !! New !! Helps take slices of Variables
-    using VariableSlices = blocks::as_slices<Variables>;
+    using VariableSlices = blocks::detail::as_slices<Variables>;
   };
   /// [int_plugin]
 
@@ -296,10 +296,18 @@ namespace {
     CHECK(blocks::get<tags::ExampleAcceleration>(const_block_alias) ==
           std::vector<int>{0, 1, 2});
 
+    //    // check if the get with an index works as expected
+    //    CHECK(blocks::get<tags::ExampleInitializedPosition>(const_block_alias,
+    //    1UL) ==
+    //          3);
+
     // normal slice
     auto block_slice = blocks::slice(block, 1UL);
     static_assert(blocks::IsBlockSlice<decltype(block_slice)>::value,
                   "Not a constant block slice");
+    using ExpectedSliceType = blocks::BlockSlice<IntermediateExamplePlugin>;
+    static_assert(std::is_same<ExpectedSliceType, decltype(block_slice)>::value,
+                  "Block slice logic failure!");
 
     CHECK(blocks::get<tags::ExampleInitializedPosition>(block_slice) == 3);
     CHECK(blocks::get<tags::ExampleInitializedVelocity>(block_slice) ==
@@ -316,6 +324,11 @@ namespace {
     auto const_block_slice = blocks::slice(const_block_alias, 1UL);
     static_assert(blocks::IsConstBlockSlice<decltype(const_block_slice)>::value,
                   "Not a constant block slice");
+    using ExpectedConstSliceType =
+        blocks::ConstBlockSlice<IntermediateExamplePlugin>;
+    static_assert(std::is_same<ExpectedConstSliceType,
+                               decltype(const_block_slice)>::value,
+                  "Block slice logic failure!");
 
     CHECK(blocks::get<tags::ExampleInitializedPosition>(const_block_slice) ==
           3);
@@ -363,7 +376,7 @@ namespace {
     using Variables = tmpl::append<InitializedVariables, ComputedVariables>;
 
     // Helps take slices of Variables
-    using VariableSlices = blocks::as_slices<Variables>;
+    using VariableSlices = blocks::detail::as_slices<Variables>;
 
     // can be made generic, but we keep it simple here for the sake of clarity
     static constexpr std::size_t n_dofs = 3UL;
@@ -491,7 +504,7 @@ namespace blocks {
       Parent::initialize(*this, std::forward<Initializer>(initializer));
 
       // any post-conditions after initialization
-    };
+    }
 
     ~Block() = default;
   };
@@ -548,6 +561,9 @@ namespace {
     auto block_slice = blocks::slice(block, 1UL);
     static_assert(blocks::IsBlockSlice<decltype(block_slice)>::value,
                   "Not a constant block slice");
+    using ExpectedSliceType = blocks::BlockSlice<AdvancedExamplePlugin>;
+    static_assert(std::is_same<ExpectedSliceType, decltype(block_slice)>::value,
+                  "Block slice type failure!");
 
     CHECK(blocks::get<tags::ExampleInitializedPosition>(block_slice) == 2);
     CHECK(blocks::get<tags::ExampleInitializedVelocity>(block_slice) ==
@@ -564,6 +580,11 @@ namespace {
     auto const_block_slice = blocks::slice(const_block_alias, 1UL);
     static_assert(blocks::IsConstBlockSlice<decltype(const_block_slice)>::value,
                   "Not a constant block slice");
+    using ExpectedConstSliceType =
+        blocks::ConstBlockSlice<AdvancedExamplePlugin>;
+    static_assert(std::is_same<ExpectedConstSliceType,
+                               decltype(const_block_slice)>::value,
+                  "Block slice type failure!");
 
     CHECK(blocks::get<tags::ExampleInitializedPosition>(const_block_slice) ==
           2);
@@ -761,7 +782,7 @@ namespace {
     using Variables = tmpl::append<InitializedVariables, ComputedVariables>;
 
     // Helps take slices of Variables
-    using VariableSlices = blocks::as_slices<Variables>;
+    using VariableSlices = blocks::detail::as_slices<Variables>;
 
     // !! New !! To help initialize the block to be formed, we have an
     // initialize method
@@ -867,7 +888,7 @@ namespace blocks {
       Parent::initialize(*this, std::forward<Initializer>(initializer));
 
       // any post-conditions after initialization
-    };
+    }
 
     ~Block() = default;
   };
@@ -921,6 +942,11 @@ namespace {
 
     // normal slice
     auto block_slice = blocks::slice(block, 1UL);
+    using ExpectedSliceType =
+        blocks::BlockSlice<CompositionExamplePlugin<blocks::BlockSlice>>;
+    static_assert(std::is_same<ExpectedSliceType, decltype(block_slice)>::value,
+                  "Block slice type failure!");
+
     static_assert(blocks::IsBlockSlice<decltype(block_slice)>::value,
                   "Not a constant block slice");
 
@@ -939,6 +965,11 @@ namespace {
     auto const_block_slice = blocks::slice(const_block_alias, 1UL);
     static_assert(blocks::IsConstBlockSlice<decltype(const_block_slice)>::value,
                   "Not a constant block slice");
+    using ExpectedConstSliceType = blocks::ConstBlockSlice<
+        CompositionExamplePlugin<blocks::ConstBlockSlice>>;
+    static_assert(std::is_same<ExpectedConstSliceType,
+                               decltype(const_block_slice)>::value,
+                  "Block slice type failure!");
 
     CHECK(blocks::get<tags::ExampleInitializedPosition>(const_block_slice) ==
           2);
@@ -1041,7 +1072,7 @@ struct FacadedIntermediateExamplePlugin {
       tmpl::list<ExamplePosition, ExampleVelocity, ExampleAcceleration>;
 
   // !! New !! Helps take slices of Variables
-  using VariableSlices = blocks::as_slices<Variables>;
+  using VariableSlices = blocks::detail::as_slices<Variables>;
 
   int do_it_or_else() { return 1; }
 };
@@ -1131,6 +1162,10 @@ namespace {
     auto block_slice = blocks::slice(block, 1UL);
     static_assert(blocks::IsBlockSlice<decltype(block_slice)>::value,
                   "Not a constant block slice");
+    using ExpectedSliceType =
+        blocks::BlockSlice<FacadedIntermediateExamplePlugin>;
+    static_assert(std::is_same<ExpectedSliceType, decltype(block_slice)>::value,
+                  "Block slice type failure!");
 
     CHECK(blocks::get<tags::ExampleInitializedPosition>(block_slice) == 3);
     CHECK(blocks::get<tags::ExampleInitializedVelocity>(block_slice) ==
@@ -1147,6 +1182,11 @@ namespace {
     auto const_block_slice = blocks::slice(const_block_alias, 1UL);
     static_assert(blocks::IsConstBlockSlice<decltype(const_block_slice)>::value,
                   "Not a constant block slice");
+    using ExpectedConstSliceType =
+        blocks::ConstBlockSlice<FacadedIntermediateExamplePlugin>;
+    static_assert(std::is_same<ExpectedConstSliceType,
+                               decltype(const_block_slice)>::value,
+                  "Block slice type failure!");
 
     CHECK(blocks::get<tags::ExampleInitializedPosition>(const_block_slice) ==
           3);

@@ -3,6 +3,7 @@ set(LIBRARY "Test_BlockVariables")
 set(LIBRARY_SOURCES
         Test_BlockInitializer.cpp
         Test_BlockVariables.cpp
+        Test_Protocols.cpp
         Test_TypeTraits.cpp
         )
 

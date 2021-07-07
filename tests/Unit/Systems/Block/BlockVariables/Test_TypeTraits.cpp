@@ -28,7 +28,7 @@ namespace {
     static_assert(
         blocks::IsVariable<blocks::Variable<
             T0::TestParameterTag, T0::TestRankTag, T0::TestExtraTag>>::value,
-        "Not a block variable!");
+        "Is a block variable!");
     /// [is_variable_example]
 
     using T76 = Tags<76U>;
@@ -57,22 +57,40 @@ namespace {
     using TestBlockVariable0 =
         blocks::Variable<T0::TestParameterTag, T0::TestRankTag,
                          T0::TestExtraTag>;
-    static_assert(
-        blocks::IsVariable<blocks::VariableSlice<TestBlockVariable0>>::value,
-        "Not a block variable!");
+
+    // TODO : does this need to have variable semantics?
+    //    static_assert(
+    //        blocks::IsVariable<blocks::VariableSlice<TestBlockVariable0>>::value,
+    //        "Not a block variable!");
 
     using TestBlockVariable76 =
         blocks::InitializedVariable<T76::TestParameterTag, T76::TestRankTag,
                                     T76::TestExtraTag>;
+    // TODO : does this need to have variable semantics?
+    //    static_assert(
+    //        blocks::IsVariable<blocks::VariableSlice<TestBlockVariable76>>::value,
+    //        "Not a block variable!");
+  }  // namespace
+
+  namespace {
+    /// [is_block_initializer_example]
+    // a mock plugin class
+    struct MockPlugin;
+    struct MockInitializerOne;
+    struct MockInitializerTwo;
+
     static_assert(
-        blocks::IsVariable<blocks::VariableSlice<TestBlockVariable76>>::value,
-        "Not a block variable!");
+        blocks::IsBlockInitializer<blocks::BlockInitializer<
+            MockPlugin, MockInitializerOne, MockInitializerTwo>>::value,
+        "Is a block variable!");
+    /// [is_block_initializer_example]
+
   }  // namespace
 
   // Maps
   /// [map_setup]
   template <unsigned int I>
-  using Int = std::integral_constant<int, I>;
+  using Int = std::integral_constant<unsigned int, I>;
 
   template <unsigned int I>
   struct TestMapType {

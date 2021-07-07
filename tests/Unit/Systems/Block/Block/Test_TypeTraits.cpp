@@ -120,28 +120,252 @@ static_assert(!blocks::ModelsBlockConcept<Test4>::value,
 static_assert(!blocks::ModelsBlockConcept<Test6>::value,
               "Block type traits failure!");
 
+namespace {
+  template <template <typename> class B>
+  struct ExamplePluginWithCRTP {
+    using Derived = B<ExamplePluginWithCRTP<B>>;
+  };
+}  // namespace
+
+namespace blocks {
+
+  template <>
+  class Block<ExamplePluginWithCRTP<Block>> : ExamplePluginWithCRTP<Block> {};
+
+}  // namespace blocks
+
+namespace {
+
+  struct DummyTraits {};
+
+  template <typename Traits, template <typename> class B>
+  struct ExamplePluginWithCRTPAndTraits {
+    using Derived = B<ExamplePluginWithCRTPAndTraits<Traits, B>>;
+  };
+
+}  // namespace
+
+namespace blocks {
+
+  template <>
+  class Block<ExamplePluginWithCRTPAndTraits<DummyTraits, Block>>
+      : ExamplePluginWithCRTPAndTraits<DummyTraits, Block> {};
+
+}  // namespace blocks
+
+namespace {
+
+  struct DummyTag;
+
+  template <typename Traits, template <typename> class B, typename Tag>
+  struct ExamplePluginWithCRTPAndTraitsAndTag {
+    using Derived = B<ExamplePluginWithCRTPAndTraitsAndTag<Traits, B, Tag>>;
+  };
+
+}  // namespace
+
+namespace blocks {
+
+  template <>
+  class Block<
+      ExamplePluginWithCRTPAndTraitsAndTag<DummyTraits, Block, DummyTag>>
+      : ExamplePluginWithCRTPAndTraitsAndTag<DummyTraits, Block, DummyTag> {};
+
+}  // namespace blocks
+
 /// [plugin_trait_example]
 using Test1 = blocks::Block<ExamplePlugin>;
-static_assert(std::is_same<typename blocks::PluginTrait<Test1>::type,
-                           ExamplePlugin>::value,
-              "Block type traits failure!");
+static_assert(
+    std::is_same<typename blocks::PluginTrait<Test1>::type<blocks::Block>,
+                 ExamplePlugin>::value,
+    "Block type traits failure!");
+
+using Test101 = blocks::Block<ExamplePluginWithCRTP<blocks::Block>>;
+static_assert(
+    std::is_same<typename blocks::PluginTrait<Test101>::type<blocks::Block>,
+                 ExamplePluginWithCRTP<blocks::Block>>::value,
+    "Block type traits failure!");
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test101>::type<blocks::BlockSlice>,
+        ExamplePluginWithCRTP<blocks::BlockSlice>>::value,
+    "Block type traits failure!");
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test101>::type<blocks::ConstBlockSlice>,
+        ExamplePluginWithCRTP<blocks::ConstBlockSlice>>::value,
+    "Block type traits failure!");
+
+using Test102 =
+    blocks::Block<ExamplePluginWithCRTPAndTraits<DummyTraits, blocks::Block>>;
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test102>::type<blocks::Block>,
+        ExamplePluginWithCRTPAndTraits<DummyTraits, blocks::Block>>::value,
+    "Block type traits failure!");
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test102>::type<blocks::BlockSlice>,
+        ExamplePluginWithCRTPAndTraits<DummyTraits, blocks::BlockSlice>>::value,
+    "Block type traits failure!");
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test102>::type<blocks::ConstBlockSlice>,
+        ExamplePluginWithCRTPAndTraits<DummyTraits,
+                                       blocks::ConstBlockSlice>>::value,
+    "Block type traits failure!");
+
+using Test103 = blocks::Block<
+    ExamplePluginWithCRTPAndTraitsAndTag<DummyTraits, blocks::Block, DummyTag>>;
+static_assert(
+    std::is_same<typename blocks::PluginTrait<Test103>::type<blocks::Block>,
+                 ExamplePluginWithCRTPAndTraitsAndTag<
+                     DummyTraits, blocks::Block, DummyTag>>::value,
+    "Block type traits failure!");
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test103>::type<blocks::BlockSlice>,
+        ExamplePluginWithCRTPAndTraitsAndTag<DummyTraits, blocks::BlockSlice,
+                                             DummyTag>>::value,
+    "Block type traits failure!");
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test103>::type<blocks::ConstBlockSlice>,
+        ExamplePluginWithCRTPAndTraitsAndTag<
+            DummyTraits, blocks::ConstBlockSlice, DummyTag>>::value,
+    "Block type traits failure!");
 
 using Test3 = blocks::BlockSlice<ExamplePlugin>;
-static_assert(std::is_same<typename blocks::PluginTrait<Test3>::type,
-                           ExamplePlugin>::value,
-              "Block type traits failure!");
+static_assert(
+    std::is_same<typename blocks::PluginTrait<Test3>::type<blocks::BlockSlice>,
+                 ExamplePlugin>::value,
+    "Block type traits failure!");
+
+using Test301 = blocks::BlockSlice<ExamplePluginWithCRTP<blocks::BlockSlice>>;
+static_assert(
+    std::is_same<typename blocks::PluginTrait<Test301>::type<blocks::Block>,
+                 ExamplePluginWithCRTP<blocks::Block>>::value,
+    "Block type traits failure!");
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test301>::type<blocks::BlockSlice>,
+        ExamplePluginWithCRTP<blocks::BlockSlice>>::value,
+    "Block type traits failure!");
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test301>::type<blocks::ConstBlockSlice>,
+        ExamplePluginWithCRTP<blocks::ConstBlockSlice>>::value,
+    "Block type traits failure!");
+
+using Test302 = blocks::BlockSlice<
+    ExamplePluginWithCRTPAndTraits<DummyTraits, blocks::BlockSlice>>;
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test302>::type<blocks::Block>,
+        ExamplePluginWithCRTPAndTraits<DummyTraits, blocks::Block>>::value,
+    "Block type traits failure!");
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test302>::type<blocks::BlockSlice>,
+        ExamplePluginWithCRTPAndTraits<DummyTraits, blocks::BlockSlice>>::value,
+    "Block type traits failure!");
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test302>::type<blocks::ConstBlockSlice>,
+        ExamplePluginWithCRTPAndTraits<DummyTraits,
+                                       blocks::ConstBlockSlice>>::value,
+    "Block type traits failure!");
+
+using Test303 = blocks::BlockSlice<ExamplePluginWithCRTPAndTraitsAndTag<
+    DummyTraits, blocks::BlockSlice, DummyTag>>;
+static_assert(
+    std::is_same<typename blocks::PluginTrait<Test303>::type<blocks::Block>,
+                 ExamplePluginWithCRTPAndTraitsAndTag<
+                     DummyTraits, blocks::Block, DummyTag>>::value,
+    "Block type traits failure!");
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test303>::type<blocks::BlockSlice>,
+        ExamplePluginWithCRTPAndTraitsAndTag<DummyTraits, blocks::BlockSlice,
+                                             DummyTag>>::value,
+    "Block type traits failure!");
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test303>::type<blocks::ConstBlockSlice>,
+        ExamplePluginWithCRTPAndTraitsAndTag<
+            DummyTraits, blocks::ConstBlockSlice, DummyTag>>::value,
+    "Block type traits failure!");
 
 using Test5 = blocks::ConstBlockSlice<ExamplePlugin>;
-static_assert(std::is_same<typename blocks::PluginTrait<Test5>::type,
-                           ExamplePlugin>::value,
-              "Block type traits failure!");
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test5>::type<blocks::ConstBlockSlice>,
+        ExamplePlugin>::value,
+    "Block type traits failure!");
 
+using Test501 = blocks::BlockSlice<ExamplePluginWithCRTP<blocks::BlockSlice>>;
+static_assert(
+    std::is_same<typename blocks::PluginTrait<Test501>::type<blocks::Block>,
+                 ExamplePluginWithCRTP<blocks::Block>>::value,
+    "Block type traits failure!");
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test501>::type<blocks::BlockSlice>,
+        ExamplePluginWithCRTP<blocks::BlockSlice>>::value,
+    "Block type traits failure!");
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test501>::type<blocks::ConstBlockSlice>,
+        ExamplePluginWithCRTP<blocks::ConstBlockSlice>>::value,
+    "Block type traits failure!");
+
+using Test502 = blocks::ConstBlockSlice<
+    ExamplePluginWithCRTPAndTraits<DummyTraits, blocks::ConstBlockSlice>>;
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test502>::type<blocks::Block>,
+        ExamplePluginWithCRTPAndTraits<DummyTraits, blocks::Block>>::value,
+    "Block type traits failure!");
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test502>::type<blocks::BlockSlice>,
+        ExamplePluginWithCRTPAndTraits<DummyTraits, blocks::BlockSlice>>::value,
+    "Block type traits failure!");
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test502>::type<blocks::ConstBlockSlice>,
+        ExamplePluginWithCRTPAndTraits<DummyTraits,
+                                       blocks::ConstBlockSlice>>::value,
+    "Block type traits failure!");
+
+using Test503 = blocks::ConstBlockSlice<ExamplePluginWithCRTPAndTraitsAndTag<
+    DummyTraits, blocks::ConstBlockSlice, DummyTag>>;
+static_assert(
+    std::is_same<typename blocks::PluginTrait<Test503>::type<blocks::Block>,
+                 ExamplePluginWithCRTPAndTraitsAndTag<
+                     DummyTraits, blocks::Block, DummyTag>>::value,
+    "Block type traits failure!");
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test503>::type<blocks::BlockSlice>,
+        ExamplePluginWithCRTPAndTraitsAndTag<DummyTraits, blocks::BlockSlice,
+                                             DummyTag>>::value,
+    "Block type traits failure!");
+static_assert(
+    std::is_same<
+        typename blocks::PluginTrait<Test503>::type<blocks::ConstBlockSlice>,
+        ExamplePluginWithCRTPAndTraitsAndTag<
+            DummyTraits, blocks::ConstBlockSlice, DummyTag>>::value,
+    "Block type traits failure!");
 /// [plugin_trait_example]
 
 /// [plugin_t_example]
-using Test1 = blocks::Block<ExamplePlugin>;
-using F = typename blocks::PluginTrait<Test1>::type;
-using S = blocks::plugin_t<Test1>;
+using Test302 = blocks::BlockSlice<
+    ExamplePluginWithCRTPAndTraits<DummyTraits, blocks::BlockSlice>>;
+using F =
+    blocks::Block<typename blocks::PluginTrait<Test102>::type<blocks::Block>>;
+using S =
+    typename blocks::PluginFrom<Test102>::template to<blocks::Block>::type;
 
 static_assert(std::is_same<F, S>::value, "Block type traits failure!");
 /// [plugin_t_example]
