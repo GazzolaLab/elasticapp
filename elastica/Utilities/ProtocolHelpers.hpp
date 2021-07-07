@@ -49,6 +49,7 @@ namespace tt {
   /*!\brief Checks if the `ConformingType` conforms to the `Protocol`.
    * \ingroup protocols
    *
+   * \details
    * This metafunction is SFINAE-friendly. See `tt::assert_conforms_to` for a
    * metafunction that is not SFINAE-friendly but that triggers static asserts
    * with diagnostic messages to understand why the `ConformingType` does not
@@ -67,9 +68,27 @@ namespace tt {
   template <typename ConformingType, typename Protocol>
   using conforms_to =
       typename std::is_convertible<ConformingType*, ConformsTo<Protocol>*>;
+  //****************************************************************************
 
+  //****************************************************************************
+  /*!\brief Auxiliary variable template for tt::conforms_to
+   * \ingroup protocols
+   *
+   * \details
+   * The conforms_to_v variable template provides a convenient shortcut to
+   * access the nested `value` of the conforms_to class template. For
+   * instance, given the types `T`, `Protocol` the following two statements are
+   * identical:
+   * \example
+   * \code
+   * constexpr bool value1 = tt::conforms_to<T, Protocol>::value;
+   * constexpr bool value2 = tt::conforms_to_v<T, Protocol>;
+   * \endcode
+   *
+   * \see tt::conforms_to
+   */
   template <typename ConformingType, typename Protocol>
-  constexpr bool conforms_to_v =
+  static constexpr bool conforms_to_v =
       std::is_convertible<ConformingType*, ConformsTo<Protocol>*>::value;
   //****************************************************************************
 
@@ -84,7 +103,11 @@ namespace tt {
           "and the protocol is listed as the second template parameter. "
           "Have you forgotten to (publicly) inherit the type from "
           "tt::ConformsTo<Protocol>?");
-      using test = typename Protocol::template test<ConformingType>;
+      static_assert(
+          not cpp17::is_same_v<
+              decltype(typename Protocol::template test<ConformingType>{}),
+              void>,
+          "Protocol failure!");
     };
 
   }  // namespace detail
@@ -93,7 +116,7 @@ namespace tt {
   /*!\brief Assert that the `ConformingType` conforms to the `Protocol`.
    * \ingroup protocols
    *
-   * Similar to `tt::conforms_to`, but not SFINAE-friendly. Instead, triggers
+   * Similar to tt::conforms_to, but not SFINAE-friendly. Instead, triggers
    * static asserts with diagnostic messages to understand why the
    * `ConformingType` fails to conform to the `Protocol`.
    *
