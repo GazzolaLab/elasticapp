@@ -104,8 +104,8 @@ namespace elastica {
       std::size_t bytesInUse, sizeAllocated;
     };
     // To mimic linux interface
-    static malloc_info_internal mallinfo();
-    static void free_as_much_memory_as_possible();
+    static inline malloc_info_internal mallinfo();
+    static inline void free_as_much_memory_as_possible();
 #endif
 
    private:
@@ -382,7 +382,7 @@ namespace elastica {
   inline int64_t MemoryMeter::lastInUse() const { return lastInUseDelta_; }
 
 #if defined(__APPLE__) && defined(__MACH__)  // MacOs
-  MemoryMeter::malloc_info_internal MemoryMeter::mallinfo() {
+  inline MemoryMeter::malloc_info_internal MemoryMeter::mallinfo() {
 #if 0
     // This seems to be unusable as even printfs change the value!
     size_t bytesInUse(0UL), blocksInUse(0UL), sizeAllocated(0UL);
@@ -430,7 +430,7 @@ namespace elastica {
   //****************************************************************************
 
   //****************************************************************************
-  void MemoryMeter::free_as_much_memory_as_possible() {
+  inline void MemoryMeter::free_as_much_memory_as_possible() {
     vm_address_t* zones;
     unsigned int count;
     unsigned int i;
