@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include "Utilities/ForceInline.hpp"  // introduces dependency
+
 namespace named_type {
 
   //============================================================================
@@ -74,7 +76,7 @@ namespace named_type {
     // Safely down-casts this module to the underlying derived type, using
     // the Curiously Recurring Template Pattern (CRTP).
     */
-    inline constexpr auto self() & noexcept -> Reference {
+    ELASTICA_ALWAYS_INLINE constexpr auto self() & noexcept -> Reference {
       return static_cast<Reference>(*this);
     }
     //**************************************************************************
@@ -87,7 +89,8 @@ namespace named_type {
     // Safely down-casts this module to the underlying derived type, using
     // the Curiously Recurring Template Pattern (CRTP).
     */
-    inline constexpr auto self() const & noexcept -> ConstReference {
+    ELASTICA_ALWAYS_INLINE constexpr auto self() const& noexcept
+        -> ConstReference {
       return static_cast<ConstReference>(*this);
     }
     //**************************************************************************
@@ -96,10 +99,9 @@ namespace named_type {
     //**Deleted Self method*****************************************************
     // They can never be called anyway since they do not participate in overload
     // resolution (since the `this` pointer is always a & type)
-    inline constexpr auto self() && = delete;
-    inline constexpr auto self() const && = delete;
+    constexpr auto self() && = delete;
+    constexpr auto self() const&& = delete;
     //**************************************************************************
-
   };
   //****************************************************************************
 
