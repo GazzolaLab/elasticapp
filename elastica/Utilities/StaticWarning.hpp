@@ -32,7 +32,7 @@ namespace elastica {
    * Specialization for a passing check, does not print anything
    */
   template <>
-  constexpr void static_warning<true>(const char*) noexcept {};
+  constexpr void static_warning<true>(const char*) noexcept {}
   /*! \endcond */
   //****************************************************************************
 
@@ -46,7 +46,7 @@ namespace elastica {
    */
   template <>
   [[deprecated]] constexpr void static_warning<false>(
-      const char* const) noexcept {};
+      const char* const) noexcept {}
   /*! \endcond */
   //****************************************************************************
 }  // namespace elastica
@@ -55,5 +55,5 @@ namespace elastica {
 /*!\brief A compile-time warning message similar to static_assert
 // \ingroup utils
 */
-#define STATIC_WARNING(pred, msg) ::elastica::static_warning<pred>(msg);
+#define STATIC_WARNING(pred, msg) ::elastica::static_warning<pred>(msg)
 //******************************************************************************
