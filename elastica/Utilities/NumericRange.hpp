@@ -104,7 +104,7 @@ namespace elastica {
     /*!\brief Alias declaration for an integer NumericRangeImpl.
     // \ingroup utils
     */
-    using NumericRange = NumericRangeImpl<std::size_t, int>;
+    using NumericRange = NumericRangeImpl<std::size_t, std::size_t>;
     /*! \endcond */
     //**************************************************************************
 
@@ -141,11 +141,12 @@ namespace elastica {
     // \param step Step of the range
     */
     template <typename F, typename Step>
-    inline constexpr auto numeric_range(F start, F stop, Step step = 1) noexcept(
-        noexcept(NumericRangeImpl<F, Step>{start, stop, step}))
-        -> NumericRangeImpl<F, Step> {
+    inline constexpr auto numeric_range(
+        F start, F stop,
+        Step step = 1) noexcept(noexcept(NumericRangeImpl<F, Step>{
+        start, stop, step})) -> NumericRangeImpl<F, Step> {
       return detail::NumericRangeImpl<F, Step>{start, stop, step};
-    };
+    }
     /*! \endcond */
     //**************************************************************************
 
@@ -191,7 +192,11 @@ namespace elastica {
     ELASTICA_ASSERT(((has_positive_step && start <= stop) ||
                      (!has_positive_step && start >= stop)),
                     "Step moves away from end");
-    return detail::numeric_range(start, stop, step);
+    // switch arguments here so that we can work only with size_t in forcing
+    // etc.
+    return has_positive_step
+               ? detail::numeric_range(start, stop, static_cast<F>(step))
+               : detail::numeric_range(stop, start, static_cast<F>(-step));
   }
   //****************************************************************************
 

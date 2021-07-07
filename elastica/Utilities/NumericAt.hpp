@@ -19,6 +19,8 @@
 #include <array>
 #include <cstdint>
 #include <sstream>
+#include <memory>
+#include <algorithm>
 
 #include "Utilities/Invoke.hpp"
 #include "Utilities/MakeArray.hpp"
