@@ -1,0 +1,588 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Interface class for a Geometry component of
+//  @ref cosserat_rod_component
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
+#pragma once
+
+//******************************************************************************
+// Includes
+//******************************************************************************
+#include <cmath>
+#include <utility>
+
+#include "Simulator/Frames/LagrangianFrame.hpp"
+#include "Utilities/CRTP.hpp"
+#include "Utilities/Math/Vec3.hpp"
+#include "Utilities/Requires.hpp"
+#include "Utilities/TMPL.hpp"
+
+///// Types always first
+#include "Systems/CosseratRods/Components/Geometry/detail/Types.hpp"
+/////
+#include "Systems/CosseratRods/Components/Geometry/detail/CosseratRodCrossSectionInterfaceTags.hpp"
+#include "Systems/CosseratRods/Components/Geometry/detail/CosseratRodSpanwiseGeometry.hpp"
+
+namespace elastica {
+
+  namespace cosserat_rod {
+
+    namespace component {
+
+      namespace detail {
+
+        //======================================================================
+        //
+        //  CLASS DEFINITION
+        //
+        //======================================================================
+
+        //**********************************************************************
+        /*!\brief Variables corresponding to the geometry interface component
+         * \ingroup cosserat_rod_component
+         *
+         * \details
+         * CosseratRodCrossSectionInterfaceVariables contains the definitions of
+         * variables used within the Blocks framework for a rod data-structure
+         * with an interface expected by other components.
+         *
+         * \tparam CRT A valid Cosserat Rod Traits class
+         *
+         * \see CosseratRodCrossSectionInterface
+         */
+        template <typename CRT>
+        class CosseratRodCrossSectionInterfaceVariables {
+         private:
+          //**Type definitions**************************************************
+          //! Traits type
+          using Traits = CRT;
+          //********************************************************************
+
+         protected:
+          //**Variable definitions**********************************************
+          /*!\name Variable definitions*/
+          //@{
+
+          //********************************************************************
+          /*!\brief Variable marking ElementDimension within the Cosserat rod
+           * hierarchy
+           */
+          struct ElementDimension
+              : public Traits::template CosseratRodInitializedVariable<
+                    ::elastica::tags::ElementDimension,  //
+                    typename Traits::DataType::Scalar,   //
+                    typename Traits::Place::OnElement> {
+            //**Type definitions************************************************
+            //! The element type of a ghost
+            using ghost_type = typename Traits::DataType::Scalar::ghost_type;
+            //******************************************************************
+
+            //******************************************************************
+            /*!\brief Obtain the ghost value
+             *
+             * \details
+             * Overrides the default value for putting in ghost elements.
+             */
+            static inline constexpr auto ghost_value() noexcept -> ghost_type {
+              return ghost_type(1.0);
+            }
+            //******************************************************************
+          };
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Variable marking ElementVolume within the Cosserat rod
+           * hierarchy
+           */
+          struct ElementVolume
+              : public Traits::template CosseratRodInitializedVariable<
+                    ::elastica::tags::ElementVolume,    //
+                    typename Traits::DataType::Scalar,  //
+                    typename Traits::Place::OnElement> {
+            //**Type definitions************************************************
+            //! The element type of a ghost
+            using ghost_type = typename Traits::DataType::Scalar::ghost_type;
+            //******************************************************************
+
+            //******************************************************************
+            /*!\brief Obtain the ghost value
+             *
+             * \details
+             * Overrides the default value for putting in ghost elements.
+             */
+            static inline constexpr auto ghost_value() noexcept -> ghost_type {
+              return ghost_type(1.0);
+            }
+            //******************************************************************
+          };
+          //********************************************************************
+
+          //@}
+          //********************************************************************
+
+          //**Type definitions**************************************************
+          //! List of computed variables
+          using ComputedVariables = tmpl::list<ElementVolume>;
+          //! List of initialized variables
+          using InitializedVariables = tmpl::list<ElementDimension>;
+          //! List of all variables
+          using Variables =
+              tmpl::append<InitializedVariables, ComputedVariables>;
+          //********************************************************************
+        };
+        //**********************************************************************
+
+        // TODO : Protocol for cross section trait
+        //======================================================================
+        //
+        //  CLASS DEFINITION
+        //
+        //======================================================================
+
+        //**********************************************************************
+        /*!\brief Interface component corresponding to a spanwise rod with a
+         * particular shape of cross section
+         * \ingroup cosserat_rod_component
+         *
+         * \details
+         * CosseratRodCrossSectionInterface implements the penultimate Geometry
+         * component use within Cosserat rods implemented in the Blocks
+         * framework. It denotes a Cosserat rod data-structure with a particular
+         * shape of cross section (such as a square or a circle) spanning a
+         * single spatial dimension (i.e. along centerline coordinates)
+         *
+         * \tparam CRT A valid Cosserat Rod Traits class
+         * \tparam ComputationalBlock The final block which is derived from the
+         * current component
+         * \tparam CrossSectionOperations Operations for particular cross
+         * section shapes (such as a square or a circle)
+         *
+         * \see CosseratRodCrossSectionInterfaceVariables
+         */
+        template <typename CRT, typename ComputationalBlock,
+                  typename CrossSectionOperations>
+        class CosseratRodCrossSectionInterface
+            : public CosseratRodSpanwiseGeometry<CRT, ComputationalBlock>,
+              public CosseratRodCrossSectionInterfaceVariables<CRT>,
+              public CrossSectionOperations,
+              public CRTPHelper<ComputationalBlock,
+                                CosseratRodCrossSectionInterface> {
+         protected:
+          //**Type definitions**************************************************
+          //! Frame type
+          using Frame = ::elastica::detail::LagrangianFrame;
+          //! Frame direction type
+          using DirectionType = typename Frame::DirectionType;
+          //! Cross section type
+          // this is protected for access in CrossSectionOperations
+          using CrossSection = CrossSectionOperations;
+          //********************************************************************
+
+         private:
+          //**Type definitions**************************************************
+          //! Traits type
+          using Traits = CRT;
+          //! This type
+          using This =
+              CosseratRodCrossSectionInterface<Traits, ComputationalBlock,
+                                               CrossSection>;
+          //! Parent type
+          using Parent =
+              CosseratRodSpanwiseGeometry<Traits, ComputationalBlock>;
+          //! Variable definitions
+          using VariableDefinitions =
+              CosseratRodCrossSectionInterfaceVariables<Traits>;
+          //! CRTP Type
+          using CRTP =
+              CRTPHelper<ComputationalBlock, CosseratRodCrossSectionInterface>;
+          //! CRTP methods
+          using CRTP::self;
+          //! Real number type
+          using real_type = typename Traits::real_type;
+          //! Index type
+          using index_type = typename Traits::index_type;
+          //********************************************************************
+
+         protected:
+          //**Type definitions**************************************************
+          //! List of initialized variables
+          using InitializedVariables =
+              tmpl::append<typename Parent::InitializedVariables,
+                           typename VariableDefinitions::InitializedVariables>;
+          //! List of computed variables
+          using ComputedVariables =
+              tmpl::append<typename Parent::ComputedVariables,
+                           typename VariableDefinitions::ComputedVariables>;
+          //! List of all variables
+          using Variables =
+              tmpl::append<typename Parent::Variables,
+                           typename VariableDefinitions::Variables>;
+          //! Current Variable definitions
+          using typename Parent::ElementLength;
+          using typename VariableDefinitions::ElementDimension;
+          using typename VariableDefinitions::ElementVolume;
+          //********************************************************************
+
+         private:
+          //**Parent methods****************************************************
+          //! Methods inherited from parent class
+          using CrossSection::compute_cross_section_area;
+          using CrossSection::compute_second_moment_of_area;
+          using CrossSection::update_dimension;
+
+         public:
+          using CrossSection::shape_factor;
+          //********************************************************************
+
+          //**Static members****************************************************
+          //! unique ID for D1 direction
+          static constexpr DirectionType D1 = Frame::D1;
+          //! unique ID for D2 direction
+          static constexpr DirectionType D2 = Frame::D2;
+          //! unique ID for D3 direction
+          static constexpr DirectionType D3 = Frame::D3;
+          //********************************************************************
+
+         protected:
+          //********************************************************************
+          /*!\brief Initialize method for the current component
+           *
+           * \details
+           * initialize() is responsible for initializing the variables present
+           * in the current component in the final block of data. For
+           * InitializedVariables, it fetches the corresponding initializer from
+           * the set of `initializers` to fill in the data. For
+           * ComputedVariables the default value is usually set. In this way,
+           * each component is responsible for initializing its own data in a
+           * manner that does not intrude with initialization from other
+           * components.
+           *
+           * \tparam DownstreamBlock The final block-like object which is
+           * derived from the current component
+           * \tparam CosseratInitializer An Initializer corresponding to the
+           * Cosserat rod hierarchy
+           */
+          template <typename DownstreamBlock, typename CosseratInitializer>
+          static void initialize(DownstreamBlock& downstream_block,
+                                 CosseratInitializer&& initializers) {
+            // 1. Initialize parent
+            Parent::initialize(downstream_block,
+                               std::forward<CosseratInitializer>(initializers));
+
+            // 2. Initialize generators first
+            struct {
+              CosseratInitializer value;
+            } cap{std::forward<CosseratInitializer>(initializers)};
+            tmpl::for_each<typename VariableDefinitions::InitializedVariables>(
+                [&downstream_block, &cap
+                 // cap = std::move(cap)
+            ](auto v) mutable -> void {
+                  using Variable = tmpl::type_from<decltype(v)>;
+                  using Tag = blocks::initializer_t<Variable>;
+
+                  auto& variable(blocks::get<Tag>(downstream_block));
+                  auto&& initializer(blocks::get<Tag>(std::move(cap.value)));
+
+                  auto dofs = Variable::get_dofs(cap.value.n_elems());
+                  for (std::size_t i = 0; i < dofs; ++i) {
+                    // TODO : This doesn't work on slices, consider having the
+                    // slice member in the initializer itself
+                    Variable::slice(variable, i) = initializer(i);
+                  }
+                });
+
+            // 3. Computed tags
+
+            {
+              auto& volumes(blocks::get<::elastica::tags::ElementVolume>(
+                  downstream_block));
+              auto& dimensions(blocks::get<::elastica::tags::ElementDimension>(
+                  downstream_block));
+              auto& lengths(blocks::get<::elastica::tags::ElementLength>(
+                  downstream_block));
+
+              volumes = dimensions * lengths;
+            }
+          }
+          //********************************************************************
+
+         public:
+          //**Get methods*******************************************************
+          /*!\name Get methods*/
+          //@{
+
+          // These are all interface functions, explicitly disallow on temporary
+          // objects by non overload on &&
+          //********************************************************************
+          /*!\name dimension methods*/
+          //@{
+          /*!\brief Gets dimension of the current rod
+           */
+          inline constexpr decltype(auto) get_element_dimension() & noexcept {
+            return blocks::get<ElementDimension>(self());
+          }
+          inline constexpr decltype(auto) get_element_dimension()
+              const& noexcept {
+            return blocks::get<ElementDimension>(self());
+          }
+          inline constexpr decltype(auto) get_element_dimension(
+              index_type idx) & noexcept {
+            return ElementDimension::slice(get_element_dimension(), idx);
+          }
+          inline constexpr decltype(auto) get_element_dimension(
+              index_type idx) const& noexcept {
+            return ElementDimension::slice(get_element_dimension(), idx);
+          }
+          //@}
+          //********************************************************************
+
+          //********************************************************************
+          /*!\name volume methods*/
+          //@{
+          /*!\brief Gets volume of the current rod
+           */
+          inline constexpr decltype(auto) get_element_volume() & noexcept {
+            // Do we need it here, or should it be under update volume?
+            //          (blocks::get<ElementVolume>(self())) =
+            //              (blocks::get<ElementDimension>(self())) *
+            //              (blocks::get<ElementLength>(self()));
+            return blocks::get<ElementVolume>(self());
+          }
+          inline constexpr decltype(auto) get_element_volume() const& noexcept {
+            return blocks::get<ElementVolume>(self());
+          }
+          inline constexpr decltype(auto) get_element_volume(
+              index_type idx) & noexcept {
+            return ElementVolume::slice(get_element_volume(), idx);
+          }
+          inline constexpr decltype(auto) get_element_volume(
+              index_type idx) const& noexcept {
+            return ElementVolume::slice(get_element_volume(), idx);
+          }
+          //@}
+          //********************************************************************
+
+          //********************************************************************
+          /*!\name area methods*/
+          //@{
+          /*!\brief Gets area of the current rod
+           */
+          inline constexpr auto get_area() const& /*noexcept*/ {
+            // Should give out a VecVecExpr rather than Dimensions object
+            // for expression template mechanisms
+            return compute_cross_section_area(This::get_element_dimension());
+          }
+          inline constexpr auto get_area(index_type idx) const& /*noexcept*/ {
+            // Should give out a VecVecExpr rather than Dimensions object
+            // for expression template mechanisms
+            return compute_cross_section_area(This::get_element_dimension(idx));
+          }
+          //@}
+          //********************************************************************
+
+          //********************************************************************
+          /*!\name second moment of area methods*/
+          //@{
+          /*!\brief Gets second moment of area of the current rod
+           */
+          template <DirectionType Dim, Requires<(Dim < Frame::D3)> = nullptr>
+          inline constexpr decltype(auto) get_second_moment_of_area() const
+          /*noexcept*/ {
+            // Should give out a VecVecExpr rather than Dimensions object
+            // for expression template mechanisms
+            return compute_second_moment_of_area(This::get_element_dimension());
+          }
+          template <DirectionType Dim, Requires<(Dim == Frame::D3)> = nullptr>
+          inline constexpr decltype(auto) get_second_moment_of_area() const
+          /*noexcept*/ {
+            // Should give out a VecVecExpr rather than Dimensions object
+            // for expression template mechanisms
+            return real_t(2.0) *
+                   compute_second_moment_of_area(This::get_element_dimension());
+          }
+          template <DirectionType Dim>
+          inline constexpr decltype(auto) get_second_moment_of_area(
+              index_type idx) const /*noexcept*/ {
+            // Should give out a VecVecExpr rather than Dimensions object
+            // for expression template mechanisms
+            return ElementDimension::slice(
+                This::get_second_moment_of_area<Dim>(), idx);
+          }
+
+          // do not have APIs return vec3, seems to reduce customizability and
+          // promores bad code
+          inline constexpr auto get_second_moment_of_area(index_type idx) const
+          /*noexcept*/ {
+            return Vec3{real_t(This::get_second_moment_of_area<D1>(idx)),
+                        real_t(This::get_second_moment_of_area<D2>(idx)),
+                        real_t(This::get_second_moment_of_area<D3>(idx))};
+          }
+
+          //@}
+          //********************************************************************
+
+          //@}
+          //********************************************************************
+
+          /*
+          inline constexpr auto get_volumes(std::size_t i) const noexcept
+          -> float_type {
+            return This::get<VolumeCollectionTag>()[i];
+          }
+
+          inline constexpr auto get_area(std::size_t i) const noexcept
+              -> float_type {
+            return self().area_impl(This::get_dimension(i));
+          }
+
+          template <DirectorType Dim, Requires<(Dim < This::D3)> = nullptr>
+          inline constexpr auto get_second_moment_of_area(
+              std::size_t i) const noexcept -> float_type {
+            return self().second_moment_of_area_impl(This::get_dimension(i));
+          }
+
+          template <DirectorType Dim, Requires<(Dim == This::D3)> = nullptr>
+          inline constexpr auto get_second_moment_of_area(
+              std::size_t i) const noexcept -> float_type {
+            // Perpendicular axis theorem
+            return float_type(2.0) *
+                   self().second_moment_of_area_impl(This::get_dimension(i));
+          }
+          inline constexpr auto get_second_moment_of_area(
+              std::size_t i) const noexcept {
+            return Vec3{get_second_moment_of_area<D1>(i),
+                        get_second_moment_of_area<D2>(i),
+                        get_second_moment_of_area<D3>(i)};
+          }
+
+          */
+
+          //      inline constexpr auto get_second_moment_of_area() const
+          //      noexcept
+          //      {
+          //        return Vec3{get_second_moment_of_area<D1>(),
+          //                    get_second_moment_of_area<D2>(),
+          //                    get_second_moment_of_area<D3>()};
+          //      }
+          //
+
+          // Technically these can be put in an interface class that has
+          // the ability to compute curvature/shear etc., but we can leave
+          // it aside for now.
+
+         private:
+          //**Computation methods***********************************************
+          /*!\name Computation methods*/
+          //@{
+
+          // Translational functions
+          void compute_translation_diagnostics() noexcept {
+            // 1. Compute new lengths
+
+            // 2. Update tangents
+
+            // 3. Compute new radius based on above lengths
+            // Note! Here we need a CRTP method to get r from l
+            // self().dimension_from_volume_impl(get_volumes(), get_lengths());
+
+            // 4. Compute dilatation of elements
+
+            // 5. Compute dilatation of voronoi regions
+          }
+
+         protected:
+          void compute_shear_strains() noexcept {
+            // Q (et - d_3)
+            // Q is always latest, only e and t need to be computed
+            compute_translation_diagnostics();
+
+            //          This::get<
+            //              typename
+            //              GeometryParent::ShearStretchStrainCollectionTag>()
+            //              = 1.0;
+          }
+
+          void compute_curvature() noexcept {
+            // kappa is the only rotational diagnostic, so we direcelty compute
+            // that here
+            // std::get<typename GeometryParent::CurvatureCollectionTag>(
+            // self().data()) = 1.0;
+            // get_curvature() = log(get_rotation_matrices());
+          }
+          //@}
+          //********************************************************************
+        };
+        //**********************************************************************
+
+      }  // namespace detail
+
+    }  // namespace component
+
+  }  // namespace cosserat_rod
+
+}  // namespace elastica
+
+//  public RodKinematics<RodTraits>
+// Sparse_strategy
+// Dense strategy
+/* Lessons learnt:
+ * We wanted to CRTP multiple times to achieve multiple-inheritance
+ * during compile-time. However putting the tag structs inside the
+ * CRTP base class is problematic as the tags are also stamped with
+ * the CRTP-ed derived class (aka the CrossSection template) below.
+ * For some reason (still unknown), this causes the tuples to not find
+ * the tags initialized from the block ||-> plugin || -> circle geometry
+ * which is then specially CRTped to the CrossSectionBase class.
+ *
+ * The error comes because
+ * We search for
+    elastica::detail_cosserat_rod::CosseratRodTraits::VectorSlice<elastica::detail_cosserat_rod::CrossSectionBase<elastica::detail_cosserat_rod::CosseratRodTraits,
+    elastica::detail_cosserat_rod::CircleCrossSection<elastica::detail_cosserat_rod::CosseratRodTraits,
+    elastica::Block<elastica::CosseratRodPlugin<elastica::detail_cosserat_rod::CosseratRodTraits,
+    elastica::Block, elastica::detail_cosserat_rod::CircleCrossSection> > >
+    >::VolumeCollectionTag, elastica::detail_cosserat_rod::ElementTagImpl>;
+
+    But in the tuple we only have
+    elastica::detail_cosserat_rod::CosseratRodTraits::VectorSlice<elastica::detail_cosserat_rod::CrossSectionBase<elastica::detail_cosserat_rod::CosseratRodTraits,
+    elastica::detail_cosserat_rod::CircleCrossSection<elastica::detail_cosserat_rod::CosseratRodTraits,
+    elastica::CosseratRodPlugin<elastica::detail_cosserat_rod::CosseratRodTraits,
+    elastica::Block, elastica::detail_cosserat_rod::CircleCrossSection> >
+    >::VolumeCollectionTag, elastica::detail_cosserat_rod::ElementTagImpl>,
+
+    Notice how an extra "Block" template gets added to the search parameter
+   around the CosseratRodPlugin. This seems to be the right type to be
+   searched for, at least while looking at the hierarchy that we have.
+ However in the tuple types there's a deficiency of the block types for some
+ reason.
+
+   To avoid these hassle, we again split the CrossSectionBase into
+ CrossSectionOperations templated on the CosseratRodTraits. The sole purpose
+ of this parent is just to provide meta-data on what the cross-section base
+ should contain.
+ *
+ */
+
+/*
+ * In this multiple CRTP inheritance, another trick is used. We know
+ * that the CrossSection class will only have static members. Then
+ * instead of templating on the ComputaionalBlock (the impl) class
+ * we template on the CrossSection instead and give it a friend access.
+ * Thie leads to a more "sensible" code since only CrossSection can
+ * be used as the final class (aka CrossSectionBase cannot be used
+ * to instantiate a Cosserat Rod), thus preventing wrong misuse. Also
+ * the CrossSection hierarchy is self contained and can be reused
+ * without worrying about blocks getting interchanged in the
+ * CrossSection Base and CrossSection (since only one block is
+ * templated)
+ *
+ *
+ */

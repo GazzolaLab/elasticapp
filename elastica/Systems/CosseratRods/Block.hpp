@@ -1,127 +1,153 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Specialization of a Block for Cosserat rods
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
 
-#include <tuple>
+//******************************************************************************
+// Includes
+//******************************************************************************
+
+#include <vector>
 
 /// Forward declarations
 #include "Systems/CosseratRods/Types.hpp"
 ///
 
-#include "DataStructures/TaggedTuple.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Systems/Block/Block.hpp"
-#include "Systems/Block/BlockSlice.hpp"
 #include "Systems/CosseratRods/BlockInitializer.hpp"
 #include "Systems/CosseratRods/BlockSlice.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
-#include "Systems/CosseratRods/TypeTraits/Initializers.hpp"
 #include "Utilities/NonCopyable.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/StdHelpers.hpp"
+//#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TMPLDebugging.hpp"
 
-namespace elastica {
+// serialization support, feels strange coming from simulator
+#include "Simulator/IO/Serialization/Serialize.hpp"
 
-  //    template <typename CRT,                 // Cosserat Rod Traits
-  //              template <typename> ComputationalBlock,  // Block with
-  //              implementation
-  //            template <typename /*CRT*/, typename /* CosseratRodPlugin */>
-  //            class... Layers>  // Skills
-  //  class CosseratRodPlugin;
+namespace blocks {
 
-  // template <typename> Block
+  //============================================================================
+  //
+  //  CLASS DEFINITION
+  //
+  //============================================================================
 
-  //  template <template <typename /*Traits*/, typename /* Block */,
-  //                      template <typename /*Traits*/, typename /* Block */>
-  //                      class... /* Skills*/>
-  //            class Plugin>
-  //  class Block;
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\brief Specialization of blocks::Block for CosseratRodPlugin
+   * \ingroup blocks
+   *
+   * \tparam CRT        The traits class for a Cosserat rod
+   * \tparam Components Components customizing a Cosserat rod (such as geometry,
+   *                    elasticity)
+   *
+   * \see blocks::Block
+   */
+  template <typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  class Block<
+      elastica::cosserat_rod::CosseratRodPlugin<CRT, Block, Components...>>
+      // final (not final because testing requires deriving)
+      : private elastica::NonCopyable,
+        public BlockFacade<elastica::cosserat_rod::CosseratRodPlugin<
+            CRT, Block, Components...>> {
+   private:
+    //**Type definitions********************************************************
+    //! Traits type
+    using Traits = CRT;
+    //! Parent type
+    using Parent = BlockFacade<
+        elastica::cosserat_rod::CosseratRodPlugin<CRT, Block, Components...>>;
+    using Plugin = typename Parent::PluginType;
+    //! This type
+    using This = Block<Plugin>;
+    //! This slice type
+    using ThisSlice =
+        BlockSlice<elastica::cosserat_rod::CosseratRodPlugin<CRT, BlockSlice,
+                                                             Components...>>;
+    //! Plugin type for the slice
+    using SlicePlugin = typename ThisSlice::PluginType;
 
-  // Specialization of blocks for the cosserat rods class
-  // TODO : Blocking strategy :
-  //  1. Default : free blocks
-  //  2. fixed size blocks (compile time-parameter)
-
-  //  template <template <typename, typename...> class TT, typename SENDER,
-  //            typename... ARGS>
-  //  class CRTPBase<TT<SENDER, ARGS...>> {
-  //    // ...
-  //  };
-
-  // Specialization for a Cosserat Rod plugin
-  //  template <template <typename /*Traits*/, typename /* Block */,
-  //                      template <typename /*Traits*/, typename /* Block */>
-  //                      class... /* Skills*/>
-  //            class CRPlugin,
-  //            typename CRT, template <typename, typename> class... Skills>
-  //  class Block<CRPlugin<CRT, Block>>;
-
-  template <typename CRT,                  // Cosserat Rod Traits
-            template <typename, typename>  // Skills
-            class... Layers>
-  class Block<CosseratRodPlugin<CRT, Block, Layers...>>
-      : public CosseratRodPlugin<CRT, Block, Layers...>, private NonCopyable {
-    // Friend it to prevent annoying private member messages
-    //    template <typename B>
-    //    friend class CosseratRodPlugin;
-
-    using Parent = CosseratRodPlugin<CRT, Block, Layers...>;
-    friend Parent;
-    using This = Block<Parent>;
-#define REPEAT_2(M, N) M(N) M(N + 1)
-#define REPEAT_4(M, N) REPEAT_2(M, N) REPEAT_2(M, N + 2)
-#define REPEAT_8(M, N) REPEAT_4(M, N) REPEAT_4(M, N + 4)
-#define FRIEND(N)                                                       \
-  friend std::tuple_element_t<std::min(static_cast<std::size_t>(N + 1), \
-                                       sizeof...(Layers)),              \
-                              std::tuple<void, Layers<CRT, This>...>>;
-
-    // Friend also all the layers called in parents
-    REPEAT_8(FRIEND, 0)
-
-#undef FRIEND
-#undef REPEAT_8
-#undef REPEAT_4
-#undef REPEAT_2
-
-
-    // Import staggering tags
-    using typename Parent::ElementTag;
-    using typename Parent::NodeTag;
-    using typename Parent::VoronoiTag;
-
-    //
-    using typename Parent::ElementMemberTags;
-    using typename Parent::MemberTags;
-    using typename Parent::NodeMemberTags;
-    using typename Parent::VoronoiMemberTags;
-
-    //
-    using typename Parent::SliceTags;
-    template <typename T>
-    using slice_type_t = typename Parent::template slice_type_t<T>;
-    using Slices = tmpl::as_tagged_tuple<SliceTags>;
-
-    using CosseratRodProperties = tmpl::as_tagged_tuple<MemberTags>;
-
+   protected:
+    //! List of variables
+    using typename Parent::Variables;
+    //! List of variables placed on the whole rod
+    using VariablesOnRod =
+        tmpl::filter<Variables, typename Traits::template IsOnRod<tmpl::_1>>;
+    //! List of variables placed on the nodes in the grid
+    using VariablesOnNode =
+        tmpl::filter<Variables, typename Traits::template IsOnNode<tmpl::_1>>;
+    //! List of variables placed on the elements in the grid
+    using VariablesOnElement =
+        tmpl::filter<Variables,
+                     typename Traits::template IsOnElement<tmpl::_1>>;
+    //! List of variables placed on the voronois in the grid
+    using VariablesOnVoronoi =
+        tmpl::filter<Variables,
+                     typename Traits::template IsOnVoronoi<tmpl::_1>>;
+    //! Template type of expected initializer
     template <typename... Initializers>
     using CosseratInitializer =
-    typename CosseratBlockInitializer<CRT>::template Initializer<Initializers...>;
-    using CosseratSlice =
-        BlockSlice<CosseratRodPlugin<CRT, BlockSlice, Layers...>>;
+        // note : here it is not templated on the slice of the plugin but rather
+        // the plugin itself
+        ::elastica::cosserat_rod::CosseratInitializer<Plugin, Initializers...>;
+    //! Tag to place on nodes
+    using OnNode = typename Traits::Place::OnNode;
+    //! Tag to place on elements
+    using OnElement = typename Traits::Place::OnElement;
+    //! Tag to place on voronois
+    using OnVoronoi = typename Traits::Place::OnVoronoi;
+    //! Tag to place on the whole rod rather than at discrete points
+    using OnRod = typename Traits::Place::OnRod;
+    //! Type of index
+    using index_type = typename Traits::index_type;
+    // Same as typename Traits::DataType::Index::type::ElementType;
+    // but this one is tailored to blaze
+    //! Type of size
+    using size_type = typename Traits::size_type;
+    //! Type of total element count
+    using TotalElementCount = size_type;
+    //! Type of ghost node indices
+    using GhostNodeIndices = std::vector<index_type>;
+    //**************************************************************************
 
-    // No need scalable allocator
-    using SizeType = std::size_t;
-    using TotalElementCount = SizeType;
-    using GhostNodeIndices = std::vector<SizeType>;
-    using ElementCounts = std::vector<SizeType>;
+   private:
+    //**Friendships*************************************************************
+    // Friend the Facade (for what?)
+    friend Parent;
+    // Friend the serialization struct
+    friend elastica::io::Serialize<This>;
+    //**************************************************************************
 
-    // Import from parent
-    using Parent::n_elements;
-    using Parent::n_nodes;
-    using Parent::n_voronois;
+    //**Parent methods**********************************************************
+    //! Methods inherited from parent class
+   public:
+    using Plugin::n_elements;
+    using Plugin::total_n_elements;
+    using Plugin::total_n_nodes;
+    using Plugin::total_n_voronois;
+    // for n_units() free function
+    using Parent::n_units;
 
-    /* Really needed?
+   protected:
+    using Parent::n_ghosts;
+    //**************************************************************************
+
+    /* Not really needed?
     static constexpr std::size_t get_number_of_node_members() {
       return tmpl::size<NodeMemberTags>::value;
     }
@@ -135,453 +161,841 @@ namespace elastica {
     }
     */
 
-    // InitializerPacks are pack objects (a tuple) each having a bunch of
-    // generator expressions to initialize a single cosserat rod
-    //    template <typename... InitializerPacks>
-    //    Block(ElementCounts&& elements,
-    //          std::tuple<InitializerPacks...>&& initializer_packs)
-    //        : elements_(std::move(elements)){};
-
+    //**************************************************************************
+    /*!\name Get variable helpers */
+    //@{
+    /*!\brief Helper to get the list of variables based on the stagger type
+     */
    private:
-    // Returns number of units stored in the block
-    inline auto size() const noexcept -> SizeType {
-      return element_counts_.size();
-    }
+    static constexpr inline auto GetVariablesHelper(OnRod) noexcept ->
+        typename This::VariablesOnRod;
+    static constexpr inline auto GetVariablesHelper(OnNode) noexcept ->
+        typename This::VariablesOnNode;
+    static constexpr inline auto GetVariablesHelper(OnElement) noexcept ->
+        typename This::VariablesOnElement;
+    static constexpr inline auto GetVariablesHelper(OnVoronoi) noexcept ->
+        typename This::VariablesOnVoronoi;
+    //@}
+    //**************************************************************************
 
-    // We can have a ghost policy here, but its unnecessary as only
-    // one feasible implementation exists
-    static inline constexpr auto n_ghosts(ElementTag /*meta*/) noexcept
-        -> SizeType {
-      return 2UL;
-    };
+   protected:
+    //**Type definitions********************************************************
+    //! Template type for getting the list of variables based on
+    //! the stagger type
+    template <typename OnStaggerType>
+    using get_variables_placed =
+        decltype(GetVariablesHelper(std::declval<OnStaggerType>()));
+    //**************************************************************************
 
-    static inline constexpr auto n_ghosts(NodeTag /* meta */) noexcept
-        -> SizeType {
-      return n_ghosts(ElementTag{}) - 1UL;
-    };
-
-    static inline constexpr auto n_ghosts(VoronoiTag /* meta */) noexcept
-        -> SizeType {
-      return n_ghosts(ElementTag{}) + 1UL;
-    };
-
-    inline constexpr auto data() noexcept -> CosseratRodProperties& {
-      return rod_properties_;
-    };
-
-    inline constexpr auto data() const noexcept
-        -> CosseratRodProperties const& {
-      return rod_properties_;
-    };
-
-    template <typename PropertyTag>
-    inline constexpr decltype(auto) get() noexcept {
-      return std::get<PropertyTag>(data());
-    }
-
-    template <typename PropertyTag>
-    inline constexpr decltype(auto) get() const noexcept {
-      return std::get<PropertyTag>(data());
-    }
-
-    // TODO : Unused
-    // metafunction behaves as associative array of TagTypes and Members
-
-    /* NOTE: An explicit specialization of structs inside class scope
-     does not work with gcc-14 as its not standard C++-14 (but clang has no
-     issues due to some retroactive fix). Even specializing thes structs
-     outside of the class scope does not seem to help.
-
+    //**************************************************************************
+    /*!\name Start of slice */
+    //@{
+   private:
+    //**************************************************************************
     template <typename T>
-    struct GetMembersMarkedWithHelper;
+    using identity = tmpl::type_<T>;
+    /* Dev note:
+     * Need tag dispatch here as function specialization is not valid
+     * (even with a single template parameter) because it is an
+     * Explicit specialization in non-namespace scope
+     * This was corrected in a later draft, so Clang++ works fine. However
+     * GCC bugs out, even with the retroactive fix applied to C++14 compilers.
+     * https://stackoverflow.com/questions/3052579/explicit-specialization-in-non-namespace-scope
+     */
+    template <typename OnStaggerType>
+    inline auto get_start_of_slice_helper(index_type const unit,
+                                   identity<OnStaggerType>) const noexcept
+        -> size_type {
+      // Zero-based indexing
+      // this is implemented in check() now
+      //      ELASTICA_ASSERT(ghost_node_indices_.size() >= unit,
+      //                      "Wrong number of units requested");
 
-    template <>
-    struct GetMembersMarkedWithHelper<NodeTag> {
-      using type = This::NodeMemberTags;
-    };
-
-    template <>
-    struct GetMembersMarkedWithHelper<ElementTag> {
-      using type = This::ElementMemberTags;
-    };
-
-    template <>
-    struct GetMembersMarkedWithHelper<VoronoiTag> {
-      using type = This::VoronoiMemberTags;
-    };
-
-    template <typename StaggeredTag>
-    using get_members_marked_with =
-        typename GetMembersMarkedWithHelper<StaggeredTag>::type;
-    */
-
-    // To work past that im using these undefined functions
-    static constexpr This::VoronoiMemberTags GetMembersMarkedWithHelper(
-        VoronoiTag);
-    static constexpr This::NodeMemberTags GetMembersMarkedWithHelper(NodeTag);
-    static constexpr This::ElementMemberTags GetMembersMarkedWithHelper(
-        ElementTag);
-
-    template <typename StaggeredTag>
-    using get_members_marked_with =
-        decltype(GetMembersMarkedWithHelper(std::declval<StaggeredTag>()));
-
-    template <typename StaggeredTag>
-    void resize_members_marked_with() {
-      using StaggeredMemberTags = get_members_marked_with<StaggeredTag>;
-      tmpl::for_each<StaggeredMemberTags>(
-          [this, resized = Parent::template get_dofs<StaggeredTag>()](
-              auto staggered_member_tag) {
-            using StaggeredMemberTag =
-                tmpl::type_from<decltype(staggered_member_tag)>;
-            auto& staggered_member =
-                std::get<StaggeredMemberTag>(rod_properties_);
-            StaggeredMemberTag::resize(staggered_member, resized);
-          });
-    }
-
-    template <typename StaggeredTag>
-    void initialize_ghosts_marked_with() {
-      using StaggeredMemberTags = get_members_marked_with<StaggeredTag>;
-      tmpl::for_each<StaggeredMemberTags>([this,
-                                           deficit = n_ghosts(StaggeredTag{})](
-                                              auto staggered_member_tag) {
-        using StaggeredMemberTag =
-            tmpl::type_from<decltype(staggered_member_tag)>;
-        auto& staggered_member = std::get<StaggeredMemberTag>(rod_properties_);
-        const auto ghost_value = StaggeredMemberTag::ghost_value();
-
-        // Here we initialize ALL ghosts, whether or not the
-        // elements are preserved before and after reordering
-        // TODO : Policy class
-        // Resize dofs irrespective of the type
-        for (SizeType ghost_node_idx : ghost_node_indices_) {
-          SizeType ghost_stop_idx = ghost_node_idx;
-          ELASTICA_ASSERT(ghost_stop_idx > deficit,
-                          "Ghost invariant violated!");
-          SizeType ghost_start_idx = ghost_stop_idx - deficit;
-
-          for (SizeType ghost_idx = ghost_stop_idx; ghost_idx > ghost_start_idx;
-               --ghost_idx) {
-            StaggeredMemberTag::slice(staggered_member, ghost_idx) =
-                ghost_value;
-          }
-        }
-      });
-    }
-
-    template <typename StaggeredTag>
-    void make_slices_of_members_marked_with_deprecated(Slices& slices) {
-      // Always one behind is where the ghost starts according to the indexing
-      const SizeType start_slice = ghost_node_indices_.empty()
-                                       ? 0UL
-                                       : (ghost_node_indices_.back() + 1UL);
-
-      ELASTICA_ASSERT(not element_counts_.empty(),
-                      "No elements to make slices for in the Block!");
-
-      const SizeType size_slice =
-          StaggeredTag::get_dofs(element_counts_.back());
-
-      using StaggeredMemberTags = get_members_marked_with<StaggeredTag>;
-
-      tmpl::for_each<StaggeredMemberTags>(
-          [this, &slices, start_slice, size_slice](auto staggered_member_tag) {
-            using StaggeredMemberTag =
-                tmpl::type_from<decltype(staggered_member_tag)>;
-            using StaggeredMemberSliceTag = slice_type_t<StaggeredMemberTag>;
-
-            // Unsliced
-            auto& full = std::get<StaggeredMemberTag>(rod_properties_);
-            auto& sliced = std::get<StaggeredMemberSliceTag>(slices);
-
-            // Sliced for initialization : from ghost_idx + 1 to last element
-            sliced = StaggeredMemberTag::slice(full, start_slice, size_slice);
-          });
-    }
-
-    // Zero-based indexing
-    // This template is not needed, but kept for symmetry with size_of_slice
-    template <typename StaggeredTag>
-    inline auto get_start_of_slice(SizeType const unit) const noexcept
-        -> std::size_t {
-      ELASTICA_ASSERT(ghost_node_indices_.size() >= unit,
-                      "Wrong number of units requested");
       // unit - 1 cannot be negative
       return unit ? (ghost_node_indices_[unit - 1UL] + 1UL) : 0UL;
     }
-
-    // Zero-based indexing
-    template <typename StaggeredTag>
-    inline auto get_size_of_slice(SizeType const unit) const noexcept
-        -> std::size_t {
-      ELASTICA_ASSERT(ghost_node_indices_.size() >= unit,
-                      "Wrong number of units requested");
-      // unit - 1 cannot be negative
-      return StaggeredTag::get_dofs(element_counts_[unit]);
+    inline auto get_start_of_slice_helper(index_type const unit,
+                                   identity<OnRod>) const noexcept
+        -> size_type {
+      return unit;
     }
+    //**************************************************************************
 
-    template <typename StaggeredTag>
-    constexpr auto make_slices_of_members_marked_with(const SizeType unit) {
-      // Always one behind is where the ghost starts according to the indexing
-      const SizeType start_slice = get_start_of_slice<StaggeredTag>(unit);
-      const SizeType size_slice = get_size_of_slice<StaggeredTag>(unit);
-      // StaggeredTag::get_dofs(elements_.back());
-
-      using StaggeredMemberTags = get_members_marked_with<StaggeredTag>;
-
-      auto applier = [this, start_slice, size_slice](auto Is) {
-        using StaggeredMemberTag = tmpl::at_c<StaggeredMemberTags, Is>;
-        using StaggeredMemberSliceTag = slice_type_t<StaggeredMemberTag>;
-
-        // Unsliced
-        auto& full = std::get<StaggeredMemberTag>(rod_properties_);
-        // Sliced for initialization : from ghost_idx + 1 to last
-        // element
-        return StaggeredMemberSliceTag{
-            StaggeredMemberTag::slice(full, start_slice, size_slice)};
-      };
-
-      return index_apply<tmpl::size<StaggeredMemberTags>::value>(
-          [&applier](auto... Is) { return std::make_tuple(applier(Is)...); });
-    }
-
-    //    void resize(NodeTag /* meta */) {
-    //      tmpl::for_each<NodeMemberTags>(
-    //          [this, resized = n_nodes()](auto node_member_tag) {
-    //            using NodeMemberTag =
-    //            tmpl::type_from<decltype(node_member_tag)>; auto& node_member
-    //            = std::get<NodeMemberTag>(rod_properties_);
-    //            // Resize dofs irrespective of the type
-    //            NodeMemberTag::resize(node_member, resized);
-    //          });
-    //    }
-    //
-    //    void resize(ElementTag /* meta */) {
-    //      tmpl::for_each<ElementMemberTags>([this, resized = n_elements()](
-    //                                            auto element_member_tag) {
-    //        using ElementMemberTag =
-    //        tmpl::type_from<decltype(element_member_tag)>; auto&
-    //        element_member = std::get<ElementMemberTag>(rod_properties_);
-    //        // Resize dofs irrespective of the type
-    //        ElementMemberTag::resize(element_member, resized);
-    //      });
-    //    }
-    //
-    //    void resize(VoronoiTag /* meta */) {
-    //      tmpl::for_each<VoronoiMemberTags>([this, resized = n_voronois()](
-    //                                            auto voronoi_member_tag) {
-    //        using VoronoiMemberTag =
-    //        tmpl::type_from<decltype(voronoi_member_tag)>; auto&
-    //        voronoi_member = std::get<VoronoiMemberTag>(rod_properties_);
-    //        // Resize dofs irrespective of the type
-    //        VoronoiMemberTag::resize(voronoi_member, resized);
-    //      });
-    //    }
-
-    void resize() {
-      resize_members_marked_with<NodeTag>();
-      resize_members_marked_with<ElementTag>();
-      resize_members_marked_with<VoronoiTag>();
-    }
-
-    void initialize_ghosts() {
-      initialize_ghosts_marked_with<NodeTag>();
-      initialize_ghosts_marked_with<ElementTag>();
-      initialize_ghosts_marked_with<VoronoiTag>();
-    }
-
-    /*
-    Slices make_slices_deprecated() {
-      // IMPOSSIBLE : Submatrices and subvectors disallow default
-      // construction, hence do in a round about way
-      Slices slices{};
-      make_slices_of_members_marked_with_deprecated<NodeTag>(slices);
-      make_slices_of_members_marked_with_deprecated<ElementTag>(slices);
-      make_slices_of_members_marked_with_deprecated<VoronoiTag>(slices);
-      return slices;
-    }
+   public:
+    //**************************************************************************
+    /*!\brief Gets starting location of new slice, based on the stagger type
      */
-
-    auto make_slices(SizeType const unit) {
-      ELASTICA_ASSERT(not element_counts_.empty(),
-                      "No elements to make slices for in the Block!");
-      //      TypeDisplayer<decltype(make_slices_of_members_marked_with<ElementTag>(unit))>
-      //      td{};
-      return std::tuple_cat(
-          make_slices_of_members_marked_with<NodeTag>(unit),
-          make_slices_of_members_marked_with<ElementTag>(unit),
-          make_slices_of_members_marked_with<VoronoiTag>(unit));
+    template <typename OnStaggerType>
+    inline auto get_start_of_slice(index_type const unit) const noexcept
+        -> size_type {
+      return get_start_of_slice_helper(unit, identity<OnStaggerType>{});
     }
+    //@}
+    //**************************************************************************
 
-    // To resize
-    void prepare_for_resize(std::size_t n_elems) {
+    //**************************************************************************
+    /*!\brief Gets starting location of new slice, based on the stagger type
+     */
+    template <typename OnStaggerType>
+    inline auto get_size_of_slice(
+        index_type const index_to_be_sliced) const noexcept -> size_type {
+      return OnStaggerType::get_dofs(n_elements(index_to_be_sliced));
+    }
+    //**************************************************************************
+
+   public:
+    //**************************************************************************
+    /*
+     * \note
+     * Most of the non-default public interface should more or less come from
+     * the Cosserat Rod plugin class per design
+     */
+    //**************************************************************************
+
+    //////////////////////////// start conformance /////////////////////////////
+    // To work with block facade, implement customization point for generating
+    // a slice.
+    //**Slice functions*********************************************************
+    /*!\name Slice functions */
+    //@{
+    /*!\brief Takes slice of each individual variable
+     */
+    template <typename Var>
+    inline constexpr typename Var::slice_type slice(
+        index_type index_to_be_sliced) & {
+      return Var::slice(
+          blocks::get<Var>(*this),
+          get_start_of_slice<typename Var::Stagger>(index_to_be_sliced),
+          get_size_of_slice<typename Var::Stagger>(index_to_be_sliced));
+    }
+    template <typename Var>
+    inline constexpr typename Var::const_slice_type slice(
+        index_type index_to_be_sliced) const& {
+      return Var::slice(
+          blocks::get<Var>(*this),
+          get_start_of_slice<typename Var::Stagger>(index_to_be_sliced),
+          get_size_of_slice<typename Var::Stagger>(index_to_be_sliced));
+    }
+    //**************************************************************************
+
+    //@}
+    //**************************************************************************
+
+    //**Check functions*********************************************************
+    /*!\name Check functions */
+    //@{
+    /*!\brief Checks whether indices are within range of accessible values
+     */
+    inline auto check(std::size_t index_to_be_sliced) const -> std::size_t {
+      if (index_to_be_sliced < n_units()) {
+        return index_to_be_sliced;
+      } else {
+        throw std::out_of_range(
+            "Index to be sliced exceeds the number of rods inside a Cosserat "
+            "rod block!");
+      }
+    }
+    inline auto check(elastica::from_end index_to_be_sliced) const
+        -> std::size_t {
+      // cannot be 0
+      const auto fe = index_to_be_sliced.i;
+      if (fe <= n_units()) {
+        return n_units() - fe;
+      } else {
+        throw std::out_of_range(
+            "Index to be sliced from the end exceeds the number of rods inside "
+            "a Cosserat rod block!");
+      }
+    };
+    //**************************************************************************
+
+    //@}
+    //**************************************************************************
+    ///////////////////////////// end conformance //////////////////////////////
+
+   public:
+    //**Constructors************************************************************
+    /*!\name Constructors */
+    //@{
+
+    //**************************************************************************
+    /*!\brief The default constructor.
+     *
+     */
+    Block() : Parent(), ghost_node_indices_(){};
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief The move constructor.
+     *
+     * \param other Other block to move from
+     */
+    Block(Block&& other) noexcept
+        : Parent(std::move(other)),
+          ghost_node_indices_(std::move(other.ghost_node_indices_)){};
+    //**************************************************************************
+
+    //@}
+    //**************************************************************************
+
+    //**Destructor**************************************************************
+    /*!\name Destructor */
+    //@{
+    ~Block() = default;
+    //@}
+    //**************************************************************************
+
+   protected:
+    //**Resizing functions******************************************************
+    /*!\name Resizing functions */
+    //@{
+
+    //**************************************************************************
+    /*!\brief Prepares for resizing the entire rod, with some bounds checking
+     *
+     * \param n_elems The number of elements in the newly introduced rod
+     */
+    auto prepare_for_resize(std::size_t n_elems) -> size_type {
       ELASTICA_ASSERT(n_elems > 1UL, "Cannot have rods with < 2 elements!");
-      const auto n_units = size();
+      const size_type current_n_units = n_units();
+      size_type total_n_elements_after_resizing(0UL);
 
-      // A. increase units count
-      element_counts_.push_back(n_elems);
+      // A. increase units count taken care by the plugin
+      //      element_counts_.push_back(n_elems);
 
-      // B. resize dofs
-      if (n_units) {
+      // A. resize dofs
+      if (current_n_units) {
         // pre-existing block, so
 
         // 1. push back a new ghost node (based on zero-indexing)
-        ghost_node_indices_.push_back(n_nodes());
+        // i > 0
+        // gn_indices[i]
+        //   = gn_indices[i - 1] + (n_elements[i] + 1) + 1
+        //   = gn_indices[i - 1] + n_nodes[i] + 1
+        //   = gn_indices[i - 1] + 1 + n_nodes[i]
+        //   = gn_indices[i - 2] + (1 + n_nodes[i-1]) + (1 + n_nodes[i])
+        // i = 0
+        // ghost_node_indices[0UL] = n_elements[0UL] + 1
+        //                         = n_nodes[0]
+        // meanwhile
+        // total_n_nodes = n_nodes[0] + 1 + n_nodes[1] + 1 + .... + nodes[i - 1]
+        // and hence they are equivalent
+        ghost_node_indices_.push_back(total_n_nodes());
 
         // 2. calculate the new number of elements including ghosts
-        n_elements_ += (n_elems + n_ghosts(ElementTag{}));
+        total_n_elements_after_resizing =
+            total_n_elements() + n_elems + n_ghosts(OnElement{});
 
       } else {
         // Fresh block, so
         ELASTICA_ASSERT(ghost_node_indices_.empty(),
                         "Block assert failed, contact developers");
+        // cannot call total_n_elements() as we have an assert inside it
         // ghost_node_indices_.push_back(void) => No ghosts in this case
 
-        // 1. Increment total number of elements
-        n_elements_ += n_elems;
+        // 1. Increment total number of elements => No ghosts in this case
+        total_n_elements_after_resizing = n_elems;
       }
+      return total_n_elements_after_resizing;
     }
+    //**************************************************************************
 
-    // NOTE : The public interface should more or less come from the
-    //  Cosserat Rod plugin class per design
-   public:
-    Block()
-        : rod_properties_(),
-          ghost_node_indices_(),
-          element_counts_(),
-          n_elements_(0UL){};
+    //**************************************************************************
+    /*!\brief Resizes variables placed on entire rods
+     *
+     * \param total_number_of_units The total number of units/rods
+     */
+    void resize_members_on_rod(size_type const total_number_of_units) {
+      tmpl::for_each<VariablesOnRod>(
+          [this, new_size = total_number_of_units](auto v) {
+            using Variable = tmpl::type_from<decltype(v)>;
+            auto& var = blocks::get<Variable>(*this);
+            Variable::resize(var, new_size);
+          });
+    }
+    //**************************************************************************
 
-    //// Deleted by construction
-    // Block(const Block& other) = delete;
-    ////
+    //**************************************************************************
+    /*!\brief Resizes variables placed `OnStaggerType`
+     *
+     * \param total_elements The total elements across rods
+     *
+     * \tparam OnStaggerType The staggering/placement type
+     */
+    template <typename OnStaggerType>
+    void resize_members_placed(TotalElementCount const total_elements) {
+      using VariablesPlacedOnStaggerType = get_variables_placed<OnStaggerType>;
+      // new size does not depend on the variable, so we can factor it outside
+      // the lambda
+      tmpl::for_each<VariablesPlacedOnStaggerType>(
+          [this, new_size = OnStaggerType::get_dofs(total_elements)](auto v) {
+            using Variable = tmpl::type_from<decltype(v)>;
+            auto& var = blocks::get<Variable>(*this);
+            Variable::resize(var, new_size);
+          });
+    }
+    //**************************************************************************
 
-    Block(Block&& other) noexcept
-        :  // TODO : improve Tagged tuple move, for example what does move do?
-          rod_properties_(std::move(other.rod_properties_)),
-          ghost_node_indices_(std::move(other.element_counts_)),
-          element_counts_(std::move(other.element_counts_)),
-          n_elements_(other.n_elements_){};
+    //**************************************************************************
+    /*!\brief Resizes variables other than those placed on the rod
+     *
+     * \param total_elements The total elements across rods
+     */
+    void resize_members_not_on_rod(TotalElementCount const total_elements) {
+      resize_members_placed<OnNode>(total_elements);
+      resize_members_placed<OnElement>(total_elements);
+      resize_members_placed<OnVoronoi>(total_elements);
+    }
+    //**************************************************************************
 
-    // TODO : Check if all are valid blocks
-    // The implementation is variadic because resizing every time is inefficient
-    // rather we can add all dofs in one go. Of course, by putting in one block
-    // initializer, we get the regular implementation
-    template <typename... FirstBlockInitializers, typename... BlockInitializers,
-              Requires<cpp17::conjunction_v<
-                  detail_cosserat_rod::tt::IsBlockInitializer<
-                      CRT, BlockInitializers>...>> = nullptr>
-    auto emplace_back(
-        CosseratInitializer<FirstBlockInitializers...>&& first_block_initializer,
-        BlockInitializers&&... block_initializers) {
-      // 0. number of preexisting rods
-      const auto n_units = size();
-      constexpr auto n_units_added = 1 + sizeof...(BlockInitializers);
+    //**************************************************************************
+    /*!\brief Resizes all variables in the current Block
+     *
+     * \param total_elements        The total elements across all rods
+     * \param total_number_of_units The total number of units/rods
+     */
+    void resize_internal(TotalElementCount const total_elements,
+                         size_type const total_number_of_units) {
+      // 2.1 resize dofs on rods by new_n_units
+      resize_members_on_rod(total_number_of_units);
 
-      // 1. Increase units count, linear
-      prepare_for_resize(first_block_initializer.n_elems);
-      EXPAND_PACK_LEFT_TO_RIGHT(prepare_for_resize(block_initializers.n_elems));
+      // 2.2 resize dofs on nodes, elements and voronoi by total_n_elements_
+      resize_members_not_on_rod(total_elements);
+    }
+    //**************************************************************************
 
-      // 2. Bulk resize
-      resize();
+    //@}
+    //**************************************************************************
 
-      // 3. Bulk fill all ghosts
-      initialize_ghosts();
+   protected:
+    //**Ghosting functions******************************************************
+    /*!\name Ghosting functions */
+    //@{
 
-      auto initializer = [n_units, this,
-                          cap = std::forward_as_tuple(first_block_initializer,
-                                                      block_initializers...)](
-                             auto Is) {
-        auto&& block_initializer(std::get<Is>(cap));
+    //**************************************************************************
+    /*!\brief Fills ghosts on variables placed `OnStaggerType`
+     *
+     * \param deficit The number of ghosts to be filled, from the ghost node
+     * index location. Defaulted, should not be overriden, unless for testing
+     * purposes
+     *
+     * \tparam OnStaggerType The staggering/placement type
+     */
+    template <typename OnStaggerType>
+    void fill_ghosts_placed(
+        const size_type deficit = This::n_ghosts(OnStaggerType{})) {
+      using VariablesPlacedOnStaggeredType =
+          get_variables_placed<OnStaggerType>;
 
-        const SizeType unit = n_units + Is;
+      tmpl::for_each<VariablesPlacedOnStaggeredType>([this, deficit](auto v) {
+        using Variable = tmpl::type_from<decltype(v)>;
+        auto& var = blocks::get<Variable>(*this);
+        const auto ghost_value = Variable::ghost_value();
 
-        // 4. Make slices for each rod
-        CosseratSlice slices(make_slices(unit));
+        // Here we initialize ALL ghosts, whether or not the elements are
+        // preserved before and after reordering
+        // TODO : Policy class
+        for (size_type ghost_node_idx : ghost_node_indices_) {
+          const auto ghost_stop_idx = ghost_node_idx;
+          ELASTICA_ASSERT(ghost_stop_idx > deficit,
+                          "Ghost invariant violated!");
+          const auto ghost_start_idx = ghost_stop_idx - deficit;
 
-        ELASTICA_ASSERT(element_counts_[unit] == (block_initializer.n_elems),
-                        "Invariant violation detected, contact the developers");
-
-        //        Parent::print(std::forward<decltype(block_initializer.initializers)>(
-        //                block_initializer.initializers));
-
-        // ... and initialize them ...
-        Parent::initialize(slices,
-                           std::move(block_initializer));
-
-        // TODO : Returning a copy, is it okay?
-        return slices;
-      };
-
-      // by going through the rods that are just added
-      return index_apply<n_units_added>([&initializer](auto... Is) {
-        return std::make_tuple(initializer(Is)...);
+          for (size_type ghost_idx = ghost_stop_idx;
+               ghost_idx > ghost_start_idx; --ghost_idx) {
+            Variable::slice(var, ghost_idx) = ghost_value;
+          }
+          // rewrite the loop above using positive indices
+          // for (auto ghost_idx = ghost_start_idx + 1;
+          //      ghost_idx <= ghost_stop_idx; ++ghost_idx) {
+          //   Variable::slice(var, ghost_idx) = ghost_value;
+          // }
+        }
       });
     }
 
-    // TODO : Check for initializer requirements here
-    template <typename... UnitInitializers>
-    auto emplace_back(std::size_t n_elems,
-                      UnitInitializers&&... unit_initializers) {
-      /*
-      // A.
-      prepare_for_resize(n_elems);
-
-      // B. Resize memory for all the member types based on new n_elements_
-      resize();
-
-      // C. Initialize ghosts based on new n_elements_
-      // no-op if ghost_node_indices has no elements
-      initialize_ghosts();
-
-      // D. Initialize new dofs for the new cosserat rod (the one just added)
-      auto slices(make_slices_v2(size()));
-
-      Parent::initialize(
-          n_elems, slices,
-          std::forward<std::tuple<InitializerPack...>>(initializer_pack));
-
-      // At this point the total number of elements and the accumulate
-      // of individual elements should match
-       */
-      // For this case, directly return the view/slice rather than a tuple
-      // of them
-      return std::get<0UL>(emplace_back(make_cosserat_rod(
-          n_elems, std::forward<UnitInitializers>(unit_initializers)...)));
+    //**************************************************************************
+    /*!\brief Fills ghosts for all variables in the current Block
+     */
+    void fill_ghosts() {
+      // fill ghosts for members not on rod, others don't need it
+      fill_ghosts_placed<OnNode>();
+      fill_ghosts_placed<OnElement>();
+      fill_ghosts_placed<OnVoronoi>();
     }
+    //**************************************************************************
 
-    /*
-    template <typename IT>
-    void emplace_back(IT&& block) {
-      // forward to the multiple version, doesnt work
-      emplace_back(std::forward<IT>(block));
+    //**************************************************************************
+    /*!\brief Gets the ghost nodes buffer
+     *
+     * \details
+     * This is mostly used in contexts such as serialization
+     */
+    inline constexpr auto get_ghost_node_buffer() & noexcept
+        -> GhostNodeIndices& {
+      return ghost_node_indices_;
     }
-    */
+    //**************************************************************************
 
-    ~Block() = default;
+    //**************************************************************************
+    /*!\brief Gets the ghost nodes buffer for a const Block
+     *
+     * \details
+     * This is mostly used in contexts such as serialization
+     */
+    inline constexpr auto get_ghost_node_buffer() const& noexcept
+        -> GhostNodeIndices const& {
+      return ghost_node_indices_;
+    }
+    //**************************************************************************
 
-   private:
+    //@}
+    //**************************************************************************
+
+    //**Element buffer function************************************************
+    /*!\brief Initialize the element buffer at a given location
+     *
+     * \param n_elems Number of elements in the new rod
+     * \param loc_n_units Fill location
+     *
+     * \note
+     * This is mainly useful in testing
+     */
+    inline void initialize_elements_buffer(
+        size_type const n_elems, size_type const loc_n_units) noexcept {
+      n_elements(loc_n_units) = n_elems;
+    }
+    //**************************************************************************
+
+   public:
+    //**************************************************************************
+    /*!\brief Emplaces a new rod to the block
+     *
+     * \details
+     * This is the main entry-point for the Simulator to add new rods to the
+     * current Block.
+     *
+     * \param block_initializer The initializer to fill in all elements of the
+     * new block
+     */
+    template <typename... FirstBlockInitializers>
+    auto emplace(
+        CosseratInitializer<FirstBlockInitializers...>&& block_initializer)
+        -> ThisSlice {
+      using Init = CosseratInitializer<FirstBlockInitializers...>;
+      // 0. number of preexisting rods
+      const size_type curr_n_units = n_units();
+      const size_type new_n_units = curr_n_units + 1UL;
+
+      // 1. increase total number of elements and ghosts (block specific)
+      const size_type n_elements_added(
+          static_cast<Init&&>(block_initializer).n_elems());
+      const size_type total_n_elements_after_resizing =
+          prepare_for_resize(n_elements_added);
+
+      // 2. Resize the block to fit the new rod
+      // 2.1 resize dofs on nodes, elements and voronoi by total_n_elements_
+      // 2.2 resize dofs on rods by new_n_units
+      resize_internal(total_n_elements_after_resizing, new_n_units);
+
+      // 3. The slicing logic (which calls check() to see if a buffer overflows)
+      // requires that we know the number of elements that
+      // needs to be sliced before making the slice itself, which is taken from
+      // the elements buffer. So here we fill in the total_n_elements
+      initialize_elements_buffer(n_elements_added, curr_n_units);
+
+      // after resizing the units should match
+      ELASTICA_ASSERT(n_units() == new_n_units,
+                      "Invariant violation, contact the developers");
+
+      // 4. fill ghosts
+      fill_ghosts();
+
+      // after this step, we should have enough capacity for the n'th rod
+
+      // 5. make a slice for the n'th unit (0 based indexing with checks)
+      ThisSlice latest_slice(blocks::slice(*this, curr_n_units));
+
+      // ... and initialize it ...
+      Parent::initialize(latest_slice, std::move(block_initializer));
+
+      // copied to the output buffer, NRVO should kick in
+      return latest_slice;
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Emplaces (back) a new rod to the block
+     *
+     * \param block_initializer The initializer to fill in all elements of the
+     * new block
+     *
+     * \see emplace
+     */
+    template <typename... FirstBlockInitializers>
+    inline decltype(auto) emplace_back(
+        CosseratInitializer<FirstBlockInitializers...>&& block_initializer) {
+      return emplace(std::move(block_initializer));
+    }
+    //**************************************************************************
+
+   protected:
     //**Member variables********************************************************
     /*!\name Member variables */
     //@{
-    //!< All members of CosseratRod
-    CosseratRodProperties rod_properties_;
-    //    TypeDisplayer<CosseratRodProperties> td{};
-    //@}
-    //**************************************************************************
-
-    //**Additional member variables*********************************************
-    /*!\name Member variables */
-    //@{
     /// Extra members for book-keeping
-    //!< Indices of nodal ghosts across
+    //! Indices of nodal ghosts across
     GhostNodeIndices ghost_node_indices_;
-    //!< Number of elements within each unit
-    ElementCounts element_counts_;
-    //!< Total number of elements, for polymorphism as a Cosserat rod
-    TotalElementCount n_elements_;
     //@}
     //**************************************************************************
   };
+  /*! \endcond */
+  //****************************************************************************
 
-}  // namespace elastica
+}  // namespace blocks
+
+namespace blocks {
+
+  //============================================================================
+  //
+  //  CLASS DEFINITION
+  //
+  //============================================================================
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\brief Specialization of blocks::Block for a TaggedCosseratRodPlugin
+   * \ingroup blocks
+   *
+   * \tparam CRT        The traits class for a Tagged Cosserat plugin
+   * \tparam Tag        The tag for the Tagged Cosserat plugin
+   * \tparam Components Components customizing a Cosserat rod (such as geometry,
+   *                    elasticity)
+   *
+   * \see blocks::Block
+   */
+  template <typename CRT, typename Tag,
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  class Block<elastica::cosserat_rod::TaggedCosseratRodPlugin<CRT, Block, Tag,
+                                                              Components...>>
+      : public Block<elastica::cosserat_rod::CosseratRodPlugin<CRT, Block,
+                                                               Components...>> {
+   private:
+    //**Type definitions********************************************************
+    //! This type
+    using This =
+        Block<elastica::cosserat_rod::TaggedCosseratRodPlugin<CRT, Block, Tag,
+                                                              Components...>>;
+    //! This slice type
+    using ThisSlice =
+        BlockSlice<elastica::cosserat_rod::TaggedCosseratRodPlugin<
+            CRT, BlockSlice, Tag, Components...>>;
+    //! Parent type
+    using Parent = Block<
+        elastica::cosserat_rod::CosseratRodPlugin<CRT, Block, Components...>>;
+
+   protected:
+    //! Template type of expected initializer
+    template <typename... Initializers>
+    using CosseratInitializer =
+        typename Parent::template CosseratInitializer<Initializers...>;
+    //**************************************************************************
+
+   public:
+    //**************************************************************************
+    /*!\brief Emplaces a new rod to the block
+     *
+     * \details
+     * This is the main entry-point for the Simulator to add new rods to the
+     * current Block.
+     *
+     * \param block_initializer The initializer to fill in all elements of the
+     * new block
+     */
+    template <typename... FirstBlockInitializers>
+    auto emplace(
+        CosseratInitializer<FirstBlockInitializers...>&& block_initializer)
+        -> ThisSlice {
+      // converts to a tagged slice
+      return Parent::emplace(std::move(block_initializer));
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Emplaces (back) a new rod to the block
+     *
+     * \param block_initializer The initializer to fill in all elements of the
+     * new block
+     *
+     * \see emplace
+     */
+    template <typename... FirstBlockInitializers>
+    inline decltype(auto) emplace_back(
+        CosseratInitializer<FirstBlockInitializers...>&& block_initializer) {
+      return This::emplace(std::move(block_initializer));
+    }
+    //**************************************************************************
+  };
+  //****************************************************************************
+
+}  // namespace blocks
+
+namespace blocks {
+
+  //============================================================================
+  //
+  //  FREE FUNCTIONS
+  //
+  //============================================================================
+
+  //****************************************************************************
+  /*!\brief Returns the size of the Cosserat Rod.
+   * \ingroup cosserat_rod blocks
+   *
+   * \param cosserat_rod The current cosserat rod.
+   * \return The  number of elements in the cosserat rod.
+   */
+  template <typename CRT,
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  inline constexpr auto size(
+      Block<::elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, Block, Components...>> const& cosserat_rod) noexcept {
+    // it might be not the best idea to have a size() member in the first place
+    return cosserat_rod.size();
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Get number of units within a CosseratRod
+   * \ingroup cosserat_rod blocks
+   *
+   * \details
+   * Get number of units from a Block. By 'units' we mean the number of
+   * individual BlockSlice(s) composing the Block.
+   *
+   * \usage
+   * \code
+     Block<...> b;
+     std::size_t n_units = blocks::n_units(b);
+   * \endcode
+   *
+   * \param cosserat_rod The cosserat rod whose n_units is to be extracted
+   */
+  template <typename CRT,
+      template <typename /*CRT*/, typename /*InitializedBlock*/>
+      class... Components>
+  inline auto n_units(Block<::elastica::cosserat_rod::CosseratRodPlugin<
+      CRT, Block, Components...>> const& cosserat_rod) noexcept -> std::size_t{
+      return cosserat_rod.n_units();
+  }
+  //****************************************************************************
+
+}  // namespace blocks
+
+//    template <typename CRT,                 // Cosserat Rod Traits
+//              template <typename> ComputationalBlock,  // Block with
+//              implementation
+//            template <typename /*CRT*/, typename /* CosseratRodPlugin */>
+//            class... Components>  // Skills
+//  class CosseratRodPlugin;
+
+// template <typename> Block
+
+//  template <template <typename /*Traits*/, typename /* Block */,
+//                      template <typename /*Traits*/, typename /* Block */>
+//                      class... /* Skills*/>
+//            class Plugin>
+//  class Block;
+
+// Specialization of blocks for the cosserat rods class
+// TODO : Blocking strategy :
+//  1. Default : free blocks
+//  2. fixed size blocks (compile time-parameter)
+
+//  template <template <typename, typename...> class TT, typename SENDER,
+//            typename... ARGS>
+//  class CRTPBase<TT<SENDER, ARGS...>> {
+//    // ...
+//  };
+
+// Specialization for a Cosserat Rod plugin
+//  template <template <typename /*Traits*/, typename /* Block */,
+//                      template <typename /*Traits*/, typename /* Block */>
+//                      class... /* Skills*/>
+//            class CRPlugin,
+//            typename CRT, template <typename, typename> class... Skills>
+//  class Block<CRPlugin<CRT, Block>>;
+
+/*
+template <typename StaggeredTag>
+constexpr auto make_slices_of_members_marked_with(const size_type unit) {
+  // Always one behind is where the ghost starts according to the indexing
+  const size_type start_slice = get_start_of_slice<StaggeredTag>(unit);
+  const size_type size_slice = get_size_of_slice<StaggeredTag>(unit);
+  // StaggeredTag::get_dofs(elements_.back());
+
+  using StaggeredMemberTags = get_members_marked_with<StaggeredTag>;
+
+  auto applier = [this, start_slice, size_slice](auto Is) {
+    using StaggeredMemberTag = tmpl::at_c<StaggeredMemberTags, Is>;
+    using StaggeredMemberSliceTag = slice_type_t<StaggeredMemberTag>;
+
+    // Unsliced
+    auto& full = std::get<StaggeredMemberTag>(rod_properties_);
+    // Sliced for initialization : from ghost_idx + 1 to last
+    // element
+    return StaggeredMemberSliceTag{
+        StaggeredMemberTag::slice(full, start_slice, size_slice)};
+  };
+
+  return index_apply<tmpl::size<StaggeredMemberTags>::value>(
+      [&applier](auto... Is) { return std::make_tuple(applier(Is)...); });
+}
+*/
+
+//    void resize(NodeTag /* meta */) {
+//      tmpl::for_each<NodeMemberTags>(
+//          [this, resized = n_nodes()](auto node_member_tag) {
+//            using NodeMemberTag =
+//            tmpl::type_from<decltype(node_member_tag)>; auto& node_member
+//            = std::get<NodeMemberTag>(rod_properties_);
+//            // Resize dofs irrespective of the type
+//            NodeMemberTag::resize(node_member, resized);
+//          });
+//    }
+//
+//    void resize(ElementTag /* meta */) {
+//      tmpl::for_each<ElementMemberTags>([this, resized = n_elements()](
+//                                            auto element_member_tag) {
+//        using ElementMemberTag =
+//        tmpl::type_from<decltype(element_member_tag)>; auto&
+//        element_member = std::get<ElementMemberTag>(rod_properties_);
+//        // Resize dofs irrespective of the type
+//        ElementMemberTag::resize(element_member, resized);
+//      });
+//    }
+//
+//    void resize(VoronoiTag /* meta */) {
+//      tmpl::for_each<VoronoiMemberTags>([this, resized = n_voronois()](
+//                                            auto voronoi_member_tag) {
+//        using VoronoiMemberTag =
+//        tmpl::type_from<decltype(voronoi_member_tag)>; auto&
+//        voronoi_member = std::get<VoronoiMemberTag>(rod_properties_);
+//        // Resize dofs irrespective of the type
+//        VoronoiMemberTag::resize(voronoi_member, resized);
+//      });
+//    }
+
+/*
+Slices make_slices_deprecated() {
+  // IMPOSSIBLE : Submatrices and subvectors disallow default
+  // construction, hence do in a round about way
+  Slices slices{};
+  make_slices_of_members_marked_with_deprecated<NodeTag>(slices);
+  make_slices_of_members_marked_with_deprecated<ElementTag>(slices);
+  make_slices_of_members_marked_with_deprecated<VoronoiTag>(slices);
+  return slices;
+}
+ */
+
+/* this now comes from the blocks library
+auto make_slices(size_type const unit) {
+  ELASTICA_ASSERT(not element_counts_.empty(),
+                  "No elements to make slices for in the Block!");
+  //
+TypeDisplayer<decltype(make_slices_of_members_marked_with<ElementTag>(unit))>
+  //      td{};
+  return std::tuple_cat(
+      make_slices_of_members_marked_with<NodeTag>(unit),
+      make_slices_of_members_marked_with<ElementTag>(unit),
+      make_slices_of_members_marked_with<VoronoiTag>(unit));
+}
+*/
+
+/*
+// TODO : Check if all are valid blocks
+// The implementation is variadic because resizing every time is inefficient
+// rather we can add all dofs in one go. Of course, by putting in one block
+// initializer, we get the regular implementation
+template <typename... FirstBlockInitializers, typename... BlockInitializers,
+          Requires<cpp17::conjunction_v<
+              detail_cosserat_rod::tt::IsBlockInitializer<
+                  CRT, BlockInitializers>...>> = nullptr>
+auto emplace_back(CosseratInitializer<FirstBlockInitializers...>&&
+                      first_block_initializer,
+                  BlockInitializers&&... block_initializers) {
+  // 0. number of preexisting rods
+  const auto n_units = size();
+  constexpr auto n_units_added = 1 + sizeof...(BlockInitializers);
+
+  // 1. Increase units count, linear
+  prepare_for_resize(first_block_initializer.n_elems);
+  EXPAND_PACK_LEFT_TO_RIGHT(prepare_for_resize(block_initializers.n_elems));
+
+  // 2. Bulk resize
+  resize();
+
+  // 3. Bulk fill all ghosts
+  initialize_ghosts();
+
+  auto initializer = [n_units, this,
+                      cap = std::forward_as_tuple(first_block_initializer,
+                                                  block_initializers...)](
+                         auto Is) {
+    auto&& block_initializer(std::get<Is>(cap));
+
+    const size_type unit = n_units + Is;
+
+    // 4. Make slices for each rod
+    CosseratSlice slices(make_slices(unit));
+
+    ELASTICA_ASSERT(element_counts_[unit] == (block_initializer.n_elems),
+                    "Invariant violation detected, contact the developers");
+
+    // Parent::print(std::forward<decltype(block_initializer.initializers)>(
+    //                block_initializer.initializers));
+
+    // ... and initialize them ...
+    Parent::initialize(slices, std::move(block_initializer));
+
+    // TODO : Returning a copy, is it okay?
+    return slices;
+  };
+
+  // by going through the rods that are just added
+  return index_apply<n_units_added>([&initializer](auto... Is) {
+    return std::make_tuple(initializer(Is)...);
+  });
+}
+
+// TODO : Check for initializer requirements here
+template <typename... UnitInitializers>
+auto emplace_back(std::size_t n_elems,
+                  UnitInitializers&&... unit_initializers) {
+  // A.
+  prepare_for_resize(n_elems);
+
+  // B. Resize memory for all the member types based on new
+  total_n_elements_ resize();
+
+  // C. Initialize ghosts based on new total_n_elements_
+  // no-op if ghost_node_indices has no elements
+  initialize_ghosts();
+
+  // D. Initialize new dofs for the new cosserat rod (the one just added)
+  auto slices(make_slices_v2(size()));
+
+  Parent::initialize(
+      n_elems, slices,
+      std::forward<std::tuple<InitializerPack...>>(initializer_pack));
+
+  // At this point the total number of elements and the accumulate
+  // of individual elements should match
+  // For this case, directly return the view/slice rather than a tuple
+  // of them
+  return std::get<0UL>(emplace_back(make_cosserat_rod(
+      n_elems, std::forward<UnitInitializers>(unit_initializers)...)));
+}
+*/

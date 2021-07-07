@@ -25,25 +25,25 @@
 // Forward declarations
 #include "Systems/CosseratRods/BlockInitializer.hpp"
 #include "Systems/CosseratRods/TypeTraits/Aliases.hpp"
-#include "Systems/CosseratRods/Types.hpp"
 
 namespace elastica {
 
-  namespace detail_cosserat_rod {
+  namespace cosserat_rod {
 
     namespace tt {
 
-      template <typename Trait, typename T>
-      struct IsBlockInitializer
-          : ::tt::is_a_t<CosseratBlockInitializer<Trait>::template Initializer,
-                         T> {};
-
-      template <typename T>
-      struct CheckForInitializerTagType
-          : ::tt::is_detected<initializer_tag_t, T> {};
+      //      template <typename Trait, typename T>
+      //      struct IsBlockInitializer
+      //          : ::tt::is_a_t<CosseratBlockInitializer<Trait>::template
+      //          Initializer,
+      //                         T> {};
+      //
+      //      template <typename T>
+      //      struct CheckForInitializerTagType
+      //          : ::tt::is_detected<initializer_tag_t, T> {};
 
     }  // namespace tt
 
-  }  // namespace detail_cosserat_rod
+  }  // namespace cosserat_rod
 
 }  // namespace elastica

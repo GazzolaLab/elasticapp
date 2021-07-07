@@ -1,0 +1,57 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Cosserat rods in \elastica
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
+#pragma once
+
+//******************************************************************************
+// Includes
+//******************************************************************************
+////
+#include "Systems/CosseratRods/Protocols.hpp"
+#include "Systems/CosseratRods/Tags.hpp"
+#include "Systems/CosseratRods/TypeTraits.hpp"
+#include "Systems/CosseratRods/Types.hpp"
+////
+//// include implementations now
+#include "Systems/CosseratRods/Block.hpp"
+#include "Systems/CosseratRods/BlockInitializer.hpp"
+#include "Systems/CosseratRods/BlockSlice.hpp"
+#include "Systems/CosseratRods/Components.hpp"
+#include "Systems/CosseratRods/CosseratRodPlugin.hpp"
+///
+/// include initialized classes now
+///
+
+//==============================================================================
+//
+//  DOXYGEN DOCUMENTATION
+//
+//==============================================================================
+
+//******************************************************************************
+/*!\defgroup cosserat_rod Cosserat rods
+ * \ingroup systems
+ *
+ * The Cosserat rods module implements data and operations for manipulating
+ * Cosserat rods, in the style of @ref blocks within \elastica.
+ */
+//******************************************************************************
+
+namespace elastica {
+
+  /*!\brief Cosserat rod data-structures and routines
+  // \ingroup cosserat_rod
+  */
+  namespace cosserat_rod {}
+
+}  // namespace elastica

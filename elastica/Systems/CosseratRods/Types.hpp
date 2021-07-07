@@ -1,88 +1,65 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief All types belonging to @ref cosserat_rod
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
 
-#include "Systems/Block/Block.hpp"
-#include "Systems/Block/BlockSlice.hpp"
-//#include "Systems/CosseratRods/CosseratRodTraits.hpp"
-#include "Systems/CosseratRods/Policies/StrongTypes.hpp"
-#include "Systems/CosseratRods/Policies/Types.hpp"
-#include "Utilities/DefineTypes.h"
+#include "Systems/Block/Types.hpp"
+#include "Systems/CosseratRods/Components/Types.hpp"
 
 namespace elastica {
 
-  //////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////
-  // Namespace promotion
-  //////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////
+  namespace cosserat_rod {
 
-  using detail_cosserat_rod::make_bend_twist_rigidity_profile;
-  using detail_cosserat_rod::make_dimension_profile;
-  using detail_cosserat_rod::make_director_profile;
-  using detail_cosserat_rod::make_force_damping_profile;
-  using detail_cosserat_rod::make_position_profile;
-  using detail_cosserat_rod::make_reference_curvature_profile;
-  using detail_cosserat_rod::make_reference_length_profile;
-  using detail_cosserat_rod::make_shear_stretch_rigidity_profile;
-  using detail_cosserat_rod::make_torque_damping_profile;
+    ////////////////////////////////////////////////////////////////////////////
+    //
+    // Forward declarations of cosserat rod customization types
+    //
+    ////////////////////////////////////////////////////////////////////////////
 
-  // Cross sections
-  using detail_cosserat_rod::CircleCrossSection;
-  using detail_cosserat_rod::SquareCrossSection;
-
-  // Elastic models
-  using detail_cosserat_rod::DampedLinearHyperelasticModel;
-  using detail_cosserat_rod::LinearHyperelasticModel;
-
-  //////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////
-  // Forward declarations of cosserat rod types
-  //////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////
-
-  namespace detail_cosserat_rod {
-
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <typename /*DataTraits*/, typename /*PlacementTraits*/,
+              typename /*AllocatorTraits*/>
     struct CosseratRodTraits;
 
-  }
+    template <typename /*CRT*/,
+              template <typename /*Plugin*/> class /*ComputationalBlock*/,
+              template <typename /*CRT*/, typename /*Instantiated Block*/>
+              class... /*Components*/>
+    class CosseratRodPlugin;
 
-  template <typename CRT, template <typename> class ComputationalBlock,
-            template <typename, typename> class... Layers>
-  class CosseratRodPlugin;
+    template <typename /*CRT*/,
+              template <typename /*Plugin*/> class /*ComputationalBlock*/,
+              typename /*Tag*/,
+              template <typename /*CRT*/, typename /*Instantiated Block*/>
+              class... /*Components*/>
+    class TaggedCosseratRodPlugin;
 
-  // Declare a specialization of the CosseratBlockSlice ckass;
-  template <typename CRT,                  // Cosserat Rod Traits
-            template <typename, typename>  // Skills
-            class... Layers>
-  class BlockSlice<CosseratRodPlugin<CRT, BlockSlice, Layers...>>;
+    template <class /*Plugin*/, class... /*Initializers*/>
+    struct CosseratInitializer;
+    /*! \endcond */
+    //**************************************************************************
 
-  namespace slices {
+  }  // namespace cosserat_rod
 
-    template <typename CRT,                  // Cosserat Rod Traits
-              template <typename, typename>  // Skills
-              class... Layers>
-    constexpr decltype(auto) get(
-        BlockSlice<CosseratRodPlugin<CRT, BlockSlice, Layers...>>&);
+  namespace cosserat_rod {
 
-    template <typename CRT,                  // Cosserat Rod Traits
-              template <typename, typename>  // Skills
-              class... Layers>
-    constexpr decltype(auto) get(
-        BlockSlice<CosseratRodPlugin<CRT, BlockSlice, Layers...>> const&);
+    ////////////////////////////////////////////////////////////////////////////
+    //
+    // Forward declarations of rod types
+    //
+    ////////////////////////////////////////////////////////////////////////////
 
-  }  // namespace slices
+  }  // namespace cosserat_rod
 
-  // Can instantiate it in a CPP file
-  using CosseratRodBlock =
-      Block<CosseratRodPlugin<detail_cosserat_rod::CosseratRodTraits, Block,
-                              CircleCrossSection, LinearHyperelasticModel>>;
-
-  using DampedCosseratRodBlock = Block<
-      CosseratRodPlugin<detail_cosserat_rod::CosseratRodTraits, Block,
-                        CircleCrossSection, DampedLinearHyperelasticModel>>;
-
-  template <typename /* Cosserat Rod Traits */>
-  struct CosseratBlockInitializer;
-
-  //  class RigidBodyCollection;
-  //  class SphereCollection;
 }  // namespace elastica
