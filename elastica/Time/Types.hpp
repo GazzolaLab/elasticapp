@@ -1,9 +1,24 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Time types
 //
-// Created by Tejaswin Parthasarathy on 5/25/21.
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
 //
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
 
 #pragma once
 
+//******************************************************************************
+// Includes
+//******************************************************************************
+//
+#include "Time/SymplecticSteppers/Types.hpp"
+//
 #include "Utilities/DefineTypes.h"
 
 namespace elastica {
