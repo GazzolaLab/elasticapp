@@ -126,7 +126,7 @@ namespace {
 
     CHECK_ITERABLE_APPROX(actual_double, expected_double);
     CHECK(actual_string == expected_string);
-  };
+  }
 
   void test_named_type_constructors_for_custom() {
     using aggregate_type = std::vector<Aggregate>;

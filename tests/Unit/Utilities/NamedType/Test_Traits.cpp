@@ -7,6 +7,7 @@
 #include "TraitsTesters.hpp"
 #include "Utilities/NamedType/Affordances.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/IgnoreUnused.hpp"
 
 namespace {
 
@@ -37,8 +38,8 @@ namespace {
         tmpl::any<NoCallableCheck, tmpl::not_<tmpl::detail::non_null>>::value,
         "Oops!");
 
-    auto lambda = [](int x) { return x; };
-    auto mut_lambda = [i = 0]() mutable { return i; };
+    auto IGNORE_UNUSED lambda = [](int x) { return x; };
+    auto IGNORE_UNUSED mut_lambda = [i = 0]() mutable { return i; };
     struct MyCallable {
       int operator()(int x) { return 2 * x; }
     };
