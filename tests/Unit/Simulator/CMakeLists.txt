@@ -1,3 +1,8 @@
+add_subdirectory(Configuration)
+add_subdirectory(Connections)
 add_subdirectory(Constraints)
+add_subdirectory(Domain)
+add_subdirectory(Forcing)
+add_subdirectory(Frames)
 add_subdirectory(IO)
 add_subdirectory(Interface)

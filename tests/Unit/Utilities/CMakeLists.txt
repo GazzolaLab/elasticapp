@@ -6,11 +6,15 @@ set(LIBRARY_SOURCES
         # Test_StdHelpers.cpp
         # Test_TaggedTuple.cpp
         # Test_Tuple.cpp
+        Test_AsConst.cpp
+        Test_AsTaggedTuple.cpp
         Test_CRTP.cpp
         Test_Defer.cpp
         Test_End.cpp
         Test_FakeVirtual.cpp
+        Test_GetOutput.cpp
         Test_Invoke.cpp
+        Test_MakeFromTuple.cpp
         Test_MakeNamedFunctor.cpp
         Test_NumericAt.cpp
         Test_NumericRange.cpp
@@ -19,8 +23,11 @@ set(LIBRARY_SOURCES
         # Test_PtrVector.cpp
         Test_PrettyType.cpp
         Test_Registration.cpp
+        Test_RepeatAsTuple.cpp
         Test_Requires.cpp
+        Test_Size.cpp
         Test_StaticConst.cpp
+        Test_StdHelpers.cpp
         Test_SystemClock.cpp
         Test_TaggedTuple.cpp
         Test_TMPL.cpp

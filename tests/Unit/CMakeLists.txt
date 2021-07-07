@@ -9,6 +9,7 @@ add_subdirectory(Framework)
 add_subdirectory(Options)
 add_subdirectory(Simulator)
 add_subdirectory(Systems)
+add_subdirectory(Time)
 add_subdirectory(Utilities)
 
 write_test_registration_function(
