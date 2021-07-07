@@ -8,6 +8,7 @@ find_package(Doxygen REQUIRED)
 if (DOXYGEN_FOUND)
 
     set(ELASTICA_DOX_GENERATE_HTML "YES")
+    set(ELASTICA_DOX_GENERATE_XML "NO")
 
     configure_file(
             docs/Doxyfile.in

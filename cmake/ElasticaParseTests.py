@@ -7,47 +7,24 @@ import re
 
 # A list of all the allowed ctest labels/Catch tags for tests
 allowed_tags = [
-    "Actions",
-    "ApparentHorizons",
-    "Burgers",
+    "Connections",
     "Constraints",
-    "ControlSystem",
-    "DataStructures",
+    "Configuration",
     "Domain",
-    "Elasticity",
-    "Elliptic",
     "EquationsOfState",
     "ErrorHandling",
-    "Evolution",
-    "Fluxes",
-    "GeneralizedHarmonic",
-    "GrMhd",
-    "H5",
-    "Hydro",
+    "Forcing",
     "IO",
     "Informer",
     "Interface",
-    "Limiters",
-    "LinearAlgebra",
-    "LinearOperators",
-    "LinearSolver",
-    "M1Grey",
-    "NumericalAlgorithms",
-    "Observers",
     "Options",
     "Parallel",
-    "ParallelAlgorithms",
-    "PointwiseFunctions",
-    "Pypp",
-    "RelativisticEuler",
-    "RootFinding",
     "Serialization",
     "Simulator",
-    "Spectral",
+    "Systems",
     "Time",
     "Unit",
     "Utilities",
-    "VariableFixing",
 ]
 
 # Allowed test attributes
@@ -94,9 +71,14 @@ def parse_source_file(file_name):
         # group(2) == [Unit][My]
         # group(3) == hai
         parsed_name = re.search("\"(.*)\",[\s]*\"(.*)\"", test_name)
-        test_name = parsed_name.group(1)
-        test_tags = parsed_name.group(2).lower().replace("[", "")[:-1]
-        test_tags = test_tags.split("]")
+        try:
+            test_name = parsed_name.group(1)
+            test_tags = parsed_name.group(2).lower().replace("[", "")[:-1]
+            test_tags = test_tags.split("]")
+        except AttributeError as e:
+            # in case there is a commented out or mismatched regex
+            print("Error raised for test named %s in file " % (test_name, file_name))
+            raise e
         for test_tag in test_tags:
             if not test_tag in allowed_tags:
                 print("\nERROR: The tag '%s' is not allowed but was found in "
