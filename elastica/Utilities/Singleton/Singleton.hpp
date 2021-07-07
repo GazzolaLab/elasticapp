@@ -158,7 +158,7 @@ namespace elastica {
     //**************************************************************************
 
     //**Access functions********************************************************
-    /*!\brief Acces to the underlying singleton
+    /*!\brief Access to the underlying singleton
     //
     // \return Handle to the sole singleton of type T
     */
