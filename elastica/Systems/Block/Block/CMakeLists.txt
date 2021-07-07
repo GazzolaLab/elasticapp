@@ -11,6 +11,8 @@ elastica_target_headers(
         Block.hpp
         BlockFacade.hpp
         BlockSlice.hpp
+        DisplayVariables.hpp
+        Protocols.hpp
         Types.hpp
         TypeTraits.hpp
 )

@@ -10,6 +10,8 @@ elastica_target_headers(
         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
         HEADERS
         Block.hpp
+        Protocols.hpp
+        Serialize.hpp
         Types.hpp
         TypeTraits.hpp
 )
