@@ -24,6 +24,520 @@
 
 namespace blocks {
 
+  namespace detail {
+
+    //==========================================================================
+    //
+    //  CLASS DEFINITION
+    //
+    //==========================================================================
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    /*!\brief Metafunction to obtain slice types of a typelist of block
+     * variables
+     * \ingroup blocks
+     *
+     * \details
+     * The as_slices template type helps obtain the slice types of a typelist of
+     * declared blocks::Variable, used as shown below. The resulting type
+     * contains nested types `slices` and `const_slices` which are typelists
+     * containing the slice types and constant slice types of the
+     * blocks::Variable.
+     *
+     * \example
+     * \code
+     *  // ... Declare variables Var1, Var2, Var3
+     *
+     *  // Typelist of all variable slices
+     *  using VariablesList = tmpl::list<Var1, Var2, Var3>;
+     *
+     *  // Type containing information about slices
+     *  using VariableSlicesInformation = as_slices<VariablesList>;
+     *
+     *  // TypeList of slices of all variables
+     *  using VariableSlices = typename VariableSlicesInformation::slices;
+     *
+     *  // TypeList of constant slices of all variables
+     *  using VariableConstSlices
+     *    = typename VariableSlicesInformation::const_slices;
+     * \endcode
+     *
+     * \tparam L typelist of block::Variables
+     *
+     * \see blocks::Variables, Block
+     */
+    template <typename L>
+    struct as_slices {
+      //**Type definitions******************************************************
+      //! Typelist of slices
+      using slices = tmpl::transform<L, tmpl::bind<slice_type_t, tmpl::_1>>;
+      //! Typelist of const slices
+      using const_slices =
+          tmpl::transform<L, tmpl::bind<const_slice_type_t, tmpl::_1>>;
+      //************************************************************************
+    };
+    /*! \endcond */
+    //**************************************************************************
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    /*!\brief Implementation of a slice/view on an \elastica Block
+     * \ingroup blocks
+     *
+     * \details
+     * The BlockSliceFacade template class provides a slice (or) view into a
+     * Block of `data` and `operations`. It also models the `ComputationalBlock`
+     * concept and hence can be used across places where a \elastica Block is
+     * used as a template parameter.
+     *
+     * Similar to Block, BlockSliceFacade can also be customized (specialized)
+     * for any Lagrangian entity, but experience suggests that extensive
+     * customization is not needed. For a concrete example, please see
+     * specializations of BlockSliceFacade in @ref cosserat_rod
+     *
+     * \usage
+     * The intended usage of a BlockSliceFacade is when a view is required into
+     the data
+     * held by a block---this is frequently the case when a user either
+     * 1. adds an entity into the Simulator, or
+     * 2. requires access (for e.g. reading/writing to disk) to only a portion
+     of
+     * the block.
+     * The pattern that is most commonly seen in the use case (1) is for a
+     * BlockSliceFacade templated on some `Plugin` type to be only used with a
+     Block
+     * of the same `Plugin` type, when adding new entities to the Block.
+     * For use case (2) we suggest the user to the blocks::slice() function,
+     which
+     * has an intuitive, explicit slice syntax, or even the subscript
+     operator[].
+     * We note that we might explicitly disable the subscript operator [] for
+     * slicing in the future, as the semantics are potentially unclear.
+     *
+     * Finally, with no additional coding effort, the BlockSliceFacade has
+     exactly the
+     * same operations as the mother Block (aka Block of the same `Plugin`
+     type),
+     * but now it operates only on that slice of the data. This means that a
+     * BlockSliceFacade can be used as a small Block in itself which greatly
+     simplifies
+     * interfacing different components of \elastica---the user need not care or
+     * even know about whether the data that she has is a Block or a
+     BlockSliceFacade!
+     * For example,
+       \code
+           // ... make simulator etc ...
+           auto my_rod = simulator.emplace_back<CosseratRod>( * ...args... *);
+           // the args go and form a Block
+           // which in turn returns a BlockSliceFacade
+           // which the user gets as my_rod
+
+           // use my_rod like a regular cosserat rod
+           simulator->constrain(my_rod)->using<SomeConstraint>( *...args... *);
+       \endcode
+     * This abstraction helped us constrain \c my_rod, embedded in a Block of
+     * data, using \c SomeConstraint just like any non-Blocked item of the
+     * \elastica library.
+     *
+     * \tparam Plugin The computational plugin modeling a Lagrangian entity
+     *
+     * \see Block, blocks::slice
+     */
+    template <class Plugin>
+    class BlockSliceFacade : public Plugin {
+     protected:
+      //**Type definitions******************************************************
+      //! Type of the parent plugin
+      using Parent = Plugin;
+      //! Type of the slice
+      using This = BlockSliceFacade<Plugin>;
+      //************************************************************************
+
+      //**Friendships***********************************************************
+      //! Friend the plugin
+      friend Parent;
+      //************************************************************************
+
+     public:
+      //**Type definitions******************************************************
+      //! List of variables
+      using typename Parent::Variables;
+      //! Typelist of all variable slices
+      using VariableSlicesList = typename detail::as_slices<Variables>::slices;
+      //! Values of all variable slices
+      using BlockVariableSlices = as_block_variables<VariableSlicesList>;
+      //! Conformant mapping between tags and variables
+      using VariableMap = VariableMapping<VariableSlicesList>;
+      //! Type of the plugin
+      using PluginType = Plugin;
+      //************************************************************************
+
+      // ideally we make the constructors protected, but this interferes with
+      // nothrow specifications
+      // https://stackoverflow.com/questions/40441994/usage-of-noexcept-in-derived-classes
+     public:
+      //**Constructors**********************************************************
+      /*!\name Constructors */
+      //@{
+
+      //************************************************************************
+      /*!\brief The default constructor.
+       *
+       * \param args... slice types to be transferred to the underlying
+       * container
+       */
+      template <typename... Args>
+      explicit BlockSliceFacade(Args&&... args) noexcept(
+          noexcept(BlockVariableSlices(std::forward<Args>(args)...)))
+          : slices_(std::forward<Args>(args)...) {}
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief The copy constructor (non-const version to compete with the
+       * forwarding constructor)
+       *
+       * \param other slice to copy
+       */
+      BlockSliceFacade(BlockSliceFacade& other) : slices_(other.slices_){};
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief The copy constructor.
+       *
+       * \param other slice to copy
+       */
+      BlockSliceFacade(BlockSliceFacade const& other)
+          : slices_(other.slices_){};
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief The move constructor.
+       *
+       * \param other slice to move from
+       */
+      BlockSliceFacade(BlockSliceFacade&& other) noexcept
+          : slices_(std::move(other.slices_)){};
+      //************************************************************************
+
+      //@}
+      //************************************************************************
+
+     public:
+      //**Destructor************************************************************
+      /*!\name Destructor */
+      //@{
+      ~BlockSliceFacade() = default;
+      //@}
+      //************************************************************************
+
+      //**Data access***********************************************************
+      /*!\name Data access */
+      //@{
+
+      //************************************************************************
+      /*!\brief Access to the underlying data
+      //
+      // \return Mutable lvalue reference to the underlying data
+      */
+      inline constexpr BlockVariableSlices& data() & noexcept {
+        return slices_;
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Access to the underlying data
+      //
+      // \return Constant lvalue reference to the underlying data
+      */
+      inline constexpr BlockVariableSlices const& data() const& noexcept {
+        return slices_;
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Access to the underlying data
+      //
+      // \return Mutable rvalue reference to the underlying data
+      */
+      inline constexpr BlockVariableSlices&& data() && noexcept {
+        return static_cast<BlockVariableSlices&&>(slices_);
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Access to the underlying data
+      //
+      // \return Const rvalue reference to the underlying data
+      */
+      inline constexpr BlockVariableSlices const&& data() const&& noexcept {
+        return static_cast<BlockVariableSlices const&&>(slices_);
+      }
+      //************************************************************************
+
+      //@}
+      //************************************************************************
+
+     private:
+      //**Member variables******************************************************
+      /*!\name Member variables */
+      //@{
+      //! All slices of Block variables
+      BlockVariableSlices slices_;
+      //@}
+      //************************************************************************
+    };
+    /*! \endcond */
+    //**************************************************************************
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    /*!\brief Implementation of a slice/view on a const \elastica Block
+     * \ingroup blocks
+     *
+     * \details
+     * The ConstBlockSliceFacade template class provides a slice (or) view into
+     * a constant Block of \a data and \a operations. It also models the
+     * `ComputationalBlock` concept and hence can be used across places where a
+     * \elastica Block is used as a template parameter.
+     *
+     * Notably, it differs from BlockSliceFacade in one key aspect : the
+     * underlying data/view is always constant and cannot be modified (it is
+     * only read only). Hence ConstBlock is useful for propagating
+     * const-correctness throughout the code. It can be used in places where one
+     * needs to pass (const)-data to the user which she can then copy and use it
+     * for her own purposes.
+     *
+     * \tparam Plugin The computational plugin modeling a Lagrangian entity
+     *
+     * \see BlockSliceFacade
+     */
+    template <class Plugin>  // The computational plugin type
+    class ConstBlockSliceFacade : public Plugin {
+     protected:
+      //**Type definitions******************************************************
+      //! Type of the parent plugin
+      using Parent = Plugin;
+      //! Type of the slice
+      using This = ConstBlockSliceFacade<Parent>;
+      //************************************************************************
+
+      //**Friendships***********************************************************
+      //! Friend the plugin
+      friend Parent;
+      //************************************************************************
+
+     public:
+      //**Type definitions******************************************************
+      //! List of variables
+      using typename Parent::Variables;
+      //! Typelist of all variable slices
+      using VariableSlicesList =
+          typename detail::as_slices<Variables>::const_slices;
+      //! Values of all variable slices
+      using BlockVariableSlices = as_block_variables<VariableSlicesList>;
+      //! Conformant mapping between tags and variables
+      using VariableMap = VariableMapping<VariableSlicesList>;
+      //! Type of the plugin
+      using PluginType = Plugin;
+      //************************************************************************
+
+      // ideally we make the constructors protected, but this interferes with
+      // nothrow specifications
+      // https://stackoverflow.com/questions/40441994/usage-of-noexcept-in-derived-classes
+     public:
+      //**Constructors**********************************************************
+      /*!\name Constructors */
+      //@{
+
+      //************************************************************************
+      /*!\brief The default constructor.
+       *
+       * \param value reference to the underlying callable, copied into func
+       */
+      template <typename... Args>
+      explicit ConstBlockSliceFacade(Args&&... args) noexcept(
+          noexcept(BlockVariableSlices(std::forward<Args>(args)...)))
+          : slices_(std::forward<Args>(args)...) {}
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief The copy constructor.
+       *
+       * \param other slice to copy
+       */
+      ConstBlockSliceFacade(ConstBlockSliceFacade const& other)
+          : slices_(other.slices_){};
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief The copy constructor (non-const version to compete with the
+       * forwarding constructor)
+       *
+       * \param other slice to copy
+       */
+      ConstBlockSliceFacade(ConstBlockSliceFacade& other)
+          : slices_(other.slices_){};
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief The move constructor.
+       *
+       * \param other slice to move from
+       */
+      ConstBlockSliceFacade(ConstBlockSliceFacade&& other) noexcept
+          : slices_(std::move(other.slices_)){};
+      //************************************************************************
+
+      //@}
+      //************************************************************************
+
+     public:
+      //**Destructor************************************************************
+      /*!\name Destructor */
+      //@{
+      ~ConstBlockSliceFacade() = default;
+      //@}
+      //************************************************************************
+
+      //**Data access***********************************************************
+      /*!\name Data access */
+      //@{
+
+      //************************************************************************
+      /*!\brief Access to the underlying data
+      //
+      // \return Constant lvalue reference to the underlying data
+      */
+      inline constexpr BlockVariableSlices const& data() const& noexcept {
+        return slices_;
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Access to the underlying data
+      //
+      // \return Const rvalue reference to the underlying data
+      */
+      inline constexpr BlockVariableSlices const&& data() const&& noexcept {
+        return static_cast<BlockVariableSlices const&&>(slices_);
+      }
+      //************************************************************************
+
+      //@}
+      //************************************************************************
+
+     private:
+      //**Member variables******************************************************
+      /*!\name Member variables */
+      //@{
+      //! All slices of constant Block variables
+      BlockVariableSlices const slices_;
+      //@}
+      //************************************************************************
+    };
+    /*! \endcond */
+    //**************************************************************************
+
+    //==========================================================================
+    //
+    //  GLOBAL OPERATORS
+    //
+    //==========================================================================
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <class Plugin>
+    inline constexpr auto blocks_equality_impl(
+        BlockSliceFacade<Plugin> const& lhs,
+        BlockSliceFacade<Plugin> const& rhs) noexcept(noexcept(lhs.data() ==
+                                                               rhs.data()))
+        -> bool {
+      return (lhs.data() == rhs.data());
+    }
+    /*! \endcond */
+    //**************************************************************************
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <class Plugin>
+    inline constexpr auto blocks_equality_impl(
+        ConstBlockSliceFacade<Plugin> const& lhs,
+        ConstBlockSliceFacade<Plugin> const&
+            rhs) noexcept(noexcept(lhs.data() == rhs.data())) -> bool {
+      return (lhs.data() == rhs.data());
+    }
+    /*! \endcond */
+    //**************************************************************************
+
+    //**Equality operator*******************************************************
+    /*!\brief Equality comparison between two BlockSliceFacade objects.
+     *
+     * \param lhs The left-hand side slice.
+     * \param rhs The right-hand side slice.
+     * \return \a true if the slices are same, else \a false
+     */
+    template <class Plugin>
+    inline constexpr auto operator==(
+        BlockSliceFacade<Plugin> const& lhs,
+        BlockSliceFacade<Plugin> const&
+            rhs) noexcept(noexcept(detail::blocks_equality_impl(lhs, rhs)))
+        -> bool {
+      return blocks_equality_impl(lhs, rhs);
+    }
+    //**************************************************************************
+
+    //**Equality operator*******************************************************
+    /*!\brief Equality comparison between two ConstBlockSliceFacade objects.
+     *
+     * \param lhs The left-hand side const slice.
+     * \param rhs The right-hand side const slice.
+     * \return \a true if the const slices are same, else \a false
+     */
+    template <class Plugin>
+    inline constexpr auto operator==(
+        ConstBlockSliceFacade<Plugin> const& lhs,
+        ConstBlockSliceFacade<Plugin> const&
+            rhs) noexcept(noexcept(detail::blocks_equality_impl(lhs, rhs)))
+        -> bool {
+      return blocks_equality_impl(lhs, rhs);
+    }
+    //**************************************************************************
+
+  }  // namespace detail
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  template <class Plugin>
+  //, typename Parent = detail::BlockSliceFacade<Plugin>>
+  inline constexpr auto operator==(
+      BlockSlice<Plugin> const& lhs,
+      BlockSlice<Plugin> const&
+          rhs)  // noexcept(noexcept(detail::blocks_equality_impl(lhs,
+                // rhs)))
+      /*
+      noexcept(noexcept(detail::
+                                     blocks_equality_impl(
+                                         static_cast<Parent const&>(lhs),
+                                         static_cast<Parent const&>(rhs))))
+                                         */
+      -> bool;
+  template <class Plugin>
+  // typename Parent = detail::ConstBlockSliceFacade<Plugin>>
+  inline constexpr auto operator==(
+      ConstBlockSlice<Plugin> const& lhs,
+      ConstBlockSlice<Plugin> const&
+          rhs)  // noexcept(noexcept(detail::blocks_equality_impl(lhs, rhs)))
+      /*
+      noexcept(noexcept(detail::
+                                     blocks_equality_impl(
+                                         static_cast<Parent const&>(lhs),
+                                         static_cast<Parent const&>(rhs))))
+                                         */
+      -> bool;
+  /*! \endcond */
+  //****************************************************************************
+
   //============================================================================
   //
   //  CLASS DEFINITION
@@ -31,64 +545,19 @@ namespace blocks {
   //============================================================================
 
   //****************************************************************************
-  /*!\brief Metafunction to obtain slice types of a typelist of block variables
-  // \ingroup blocks
-  //
-  // \details
-  // The as_slices template type helps obtain the slice types of a typelist of
-  // declared blocks::Variable, used as shown below. The resulting type contains
-  // nested types `slices` and `const_slices` which are typelists containing
-  // the slice types and constant slice types of the blocks::Variable.
-  //
-  // \example
-  // \code
-      // ... Declare variables Var1, Var2, Var3
-
-      // Typelist of all variable slices
-      using VariablesList = tmpl::list<Var1, Var2, Var3>;
-
-      // Type containing information about slices
-      using VariableSlicesInformation = as_slices<VariablesList>;
-
-      // TypeList of slices of all variables
-      using VariableSlices = typename VariableSlicesInformation::slices;
-
-      // TypeList of constant slices of all variables
-      using VariableConstSlices
-        = typename VariableSlicesInformation::const_slices;
-
-     \endcode
-  //
-  // \tparam L typelist of block::Variables
-  //
-  // \see blocks::Variables, Block
-  */
-  template <typename L>
-  struct as_slices {
-    //**Type definitions********************************************************
-    //! Typelist of slices
-    using slices = tmpl::transform<L, tmpl::bind<slice_type_t, tmpl::_1>>;
-    //! Typelist of const slices
-    using const_slices =
-        tmpl::transform<L, tmpl::bind<const_slice_type_t, tmpl::_1>>;
-    //**************************************************************************
-  };
-  //****************************************************************************
-
-  //****************************************************************************
   /*!\brief Implementation of a slice/view on an \elastica Block
    * \ingroup blocks
    *
    * \details
    * The BlockSlice template class provides a slice (or) view into a Block of
-   * \a data and \a operations. It also models the `ComputationalBlock` concept
+   * `data` and `operations`. It also models the `ComputationalBlock` concept
    * and hence can be used across places where a \elastica Block is used as
    * a template parameter.
    *
    * Similar to Block, BlockSlice can also be customized (specialized) for any
    * Lagrangian entity, but experience suggests that extensive customization is
    * not needed. For a concrete example, please see specializations of
-   * BlockSlice in @ref cosserat_rod
+   * BlockSlice in @ref cosserat_rod.
    *
    * \usage
    * The intended usage of a BlockSlice is when a view is required into the data
@@ -111,16 +580,16 @@ namespace blocks {
    * interfacing different components of \elastica---the user need not care or
    * even know about whether the data that she has is a Block or a BlockSlice!
    * For example,
-     \code
-         // ... make simulator etc ...
-         auto my_rod = simulator.emplace_back<CosseratRod>( * ...args... *);
-         // the args go and form a Block
-         // which in turn returns a BlockSlice
-         // which the user gets as my_rod
-
-         // use my_rod like a regular cosserat rod
-         simulator->constrain(my_rod)->using<SomeConstraint>( *...args... *);
-     \endcode
+   * \code
+   *     // ... make simulator etc ...
+   *     auto my_rod = simulator.emplace_back<CosseratRod>( * ...args... *);
+   *     // the args go and form a Block
+   *     // which in turn returns a BlockSlice
+   *     // which the user gets as my_rod
+   *
+   *     // use my_rod like a regular cosserat rod
+   *     simulator->constrain(my_rod)->using<SomeConstraint>( *...args... *);
+   * \endcode
    * This abstraction helped us constrain \c my_rod, embedded in a Block of
    * data, using \c SomeConstraint just like any non-Blocked item of the
    * \elastica library.
@@ -128,34 +597,32 @@ namespace blocks {
    * \tparam Plugin The computational plugin modeling a Lagrangian entity
    *
    * \see Block, blocks::slice
-  */
+   */
   template <class Plugin>
-  class BlockSlice : public Plugin {
+  class BlockSlice : public detail::BlockSliceFacade<Plugin> {
    protected:
     //**Type definitions********************************************************
     //! Type of the parent plugin
-    using Parent = Plugin;
+    using Parent = detail::BlockSliceFacade<Plugin>;
     //! Type of the slice
-    using This = BlockSlice<Parent>;
-    //**************************************************************************
-
-    //**Friendships*************************************************************
-    //! Friend the plugin
-    friend Parent;
-    //! Friend the main block too
-    friend class Block<Parent>;
+    using This = BlockSlice<Plugin>;
     //**************************************************************************
 
    public:
     //**Type definitions********************************************************
-    //! List of variables
-    using typename Parent::Variables;
-    //! Typelist of all variable slices
-    using VariableSlicesList = typename as_slices<Variables>::slices;
-    //! Values of all variable slices
-    using BlockVariableSlices = as_block_variables<VariableSlicesList>;
-    //! Conformant mapping between tags and variables
-    using VariableMap = VariableMapping<VariableSlicesList>;
+    //! Type of the parent plugin
+    using typename Parent::PluginType;
+    //! Type of the parent block
+    using ParentBlock = typename PluginFrom<This>::template to<Block>::type;
+    //**************************************************************************
+
+    //**Friendships*************************************************************
+    //! Friend the main block
+    friend ParentBlock;
+    //! Friend the equality operator
+    friend bool operator==
+        <Plugin>(BlockSlice<Plugin> const& lhs, BlockSlice<Plugin> const& rhs);
+    // noexcept(noexcept(detail::blocks_equality_impl(lhs, rhs)));
     //**************************************************************************
 
    public:
@@ -166,12 +633,12 @@ namespace blocks {
     //**************************************************************************
     /*!\brief The default constructor.
      *
-     * \param args... slice types to be transferred to the underlying container
+     * \param args slice types to be transferred to the underlying container
      */
     template <typename... Args>
-    explicit BlockSlice(Args&&... args) noexcept(
-        noexcept(BlockVariableSlices(std::forward<Args>(args)...)))
-        : slices_(std::forward<Args>(args)...){};
+    explicit BlockSlice(ParentBlock& parent_block, Args&&... args) noexcept(
+        noexcept(Parent(std::forward<Args>(args)...)))
+        : Parent(std::forward<Args>(args)...), parent_block_(parent_block) {}
     //**************************************************************************
 
     //**************************************************************************
@@ -179,7 +646,19 @@ namespace blocks {
      *
      * \param other slice to copy
      */
-    BlockSlice(BlockSlice const& other) : slices_(other.slices_){};
+    BlockSlice(BlockSlice const& other)
+        : Parent(static_cast<Parent const&>(other)),
+          parent_block_(other.parent_block_){};
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief The copy constructor.
+     *
+     * \param other slice to copy
+     */
+    BlockSlice(BlockSlice& other)
+        : Parent(static_cast<Parent&>(other)),
+          parent_block_(other.parent_block_){};
     //**************************************************************************
 
     //**************************************************************************
@@ -188,7 +667,8 @@ namespace blocks {
      * \param other slice to move from
      */
     BlockSlice(BlockSlice&& other) noexcept
-        : slices_(std::move(other.slices_)){};
+        : Parent(static_cast<Parent&&>(other)),
+          parent_block_(other.parent_block_){};
     //**************************************************************************
 
     //@}
@@ -202,45 +682,15 @@ namespace blocks {
     //@}
     //**************************************************************************
 
-    //**Data access*************************************************************
-    /*!\name Data access */
+    //**Utility methods*********************************************************
+    /*!\name Utility methods*/
     //@{
 
     //**************************************************************************
-    /*!\brief Access to the underlying data
-    //
-    // \return Mutable lvalue reference to the underlying data
-    */
-    inline constexpr BlockVariableSlices& data() & noexcept { return slices_; }
-    //**************************************************************************
-
-    //**************************************************************************
-    /*!\brief Access to the underlying data
-    //
-    // \return Constant lvalue reference to the underlying data
-    */
-    inline constexpr BlockVariableSlices const& data() const& noexcept {
-      return slices_;
-    }
-    //**************************************************************************
-
-    //**************************************************************************
-    /*!\brief Access to the underlying data
-    //
-    // \return Mutable rvalue reference to the underlying data
-    */
-    inline constexpr BlockVariableSlices&& data() && noexcept {
-      return static_cast<BlockVariableSlices&&>(slices_);
-    }
-    //**************************************************************************
-
-    //**************************************************************************
-    /*!\brief Access to the underlying data
-    //
-    // \return Const rvalue reference to the underlying data
-    */
-    inline constexpr BlockVariableSlices const&& data() const&& noexcept {
-      return static_cast<BlockVariableSlices const&&>(slices_);
+    /*!\brief Gets the parent block
+     */
+    inline constexpr auto parent() const noexcept -> ParentBlock const& {
+      return parent_block_;
     }
     //**************************************************************************
 
@@ -251,8 +701,8 @@ namespace blocks {
     //**Member variables********************************************************
     /*!\name Member variables */
     //@{
-    //! All slices of Block variables
-    BlockVariableSlices slices_;
+    //! Reference to the parent block
+    ParentBlock const& parent_block_;
     //@}
     //**************************************************************************
   };
@@ -278,33 +728,31 @@ namespace blocks {
    *
    * \see BlockSlice
    */
-  template <class Plugin>  // The computational plugin type
-  class ConstBlockSlice : public Plugin {
+  template <class Plugin>
+  class ConstBlockSlice : public detail::ConstBlockSliceFacade<Plugin> {
    protected:
     //**Type definitions********************************************************
     //! Type of the parent plugin
-    using Parent = Plugin;
+    using Parent = detail::ConstBlockSliceFacade<Plugin>;
     //! Type of the slice
-    using This = ConstBlockSlice<Parent>;
-    //**************************************************************************
-
-    //**Friendships*************************************************************
-    //! Friend the plugin
-    friend Parent;
-    //! Friend the main block too
-    friend class Block<Parent>;
+    using This = ConstBlockSlice<Plugin>;
     //**************************************************************************
 
    public:
     //**Type definitions********************************************************
-    //! List of variables
-    using typename Parent::Variables;
-    //! Typelist of all variable slices
-    using VariableSlicesList = typename as_slices<Variables>::const_slices;
-    //! Values of all variable slices
-    using BlockVariableSlices = as_block_variables<VariableSlicesList>;
-    //! Conformant mapping between tags and variables
-    using VariableMap = VariableMapping<VariableSlicesList>;
+    //! Type of the parent plugin
+    using typename Parent::PluginType;
+    //! Type of the parent block
+    using ParentBlock = typename PluginFrom<This>::template to<Block>::type;
+    //**************************************************************************
+
+    //**Friendships*************************************************************
+    //! Friend the main block
+    friend ParentBlock;
+    //! Friend the equality operator
+    friend bool operator==<Plugin>(ConstBlockSlice<Plugin> const& lhs,
+                                   ConstBlockSlice<Plugin> const& rhs);
+    // noexcept(noexcept(detail::blocks_equality_impl(lhs, rhs)));
     //**************************************************************************
 
    public:
@@ -315,12 +763,13 @@ namespace blocks {
     //**************************************************************************
     /*!\brief The default constructor.
      *
-     * \param value reference to the underlying callable, copied into func
+     * \param args slice types to be transferred to the underlying container
      */
     template <typename... Args>
-    explicit ConstBlockSlice(Args&&... args) noexcept(
-        noexcept(BlockVariableSlices(std::forward<Args>(args)...)))
-        : slices_(std::forward<Args>(args)...){};
+    explicit ConstBlockSlice(
+        ParentBlock const& parent_block,
+        Args&&... args) noexcept(noexcept(Parent(std::forward<Args>(args)...)))
+        : Parent(std::forward<Args>(args)...), parent_block_(parent_block) {}
     //**************************************************************************
 
     //**************************************************************************
@@ -328,7 +777,19 @@ namespace blocks {
      *
      * \param other slice to copy
      */
-    ConstBlockSlice(ConstBlockSlice const& other) : slices_(other.slices_){};
+    ConstBlockSlice(ConstBlockSlice const& other)
+        : Parent(static_cast<Parent const&>(other)),
+          parent_block_(other.parent_block_){};
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief The copy constructor.
+     *
+     * \param other slice to copy
+     */
+    ConstBlockSlice(ConstBlockSlice& other)
+        : Parent(static_cast<Parent&>(other)),
+          parent_block_(other.parent_block_){};
     //**************************************************************************
 
     //**************************************************************************
@@ -337,7 +798,8 @@ namespace blocks {
      * \param other slice to move from
      */
     ConstBlockSlice(ConstBlockSlice&& other) noexcept
-        : slices_(std::move(other.slices_)){};
+        : Parent(static_cast<Parent&&>(other)),
+          parent_block_(other.parent_block_){};
     //**************************************************************************
 
     //@}
@@ -351,27 +813,15 @@ namespace blocks {
     //@}
     //**************************************************************************
 
-    //**Data access*************************************************************
-    /*!\name Data access */
+    //**Utility methods*********************************************************
+    /*!\name Utility methods*/
     //@{
 
     //**************************************************************************
-    /*!\brief Access to the underlying data
-    //
-    // \return Constant lvalue reference to the underlying data
-    */
-    inline constexpr BlockVariableSlices const& data() const& noexcept {
-      return slices_;
-    }
-    //**************************************************************************
-
-    //**************************************************************************
-    /*!\brief Access to the underlying data
-    //
-    // \return Const rvalue reference to the underlying data
-    */
-    inline constexpr BlockVariableSlices const&& data() const&& noexcept {
-      return static_cast<BlockVariableSlices const&&>(slices_);
+    /*!\brief Gets the parent block
+     */
+    inline constexpr auto parent() const noexcept -> ParentBlock const& {
+      return parent_block_;
     }
     //**************************************************************************
 
@@ -382,11 +832,58 @@ namespace blocks {
     //**Member variables********************************************************
     /*!\name Member variables */
     //@{
-    //! All slices of constant Block variables
-    BlockVariableSlices slices_;
+    //! Reference to the parent block
+    ParentBlock const& parent_block_;
     //@}
     //**************************************************************************
   };
+  //****************************************************************************
+
+  //============================================================================
+  //
+  //  GLOBAL OPERATORS
+  //
+  //============================================================================
+
+  //**Equality operator*********************************************************
+  /*!\brief Equality comparison between two BlockSlice objects.
+   *
+   * \param lhs The left-hand side slice.
+   * \param rhs The right-hand side slice.
+   * \return \a true if the slices are same, else \a false
+   */
+  template <class Plugin>
+  inline constexpr auto operator==(
+      BlockSlice<Plugin> const& lhs,
+      BlockSlice<Plugin> const&
+          rhs)  // noexcept(noexcept(detail::blocks_equality_impl(lhs,
+                // rhs)))
+      -> bool {
+    // using Parent = typename BlockSlice<Plugin>::Parent;
+    // short circuit if the parent blocks dont match
+    return (&lhs.parent() == &rhs.parent()) and
+           detail::blocks_equality_impl(lhs, rhs);
+  }
+  //****************************************************************************
+
+  //**Equality operator*********************************************************
+  /*!\brief Equality comparison between two ConstBlockSlice objects.
+   *
+   * \param lhs The left-hand side const slice.
+   * \param rhs The right-hand side const slice.
+   * \return \a true if the const slices are same, else \a false
+   */
+  template <class Plugin>
+  inline constexpr auto operator==(
+      ConstBlockSlice<Plugin> const& lhs,
+      ConstBlockSlice<Plugin> const&
+          rhs)  // noexcept(noexcept(detail::blocks_equality_impl(lhs, rhs)))
+      -> bool {
+    // using Parent = typename ConstBlockSlice<Plugin>::Parent;
+    // short circuit if the parent blocks dont match
+    return (&lhs.parent() == &rhs.parent()) and
+           detail::blocks_equality_impl(lhs, rhs);
+  }
   //****************************************************************************
 
   namespace detail {
@@ -394,35 +891,39 @@ namespace blocks {
     //**************************************************************************
     /*! \cond ELASTICA_INTERNAL */
     /*!\brief Slice operator for mutable blocks
-    // \ingroup blocks
-    //
-    // \details
-    // Helps take slices of a mutable lvalue reference to block.
+     * \ingroup blocks
+     *
+     * \details
+     * Helps take slices of a mutable lvalue reference to block.
+     * BlockSlice<PluginTrait<BlockLike>::template type<BlockSlice>>
+     * PluginFrom<BlockLike>::template to<BlockSlice>::type;
     */
-    template <typename BlockLike, typename... Vars,
-              typename ReturnType = BlockSlice<plugin_t<BlockLike>>>
+    template <typename Plugin, typename... Vars,
+              typename ReturnType = typename PluginFrom<
+                  Block<Plugin>>::template to<BlockSlice>::type>
     inline constexpr decltype(auto) slice_impl(
-        BlockLike& block_like, std::size_t index,
+        Block<Plugin>& block_like, std::size_t index,
         tmpl::list<Vars...> /* meta */) noexcept(noexcept(ReturnType{
-        block_like.template slice<Vars>(index)...})) {
-      return ReturnType{block_like.template slice<Vars>(index)...};
+        block_like, block_like.template slice<Vars>(index)...})) {
+      return ReturnType{block_like, block_like.template slice<Vars>(index)...};
     }
     //**************************************************************************
 
     //**************************************************************************
     /*!\brief Slice operator for constant blocks
-    // \ingroup blocks
-    //
-    // \details
-    // Helps take slices of a constant levalue reference to a block.
+     * \ingroup blocks
+     *
+     * \details
+     * Helps take slices of a constant lvalue reference to a block.
     */
-    template <typename BlockLike, typename... Vars,
-              typename ReturnType = const ConstBlockSlice<plugin_t<BlockLike>>>
+    template <typename Plugin, typename... Vars,
+              typename ReturnType = const typename PluginFrom<
+                  Block<Plugin>>::template to<ConstBlockSlice>::type>
     inline constexpr decltype(auto) slice_impl(
-        BlockLike const& block_like, std::size_t index,
+        Block<Plugin> const& block_like, std::size_t index,
         tmpl::list<Vars...> /* meta */) noexcept(noexcept(ReturnType{
-        block_like.template slice<Vars>(index)...})) {
-      return ReturnType{block_like.template slice<Vars>(index)...};
+        block_like, block_like.template slice<Vars>(index)...})) {
+      return ReturnType{block_like, block_like.template slice<Vars>(index)...};
     }
     /*! \endcond */
     //**************************************************************************
@@ -435,38 +936,47 @@ namespace blocks {
   //
   //============================================================================
 
+  //**Block slice***************************************************************
+  /*!\name Block slice functions */
+  //@{
+
   //****************************************************************************
   /*!\brief Slice operator for blocks
-  // \ingroup blocks
-  //
-  // \details
-  // Implements slices/views on entities modeling block concept.
-  //
-  // \param block_like Data-structure modeling the block concept
-  // \param index The index of the slice (int or from_end)
-  //
-  // \example
-  // Given a block `b`, we can slice it using
-  // \code
-     auto b_slice = block::slice(b, 5UL); // at index 5 from start
-     auto b_slice_from_end = block::slice(b, elastica::end - 2UL); // 2 from end
-     \endcode
-  //
-  // \note
-  // not marked noexcept because we can have out of range indices
+   * \ingroup blocks
+   *
+   * \details
+   * Implements slices/views on entities modeling block concept.
+   *
+   * \param block_like Data-structure modeling the block concept
+   * \param index The index of the slice (int or from_end)
+   *
+   * \example
+   * Given a block `b`, we can slice it using
+   * \code
+   * auto b_slice = block::slice(b, 5UL); // at index 5 from start
+   * auto b_slice_from_end = block::slice(b, elastica::end - 2UL); // 2 from end
+   * \endcode
+   *
+   * \note
+   * not marked noexcept because we can have out of range indices
   */
-  template <typename BlockLike, typename Index>
-  inline constexpr decltype(auto) slice(BlockLike&& block_like,
+  template <typename Plugin, typename Index>
+  inline constexpr decltype(auto) slice(Block<Plugin>& block_like,
                                         Index index) /*noexcept*/ {
-    using Block_t = std::decay_t<BlockLike>;
-    static_assert(
-        ModelsBlockConcept<Block_t>::value,
-        "Could not slice as the type passed in is not"
-        "a valid elastica Block type.");
-    return detail::slice_impl(std::forward<BlockLike>(block_like),
-                              block_like.check(index),
-                              typename Block_t::Variables{});
+    return detail::slice_impl(block_like, block_like.check(index),
+                              typename Plugin::Variables{});
   }
+  //****************************************************************************
+
+  //****************************************************************************
+  template <typename Plugin, typename Index>
+  inline constexpr decltype(auto) slice(Block<Plugin> const& block_like,
+                                        Index index) /*noexcept*/ {
+    return detail::slice_impl(static_cast<Block<Plugin> const&>(block_like),
+                              block_like.check(index),
+                              typename Plugin::Variables{});
+  }
+  //@}
   //****************************************************************************
 
 }  // namespace blocks
