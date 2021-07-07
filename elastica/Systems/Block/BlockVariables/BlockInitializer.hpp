@@ -21,10 +21,10 @@
 #include "Systems/Block/Block/Aliases.hpp"
 #include "Systems/Block/Block/Block.hpp"
 //
-#include "Aliases.hpp"
-#include "Protocols.hpp"
-#include "TypeTraits.hpp"
-#include "Types.hpp"
+#include "Systems/Block/BlockVariables/Aliases.hpp"
+#include "Systems/Block/BlockVariables/Protocols.hpp"
+#include "Systems/Block/BlockVariables/TypeTraits.hpp"
+#include "Systems/Block/BlockVariables/Types.hpp"
 //
 #include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/MakeNamedFunctor.hpp"
@@ -33,6 +33,7 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/StaticWarning.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TMPLDebugging.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace blocks {
@@ -41,26 +42,45 @@ namespace blocks {
 
     //**************************************************************************
     /*! \cond ELASTICA_INTERNAL */
-    /*!\brief Implementation of compile-time feedback to the user in case
-     * initializers are additional/missing.
+    /*!\brief Implementation of compile-time error feedback to the user in case
+     * initializers are missing.
      * \ingroup blocks
      *
      * \tparam L list of set difference between expected and given initializers
      */
     template <typename L>
-    struct ProvideFeedbackImpl {
+    struct ErrorFeedback {
+      TypeDisplayer<L>
+          these_tags_are_needed_for_initialization_but_are_not_provided_please_provide_them{};
+    };
+    //**************************************************************************
+
+    template <bool B>
+    struct these_tags_are_not_needed_by_the_block_but_provided {};
+
+    template <>
+    struct [[deprecated(R"error(
+Please see the list of tags not needed for initialization in the instantiation of template class blocks::detail::WarningFeedback
+)error")]] these_tags_are_not_needed_by_the_block_but_provided<false>{};
+
+    //**************************************************************************
+    /*!\brief Implementation of compile-time warning feedback to the user in
+     * case additional, unneeded initializers are provided. \ingroup blocks
+     *
+     * \tparam L list of set difference between expected and given initializers
+     */
+    template <typename L>
+    struct WarningFeedback {
       static constexpr bool value = (tmpl::size<L>::value == 0);
-      static constexpr auto error_for_deficient_initializers() noexcept
-          -> void {
-        static_assert(value,
-                      "is a list of initializer tags needed by the block, but "
-                      "not provided");
-      }
-      static constexpr auto warn_for_extra_initializers() noexcept -> void {
-        STATIC_WARNING(
-            value,
-            "is a list of additional initializer tags not needed by the block");
-      }
+
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=84347
+#if defined(__clang__)
+      using Feedback IGNORE_UNUSED = decltype(
+          these_tags_are_not_needed_by_the_block_but_provided<value>{});
+#else
+      using Feedback IGNORE_UNUSED = decltype(STATIC_WARNING(
+          value, "These tags are not needed by the block but provided!"));
+#endif
     };
     /*! \endcond */
     //**************************************************************************
@@ -76,14 +96,26 @@ namespace blocks {
      */
     template <typename Expected, typename Given>
     struct ProvideFeedback {
+      /*
+      // this is not the perfect recipe as for example
+      // Expected : list<A, B, C>
+      // Given : list<A, B, D, E>
+      // so value = false, so only a warning is generated
       static constexpr bool value =
           (tmpl::size<Expected>::value > tmpl::size<Given>::value);
-      using FeedbackList IGNORE_UNUSED = tmpl::conditional_t<
-          value,
-          decltype(ProvideFeedbackImpl<tmpl::list_difference<Expected, Given>>::
-                       error_for_deficient_initializers()),
-          decltype(ProvideFeedbackImpl<tmpl::list_difference<Given, Expected>>::
-                       warn_for_extra_initializers())>;
+
+      // Rather if we do expected - given we get
+      // result = list<C>, which always triggers an error response
+      */
+      static constexpr bool value = static_cast<bool>(
+          tmpl::size<tmpl::list_difference<Expected, Given>>::value);
+
+      // decltypes are necessary to force instantiation rather than the
+      // compiler smartly optimizing it away
+      using Feedback IGNORE_UNUSED =
+          decltype(tmpl::conditional_t<
+                   value, ErrorFeedback<tmpl::list_difference<Expected, Given>>,
+                   WarningFeedback<tmpl::list_difference<Given, Expected>>>{});
     };
     /*! \endcond */
     //**************************************************************************
@@ -128,6 +160,29 @@ namespace blocks {
 
   }  // namespace detail
 
+  //****************************************************************************
+  /*!\brief Data-structure for initializing a Block
+   * \ingroup blocks
+   *
+   * \details
+   * Initializing the variables in a blocks::Block is eased by using this
+   * BlockInitializer. BlockInitializer is not directly used, but is indirectly
+   * used by @ref blocks while using blocks::initialize() and
+   * blocks::initialize_block(). Please refer to the documentation of these
+   * functions instead.
+   *
+   * Note that if you are implementing customized `Plugin` types, it is useful
+   * to extend this struct by inheritance for customizing behavior if needed,
+   * while using the already existing infrastructure in @ref blocks. For one
+   * such example, the elastica::cosserat_rod::CosseratInitializer.
+   *
+   * \tparam Plugin The plugin to initialize
+   * \tparam InitializerVariables Initializers, formed using
+   * blocks::initialize()
+   *
+   * \see blocks::initialize(), blocks::initialize_block(), blocks::Block,
+   * blocks::BlockSlice
+   */
   template <typename Plugin,
             typename... InitializerVariables>  // Cosserat rod traits
   struct BlockInitializer                      // <Plugin,
@@ -144,7 +199,8 @@ namespace blocks {
     //**************************************************************************
     /*!\name Feedback type definitions */
     //@{
-    //! Initialized BlockVariable (s) marked by the Block
+    //! Initialized BlockVariable(s) marked by the Block
+    //\note This is guaranteed to exist in the Block by using the Facade
     using InitializedVariables = initialized_variables_t<Block<Plugin>>;
     //! Tags expected by the Initialized Variables
     using ExpectedInitializerTags =
@@ -155,7 +211,8 @@ namespace blocks {
         tmpl::transform<Leafs, tmpl::bind<parameter_t, tmpl::_1>>;
     //! Feedback to the user based on these tags above
     using FeedbackToUser IGNORE_UNUSED =
-        detail::ProvideFeedback<ExpectedInitializerTags, GivenInitializerTags>;
+        decltype(detail::ProvideFeedback<ExpectedInitializerTags,
+                                         GivenInitializerTags>{});
     //@}
     //**************************************************************************
 
@@ -166,12 +223,13 @@ namespace blocks {
     //**************************************************************************
     /*!\brief The default constructor.
      *
-     * \param args... Functors to be passed to the underlying initializer data
+     * \param funcs Callables to be passed to the underlying initializer
+     * data
      */
-    template <typename... Args>
-    explicit BlockInitializer(Args&&... args) noexcept(
-        noexcept(Initializers(std::forward<Args>(args)...)))
-        : initializers_(std::forward<Args>(args)...){};
+    template <typename... Funcs>
+    explicit BlockInitializer(Funcs&&... funcs) noexcept(
+        noexcept(Initializers(std::forward<Funcs>(funcs)...)))
+        : initializers_(std::forward<Funcs>(funcs)...) {}
     //**************************************************************************
 
     //**************************************************************************
@@ -340,7 +398,9 @@ namespace blocks {
     using Block_t = BlockInitializer<Plugin, InitializerVariables...>;
     // here we need to make sure that all blocks give a templated type trait
     // to recover block variables from a given "outside" Tag
-    using BlockVariableTag = typename Block_t::template var_from<Tag>;
+    using BlockVariableTag =
+        typename Block_t::VariableMap::template variable_from<Tag>;
+    // using BlockVariableTag = typename Block_t::template var_from<Tag>;
     return tuples::get<BlockVariableTag>(
         static_cast<Block_t const&&>(block_initializer).data());
   }
@@ -458,7 +518,7 @@ namespace blocks {
     return ::named_type::make_named_functor<
         detail::Initializer<Tag>::template type>(std::forward<F>(f),
                                                  std::forward<Funcs>(funcs)...);
-  };
+  }
   //****************************************************************************
 
 }  // namespace blocks
