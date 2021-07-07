@@ -8,6 +8,7 @@ add_elastica_library(${LIBRARY} INTERFACE)
 #add_subdirectory(Stepper)
 add_subdirectory(Helpers)
 add_subdirectory(SymplecticSteppers)
+add_subdirectory(Protocols)
 
 elastica_target_headers(
         ${LIBRARY}

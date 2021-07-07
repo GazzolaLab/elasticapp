@@ -1,5 +1,6 @@
 add_subdirectory(Helpers)
 add_subdirectory(SymplecticStepper)
+add_subdirectory(Protocols)
 
 set(LIBRARY "Test_Time")
 
