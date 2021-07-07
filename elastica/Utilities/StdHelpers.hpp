@@ -1,15 +1,24 @@
 #pragma once
 
 #include <array>
+#include <chrono>
 #include <cstdio>
+#include <ctime>
+#include <deque>
+#include <list>
+#include <map>
+#include <memory>
+#include <set>
 #include <sstream>
 #include <string>
 #include <tuple>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
-//#include "DataStructures/TaggedTuple.hpp"
 #include "Utilities/PrintHelpers.hpp"
+#include "Utilities/StlStreamDeclarations.hpp"
 #include "Utilities/TypeTraits/IsStreamable.hpp"
 
 namespace StdHelpers_detail {
