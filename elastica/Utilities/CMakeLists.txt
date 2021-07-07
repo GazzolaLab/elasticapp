@@ -4,7 +4,7 @@ set(LIBRARY Utilities)
 
 add_elastica_library(${LIBRARY})
 
-add_subdirectory(Geometry)
+# add_subdirectory(Geometry)
 add_subdirectory(Logging)
 add_subdirectory(Math)
 add_subdirectory(MemoryMeter)
@@ -21,12 +21,15 @@ elastica_target_sources(
         SystemClock.cpp
         PrettyType.cpp
         WrapText.cpp
+        WidthStream.cpp
 )
 
 elastica_target_headers(
         ${LIBRARY}
         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
         HEADERS
+        Approx.hpp
+        AsConst.hpp
         Byte.hpp
         CRTP.hpp
         DefineTypes.h
@@ -42,6 +45,7 @@ elastica_target_headers(
         Logging.hpp
         MakeArray.hpp
         MakeCopyable.hpp
+        MakeFromTuple.hpp
         MakeNamedFunctor.hpp
         MakeSignalingNan.hpp
         MakeString.hpp
@@ -73,6 +77,7 @@ elastica_target_headers(
         TMPL.hpp
         TMPLDebugging.hpp
         TypeTraits.hpp
+        WidthStream.hpp
         WrapText.hpp
 )
 
