@@ -65,7 +65,7 @@ EXTRACT_ALL            = NO
 
 EXTRACT_PRIVATE        = NO
 
-EXTRACT_STATIC         = NO
+EXTRACT_STATIC         = YES
 
 EXTRACT_LOCAL_CLASSES  = NO
 
@@ -93,7 +93,8 @@ STRIP_CODE_COMMENTS    = NO
 # configuration options related to the input files
 #---------------------------------------------------------------------------
 
-INPUT = @PROJECT_SOURCE_DIR@/elastica
+INPUT = @PROJECT_SOURCE_DIR@/elastica \
+        @PROJECT_SOURCE_DIR@/tests/Unit/Framework
 
 # Add tutorials directory
 INPUT += @PROJECT_SOURCE_DIR@/docs
@@ -111,9 +112,7 @@ EXCLUDE_SYMLINKS       = NO
 EXCLUDE_PATTERNS       =
 
 EXCLUDE_SYMBOLS        = *brigand*                                    \
-                         charm_init_*                                 \
                          *detail*                                     \
-                         PUP*                                         \
                          ELASTICA_TEST_CASE*                          \
                          std*                                         \
                          YAML*
@@ -131,9 +130,9 @@ EXAMPLE_RECURSIVE      = NO
 
 GENERATE_HTML          = @ELASTICA_DOX_GENERATE_HTML@
 
-#HTML_HEADER            = @PROJECT_SOURCE_DIR@/docs/config/header.html
+HTML_HEADER            = @PROJECT_SOURCE_DIR@/docs/config/header.html
 
-#HTML_FOOTER            = @PROJECT_SOURCE_DIR@/docs/config/footer.html
+HTML_FOOTER            = @PROJECT_SOURCE_DIR@/docs/config/footer.html
 
 #IMAGE_PATH             = @PROJECT_SOURCE_DIR@/docs/images/
 
@@ -141,7 +140,7 @@ GENERATE_LATEX         = NO
 
 GENERATE_RTF           = NO
 
-GENERATE_XML           = @SPECTRE_DOX_GENERATE_XML@
+GENERATE_XML           = @ELASTICA_DOX_GENERATE_XML@
 
 XML_OUTPUT             = xml
 
@@ -155,15 +154,16 @@ MACRO_EXPANSION        = YES
 
 # Macros we actually want to expand during preprocessing
 # EXPAND_AS_DEFINED      = MAKE_BINARY_FUNCTIONAL \
-                         MAKE_BINARY_INPLACE_OPERATOR \
-                         MAKE_BINARY_OPERATOR \
-                         MAKE_UNARY_FUNCTIONAL
+#                        MAKE_BINARY_INPLACE_OPERATOR \
+#                        MAKE_BINARY_OPERATOR \
+#                        MAKE_UNARY_FUNCTIONAL
 
 EXPAND_ONLY_PREDEF     = YES
 
 SEARCH_INCLUDES        = YES
 
-PREDEFINED             = ELASTICA_ALWAYS_INLINE
+PREDEFINED             = ELASTICA_ALWAYS_INLINE= \
+                         OVERLOADER_CONSTEXPR=
 
 #---------------------------------------------------------------------------
 # Configuration options related to the dot tool
@@ -205,9 +205,28 @@ GENERATE_LEGEND        = NO
 # HTML layout file
 #---------------------------------------------------------------------------
 
+LAYOUT_FILE = @PROJECT_SOURCE_DIR@/docs/config/layout.xml
+
 FORMULA_MACROFILE = @PROJECT_SOURCE_DIR@/docs/config/commands.tex
 
-USE_MATHJAX = NO
+HTML_EXTRA_FILES       = @PROJECT_SOURCE_DIR@/docs/config/icons/octicons.eot \
+                         @PROJECT_SOURCE_DIR@/docs/config/icons/octicons.svg \
+                         @PROJECT_SOURCE_DIR@/docs/config/icons/octicons.ttf \
+                         @PROJECT_SOURCE_DIR@/docs/config/icons/octicons.woff \
+                         @PROJECT_SOURCE_DIR@/docs/config/bootstrap.min.css \
+                         @PROJECT_SOURCE_DIR@/docs/config/octicons.css \
+                         @PROJECT_SOURCE_DIR@/docs/config/js/popper.min.js \
+                         @PROJECT_SOURCE_DIR@/docs/config/js/bootstrap.min.js \
+                         @PROJECT_SOURCE_DIR@/docs/config/js/jquery.js \
+                         @PROJECT_SOURCE_DIR@/docs/.nojekyll \
+                         @PROJECT_SOURCE_DIR@/docs/config/MathJax.js \
+                         @PROJECT_SOURCE_DIR@/LICENSE
+
+# This is not the recommended way of using a completely custom style sheet.
+# It's probably better to have a custom header that uses the style sheet
+HTML_STYLESHEET = @PROJECT_SOURCE_DIR@/docs/config/doxygen.css
+
+USE_MATHJAX = YES
 
 # MATHJAX_RELPATH ultimately links to docs/config/MathJax.js, which is
 # copied to docs/html/MathJax.js with the HTML_EXTRA_FILES
