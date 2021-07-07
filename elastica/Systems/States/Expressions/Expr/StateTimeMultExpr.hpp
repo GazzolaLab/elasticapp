@@ -1,7 +1,7 @@
 //==============================================================================
 /*!
 //  \file
-//  \brief Definition of Default Simulator Configuration
+//  \brief Type marking multiplication operations between a state and time
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
@@ -11,38 +11,40 @@
 */
 //==============================================================================
 
+#pragma once
+
 //******************************************************************************
 // Includes
 //******************************************************************************
-
-#include "Simulator/Interface/DefaultSimulatorConfiguration.hpp"
+#include "Systems/States/Expressions/Expr/StateExpr.hpp"
 
 namespace elastica {
 
-  namespace interface {
+  namespace states {
 
     //==========================================================================
     //
-    //  EXPLICIT INSTANTIATIONS
+    //  CLASS DEFINITION
     //
     //==========================================================================
 
-    /*
-    // Explicitly instantiate only the classes we want to be defined.
-    https://stackoverflow.com/questions/2351148/explicit-template-instantiation-when-is-it-used
-    // Sad but true :
-    https://stackoverflow.com/questions/11705407/explicit-template-instantiation-through-a-typedef
-    */
-
     //**************************************************************************
-    /*!\brief Explicit instantiation of DefaultSimulatorConfiguration
-    // \ingroup simulator
-    */
-    template struct SimulatorConfiguration<defaults::DomainConfiguration,
-                                           defaults::SystemsConfiguration,
-                                           defaults::EnvironmentsConfiguration>;
+    /*!\brief Base class for all state--time multiplication expression
+     * templates.
+     * \ingroup states
+     *
+     * StateTimeMultExpr marks all expression templates that implement
+     * state-time multiplications. All classes, that represent a state-time
+     * multiplication  and that are used within the expression template
+     * environment of \elastica have to derive publicly from this
+     * class in order to qualify as multiplication expression template.
+     *
+     * \tparam MultExpr type of the multiplication expression
+     */
+    template <typename MultExpr>  // Base type of the expression
+    struct StateTimeMultExpr : public StateExpr<MultExpr> {};
     //**************************************************************************
 
-  }  // namespace interface
+  }  // namespace states
 
 }  // namespace elastica
