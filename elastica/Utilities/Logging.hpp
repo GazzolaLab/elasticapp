@@ -79,15 +79,15 @@ namespace elastica {
     //**************************************************************************
     /*!\brief Log a function object to streams
      *
-     * \param f          Functor object to log
-     * \param stream     The first stream to log onto
-     * \param streams... The other streams to log onto
+     * \param f       Functor object to log
+     * \param stream  The first stream to log onto
+     * \param streams The other streams to log onto
      *
      * \see log()
      */
     template <typename F, typename Stream, typename... Streams>
-    inline auto log_to_stream(F&& f, const Stream& stream,
-                              const Streams&... streams) noexcept -> void {
+    inline auto log_to_stream(F&& f, Stream& stream,
+                              Streams&... streams) noexcept -> void {
       // what are the semantics here if f returns?
       expand_pack(std::forward<F>(f)(stream), std::forward<F>(f)(streams)...);
     }
@@ -152,7 +152,7 @@ namespace elastica {
         template <typename F, typename... Streams>
         inline auto operator()(F&& /*f*/,
                                const Streams&... /*streams*/) const noexcept
-            -> void{};
+            -> void {}
       };
       /*! \endcond */
       //************************************************************************
@@ -164,17 +164,17 @@ namespace elastica {
      *
      * \tparam L The LoggingLevel to log
      *
-     * \param f        The function object to log
-     * \param funcs... The other function objects to log
+     * \param f     The function object to log
+     * \param funcs The other function objects to log
      *
      * \see log_to_stream(), tee()
      */
     template <LoggingLevel L, typename F, typename... Funcs>
     inline auto log(F&& f, Funcs&&... funcs) noexcept -> void {
       detail::LogInterface<L> logger;
-      expand_pack(logger(std::forward<F>(f)),
-                  logger(std::forward<Funcs>(funcs))...);
-    };
+      EXPAND_PACK_LEFT_TO_RIGHT(logger(std::forward<F>(f)),
+                                logger(std::forward<Funcs>(funcs)));
+    }
     //**************************************************************************
 
     //**************************************************************************
@@ -182,8 +182,8 @@ namespace elastica {
      *
      * \tparam L The LoggingLevel to log
      *
-     * \param f        The function object to log
-     * \param funcs... The other function objects to log
+     * \param f     The function object to log
+     * \param funcs The other function objects to log
      *
      * \see log()
      */
@@ -192,7 +192,7 @@ namespace elastica {
       detail::LogInterface<L> logger;
       expand_pack(logger(std::forward<F>(f), std::cout),
                   logger(std::forward<Funcs>(funcs), std::cout)...);
-    };
+    }
     //**************************************************************************
 
   }  // namespace logging
