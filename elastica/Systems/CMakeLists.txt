@@ -1,9 +1,11 @@
 set(LIBRARY Systems)
 
-add_elastica_library(${LIBRARY})
+add_elastica_library(${LIBRARY} INTERFACE)
 
+add_subdirectory(Block)
 add_subdirectory(RigidBody)
 add_subdirectory(CosseratRods)
+add_subdirectory(States)
 
 elastica_target_headers(
         ${LIBRARY}
@@ -14,7 +16,7 @@ elastica_target_headers(
 
 target_link_libraries(
         ${LIBRARY}
-        PUBLIC
+        INTERFACE
         Blaze
         ErrorHandling
         Utilities
