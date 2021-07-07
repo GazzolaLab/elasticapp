@@ -3,13 +3,18 @@
 # ##############################################################################
 # Distributed under the MIT License. See LICENSE for details.
 # ##############################################################################
-cmake_minimum_required(VERSION 3.3.2)
+cmake_minimum_required(VERSION 3.12.0)
 
 # ##############################################################################
 # Set policies
 # ##############################################################################
 if (POLICY CMP0074)
     cmake_policy(SET CMP0074 NEW)
+endif ()
+if (POLICY CMP0110)
+    # disable support for arbitrary characters (such as whitespace) in test names
+    # but rather use underscores
+    cmake_policy(SET CMP0110 OLD)
 endif ()
 
 # ##############################################################################
@@ -33,6 +38,16 @@ include(Logging)
 set_logs_on()
 set_log_level("DEBUG") # INFO  DEBUG  HEAVYDEBUG
 
+option(
+        DOCS_ONLY
+        "Skip all initialization not required for rendering documentation"
+)
+
+if (DOCS_ONLY)
+    include(SetupDoxygen)
+    return()
+endif (DOCS_ONLY)
+
 include(ProhibitInSourceBuild)
 # include(AddSources) # Add function to add a set of source files.
 # include(ElasticaUtils)
@@ -49,6 +64,7 @@ include(ElasticaAddInterfaceLibraryHeaders)
 include(ElasticaTargetHeaders)
 include(ElasticaTargetSources)
 include(ElasticaAddLibraries)
+include(CheckBrokenArray0)
 # include(SetupBuildInfo) include(SetupCCache)
 
 # In order to use certain code analysis tools like clang-tidy and cppcheck the
@@ -63,18 +79,25 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # include(SetupLapack) include(SetupNumPy) include(SetupOpenMP)
 # include(SetupPapi) include(SetupSciPy) include(SetupLibsharp)
 include(SetupBlaze)
-include(SetupTBB)
-include(SetupCatch)
+include(SetupBlazeTensor)
 include(SetupBrigand)
+include(SetupBoost)
+include(SetupCatch)
 include(SetupFilesystem)
-# include(SetupVTK) include(SetupYamlCpp)
+include(SetupTBB)
+include(SetupYamlCpp)
+# include(SetupVTK)
+
+include(SetupDoxygen)
+include(CodeCoverageDetection)
 
 enable_testing(true)
 include(ElasticaAddTestLibs)
 include(ElasticaAddCatchTests)
-include(SetupCompilationFailureTests)
 
+# directly call Simulator/ABC instead of elastica/Simulator/ABC
 include_directories(${CMAKE_SOURCE_DIR}/elastica)
+include_directories(${CMAKE_SOURCE_DIR}/tests/Unit)
 #include_directories(${CMAKE_SOURCE_DIR})
 
 add_subdirectory(elastica)

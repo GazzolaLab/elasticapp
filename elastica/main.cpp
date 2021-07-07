@@ -17,6 +17,7 @@
 //#include "Utilities/StdHelpers.hpp"
 #include "Simulator/Environments/Primitives/PlanePrimitive.hpp"
 #include "Simulator/Materials.hpp"
+#include "elastica.hpp"
 
 /*
 int main(int argc, char* argv[]) {

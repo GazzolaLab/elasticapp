@@ -13,6 +13,7 @@ add_executable(elastica main.cpp)
 add_subdirectory(ErrorHandling)
 add_subdirectory(Utilities)
 add_subdirectory(Simulator)
+add_subdirectory(Options)
 add_subdirectory(Systems)
 add_subdirectory(Time)
 
