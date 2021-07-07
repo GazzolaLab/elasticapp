@@ -36,6 +36,9 @@ namespace blocks {
   template <typename ParameterTag, typename RankTag, typename... Tags>
   struct InitializedVariable;
 
+  template <typename VariableOrDerivedVariable>
+  struct same_as;
+
   //////////////////////////////////////////////////////////////////////////////
   //
   // Forward declarations of Initializer
