@@ -30,6 +30,19 @@
 
 namespace blocks {
 
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  // forward declarations of the slice() function for overload resolution
+  // in blockFacade::slice()
+  template <typename Plugin, typename Index>
+  inline constexpr decltype(auto) slice(Block<Plugin>& block_like,
+                                        Index index);
+  template <typename Plugin, typename Index>
+  inline constexpr decltype(auto) slice(Block<Plugin> const& block_like,
+                                        Index index);
+  /*! \endcond */
+  //****************************************************************************
+
   namespace detail {
 
     //**************************************************************************
@@ -47,13 +60,13 @@ namespace blocks {
     //************************************************************************
     /*! \cond ELASTICA_INTERNAL */
     /*!\brief Signature of expected a derived Block
-    // \ingroup blocks
-    //
-    // Very similar to protocols, but we don't need to derive from the
-    // protocol class. Rather, signatures rely on an implicit interface
-    // guarantee.
-    //
-    // \tparam BlockImplementation The block that derives from BlockFacade
+     * \ingroup blocks
+     *
+     * Very similar to protocols, but we don't need to derive from the
+     * protocol class. Rather, signatures rely on an implicit interface
+     * guarantee.
+     *
+     * \tparam BlockImplementation The block that derives from BlockFacade
     */
     template <typename BlockImplementation>
     struct Signatures {
@@ -73,9 +86,9 @@ namespace blocks {
 
       /// [const_slice_signature]
       template <typename Tag>
-      using const_slice_signature = decltype(
-          std::declval<BlockImplementation const&>().template slice<Tag>(
-              std::declval<std::size_t>()));
+      using const_slice_signature =
+          decltype(std::declval<BlockImplementation const&>()
+                       .template slice<Tag>(std::declval<std::size_t>()));
       // This is equivalent to
       //   template <typename Tag>
       //   // some_return_type
@@ -98,53 +111,53 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief A helper facade for ease in implementing new Block types
-  // \ingroup blocks
-  //
-  // \details
-  // The BlockFacade is a helper template to assist in conforming to the
-  // protocols expected by a Block class, when specializing it for
-  // particular Plugin types. It provides the interface of a block in terms of a
-  // few core functions and associated types, which are to be supplied by a
-  // Block that derives from BlockFacade. Internally, BlockFacade uses the CRTP
-  // pattern to access the core functions supplied by the Block.
-  //
-  // BlockFacade is modeled after boost::iterator_facade. Notably, it differs
-  // from boost::iterator_facade in one key aspect : the BlockFacade is
-  // internally templated on blocks::Block---hence its use for anything
-  // other then implementing a specialization of blocks::Block template is
-  // ill-formed by definition.
-  //
-  // \usage
-  // While customizing a blocks::block for some type `CustomPlugin` (which needs
-  // to meet the expected interface for a valid `Plugin`, see Blocks), we can
-  // use BlockFacade to minimize the code we need to write, as shown below:
-  // \snippet Test_BlockFacade.cpp block_facade_usage
-  // For correct use with a BlockFacade, the following members in the deriving
-  // Block need to be defined.
-  // \snippet this slice_signature
-  // \snippet this const_slice_signature
-  //
-  // where
-  // - `t` is the current time of the simulation
-  // - `sys` is an object modeling an \elastica system
-  // - `index` is the index being constrained.
-  //
-  // \example
-  // For a simple custom Plugin as shown below,
-  // \snippet Test_BlocksFramework.cpp int_plugin
-  // Without a BlockFacade, one needs to write out
-  // \snippet Test_BlocksFramework.cpp int_block
-  // With a BlockFacade however, this process becomes more simpler
-  // \snippet Test_BlocksFramework.cpp fac_int_block
-  //
-  // Additionally for more practical, operate-intensive Plugins in \elastica,
-  // such as Cosserat rods, BlockFacade takes care of setting up the necessary
-  // type definitions for slicing/initialization among others, including setting
-  // up subscript operators etc given the Block has the necessary functions
-  //
-  // \tparam Plugin The computational plugin modeling a Lagrangian entity
-  //
-  // \see Block
+   * \ingroup blocks
+   *
+   * \details
+   * The BlockFacade is a helper template to assist in conforming to the
+   * protocols expected by a Block class, when specializing it for
+   * particular Plugin types. It provides the interface of a block in terms of a
+   * few core functions and associated types, which are to be supplied by a
+   * Block that derives from BlockFacade. Internally, BlockFacade uses the CRTP
+   * pattern to access the core functions supplied by the Block.
+   *
+   * BlockFacade is modeled after boost::iterator_facade. Notably, it differs
+   * from boost::iterator_facade in one key aspect : the BlockFacade is
+   * internally templated on blocks::Block---hence its use for anything
+   * other then implementing a specialization of blocks::Block template is
+   * ill-formed by definition.
+   *
+   * \usage
+   * While customizing a blocks::block for some type `CustomPlugin` (which needs
+   * to meet the expected interface for a valid `Plugin`, see Blocks), we can
+   * use BlockFacade to minimize the code we need to write, as shown below:
+   * \snippet Test_BlockFacade.cpp block_facade_usage
+   * For correct use with a BlockFacade, the following members in the deriving
+   * Block need to be defined.
+   * \snippet this slice_signature
+   * \snippet this const_slice_signature
+   *
+   * where
+   * - `t` is the current time of the simulation
+   * - `sys` is an object modeling an \elastica system
+   * - `index` is the index being constrained.
+   *
+   * \example
+   * For a simple custom Plugin as shown below,
+   * \snippet Test_BlocksFramework.cpp int_plugin
+   * Without a BlockFacade, one needs to write out
+   * \snippet Test_BlocksFramework.cpp int_block
+   * With a BlockFacade however, this process becomes more simpler
+   * \snippet Test_BlocksFramework.cpp fac_int_block
+   *
+   * Additionally for more practical, operate-intensive Plugins in \elastica,
+   * such as Cosserat rods, BlockFacade takes care of setting up the necessary
+   * type definitions for slicing/initialization among others, including setting
+   * up subscript operators etc given the Block has the necessary functions
+   *
+   * \tparam Plugin The computational plugin modeling a Lagrangian entity
+   *
+   * \see Block
   */
   template <typename Plugin>
   class BlockFacade : public Plugin,
@@ -173,6 +186,9 @@ namespace blocks {
      * \metareturns cpp17::bool_constant
      */
     static inline constexpr auto parent_to_be_initialized() noexcept {
+      // This one-liner doesn't work if the initialized_variables_t is protected
+      // which is the intended use case
+      // return ::tt::is_detected<blocks::initialized_variables_t, Plugin>{};
       return ::tt::is_detected<blocks::initialized_variables_t, Plugin>{};
     }
     /*! \endcond */
@@ -198,20 +214,26 @@ namespace blocks {
     using Parent = Plugin;
     //! This type
     using This = BlockFacade<Parent>;
+    //**************************************************************************
 
    public:
+    //**Type definitions********************************************************
+    //! Plugin type
+    using PluginType = Parent;
     //! List of variables
     using typename Parent::Variables;
     //! List of initialized variables
-    using InitializedVariables = typename std::conditional_t<
-        parent_to_be_initialized(), Parent,
-        detail::EmptyInitializedVariables>::InitializedVariables;
+    using InitializedVariables = blocks::initialized_variables_t<
+        std::conditional_t<parent_to_be_initialized(), Parent,
+                           detail::EmptyInitializedVariables>>;
     //! Container for all variables
     using BlockVariables = as_block_variables<Variables>;
     //! Conformant mapping between tags and variables
     using VariableMap = VariableMapping<Variables>;
+    //**************************************************************************
 
    private:
+    //**Type definitions********************************************************
     //! CRTP Type
     using CRTP = elastica::CRTPHelper<Block<Parent>, BlockFacade>;
     //! CRTP methods
@@ -267,16 +289,16 @@ namespace blocks {
 
     //**************************************************************************
     /*!\brief Access to the underlying data
-    //
-    // \return Mutable lvalue reference to the underlying data
+     *
+     * \return Mutable lvalue reference to the underlying data
     */
     inline constexpr BlockVariables& data() & noexcept { return variables_; }
     //**************************************************************************
 
     //**************************************************************************
     /*!\brief Access to the underlying data
-    //
-    // \return Constant lvalue reference to the underlying data
+     *
+     * \return Constant lvalue reference to the underlying data
     */
     inline constexpr BlockVariables const& data() const& noexcept {
       return variables_;
@@ -285,8 +307,8 @@ namespace blocks {
 
     //**************************************************************************
     /*!\brief Access to the underlying data
-    //
-    // \return Mutable rvalue reference to the underlying data
+     *
+     * \return Mutable rvalue reference to the underlying data
     */
     inline constexpr BlockVariables&& data() && noexcept {
       return static_cast<BlockVariables&&>(variables_);
@@ -296,8 +318,8 @@ namespace blocks {
 
     //**************************************************************************
     /*!\brief Access to the underlying data
-    //
-    // \return Const rvalue reference to the underlying data
+     *
+     * \return Const rvalue reference to the underlying data
     */
     inline constexpr BlockVariables const&& data() const&& noexcept {
       return static_cast<BlockVariables const&&>(variables_);
@@ -353,6 +375,7 @@ namespace blocks {
      */
     template <typename IndexLike>
     inline decltype(auto) operator[](IndexLike index) & {
+      using ::blocks::slice;
       return slice(self(), index);
     }
     //**************************************************************************
@@ -364,6 +387,7 @@ namespace blocks {
      */
     template <typename IndexLike>
     inline decltype(auto) operator[](IndexLike index) const& {
+      using ::blocks::slice;
       return slice(self(), index);
     }
     //**************************************************************************
