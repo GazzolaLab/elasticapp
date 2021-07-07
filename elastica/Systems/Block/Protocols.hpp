@@ -1,7 +1,7 @@
 //==============================================================================
 /*!
 //  \file
-//  \brief Cosserat rod policies header
+//  \brief All protocols belonging to @ref blocks
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
@@ -17,5 +17,5 @@
 // Includes
 //******************************************************************************
 
-#include "Systems/CosseratRods/Policies/ElasticityPolicies/ElasticityPolicies.hpp"
-#include "Systems/CosseratRods/Policies/GeometryPolicies/GeometryPolicies.hpp"
+#include "Systems/Block/Block/Protocols.hpp"
+#include "Systems/Block/BlockVariables/Protocols.hpp"

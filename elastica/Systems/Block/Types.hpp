@@ -18,6 +18,6 @@
 //******************************************************************************
 
 ///
-#include "Block/Types.hpp"
-#include "BlockVariables/Types.hpp"
+#include "Systems/Block/Block/Types.hpp"
+#include "Systems/Block/BlockVariables/Types.hpp"
 ///
