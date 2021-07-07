@@ -107,3 +107,23 @@ void test_serialization(const T& t) {
   static_assert(::tt::has_equivalence_v<T>, "No operator== for T");
   CHECK(t == serialize_and_deserialize(t));
 }
+
+struct NonCopyable {
+  constexpr NonCopyable() = default;
+  constexpr NonCopyable(const NonCopyable&) = delete;
+  constexpr NonCopyable& operator=(const NonCopyable&) = delete;
+  constexpr NonCopyable(NonCopyable&&) = default;
+  NonCopyable& operator=(NonCopyable&&) = default;
+  ~NonCopyable() = default;
+};
+inline bool operator==(const NonCopyable& /*a*/,
+                       const NonCopyable& /*b*/) noexcept {
+  return true;
+}
+inline bool operator!=(const NonCopyable& a, const NonCopyable& b) noexcept {
+  return not(a == b);
+}
+inline std::ostream& operator<<(std::ostream& os,
+                                const NonCopyable& /*v*/) noexcept {
+  return os << "NC";
+}
