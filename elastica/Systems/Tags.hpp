@@ -1,3 +1,17 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Common accessor tags for all \elastica systems
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
 
-#include "elastica/Systems/RigidBody/Tags.hpp"
+#include "Systems/RigidBody/Tags.hpp"
+#include "Systems/common/Tags.hpp"
