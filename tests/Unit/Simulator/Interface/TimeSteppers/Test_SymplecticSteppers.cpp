@@ -11,10 +11,12 @@
 #include "Systems/Block.hpp"
 #include "Systems/CosseratRods/CosseratRods.hpp"
 #include "Systems/CosseratRods/Mocks/CosseratRodTraits.hpp"
-#include "Time/RevisedSymplecticSteppers/Algorithms.hpp"
-#include "Time/RevisedSymplecticSteppers/SymplecticStepper.hpp"
 #include "Time/SimulationTime.hpp"
+#include "Time/SymplecticSteppers/Algorithms.hpp"
+#include "Time/Protocols.hpp"
+#include "Time/SymplecticSteppers/SymplecticStepper.hpp"
 #include "Utilities/IgnoreUnused.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/RepeatAsTuple.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -228,6 +230,11 @@ namespace {
     //
     using Config = std::decay_t<decltype(config)>;
     using Sim = ::mock::SystemsSimulator<Config>;
+    static_assert(
+        ::tt::conforms_to_v<
+            Sim, ::elastica::timestepper::protocols::SymplecticSteppable>,
+        "Symplectic meta failure!");
+
     return Sim(std::move(config));
   }
 
@@ -247,13 +254,14 @@ namespace {
     const TimeStepper time_stepper{};
 
     ::elastica::Time time_v{0.0};
-    ::elastica::TimeDelta time_delta{0.2}; // dont do nan bro
+    ::elastica::TimeDelta time_delta{0.2};  // dont do nan bro
     sim.step(time_stepper, time_v, time_delta);
 
     // position verlet has
     // one kinematic step , followed by dynamic, followed by kinematic
     // for_each_block, dynamic, for_each_block
-    // for_each_block, (post_kinematic_update, for_each_block, pre_dynamic, for_each_block, post_dynamic), for_each_block
+    // for_each_block, (post_kinematic_update, for_each_block, pre_dynamic,
+    // for_each_block, post_dynamic), for_each_block
     std::vector<std::string> expected;
     expected.emplace_back("for_each_block");
     expected.emplace_back("post_kinematic_update");

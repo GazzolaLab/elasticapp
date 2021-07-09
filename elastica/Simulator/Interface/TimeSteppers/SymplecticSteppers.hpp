@@ -20,6 +20,7 @@
 ///
 #include "Simulator/Interface/TimeSteppers/Types.hpp"
 /// Temporal interfaces
+#include "Time/Protocols.hpp"
 #include "Time/SimulationTime.hpp"
 #include "Time/SymplecticSteppers.hpp"
 /// Utils
@@ -27,6 +28,7 @@
 #include "Utilities/CRTP.hpp"
 #include "Utilities/Logging.hpp"
 #include "Utilities/NonCopyable.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 
 namespace elastica {
 
@@ -53,8 +55,9 @@ namespace elastica {
      */
     template <class SimTraits, class Sim>
     class InterfaceWithSymplecticSteppers
-        : public CRTPHelper<Sim, InterfaceWithSymplecticSteppers>
-    // public ::tt::ConformsTo<protocols::TimeStepper>, // TODO!
+        : public CRTPHelper<Sim, InterfaceWithSymplecticSteppers>,
+          public ::tt::ConformsTo<
+              ::elastica::timestepper::protocols::SymplecticSteppable>
     // public NonCopyable // Trivially copyable, so leave it alone
     {
      private:
