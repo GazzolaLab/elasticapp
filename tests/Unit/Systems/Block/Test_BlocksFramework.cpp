@@ -1119,6 +1119,13 @@ namespace blocks {
     ~Block() = default;
   };
 
+  // for apply_over_slice adapter
+  inline auto n_units(
+      Block<FacadedIntermediateExamplePlugin> const& block) noexcept
+      -> std::size_t {
+    return block.size();
+  };
+
 }  // namespace blocks
 /// [fac_int_block]
 
@@ -1213,5 +1220,40 @@ namespace {
         (std::vector<float>{2.5F, 3.5F, 4.5F}));
     CHECK(blocks::get<tags::ExampleAcceleration>(std::move(block)) ==
           std::vector<int>{0, 3, 2});
+  }
+
+}  // namespace
+
+namespace {
+  ELASTICA_TEST_CASE("Unit.Systems.Blocks.apply_over_slices_adapter",
+                     "[Systems][Unit]") {
+    using MyBlock = blocks::Block<FacadedIntermediateExamplePlugin>;
+    MyBlock block;
+    blocks::get<tags::ExampleInitializedPosition>(block).push_back(2);
+    blocks::get<tags::ExampleInitializedPosition>(block).push_back(3);
+    blocks::get<tags::ExampleInitializedPosition>(block).push_back(4);
+
+    blocks::get<tags::ExampleInitializedVelocity>(block).push_back(2.5F);
+    blocks::get<tags::ExampleInitializedVelocity>(block).push_back(3.5F);
+    blocks::get<tags::ExampleInitializedVelocity>(block).push_back(4.5F);
+
+    blocks::get<tags::ExampleAcceleration>(block).push_back(0);
+    blocks::get<tags::ExampleAcceleration>(block).push_back(1);
+    blocks::get<tags::ExampleAcceleration>(block).push_back(2);
+
+    std::size_t n_slices = 0UL;
+    auto count_slices = blocks::apply_over_slice_adapter(
+        [&n_slices](auto const&) { ++n_slices; });
+    (void)count_slices(block);
+    CHECK(n_slices == 3UL);
+
+    int accum_position = 0;
+    auto accumulate_position_over =
+        blocks::apply_over_slice_adapter([&accum_position](auto slice) {
+          accum_position +=
+              blocks::get<tags::ExampleInitializedPosition>(slice);
+        });
+    (void)accumulate_position_over(block);
+    CHECK(accum_position == (2 + 3 + 4));
   }
 }  // namespace

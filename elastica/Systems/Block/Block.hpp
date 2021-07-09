@@ -99,7 +99,7 @@ namespace blocks {
    */
   template <typename F>
   constexpr auto apply_over_slice_adapter(F func) noexcept {
-    return [func = std::move(func)](auto& system_block) -> void {
+    return [func = std::move(func)](auto& system_block) /*mutable*/ -> void {
       using ::blocks::n_units;
       const std::size_t cardinality = n_units(system_block);
       // iteration within a block is always serial
