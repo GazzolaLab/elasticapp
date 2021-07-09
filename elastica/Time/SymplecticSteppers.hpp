@@ -31,14 +31,14 @@ namespace elastica {
 
     //**************************************************************************
     /*!\brief Symplectic time-steppers and methods
-    // \ingroup time
-    */
+     * \ingroup time
+     */
     namespace symplectic {}
     //**************************************************************************
 
     /// Promote namespaces
-    using symplectic::SymplecticStepper;
     using symplectic::PositionVerlet;
+    using symplectic::SymplecticStepper;
     using symplectic::VelocityVerlet;
 
   }  // namespace timestepper

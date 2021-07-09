@@ -1,14 +1,25 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Type traits for the Time module
 //
-// Created by Tejaswin Parthasarathy on 5/25/21.
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
 //
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
 
 #pragma once
 
+//******************************************************************************
+// Includes
+//******************************************************************************
 #include <type_traits>
 
-#include "Time/Types.hpp"
 #include "Time/Helpers/TypeTraits.hpp"
-
+#include "Time/Types.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 namespace elastica {
@@ -45,22 +56,23 @@ namespace elastica {
      \endcode
     */
     template <typename T>
-    struct IsTimeDelta : public ::tt::is_a<::elastica::detail::SimulationTimeDelta, T> {};
+    struct IsTimeDelta
+        : public ::tt::is_a<::elastica::impl::SimulationTimeDelta, T> {};
     //**************************************************************************
 
     //**************************************************************************
     /*!\brief Auxiliary variable template for the IsTimeDelta type trait.
-    // \ingroup type_traits
-    //
-    // The is_time_delta_v variable template provides a convenient shortcut to
-    // access the nested \a value of the IsTimeDelta class template. For
-    // instance, given the type \a T the following two statements are identical:
-
-       \code
-       constexpr bool value1 = elastica::IsTimeDelta<T>::value;
-       constexpr bool value2 = elastica::is_time_delta_v<T>;
-       \endcode
-    */
+     * \ingroup type_traits
+     *
+     * The is_time_delta_v variable template provides a convenient shortcut to
+     * access the nested \a value of the IsTimeDelta class template. For
+     * instance, given the type \a T the following two statements are identical:
+     *
+     * \code
+     * constexpr bool value1 = elastica::IsTimeDelta<T>::value;
+     * constexpr bool value2 = elastica::is_time_delta_v<T>;
+     * \endcode
+     */
     template <typename T>
     constexpr bool is_time_delta_v = IsTimeDelta<T>::value;
     //**************************************************************************

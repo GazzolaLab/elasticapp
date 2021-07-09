@@ -23,17 +23,38 @@
 
 namespace elastica {
 
-  namespace detail {
+  namespace impl { // document, so don't use detail
 
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
     template <typename /* Real */>
     class SimulationTime;
-
     template <typename /* Real */>
     class SimulationTimeDelta;
+    /*! \endcond */
+    //**************************************************************************
 
   }  // namespace detail
 
-  using Time = detail::SimulationTime<real_t>;
-  using TimeDelta = detail::SimulationTimeDelta<real_t>;
+  //****************************************************************************
+  /*!\brief The simulation time used in \elastica
+   * \ingroup time
+   *
+   * \details
+   * The time in a simulation. Times can be safely compared for equality and
+   * provides more meaningful program semantics.
+   */
+  using Time = impl::SimulationTime<real_t>;
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief The interval of change in time in \elastica
+   * \ingroup time
+   *
+   * \details
+   * Represents an interval of time between two Times.
+   */
+  using TimeDelta = impl::SimulationTimeDelta<real_t>;
+  //****************************************************************************
 
 }  // namespace elastica
