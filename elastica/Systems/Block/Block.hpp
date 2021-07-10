@@ -92,13 +92,13 @@ namespace blocks {
    * auto func = [](auto & system){ // User code to iterate on systems; }
    * // use to apply over slices
    * auto func_to_be_applied_over_slices =
-   * blocks::apply_over_slice_adapter(func);
+   * blocks::for_each_slice_adapter(func);
    * \endcode
    *
    * \param func Callable to be applied over slices
    */
   template <typename F>
-  constexpr auto apply_over_slice_adapter(F func) noexcept {
+  constexpr auto for_each_slice_adapter(F func) noexcept {
     return [func = std::move(func)](auto& system_block) /*mutable*/ -> void {
       using ::blocks::n_units;
       const std::size_t cardinality = n_units(system_block);

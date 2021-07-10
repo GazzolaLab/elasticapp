@@ -1242,14 +1242,14 @@ namespace {
     blocks::get<tags::ExampleAcceleration>(block).push_back(2);
 
     std::size_t n_slices = 0UL;
-    auto count_slices = blocks::apply_over_slice_adapter(
+    auto count_slices = blocks::for_each_slice_adapter(
         [&n_slices](auto const&) { ++n_slices; });
     (void)count_slices(block);
     CHECK(n_slices == 3UL);
 
     int accum_position = 0;
     auto accumulate_position_over =
-        blocks::apply_over_slice_adapter([&accum_position](auto slice) {
+        blocks::for_each_slice_adapter([&accum_position](auto slice) {
           accum_position +=
               blocks::get<tags::ExampleInitializedPosition>(slice);
         });

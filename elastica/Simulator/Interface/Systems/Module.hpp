@@ -456,8 +456,7 @@ namespace elastica {
        */
       template <typename F>
       inline decltype(auto) for_each_system(F func) const noexcept {
-        (void)for_each_block(
-            ::blocks::apply_over_slice_adapter(std::ref(func)));
+        (void)for_each_block(::blocks::for_each_slice_adapter(std::ref(func)));
         return func;
       }
       //************************************************************************
@@ -481,7 +480,7 @@ namespace elastica {
       template <typename PluginsTypeList, typename F>
       inline decltype(auto) for_each_system(F func) const noexcept {
         (void)for_each_block<as_blocks<PluginsTypeList>>(
-            ::blocks::apply_over_slice_adapter(std::ref(func)));
+            ::blocks::for_each_slice_adapter(std::ref(func)));
         return func;
       }
       //************************************************************************
