@@ -24,6 +24,7 @@
 // include implementations now
 #include "Systems/Block/Block/Block.hpp"
 #include "Systems/Block/Block/BlockFacade.hpp"
+#include "Systems/Block/Block/BlockIterator.hpp"
 #include "Systems/Block/Block/BlockSlice.hpp"
 #include "Systems/Block/Block/DisplayVariables.hpp"
 // Variable implementations
@@ -79,13 +80,75 @@ namespace blocks {
   //****************************************************************************
 
   //****************************************************************************
+  /*!\brief Get a random access iterator to the start of the block
+   * \ingroup blocks
+   */
+  template <typename Plugin>
+  inline auto begin(Block<Plugin>& block) noexcept -> BlockIterator<Plugin> {
+    return BlockIterator<Plugin>(&block, 0UL);
+  };
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Get a random access iterator to the end of the block
+   * \ingroup blocks
+   */
+  template <typename Plugin>
+  inline auto end(Block<Plugin>& block) noexcept -> BlockIterator<Plugin> {
+    return BlockIterator<Plugin>(&block, n_units(block));
+  };
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Get a random access const iterator to the start of the block
+   * \ingroup blocks
+   */
+  template <typename Plugin>
+  inline auto cbegin(Block<Plugin> const& block) noexcept
+      -> ConstBlockIterator<Plugin> {
+    return ConstBlockIterator<Plugin>(&block, 0UL);
+  };
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Get a random access const iterator to the end of the block
+   * \ingroup blocks
+   */
+  template <typename Plugin>
+  inline auto cend(Block<Plugin> const& block) noexcept
+      -> ConstBlockIterator<Plugin> {
+    return ConstBlockIterator<Plugin>(&block, n_units(block));
+  };
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Get a random access const iterator to the start of the block
+   * \ingroup blocks
+   */
+  template <typename Plugin>
+  inline auto begin(Block<Plugin> const& block) noexcept {
+    return cbegin(block);
+  };
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Get a random access const iterator to the end of the block
+   * \ingroup blocks
+   */
+  template <typename Plugin>
+  inline auto end(Block<Plugin> const& block) noexcept {
+    return cend(block);
+  };
+  //****************************************************************************
+
+  //****************************************************************************
   /*!\brief Adapt a function to be applied over slices instead of blocks
    * \ingroup blocks
    *
    * \details
-   * Given a callable `func`, adapt it so that it can be applied on a slice-wise
-   * basis rather than a blockwise basis. This proves useful for iteration in
-   * the ::elastica::modules::Systems module of Simulator.
+   * Given a callable `func`, adapt it so that it can be applied on a
+   * slice-wise basis rather than a blockwise basis. This proves useful for
+   * iteration in the ::elastica::modules::Systems module of Simulator.
    *
    * \usage
    * \code
@@ -99,15 +162,9 @@ namespace blocks {
    */
   template <typename F>
   constexpr auto for_each_slice_adapter(F func) noexcept {
-    return [func = std::move(func)](auto& system_block) /*mutable*/ -> void {
-      using ::blocks::n_units;
-      const std::size_t cardinality = n_units(system_block);
-      // iteration within a block is always serial
-      for (std::size_t idx = 0UL; idx < cardinality; ++idx)
-        // block[] returns not a "tagged" rod but the rod itself. So overloading
-        // based on tags do not work as expected
-        // so use slice() instead, which doesn't have this problem
-        func(blocks::slice(system_block, idx));
+    return [func = std::move(func)](auto& block) /*mutable*/ -> void {
+      for (auto slice : block)
+        func(slice);
     };
   }
   //****************************************************************************

@@ -10,6 +10,7 @@ elastica_target_headers(
         AsVariables.hpp
         Block.hpp
         BlockFacade.hpp
+        BlockIterator.hpp
         BlockSlice.hpp
         DisplayVariables.hpp
         Protocols.hpp

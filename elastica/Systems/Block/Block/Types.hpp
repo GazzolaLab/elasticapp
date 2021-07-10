@@ -38,6 +38,11 @@ namespace blocks {
   template <typename /*Plugin*/>
   class BlockFacade;
 
+  template <typename /*Plugin*/>
+  class BlockIterator;
+
+  template <typename /*Plugin*/>
+  class ConstBlockIterator;
   /*! \endcond */
   //****************************************************************************
 

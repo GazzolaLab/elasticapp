@@ -1,0 +1,593 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Iterators for Blocks
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
+#pragma once
+
+//******************************************************************************
+// Includes
+//******************************************************************************
+#include <cstddef>
+#include <iterator>
+#include <limits>
+
+#include "Systems/Block/Block/TypeTraits.hpp"
+#include "Systems/Block/Block/Types.hpp"
+//
+
+namespace blocks {
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  // forward declarations of the slice() function for iteraton
+  // in blockFacade::slice()
+  template <typename Plugin, typename Index>
+  inline constexpr decltype(auto) slice(Block<Plugin>& block_like, Index index);
+  template <typename Plugin, typename Index>
+  inline constexpr decltype(auto) slice(Block<Plugin> const& block_like,
+                                        Index index);
+  /*! \endcond */
+  //****************************************************************************
+
+  //============================================================================
+  //
+  //  CLASS DEFINITION
+  //
+  //============================================================================
+
+  //****************************************************************************
+  /*!\brief Implementation of a iterator for blocks.
+   * \ingroup blocks
+   *
+   * The BlockIterator represents a generic random-access iterator that can be
+   * used for all block types in \elastica
+   */
+  template <typename Plugin>
+  struct BlockIterator {
+   private:
+    //**Type definitions********************************************************
+    using ParentBlock = Block<Plugin>;
+    //**************************************************************************
+
+   public:
+    //**Type definitions********************************************************
+    //! The iterator category.
+    using IteratorCategory = std::random_access_iterator_tag;
+    //! Type of the underlying elements.
+    using ValueType =
+        typename PluginFrom<ParentBlock>::template to<BlockSlice>::type;
+    //! Pointer return type.
+    using PointerType = ValueType;
+    //! Reference return type.
+    using ReferenceType = ValueType;
+    //! Difference between two iterators.
+    using DifferenceType = std::size_t;
+
+    // STL iterator requirements
+    //! The iterator category.
+    using iterator_category = IteratorCategory;
+    //! Type of the underlying elements.
+    using value_type = ValueType;
+    //! Pointer return type.
+    using pointer = PointerType;
+    //! Reference return type.
+    using reference = ReferenceType;
+    //! Difference between two iterators.
+    using difference_type = DifferenceType;
+    //**************************************************************************
+
+   public:
+    //**Constructors************************************************************
+    /*!\name Constructors */
+    //@{
+
+    //**************************************************************************
+    /*!\brief Default constructor for the BlockIterator class.
+     */
+    explicit constexpr BlockIterator() noexcept
+        : block_(nullptr), curr_idx_(std::numeric_limits<std::size_t>::max()) {}
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Constructor for the BlockIterator class.
+     *
+     * \param ptr Pointer to the block
+     * \param idx Index of slicing
+     */
+    explicit constexpr BlockIterator(ParentBlock* ptr, std::size_t idx) noexcept
+        : block_(ptr), curr_idx_(idx) {}
+    BlockIterator(const BlockIterator&) = default;
+    //@}
+    //**************************************************************************
+
+    //**Destructor**************************************************************
+    /*!\name Destructor */
+    //@{
+    ~BlockIterator() = default;
+    //@}
+    //**************************************************************************
+
+    //**Assignment operators****************************************************
+    /*!\name Assignment operators */
+    //@{
+
+    //**************************************************************************
+    /*!\brief Addition assignment operator.
+     *
+     * \param inc The increment of the iterator.
+     * \return Reference to the incremented iterator.
+     */
+    constexpr BlockIterator& operator+=(difference_type inc) noexcept {
+      curr_idx_ += inc;
+      return *this;
+    };
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Subtraction assignment operator.
+     *
+     * \param dec The decrement of the iterator.
+     * \return Reference to the decremented iterator.
+     */
+    constexpr BlockIterator& operator-=(difference_type dec) noexcept {
+      // does this by any chance go beyond bounds?
+      curr_idx_ -= dec;
+      return *this;
+    };
+    //**************************************************************************
+
+    BlockIterator& operator=(const BlockIterator&) = default;
+    //@}
+    //**************************************************************************
+
+    //**Increment/decrement operators*******************************************
+    /*!\name Increment/decrement operators */
+    //@{
+
+    //**************************************************************************
+    /*!\brief Pre-increment operator.
+     *
+     * \return Reference to the incremented iterator.
+     */
+    constexpr BlockIterator& operator++() noexcept {
+      ++curr_idx_;
+      return *this;
+    };
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Post-increment operator.
+     *
+     * \return The previous position of the iterator.
+     */
+
+    constexpr const BlockIterator operator++(int) noexcept {
+      return BlockIterator(block_, curr_idx_++);
+    };
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Pre-decrement operator.
+     *
+     * \return Reference to the decremented iterator.
+     */
+    constexpr BlockIterator& operator--() noexcept {
+      --curr_idx_;
+      return *this;
+    };
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Post-decrement operator.
+     *
+     * \return The previous position of the iterator.
+     */
+    constexpr const BlockIterator operator--(int) noexcept {
+      return BlockIterator(block_, curr_idx_--);
+    };
+    //**************************************************************************
+
+    //@}
+    //**************************************************************************
+
+    //**Access operators********************************************************
+    /*!\name Access operators */
+    //@{
+
+    //**************************************************************************
+    /*!\brief Direct access to the underlying slice.
+     *
+     * \param index Access index.
+     * \return Accessed slice.
+     */
+    constexpr ReferenceType operator[](size_t index) const noexcept {
+      return blocks::slice(*block_, curr_idx_ + index);
+    };
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Direct access to the slice at the current iterator position.
+     *
+     * \return Current slice.
+     */
+    constexpr ReferenceType operator*() const noexcept {
+      // block[] returns not a "tagged" rod but the rod itself. So overloading
+      // based on tags do not work as expected
+      // so use slice() instead, which doesn't have this problem
+      return blocks::slice(*block_, curr_idx_);
+    };
+    //@}
+    //**************************************************************************
+
+    //**Utility functions*******************************************************
+    /*!\name Utility functions */
+    //@{
+
+    //**************************************************************************
+    /*!\brief Low-level access to the underlying data of the iterator.
+     *
+     * \return Pointer to the parent block.
+     */
+    constexpr ParentBlock* data() const noexcept { return block_; }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Low-level access to the index of the iterator.
+     *
+     * \return Index into the current slice location
+     */
+    constexpr auto index() const noexcept -> std::size_t { return curr_idx_; }
+    //**************************************************************************
+
+    //@}
+    //**************************************************************************
+
+   private:
+    //**Member variables********************************************************
+    /*!\name Member variables */
+    //@{
+    //! Pointer to the held block.
+    ParentBlock* block_;
+    //! Current slicing index
+    std::size_t curr_idx_;
+    //@}
+    //**************************************************************************
+  };
+  //****************************************************************************
+
+  //============================================================================
+  //
+  //  GLOBAL OPERATORS
+  //
+  //============================================================================
+
+  //****************************************************************************
+  /*!\name BlockIterator operators */
+  //@{
+
+  //****************************************************************************
+  /*!\brief Equality comparison between two BlockIterator objects.
+   *
+   * \param lhs The left-hand side iterator.
+   * \param rhs The right-hand side iterator.
+   * \return \a true if the iterators refer to the same element, \a false if
+   * not.
+   */
+  template <typename Plugin>
+  constexpr inline bool operator==(const BlockIterator<Plugin>& lhs,
+                                   const BlockIterator<Plugin>& rhs) noexcept {
+    return lhs.data() == rhs.data() and lhs.index() == rhs.index();
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief InEquality comparison between two BlockIterator objects.
+   *
+   * \param lhs The left-hand side iterator.
+   * \param rhs The right-hand side iterator.
+   * \return \a true if the iterators don't refer to the same element, \a false
+   * if they do.
+   */
+  template <typename Plugin>
+  constexpr inline bool operator!=(const BlockIterator<Plugin>& lhs,
+                                   const BlockIterator<Plugin>& rhs) noexcept {
+    return lhs.data() != rhs.data() or lhs.index() != rhs.index();
+  }
+  //****************************************************************************
+
+  //@}
+  //****************************************************************************
+
+}  // namespace blocks
+
+namespace blocks {
+
+  //============================================================================
+  //
+  //  CLASS DEFINITION
+  //
+  //============================================================================
+
+  //****************************************************************************
+  /*!\brief Implementation of a iterator for blocks.
+   * \ingroup blocks
+   *
+   * The ConstBlockIterator represents a generic random-access iterator that can
+   * be used for all block types in \elastica
+   */
+  template <typename Plugin>
+  struct ConstBlockIterator {
+   private:
+    //**Type definitions********************************************************
+    using ParentBlock = Block<Plugin>;
+    //**************************************************************************
+
+   public:
+    //**Type definitions********************************************************
+    //! The iterator category.
+    using IteratorCategory = std::random_access_iterator_tag;
+    //! Type of the underlying elements.
+    using ValueType =
+        typename PluginFrom<ParentBlock>::template to<ConstBlockSlice>::type;
+    //! Pointer return type.
+    using PointerType = ValueType;
+    //! Reference return type.
+    using ReferenceType = ValueType;
+    //! Difference between two iterators.
+    using DifferenceType = std::size_t;
+
+    // STL iterator requirements
+    //! The iterator category.
+    using iterator_category = IteratorCategory;
+    //! Type of the underlying elements.
+    using value_type = ValueType;
+    //! Pointer return type.
+    using pointer = PointerType;
+    //! Reference return type.
+    using reference = ReferenceType;
+    //! Difference between two iterators.
+    using difference_type = DifferenceType;
+    //**************************************************************************
+
+   public:
+    //**Constructors************************************************************
+    /*!\name Constructors */
+    //@{
+
+    //**************************************************************************
+    /*!\brief Default constructor for the ConstBlockIterator class.
+     */
+    explicit constexpr ConstBlockIterator() noexcept
+        : block_(nullptr), curr_idx_(std::numeric_limits<std::size_t>::max()) {}
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Constructor for the ConstBlockIterator class.
+     *
+     * \param ptr Pointer to the block
+     * \param idx Index of slicing
+     */
+    explicit constexpr ConstBlockIterator(ParentBlock const* ptr,
+                                          std::size_t idx) noexcept
+        : block_(ptr), curr_idx_(idx) {}
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Conversion constructor from a BlockIterator instance.
+     *
+     * \param it The BlockIterator instance to be copied.
+     */
+    constexpr ConstBlockIterator(BlockIterator<Plugin> const& it) noexcept
+        : block_(it.data()), curr_idx_(it.index()){};
+    //**************************************************************************
+
+    ConstBlockIterator(const ConstBlockIterator&) = default;
+    //@}
+    //**************************************************************************
+
+    //**Destructor**************************************************************
+    /*!\name Destructor */
+    //@{
+    ~ConstBlockIterator() = default;
+    //@}
+    //**************************************************************************
+
+    //**Assignment operators****************************************************
+    /*!\name Assignment operators */
+    //@{
+
+    //**************************************************************************
+    /*!\brief Addition assignment operator.
+     *
+     * \param inc The increment of the iterator.
+     * \return Reference to the incremented iterator.
+     */
+    constexpr ConstBlockIterator& operator+=(difference_type inc) noexcept {
+      curr_idx_ += inc;
+      return *this;
+    };
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Subtraction assignment operator.
+     *
+     * \param dec The decrement of the iterator.
+     * \return Reference to the decremented iterator.
+     */
+    constexpr ConstBlockIterator& operator-=(difference_type dec) noexcept {
+      // does this by any chance go beyond bounds?
+      curr_idx_ -= dec;
+      return *this;
+    };
+    //**************************************************************************
+
+    ConstBlockIterator& operator=(const ConstBlockIterator&) = default;
+    //@}
+    //**************************************************************************
+
+    //**Increment/decrement operators*******************************************
+    /*!\name Increment/decrement operators */
+    //@{
+
+    //**************************************************************************
+    /*!\brief Pre-increment operator.
+     *
+     * \return Reference to the incremented iterator.
+     */
+    constexpr ConstBlockIterator& operator++() noexcept {
+      ++curr_idx_;
+      return *this;
+    };
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Post-increment operator.
+     *
+     * \return The previous position of the iterator.
+     */
+    constexpr const ConstBlockIterator operator++(int) noexcept {
+      return ConstBlockIterator(block_, curr_idx_++);
+    };
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Pre-decrement operator.
+     *
+     * \return Reference to the decremented iterator.
+     */
+    constexpr ConstBlockIterator& operator--() noexcept {
+      --curr_idx_;
+      return *this;
+    };
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Post-decrement operator.
+     *
+     * \return The previous position of the iterator.
+     */
+    constexpr const ConstBlockIterator operator--(int) noexcept {
+      return ConstBlockIterator(block_, curr_idx_--);
+    };
+    //**************************************************************************
+
+    //@}
+    //**************************************************************************
+
+    //**Access operators********************************************************
+    /*!\name Access operators */
+    //@{
+
+    //**************************************************************************
+    /*!\brief Direct access to the underlying slice.
+     *
+     * \param index Access index.
+     * \return Accessed slice.
+     */
+    constexpr ReferenceType operator[](size_t index) const noexcept {
+      return blocks::slice(*block_, curr_idx_ + index);
+    };
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Direct access to the slice at the current iterator position.
+     *
+     * \return Current slice.
+     */
+    constexpr ReferenceType operator*() const noexcept {
+      return blocks::slice(*block_, curr_idx_);
+    };
+    //@}
+    //**************************************************************************
+
+    //**Utility functions*******************************************************
+    /*!\name Utility functions */
+    //@{
+
+    //**************************************************************************
+    /*!\brief Low-level access to the underlying data of the iterator.
+     *
+     * \return Pointer to the parent block.
+     */
+    constexpr ParentBlock const* data() const noexcept { return block_; }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Low-level access to the index of the iterator.
+     *
+     * \return Index into the current slice location
+     */
+    constexpr auto index() const noexcept -> std::size_t { return curr_idx_; }
+    //**************************************************************************
+
+    //@}
+    //**************************************************************************
+
+   private:
+    //**Member variables********************************************************
+    /*!\name Member variables */
+    //@{
+    //! Pointer to the held (const) block.
+    ParentBlock const* block_;
+    //! Current slicing index
+    std::size_t curr_idx_;
+    //@}
+    //**************************************************************************
+  };
+  //****************************************************************************
+
+  //============================================================================
+  //
+  //  GLOBAL OPERATORS
+  //
+  //============================================================================
+
+  //****************************************************************************
+  /*!\name ConstBlockIterator operators */
+  //@{
+
+  //****************************************************************************
+  /*!\brief Equality comparison between two ConstBlockIterator objects.
+   *
+   * \param lhs The left-hand side iterator.
+   * \param rhs The right-hand side iterator.
+   * \return \a true if the iterators refer to the same element, \a false if
+   * not.
+   */
+  template <typename Plugin>
+  constexpr inline bool operator==(
+      const ConstBlockIterator<Plugin>& lhs,
+      const ConstBlockIterator<Plugin>& rhs) noexcept {
+    return lhs.data() == rhs.data() and lhs.index() == rhs.index();
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief InEquality comparison between two ConstBlockIterator objects.
+   *
+   * \param lhs The left-hand side iterator.
+   * \param rhs The right-hand side iterator.
+   * \return \a true if the iterators don't refer to the same element, \a false
+   * if they do.
+   */
+  template <typename Plugin>
+  constexpr inline bool operator!=(
+      const ConstBlockIterator<Plugin>& lhs,
+      const ConstBlockIterator<Plugin>& rhs) noexcept {
+    return lhs.data() != rhs.data() or lhs.index() != rhs.index();
+  }
+  //****************************************************************************
+
+  //@}
+  //****************************************************************************
+
+}  // namespace blocks
