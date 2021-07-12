@@ -2,13 +2,20 @@
 
 set(LIBRARY Time)
 
-add_elastica_library(${LIBRARY} INTERFACE)
+add_elastica_library(${LIBRARY})
 
 #add_subdirectory(Algebra)
 #add_subdirectory(Stepper)
 add_subdirectory(Helpers)
 add_subdirectory(SymplecticSteppers)
 add_subdirectory(Protocols)
+
+elastica_target_sources(
+        ${LIBRARY}
+        PRIVATE
+        SimulationTime.cpp
+        TimeStepId.cpp
+)
 
 elastica_target_headers(
         ${LIBRARY}
@@ -18,6 +25,7 @@ elastica_target_headers(
         Helpers.hpp
         integrate.hpp
         SimulationTime.hpp
+        TimeStepID.hpp
         StepperTags.hpp
         SymplecticSteppers.hpp
         Tags.hpp

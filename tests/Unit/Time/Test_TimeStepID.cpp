@@ -1,0 +1,113 @@
+//
+// Created by Tejaswin Parthasarathy on 7/12/21.
+//
+
+///
+#include "Framework/TestingFramework.hpp"
+///
+#include "Time/TimeStepID.hpp"
+
+namespace {
+  using ::elastica::TimeStepID;
+
+  ELASTICA_TEST_CASE("Unit.Time.TimeStepID.constructor", "[Unit][Time]") {
+    TimeStepID time_step(1UL);
+    CHECK(time_step.step() == 0UL);
+    CHECK(time_step.substep() == 0U);
+  }
+
+  ELASTICA_TEST_CASE("Unit.Time.TimeStepID.pre_increment", "[Unit][Time]") {
+    TimeStepID time_step(2UL);
+    CHECK(time_step.step() == 0UL);
+    CHECK(time_step.substep() == 0U);
+    ++time_step;
+    CHECK(time_step.step() == 0UL);
+    CHECK(time_step.substep() == 1U);
+    ++time_step;
+    CHECK(time_step.step() == 1UL);
+    CHECK(time_step.substep() == 0U);
+  }
+
+  ELASTICA_TEST_CASE("Unit.Time.TimeStepID.post_increment", "[Unit][Time]") {
+    TimeStepID time_step(2UL);
+    CHECK(time_step.step() == 0UL);
+    CHECK(time_step.substep() == 0U);
+
+    auto another_time_step = time_step++;
+    CHECK(time_step.step() == 0UL);
+    CHECK(time_step.substep() == 1U);
+    CHECK(another_time_step.step() == 0UL);
+    CHECK(another_time_step.substep() == 0U);
+
+    auto yet_another_time_step = time_step++;
+    CHECK(time_step.step() == 1UL);
+    CHECK(time_step.substep() == 0U);
+    CHECK(another_time_step.step() == 0UL);
+    CHECK(another_time_step.substep() == 0U);
+    CHECK(yet_another_time_step.step() == 0UL);
+    CHECK(yet_another_time_step.substep() == 1U);
+  }
+
+  ELASTICA_TEST_CASE("Unit.Time.TimeStepID.pre_decrement", "[Unit][Time]") {
+    TimeStepID time_step(2UL);
+    ++time_step;
+    ++time_step;
+    ++time_step;
+    CHECK(time_step.step() == 1UL);
+    CHECK(time_step.substep() == 1U);
+
+    --time_step;
+    CHECK(time_step.step() == 1UL);
+    CHECK(time_step.substep() == 0U);
+    --time_step;
+    CHECK(time_step.step() == 0UL);
+    CHECK(time_step.substep() == 1U);
+    --time_step;
+    CHECK(time_step.step() == 0UL);
+    CHECK(time_step.substep() == 0U);
+  }
+
+  ELASTICA_TEST_CASE("Unit.Time.TimeStepID.post_decrement", "[Unit][Time]") {
+    TimeStepID time_step(3UL);
+    ++time_step;
+    ++time_step;
+    ++time_step;
+    ++time_step;
+    CHECK(time_step.step() == 1UL);
+    CHECK(time_step.substep() == 1U);
+
+    time_step--;
+    CHECK(time_step.step() == 1UL);
+    CHECK(time_step.substep() == 0U);
+    time_step--;
+    CHECK(time_step.step() == 0UL);
+    CHECK(time_step.substep() == 2U);
+    time_step--;
+    CHECK(time_step.step() == 0UL);
+    CHECK(time_step.substep() == 1U);
+  }
+
+  ELASTICA_TEST_CASE("Unit.Time.TimeStepID.logical", "[Unit][Time]") {
+    TimeStepID time_step(3UL);
+    ++time_step;
+    ++time_step;
+    ++time_step;
+
+    TimeStepID another_time_step(3UL);
+    ++another_time_step;
+    ++another_time_step;
+
+    CHECK(time_step != another_time_step);
+
+    CHECK(another_time_step < time_step);
+    CHECK(another_time_step <= time_step);
+
+    CHECK(time_step > another_time_step);
+    CHECK(time_step >= another_time_step);
+
+    CHECK(time_step == ++another_time_step);
+    CHECK(another_time_step <= time_step);
+    CHECK(time_step >= another_time_step);
+  }
+
+}  // namespace

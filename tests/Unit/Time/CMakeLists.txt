@@ -6,6 +6,7 @@ set(LIBRARY "Test_Time")
 
 set(LIBRARY_SOURCES
         Test_SimulationTime.cpp
+        Test_TimeStepID.cpp
         Test_TypeTraits.cpp
         )
 

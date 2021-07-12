@@ -23,7 +23,7 @@
 
 namespace elastica {
 
-  namespace impl { // document, so don't use detail
+  namespace impl {  // document, so don't use detail
 
     //**************************************************************************
     /*! \cond ELASTICA_INTERNAL */
@@ -34,7 +34,13 @@ namespace elastica {
     /*! \endcond */
     //**************************************************************************
 
-  }  // namespace detail
+  }  // namespace impl
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  class TimeStepID;
+  /*! \endcond */
+  //****************************************************************************
 
   //****************************************************************************
   /*!\brief The simulation time used in \elastica
