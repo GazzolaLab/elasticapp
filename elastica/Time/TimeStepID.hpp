@@ -19,6 +19,8 @@
 
 #include <cstdint>
 #include <iosfwd>
+
+#include "Time/Types.hpp"
 /// Serialization support
 #include "Simulator/IO/Serialization/Types.hpp"
 

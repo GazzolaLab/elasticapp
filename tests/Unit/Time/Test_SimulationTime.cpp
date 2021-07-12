@@ -2,11 +2,13 @@
 // Created by Tejaswin Parthasarathy on 5/25/21.
 //
 
-///
-#include "Framework/TestingFramework.hpp"
-///
+//
 #include "Framework/TestHelpers.hpp"
+#include "Framework/TestingFramework.hpp"
+//
+#include "Time/Serialize.hpp"
 #include "Time/SimulationTime.hpp"
+//
 #include "Utilities/IgnoreUnused.hpp"
 
 namespace {

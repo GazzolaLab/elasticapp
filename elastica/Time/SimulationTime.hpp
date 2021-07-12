@@ -20,8 +20,10 @@
 #include <limits>
 #include <ostream>
 
-#include "Simulator/IO/Serialization/Serialize.hpp"
 #include "Time/Types.hpp"
+/// Serialization support
+#include "Simulator/IO/Serialization/Types.hpp"
+//
 #include "Utilities/Approx.hpp"
 
 namespace elastica {
@@ -533,57 +535,5 @@ namespace elastica {
     //**************************************************************************
 
   }  // namespace impl
-
-  namespace io {
-
-    //**************************************************************************
-    /*! \cond ELASTICA_INTERNAL */
-    /*!\brief Specialization of Serialize template for SimulationTime
-     * \ingroup time
-     *
-     * \tparam Real Value type of time
-     */
-    template <typename Real>
-    struct Serialize<::elastica::impl::SimulationTime<Real>> {
-      using type = ::elastica::impl::SimulationTime<Real>;
-
-      template <typename InArchive>
-      static inline void load(InArchive& ar, type& time) {
-        ar(time.value());
-      }
-
-      template <typename InArchive>
-      static inline void save(InArchive& ar, type const& time) {
-        ar(time.value());
-      }
-    };
-    /*! \endcond */
-    //**************************************************************************
-
-    //**************************************************************************
-    /*! \cond ELASTICA_INTERNAL */
-    /*!\brief Specialization of Serialize template for SimulationTimeDelta
-     * \ingroup time
-     *
-     * \tparam Real Value type of time
-     */
-    template <typename Real>
-    struct Serialize<::elastica::impl::SimulationTimeDelta<Real>> {
-      using type = ::elastica::impl::SimulationTimeDelta<Real>;
-
-      template <typename InArchive>
-      static inline void load(InArchive& ar, type& time_delta) {
-        ar(time_delta.value());
-      }
-
-      template <typename InArchive>
-      static inline void save(InArchive& ar, type const& time_delta) {
-        ar(time_delta.value());
-      }
-    };
-    /*! \endcond */
-    //**************************************************************************
-
-  }  // namespace io
 
 }  // namespace elastica
