@@ -104,7 +104,7 @@ namespace elastica {
       //************************************************************************
 
       //************************************************************************
-      /*!\brief Explicit converstion operator to the underlying time
+      /*!\brief Explicit conversion operator to the underlying time
        */
       explicit inline constexpr operator Real() const noexcept {
         return value();
@@ -116,8 +116,8 @@ namespace elastica {
       //**Increment/decrement operators*****************************************
       /*!\name Increment/decrement operators */
       //@{
-      SimulationTime& operator+=(const TimeDelta& delta) noexcept;
-      SimulationTime& operator-=(const TimeDelta& delta) noexcept;
+      SimulationTime& operator+=(const TimeDelta& inc) noexcept;
+      SimulationTime& operator-=(const TimeDelta& dec) noexcept;
       //@}
       //************************************************************************
 
@@ -216,7 +216,7 @@ namespace elastica {
       //************************************************************************
 
       //************************************************************************
-      /*!\brief Explicit converstion operator to the underlying time
+      /*!\brief Explicit conversion operator to the underlying time
        */
       explicit inline constexpr operator Real() const noexcept {
         return value();
