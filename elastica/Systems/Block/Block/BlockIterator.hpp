@@ -169,7 +169,6 @@ namespace blocks {
      *
      * \return The previous position of the iterator.
      */
-
     constexpr const BlockIterator operator++(int) noexcept {
       return BlockIterator(block_, curr_idx_++);
     };
