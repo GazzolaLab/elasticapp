@@ -93,6 +93,12 @@ namespace elastica {
     SubStep substep() const noexcept { return substep_; }
     //**************************************************************************
 
+    //**************************************************************************
+    /*!\brief Access to the step threshold
+     */
+    SubStep step_threshold() const noexcept { return to_step_threshold; }
+    //**************************************************************************
+
     //@}
     //**************************************************************************
 
@@ -179,11 +185,11 @@ namespace elastica {
     /*!\name Member variables */
     //@{
     //! Count of step
-    std::uint64_t step_{0};
+    Step step_{0};
     //! Count of substep
-    std::uint8_t substep_{0};
+    SubStep substep_{0};
     //! Threshold
-    std::uint8_t to_step_threshold;
+    SubStep to_step_threshold;
     //@}
     //**************************************************************************
   };

@@ -25,10 +25,11 @@ elastica_target_headers(
         Helpers.hpp
         integrate.hpp
         SimulationTime.hpp
-        TimeStepID.hpp
+        Serialize.hpp
         StepperTags.hpp
         SymplecticSteppers.hpp
         Tags.hpp
+        TimeStepID.hpp
         Types.hpp
         TypeTraits.hpp
 )
