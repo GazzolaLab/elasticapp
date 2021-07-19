@@ -1,9 +1,9 @@
 # Elastica++
 
-[![](https://img.shields.io/badge/c%2B%2B-14-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization)
+[![](https://img.shields.io/badge/c%2B%2B-14-blue.svg)](https://en.wikipedia.org/wiki/CollisionConfi%2B%2B#Standardization)
 [![](https://img.shields.io/badge/license-MIT-blue.svg)]()
 
-Efficiently simulation soft-filaments on devices from your laptop to supercomputing clusters.
+*Efficiently simulate soft-filaments on devices from your laptop to supercomputing clusters.*
 
 [Add project logo.]
 
@@ -98,12 +98,16 @@ The project is similar to the [PitchFork Layout], as follows:
 
 - .github - GitHub specific settings
 - build - Ephemeral out-of-source build directory
+- contrib - Contribution and code guidelines
 - cmake - Cmake configurations
 - docs - Documentation
 - external - Includes submodules of external projects (none so far, all using [vcpkg])
 - scripts - Build, test, and run scripts
 - elastica - Header and Source files
 - tests - Unit tests
+
+Each folder within the source code has a brief README explaining the layout for that
+subsystem.
 
 ### Pre-Requisites<a id="sec-3-1"></a>
 
@@ -141,9 +145,10 @@ project.
       take care of it.
 2. **Request a feature**
     - You can also request for a feature [[][here]], and if it will viable, it will be picked for development.
-3. **Create a merge request**
-    - It can&rsquo;t get better then this, your pull request will be appreciated by the community. You can get started
-      by picking up any open issues from [[][here]] and make a pull request.
+3. **Create a pull request**
+    - It can&rsquo;t get better then this, your pull request (PR) will be appreciated by the community. You can get
+      started by picking up any open issues from [[][here]] and make a pull request. The steps to create a PR are
+      detailed [here](#PR).
 
 ### Branches<a id="sec-4-2"></a>
 
@@ -155,19 +160,13 @@ project.
 
 3. No further branches should be created in the main repository.
 
-**Steps to create a merge request**
+**Steps to create a pull request<a id="PR"></a>**
 
 1. Make a PR to `master` branch.
-2. Comply with the best practices and guidelines e.g. where the PR concerns visual elements it should have an image
-   showing the effect.
-3. It must pass all continuous integration checks and get positive reviews.
+2. Please comply with best practices and guidelines, found in the contribution guidelines [here](contrib/README.md).
+3. It must pass all continuous integration checks and get positive reviews. 
 
 After this, changes will be merged.
-
-### Guideline<a id="sec-4-3"></a>
-
-coding guidelines or other things you want people to follow should follow.
-
 
 [CMake]: https://www.cmake.org
 
