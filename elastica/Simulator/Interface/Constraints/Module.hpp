@@ -271,12 +271,11 @@ namespace elastica {
 
           // 2. if so, good create a constraint object, append and return to
           // user ConstraintType constraint_ =
-          // std::make_unique<ConstraintImpl>(idx); Do not use make_unique here
-          // because Constraints' constructor is protected by design
+          // std::make_unique<ConstraintImpl>(idx);
           using CONSTrainT = ::elastica::interface::constraints::Constraint<
               System, ConstraintsRegistrars>;
-          constraints_.push_back(ConstraintID(
-              new CONSTrainT(n_total_constraints, system, std::move(name))));
+          constraints_.emplace_back(std::make_unique<CONSTrainT>(
+              n_total_constraints, system, std::move(name)));
         } catch (const std::exception& e) {
           abort_with_backtrace(e);
         }

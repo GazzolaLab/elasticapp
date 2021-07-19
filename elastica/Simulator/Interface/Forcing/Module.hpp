@@ -260,13 +260,12 @@ namespace elastica {
 
           // 2. if so, good create a forcing object, append and return to user
           // ForcingType forcing_ = std::make_unique<ForcingImpl>(idx);
-          // Do not use make_unique here because Constraints' constructor is
-          // protected by design
           using FORcing =
               ::elastica::interface::forcing::Forcing<System,
                                                       ForcingRegistrars>;
-          forcing_.push_back(
-              ForcingID(new FORcing(n_total_forcing, system, std::move(name))));
+          forcing_.emplace_back(std::make_unique<FORcing>(
+              n_total_forcing, system, std::move(name)));
+
         } catch (const std::exception& e) {
           abort_with_backtrace(e);
         }

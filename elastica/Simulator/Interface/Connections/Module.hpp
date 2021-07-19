@@ -149,12 +149,12 @@ namespace elastica {
       //**Type definitions******************************************************
       //! Type of simulation time
       using TimeType = typename SimTraits::TimeType;  // public for protocols
-      //! ID Type of constraint applicator
+      //! ID Type of connection applicator
       using ConnecterID =
           std::unique_ptr<::elastica::interface::connections::ConnecterBase>;
-      //! Type of constraint registrars
+      //! Type of connection registrars
       using ConnectionsRegistrars = typename SimTraits::ConnectionsRegistrars;
-      //! ID Type of constraints
+      //! ID Type of connections
       using ConnectionID =
           std::unique_ptr<::elastica::interface::connections::ConnectionBase<
               ConnectionsRegistrars>>;
@@ -306,7 +306,7 @@ namespace elastica {
        *
        * \param first_system The first system to be connected
        * \param second_system The second system to be connected
-       * \param name An optional name for the constrain, useful for debugging
+       * \param name An optional name for the connection, useful for debugging
        * \exception std::runtime_error If `first_system` and `second_system`
        * are not registered in the simulator
        * \return Mutable reference to a
@@ -332,19 +332,16 @@ namespace elastica {
           -> ::elastica::interface::connections::Connection<
               FirstSystem, SecondSystem, ConnectionsRegistrars>& {
         try {
-
           // 1. See if connections are possible between the systems
           check_if_systems_can_be_connected(first_system, second_system);
 
           // 2. if so, good create a connection object, append and return to
           // user
-          // Do not use make_unique here because Connection's constructor is
-          // protected by design
           using Connexion = ::elastica::interface::connections::Connection<
               FirstSystem, SecondSystem, ConnectionsRegistrars>;
-          connections_.push_back(
-              ConnectionID(new Connexion(n_total_connections, first_system,
-                                         second_system, std::move(name))));
+          connections_.emplace_back(
+              std::make_unique<Connexion>(n_total_connections, first_system,
+                                          second_system, std::move(name)));
 
         } catch (const std::exception& e) {
           abort_with_backtrace(e);
@@ -592,7 +589,7 @@ namespace elastica {
          *   \endcode
          * Notice that there is an attempt to connect the rods, yet actual
          * connection information is not received. The simulator thinks they
-         * have constrained, and tries to access the connection generator.
+         * have connected, and tries to access the connection generator.
          * Unfortunately its a nullptr which upon dereferencing results in a
          * segfault
          */
@@ -685,8 +682,8 @@ Did you give the right indices using the at() method?
           connecters_.reserve(n_total_connections);
           std::transform(connections_.cbegin(), connections_.cend(),
                          std::back_inserter(connecters_),
-                         [](const ConnectionID& constraint) {
-                           return constraint->finalize();
+                         [](const ConnectionID& connection) {
+                           return connection->finalize();
                          });
         } catch (...) {
           const char* error_message =
@@ -698,18 +695,18 @@ Did you give the right indices using the at() method?
         connections_.clear();
         connections_.shrink_to_fit();
 
-        // to be safe, constrain initially
+        // to be safe, connect initially
         apply_connections(time_v);
       }
       //************************************************************************
 
      private:
       //**Member variables******************************************************
-      //! The total number of registered constraints
+      //! The total number of registered connections
       SizeType n_total_connections;
-      //! The temporary constraint information before finalizing
+      //! The temporary connection information before finalizing
       std::vector<ConnectionID> connections_;
-      //! The constraint information applied on runtime
+      //! The connection information applied on runtime
       std::vector<ConnecterID> connecters_;
       //************************************************************************
     };
@@ -718,4 +715,3 @@ Did you give the right indices using the at() method?
   }  // namespace modules
 
 }  // namespace elastica
-
