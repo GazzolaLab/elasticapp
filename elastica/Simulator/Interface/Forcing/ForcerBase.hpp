@@ -112,6 +112,12 @@ namespace elastica {
         //**********************************************************************
 
         //**********************************************************************
+        /*!\brief Gets a handle to the stored forcing with its type erased
+         */
+        virtual void* get_forcing_unsafe() noexcept = 0;
+        //**********************************************************************
+
+        //**********************************************************************
         /*!\brief Force both translational and rotation DOFs simultaneously
          *
          * \param time_v The current time of simulation

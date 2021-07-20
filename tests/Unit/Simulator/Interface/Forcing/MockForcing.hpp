@@ -39,6 +39,10 @@ namespace mock {
     using Parent::id;
     void apply_forces(TimeType) const noexcept override { i += 2; }
     void apply_torques(TimeType) const noexcept override { --i; }
+    void* get_forcing_unsafe() noexcept final {
+      return nullptr;
+    }
+
     int value() const { return i; };
 
    private:

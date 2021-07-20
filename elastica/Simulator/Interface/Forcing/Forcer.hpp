@@ -161,6 +161,14 @@ namespace elastica {
         };
         //**********************************************************************
 
+        //**********************************************************************
+        /*!\brief Gets a handle to the stored forcing with its type erased
+         */
+        void* get_forcing_unsafe() noexcept final {
+          return &forcing_;
+        }
+        //**********************************************************************
+
         //@}
         //**********************************************************************
 
@@ -273,6 +281,14 @@ namespace elastica {
         virtual void apply_torques(TimeType time_v) const noexcept final {
           apply_torques_implementation(time_v);
         };
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Gets a handle to the stored forcing with its type erased
+         */
+        void* get_forcing_unsafe() noexcept final {
+          return forcing_.get();
+        }
         //**********************************************************************
 
         //@}
