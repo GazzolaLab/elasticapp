@@ -100,6 +100,12 @@ namespace elastica {
      * \snippet Constraints/Test_Module.cpp constrain_eg_no_curry
      * \snippet Constraints/Test_Module.cpp constrain_eg_with_name
      *
+     * It is useful to get a handle back to the constraint to manipulate/record
+     * it later on in the client script. For this purpose, after completing the
+     * constraint, one gets a key which can be used to retrieve the constraint
+     * after finalizing the simulator. This is shown below:
+     * \snippet Constraints/Test_Module.cpp query_eg
+     *
      * \see ::elastica::make_simulator()
      */
     template <class SimTraits, class Sim>
@@ -285,6 +291,71 @@ namespace elastica {
 
         return static_cast<::elastica::interface::constraints::Constraint<
             System, ConstraintsRegistrars>&>(*(constraints_.back()));
+      }
+      //************************************************************************
+
+     protected:
+      //************************************************************************
+      /*! \cond ELASTICA_INTERNAL */
+      /*!\brief Retrieval of a constrainer from a unique key
+       *
+       * \param constraint_uuid The key using which we retrieve the constraints
+       */
+      inline auto retrieve_from_query(IndexType constraint_uuid) noexcept ->
+      typename ConstrainerID::pointer {
+        /*
+         * dev note:
+         * 1. the retrieval is noexcept as by construction the
+         * constraint uuid here is < size of array.
+         * 2. if we batch the logic here changes and we need to do a search.
+         */
+        return constrainers_[constraint_uuid].get();
+      }
+      /*! \endcond */
+      //************************************************************************
+
+     public:
+      //************************************************************************
+      /*!\brief Query the simulator for a created constraint
+       *
+       * \details
+       * query() is the interface for querying for constraints created within a
+       * \elastica simulation. It takes as input the key generated from the
+       * constrain() hierarchy and returns the constraint that it corresponds to.
+       * This is useful if you want to manipulate the constraints (such as for
+       * storing some temporal data) using the events mechanism of \elastica.
+       *
+       * It should be noted that a successful query can only be completed after
+       * finalizing the simulator and no additional constraints can be
+       * launched). Failure to finalize() results in a runtime error.
+       *
+       * \param query_key The key of the query generated from the constrain()
+       * process
+       * \exception Nested exception if failed to query
+       *
+       * \example
+       * For the setup of systems shown below...
+       * \snippet Constraints/Test_Module.cpp constrain_setup
+       * and after completing the constraint, one gets a key which can be used
+       * to retrieve the constraint object after finalizing
+       * \snippet Constraints/Test_Module.cpp query_eg
+       */
+      template <typename ConstraintType>
+      inline auto query(
+          ::elastica::interface::constraints::ConstraintQueryID<ConstraintType>
+          query_key) -> ConstraintType& {
+        using ::elastica::interface::detail::id;  // from include in query
+        const char* error_message =
+            "Attempts to query a constraint failed because ";
+        try {
+          this->self().check_if_final();
+        } catch (...) {
+          std::throw_with_nested(std::runtime_error(error_message));
+        }
+
+        // convert a void ptr to a ConstraintType* and then dereference it
+        return *static_cast<ConstraintType*>((
+            This::retrieve_from_query(id(query_key))->get_constraint_unsafe()));
       }
       //************************************************************************
 

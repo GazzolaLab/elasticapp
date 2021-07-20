@@ -363,6 +363,8 @@ constraints::Constraint?
           record_name_of<ConcreteConstraint>();
 
           try {
+            // https://stackoverflow.com/questions/26831382/capturing-perfectly-forwarded-variable-in-lambda
+            // https://vittorioromeo.info/index/blog/capturing_perfectly_forwarded_objects_in_lambdas.html
             struct {
               ConcreteConstraint bc;
               NumericIndexSet index_set;
@@ -393,7 +395,7 @@ constraints::Constraint?
                   return make_constrainer(
                       typename Parent::UUIDType{unique_id,
                                                 std::move(unique_name)},
-                      // while const-correctness is maintained in Connection,
+                      // while const-correctness is maintained in Constraint,
                       // we need to modify the systems later on, so cast it
                       // away
                       const_cast<System&>(system_),
@@ -453,9 +455,7 @@ constraints::Constraint?
         template <typename ConcreteConstraint, typename IndexSet>
         auto with(ConcreteConstraint&& constraint,
                   IndexSet&& indices) /*noexcept*/
-            -> Constraint& {
-          // https://stackoverflow.com/questions/26831382/capturing-perfectly-forwarded-variable-in-lambda
-          // https://vittorioromeo.info/index/blog/capturing_perfectly_forwarded_objects_in_lambdas.html
+        {
           try {
             unsafe_with(std::forward<ConcreteConstraint>(constraint),
                         std::forward<IndexSet>(indices));
@@ -463,9 +463,10 @@ constraints::Constraint?
             abort_with_backtrace(e);
           }
 
-          // It doesn't seem like a good idea to return a self reference at this
-          // location
-          return *this;
+          // return a key for querying after finalizing
+          using ::elastica::interface::detail::id;
+          return ConstraintQueryID<std::decay_t<ConcreteConstraint>>{
+              id(this->id())};
         }
         //**********************************************************************
 

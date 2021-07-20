@@ -220,6 +220,30 @@ namespace elastica {
         change_with_noop(first_system);
         ++rate_counter;
       }
+
+      std::size_t some_member{23UL};  // not 0
+    };
+
+    ELASTICA_DEFINE_CONSTRAINT(ConstraintWithMember) {
+     public:
+      ConstraintWithMember(int i, char c) : int_member(i), char_member(c){};
+      ConstraintWithMember(ConstraintWithMember && other) noexcept
+          : int_member(other.int_member), char_member(other.char_member){};
+      ~ConstraintWithMember() = default;
+
+      template <typename TimeType, typename System>
+      void constrain_primitives(TimeType /* time */, System& /*first_system*/,
+                                std::size_t /* first_index */
+      ) const {}
+      template <typename TimeType, typename System>
+      void constrain_rates(TimeType /* time */, System& /*first_system*/,
+                           std::size_t /* first_index */
+      ) const {}
+      explicit operator int() const noexcept { return int_member; }
+      explicit operator char() const noexcept { return char_member; }
+
+      int int_member;  // not 0
+      float char_member;
     };
 
   }  // namespace constraints
@@ -313,15 +337,16 @@ namespace {
       System sys{100UL};
       std::string optional_constraint_name = "ExampleConstraint";
       /// [constrain_eg_with_name]
-      // order of with() and at() don't matter
+      // order of with() and at() don't matter but put the with_name()
+      // immediately after launching constrain()
       sim.constrain(sys)
+          .with_name((optional_constraint_name))
           .with(ExampleConstraint{})
-          .at(end - 50UL, 32UL, 64UL)
-          .with_name((optional_constraint_name));
+          .at(end - 50UL, 32UL, 64UL);
       sim.constrain(sys)
+          .with_name(std::move(optional_constraint_name))
           .at(end - 50UL, 32UL, 64UL)
-          .with(ExampleConstraint{})
-          .with_name(std::move(optional_constraint_name));
+          .with(ExampleConstraint{});
       /// [constrain_eg_with_name]
 
       CHECK(sim.n_constraints() == 7UL);
@@ -379,6 +404,109 @@ namespace {
     CHECK_THROWS_NESTED_WITH(sim.finalize(),
                              "Preparing the constraints module failed",
                              "Faults detected ", "listed by their");
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE(
+      "Unit.Simulator.Interface.Constraints.Module.query",
+      "[Unit][Simulator][Interface][Constraints]") {
+    // clang-format on
+    auto sim_config =
+        mock::make_simulator_configuration(DefaultConstraintsConfiguration{});
+    // check cases without an error first.
+    bool arg_all_registered = true;
+    bool is_final = false;
+    auto sim = mock::make_simulator<::mock::ConstraintsModule>(
+        sim_config, arg_all_registered, is_final);
+    CHECK(sim.n_constraints() == 0UL);
+
+    using ::elastica::end;
+    using ::elastica::constraints::ConstraintDefaulted;
+    using ::elastica::interface::at;
+    using ::elastica::interface::pair;
+    using ::mock::MockSystem;
+    using ExampleConstraint = ConstraintDefaulted<>;
+    {
+      using System = MockSystem;
+
+      // same setup as earlier
+      // is a physical system, e.g. CosseratRod, with 100 degrees of freedom
+      System sys{100UL};
+      std::string optional_constraint_name = "MyConstraint";
+
+      /// [query_eg]
+      auto my_constraint_key =
+          sim.constrain(sys, optional_constraint_name)
+              .with<ExampleConstraint>(/* ExampleConstraint arguments*/)
+              .at(end - 2UL, end - 1UL);
+
+      sim.finalize();
+
+      auto& my_constraint = sim.query(my_constraint_key);
+      // you can now access member data of `my_constraint`
+      /// [query_eg]
+
+      CHECK(my_constraint.some_member == 23UL);
+    }
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE(
+      "Unit.Simulator.Interface.Constraints.Module.query_for_multiple",
+      "[Unit][Simulator][Interface][Constraints]") {
+    // clang-format on
+    auto sim_config =
+        mock::make_simulator_configuration(DefaultConstraintsConfiguration{});
+    // check cases without an error first.
+    bool arg_all_registered = true;
+    bool is_final = false;
+    auto sim = mock::make_simulator<::mock::ConstraintsModule>(
+        sim_config, arg_all_registered, is_final);
+    CHECK(sim.n_constraints() == 0UL);
+
+    using ::elastica::end;
+    using ::elastica::constraints::ConstraintDefaulted;
+    using ::elastica::constraints::ConstraintWithMember;
+    using ::elastica::interface::at;
+    using ::elastica::interface::pair;
+    using ::mock::MockSystem;
+    {
+      using System = MockSystem;
+      using ExampleConstraint = ConstraintDefaulted<>;
+
+      // same setup as earlier
+      // is a physical system, e.g. CosseratRod, with 100 degrees of freedom
+      System sys{100UL};
+      std::string optional_constraint_name = "MyConstraint";
+      auto first_constraint_key =
+          sim.constrain(sys, optional_constraint_name)
+              .with<ExampleConstraint>(/* ExampleConstraint arguments*/)
+              .at(end - 2UL, end - 1UL);
+      auto second_constraint_key = sim.constrain(sys, optional_constraint_name)
+                                       .with<ConstraintWithMember<>>(32, 'a')
+                                       .at(1UL);
+      auto third_constraint_key =
+          sim.constrain(sys, optional_constraint_name)
+              .with<ExampleConstraint>(/* ExampleConstraint arguments*/)
+              .at(end - 2UL, end - 1UL);
+      auto fourth_constraint_key = sim.constrain(sys, optional_constraint_name)
+                                       .with<ConstraintWithMember<>>(42, 'd')
+                                       .at(5UL);
+
+      sim.finalize();
+      auto& first_constraint = sim.query(first_constraint_key);
+      auto& third_constraint = sim.query(third_constraint_key);
+
+      CHECK(first_constraint.some_member == 23UL);
+      CHECK(third_constraint.some_member == 23UL);
+
+      auto& second_constraint = sim.query(second_constraint_key);
+      auto& fourth_constraint = sim.query(fourth_constraint_key);
+      CHECK(int(second_constraint) == 32);
+      CHECK(char(second_constraint) == 'a');
+      CHECK(int(fourth_constraint) == 42);
+      CHECK(char(fourth_constraint) == 'd');
+    }
   }
 
   // clang-format off
