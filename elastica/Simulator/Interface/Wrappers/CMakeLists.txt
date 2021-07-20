@@ -5,6 +5,7 @@ elastica_target_headers(
         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
         HEADERS
         AtWrapper.hpp
+        QueryID.hpp
         Serialize.hpp
         ToWrapper.hpp
         UUID.hpp

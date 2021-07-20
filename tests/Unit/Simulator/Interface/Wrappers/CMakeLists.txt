@@ -6,6 +6,7 @@ set(LIBRARY "Test_Interface_Wrappers")
 set(LIBRARY_SOURCES
         Test_WithWrapper.cpp
         Test_AtWrapper.cpp
+        Test_QueryID.cpp
         Test_UUID.cpp
         Test_Serialize.cpp
         Test_ToWrapper.cpp
