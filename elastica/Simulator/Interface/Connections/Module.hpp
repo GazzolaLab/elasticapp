@@ -113,6 +113,12 @@ namespace elastica {
      * \snippet Connections/Test_Module.cpp connect_at_end_idx_eg
      * \snippet Connections/Test_Module.cpp connect_at_end_idx_eg_curry
      *
+     * It is useful to get a handle back to the connection to manipulate/record
+     * it later on in the client script. For this purpose, after completing the
+     * connection, one gets a key which can be used to retrieve the connection
+     * after finalizing the simulator. This is shown below:
+     * \snippet Connections/Test_Module.cpp query_eg
+     *
      * \see ::elastica::make_simulator()
      */
     template <class SimTraits, class Sim>
