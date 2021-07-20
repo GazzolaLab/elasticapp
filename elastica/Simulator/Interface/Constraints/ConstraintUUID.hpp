@@ -21,6 +21,7 @@
 
 #include "Simulator/Interface/Constraints/Types.hpp"
 #include "Simulator/Interface/Wrappers/UUID.hpp"
+#include "Simulator/Interface/Wrappers/QueryID.hpp"
 
 namespace elastica {
 
@@ -46,7 +47,7 @@ namespace elastica {
       // \details
       // Unique tag parameter for UUID
       */
-      struct ConstraintUUIDTag;
+      struct ConstraintIDTag;
       /*! \endcond */
       //************************************************************************
 
@@ -58,9 +59,9 @@ namespace elastica {
       // ConstraintID is a helper class to uniquely identify a constraint
       */
       struct ConstraintUUID
-          : public ::elastica::interface::detail::UUID<ConstraintUUIDTag> {
+          : public ::elastica::interface::detail::UUID<ConstraintIDTag> {
         //**Type definitions****************************************************
-        using Parent = ::elastica::interface::detail::UUID<ConstraintUUIDTag>;
+        using Parent = ::elastica::interface::detail::UUID<ConstraintIDTag>;
         //**********************************************************************
 
         //**Constructors********************************************************
@@ -68,6 +69,33 @@ namespace elastica {
         //@{
         using Parent::Parent;
         using Parent::operator=;
+        //@}
+        //**********************************************************************
+      };
+      /*! \endcond */
+      //************************************************************************
+
+      //************************************************************************
+      /*! \cond ELASTICA_INTERNAL */
+      /*!\brief Constraint ID
+       * \ingroup connections
+       *
+       * \details
+       * ConstraintID is a helper class to uniquely identify a connection
+       */
+      template <typename Type_>
+      struct ConstraintQueryID
+          : public ::elastica::interface::detail::QueryID<ConstraintIDTag,
+                                                          Type_> {
+        //**Type definitions****************************************************
+        using Parent =
+            ::elastica::interface::detail::QueryID<ConstraintIDTag, Type_>;
+        //**********************************************************************
+
+        //**Constructors********************************************************
+        /*!\name Constructors */
+        //@{
+        using Parent::Parent;
         //@}
         //**********************************************************************
       };
