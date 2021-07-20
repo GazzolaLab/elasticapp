@@ -42,6 +42,10 @@ namespace mock {
     using Parent::id;
     void constrain_primitives(TimeType) const noexcept override { i += 2; }
     void constrain_rates(TimeType) const noexcept override { --i; }
+    void* get_constraint_unsafe() noexcept override {
+      // imma play with fire.
+      return nullptr;
+    }
     int value() const { return i; };
 
    private:

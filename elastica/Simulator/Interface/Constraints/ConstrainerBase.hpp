@@ -115,6 +115,12 @@ namespace elastica {
         //**********************************************************************
 
         //**********************************************************************
+        /*!\brief Gets a handle to the stored constraint its type erased
+         */
+        virtual void* get_constraint_unsafe() noexcept = 0;
+        //**********************************************************************
+
+        //**********************************************************************
         /*!\brief Constrain both primitives and rates simultaneously
          *
          * \param time_v The current time of simulation

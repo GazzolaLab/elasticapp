@@ -217,6 +217,14 @@ namespace elastica {
         }
         //**********************************************************************
 
+        //**********************************************************************
+        /*!\brief Gets a handle to the stored constraint its type erased
+         */
+        void* get_constraint_unsafe() noexcept final {
+          return &constraint_;
+        }
+        //**********************************************************************
+
         //@}
         //**********************************************************************
 
@@ -338,6 +346,14 @@ namespace elastica {
         void constrain_rates(TimeType time_v) const noexcept final {
           constraint_->constrain_rates_internal(time_v, sys_, indices_->data(),
                                                 indices_->size());
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Gets a handle to the stored constraint its type erased
+         */
+        void* get_constraint_unsafe() noexcept final {
+          return constraint_.get();
         }
         //**********************************************************************
 
