@@ -146,7 +146,7 @@ namespace elastica {
        *
        * \param lhs The left-hand side uuid.
        * \param rhs The right-hand side uuid.
-       * \return \a true if the uuids are same, else \a false
+       * \return \a true if the uuids are not the same, else \a false
        */
       template <class ParameterTag>
       bool operator!=(UUID<ParameterTag> const& lhs,
