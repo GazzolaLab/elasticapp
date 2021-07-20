@@ -542,8 +542,8 @@ namespace elastica {
        *
        * \param connection_uuid The key using which we retrieve the connections
        */
-      inline auto retrieve_from_query(IndexType connection_uuid) noexcept ->
-          typename ConnecterID::pointer {
+      inline auto retrieve_from_query(IndexType const connection_uuid) noexcept
+          -> typename ConnecterID::pointer {
         /*
          * dev note:
          * 1. the retrieval is noexcept as by construction the
@@ -582,9 +582,8 @@ namespace elastica {
        * \snippet Connections/Test_Module.cpp query_eg
        */
       template <typename ConnectionType>
-      inline auto query(
-          ::elastica::interface::connections::ConnectionQueryID<ConnectionType>
-              query_key) -> ConnectionType& {
+      inline auto query(::elastica::interface::connections::ConnectionQueryID<
+                        ConnectionType> const query_key) -> ConnectionType& {
         using ::elastica::interface::detail::id;  // from include in query
         const char* error_message =
             "Attempts to query a connection failed because ";

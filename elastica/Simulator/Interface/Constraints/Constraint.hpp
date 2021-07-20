@@ -453,8 +453,8 @@ constraints::Constraint?
          * \see #unsafe_with() for implementation details
          */
         template <typename ConcreteConstraint, typename IndexSet>
-        auto with(ConcreteConstraint&& constraint,
-                  IndexSet&& indices) /*noexcept*/
+        decltype(auto) with(ConcreteConstraint&& constraint,
+                            IndexSet&& indices) /*noexcept*/
         {
           try {
             unsafe_with(std::forward<ConcreteConstraint>(constraint),
@@ -465,8 +465,8 @@ constraints::Constraint?
 
           // return a key for querying after finalizing
           using ::elastica::interface::detail::id;
-          return ConstraintQueryID<std::decay_t<ConcreteConstraint>>{
-              id(this->id())};
+          using RT = const ConstraintQueryID<std::decay_t<ConcreteConstraint>>;
+          return RT{id(this->id())};
         }
         //**********************************************************************
 

@@ -484,8 +484,8 @@ connections::Connection?
          * \see #unsafe_with() for implementation details
          */
         template <typename ConcreteConnection, typename IndexPair>
-        auto with(ConcreteConnection&& connection,
-                  IndexPair&& index_pair) /*noexcept*/
+        decltype(auto) with(ConcreteConnection&& connection,
+                            IndexPair&& index_pair) /*noexcept*/
         {
           try {
             unsafe_with(std::forward<ConcreteConnection>(connection),
@@ -496,8 +496,8 @@ connections::Connection?
 
           // retrun a key for querying after finalizing
           using ::elastica::interface::detail::id;
-          return ConnectionQueryID<std::decay_t<ConcreteConnection>>{
-              id(this->id())};
+          using RT = const ConnectionQueryID<std::decay_t<ConcreteConnection>>;
+          return RT{id(this->id())};
         }
         //**********************************************************************
 

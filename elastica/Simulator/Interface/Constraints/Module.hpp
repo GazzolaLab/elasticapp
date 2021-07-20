@@ -301,8 +301,8 @@ namespace elastica {
        *
        * \param constraint_uuid The key using which we retrieve the constraints
        */
-      inline auto retrieve_from_query(IndexType constraint_uuid) noexcept ->
-      typename ConstrainerID::pointer {
+      inline auto retrieve_from_query(IndexType const constraint_uuid) noexcept
+          -> typename ConstrainerID::pointer {
         /*
          * dev note:
          * 1. the retrieval is noexcept as by construction the
@@ -321,9 +321,10 @@ namespace elastica {
        * \details
        * query() is the interface for querying for constraints created within a
        * \elastica simulation. It takes as input the key generated from the
-       * constrain() hierarchy and returns the constraint that it corresponds to.
-       * This is useful if you want to manipulate the constraints (such as for
-       * storing some temporal data) using the events mechanism of \elastica.
+       * constrain() hierarchy and returns the constraint that it corresponds
+       * to. This is useful if you want to manipulate the constraints (such as
+       * for storing some temporal data) using the events mechanism of
+       * \elastica.
        *
        * It should be noted that a successful query can only be completed after
        * finalizing the simulator and no additional constraints can be
@@ -341,9 +342,8 @@ namespace elastica {
        * \snippet Constraints/Test_Module.cpp query_eg
        */
       template <typename ConstraintType>
-      inline auto query(
-          ::elastica::interface::constraints::ConstraintQueryID<ConstraintType>
-          query_key) -> ConstraintType& {
+      inline auto query(::elastica::interface::constraints::ConstraintQueryID<
+                        ConstraintType> const query_key) -> ConstraintType& {
         using ::elastica::interface::detail::id;  // from include in query
         const char* error_message =
             "Attempts to query a constraint failed because ";
