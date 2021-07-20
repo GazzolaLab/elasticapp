@@ -427,6 +427,22 @@ reorganizing your code logic.
       }
       //************************************************************************
 
+      //************************************************************************
+      /*!\brief Throw if simulation is not yet finalized
+       *
+       * \throws logic_error if simulation is not already finalized
+       */
+      auto check_if_final() const -> void {
+        const char* error_message = R"error(
+The simulator has not yet been finalized, yet you are trying to access constant
+parameters! Please ensure that access of Simulator occurs after finalize() is called by
+reorganizing your code logic.
+)error";
+        if (not ready())
+          throw std::logic_error(error_message);
+      }
+      //************************************************************************
+
      public:
       //**ready method**********************************************************
       /*!\brief Is the simulation ready for integration?
@@ -722,4 +738,3 @@ reorganizing your code logic.
   }  // namespace interface
 
 }  // namespace elastica
-
