@@ -20,6 +20,7 @@
 #include <utility>
 
 #include "Simulator/Interface/Connections/Types.hpp"
+#include "Simulator/Interface/Wrappers/QueryID.hpp"
 #include "Simulator/Interface/Wrappers/UUID.hpp"
 
 namespace elastica {
@@ -46,7 +47,7 @@ namespace elastica {
        * \details
        * Unique tag parameter for UUID
        */
-      struct ConnectionUUIDTag;
+      struct ConnectionIDTag;
       /*! \endcond */
       //************************************************************************
 
@@ -59,9 +60,9 @@ namespace elastica {
        * ConnectionID is a helper class to uniquely identify a connection
        */
       struct ConnectionUUID
-          : public ::elastica::interface::detail::UUID<ConnectionUUIDTag> {
+          : public ::elastica::interface::detail::UUID<ConnectionIDTag> {
         //**Type definitions****************************************************
-        using Parent = ::elastica::interface::detail::UUID<ConnectionUUIDTag>;
+        using Parent = ::elastica::interface::detail::UUID<ConnectionIDTag>;
         //**********************************************************************
 
         //**Constructors********************************************************
@@ -69,6 +70,33 @@ namespace elastica {
         //@{
         using Parent::Parent;
         using Parent::operator=;
+        //@}
+        //**********************************************************************
+      };
+      /*! \endcond */
+      //************************************************************************
+
+      //************************************************************************
+      /*! \cond ELASTICA_INTERNAL */
+      /*!\brief Connection ID
+       * \ingroup connections
+       *
+       * \details
+       * ConnectionID is a helper class to uniquely identify a connection
+       */
+      template <typename Type_>
+      struct ConnectionQueryID
+          : public ::elastica::interface::detail::QueryID<ConnectionIDTag,
+                                                          Type_> {
+        //**Type definitions****************************************************
+        using Parent =
+            ::elastica::interface::detail::QueryID<ConnectionIDTag, Type_>;
+        //**********************************************************************
+
+        //**Constructors********************************************************
+        /*!\name Constructors */
+        //@{
+        using Parent::Parent;
         //@}
         //**********************************************************************
       };

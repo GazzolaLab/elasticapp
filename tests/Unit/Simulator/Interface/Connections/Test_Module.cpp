@@ -54,7 +54,7 @@ namespace {
 
     static_assert(
         ::tt::assert_conforms_to<decltype(sim),
-            ::elastica::interface::protocols::Connections>,
+                                 ::elastica::interface::protocols::Connections>,
         "Meta failure");
   }
 
@@ -251,6 +251,9 @@ namespace elastica {
         change_with_noop(first_system, second_system);
         ++torque_counter;
       }
+
+     public:
+      std::size_t some_member{23UL}; // not zero!
     };
 
   }  // namespace connections
@@ -405,61 +408,61 @@ namespace {
       std::string optional_connection_name = "ExampleConnection";
 
       /// [connect_to_eg]
-      // order of with() and at() don't matter
+      // order of with(), at(), with_name() don't matter
       // but to() should follow connect() for readability
       sim.connect(fs)
           .to(ss)
+          .with_name(optional_connection_name)  // can be skipped
           .with<ExampleConnection>(/* ExampleConnection arguments*/)
-          .at(pair(1UL, 2UL))
-          .with_name(optional_connection_name);  // can be skipped
+          .at(pair(1UL, 2UL));
       sim.connect(fs)
           .to(ss)
+          .with_name(optional_connection_name)  // can be skipped
           .at(pair(end - 7UL, 9UL))
-          .with<ExampleConnection>(/* ExampleConnection arguments*/)
-          .with_name(optional_connection_name);  // can be skipped
+          .with<ExampleConnection>(/* ExampleConnection arguments*/);
       /// [connect_to_eg]
 
       CHECK(sim.n_connections() == 14UL);
 
       sim.connect(fs)
           .to(ss)
+          .with_name(optional_connection_name)  // can be skipped
           .at(pair(9UL, end - 7UL))
-          .with<ExampleConnection>(/* ExampleConnection arguments*/)
-          .with_name(optional_connection_name);  // can be skipped
+          .with<ExampleConnection>(/* ExampleConnection arguments*/);
       CHECK(sim.n_connections() == 15UL);
 
       sim.connect(fs)
           .to(ss)
+          .with_name(optional_connection_name)  // can be skipped
           .at(pair(end - 82UL, end - 7UL))
-          .with<ExampleConnection>(/* ExampleConnection arguments*/)
-          .with_name(optional_connection_name);  // can be skipped
+          .with<ExampleConnection>(/* ExampleConnection arguments*/);
       CHECK(sim.n_connections() == 16UL);
 
       /// [connect_to_eg_no_curry]
       sim.connect(fs)  //
           .to(ss)
-          .with(ExampleConnection{}, at(pair(1UL, 2UL)))
-          .with_name(optional_connection_name);  // can be skipped
+          .with_name(optional_connection_name)  // can be skipped
+          .with(ExampleConnection{}, at(pair(1UL, 2UL)));
       /// [connect_to_eg_no_curry]
 
       CHECK(sim.n_connections() == 17UL);
 
       sim.connect(fs)  //
           .to(ss)
-          .with(ExampleConnection{}, at(pair(end - 1UL, 2UL)))
-          .with_name(optional_connection_name);  // can be skipped
+          .with_name(optional_connection_name)  // can be skipped
+          .with(ExampleConnection{}, at(pair(end - 1UL, 2UL)));
       CHECK(sim.n_connections() == 18UL);
 
       sim.connect(fs)  //
           .to(ss)
-          .with(ExampleConnection{}, at(pair(5UL, end - 11UL)))
-          .with_name(optional_connection_name);  // can be skipped
+          .with_name(optional_connection_name)  // can be skipped
+          .with(ExampleConnection{}, at(pair(5UL, end - 11UL)));
       CHECK(sim.n_connections() == 19UL);
 
       sim.connect(fs)  //
           .to(ss)
-          .with(ExampleConnection{}, at(pair(end - 51UL, end - 11UL)))
-          .with_name(optional_connection_name);  // can be skipped
+          .with_name(optional_connection_name)  // can be skipped
+          .with(ExampleConnection{}, at(pair(end - 51UL, end - 11UL)));
       CHECK(sim.n_connections() == 20UL);
 
       /// [connect_to_eg_curry]
@@ -467,22 +470,22 @@ namespace {
       // but to() should follow connect() for readability
       sim.connect(fs)  //
           .to(ss)
+          .with_name(optional_connection_name)  // can be skipped
           .with(ExampleConnection{})
-          .at(pair(1UL, 2UL))
-          .with_name(optional_connection_name);  // can be skipped
-      sim.connect(fs)                            //
+          .at(pair(1UL, 2UL));
+      sim.connect(fs)  //
           .to(ss)
+          .with_name(optional_connection_name)  // can be skipped
           .at(pair(1UL, end - 45UL))
-          .with(ExampleConnection{})
-          .with_name(optional_connection_name);  // can be skipped
+          .with(ExampleConnection{});
       /// [connect_to_eg_curry]
       CHECK(sim.n_connections() == 22UL);
 
       sim.connect(fs)  //
           .to(ss)
+          .with_name(optional_connection_name)  // can be skipped
           .at(pair(end - 6UL, 45UL))
-          .with(ExampleConnection{})
-          .with_name(optional_connection_name);  // can be skipped
+          .with(ExampleConnection{});
       CHECK(sim.n_connections() == 23UL);
 
       sim.connect(fs)  //
@@ -501,8 +504,8 @@ namespace {
       /// [connect_idx_eg]
       sim.connect(fs, 5UL)  //
           .to(ss, 6UL)      //
-          .with<ExampleConnection>(/* ExampleConnection arguments*/)
-          .with_name(optional_connection_name);  // can be skipped
+          .with<ExampleConnection>(/* ExampleConnection arguments*/);
+      // .with_name(optional_connection_name);  // cannot be named for now
       /// [connect_idx_eg]
 
       CHECK(sim.n_connections() == 25UL);
@@ -510,8 +513,8 @@ namespace {
       /// [connect_idx_eg_curry]
       sim.connect(fs, 19UL)    //
           .to(ss, end - 20UL)  //
-          .with(ExampleConnection{})
-          .with_name(optional_connection_name);  // can be skipped
+          .with(ExampleConnection{});
+      // .with_name(optional_connection_name);  // cannot be named for now
       /// [connect_idx_eg_curry]
 
       CHECK(sim.n_connections() == 26UL);
@@ -526,16 +529,16 @@ namespace {
       /// [connect_end_idx_eg]
       sim.connect(fs, end - 5UL)  //
           .to(ss, end - 6UL)      //
-          .with<ExampleConnection>(/* ExampleConnection arguments*/)
-          .with_name(optional_connection_name);  // can be skipped
+          .with<ExampleConnection>(/* ExampleConnection arguments*/);
+      // .with_name(optional_connection_name);  // cannot be named for now
       /// [connect_end_idx_eg]
       CHECK(sim.n_connections() == 27UL);
 
       /// [connect_end_idx_eg_curry]
       sim.connect(fs, end - 5UL)  //
           .to(ss, 6UL)            //
-          .with(ExampleConnection{})
-          .with_name(optional_connection_name);  // can be skipped
+          .with(ExampleConnection{});
+      // .with_name(optional_connection_name);  // cannot be named for now
       /// [connect_end_idx_eg_curry]
       CHECK(sim.n_connections() == 28UL);
     }
@@ -549,8 +552,8 @@ namespace {
       /// [connect_at_idx_eg]
       sim.connect(fs, at(15UL))  //
           .to(ss, at(61UL))      //
-          .with<ExampleConnection>(/* ExampleConnection arguments*/)
-          .with_name(optional_connection_name);  // can be skipped
+          .with<ExampleConnection>(/* ExampleConnection arguments*/);
+      // .with_name(optional_connection_name);  // cannot be named for now
       /// [connect_at_idx_eg]
 
       CHECK(sim.n_connections() == 29UL);
@@ -558,8 +561,8 @@ namespace {
       /// [connect_at_idx_eg_curry]
       sim.connect(fs, at(49UL))    //
           .to(ss, at(end - 25UL))  //
-          .with(ExampleConnection{})
-          .with_name(optional_connection_name);  // can be skipped
+          .with(ExampleConnection{});
+      // .with_name(optional_connection_name);  // cannot be named for now
       /// [connect_at_idx_eg_curry]
 
       CHECK(sim.n_connections() == 30UL);
@@ -574,8 +577,8 @@ namespace {
       /// [connect_at_end_idx_eg]
       sim.connect(fs, at(end - 15UL))  //
           .to(ss, at(end - 61UL))      //
-          .with<ExampleConnection>(/* ExampleConnection arguments*/)
-          .with_name(optional_connection_name);  // can be skipped
+          .with<ExampleConnection>(/* ExampleConnection arguments*/);
+      // .with_name(optional_connection_name);  // cannot be named for now
       /// [connect_at_end_idx_eg]
 
       CHECK(sim.n_connections() == 31UL);
@@ -583,8 +586,8 @@ namespace {
       /// [connect_at_end_idx_eg_curry]
       sim.connect(fs, at(end - 49UL))  //
           .to(ss, at(25UL))            //
-          .with(ExampleConnection{})
-          .with_name(optional_connection_name);  // can be skipped
+          .with(ExampleConnection{});
+      // .with_name(optional_connection_name);  // can be skipped
       /// [connect_at_end_idx_eg_curry]
 
       CHECK(sim.n_connections() == 32UL);
@@ -641,6 +644,57 @@ namespace {
     CHECK_THROWS_NESTED_WITH(sim.finalize(),
                              "Preparing the connections module failed",
                              "Faults detected ", "listed by their");
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE(
+      "Unit.Simulator.Interface.Connections.Module.query",
+      "[Unit][Simulator][Interface][Connections]") {
+    // clang-format on
+    auto sim_config =
+        mock::make_simulator_configuration(DefaultConnectionsConfiguration{});
+    // check cases without an error first.
+    bool arg_all_registered = true;
+    bool is_final = false;
+    auto sim = mock::make_simulator<::mock::ConnectionsModule>(
+        sim_config, arg_all_registered, is_final);
+    CHECK(sim.n_connections() == 0UL);
+
+    using ::elastica::end;
+    using ::elastica::connections::ConnectionDefaulted;
+    using ::elastica::interface::at;
+    using ::elastica::interface::pair;
+    using ::mock::MockSystem;
+    using ExampleConnection = ConnectionDefaulted<>;
+    {
+      using first_system = MockSystem;
+      using second_system = MockSystem;
+
+      // same setup as earlier
+      // is a physical system, e.g. CosseratRod, with 100 degrees of freedom
+      first_system fs{100UL};
+      // is a physical system, e.g. CosseratRod, with 100 degrees of freedom
+      second_system ss{100UL};
+      std::string optional_connection_name = "MyConnection";
+      // ExampleConnection is some elastica::connection satisfying the
+      // connection protocols
+
+      /// [query_eg]
+      auto my_connection_key =
+          sim.connect(fs)
+              .to(ss)
+              .with_name(optional_connection_name)  // can be skipped
+              .with<ExampleConnection>(/* ExampleConnection arguments*/)
+              .at(pair(1UL, 2UL));
+
+      sim.finalize();
+
+      auto& my_connection = sim.query(my_connection_key);
+      // you can now access member data of `my_connection`
+      /// [query_eg]
+
+      CHECK(my_connection.some_member == 23UL);
+    }
   }
 
   // clang-format off

@@ -486,7 +486,7 @@ connections::Connection?
         template <typename ConcreteConnection, typename IndexPair>
         auto with(ConcreteConnection&& connection,
                   IndexPair&& index_pair) /*noexcept*/
-            -> Connection& {
+        {
           try {
             unsafe_with(std::forward<ConcreteConnection>(connection),
                         std::forward<IndexPair>(index_pair));
@@ -494,9 +494,10 @@ connections::Connection?
             abort_with_backtrace(e);
           }
 
-          // It doesn't seem like a good idea to return a self reference at this
-          // location
-          return *this;
+          // retrun a key for querying after finalizing
+          using ::elastica::interface::detail::id;
+          return ConnectionQueryID<std::decay_t<ConcreteConnection>>{
+              id(this->id())};
         }
         //**********************************************************************
 

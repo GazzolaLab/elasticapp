@@ -529,6 +529,71 @@ namespace elastica {
       }
       //************************************************************************
 
+     protected:
+      //************************************************************************
+      /*! \cond ELASTICA_INTERNAL */
+      /*!\brief Retrieval of a connecter from a unique key
+       *
+       * \param connection_uuid The key using which we retrieve the connections
+       */
+      inline auto retrieve_from_query(IndexType connection_uuid) noexcept ->
+          typename ConnecterID::pointer {
+        /*
+         * dev note:
+         * 1. the retrieval is noexcept as by construction the
+         * connection uuid here is < size of array.
+         * 2. if we batch the logic here changes and we need to do a search.
+         */
+        return connecters_[connection_uuid].get();
+      }
+      /*! \endcond */
+      //************************************************************************
+
+     public:
+      //************************************************************************
+      /*!\brief Query the simulator for a created connection
+       *
+       * \details
+       * query() is the interface for querying for connections created within a
+       * \elastica simulation. It takes as input the key generated from the
+       * connect() hierarchy and returns the connection that it corresponds to.
+       * This is useful if you want to manipulate the connections (such as for
+       * storing some temporal data) using the events mechanism of \elastica.
+       *
+       * It should be noted that a successful query can only be completed after
+       * finalizing the simulator (and no additional connections can be
+       * launched). Failure to finalize() results in a runtime error.
+       *
+       * \param query_key The key of the query generated from the connect()
+       * process
+       * \exception Nested exception if failed to query
+       *
+       * \example
+       * For the setup of systems shown below...
+       * \snippet Connections/Test_Module.cpp connect_setup
+       * and after completing the connection, one gets a key which can be used
+       * to retrieve the connection object after finalizing
+       * \snippet Connections/Test_Module.cpp query_eg
+       */
+      template <typename ConnectionType>
+      inline auto query(
+          ::elastica::interface::connections::ConnectionQueryID<ConnectionType>
+              query_key) -> ConnectionType& {
+        using ::elastica::interface::detail::id;  // from include in query
+        const char* error_message =
+            "Attempts to query a connection failed because ";
+        try {
+          this->self().check_if_final();
+        } catch (...) {
+          std::throw_with_nested(std::runtime_error(error_message));
+        }
+
+        // convert a void ptr to a ConnectionType* and then dereference it
+        return *static_cast<ConnectionType*>((
+            This::retrieve_from_query(id(query_key))->get_connection_unsafe()));
+      }
+      //************************************************************************
+
       //************************************************************************
       /*!\brief Apply connections in between systems
        *
