@@ -20,6 +20,7 @@
 #include <utility>
 
 #include "Simulator/Interface/Forcing/Types.hpp"
+#include "Simulator/Interface/Wrappers/QueryID.hpp"
 #include "Simulator/Interface/Wrappers/UUID.hpp"
 
 namespace elastica {
@@ -46,7 +47,7 @@ namespace elastica {
       // \details
       // Unique tag parameter for UUID
       */
-      struct ForcingUUIDTag;
+      struct ForcingIDTag;
       /*! \endcond */
       //************************************************************************
 
@@ -58,9 +59,9 @@ namespace elastica {
       // ForcingID is a helper class to uniquely identify a forcing
       */
       struct ForcingUUID
-          : public ::elastica::interface::detail::UUID<ForcingUUIDTag> {
+          : public ::elastica::interface::detail::UUID<ForcingIDTag> {
         //**Type definitions****************************************************
-        using Parent = ::elastica::interface::detail::UUID<ForcingUUIDTag>;
+        using Parent = ::elastica::interface::detail::UUID<ForcingIDTag>;
         //**********************************************************************
 
         //**Constructors********************************************************
@@ -68,6 +69,32 @@ namespace elastica {
         //@{
         using Parent::Parent;
         using Parent::operator=;
+        //@}
+        //**********************************************************************
+      };
+      /*! \endcond */
+      //************************************************************************
+
+      //************************************************************************
+      /*! \cond ELASTICA_INTERNAL */
+      /*!\brief Forcing ID
+       * \ingroup connections
+       *
+       * \details
+       * ForcingID is a helper class to uniquely identify a connection
+       */
+      template <typename Type_>
+      struct ForcingQueryID
+          : public ::elastica::interface::detail::QueryID<ForcingIDTag, Type_> {
+        //**Type definitions****************************************************
+        using Parent =
+            ::elastica::interface::detail::QueryID<ForcingIDTag, Type_>;
+        //**********************************************************************
+
+        //**Constructors********************************************************
+        /*!\name Constructors */
+        //@{
+        using Parent::Parent;
         //@}
         //**********************************************************************
       };
