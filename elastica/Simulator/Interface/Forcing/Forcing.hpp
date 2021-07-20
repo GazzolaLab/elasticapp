@@ -448,8 +448,9 @@ forcing::Forcing?
          * \see with(), at()
          */
         template <typename ConcreteForcing, typename IndexSet>
-        auto with(ConcreteForcing&& forcing, IndexSet&& indices) /*noexcept*/
-            -> Forcing& {
+        decltype(auto) with(ConcreteForcing&& forcing,
+                            IndexSet&& indices) /*noexcept*/
+        {
           try {
             unsafe_with(std::forward<ConcreteForcing>(forcing),
                         std::forward<IndexSet>(indices));
@@ -457,9 +458,10 @@ forcing::Forcing?
             abort_with_backtrace(e);
           }
 
-          // It doesn't seem like a good idea to return a self reference at this
-          // location
-          return *this;
+          // return a key for querying after finalizing
+          using ::elastica::interface::detail::id;
+          using RT = const ForcingQueryID<std::decay_t<ConcreteForcing>>;
+          return RT{id(this->id())};
         }
         //**********************************************************************
 

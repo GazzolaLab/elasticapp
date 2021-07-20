@@ -99,6 +99,12 @@ namespace elastica {
      * \snippet Forcing/Test_Module.cpp force_eg_no_curry
      * \snippet Forcing/Test_Module.cpp force_eg_with_name
      *
+     * It is useful to get a handle back to the forcing to manipulate/record
+     * it later on in the client script. For this purpose, after completing the
+     * forcing, one gets a key which can be used to retrieve the forcing
+     * after finalizing the simulator. This is shown below:
+     * \snippet Forcing/Test_Module.cpp query_eg
+     *
      * \see ::elastica::make_simulator()
      */
     template <class SimTraits,  // Simulator options
@@ -275,6 +281,71 @@ namespace elastica {
 
         return static_cast<::elastica::interface::forcing::Forcing<
             System, ForcingRegistrars>&>(*(forcing_.back()));
+      }
+      //************************************************************************
+
+     protected:
+      //************************************************************************
+      /*! \cond ELASTICA_INTERNAL */
+      /*!\brief Retrieval of a forcer from a unique key
+       *
+       * \param forcing_uuid The key using which we retrieve the forcings
+       */
+      inline auto retrieve_from_query(IndexType const forcing_uuid) noexcept ->
+          typename ForcerID::pointer {
+        /*
+         * dev note:
+         * 1. the retrieval is noexcept as by construction the
+         * forcing uuid here is < size of array.
+         * 2. if we batch the logic here changes and we need to do a search.
+         */
+        return forcers_[forcing_uuid].get();
+      }
+      /*! \endcond */
+      //************************************************************************
+
+     public:
+      //************************************************************************
+      /*!\brief Query the simulator for a created forcing
+       *
+       * \details
+       * query() is the interface for querying for forcings created within a
+       * \elastica simulation. It takes as input the key generated from the
+       * constrain() hierarchy and returns the forcing that it corresponds to.
+       * This is useful if you want to manipulate the forcings (such as for
+       * storing some temporal data) using the events mechanism of \elastica.
+       *
+       * It should be noted that a successful query can only be completed after
+       * finalizing the simulator and no additional forcings can be
+       * launched). Failure to finalize() results in a runtime error.
+       *
+       * \param query_key The key of the query generated from the constrain()
+       * process
+       * \exception Nested exception if failed to query
+       *
+       * \example
+       * For the setup of systems shown below...
+       * \snippet Forcing/Test_Module.cpp force_setup
+       * and after completing the forcing, one gets a key which can be used
+       * to retrieve the forcing object after finalizing
+       * \snippet Forcing/Test_Module.cpp query_eg
+       */
+      template <typename ForcingType>
+      inline auto query(
+          ::elastica::interface::forcing::ForcingQueryID<ForcingType> const
+              query_key) -> ForcingType& {
+        using ::elastica::interface::detail::id;  // from include in query
+        const char* error_message =
+            "Attempts to query a forcing failed because ";
+        try {
+          this->self().check_if_final();
+        } catch (...) {
+          std::throw_with_nested(std::runtime_error(error_message));
+        }
+
+        // convert a void ptr to a ForcingType* and then dereference it
+        return *static_cast<ForcingType*>(
+            (This::retrieve_from_query(id(query_key))->get_forcing_unsafe()));
       }
       //************************************************************************
 
