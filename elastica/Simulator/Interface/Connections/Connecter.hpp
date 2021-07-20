@@ -228,6 +228,14 @@ namespace elastica {
         };
         //**********************************************************************
 
+        //**********************************************************************
+        /*!\brief Gets a handle to the stored connection its type erased
+         */
+        void* get_connection_unsafe() noexcept final {
+          return &connection_;
+        }
+        //**********************************************************************
+
         //@}
         //**********************************************************************
 
@@ -343,6 +351,14 @@ namespace elastica {
         void apply_torques(TimeType time_v) const noexcept final {
           connection_.apply_torques_internal(time_v, first_sys_, second_sys_);
         };
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Gets a handle to the stored connection its type erased
+         */
+        void* get_connection_unsafe() noexcept final {
+          return &connection_;
+        }
         //**********************************************************************
 
         //@}
@@ -474,6 +490,14 @@ namespace elastica {
           connection_->apply_torques_internal(time_v, first_sys_, first_index(),
                                               second_sys_, second_index());
         };
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Gets a handle to the stored connection its type erased
+         */
+        void* get_connection_unsafe() noexcept final {
+          return connection_.get();
+        }
         //**********************************************************************
 
         //@}

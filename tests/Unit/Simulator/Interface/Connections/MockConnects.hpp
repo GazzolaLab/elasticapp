@@ -13,8 +13,8 @@
 #include "Simulator/Interface/Connections/ExecutionPolicy.hpp"
 #include "Simulator/Interface/Connections/Module.hpp"
 #include "Time/SimulationTime.hpp"
-#include "Utilities/NonCopyable.hpp"
 #include "Utilities/IgnoreUnused.hpp"
+#include "Utilities/NonCopyable.hpp"
 /// seraizlie
 #include "Simulator/Interface/Connections/Serialize.hpp"
 
@@ -41,6 +41,10 @@ namespace mock {
     using Parent::id;
     void apply_forces(TimeType) const noexcept override { i += 2; }
     void apply_torques(TimeType) const noexcept override { --i; }
+    void* get_connection_unsafe() noexcept override {
+      // imma play with fire.
+      return nullptr;
+    }
     int value() const { return i; };
 
    private:
@@ -94,18 +98,17 @@ namespace mock {
   using TestConnection =
       TestConnectionImpl<FirstSystem, SecondSystem, tmpl::list<>>;
 
-
   //////////////////////////////////////////////////////////////////////////////
   // Test of execution policy
   //////////////////////////////////////////////////////////////////////////////
   template <class ConnectionsTraits, class ConnectionsModule>
   class ExecutionPolicy
       : public ::elastica::interface::connections::ExecutionPolicy<
-          ConnectionsTraits, ConnectionsModule> {
+            ConnectionsTraits, ConnectionsModule> {
    private:
     using P =
-    ::elastica::interface::connections::ExecutionPolicy<ConnectionsTraits,
-        ConnectionsModule>;
+        ::elastica::interface::connections::ExecutionPolicy<ConnectionsTraits,
+                                                            ConnectionsModule>;
 
    public:
     using P::ConnectSystemsOp;
@@ -114,7 +117,7 @@ namespace mock {
   template <typename ConnectionsTraits>
   struct SimulatorWithConnections
       : public ExecutionPolicy<ConnectionsTraits,
-          SimulatorWithConnections<ConnectionsTraits>>,
+                               SimulatorWithConnections<ConnectionsTraits>>,
         protected ::elastica::NonCopyable {
     using C = Connecter;
     using Pointer = std::unique_ptr<C>;
@@ -124,7 +127,7 @@ namespace mock {
     SimulatorWithConnections(SimulatorWithConnections&&) noexcept = default;
 
     using Policy = ExecutionPolicy<ConnectionsTraits,
-        SimulatorWithConnections<ConnectionsTraits>>;
+                                   SimulatorWithConnections<ConnectionsTraits>>;
     using Algorithm = typename Policy::ConnectSystems::type;
     // n_con
     std::size_t n_connections() const { return connecters_.size(); }

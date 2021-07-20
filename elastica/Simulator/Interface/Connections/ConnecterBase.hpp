@@ -114,6 +114,12 @@ namespace elastica {
         //**********************************************************************
 
         //**********************************************************************
+        /*!\brief Gets a handle to the stored connection its type erased
+         */
+        virtual void* get_connection_unsafe() noexcept = 0;
+        //**********************************************************************
+
+        //**********************************************************************
         /*!\brief Apply all connection artefacts simultaneously
          *
          * \param time_v The current time of simulation
