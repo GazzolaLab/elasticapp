@@ -94,6 +94,9 @@ int * const
 is a constant pointer to an integer. With our choice of convention one only have to remember that the `const` keyword
 tells something about the token immediately to the left of it.
 
+In case you have written code with west const and want to change it to `elastica++` conventions (east `const`), take 
+a look at [westerly](https://github.com/biasmv/westerly) (needs `python`).
+
 ## Template typename/class keyword
 
 In templates we prefer the keyword `typename` over the keyword `class`.
