@@ -59,7 +59,7 @@ namespace elastica {
          *
          * \tparam CRT A valid Cosserat Rod Traits class
          *
-         * \see CosseratRodCrossSectionInterface, WithSquareCrossSection
+         * \see CosseratRodCrossSectionInterface, WithSquareCosseratRod
          */
         template <typename CRT>
         class SquareCrossSectionOperations {
@@ -144,20 +144,20 @@ namespace elastica {
        * \ingroup cosserat_rod_component
        *
        * \details
-       * WithSquareCrossSection implements the final Geometry component use
+       * WithSquareCosseratRod implements the final Geometry component use
        * within Cosserat rods implemented in the Blocks framework. It denotes a
        * Cosserat rod data-structure with a square cross section in the
        * lateral direction and spanning a single spatial dimension along the
        * transverse dimension.
        *
        * \usage
-       * Since WithSquareCrossSection is a valid and complete Geometry component
+       * Since WithSquareCosseratRod is a valid and complete Geometry component
        * adhering to protocols::Geometry1D, one can use it to declare a
        * CosseratRodPlugin within the @ref blocks framework
        * \code
        * // pre-declare RodTraits, Blocks
        * using CircularCosseratRod = CosseratRodPlugin<RodTraits, Block,
-       * components::WithSquareCrossSection>
+       * components::WithSquareCosseratRod>
        * \endcode
        *
        * \tparam CRT A valid Cosserat Rod Traits class
@@ -167,12 +167,12 @@ namespace elastica {
        * \see CosseratRodPlugin
        */
       template <typename CRT, typename ComputationalBlock>
-      class WithSquareCrossSection
+      class WithSquareCosseratRod
           : public detail::CosseratRodCrossSectionInterface<
                 CRT, ComputationalBlock,
                 detail::SquareCrossSectionOperations<CRT>>,
             public ::tt::ConformsTo<protocols::Geometry1D>,
-            public Component<WithSquareCrossSection<CRT, ComputationalBlock>> {
+            public Component<WithSquareCosseratRod<CRT, ComputationalBlock>> {
        private:
         //**Type definitions****************************************************
         //! Traits type
@@ -180,7 +180,7 @@ namespace elastica {
         //! Cross section type
         using CrossSection = detail::SquareCrossSectionOperations<Traits>;
         //! This type
-        using This = WithSquareCrossSection<Traits, ComputationalBlock>;
+        using This = WithSquareCosseratRod<Traits, ComputationalBlock>;
         //! Parent type
         using Parent =
             detail::CosseratRodCrossSectionInterface<Traits, ComputationalBlock,

@@ -5,7 +5,7 @@
 
 #include "Framework/TestingFramework.hpp"
 // #include "Systems/CosseratRods/Components/Geometry/Protocols.hpp"
-#include "Systems/CosseratRods/Components/Geometry/WithSquareCrossSection.hpp"
+#include "Systems/CosseratRods/Components/Geometry/WithSquareCosseratRod.hpp"
 ///
 #include "Systems/CosseratRods/Mocks.hpp"
 ///
@@ -37,13 +37,13 @@ namespace {
 
   template <typename B>
   class TestGeometry
-      : public WithSquareCrossSection<mock::BasicCosseratRodTraits, B> {
+      : public WithSquareCosseratRod<mock::BasicCosseratRodTraits, B> {
     // The point of this class is to bring
     //    Frame;
     //    DirectionType;
     // into public scope for testing
    public:
-    using Parent = WithSquareCrossSection<mock::BasicCosseratRodTraits, B>;
+    using Parent = WithSquareCosseratRod<mock::BasicCosseratRodTraits, B>;
     using Parent::Parent;
     using typename Parent::ComputedVariables;
     using typename Parent::InitializedVariables;
@@ -66,7 +66,7 @@ namespace {
   //      tt::assert_conforms_to<Plugin,
   //      ::elastica::cosserat_rod::protocols::Shape>, "failure!");
 
-  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.WithSquareCrossSection.data",
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.WithSquareCosseratRod.data",
                      "[Systems][Unit]") {
     Model model{};
 

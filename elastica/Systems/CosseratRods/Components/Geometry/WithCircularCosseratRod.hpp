@@ -64,7 +64,7 @@ namespace elastica {
          *
          * \tparam CRT A valid Cosserat Rod Traits class
          *
-         * \see CosseratRodCrossSectionInterface, WithCircleCrossSection
+         * \see CosseratRodCrossSectionInterface, WithCircularCosseratRod
          */
         template <typename CRT>
         class CircleCrossSectionOperations {
@@ -113,7 +113,7 @@ namespace elastica {
            * \param length Length of the rod
            */
           template <typename Volume, typename Length>
-          static inline decltype(auto) update_dimension(
+          static inline decltype(auto) update_dimension( /* TODO rename: compute_dimension_conserve_volume */
               Volume const& volume, Length const& length) noexcept {
             constexpr auto inv_pi = static_cast<real_type>(M_1_PI);
             return sqrt(inv_pi * volume / length);
@@ -148,20 +148,20 @@ namespace elastica {
        * \ingroup cosserat_rod_component
        *
        * \details
-       * WithCircleCrossSection implements the final Geometry component use
+       * WithCircularCosseratRod implements the final Geometry component use
        * within Cosserat rods implemented in the Blocks framework. It denotes a
        * Cosserat rod data-structure with a circular cross section in the
        * lateral direction and spanning a single spatial dimension along the
        * transverse dimension.
        *
        * \usage
-       * Since WithCircleCrossSection is a valid and complete Geometry component
+       * Since WithCircularCosseratRod is a valid and complete Geometry component
        * adhering to protocols::Geometry1D, one can use it to declare a
        * CosseratRodPlugin within the @ref blocks framework
        * \code
        * // pre-declare RodTraits, Blocks
        * using CircularCosseratRod = CosseratRodPlugin<RodTraits, Block,
-       * components::WithCircleCrossSection>
+       * components::WithCircularCosseratRod>
        * \endcode
        *
        * \tparam CRT A valid Cosserat Rod Traits class
@@ -171,12 +171,12 @@ namespace elastica {
        * \see CosseratRodPlugin
        */
       template <typename CRT, typename ComputationalBlock>
-      class WithCircleCrossSection
+      class WithCircularCosseratRod
           : public detail::CosseratRodCrossSectionInterface<
                 CRT, ComputationalBlock,
                 detail::CircleCrossSectionOperations<CRT>>,
             public ::tt::ConformsTo<protocols::Geometry1D>,
-            public Component<WithCircleCrossSection<CRT, ComputationalBlock>> {
+            public Component<WithCircularCosseratRod<CRT, ComputationalBlock>> {
        private:
         //**Type definitions****************************************************
         //! Traits type
@@ -184,7 +184,7 @@ namespace elastica {
         //! Cross section type
         using CrossSection = detail::CircleCrossSectionOperations<Traits>;
         //! This type
-        using This = WithCircleCrossSection<Traits, ComputationalBlock>;
+        using This = WithCircularCosseratRod<Traits, ComputationalBlock>;
         //! Parent type
         using Parent =
             detail::CosseratRodCrossSectionInterface<Traits, ComputationalBlock,

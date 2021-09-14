@@ -19,7 +19,7 @@ namespace {
   using namespace elastica::cosserat_rod::component::detail;
 
   template <typename B>
-  using TestGeometry = WithCircleCrossSection<mock::BasicCosseratRodTraits, B>;
+  using TestGeometry = WithCircularCosseratRod<mock::BasicCosseratRodTraits, B>;
 
   template <typename B>
   using TestElasticity =

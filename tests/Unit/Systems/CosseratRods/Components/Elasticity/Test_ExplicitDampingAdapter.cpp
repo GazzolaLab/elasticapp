@@ -75,7 +75,7 @@ namespace {
 
   template <typename B>
   using TestGeometry =
-      component::WithCircleCrossSection<mock::BasicCosseratRodTraits, B>;
+      component::WithCircularCosseratRod<mock::BasicCosseratRodTraits, B>;
 
   template <typename B>
   using TestElasticity =

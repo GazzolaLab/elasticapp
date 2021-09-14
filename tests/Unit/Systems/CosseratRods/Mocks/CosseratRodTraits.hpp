@@ -107,9 +107,9 @@ namespace mock {
       // to prevent  error: multiple overloads of 'n_ghosts' instantiate to the
       // same signature 'auto
       // (elastica::cosserat_rod::CosseratRodPlugin<mock::BasicCosseratRodTraits,
-      // DummyBlock, WithCircleCrossSection>::OnNode) noexcept ->
+      // DummyBlock, WithCircularCosseratRod>::OnNode) noexcept ->
       // elastica::cosserat_rod::CosseratRodPlugin<mock::BasicCosseratRodTraits,
-      // DummyBlock, WithCircleCrossSection>::size_type' (aka 'auto
+      // DummyBlock, WithCircularCosseratRod>::size_type' (aka 'auto
       // (mock::PlacementMarker) noexcept -> unsigned long')
       using OnNode = PlacementMarker<0UL>;
       using OnElement = PlacementMarker<1UL>;
