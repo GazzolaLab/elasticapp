@@ -1,6 +1,6 @@
 # Distributed under the MIT License. See LICENSE for details.
 
-add_executable(elastica main.cpp)
+add_executable(elastica main.cpp Utilities/Math/LinalgDetail/BatchOperations.hpp Utilities/Math/Linalg.hpp)
 
 #target_include_directories(elastica PRIVATE DataStructures)
 #target_include_directories(elastica PRIVATE Utilities)
