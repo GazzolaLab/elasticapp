@@ -1,5 +1,5 @@
 //
-// Created by Seung Hyun Kim on 9/15/21.
+// Created by Yashraj Bhosale on 9/15/21.
 //  \file
 //  \brief Linear algebra batch kernels for \elastica.
 //==============================================================================

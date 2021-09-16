@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Utilities/Math/LinalgDetail/BatchOperations.hpp"
+#include "Utilities/Math/LinalgDetail/VectorOperations.hpp"
 #include "Utilities/NonCreatable.hpp"
 
 namespace elastica {

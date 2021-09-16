@@ -34,7 +34,8 @@ namespace elastica{
       //**Type definitions******************************************************
       using DataTrait = TraitsForData;
 
-      using Opration=BlazeOperations<OptimizationLevel::optimized, DataTrait>;
+      using Operation = BlazeOperations<OptimizationLevel::optimized,
+                                        DataTrait>;
       //************************************************************************
     };
     //**************************************************************************
