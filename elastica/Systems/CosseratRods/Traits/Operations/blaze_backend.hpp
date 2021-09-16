@@ -18,6 +18,7 @@
 //******************************************************************************
 #include "Systems/CosseratRods/Traits/Operations/OptimizationLevel.hpp"
 #include "Utilities/NonCreatable.hpp"
+#include "Utilities/Math/Linalg.hpp"
 
 /// Add blaze_backend code here
 
@@ -30,8 +31,9 @@ namespace elastica {
     /*!\brief Rod Operations specialized for blaze data structures
      * \ingroup cosserat_rods
      */
-    template <OptimizationLevel O>
-    struct BlazeOperations;
+    template <OptimizationLevel O, typename TraitsForData>
+    struct BlazeOperations : public NonCreatable{
+    };
     /*! \endcond */
     //**************************************************************************
 
@@ -40,9 +42,20 @@ namespace elastica {
     /*!\brief Specialization for non-optimized routines
      * \ingroup cosserat_rods
      */
-    template <>
-    struct BlazeOperations<OptimizationLevel::basic> : public NonCreatable {
+    template <typename TraitsForData>
+    struct BlazeOperations<OptimizationLevel::basic, TraitsForData> : public NonCreatable {
+      using DataTrait = TraitsForData;
+
       static inline int add(int x, int y) { return x + y; }
+
+      static inline void batch_matvec(typename DataTrait::Vector& matvec_batch,
+                                      typename const DataTrait::Matrix& matrix_batch,
+                                      typename const DataTrait::Vector& vector_batch) {
+        elastica::batch_matvec<DataTrait::Vector,
+                               DataTrait::Matrix,
+                               DataTrait::vector>
+            (matvec_batch, matrix_batch, vector_batch);
+      }
     };
     /*! \endcond */
     //**************************************************************************
@@ -52,8 +65,8 @@ namespace elastica {
     /*!\brief Specialization for optimized routines
      * \ingroup cosserat_rods
      */
-    template <>
-    struct BlazeOperations<OptimizationLevel::optimized> : public NonCreatable {
+    template <typename TraitsForData>
+    struct BlazeOperations<OptimizationLevel::optimized, TraitsForData> : public NonCreatable {
       static inline int add(int x, int y) { return x + y; }
     };
     /*! \endcond */

@@ -21,6 +21,7 @@
 
 // Elastica
 #include "Systems/CosseratRods/Traits/DataTrait.hpp"
+#include "Systems/CosseratRods/Traits/OperationTrait.hpp"
 #include "Systems/CosseratRods/Traits/PlacementTrait.hpp"
 #include "Systems/CosseratRods/Types.hpp"
 //#include "Systems/CosseratRods/Policies/Policies.hpp"
@@ -82,8 +83,7 @@ namespace elastica {
       //! Type of size
       using size_type = typename Place::size_type;
       //! Operations type to act on the data, typically contains kernels
-      using Operations =
-          typename DataType::template Operations<OptimizationLevel::optimized>;
+      using Operations = OperationTrait<TraitsForData>::Operation;
       //************************************************************************
 
       //************************************************************************

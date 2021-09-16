@@ -4,7 +4,7 @@ set(LIBRARY Simulator)
 
 add_subdirectory(Connections)
 add_subdirectory(Constraints)
-add_subdirectory(Environments)
+# add_subdirectory(Environments)
 add_subdirectory(Forcing)
 add_subdirectory(Indexers)
 add_subdirectory(Protocols)

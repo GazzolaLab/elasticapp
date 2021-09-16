@@ -30,8 +30,8 @@
 
 #if defined(ELASTICA_USE_BLAZE)
 #include "DataTraits/blaze_backend/DataTraits.hpp"
-#include "Systems/CosseratRods/Traits/Operations/OptimizationLevel.hpp"
-#include "Systems/CosseratRods/Traits/Operations/blaze_backend.hpp"
+#include "Operations/OptimizationLevel.hpp"
+#include "Operations/blaze_backend.hpp"
 #endif  // ELASTICA_USE_BLAZE
 
 ///
@@ -78,9 +78,6 @@ namespace elastica {
       using Vector = MatrixTag<real_type>;
       //! Type to track matrices on a Cosserat rod, with shape (d, d)
       using Matrix = TensorTag<real_type>;
-      //! Template type for the operations used on the above defined types
-      template <OptimizationLevel OptLevel>
-      using Operations = BlazeOperations<OptLevel>;
       //************************************************************************
     };
     //**************************************************************************
