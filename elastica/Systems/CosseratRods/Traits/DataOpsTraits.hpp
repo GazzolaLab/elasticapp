@@ -21,17 +21,17 @@
 #include "Systems/CosseratRods/Traits/Types.hpp"
 #include "Utilities/DefineTypes.h"
 ///
-#include "Systems/CosseratRods/Traits/DataTraits/Rank.hpp"
+//#include "Systems/CosseratRods/Traits/DataTraits/Rank.hpp"
 // Not used, since we directly use blaze's implementation of a vector
-//#include "Systems/CosseratRods/Traits/DataTraits/ScalarTag.hpp"
+//#include "Systems/CosseratRods/Traits/DataType/ScalarTag.hpp"
 ///
 
 #define ELASTICA_USE_BLAZE 1  // todo : from CMAKE
 
 #if defined(ELASTICA_USE_BLAZE)
-#include "DataTraits/blaze_backend/DataTraits.hpp"
-#include "Operations/OptimizationLevel.hpp"
-#include "Operations/blaze_backend.hpp"
+#include "DataType/BlazeBackend/DataTypeTraits.hpp"
+#include "Operations/BlazeBackend/OpsTraits.hpp"
+#include "Systems/CosseratRods/Traits/Operations/BlazeBackend/OptimizationLevel.hpp"
 #endif  // ELASTICA_USE_BLAZE
 
 ///
@@ -40,9 +40,6 @@
 namespace elastica {
 
   namespace cosserat_rod {
-
-    // Facility to promote ranks, thus doing AoS<->SoA?
-    // independence from actual type used
 
     //==========================================================================
     //
@@ -55,7 +52,7 @@ namespace elastica {
      * \ingroup cosserat_rod
      *
      * \details
-     * DataTrait is the customization point for altering the data-structures to
+     * DataOpsTraits is the customization point for altering the data-structures to
      * be used within the Cosserat rod hierarchy implemented using @ref blocks
      * in \elastica. It defines (domain-specific) types corresponding to a
      * Cosserat rod (such as a matrix, vector etc.), and is intended for use as
@@ -63,7 +60,7 @@ namespace elastica {
      *
      * \see elastica::cosserat_rod::CosseratRodTraits
      */
-    struct DataTrait : private NonCreatable {
+    struct DataOpsTraits : private NonCreatable {
       //**Type definitions******************************************************
       //! Real type
       using real_type = real_t;
@@ -79,9 +76,12 @@ namespace elastica {
       //! Type to track matrices on a Cosserat rod, with shape (d, d)
       using Matrix = TensorTag<real_type>;
       //************************************************************************
+
+      //**Operation definitions*************************************************
+      using OpsTraits = Operations<OptimizationLevel::basic>;
+      //************************************************************************
     };
     //**************************************************************************
 
   }  // namespace cosserat_rod
-
 }  // namespace elastica

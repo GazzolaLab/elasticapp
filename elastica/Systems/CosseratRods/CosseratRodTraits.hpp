@@ -20,8 +20,7 @@
 #include <type_traits>
 
 // Elastica
-#include "Systems/CosseratRods/Traits/DataTrait.hpp"
-#include "Systems/CosseratRods/Traits/OperationTrait.hpp"
+#include "Systems/CosseratRods/Traits/DataOpsTraits.hpp"
 #include "Systems/CosseratRods/Traits/PlacementTrait.hpp"
 #include "Systems/CosseratRods/Types.hpp"
 //#include "Systems/CosseratRods/Policies/Policies.hpp"
@@ -68,12 +67,12 @@ namespace elastica {
      * \tparam TraitsForPlacement Traits controlling the placement of variables
      * \tparam TraitsForAllocation Traits controlling memory allocation
      */
-    template <typename TraitsForData, typename TraitsForPlacement,
+    template <typename TraitsForDataOps, typename TraitsForPlacement,
               typename TraitsForAllocation>
     struct CosseratRodTraits : private NonCreatable {
       //**Type definitions******************************************************
       //! Data type for seamless use in components
-      using DataType = TraitsForData;
+      using DataType = TraitsForDataOps;
       //! Real type
       using real_type = typename DataType::real_type;
       //! Type of index
@@ -83,7 +82,7 @@ namespace elastica {
       //! Type of size
       using size_type = typename Place::size_type;
       //! Operations type to act on the data, typically contains kernels
-      using Operation = OperationTrait<TraitsForData>::Operation;
+      using Operation = typename TraitsForDataOps::OpsTraits;
       //************************************************************************
 
       //************************************************************************
@@ -203,7 +202,7 @@ namespace elastica {
      * \see CosseratRodTraits
      */
     struct DefaultCosseratRodTraits
-        : public CosseratRodTraits<DataTrait, PlacementTrait, void> {};
+        : public CosseratRodTraits<DataOpsTraits, PlacementTrait, void> {};
     //**************************************************************************
 
   }  // namespace cosserat_rod

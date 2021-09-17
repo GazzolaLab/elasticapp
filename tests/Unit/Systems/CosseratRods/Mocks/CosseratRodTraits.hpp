@@ -4,10 +4,11 @@
 
 #pragma once
 
-#include <functional> // ref_wrapper
+#include <functional>  // ref_wrapper
 
 #include "ErrorHandling/Assert.hpp"
 #include "Systems/Block/Block.hpp"
+#include "Systems/CosseratRods/Traits/DataOpsTraits.hpp"  // TODO: Need to be removed
 #include "Systems/CosseratRods/Traits/PlacementTrait.hpp"
 #include "Systems/CosseratRods/Traits/Protocols.hpp"
 #include "Utilities/NonCreatable.hpp"

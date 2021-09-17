@@ -55,7 +55,7 @@ namespace elastica {
        * With the setup shown here
        * \snippet Mocks/CosseratRodTraits.hpp vector_datatrait
        * we ensure conformance as
-       * \snippet DataTraits/Test_Protocols.cpp datatrait_protocol_eg
+       * \snippet DataType/Test_Protocols.cpp datatrait_protocol_eg
        */
       struct DataTrait {
         //**********************************************************************

@@ -21,8 +21,8 @@
 #include "ErrorHandling/Assert.hpp"
 
 // Rank
-#include "Systems/CosseratRods/Traits/DataTraits/Protocols.hpp"
-#include "Systems/CosseratRods/Traits/DataTraits/Rank.hpp"
+#include "Systems/CosseratRods/Traits/DataType/Protocols.hpp"
+#include "Systems/CosseratRods/Traits/DataType/Rank.hpp"
 
 // Tensor types
 #include <blaze/math/AlignmentFlag.h>

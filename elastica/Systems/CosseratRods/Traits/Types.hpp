@@ -25,7 +25,7 @@ namespace elastica {
 
     //************************************************************************
     /*! \cond ELASTICA_INTERNAL */
-    struct DataTrait;
+    struct DataOpsTraits;
     struct PlacementTrait;
     /*! \endcond */
     //************************************************************************

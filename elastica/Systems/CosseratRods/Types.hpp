@@ -28,7 +28,7 @@ namespace elastica {
 
     //**************************************************************************
     /*! \cond ELASTICA_INTERNAL */
-    template <typename /*DataTraits*/, typename /*PlacementTraits*/,
+    template <typename /*DataType*/, typename /*PlacementTraits*/,
               typename /*AllocatorTraits*/>
     struct CosseratRodTraits;
 
