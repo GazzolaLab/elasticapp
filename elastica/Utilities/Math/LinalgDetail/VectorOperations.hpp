@@ -46,6 +46,20 @@ namespace elastica {
         blaze::submatrix(in_matrix, 0UL, 1UL, dimension, n_elems - 1UL) -
         blaze::submatrix(in_matrix, 0UL, 0UL, dimension, n_elems - 1UL);
   }
+  template <typename MT2>  // blaze Matrix expression type 1
+  void difference_kernel(const MT2& in_matrix) {
+    constexpr std::size_t dimension(3UL);
+    assert(in_matrix.rows() == dimension);
+    const std::size_t n_elems = in_matrix.columns();
+    const std::size_t n_nodes = n_elems + 1UL;
+
+    auto out_matrix = blaze::column(in_matrix, 0UL);
+    blaze::column(out_matrix, n_nodes - 1UL) =
+        -blaze::column(in_matrix, n_elems - 1UL);
+    blaze::submatrix(out_matrix, 0UL, 1UL, dimension, n_elems - 1UL) =
+        blaze::submatrix(in_matrix, 0UL, 1UL, dimension, n_elems - 1UL) -
+        blaze::submatrix(in_matrix, 0UL, 0UL, dimension, n_elems - 1UL);
+  }
 
   //**************************************************************************
   /*!\brief Simple 2-point difference rule with zero at end points.

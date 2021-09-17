@@ -206,12 +206,15 @@ namespace elastica {
   //
   // \see fill later?
   */
-  template <typename MT>  // blaze Matrix expression type
-  auto batch_norm(const MT& vector_batch) {
+  template <typename MR, typename MT>  // blaze vector expression type
+  void batch_norm(MR& return_batch, const MT& vector_batch) {
     constexpr std::size_t dimension(3UL);
+    const std::size_t n_elems = vector_batch.columns();
+    assert(return_batch.rows() == dimension);
+    assert(return_batch.columns() == n_elems);
     assert(vector_batch.rows() == dimension);
 
-    return blaze::sqrt(
+    return_batch = blaze::sqrt(
         blaze::sum<blaze::columnwise>(blaze::pow(vector_batch, 2)));
   }
   //**************************************************************************

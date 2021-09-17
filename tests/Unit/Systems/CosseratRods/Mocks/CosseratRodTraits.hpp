@@ -8,7 +8,6 @@
 
 #include "ErrorHandling/Assert.hpp"
 #include "Systems/Block/Block.hpp"
-#include "Systems/CosseratRods/Traits/DataOpsTraits.hpp"  // TODO: Need to be removed
 #include "Systems/CosseratRods/Traits/PlacementTrait.hpp"
 #include "Systems/CosseratRods/Traits/Protocols.hpp"
 #include "Utilities/NonCreatable.hpp"
@@ -87,6 +86,7 @@ namespace mock {
     return static_cast<double>(lhs) == static_cast<double>(rhs);
   }
 
+
 }  // namespace mock
 
 namespace mock {
@@ -116,6 +116,17 @@ namespace mock {
       using OnElement = PlacementMarker<1UL>;
       using OnVoronoi = PlacementMarker<2UL>;
       using OnRod = PlacementMarker<3UL>;
+    };
+
+    struct Operation {
+      template<typename A, typename B>
+      static void voronoi_length(A, B){}
+      template<typename A, typename B>
+      static void difference_kernel(A, B){}
+      template<typename B>
+      static auto difference_kernel(B){return 1UL;}
+      template<typename A, typename B>
+      static void batch_norm(A, B){}
     };
 
     // declare variables

@@ -3,8 +3,8 @@
 //
 
 #include "Framework/TestingFramework.hpp"
-#include "Systems/CosseratRods/Traits/DataTraits/Protocols.hpp"
-#include "Systems/CosseratRods/Traits/DataTraits/blaze_backend/MatrixTag.hpp"
+#include "Systems/CosseratRods/Traits/DataType/Protocols.hpp"
+#include "Systems/CosseratRods/Traits/DataType/BlazeBackend/MatrixTag.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 
 namespace {

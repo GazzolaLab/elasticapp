@@ -63,9 +63,9 @@ namespace elastica {
         return elastica::batch_dot(first_vector_batch, second_vector_batch);
       }
 
-      template<typename V>
-      static auto batch_norm(const V& vector_batch) {
-        return elastica::batch_norm(vector_batch);
+      template<typename VR, typename V>
+      static auto batch_norm(VR& return_batch, const V& vector_batch) {
+        return elastica::batch_norm(return_batch, vector_batch);
       }
 
       //************************************************************************
@@ -74,6 +74,10 @@ namespace elastica {
       static inline void difference_kernel(VR& result_vector,
                                            const V& input_vector){
         elastica::difference_kernel(result_vector, input_vector);
+      }
+      template<typename V>
+      static inline auto difference_kernel(const V& input_vector){
+        return elastica::difference_kernel(input_vector);
       }
 
       template<typename VR, typename V>

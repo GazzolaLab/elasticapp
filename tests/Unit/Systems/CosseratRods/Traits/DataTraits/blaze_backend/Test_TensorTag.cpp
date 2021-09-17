@@ -6,8 +6,8 @@
 //
 
 #include "Framework/TestingFramework.hpp"
-#include "Systems/CosseratRods/Traits/DataTraits/Protocols.hpp"
-#include "Systems/CosseratRods/Traits/DataTraits/blaze_backend/TensorTag.hpp"
+#include "Systems/CosseratRods/Traits/DataType/Protocols.hpp"
+#include "Systems/CosseratRods/Traits/DataType/BlazeBackend/TensorTag.hpp"
 #include "Utilities/Invoke.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
