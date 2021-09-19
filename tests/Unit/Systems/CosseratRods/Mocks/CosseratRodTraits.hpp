@@ -118,15 +118,23 @@ namespace mock {
       using OnRod = PlacementMarker<3UL>;
     };
 
-    struct Operation {
+    struct Operations {
       template<typename A, typename B>
       static void voronoi_length(A, B){}
       template<typename A, typename B>
       static void difference_kernel(A, B){}
       template<typename B>
       static auto difference_kernel(B){return 1UL;}
+      template<typename A, typename B, typename C>
+      static void batch_matvec(A, B, C){}
       template<typename A, typename B>
       static void batch_norm(A, B){}
+      template<typename A, typename B>
+      static void batch_inv_rotate(A, B){}
+      template<typename A>
+      static auto batch_inv_rotate(A){return 1UL;}
+      template<typename A>
+      static void batch_subtract_z_unit(A){}
     };
 
     // declare variables

@@ -1,6 +1,6 @@
 # Distributed under the MIT License. See LICENSE for details.
 
-add_executable(elastica main.cpp Utilities/Math/LinalgDetail/BatchOperations.hpp Utilities/Math/Linalg.hpp Utilities/Math/LinalgDetail/VectorOperations.hpp Systems/CosseratRods/Traits/Operations/BlazeBackend/OpsTraits.hpp Utilities/Math/LinalgDetail/temp.hpp Systems/CosseratRods/Components/Geometry/detail/CircleCrossSectionOperations.hpp)
+add_executable(elastica main.cpp Utilities/Math/BlazeDetail/BlazeLinearAlgebra.hpp Utilities/Math/BlazeDetail/BlazeRotation.hpp Systems/CosseratRods/Traits/Operations/BlazeBackend/OpsTraits.hpp Systems/CosseratRods/Components/Geometry/detail/CircleCrossSectionOperations.hpp Utilities/Math/BlazeDetail/BlazeCalculus.hpp)
 
 #target_include_directories(elastica PRIVATE DataStructures)
 #target_include_directories(elastica PRIVATE Utilities)

@@ -16,6 +16,27 @@ namespace elastica {
   // TODO: Sort out functions and declare in linalg.hpp
 
   //**************************************************************************
+  /*!\brief Vector Diference
+  //
+  // \param[out] output_vector(3, n_elems)
+  // \param[in] input_vector(3, n_elems)
+  //
+  // \return void/None
+  //
+  // \see TODO: fill later?
+  */
+  template<typename V>
+  inline auto difference_kernel(const V& in_vector){
+    constexpr std::size_t dimension(3UL);
+    assert(in_vector.rows() == dimension);
+    const std::size_t n_nodes = in_vector.columns();
+    const std::size_t n_elems = n_nodes - 1UL;
+
+    return blaze::subvector(in_vector, 0UL, 0UL, dimension, n_nodes-1UL) -
+           blaze::subvector(in_vector, 0UL, 1UL, dimension, n_nodes);
+  }
+
+  //**************************************************************************
   /*!\brief Batchwise matrix-vector product.
   //
   // \details
@@ -36,8 +57,8 @@ namespace elastica {
   // \see fill later?
   */
   template <typename MT1,  // blaze Matrix expression type 1
-            typename TT,   // blaze Tensor expression type
-            typename MT2>  // blaze Matrix expression type 2
+      typename TT,   // blaze Tensor expression type
+      typename MT2>  // blaze Matrix expression type 2
   void batch_matvec(MT1& matvec_batch,
                     const TT& matrix_batch,
                     const MT2& vector_batch) {
@@ -173,17 +194,20 @@ namespace elastica {
   //
   // \see fill later?
   */
-  template <typename MT1,  // blaze Matrix expression type 1
+  template <typename MT,
+      typename MT1,  // blaze Matrix expression type 1
       typename MT2>  // blaze Matrix expression type 2
-  auto batch_dot(const MT1& first_vector_batch, const MT2& second_vector_batch) {
+  void batch_dot(MT& return_vector_batch,
+                 const MT1& first_vector_batch,
+                 const MT2& second_vector_batch) {
     constexpr std::size_t dimension(3UL);
     const std::size_t n_elems = first_vector_batch.columns();
     assert(first_vector_batch.rows() == dimension);
     assert(second_vector_batch.rows() == dimension);
     assert(second_vector_batch.columns() == n_elems);
 
-    return blaze::sum<blaze::columnwise>(first_vector_batch %
-                                         second_vector_batch);
+    return_vector_batch = blaze::sum<blaze::columnwise>(first_vector_batch %
+                                                        second_vector_batch);
   }
   //**************************************************************************
 
@@ -214,8 +238,44 @@ namespace elastica {
     assert(return_batch.columns() == n_elems);
     assert(vector_batch.rows() == dimension);
 
-    return_batch = blaze::sqrt(
-        blaze::sum<blaze::columnwise>(blaze::pow(vector_batch, 2)));
+    return_batch =
+        blaze::sqrt(blaze::sum<blaze::columnwise>(blaze::pow(vector_batch, 2)));
+  }
+
+  //**************************************************************************
+  /*!\brief Simple 2-point difference rule with zero at end points.
+  //
+  // \details
+  // Discrete 2-point difference in \elastica of a function f:[a,b]-> R, i.e
+  // D f[a,b] -> df[a,b] where f satisfies the conditions
+  // f(a) = f(b) = 0.0. Operates from rod's elemental space to nodal space.
+  //
+  // \example
+  // The following shows a typical use of the difference kernel
+  // with the expected (correct) result also shown.
+  // \snippet test_calculus.cpp difference_kernel_example
+  //
+  // \param[out] out_matrix(3, n_nodes) difference values
+  // \param[in] in_matrix(3, n_elems) vector batch \n
+  // where n_nodes = n_elems + 1
+  //
+  // \return void/None
+  //
+  // \see fill later?
+  */
+  template <typename MT1, typename MT2>  // blaze Matrix expression type 2
+  void voronoi_length(MT1& out_matrix, const MT2& in_matrix) {
+    constexpr std::size_t dimension(3UL);
+    assert(in_matrix.rows() == dimension);
+    assert(out_matrix.rows() == dimension);
+    const std::size_t n_nodes = in_matrix.columns();
+    const std::size_t n_elems = n_nodes - 1UL;
+    assert(out_matrix.columns() == n_elems);
+
+    // 0.5*(ref_length[1:] + ref_length[:-1])
+    blaze::submatrix(out_matrix, 0UL, 0UL, dimension, n_elems) = 0.5 * (
+        blaze::submatrix(in_matrix, 0UL, 0UL, dimension, n_elems) +
+        blaze::submatrix(in_matrix, 0UL, 1UL, dimension, n_elems + 1UL));
   }
   //**************************************************************************
 }  // namespace rod

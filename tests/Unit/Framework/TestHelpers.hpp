@@ -12,6 +12,7 @@
 #include "Simulator/IO/Serialization/Archives.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/HasEquivalence.hpp"
+#include "Framework/TestingFramework.hpp"
 
 template <typename T>
 struct counter {

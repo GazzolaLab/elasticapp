@@ -3,9 +3,16 @@
 //******************************************************************************
 // Includes
 //******************************************************************************
-#include "OptimizationLevel.hpp"
-#include "Utilities/Math/Linalg.hpp"  // Blaze linalg tools
 #include "Utilities/NonCreatable.hpp"
+
+#include "elastica/Utilities/Math/BlazeDetail/BlazeLinearAlgebra.hpp"
+#include "elastica/Utilities/Math/BlazeDetail/BlazeCalculus.hpp"
+#include "elastica/Utilities/Math/BlazeDetail/BlazeRotation.hpp"
+
+#include "OptimizationLevel.hpp"
+
+#include "blaze/Blaze.h"
+#include "blaze_tensor/Blaze.h"
 
 /// Add BlazeBackend code here
 
@@ -36,6 +43,7 @@ namespace elastica {
 
       //************************************************************************
       // Batch Operations
+      // TODO: Documentation
       template<typename VT1, typename MT, typename VT2>
       static inline void batch_matvec(VT1& matvec_batch,
                                       const MT& matrix_batch,
@@ -64,42 +72,54 @@ namespace elastica {
       }
 
       template<typename VR, typename V>
-      static auto batch_norm(VR& return_batch, const V& vector_batch) {
-        return elastica::batch_norm(return_batch, vector_batch);
+      static void batch_norm(VR& return_batch, const V& vector_batch) {
+        elastica::batch_norm(return_batch, vector_batch);
       }
 
       //************************************************************************
       // Vector Operation
-      template<typename VR, typename V>
-      static inline void difference_kernel(VR& result_vector,
-                                           const V& input_vector){
-        elastica::difference_kernel(result_vector, input_vector);
-      }
+      // TODO: Documentation
       template<typename V>
       static inline auto difference_kernel(const V& input_vector){
         return elastica::difference_kernel(input_vector);
       }
 
       template<typename VR, typename V>
-      static inline void vornoi_length(VR& result_vector,
+      static inline void voronoi_length(VR& result_vector,
                                        const V& input_vector){
         elastica::voronoi_length(result_vector, input_vector);
       }
+
+      //************************************************************************
+      // Batch Rotation Operation
+      // TODO: Documentation
+      template <typename MT,  // blaze Matrix expression type
+                typename TT>  // blaze Tensor expression type
+      static inline void batch_inv_rotate(MT& rot_axis_vector_batch, const TT& rot_matrix_batch) {
+        elastica::batch_inv_rotate(rot_axis_vector_batch, rot_matrix_batch);
+      }
+
+      //************************************************************************
+      // Misc Operation
+      // TODO: Documentation
+      template <typename T>
+      static inline void batch_subtract_z_unit(T& vector) {
+        blaze::row(vector, 2UL) -= 1;
+      }
+
     };
     /*! \endcond */
     //**************************************************************************
 
-    //**************************************************************************
-    /*! \cond ELASTICA_INTERNAL */
-    /*!\brief Specialization for optimized routines
-     * \ingroup cosserat_rods
-     */
-    template<>
-    struct Operations<OptimizationLevel::optimized> : private NonCreatable {
-      static inline int add(int x, int y) { return x + y; }
-    };
-    /*! \endcond */
-    //**************************************************************************
+//    //**************************************************************************
+//    /*! \cond ELASTICA_INTERNAL */
+//    /*!\brief Specialization for optimized routines
+//     * \ingroup cosserat_rods
+//     */
+//    template<>
+//    struct Operations<OptimizationLevel::optimized> : private NonCreatable {};
+//    /*! \endcond */
+//    //**************************************************************************
 
   }  // namespace cosserat_rod
 

@@ -359,101 +359,86 @@ namespace elastica {
                   }
                 });
 
-            // 3. Finally do the computed variables
+            // 3. Finally do the computed variables (Initialization)
             {
-                //            using Variable = ReferenceVoronoiLength;
-                //            auto& reference_voronoi_length_collection(
-                //                blocks::get<Variable>(downstream_block));
-                /* TODO
-                reference_voronoi_length_collection =
-                    Traits::calculate_voronoi_length(
-                        downstream_block
-                            .template
-                get<ReferenceElementLengthCollectionTag>());
-                            */
-            }
+              // position difference
+              auto& position(blocks::get<::elastica::tags::Position>(downstream_block));
+              auto& director(blocks::get<::elastica::tags::Director>(downstream_block));
+              auto position_diff = Traits::Operations::difference_kernel(position);
 
-            {
-                //            using Variable = ElementLength;
-                //            auto& element_length_collection(
-                //                blocks::get<Variable>(downstream_block));
-                /*
-                 * TODO
-                 * element_length_collection = 2.0;
-                 */
-            }
+              // reference_length_collection
+              auto& reference_length_collection(
+                  blocks::get<ReferenceElementLength>(downstream_block));
+              Traits::Operations::batch_norm(
+                  reference_length_collection,
+                  position_diff
+                );
 
-            {
-                //            using Variable = ElementDilatation;
-                //            auto&
-                //            element_dilatation(blocks::get<Variable>(downstream_block));
-                /*
-                 * TODO
-              //        {
-              //          //          dilatations_ = lengths_ /
-              reference_lengths_;
-              //          get_slice(ElementDilatationCollectionTag{}) =
-              //              get_slice(ElementLengthCollectionTag{}) /
-              //              get_slice(ReferenceElementLengthCollectionTag{});
-              //        }
-              //
-                 */
-            }
+              // reference_voronoi_length_collection
+              auto& reference_voronoi_length_collection(
+                  blocks::get<ReferenceVoronoiLength>(downstream_block));
+              Traits::Operations::voronoi_length(
+                  reference_voronoi_length_collection,
+                  reference_length_collection
+                );
 
-            {
-                //            using Variable = VoronoiLength;
-                //            auto& voronoi_length_collection(
-                //                blocks::get<Variable>(downstream_block));
-                /*
-                 * TODO
-                 * voronoi_length_collection = 1.0;
-                 */
-            }
+              // element_length_collection
+              auto& element_length_collection(
+                  blocks::get<ElementLength>(downstream_block));
+              Traits::Operations::batch_norm(
+                  element_length_collection,
+                  position_diff
+                );
 
-            {
-                //            using Variable = VoronoiDilatation;
-                //            auto&
-                //            voronoi_dilatation(blocks::get<Variable>(downstream_block));
-                /*
-                 * TODO
-              //        {
-              //          get_slice(VoronoiDilatationCollectionTag{}) =
-              //              get_slice(VoronoiLengthCollectionTag{}) /
-              //              get_slice(ReferenceVoronoiLengthCollectionTag{});
-              //        }
-              //
-              //
-                 */
-            }
-
-            {
-                //            using Variable = Curvature;
-                //            auto&
-                //            curvature_collection(blocks::get<Variable>(downstream_block));
-                /*
-                 * TODO
-               curvature_collection = 1.0;
-                 */
-            }
-
-            {
-                //            using Variable = Tangent;
-                //            auto&
-                //            tangent_collection(blocks::get<Variable>(downstream_block));
-                /*
-                 * TODO
-                tangent_collection = 1.0;
-                 */
-            }
-
-            {
-              //            using Variable = ShearStretchStrain;
-              //            auto& shear_stretch_strains_collection(
-              //                blocks::get<Variable>(downstream_block));
-              /*
-               * TODO
-             shear_stretch_strains_collection = 1.0;
+              // element_dilatation
+              auto& element_dilatation_collection(
+                  blocks::get<ElementDilatation>(downstream_block));
+              element_dilatation_collection = element_length_collection /
+                                              reference_length_collection;
+              /* Deprecated Code
+                get_slice(ElementDilatationCollectionTag{}) =
+                get_slice(ElementLengthCollectionTag{}) /
+                get_slice(ReferenceElementLengthCollectionTag{});
                */
+
+              // voronoi_length_collection
+              auto& voronoi_length_collection(
+                  blocks::get<VoronoiLength>(downstream_block));
+              Traits::Operations::voronoi_length(voronoi_length_collection,
+                                                element_length_collection);
+
+              // voronoi_dilatation
+              auto& voronoi_dilatation(
+                  blocks::get<VoronoiDilatation>(downstream_block));
+              voronoi_dilatation = voronoi_length_collection /
+                                   reference_voronoi_length_collection;
+                /* Deprecated Code
+                 get_slice(VoronoiDilatationCollectionTag{}) =
+                 get_slice(VoronoiLengthCollectionTag{}) /
+                 get_slice(ReferenceVoronoiLengthCollectionTag{});
+               */
+
+              // tangent_collection
+              auto& tangent_collection(
+                  blocks::get<Tangent>(downstream_block));
+              tangent_collection = position_diff / reference_length_collection;
+
+              // curvature_collection (kappa)
+              auto& curvature_collection(
+                  blocks::get<Curvature>(downstream_block));
+              auto rot_vec = Traits::Operations::batch_inv_rotate(director);
+              curvature_collection = rot_vec / reference_voronoi_length_collection;
+
+              // shear_stretch_strains_collection (sigma)
+              // eqt-z
+              auto& shear_stretch_strains_collection(
+                  blocks::get<ShearStretchStrain>(downstream_block));
+              Traits::Operations::batch_matvec(
+                  shear_stretch_strains_collection,
+                  director,
+                  tangent_collection * element_dilatation_collection // matvecexpr
+                );
+              Traits::Operations::batch_subtract_z_unit(shear_stretch_strains_collection);
             }
           }
           //********************************************************************

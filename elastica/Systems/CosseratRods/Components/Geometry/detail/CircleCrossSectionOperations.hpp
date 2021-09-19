@@ -28,6 +28,14 @@ namespace cosserat_rod {
 
     namespace detail {
 
+      // TODO : Static test : assure that the size is 0 or 1
+      /* DONE : Make shape protocol with
+       *  1. get_dimension
+       *  2. get_area
+       *  3. get_volume
+       *  4. template function get_second_moment_of_inertia
+       *  5. shape_factor
+       */
       //======================================================================
       //
       //  CLASS DEFINITION
@@ -116,7 +124,6 @@ namespace cosserat_rod {
         //@}
         //********************************************************************
       };
-//**********************************************************************
 
     }  // namespace detail
 

@@ -30,7 +30,7 @@ namespace elastica {
      * Define level of optimization for the kernels employed within the
      * cosserat rod module
      */
-    enum class OptimizationLevel : std::uint8_t { basic = 0, optimized };
+    enum class OptimizationLevel : std::uint8_t { basic = 0};
     /*! \endcond */
     //**************************************************************************
 

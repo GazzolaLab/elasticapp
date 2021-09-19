@@ -31,7 +31,7 @@
 #if defined(ELASTICA_USE_BLAZE)
 #include "DataType/BlazeBackend/DataTypeTraits.hpp"
 #include "Operations/BlazeBackend/OpsTraits.hpp"
-#include "Systems/CosseratRods/Traits/Operations/BlazeBackend/OptimizationLevel.hpp"
+#include "Operations/BlazeBackend/OptimizationLevel.hpp"
 #endif  // ELASTICA_USE_BLAZE
 
 ///
@@ -78,7 +78,7 @@ namespace elastica {
       //************************************************************************
 
       //**Operation definitions*************************************************
-      using OpsTraits = Operations<OptimizationLevel::basic>;
+      using Operations = Operations<OptimizationLevel::basic>;
       //************************************************************************
     };
     //**************************************************************************
