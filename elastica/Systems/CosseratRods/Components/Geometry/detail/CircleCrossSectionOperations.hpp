@@ -108,6 +108,7 @@ namespace cosserat_rod {
         static inline decltype(auto) update_dimension( /* TODO rename: compute_dimension_conserve_volume */
             Volume const& volume, Length const& length) noexcept {
           constexpr auto inv_pi = static_cast<real_type>(M_1_PI);
+          // radius[k] = np.sqrt(volume[k] / lengths[k] / np.pi)
           return sqrt(inv_pi * volume / length);
         }
         //********************************************************************

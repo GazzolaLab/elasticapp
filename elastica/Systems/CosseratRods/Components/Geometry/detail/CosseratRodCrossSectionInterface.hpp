@@ -227,7 +227,17 @@ namespace elastica {
               tmpl::append<typename Parent::Variables,
                            typename VariableDefinitions::Variables>;
           //! Current Variable definitions
+          using typename Parent::ReferenceCurvature;
+          using typename Parent::ReferenceElementLength;
+          using typename Parent::Curvature;
+          using typename Parent::ElementDilatation;
+          using typename Parent::ReferenceVoronoiLength;
+          using typename Parent::ShearStretchStrain;
+          using typename Parent::Tangent;
+          using typename Parent::VoronoiDilatation;
+          using typename Parent::VoronoiLength;
           using typename Parent::ElementLength;
+
           using typename VariableDefinitions::ElementDimension;
           using typename VariableDefinitions::ElementVolume;
           //********************************************************************
@@ -486,17 +496,41 @@ namespace elastica {
 
           // Translational functions
           void compute_translation_diagnostics() noexcept {
+            // 0. Create reference variables
+            auto& position(blocks::get<::elastica::tags::Position>(self()));
+            auto& director(blocks::get<::elastica::tags::Director>(self()));
+
             // 1. Compute new lengths
+            auto position_diff(Traits::Operations::difference_kernel(position));
+            auto& element_length_collection(blocks::get<ElementLength>(self()));
+            Traits::Operations::batch_norm(
+                element_length_collection,
+                position_diff
+            );
 
             // 2. Update tangents
+            auto& tangent_collection(blocks::get<Tangent>(self()));
+            auto& reference_length_collection(blocks::get<ReferenceElementLength>(self()));
+            tangent_collection = position_diff / reference_length_collection;
 
-            // 3. Compute new radius based on above lengths
-            // Note! Here we need a CRTP method to get r from l
+            // 3. Compute new radius based on above lengths TODO
+            // volume conservation
+            auto& volume_collection(blocks::get<ElementVolume>(self()));
+            auto& dimensions_collection(blocks::get<ElementDimension>(self()));
+            dimensions_collection =
+                CrossSection::update_dimension(volume_collection, element_length_collection);
+            // TODO: Note! Here we need a CRTP method to get r from l (Seung - ???)
             // self().dimension_from_volume_impl(get_volumes(), get_lengths());
 
             // 4. Compute dilatation of elements
+            auto& element_dilatation_collection(blocks::get<ElementDilatation>(self()));
+            element_dilatation_collection = element_length_collection /
+                                            reference_length_collection;
 
             // 5. Compute dilatation of voronoi regions
+            auto& voronoi_dilatation(blocks::get<VoronoiDilatation>(self()));
+            voronoi_dilatation = blocks::get<VoronoiLength>(self()) /
+                                 blocks::get<ReferenceVoronoiLength>(self());
           }
 
          protected:

@@ -11,6 +11,8 @@ elastica_target_headers(
         CosseratRodSpanwiseGeometryTags.hpp
         RodSpanwiseGeometry.hpp
         RodSpanwiseGeometryTags.hpp
+        CircleCrossSectionOperations.hpp
+        SquareCrossSectionOperations.hpp
         Tags.hpp
         Types.hpp
 )

@@ -405,13 +405,12 @@ namespace elastica {
               auto& voronoi_length_collection(
                   blocks::get<VoronoiLength>(downstream_block));
               Traits::Operations::voronoi_length(voronoi_length_collection,
-                                                element_length_collection);
+                                                 element_length_collection);
 
               // voronoi_dilatation
               auto& voronoi_dilatation(
                   blocks::get<VoronoiDilatation>(downstream_block));
-              voronoi_dilatation = voronoi_length_collection /
-                                   reference_voronoi_length_collection;
+              voronoi_dilatation = voronoi_length_collection / reference_voronoi_length_collection;
                 /* Deprecated Code
                  get_slice(VoronoiDilatationCollectionTag{}) =
                  get_slice(VoronoiLengthCollectionTag{}) /

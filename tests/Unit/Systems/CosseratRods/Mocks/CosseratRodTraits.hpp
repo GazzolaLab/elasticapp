@@ -120,7 +120,7 @@ namespace mock {
 
     struct Operations {
       template<typename A, typename B>
-      static void voronoi_length(A, B){}
+      static void voronoi_length(A& a, B){a = 1;}
       template<typename A, typename B>
       static void difference_kernel(A, B){}
       template<typename B>
