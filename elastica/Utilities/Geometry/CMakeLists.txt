@@ -11,7 +11,7 @@ elastica_target_headers(
         ${LIBRARY}
         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
         HEADERS
-        angles.hpp
+        Angles.hpp
 #        get_closest_line_segment_points.hpp
 #        get_closest_point_on_line.hpp
 )

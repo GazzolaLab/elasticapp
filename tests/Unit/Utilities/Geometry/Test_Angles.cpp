@@ -4,7 +4,7 @@
 #include <cmath>
 
 #include "Framework/TestingFramework.hpp"
-#include "Utilities/Geometry/angles.hpp"
+#include "Utilities/Geometry/Angles.hpp"
 
 namespace {
   using namespace elastica::geometry;
