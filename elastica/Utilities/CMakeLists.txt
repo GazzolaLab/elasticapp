@@ -4,7 +4,7 @@ set(LIBRARY Utilities)
 
 add_elastica_library(${LIBRARY})
 
-# add_subdirectory(Geometry)
+add_subdirectory(Geometry)
 add_subdirectory(Logging)
 add_subdirectory(Math)
 add_subdirectory(MemoryMeter)
@@ -72,6 +72,7 @@ elastica_target_headers(
         StdHelpers.hpp
         SystemClock.hpp
         TaggedTuple.hpp
+        Thresholds.hpp
         TimeStamps.h
         Timing.h
         TMPL.hpp
