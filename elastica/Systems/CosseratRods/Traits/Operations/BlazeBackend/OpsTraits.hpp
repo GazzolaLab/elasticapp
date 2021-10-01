@@ -48,7 +48,8 @@ namespace elastica {
       static inline void batch_matvec(VT1& matvec_batch,
                                       const MT& matrix_batch,
                                       const VT2& vector_batch) {
-        elastica::batch_matvec(matvec_batch, matrix_batch, vector_batch);
+        using ::elastica::batch_matvec;
+        batch_matvec(matvec_batch, matrix_batch, vector_batch);
       }
 
       template<typename M1, typename M2, typename M3>

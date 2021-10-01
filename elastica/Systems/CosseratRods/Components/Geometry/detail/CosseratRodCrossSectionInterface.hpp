@@ -513,14 +513,12 @@ namespace elastica {
             auto& reference_length_collection(blocks::get<ReferenceElementLength>(self()));
             tangent_collection = position_diff / reference_length_collection;
 
-            // 3. Compute new radius based on above lengths TODO
+            // 3. Compute new radius based on above lengths
             // volume conservation
             auto& volume_collection(blocks::get<ElementVolume>(self()));
             auto& dimensions_collection(blocks::get<ElementDimension>(self()));
             dimensions_collection =
                 CrossSection::update_dimension(volume_collection, element_length_collection);
-            // TODO: Note! Here we need a CRTP method to get r from l (Seung - ???)
-            // self().dimension_from_volume_impl(get_volumes(), get_lengths());
 
             // 4. Compute dilatation of elements
             auto& element_dilatation_collection(blocks::get<ElementDilatation>(self()));
@@ -537,12 +535,18 @@ namespace elastica {
           void compute_shear_strains() noexcept {
             // Q (et - d_3)
             // Q is always latest, only e and t need to be computed
-            compute_translation_diagnostics();
+            compute_translation_diagnostics(); // Dilatation updated here!
 
-            //          This::get<
-            //              typename
-            //              GeometryParent::ShearStretchStrainCollectionTag>()
-            //              = 1.0;
+            //z_vector = np.array([0.0, 0.0, 1.0]).reshape(3, -1)
+            //sigma[:] = dilatation * _batch_matvec(director_collection, tangents) - z_vector
+            auto& shear_stretch_strains_collection(
+                blocks::get<::elastica::tags::ShearStretchStrain>(self()));
+            Traits::Operations::batch_matvec(
+                shear_stretch_strains_collection,
+                blocks::get<::elastica::tags::Director>(self()),
+                blocks::get<::elastica::tags::Tangent>(self()) * blocks::get<::elastica::tags::ElementDilatation>(self()) // matvecexpr
+            );
+            Traits::Operations::batch_subtract_z_unit(shear_stretch_strains_collection);
           }
 
           void compute_curvature() noexcept {
@@ -550,7 +554,11 @@ namespace elastica {
             // that here
             // std::get<typename GeometryParent::CurvatureCollectionTag>(
             // self().data()) = 1.0;
-            // get_curvature() = log(get_rotation_matrices());
+            // get_curvature() = log(get_rotation_matrices())
+            // auto& curvature_collection(
+            //                  blocks::get<Curvature>(downstream_block));
+            //              auto rot_vec = Traits::Operations::batch_inv_rotate(director);
+            //              curvature_collection = rot_vec / reference_voronoi_length_collection;;
           }
           //@}
           //********************************************************************
