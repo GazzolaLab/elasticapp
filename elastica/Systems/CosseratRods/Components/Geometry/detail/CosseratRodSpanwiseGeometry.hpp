@@ -29,8 +29,8 @@
 /// Types always first
 #include "Systems/CosseratRods/Components/Geometry/detail/Types.hpp"
 ///
-#include "Systems/CosseratRods/Components/Geometry/detail/CosseratRodSpanwiseGeometryTags.hpp"
 #include "Systems/CosseratRods/Components/Geometry/detail/RodSpanwiseGeometry.hpp"
+#include "Systems/CosseratRods/Components/Geometry/detail/Tags/CosseratRodSpanwiseGeometryTags.hpp"
 
 namespace elastica {
 

@@ -29,8 +29,8 @@
 ///// Types always first
 #include "Systems/CosseratRods/Components/Geometry/detail/Types.hpp"
 /////
-#include "Systems/CosseratRods/Components/Geometry/detail/CosseratRodCrossSectionInterfaceTags.hpp"
 #include "Systems/CosseratRods/Components/Geometry/detail/CosseratRodSpanwiseGeometry.hpp"
+#include "Systems/CosseratRods/Components/Geometry/detail/Tags/CosseratRodCrossSectionInterfaceTags.hpp"
 
 namespace elastica {
 
@@ -429,7 +429,7 @@ namespace elastica {
           }
 
           // do not have APIs return vec3, seems to reduce customizability and
-          // promores bad code
+          // promotes bad code
           inline constexpr auto get_second_moment_of_area(index_type idx) const
           /*noexcept*/ {
             return Vec3{real_t(This::get_second_moment_of_area<D1>(idx)),
