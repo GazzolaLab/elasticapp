@@ -552,13 +552,18 @@ namespace elastica {
           void compute_curvature() noexcept {
             // kappa is the only rotational diagnostic, so we direcelty compute
             // that here
+
+            auto& curvature_collection(
+                blocks::get<::elastica::tags::Curvature>(self()));
+            auto& reference_voronoi_length_collection(
+                blocks::get<::elastica::tags::ReferenceVoronoiLength>(self()));
+            auto rot_vec = Traits::Operations::batch_inv_rotate(blocks::get<::elastica::tags::Director>(self()));
+            curvature_collection = rot_vec / reference_voronoi_length_collection;
+
+            // Deprecated Code:
             // std::get<typename GeometryParent::CurvatureCollectionTag>(
             // self().data()) = 1.0;
             // get_curvature() = log(get_rotation_matrices())
-            // auto& curvature_collection(
-            //                  blocks::get<Curvature>(downstream_block));
-            //              auto rot_vec = Traits::Operations::batch_inv_rotate(director);
-            //              curvature_collection = rot_vec / reference_voronoi_length_collection;;
           }
           //@}
           //********************************************************************
