@@ -128,7 +128,7 @@ static Approx approx =                                          // NOLINT
                                                                       appx); \
   } while (false)
 
-/// \cond HIDDEN_SYMBOLS
+/// \cond HIDDEN_SYMBOL
 template <typename T, typename = std::nullptr_t>
 struct check_iterable_approx {
   // clang-tidy: non-const reference

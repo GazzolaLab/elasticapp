@@ -364,31 +364,22 @@ namespace elastica {
               // position difference
               auto& position(blocks::get<::elastica::tags::Position>(downstream_block));
               auto& director(blocks::get<::elastica::tags::Director>(downstream_block));
-              auto position_diff = Traits::Operations::difference_kernel(position);
+              auto position_diff(Traits::Operations::difference_kernel(position));
 
               // reference_length_collection
               auto& reference_length_collection(
                   blocks::get<ReferenceElementLength>(downstream_block));
-              Traits::Operations::batch_norm(
-                  reference_length_collection,
-                  position_diff
-                );
+              reference_length_collection = Traits::Operations::batch_norm(position_diff);
 
               // reference_voronoi_length_collection
               auto& reference_voronoi_length_collection(
                   blocks::get<ReferenceVoronoiLength>(downstream_block));
-              Traits::Operations::voronoi_length(
-                  reference_voronoi_length_collection,
-                  reference_length_collection
-                );
+              reference_voronoi_length_collection = Traits::Operations::voronoi_length(reference_length_collection);
 
               // element_length_collection
               auto& element_length_collection(
                   blocks::get<ElementLength>(downstream_block));
-              Traits::Operations::batch_norm(
-                  element_length_collection,
-                  position_diff
-                );
+              element_length_collection = Traits::Operations::batch_norm(position_diff);
 
               // element_dilatation
               auto& element_dilatation_collection(
@@ -404,8 +395,7 @@ namespace elastica {
               // voronoi_length_collection
               auto& voronoi_length_collection(
                   blocks::get<VoronoiLength>(downstream_block));
-              Traits::Operations::voronoi_length(voronoi_length_collection,
-                                                 element_length_collection);
+              voronoi_length_collection = Traits::Operations::voronoi_length(element_length_collection);
 
               // voronoi_dilatation
               auto& voronoi_dilatation(
@@ -425,8 +415,11 @@ namespace elastica {
               // curvature_collection (kappa)
               auto& curvature_collection(
                   blocks::get<Curvature>(downstream_block));
-              auto rot_vec = Traits::Operations::batch_inv_rotate(director);
-              curvature_collection = rot_vec / reference_voronoi_length_collection;
+              Traits::Operations::batch_inv_rotate_and_divide(curvature_collection,
+                                                              director,
+                                                              reference_voronoi_length_collection);
+              //auto rot_vec = Traits::Operations::batch_inv_rotate(director);
+              //curvature_collection = rot_vec / reference_voronoi_length_collection;
 
               // shear_stretch_strains_collection (sigma)
               // eqt-z

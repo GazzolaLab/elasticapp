@@ -134,7 +134,7 @@ namespace {
 
     CHECK(approx(model.get_element_dimension()) == 4.0);
     // volume = dimension * length
-    CHECK(approx(model.get_element_volume()) == 0.0);
+    CHECK(approx(model.get_element_volume()) == 4.0);
 
     CHECK(approx(model.get_area()) == 4.0);
     CHECK(approx(model.shape_factor()) == 1.6);

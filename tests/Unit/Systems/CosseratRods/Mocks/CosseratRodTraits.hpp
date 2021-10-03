@@ -119,20 +119,20 @@ namespace mock {
     };
 
     struct Operations {
-      template<typename A, typename B>
-      static void voronoi_length(A& a, B){a = 1;}
+      template<typename A>
+      static auto voronoi_length(A& a){return 1UL;}
       template<typename A, typename B>
       static void difference_kernel(A, B){}
       template<typename B>
       static auto difference_kernel(B){return 1UL;}
       template<typename A, typename B, typename C>
       static void batch_matvec(A, B, C){}
-      template<typename A, typename B>
-      static void batch_norm(A, B){}
+      template<typename A>
+      static auto batch_norm(A){return 1UL;}
       template<typename A, typename B>
       static void batch_inv_rotate(A, B){}
-      template<typename A>
-      static auto batch_inv_rotate(A){return 1UL;}
+      template<typename A, typename B, typename C>
+      static void batch_inv_rotate_and_divide(A, B, C){}
       template<typename A>
       static void batch_subtract_z_unit(A){}
     };

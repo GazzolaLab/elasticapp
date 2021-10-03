@@ -13,8 +13,6 @@
 /* things would have been much simpler if there was einsum() in blaze */
 /* NOTE: % operator corresponds to Schur product for matrices and tensors */
 namespace elastica {
-  // TODO: Sort out functions and declare in linalg.hpp
-
   //**************************************************************************
   /*!\brief Vector Diference
   //
@@ -23,7 +21,7 @@ namespace elastica {
   //
   // \return void/None
   //
-  // \see TODO: fill later?
+  // \see TODO: fill later
   */
   template<typename V>
   inline auto difference_kernel(const V& in_vector){
@@ -57,8 +55,8 @@ namespace elastica {
   // \see fill later?
   */
   template <typename MT1,  // blaze Matrix expression type 1
-      typename TT,   // blaze Tensor expression type
-      typename MT2>  // blaze Matrix expression type 2
+            typename TT,   // blaze Tensor expression type
+            typename MT2>  // blaze Matrix expression type 2
   void batch_matvec(MT1& matvec_batch,
                     const TT& matrix_batch,
                     const MT2& vector_batch) {
@@ -194,11 +192,9 @@ namespace elastica {
   //
   // \see fill later?
   */
-  template <typename MT,
-      typename MT1,  // blaze Matrix expression type 1
-      typename MT2>  // blaze Matrix expression type 2
-  void batch_dot(MT& return_vector_batch,
-                 const MT1& first_vector_batch,
+  template <typename MT1,  // blaze Matrix expression type 1
+            typename MT2>  // blaze Matrix expression type 2
+  auto batch_dot(const MT1& first_vector_batch,
                  const MT2& second_vector_batch) {
     constexpr std::size_t dimension(3UL);
     const std::size_t n_elems = first_vector_batch.columns();
@@ -206,7 +202,7 @@ namespace elastica {
     assert(second_vector_batch.rows() == dimension);
     assert(second_vector_batch.columns() == n_elems);
 
-    return_vector_batch = blaze::sum<blaze::columnwise>(first_vector_batch %
+    return blaze::sum<blaze::columnwise>(first_vector_batch %
                                                         second_vector_batch);
   }
   //**************************************************************************
@@ -230,32 +226,32 @@ namespace elastica {
   //
   // \see fill later?
   */
-  template <typename MR, typename MT>  // blaze vector expression type
-  void batch_norm(MR& return_batch, const MT& vector_batch) {
+  template <typename MT>  // blaze vector expression type
+  auto batch_norm(const MT& vector_batch) {
     constexpr std::size_t dimension(3UL);
     const std::size_t n_elems = vector_batch.columns();
-    assert(return_batch.rows() == dimension);
-    assert(return_batch.columns() == n_elems);
     assert(vector_batch.rows() == dimension);
 
-    return_batch =
-        blaze::sqrt(blaze::sum<blaze::columnwise>(blaze::pow(vector_batch, 2)));
+    return blaze::sqrt(blaze::sum<blaze::columnwise>(blaze::pow(vector_batch, 2)));
   }
 
   //**************************************************************************
-  template <typename MT1, typename MT2>  // blaze Matrix expression type 2
-  void voronoi_length(MT1& out_matrix, const MT2& in_matrix) {
+  /*!\brief Voronoi length computation
+   *
+   * @tparam MT1
+   * @tparam MT2
+   * @param in_matrix
+   */
+  template <typename MT>  // blaze Matrix expression type 2
+  auto voronoi_length(const MT& in_matrix) {
     constexpr std::size_t dimension(3UL);
     assert(in_matrix.rows() == dimension);
-    assert(out_matrix.rows() == dimension);
     const std::size_t n_nodes = in_matrix.columns();
     const std::size_t n_elems = n_nodes - 1UL;
-    assert(out_matrix.columns() == n_elems);
-    using ValueType = typename MT2::ElementType;
+    using ValueType = typename MT::ElementType;
 
     // 0.5*(ref_length[1:] + ref_length[:-1])
-    blaze::submatrix(out_matrix, 0UL, 0UL, dimension, n_elems) = ValueType(0.5) * (
-        blaze::submatrix(in_matrix, 0UL, 0UL, dimension, n_elems) +
+    return ValueType(0.5) * (blaze::submatrix(in_matrix, 0UL, 0UL, dimension, n_elems) +
         blaze::submatrix(in_matrix, 0UL, 1UL, dimension, n_elems + 1UL));
   }
   //**************************************************************************

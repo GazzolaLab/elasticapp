@@ -496,6 +496,11 @@ namespace elastica {
 
           // Translational functions
           void compute_translation_diagnostics() noexcept {
+            /*
+             *
+             * Compute eq (3.3) from 2018 RSOS paper
+             *
+             */
             // 0. Create reference variables
             auto& position(blocks::get<::elastica::tags::Position>(self()));
             auto& director(blocks::get<::elastica::tags::Director>(self()));
@@ -503,10 +508,7 @@ namespace elastica {
             // 1. Compute new lengths
             auto position_diff(Traits::Operations::difference_kernel(position));
             auto& element_length_collection(blocks::get<ElementLength>(self()));
-            Traits::Operations::batch_norm(
-                element_length_collection,
-                position_diff
-            );
+            element_length_collection = Traits::Operations::batch_norm(position_diff);
 
             // 2. Update tangents
             auto& tangent_collection(blocks::get<Tangent>(self()));
@@ -557,8 +559,12 @@ namespace elastica {
                 blocks::get<::elastica::tags::Curvature>(self()));
             auto& reference_voronoi_length_collection(
                 blocks::get<::elastica::tags::ReferenceVoronoiLength>(self()));
-            auto rot_vec = Traits::Operations::batch_inv_rotate(blocks::get<::elastica::tags::Director>(self()));
-            curvature_collection = rot_vec / reference_voronoi_length_collection;
+            auto& director(blocks::get<::elastica::tags::Director>(self()));
+            Traits::Operations::batch_inv_rotate_and_divide(curvature_collection,
+                                                            director,
+                                                            reference_voronoi_length_collection);
+            //auto rot_vec = Traits::Operations::batch_inv_rotate();
+            //curvature_collection = rot_vec / reference_voronoi_length_collection;
 
             // Deprecated Code:
             // std::get<typename GeometryParent::CurvatureCollectionTag>(

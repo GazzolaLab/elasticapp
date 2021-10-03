@@ -15,11 +15,11 @@ namespace {
   using namespace elastica::cosserat_rod::component::detail;
   using namespace elastica;
 
-  //  // conform to protocol and assert
-  //  template <typename B>
-  //  struct TestRodSpanwiseGeometry
-  //      : public RodSpanwiseGeometry<mock::BasicCosseratRodTraits, B>,
-  //        public ::tt::ConformsTo<blocks::protocols::Plugin> {};
+  // conform to protocol and assert
+  template <typename B>
+  struct TestRodSpanwiseGeometry
+      : public RodSpanwiseGeometry<mock::BasicCosseratRodTraits, B>,
+        public ::tt::ConformsTo<blocks::protocols::Plugin> {};
 
 }  // namespace
 
@@ -29,7 +29,7 @@ namespace {
   using TestGeometry = RodSpanwiseGeometry<mock::BasicCosseratRodTraits, B>;
 
   using Plugin = mock::MockPlugin<TestGeometry>;
-  //  using Model = blocks::Block<Plugin>;
+  // using Model = blocks::Block<Plugin>;
   using Model = typename Plugin::Model;
 
   static_assert(sizeof(Model) ==
@@ -54,10 +54,12 @@ namespace {
     CHECK(approx(model.get_director()) == 0.0);
 
     Model::initialize(
-        model,
-        mock::initialize_block<Plugin>(
-            blocks::initialize<tags::Position>([](...) { return 2.0; }),
-            blocks::initialize<tags::Director>([](...) { return 3.0; })));
+      model,
+      mock::initialize_block<Plugin>(
+        blocks::initialize<tags::Position>([](...) { return 2.0; }),
+        blocks::initialize<tags::Director>([](...) { return 3.0; })
+      )
+    );
 
     CHECK(approx(model.get_position()) == 2.0);
     CHECK(approx(model.get_director()) == 3.0);

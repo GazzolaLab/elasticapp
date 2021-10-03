@@ -1,9 +1,6 @@
 //
 // Created by Tejaswin Parthasarathy on 5/11/21.
 //
-//
-// Created by Tejaswin Parthasarathy on 5/11/21.
-//
 
 #include "Framework/TestingFramework.hpp"
 #include "Systems/CosseratRods/Traits/DataType/Protocols.hpp"

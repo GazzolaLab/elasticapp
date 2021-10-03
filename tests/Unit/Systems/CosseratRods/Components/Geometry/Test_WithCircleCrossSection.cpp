@@ -109,7 +109,7 @@ namespace {
     CHECK(approx(model.get_element_dimension()) == 4.0);
     // blocks::get<tags::ElementLength>(model) = 2.0;
     // volume = dimension * length, only calculated somewhere inside
-    CHECK(approx(model.get_element_volume()) == 0.0);
+    CHECK(approx(model.get_element_volume()) == 4.0);
 
     CHECK(approx(model.get_area()) == M_PI * 4.0 * 4.0);
     CHECK(approx(model.shape_factor()) == 4.0 / 3.0);

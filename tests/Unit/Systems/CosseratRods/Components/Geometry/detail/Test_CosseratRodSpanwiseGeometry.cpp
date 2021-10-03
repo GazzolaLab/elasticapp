@@ -3,6 +3,7 @@
 //
 #include "Framework/TestingFramework.hpp"
 #include "Systems/CosseratRods/Components/Geometry/detail/CosseratRodSpanwiseGeometry.hpp"
+#include "Systems/CosseratRods/Components/Geometry/detail/RodSpanwiseGeometry.hpp"
 ///
 #include "Systems/CosseratRods/Mocks.hpp"
 ///
@@ -15,6 +16,12 @@ namespace {
 
   using namespace elastica::cosserat_rod::component::detail;
   using namespace elastica;
+
+  // conform to protocol and assert
+  template <typename B>
+  struct TestCosseratRodSpanwiseGeometry
+      : public CosseratRodSpanwiseGeometry<mock::BasicCosseratRodTraits, B>,
+        public ::tt::ConformsTo<blocks::protocols::Plugin> {};
 
 }  // namespace
 
@@ -70,16 +77,17 @@ namespace {
           return 3.0;
         }),
         // from before
-        blocks::initialize<tags::ReferenceElementLength>(
-            [](...) { return 2.0; }),
-        blocks::initialize<tags::ReferenceCurvature>([](...) { return 2.0; }));
+        blocks::initialize<tags::ReferenceElementLength>([](...) { return 2.0; }),
+        blocks::initialize<tags::ReferenceCurvature>([](...) { return 2.0; }),
+        blocks::initialize<tags::ReferenceVoronoiLength>([](...) { return 1.2; }));
 
     Model::initialize(model, std::move(initializer));
 
     // check if initialization is done as expected
     CHECK_ITERABLE_APPROX(n_times_called, make_array<2>(1U));
 
-    CHECK(approx(model.get_reference_element_length()) == 2.0);
+    CHECK(approx(model.get_element_length()) == 1.0);
+    CHECK(approx(model.get_reference_element_length()) == 1.0);
     CHECK(approx(model.get_reference_curvature()) == 2.0);
   }
 

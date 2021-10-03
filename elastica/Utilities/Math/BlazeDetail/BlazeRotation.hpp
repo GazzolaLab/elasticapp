@@ -41,13 +41,15 @@ namespace elastica {
   //
   // \see fill later?
   */
-  template <typename TT>  // blaze Tensor expression type
-  auto batch_inv_rotate(const TT& rot_matrix_batch) {
+  template <typename MT, typename TT>  // blaze Tensor expression type
+  void batch_inv_rotate(MT& rot_axis_vector_batch, const TT& rot_matrix_batch) {
     constexpr std::size_t dimension(3UL);
     const std::size_t n_elems = rot_matrix_batch.columns();
     using ValueType = typename TT::ElementType;
     assert(rot_matrix_batch.pages() == dimension);
     assert(rot_matrix_batch.rows() == dimension);
+    assert(rot_axis_vector_batch.rows() == dimension);
+    assert(rot_axis_vector_batch.columns() == n_elems);
 
     /* hardcoded to avoid external memory passing */
     /* also now operates only on views */
@@ -62,8 +64,6 @@ namespace elastica {
     auto R_minus_RT =
         rot_matrix_batch - blaze::trans(rot_matrix_batch, {1, 0, 2});
     /* theta (u) = -theta * inv_skew([R - RT]) / 2 sin(theta) */
-    // TODO: Revisit. Try to avoid making memory.
-    blaze::StaticMatrix<ValueType, dimension, n_elems> rot_axis_vector_batch;
     for (std::size_t i(0UL); i < dimension; ++i) {
       auto inv_skew_symmetric_map = blaze::row(
           blaze::pageslice(R_minus_RT, (i + 2UL) % dimension),
@@ -73,7 +73,6 @@ namespace elastica {
           (blaze::sin(theta_batch) +
            ValueType(1e-14));  // TODO refactor 1e-14
     }
-    return rot_axis_vector_batch;
   }
   //**************************************************************************
 
