@@ -494,13 +494,36 @@ namespace elastica {
           /*!\name Computation methods*/
           //@{
 
+          //**************************************************************************
+          /*!\brief Updates rod geometric properties given state.
+          //
+          // \details
           // Translational functions
+          // Updates rod elemental geometric properties (elemental lengths,
+          // tangents and radii) from given nodal positions (state).
+          // Ref: eq (3.3) from \cite gazzola2018forward. \n
+          // length{i} = || position{i+1} - position{i} || \n
+          // tangent{i} = (position{i+1} - position{i}) / length{i} \n
+          // radius{i} = (volume{i} / M_PI / length{i})^0.5
+          //
+          // The following members are modified:
+          //  - length_batch(n_elems)
+          //  - tangent_batch(3, n_elems)
+          //  - radius_batch(n_elems)
+          //
+          // with the following inputs:
+          //  - position_batch(3, n_nodes)
+          //  - volume_batch(n_elems)
+          //
+          // \example
+          // The following shows a typical use of the compute_geometry_from_state()
+          // function with the expected (correct) result also shown.
+          //
+          // \return void/None
+          //
+          */
           void compute_translation_diagnostics() noexcept {
-            /*
-             *
-             * Compute eq (3.3) from 2018 RSOS paper
-             *
-             */
+            // Compute eq (3.3) from 2018 RSOS paper
             // 0. Create reference variables
             auto& position(blocks::get<::elastica::tags::Position>(self()));
             auto& director(blocks::get<::elastica::tags::Director>(self()));
@@ -534,6 +557,34 @@ namespace elastica {
           }
 
          protected:
+          //**************************************************************************
+          /*!\brief Compute elemental shear and stretch mode strains
+          //
+          // \details
+          // Computes elemental shear and stretch modes strains given the rod
+          // positions and directors (state), calls compute_all_dilatations() inside.
+          // Ref: eq (2.9) from \cite gazzola2018forward. \n
+          // strain_batch{i} =
+          // dilatation_batch{i} * director_collection_batch{i} *
+          // tangent_batch{i} - {0.0, 0.0, 1.0}
+          //
+          // The following members are modified:
+          // - strain_batch(3, n_elems)
+          //
+          // with the following inputs:
+          // - director_collection_batch(3, 3, n_elems)
+          // - temp container of (3, n_elems) for intermediate storage \n
+          // given inputs of compute_all_dilatations() are set.
+          //
+          // \example
+          // The following shows a typical use of the compute_shear_stretch_strains()
+          // function with the expected (correct) result also shown.
+          // \snippet test_gov_eqns.cpp compute_shear_stretch_strains_example
+          //
+          // \return void/None
+          //
+          // \see fill later?
+          */
           void compute_shear_strains() noexcept {
             // Q (et - d_3)
             // Q is always latest, only e and t need to be computed
