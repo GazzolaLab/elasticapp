@@ -6,12 +6,12 @@ elastica_target_headers(
         HEADERS
         Components.hpp
         ElasticityInterface.hpp
-        ElasticityInterfaceTags.hpp
+        Tags/ElasticityInterfaceTags.hpp
         ExplicitDampingAdapter.hpp
         ExplicitDampingAdapterFacade.hpp
-        ExplicitDampingAdapterFacadeTags.hpp
+        Tags/ExplicitDampingAdapterFacadeTags.hpp
         LinearHyperElasticityFacade.hpp
-        LinearHyperElasticityFacadeTags.hpp
+        Tags/LinearHyperElasticityFacadeTags.hpp
         Tags.hpp
         Types.hpp
         TypeTraits.hpp

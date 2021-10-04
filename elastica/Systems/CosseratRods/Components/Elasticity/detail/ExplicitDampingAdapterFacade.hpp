@@ -18,7 +18,7 @@
 #include "Systems/CosseratRods/Components/Elasticity/detail/Types.hpp"
 /////
 #include "Systems/Block.hpp"
-#include "Systems/CosseratRods/Components/Elasticity/detail/ExplicitDampingAdapterFacadeTags.hpp"
+#include "Systems/CosseratRods/Components/Elasticity/detail/Tags/ExplicitDampingAdapterFacadeTags.hpp"
 #include "Utilities/CRTP.hpp"
 #include "Utilities/TMPL.hpp"
 

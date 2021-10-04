@@ -21,7 +21,7 @@
 #include "Systems/CosseratRods/Components/Elasticity/detail/Types.hpp"
 ///
 #include "Systems/Block.hpp"
-#include "Systems/CosseratRods/Components/Elasticity/detail/LinearHyperElasticityFacadeTags.hpp"
+#include "Systems/CosseratRods/Components/Elasticity/detail/Tags/LinearHyperElasticityFacadeTags.hpp"
 #include "Utilities/Math/Vec3.hpp"
 #include "Utilities/TMPL.hpp"
 

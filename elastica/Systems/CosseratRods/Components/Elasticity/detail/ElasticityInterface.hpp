@@ -23,7 +23,7 @@
 #include "Systems/CosseratRods/Components/Elasticity/detail/Types.hpp"
 /////
 #include "Systems/Block.hpp"
-#include "Systems/CosseratRods/Components/Elasticity/detail/ElasticityInterfaceTags.hpp"
+#include "Systems/CosseratRods/Components/Elasticity/detail/Tags/ElasticityInterfaceTags.hpp"
 #include "Utilities/CRTP.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsDetected.hpp"
