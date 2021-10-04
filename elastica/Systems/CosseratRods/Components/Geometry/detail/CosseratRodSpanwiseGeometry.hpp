@@ -418,6 +418,12 @@ namespace elastica {
               Traits::Operations::batch_inv_rotate_and_divide(curvature_collection,
                                                               director,
                                                               reference_voronoi_length_collection);
+              // TODO: Use copy consturctor for reference curvature collection
+              auto& reference_curvature_collection(
+                  blocks::get<ReferenceCurvature>(downstream_block));
+              Traits::Operations::batch_inv_rotate_and_divide(reference_curvature_collection,
+                                                              director,
+                                                              reference_voronoi_length_collection);
               //auto rot_vec = Traits::Operations::batch_inv_rotate(director);
               //curvature_collection = rot_vec / reference_voronoi_length_collection;
 

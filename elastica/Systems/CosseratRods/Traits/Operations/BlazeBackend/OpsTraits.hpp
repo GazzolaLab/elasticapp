@@ -109,6 +109,7 @@ namespace elastica {
       //************************************************************************
       // Batch Rotation + Division Operation (specific for compute-curvature)
       // Inverse rodrigues and division always comes together.
+      // TODO: Avoid repeating code. Try to reuse inv-rotate
       // TODO: Documentation
       template <typename MT,  // blaze Matrix expression type
                 typename TT, // blaze Tensor expression type
@@ -155,7 +156,8 @@ namespace elastica {
       // TODO: Documentation
       template <typename T>
       static inline void batch_subtract_z_unit(T& vector) {
-        blaze::row(vector, 2UL) -= 1;
+        using ValueType = typename T::ElementType;
+        blaze::row(vector, 2UL) -= ValueType(1.0);
       }
 
     };

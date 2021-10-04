@@ -276,9 +276,41 @@ namespace elastica {
         //**********************************************************************
         /*!\brief Gets temporal rate of dilatation based on the current state
          * of the current rod
+         *
+         * \details
+         * Computes rate of change of elemental dilatations (de / dt) given the
+         * rod positions and velocities (state). \n
+         * dilatation_rate{i} =
+         * (position{i+1} - position{i}) dot
+         * (velocity{i+1} - velocity{i}) /
+         * (length{i} * rest_length{i}) \n
+         * Assumes compute_all_dilatations() has been called.
+         *
+         * The following members are modified:
+         * - dilatation_rate_batch(n_elems)
+         *
+         * with the following inputs:
+         * - velocity_batch(n_nodes) \n
+         * given inputs of compute_all_dilatations() are set.
+         *
+         * \example
+         * The following shows a typical use of the compute_dilatation_rate()
+         * function with the expected (correct) result also shown.
+         * \snippet test_gov_eqns.cpp compute_dilatation_rate_example
+         *
+         * \return void/None
+         *
          */
         inline constexpr decltype(auto) get_dilatation_rate() const& noexcept {
-          return 1.0;
+          auto& position(blocks::get<tags::Position>(self()));
+          auto& length(blocks::get</* TODO: length tag */>(self()));
+          auto& reference_length(blocks::get</* TODO: ref length tag */>(self()));
+          auto& velocity(blocks::get<Velocity>(self()));
+          auto position_diff_dot_velocity_diff = Traits::Operations::batch_dot(
+              Traits::Operations::difference_kernel(position),
+              Traits::Operations::difference_kernel(velocity));
+
+          return position_diff_dot_velocity_diff / (length * reference_length);
         }
         //**********************************************************************
 
