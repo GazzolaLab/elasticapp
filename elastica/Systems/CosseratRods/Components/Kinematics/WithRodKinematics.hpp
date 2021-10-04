@@ -286,19 +286,7 @@ namespace elastica {
          * (length{i} * rest_length{i}) \n
          * Assumes compute_all_dilatations() has been called.
          *
-         * The following members are modified:
-         * - dilatation_rate_batch(n_elems)
-         *
-         * with the following inputs:
-         * - velocity_batch(n_nodes) \n
-         * given inputs of compute_all_dilatations() are set.
-         *
-         * \example
-         * The following shows a typical use of the compute_dilatation_rate()
-         * function with the expected (correct) result also shown.
-         * \snippet test_gov_eqns.cpp compute_dilatation_rate_example
-         *
-         * \return void/None
+         * \return dilatation rate
          *
          */
         inline constexpr decltype(auto) get_dilatation_rate() const& noexcept {
@@ -319,6 +307,7 @@ namespace elastica {
          * of the current rod
          */
         inline constexpr decltype(auto) get_curvature_rate() const& noexcept {
+          // TODO
           return 1.0;
         }
         //**********************************************************************
