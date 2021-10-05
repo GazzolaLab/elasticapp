@@ -117,6 +117,17 @@ namespace elastica {
           //********************************************************************
 
           //********************************************************************
+          /*!\brief Variable marking ReferenceShearStretchStrain within the
+           * Cosserat rod hierarchy (kappa)
+           */
+          struct ReferenceShearStretchStrain
+              : public Traits::template CosseratRodVariable<
+                  ::elastica::tags::ReferenceShearStretchStrain,  //
+                  typename Traits::DataType::Vector,     //
+                  typename Traits::Place::OnElement> {};
+          //********************************************************************
+
+          //********************************************************************
           /*!\brief Variable marking ReferenceVoronoiLengths within the Cosserat
            * rod hierarchy
            */
@@ -205,7 +216,7 @@ namespace elastica {
 
           //********************************************************************
           /*!\brief Variable marking ShearStretchStrain within the Cosserat
-           * rod hierarchy
+           * rod hierarchy (kappa)
            */
           struct ShearStretchStrain
               : public Traits::template CosseratRodVariable<
@@ -228,7 +239,7 @@ namespace elastica {
                          Curvature, Tangent, ShearStretchStrain>;
           //! List of initialized variables
           using InitializedVariables =
-              tmpl::list<ReferenceElementLength, ReferenceCurvature>;
+              tmpl::list<ReferenceElementLength, ReferenceCurvature, ReferenceShearStretchStrain>;
           //! List of all variables
           using Variables =
               tmpl::append<InitializedVariables, ComputedVariables>;
@@ -300,6 +311,7 @@ namespace elastica {
                            typename VariableDefinitions::Variables>;
           //! Initialized variables
           using typename VariableDefinitions::ReferenceCurvature;
+          using typename VariableDefinitions::ReferenceShearStretchStrain;
           using typename VariableDefinitions::ReferenceElementLength;
           //! Computed variables
           using typename VariableDefinitions::Curvature;
@@ -437,6 +449,14 @@ namespace elastica {
                   tangent_collection * element_dilatation_collection // matvecexpr
                 );
               Traits::Operations::batch_subtract_z_unit(shear_stretch_strains_collection);
+              auto& ref_shear_stretch_strains_collection(
+                  blocks::get<ReferenceShearStretchStrain>(downstream_block));
+              Traits::Operations::batch_matvec(
+                  ref_shear_stretch_strains_collection,
+                  director,
+                  tangent_collection * element_dilatation_collection // matvecexpr
+              );
+              Traits::Operations::batch_subtract_z_unit(ref_shear_stretch_strains_collection);
             }
           }
           //********************************************************************
@@ -490,6 +510,22 @@ namespace elastica {
           inline constexpr decltype(auto) get_reference_curvature()
               const& noexcept {
             return blocks::get<ReferenceCurvature>(self());
+          }
+          //@}
+          //********************************************************************
+
+          //********************************************************************
+          /*!\name reference curvature methods*/
+          //@{
+          /*!\brief Gets reference curvature of the current rod
+           */
+          inline constexpr decltype(auto) get_reference_shear_stretch_strain() & noexcept {
+            return blocks::get<ReferenceShearStretchStrain>(self());
+          }
+
+          inline constexpr decltype(auto) get_reference_shear_stretch_strain()
+          const& noexcept {
+            return blocks::get<ReferenceShearStretchStrain>(self());
           }
           //@}
           //********************************************************************

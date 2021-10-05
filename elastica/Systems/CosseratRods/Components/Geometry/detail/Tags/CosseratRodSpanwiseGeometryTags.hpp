@@ -25,6 +25,7 @@ namespace elastica {
     // 1D Geometry types
     struct ReferenceElementLength;
     struct ReferenceCurvature;
+    struct ReferenceShearStretchStrain;
     struct ReferenceVoronoiLength;
     struct ElementLength;
     struct ElementDilatation;
