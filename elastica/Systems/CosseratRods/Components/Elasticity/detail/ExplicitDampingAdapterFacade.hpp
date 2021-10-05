@@ -78,8 +78,8 @@ namespace elastica {
           using Variables =
               tmpl::append<typename Parent::Variables,
                            typename VariableDefinitions::Variables>;
-          using typename VariableDefinitions::ForceDamping;
-          using typename VariableDefinitions::TorqueDamping;
+          using typename VariableDefinitions::ForceDampingCoefficient;
+          using typename VariableDefinitions::TorqueDampingCoefficient;
 
          private:
           // Form friendships
@@ -101,23 +101,6 @@ namespace elastica {
 
           inline constexpr auto self() const& noexcept -> ConstReference {
             return static_cast<ConstReference>(*this);
-          }
-
-         protected:
-          // TODO Implementation functions
-          inline auto compute_internal_modeled_loads_impl() const /*noexcept*/ {
-            return 1.0 + Parent::compute_internal_modeled_loads_impl();
-            // Geometry interface function
-            //  std::cout << "Adding damping to forces";
-            //        self().compute_shear_strains();
-          }
-
-          // TODO Implementation functions
-          inline auto compute_internal_modeled_torques_impl() const
-          /*noexcept*/ {
-            return 1.0 + Parent::compute_internal_modeled_torques_impl();
-            // Geometry interface function
-            //        self().compute_shear_strains();
           }
 
          protected:
@@ -151,6 +134,32 @@ namespace elastica {
                   }
                 });
           }
+
+         protected:
+          inline auto& compute_internal_modeled_loads_impl() const /*noexcept*/ {
+            auto& internal_force = Parent::compute_internal_modeled_loads_impl();
+            auto& dissipation_constant(blocks::get<ForceDampingCoefficient>(self())));
+            auto& velocity(blocks::get<tags::Velocity>(self()));
+            auto& length(blocks::get<tags::ElementLength>(self()));
+            auto elemental_velocity = Traits::Operations::voronoi_length(velocity);
+            // TODO: expand length?
+            Traits::Operations::subtract_quadrature(
+                internal_force,
+                dissipation_constant * elemental_velocity % length
+            );
+            return internal_force;
+          }
+
+          inline auto& compute_internal_modeled_torques_impl() const
+          /*noexcept*/ {
+            auto& internal_torque(Parent::compute_internal_modeled_torques_impl());
+            auto& dissipation_constant(blocks::get<TorqueDampingCoefficient>(self()));
+            auto& angular_velocity(blocks::get<tags::AngularVelocity>(self()));
+            auto& length(blocks::get<tags::ElementLength>(self()));
+            // TODO: expand length?
+            return internal_torque - dissipation_constant * angular_velocity % length;
+          }
+
         };
 
       }  // namespace detail

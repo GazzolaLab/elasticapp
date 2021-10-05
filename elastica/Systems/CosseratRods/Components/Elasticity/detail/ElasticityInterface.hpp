@@ -73,7 +73,17 @@ namespace elastica {
            * hierarchy
            */
           struct InternalLoads : public Traits::template CosseratRodVariable<
-                                     ::elastica::tags::InternalLoads,    //
+              ::elastica::tags::InternalLoads,    //
+              typename Traits::DataType::Vector,  //
+              typename Traits::Place::OnElement> {};
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Variable marking InternalStress within the Cosserat rod
+           * hierarchy
+           */
+          struct InternalStress : public Traits::template CosseratRodVariable<
+                                     ::elastica::tags::InternalStress,    //
                                      typename Traits::DataType::Vector,  //
                                      typename Traits::Place::OnElement> {};
           //********************************************************************
@@ -88,12 +98,23 @@ namespace elastica {
                                        typename Traits::Place::OnVoronoi> {};
           //********************************************************************
 
+          //********************************************************************
+          /*!\brief Variable marking InternalCouple within the Cosserat rod
+           * hierarchy
+           */
+          struct InternalCouple : public Traits::template CosseratRodVariable<
+              ::elastica::tags::InternalCouple,  //
+              typename Traits::DataType::Vector,  //
+              typename Traits::Place::OnVoronoi> {};
+          //********************************************************************
+
           //@}
           //********************************************************************
 
           //**Type definitions**************************************************
           //! List of computed variables
-          using ComputedVariables = tmpl::list<InternalLoads, InternalTorques>;
+          using ComputedVariables = tmpl::list<InternalLoads, InternalTorques,
+                                               InternalStress, InternalCouple>;
           //! List of initialized variables
           using InitializedVariables = tmpl::list<>;
           //! List of all variables
@@ -199,6 +220,8 @@ namespace elastica {
           //! Variables from definitions
           using typename VariableDefinitions::InternalLoads;
           using typename VariableDefinitions::InternalTorques;
+          using typename VariableDefinitions::InternalCouple;
+          using typename VariableDefinitions::InternalStress;
 
           //********************************************************************
           /*!\brief Initialize method for the current component
@@ -242,21 +265,37 @@ namespace elastica {
 
           //********************************************************************
           /*!\brief Computers internal force from the model
+           *
+           * \details
+           * Computes internal forces (shear force + damping force) by calling
+           * compute_shear_strain() and compute_internal_modeled_loads_impl()
+           *
+           * Ref: eq (3.8) from RSOS
+           *
+           *
+           * \return void/None
+           *
+           * \see fill later?
            */
-          inline auto compute_internal_forces() & {
-            // TODO : Do we have any preconditions and postconditions here?
-            // such as compute_stretch or compute_strain
-            return ElasticityModel::compute_internal_modeled_loads_impl();
+          inline void compute_internal_forces() & {
+            auto& internal_loads(blocks::get<InternalLoads>(self()));
+            internal_loads = ElasticityModel::compute_internal_modeled_loads_impl();
           }
           //********************************************************************
 
           //********************************************************************
-          /*!\brief Computers internal force from the model
+          /*!\brief Computers internal couple from the model
+           *
+           * \details
+           * Computes internal couple by calling
+           * compute_curvature() and compute_internal_modeled_torques_impl()
+           *
+           * \return void/None
+           *
            */
-          inline auto compute_internal_torques() & {
-            // TODO : Do we have any preconditions and postconditions here?
-            // such as compute_stretch or compute_strain
-            return ElasticityModel::compute_internal_modeled_torques_impl();
+          inline void compute_internal_torques() & {
+            auto* internal_torques(blocks::get<InternalTorques>(self()));
+            internal_torques = ElasticityModel::compute_internal_modeled_torques_impl();
           }
           //********************************************************************
 

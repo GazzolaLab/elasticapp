@@ -23,8 +23,8 @@ namespace elastica {
   namespace tags {
 
     // Damping such that F \prop v and \tau \prop \omega
-    struct ForceDamping;
-    struct TorqueDamping;
+    struct ForceDampingCoefficient;
+    struct TorqueDampingCoefficient;
 
   }  // namespace tags
 

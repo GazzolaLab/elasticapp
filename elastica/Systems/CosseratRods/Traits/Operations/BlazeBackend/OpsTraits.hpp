@@ -96,6 +96,31 @@ namespace elastica {
         return voronoi_length(input_vector);
       }
 
+      template<typename MT1, typename MT2>
+      static inline void quadrature_kernel(MT1& out_matrix, const MT2& in_matrix){
+        using ::elastica::quadrature_kernel;
+        quadrature_kernel(out_matrix, in_matrix);
+      }
+
+      // TODO: Avoid repeating code. Try to reuse inv-rotate
+      template <typename MT1, typename MT2>
+      void subtract_quadrature(MT1& out_matrix, const MT2& in_matrix) {
+        constexpr std::size_t dimension(3UL);
+        const std::size_t n_elems = in_matrix.columns();
+        assert(in_matrix.rows() == dimension);
+        assert(out_matrix.rows() == dimension);
+        const std::size_t n_nodes = n_elems + 1UL;
+        assert(out_matrix.columns() == n_nodes);
+        using ValueType = typename MT1::ElementType;
+
+        blaze::column(out_matrix, 0UL) -= ValueType(0.5) * blaze::column(in_matrix, 0UL);
+        blaze::column(out_matrix, n_nodes - 1UL) -= ValueType(0.5) * blaze::column(in_matrix, n_elems - 1UL);
+        blaze::submatrix(out_matrix, 0UL, 1UL, dimension, n_elems - 1UL) -=
+            ValueType(0.5) *
+            (blaze::submatrix(in_matrix, 0UL, 1UL, dimension, n_elems - 1UL) +
+             blaze::submatrix(in_matrix, 0UL, 0UL, dimension, n_elems - 1UL));
+      }
+
       //************************************************************************
       // Batch Rotation Operation
       // TODO: Documentation

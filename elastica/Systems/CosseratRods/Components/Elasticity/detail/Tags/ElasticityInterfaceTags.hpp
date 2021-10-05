@@ -23,7 +23,9 @@ namespace elastica {
   namespace tags {
 
     struct InternalLoads;
+    struct InternalStress;
     struct InternalTorques;
+    struct InternalCouple;
 
   }  // namespace tags
 

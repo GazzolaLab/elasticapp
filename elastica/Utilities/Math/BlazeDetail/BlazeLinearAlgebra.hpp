@@ -238,6 +238,8 @@ namespace elastica {
   //**************************************************************************
   /*!\brief Voronoi length computation
    *
+   * Equivalent to 'node_to_element_pos_or_vel' in pyelastica
+   *
    * @tparam MT1
    * @tparam MT2
    * @param in_matrix
