@@ -75,6 +75,16 @@ namespace elastica {
           //@{
 
           //********************************************************************
+          /*!\brief Variable scalar density within the Cosserat rod hierarchy
+           */
+          struct Density
+              : public Traits::template CosseratRodInitializedVariable<
+                  ::elastica::tags::Density,
+                  typename Traits::DataType::Scalar,
+                  typename Traits::Place::OnNode> {};
+          //********************************************************************
+
+          //********************************************************************
           /*!\brief Variable scalar mass within the Cosserat rod hierarchy
            */
           struct Mass
@@ -127,6 +137,26 @@ namespace elastica {
           //********************************************************************
 
           //********************************************************************
+          /*!\brief Variable marking external load within the Cosserat rod
+           * hierarchy
+           */
+          struct ExternalLoads: public Traits::template CosseratRodVariable<
+              ::elastica::tags::ExternalLoads,    //
+              typename Traits::DataType::Vector,  //
+              typename Traits::Place::OnElement> {};
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Variable marking external torque within the Cosserat rod
+           * hierarchy
+           */
+          struct ExternalTorques: public Traits::template CosseratRodVariable<
+              ::elastica::tags::ExternalTorques,    //
+              typename Traits::DataType::Vector,  //
+              typename Traits::Place::OnElement> {};
+          //********************************************************************
+
+          //********************************************************************
           /*!\brief Variable marking MassSecondMomentOfInertia within the
            * Cosserat rod hierarchy
            */
@@ -154,13 +184,12 @@ namespace elastica {
           //**Type definitions**************************************************
           //! List of computed variables
           using ComputedVariables = tmpl::list<MassSecondMomentOfInertia,
-                                               InvMassSecondMomentOfInertia>;
+                                               InvMassSecondMomentOfInertia,
+                                               ExternalLoads,
+                                               ExternalTorques>;
           //! List of initialized variables
-          using InitializedVariables = tmpl::list<Mass,
-                                                  Velocity,
-                                                  AngularVelocity,
-                                                  Acceleration,
-                                                  AngularAcceleration>;
+          using InitializedVariables = tmpl::list<Density, Mass, Velocity,
+              AngularVelocity, Acceleration, AngularAcceleration>;
           //! List of all variables
           using Variables =
               tmpl::append<InitializedVariables, ComputedVariables>;
@@ -241,6 +270,7 @@ namespace elastica {
         using typename VariableDefinitions::Variables;
 
         //! Current Variable definitions
+        using typename VariableDefinitions::Density;
         using typename VariableDefinitions::Mass;
         using typename VariableDefinitions::Velocity;
         using typename VariableDefinitions::AngularVelocity;
@@ -248,6 +278,8 @@ namespace elastica {
         using typename VariableDefinitions::Acceleration;
         using typename VariableDefinitions::MassSecondMomentOfInertia;
         using typename VariableDefinitions::InvMassSecondMomentOfInertia;
+        using typename VariableDefinitions::ExternalLoads;
+        using typename VariableDefinitions::ExternalTorques;
         //**********************************************************************
 
         //**********************************************************************
@@ -296,11 +328,46 @@ namespace elastica {
 
           // Variables Initialization
           {
+            auto& density(
+                blocks::get<Density>(downstream_block));
+            auto& mass(
+                blocks::get<Mass>(downstream_block));
             auto& mass_SMOI(
                 blocks::get<MassSecondMomentOfInertia>(downstream_block));
             auto& inv_mass_SMOI(
                 blocks::get<InvMassSecondMomentOfInertia>(downstream_block));
-            // TODO
+            auto& reference_length(
+                blocks::get<tags::ReferenceElementLength>(downstream_block));
+
+            auto area = downstream_block.get_area();
+            auto smoi = downstream_block.get_second_moment_of_inertia();
+            (density * reference_length);
+
+            /* mass second moment of inertia */
+            using Variable = MassSecondMomentOfInertia;
+            using Tag = blocks::initializer_t<Variable>;
+
+            auto& variable(blocks::get<Tag>(downstream_block));
+            auto&& stiffness_along_principal_directions_initializer =
+                blocks::get<Tag>(std::move(initializers));
+
+            const auto dofs = Variable::get_dofs(initializers.n_elems());
+            for (std::size_t idx = 0U; idx < dofs; ++idx) {
+              // (E, E, G) * (I_1, I_2, I_3)
+              Variable::slice(variable, idx) =
+                  stiffness_along_principal_directions_initializer(idx) *
+                  downstream_block.get_second_moment_of_area(idx);
+            }
+
+            /* inverse mass second moment of inertia */
+
+            // TODO: Assert non-zero division
+
+            /* Reset forces and torques */
+            auto& external_loads(blocks::get<ExternalLoads>(downstream_block));
+            auto& external_torques(blocks::get<ExternalTorques>(downstream_block));
+            external_loads = Traits::DataType::real_type(0.0);
+            external_torques = Traits::DataType::real_type(0.0);
           }
         }
         //**********************************************************************
@@ -407,22 +474,22 @@ namespace elastica {
          * \see fill later?
          */
         // TODO: double check how external force and external torque comes into play
-        template<typename VT1, typename VT2>
-        inline void update_acceleration(const VT1& external_load,
-                                         const VT2& external_torque) noexcept {
+        inline void update_acceleration() noexcept {
           auto& mass(blocks::get<Mass>(self()));
           auto& dilatation(blocks::get<tags::ElementDilatation>(self()));
           auto& inv_mass_SMOI(blocks::get<InvMassSecondMomentOfInertia>(self()));
-          auto& internal_loads(blocks::get<tags::InternalLoads>(self()));
-          auto& internal_torques(blocks::get<tags::InternalTorques>(self()));
           auto& acceleration(blocks::get<Acceleration>(self()));
           auto& angular_acceleration(blocks::get<AngularAcceleration>(self()));
+          auto& internal_loads(blocks::get<tags::InternalLoads>(self()));
+          auto& internal_torques(blocks::get<tags::InternalTorques>(self()));
+          auto& external_loads(blocks::get<ExternalLoads>(self()));
+          auto& external_torques(blocks::get<ExternalTorques>(self()));
 
-          auto total_loads = internal_loads + external_load;
+          auto total_loads = internal_loads + external_loads;
           // TODO: Revisit division vs power+multiplication
           acceleration = total_loads / Traits::Operations::expand_for_broadcast(mass);
 
-          auto total_torque= internal_torques + external_torque;
+          auto total_torque= internal_torques + external_torques;
           Traits::Operations::batch_matvec(
               angular_acceleration,
               inv_mass_SMOI,
@@ -431,8 +498,8 @@ namespace elastica {
             );
 
           /* Reset forces and torques */
-          external_load = Traits::DataType::real_type(0.0);
-          external_torque = Traits::DataType::real_type(0.0);
+          external_loads = Traits::DataType::real_type(0.0);
+          external_torques = Traits::DataType::real_type(0.0);
         }
         //*********************************************************************
 
