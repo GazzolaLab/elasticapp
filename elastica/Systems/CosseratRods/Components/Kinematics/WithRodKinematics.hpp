@@ -95,14 +95,61 @@ namespace elastica {
                     typename Traits::Place::OnElement> {};
           //********************************************************************
 
+          //********************************************************************
+          /*!\brief Variable marking Acceleration within the Cosserat rod hierarchy
+           */
+          struct Acceleration
+              : public Traits::template CosseratRodInitializedVariable<
+                  ::elastica::tags::Acceleration,         //
+                  typename Traits::DataType::Vector,  //
+                  typename Traits::Place::OnNode> {};
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Variable marking AngularAcceleration within the
+           * Cosserat rod hierarchy
+           */
+          struct AngularAcceleration
+              : public Traits::template CosseratRodInitializedVariable<
+                  ::elastica::tags::AngularAcceleration,  //
+                  typename Traits::DataType::Vector,
+                  typename Traits::Place::OnElement> {};
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Variable marking MassSecondMomentOfInertia within the
+           * Cosserat rod hierarchy
+           */
+          struct MassSecondMomentOfInertia
+              : public Traits::template CosseratRodInitializedVariable<
+                  ::elastica::tags::MassSecondMomentOfInertia,  //
+                  typename Traits::DataType::Matrix,
+                  typename Traits::Place::OnElement> {};
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Variable marking InvMassSecondMomentOfInertia within the
+           * Cosserat rod hierarchy
+           */
+          struct InvMassSecondMomentOfInertia
+              : public Traits::template CosseratRodInitializedVariable<
+                  ::elastica::tags::InvMassSecondMomentOfInertia,  //
+                  typename Traits::DataType::Matrix,
+                  typename Traits::Place::OnElement> {};
+          //********************************************************************
+
           //@}
           //********************************************************************
 
           //**Type definitions**************************************************
           //! List of computed variables
-          using ComputedVariables = tmpl::list<>;
+          using ComputedVariables = tmpl::list<MassSecondMomentOfInertia,
+                                               InvMassSecondMomentOfInertia>;
           //! List of initialized variables
-          using InitializedVariables = tmpl::list<Velocity, AngularVelocity>;
+          using InitializedVariables = tmpl::list<Velocity,
+                                                  AngularVelocity,
+                                                  Acceleration,
+                                                  AngularAcceleration>;
           //! List of all variables
           using Variables =
               tmpl::append<InitializedVariables, ComputedVariables>;
@@ -185,6 +232,10 @@ namespace elastica {
         //! Current Variable definitions
         using typename VariableDefinitions::AngularVelocity;
         using typename VariableDefinitions::Velocity;
+        using typename VariableDefinitions::AngularAcceleration;
+        using typename VariableDefinitions::Acceleration;
+        using typename VariableDefinitions::MassSecondMomentOfInertia;
+        using typename VariableDefinitions::InvMassSecondMomentOfInertia;
         //**********************************************************************
 
         //**********************************************************************
@@ -230,7 +281,13 @@ namespace elastica {
                   Variable::slice(variable, i) = initializer(i);
                 }
               });
-        }
+
+          // Variables Initialization
+          {
+            auto& mass_MOI(blocks::get<MassSecondMomentOfInertia>(downstream_block));
+            auto& inv_mass_MOI(blocks::get<InvMassSecondMomentOfInertia>(downstream_block));
+            // TODO
+          }
         //**********************************************************************
 
        public:
@@ -291,14 +348,12 @@ namespace elastica {
          */
         inline constexpr decltype(auto) get_dilatation_rate() const& noexcept {
           auto& position(blocks::get<tags::Position>(self()));
-          auto& length(blocks::get</* TODO: length tag */>(self()));
-          auto& reference_length(blocks::get</* TODO: ref length tag */>(self()));
+          auto& length(blocks::get<tags::ElementLength>(self()));
+          auto& reference_length(blocks::get<tags::ReferenceElementLength>(self()));
           auto& velocity(blocks::get<Velocity>(self()));
-          auto position_diff_dot_velocity_diff = Traits::Operations::batch_dot(
+          return Traits::Operations::batch_dot(
               Traits::Operations::difference_kernel(position),
-              Traits::Operations::difference_kernel(velocity));
-
-          return position_diff_dot_velocity_diff / (length * reference_length);
+              Traits::Operations::difference_kernel(velocity)) / (length * reference_length);
         }
         //**********************************************************************
 
@@ -309,6 +364,16 @@ namespace elastica {
         inline constexpr decltype(auto) get_curvature_rate() const& noexcept {
           // TODO
           return 1.0;
+        }
+        //**********************************************************************
+
+       protected:
+        //**********************************************************************
+        /*!\brief Gets temporal rate of curvature based on the current state
+         * of the current rod
+         */
+        inline void compute_acceleration() noexcept {
+          // TODO
         }
         //**********************************************************************
 
