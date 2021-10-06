@@ -75,6 +75,16 @@ namespace elastica {
           //@{
 
           //********************************************************************
+          /*!\brief Variable scalar mass within the Cosserat rod hierarchy
+           */
+          struct Mass
+              : public Traits::template CosseratRodInitializedVariable<
+                  ::elastica::tags::Mass,         //
+                  typename Traits::DataType::Scalar,  //
+                  typename Traits::Place::OnNode> {};
+          //********************************************************************
+
+          //********************************************************************
           /*!\brief Variable marking Velocity within the Cosserat rod hierarchy
            */
           struct Velocity
@@ -146,7 +156,8 @@ namespace elastica {
           using ComputedVariables = tmpl::list<MassSecondMomentOfInertia,
                                                InvMassSecondMomentOfInertia>;
           //! List of initialized variables
-          using InitializedVariables = tmpl::list<Velocity,
+          using InitializedVariables = tmpl::list<Mass,
+                                                  Velocity,
                                                   AngularVelocity,
                                                   Acceleration,
                                                   AngularAcceleration>;
@@ -230,8 +241,9 @@ namespace elastica {
         using typename VariableDefinitions::Variables;
 
         //! Current Variable definitions
-        using typename VariableDefinitions::AngularVelocity;
+        using typename VariableDefinitions::Mass;
         using typename VariableDefinitions::Velocity;
+        using typename VariableDefinitions::AngularVelocity;
         using typename VariableDefinitions::AngularAcceleration;
         using typename VariableDefinitions::Acceleration;
         using typename VariableDefinitions::MassSecondMomentOfInertia;
@@ -284,10 +296,13 @@ namespace elastica {
 
           // Variables Initialization
           {
-            auto& mass_MOI(blocks::get<MassSecondMomentOfInertia>(downstream_block));
-            auto& inv_mass_MOI(blocks::get<InvMassSecondMomentOfInertia>(downstream_block));
+            auto& mass_SMOI(
+                blocks::get<MassSecondMomentOfInertia>(downstream_block));
+            auto& inv_mass_SMOI(
+                blocks::get<InvMassSecondMomentOfInertia>(downstream_block));
             // TODO
           }
+        }
         //**********************************************************************
 
        public:
@@ -369,13 +384,56 @@ namespace elastica {
 
        protected:
         //**********************************************************************
-        /*!\brief Gets temporal rate of curvature based on the current state
-         * of the current rod
+        /*!\brief Update acceleration based on the current state
+         *
+         * \details
+         * Updates accelerations of the system (translational and angular) given
+         * the state of the system. \n
+         * acceleration_batch{i} =
+         * (internal_force_batch{i} + external_force_batch{i})
+         * / mass_batch{i} \n
+         * alpha_batch{i} = inv_mass_second_moment_of_inertia_batch{i} *
+         * (internal_torque_batch{i} + external_torque_batch{i}) *
+         * dilatation_batch{i} \n
+         * Also resets external_force_batch and external_torque_batch = 0.0
+         *
+         * \example
+         * The following shows a typical use of the update_acceleration()
+         * function with the expected (correct) result also shown.
+         * \snippet test_gov_eqns.cpp update_acceleration_example
+         *
+         * \return void/None
+         *
+         * \see fill later?
          */
-        inline void compute_acceleration() noexcept {
-          // TODO
+        // TODO: double check how external force and external torque comes into play
+        template<typename VT1, typename VT2>
+        inline void update_acceleration(const VT1& external_load,
+                                         const VT2& external_torque) noexcept {
+          auto& mass(blocks::get<Mass>(self()));
+          auto& dilatation(blocks::get<tags::ElementDilatation>(self()));
+          auto& inv_mass_SMOI(blocks::get<InvMassSecondMomentOfInertia>(self()));
+          auto& internal_loads(blocks::get<tags::InternalLoads>(self()));
+          auto& internal_torques(blocks::get<tags::InternalTorques>(self()));
+          auto& acceleration(blocks::get<Acceleration>(self()));
+          auto& angular_acceleration(blocks::get<AngularAcceleration>(self()));
+
+          auto total_loads = internal_loads + external_load;
+          acceleration = total_loads / Traits::Operations::expand_for_broadcast(mass);
+
+          auto total_torque= internal_torques + external_torque;
+          Traits::Operations::batch_matvec(
+              angular_acceleration,
+              inv_mass_SMOI,
+              total_torque %
+              Traits::Operations::expand_for_broadcast(dilatation)
+            );
+
+          /* Reset forces and torques */
+          external_load = Traits::DataType::real_type(0.0);
+          external_torque = Traits::DataType::real_type(0.0);
         }
-        //**********************************************************************
+        //*********************************************************************
 
         //@}
         //**********************************************************************

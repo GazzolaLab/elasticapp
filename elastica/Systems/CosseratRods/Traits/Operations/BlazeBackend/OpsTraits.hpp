@@ -40,6 +40,9 @@ namespace elastica {
     struct Operations<OptimizationLevel::basic> : private NonCreatable {
 
       static inline int add(int x, int y) { return x + y; }
+      template<typename T>
+      static inline auto expand_for_broadcast(const T& a)
+      { return blaze::expand<3UL>(a); }
 
       //************************************************************************
       // Batch Operations
