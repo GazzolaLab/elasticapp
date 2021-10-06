@@ -31,7 +31,7 @@ namespace elastica{
   */
   template <typename MT1,  // blaze Matrix expression type 1
             typename MT2>  // blaze Matrix expression type 2
-  auto two_point_difference_kernel(MT1& out_matrix, const MT2& in_matrix) {
+  void two_point_difference_kernel(MT1& out_matrix, const MT2& in_matrix) {
     constexpr std::size_t dimension(3UL);
     assert(in_matrix.rows() == dimension);
     assert(out_matrix.rows() == dimension);

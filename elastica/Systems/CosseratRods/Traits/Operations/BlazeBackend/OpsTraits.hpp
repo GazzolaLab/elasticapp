@@ -90,6 +90,12 @@ namespace elastica {
         return difference_kernel(input_vector);
       }
 
+      template<typename MT1, typename MT2>
+      static inline void two_point_difference_kernel(MT1& input_vector, const MT2& output_vector){
+        using ::elastica::two_point_difference_kernel;
+        two_point_difference_kernel(input_vector, output_vector);
+      }
+
       template<typename V>
       static inline auto voronoi_length(const V& input_vector){
         using ::elastica::voronoi_length;
