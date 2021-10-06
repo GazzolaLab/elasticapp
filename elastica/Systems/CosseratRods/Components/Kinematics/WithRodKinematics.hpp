@@ -419,6 +419,7 @@ namespace elastica {
           auto& angular_acceleration(blocks::get<AngularAcceleration>(self()));
 
           auto total_loads = internal_loads + external_load;
+          // TODO: Revisit division vs power+multiplication
           acceleration = total_loads / Traits::Operations::expand_for_broadcast(mass);
 
           auto total_torque= internal_torques + external_torque;

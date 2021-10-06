@@ -33,7 +33,7 @@ namespace elastica{
     /*!\brief Tag indicating mass
      * \ingroup systems
      */
-    struct Mass
+    struct Mass;
 
     // so3 group
 

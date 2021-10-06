@@ -43,6 +43,12 @@ namespace elastica {
       template<typename T>
       static inline auto expand_for_broadcast(const T& a)
       { return blaze::expand<3UL>(a); }
+      template<typename T>
+      static inline auto inverse_cube(const T& a)
+      { return blaze::pow(a, -3); }
+      template<typename T, typename A>
+      static inline auto transpose(const T& tensor, const A& order)
+      { return blaze::trans(tensor, order); }
 
       //************************************************************************
       // Batch Operations

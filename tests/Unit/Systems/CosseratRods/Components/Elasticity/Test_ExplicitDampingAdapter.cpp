@@ -14,6 +14,7 @@
 
 namespace {
   using namespace elastica;
+  using namespace elastica::tags;
   using namespace elastica::cosserat_rod;
   using namespace elastica::cosserat_rod::component;
   using elastica::cosserat_rod::component::detail::ElasticityInterface;

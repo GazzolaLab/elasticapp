@@ -108,36 +108,34 @@ namespace elastica {
             auto& strain(blocks::get<tags::ShearStretchStrain>(self()));
             auto& reference_strain(blocks::get<tags::ReferenceShearStretchStrain>(self()));
             auto& shear_matrix(blocks::get<tags::ShearStretchRigidityMatrix>(self()));
+            auto& internal_stress(blocks::get<tags::InternalStress>(self()));
+            auto& internal_force(blocks::get<tags::InternalLoads>(self()));
+            auto& element_dilatation(blocks::get<tags::ElementDilatation>(self()));
+            auto& director(blocks::get<tags::Director>(self()));
+
+            auto& dummy_matrix(blocks::get<tags::_DummyMatrix>(self()));
 
             self().compute_shear_strain();
-            // TODO: Revisit later. We should be able to remove placeholder for internal stress
-            auto& internal_stress(blocks::get<tags::InternalStress>(self()));
+
             Traits::Operations::batch_matvec(internal_stress,
                                              shear_matrix,
                                              strain - reference_strain);
 
             // allocating temp container (3, n_elems) for temporary storage
-            // TODO refactor to avoid temp memory allocations
-            auto QT_into_internal_stress_batch =
-                blaze::submatrix(temp_vec_batch, 0UL, 0UL, dimension, n_elems);
-            rod::linalg::batch_matvec(
+            auto& QT_into_internal_stress_batch(dummy_matrix);
+            Traits::Operations::batch_matvec(
                 QT_into_internal_stress_batch,
-                blaze::trans(director_collection_batch, {1, 0, 2}),
-                internal_stress_batch);
-            auto cosserat_internal_stress_batch =
-                QT_into_internal_stress_batch %
-                blaze::expand(blaze::pow(dilatation_batch, -1), dimension);
-            rod::calculus::difference_kernel(internal_force_batch,
-                                             cosserat_internal_stress_batch);
+                Traits::Operations::transpose(director, {1, 0, 2}),
+                internal_stress
+              );
+            // TODO: Revisit division vs power+multiplication
+            Traits::Operations::two_point_difference_kernel(
+                internal_force,
+                QT_into_internal_stress_batch /
+                    Traits::Operations::expand_for_broadcast(element_dilatation)
+              );
 
-            // return E * A * strain;
-            // cosserat_rod::batch_matvec(Stiffness, strain);
-            // cosserat_rod::batch_matvec(self().get_stiffness(),
-            // self().get_strain());
-            // cosserat_rod::batch_matvec(self().get_stiffness(),
-            // self().compute_cross_section());
-            //          Traits::Operations::add(self().get_stiffness(),
-            //                                  self().compute_cross_section());
+            return internal_force;
           }
           //********************************************************************
 
@@ -146,106 +144,101 @@ namespace elastica {
            * model
            */
           inline auto& compute_internal_modeled_torques_impl() const noexcept {
+            auto& director(blocks::get<tags::Director>(self()));
+            auto& omega(blocks::get<tags::AngularVelocity>(self()));
             auto& curvature(blocks::get<tags::Curvature>(self()));
-            auto& reference_curvature(blocks::get<tags::ReferenceCurvature>(self()));
-            auto& bend_matrix(blocks::get<tags::BendingTwistRigidityMatrix>(self()));
-
-            self().compute_curvature();
-            // TODO: Revisit later. We should be able to remove placeholder for internal couple
+            auto& tangent(blocks::get<tags::Tangent>(self()));
+            auto& dilatation(blocks::get<tags::ElementDilatation>(self()));
+            auto& voronoi_dilatation(blocks::get<tags::VoronoiDilatation>(self()));
+            auto& internal_stress(blocks::get<tags::InternalStress>(self()));
             auto& internal_couple(blocks::get<tags::InternalCouple>(self()));
+            auto& internal_torques(blocks::get<tags::InternalTorques>(self()));
+            auto& bend_matrix(blocks::get<tags::BendingTwistRigidityMatrix>(self()));
+            auto& reference_curvature(blocks::get<tags::ReferenceCurvature>(self()));
+            auto& reference_voronoi_length(blocks::get<tags::ReferenceVoronoiLength>(self()));
+            auto& reference_element_length(blocks::get<tags::ReferenceElementLength>(self()));
+            auto& mass_SMOI(blocks::get<tags::MassSecondMomentOfInertia>(self()));
+
+            auto& dummy_elem_vector(blocks::get<tags::_DummyElementVector>(self()));
+            auto& dummy_elem_vector2(blocks::get<tags::_DummyElementVector2>(self()));
+            auto& dummy_voro_vector(blocks::get<tags::_DummyVoronoiVector>(self()));
+
+            /* Compute Curvature */
+            self().compute_curvature();
             Traits::Operations::batch_matvec(internal_couple,
                                              bend_matrix,
                                              curvature - reference_curvature);
-            /* Compute dilatation rate when needed, dilatation itself is done */
-            /* before in internal_stresses */
-            this->compute_dilatation_rate();
 
-            internal_torque_batch = ValueType(0.0);
-            /* Contributions are being added step by step instead of final in */
-            /* the end to avoid additional memory allocs */
-            auto voronoi_dilatation_inv_cube_batch =
-                blaze::pow(voronoi_dilatation_batch, -3);
+            /* Compute dilatation rate */
+            auto dilatation_rate = self().get_dilatation_rate();
 
-            // allocating temp container (3, n_elems) for temporary storage
-            // TODO refactor to avoid temp memory allocations
-            auto bend_twist_couple_2D_batch =
-                blaze::submatrix(temp_vec_batch, 0UL, 0UL, dimension, n_elems);
-            rod::calculus::difference_kernel(
-                bend_twist_couple_2D_batch,
-                internal_couple_batch %
-                    blaze::expand(voronoi_dilatation_inv_cube_batch, dimension));
-            internal_torque_batch += bend_twist_couple_2D_batch;
+            auto voronoi_dilatation_inv_cube =
+                Traits::Operations::inverse_cube(voronoi_dilatation);
+
+            /* Reset internal torque */
+            // Caution: Make sure the dummy variable scope does not overlap
+            Traits::Operations::two_point_difference_kernel(
+                  internal_torques, // bend_twist_couple_2D_batch,
+                  internal_couple %
+                    Traits::Operations::expand_for_broadcast(voronoi_dilatation_inv_cube)
+                );
 
             // allocating temp container (3, n_voronoi) for temporary storage
-            // TODO refactor to avoid temp memory allocations
-            auto curvature_cross_internal_couple_batch =
-                blaze::submatrix(temp_vec_batch, 0UL, 0UL, dimension, n_voronoi);
-            rod::linalg::batch_cross(curvature_cross_internal_couple_batch,
-                                     curvature_batch, internal_couple_batch);
+            auto& curvature_cross_internal_couple_batch(dummy_voro_vector);
+            Traits::Operations::batch_cross(curvature_cross_internal_couple_batch,
+                                     curvature, internal_couple);
 
             // allocating temp container (3, n_elems) for temporary storage
-            // taking different location data slices since temp_vec_batch is being
-            // used in ET above
-            // TODO refactor to avoid temp memory allocations
-            auto bend_twist_couple_3D_batch =
-                blaze::submatrix(blaze::pageslice(temp_mat_batch, 0UL), 0UL, 0UL,
-                                 dimension, n_elems);
-            rod::calculus::quadrature_kernel(
+            auto& bend_twist_couple_3D_batch(dummy_elem_vector);
+            Traits::Operations::quadrature_kernel(
                 bend_twist_couple_3D_batch,
                 curvature_cross_internal_couple_batch %
-                    blaze::expand(rest_voronoi_length_batch *
-                                      voronoi_dilatation_inv_cube_batch,
-                                  dimension));
-            internal_torque_batch += bend_twist_couple_3D_batch;
+                    Traits::Operations::expand_for_broadcast(
+                      reference_voronoi_length * voronoi_dilatation_inv_cube)
+                );
+            internal_torques += bend_twist_couple_3D_batch;
 
             // allocating temp container (3, n_elems) for temporary storage
-            // TODO refactor to avoid temp memory allocations
-            auto Q_into_t_batch =
-                blaze::submatrix(temp_vec_batch, 0UL, 0UL, dimension, n_elems);
-            rod::linalg::batch_matvec(Q_into_t_batch, director_collection_batch,
-                                      tangent_batch);
+            auto& Q_into_t_batch(dummy_elem_vector);
+            Traits::Operations::batch_matvec(Q_into_t_batch, director, tangent);
 
             // allocating temp container (3, n_elems) for temporary storage
-            // taking different data slice since temp_vec_batch is being used
-            // in ET above
-            // TODO refactor to avoid temp memory allocations
-            auto Q_into_t_cross_internal_stress_batch =
-                blaze::submatrix(blaze::pageslice(temp_mat_batch, 0UL), 0UL, 0UL,
-                                 dimension, n_elems);
-            rod::linalg::batch_cross(Q_into_t_cross_internal_stress_batch,
-                                     Q_into_t_batch, internal_stress_batch);
-            auto shear_stretch_couple_batch =
-                (Q_into_t_cross_internal_stress_batch %
-                 blaze::expand(rest_length_batch, dimension));
-            internal_torque_batch += shear_stretch_couple_batch;
+            auto& Q_into_t_cross_internal_stress_batch(dummy_voro_vector);
+            Traits::Operations::batch_cross(
+                Q_into_t_cross_internal_stress_batch,
+                Q_into_t_batch,
+                internal_stress
+              );
+            auto shear_stretch_couple_batch = Q_into_t_cross_internal_stress_batch %
+                 Traits::Operations::expand_for_broadcast(reference_element_length);
+            internal_torques += shear_stretch_couple_batch;
 
             /* common sub expression elimination here, as J w / e is used in both */
             /* the lagrangian transport and dilatation terms */
             // allocating temp container (3, n_elems) for temporary storage
-            // TODO refactor to avoid temp memory allocations
-            auto J_omega_batch =
-                blaze::submatrix(temp_vec_batch, 0UL, 0UL, dimension, n_elems);
-            linalg::batch_matvec(J_omega_batch, mass_second_moment_of_inertia_batch,
-                                 omega_batch);
-            auto J_omega_upon_e_batch =
-                J_omega_batch %
-                blaze::expand(blaze::pow(dilatation_batch, -1), dimension);
+            auto& J_omega_upon_e_batch(dummy_elem_vector);
+            // TODO: Revisit division vs power+multiplication
+            Traits::Operations::batch_matvec(
+                J_omega_upon_e_batch,
+                mass_SMOI,
+                omega / Traits::Operations::expand_for_broadcast(dilatation) // J_omega
+              );
 
             // allocating temp container (3, n_elems) for temporary storage
-            // taking different data slice since temp_vec_batch is being used in
-            // ET above
-            // TODO refactor to avoid temp memory allocations
-            auto lagrangian_transport_batch =
-                blaze::submatrix(blaze::pageslice(temp_mat_batch, 0UL), 0UL, 0UL,
-                                 dimension, n_elems);
-            rod::linalg::batch_cross(lagrangian_transport_batch,
-                                     J_omega_upon_e_batch, omega_batch);
-            internal_torque_batch += lagrangian_transport_batch;
+            auto& lagrangian_transport_batch(dummy_elem_vector2);
+            Traits::Operations::batch_cross(
+                lagrangian_transport_batch,
+                J_omega_upon_e_batch,
+                omega
+              );
+            internal_torques += lagrangian_transport_batch;
 
-            auto unsteady_dilatation_batch =
-                J_omega_upon_e_batch %
-                blaze::expand(dilatation_rate_batch / dilatation_batch, dimension);
-            internal_torque_batch += unsteady_dilatation_batch;
+            // unsteady_dilatation_batch
+            auto unsteady_dilatation_batch = J_omega_upon_e_batch %
+                Traits::Operations::expand_for_broadcast(dilatation_rate / dilatation);
+            internal_torques += unsteady_dilatation_batch;
+
+            return internal_torques;
           }
           //********************************************************************
 

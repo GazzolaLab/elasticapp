@@ -138,14 +138,14 @@ namespace elastica {
          protected:
           inline auto& compute_internal_modeled_loads_impl() const /*noexcept*/ {
             auto& internal_force = Parent::compute_internal_modeled_loads_impl();
-            auto& dissipation_constant(blocks::get<ForceDampingCoefficient>(self())));
+            auto& dissipation_constant(blocks::get<ForceDampingCoefficient>(self()));
             auto& velocity(blocks::get<tags::Velocity>(self()));
             auto& length(blocks::get<tags::ElementLength>(self()));
             auto elemental_velocity = Traits::Operations::voronoi_length(velocity);
-            // TODO: expand length?
             Traits::Operations::subtract_quadrature(
                 internal_force,
-                dissipation_constant * elemental_velocity % length
+                dissipation_constant * elemental_velocity %
+                    Traits::Operations::expand_for_broadcast(length)
             );
             return internal_force;
           }
@@ -156,8 +156,8 @@ namespace elastica {
             auto& dissipation_constant(blocks::get<TorqueDampingCoefficient>(self()));
             auto& angular_velocity(blocks::get<tags::AngularVelocity>(self()));
             auto& length(blocks::get<tags::ElementLength>(self()));
-            // TODO: expand length?
-            return internal_torque - dissipation_constant * angular_velocity % length;
+            return internal_torque - dissipation_constant * angular_velocity %
+                     Traits::Operations::expand_for_broadcast(length);
           }
 
         };

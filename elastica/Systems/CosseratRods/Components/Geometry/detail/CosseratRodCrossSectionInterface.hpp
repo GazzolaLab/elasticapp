@@ -622,6 +622,7 @@ namespace elastica {
             // self().data()) = 1.0;
             // get_curvature() = log(get_rotation_matrices())
           }
+
           //@}
           //********************************************************************
         };
