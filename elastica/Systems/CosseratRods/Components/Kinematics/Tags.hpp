@@ -30,26 +30,14 @@ namespace elastica{
     // Scalar
 
     //**************************************************************************
-    /*!\brief Tag indicating mass
+    /*!\brief Tag indicating mass and density
      * \ingroup systems
      */
     struct Mass;
+    struct Density;
 
-    // so3 group
+    struct ExternalLoads;
+    struct ExternalTorques;
 
-    //**************************************************************************
-    /*!\brief Tag indicating mass second moment of inertia
-     * \ingroup systems
-     */
-    struct MassSecondMomentOfInertia;
-    //**************************************************************************
-
-    //**************************************************************************
-    /*!\brief Tag indicating inverse mass second moment of inertia
-     * equivalent to inverse of mass second moment of inertia.
-     * \ingroup systems
-     */
-    struct InvMassSecondMomentOfInertia;
-    //**************************************************************************
   }
 }

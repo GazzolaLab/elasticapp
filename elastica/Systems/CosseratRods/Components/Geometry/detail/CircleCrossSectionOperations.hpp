@@ -86,7 +86,7 @@ namespace cosserat_rod {
         //********************************************************************
 
         //********************************************************************
-        /*!\brief computes second moment of area
+        /*!\brief computes second moment of area I_1
          *
          * \param radius radius of the circle
          */

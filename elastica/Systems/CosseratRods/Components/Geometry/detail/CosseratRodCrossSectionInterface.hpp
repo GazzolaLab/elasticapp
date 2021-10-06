@@ -126,12 +126,36 @@ namespace elastica {
           };
           //********************************************************************
 
+          //********************************************************************
+          /*!\brief Variable marking MassSecondMomentOfInertia within the
+           * Cosserat rod hierarchy
+           */
+          struct MassSecondMomentOfInertia
+              : public Traits::template CosseratRodInitializedVariable<
+                  ::elastica::tags::MassSecondMomentOfInertia,  //
+                  typename Traits::DataType::Matrix,
+                  typename Traits::Place::OnElement> {};
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Variable marking InvMassSecondMomentOfInertia within the
+           * Cosserat rod hierarchy
+           */
+          struct InvMassSecondMomentOfInertia
+              : public Traits::template CosseratRodInitializedVariable<
+                  ::elastica::tags::InvMassSecondMomentOfInertia,  //
+                  typename Traits::DataType::Matrix,
+                  typename Traits::Place::OnElement> {};
+          //********************************************************************
+
           //@}
           //********************************************************************
 
           //**Type definitions**************************************************
           //! List of computed variables
-          using ComputedVariables = tmpl::list<ElementVolume>;
+          using ComputedVariables = tmpl::list<ElementVolume,
+                                               MassSecondMomentOfInertia,
+                                               InvMassSecondMomentOfInertia>;
           //! List of initialized variables
           using InitializedVariables = tmpl::list<ElementDimension>;
           //! List of all variables
@@ -238,6 +262,8 @@ namespace elastica {
           using typename Parent::VoronoiLength;
           using typename Parent::ElementLength;
 
+          using typename VariableDefinitions::MassSecondMomentOfInertia;
+          using typename VariableDefinitions::InvMassSecondMomentOfInertia;
           using typename VariableDefinitions::ElementDimension;
           using typename VariableDefinitions::ElementVolume;
           //********************************************************************
@@ -320,7 +346,39 @@ namespace elastica {
               auto& lengths(blocks::get<::elastica::tags::ElementLength>(
                   downstream_block));
 
-              volumes = dimensions * lengths;
+              volumes = compute_cross_section_area(dimensions) * lengths;
+            }
+
+            /* mass second moment of inertia */
+            {
+              using Variable = MassSecondMomentOfInertia;
+              using Tag = blocks::initializer_t<Variable>;
+              using Traits::DataType::real_type;
+
+              auto& variable(blocks::get<Tag>(downstream_block));
+              const auto dofs = Variable::get_dofs(initializers.n_elems());
+              for (std::size_t idx = 0U; idx < dofs; ++idx) {
+                // (I_1, I_2, I_3)
+                Variable::slice(variable, idx) = real_type(0.0);
+                Variable::diagonal_assign(variable, idx,
+                    downstream_block.get_second_moment_of_area(idx));
+              }
+            }
+
+            /* inverse mass second moment of inertia */
+            {
+              using Variable = InvMassSecondMomentOfInertia;
+              using Tag = blocks::initializer_t<Variable>;
+              using Traits::DataType::real_type;
+
+              auto& variable(blocks::get<Tag>(downstream_block));
+              const auto dofs = Variable::get_dofs(initializers.n_elems());
+              for (std::size_t idx = 0U; idx < dofs; ++idx) {
+                // inv(I_1, I_2, I_3)
+                Variable::slice(variable, idx) = real_type(0.0);
+                  Variable::diagonal_assign(variable, idx,
+                      real_type(1.0)/downstream_block.get_second_moment_of_area(idx));
+              }
             }
           }
           //********************************************************************

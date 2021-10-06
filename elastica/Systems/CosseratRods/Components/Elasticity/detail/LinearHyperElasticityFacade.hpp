@@ -257,6 +257,7 @@ namespace elastica {
             {
               using Variable = BendingTwistRigidityMatrix;
               using Tag = blocks::initializer_t<Variable>;
+              using Traits::DataType::real_type;
 
               auto& variable(blocks::get<Tag>(downstream_block));
               auto&& stiffness_along_principal_directions_initializer =
@@ -265,9 +266,13 @@ namespace elastica {
               const auto dofs = Variable::get_dofs(initializers.n_elems());
               for (std::size_t idx = 0U; idx < dofs; ++idx) {
                 // (E, E, G) * (I_1, I_2, I_3)
-                Variable::slice(variable, idx) =
+                Variable::slice(variable, idx) = real_type(0.0);
+                Variable::diagonal_assign(
+                    variable,
+                    idx,
                     stiffness_along_principal_directions_initializer(idx) *
-                    downstream_block.get_second_moment_of_area(idx);
+                        downstream_block.get_second_moment_of_area(idx)
+                  );
                 /*
                     This::get_moment_of_inertia_along_principal_directions(
                         downstream_block, i);
@@ -279,6 +284,7 @@ namespace elastica {
             {
               using Variable = ShearStretchRigidityMatrix;
               using Tag = blocks::initializer_t<Variable>;
+              using Traits::DataType::real_type;
 
               auto& variable(blocks::get<Tag>(downstream_block));
               auto&& stiffness_along_principal_directions_initializer =
@@ -287,10 +293,14 @@ namespace elastica {
               const auto dofs = Variable::get_dofs(initializers.n_elems());
               for (std::size_t idx = 0U; idx < dofs; ++idx) {
                 // (G, G, E) * (\alpha A, \alpha A, A)
-                Variable::slice(variable, idx) =
+                Variable::slice(variable, idx) = real_type(0.0);
+                Variable::diagonal_assign(
+                    variable,
+                    idx,
                     stiffness_along_principal_directions_initializer(idx) *
-                    This::get_effective_area_along_principal_directions(
-                        downstream_block, idx);
+                      This::get_effective_area_along_principal_directions(
+                        downstream_block, idx)
+                  );
               }
             }
           }
