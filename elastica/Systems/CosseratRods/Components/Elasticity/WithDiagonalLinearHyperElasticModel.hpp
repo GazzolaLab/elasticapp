@@ -23,6 +23,7 @@
 ///// Types always first
 #include "Systems/CosseratRods/Components/Elasticity/Types.hpp"
 /////
+#include "Systems/CosseratRods/Components/Geometry/Tags.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/Protocols.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/detail/ElasticityInterface.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/detail/LinearHyperElasticityFacade.hpp"
@@ -104,7 +105,7 @@ namespace elastica {
           /*!\brief Computes the modeled internal loads from the elasticity
            * model
            */
-          inline auto& compute_internal_modeled_loads_impl() const noexcept {
+          inline void compute_internal_modeled_loads_impl() const noexcept {
             auto& strain(blocks::get<tags::ShearStretchStrain>(self()));
             auto& reference_strain(blocks::get<tags::ReferenceShearStretchStrain>(self()));
             auto& shear_matrix(blocks::get<tags::ShearStretchRigidityMatrix>(self()));
@@ -135,7 +136,7 @@ namespace elastica {
                     Traits::Operations::expand_for_broadcast(element_dilatation)
               );
 
-            return internal_force;
+            // return internal_force;
           }
           //********************************************************************
 
@@ -143,7 +144,7 @@ namespace elastica {
           /*!\brief Computes the modeled internal torques from the elasticity
            * model
            */
-          inline auto& compute_internal_modeled_torques_impl() const noexcept {
+          inline void compute_internal_modeled_torques_impl() const noexcept {
             auto& director(blocks::get<tags::Director>(self()));
             auto& omega(blocks::get<tags::AngularVelocity>(self()));
             auto& curvature(blocks::get<tags::Curvature>(self()));
@@ -238,7 +239,6 @@ namespace elastica {
                 Traits::Operations::expand_for_broadcast(dilatation_rate / dilatation);
             internal_torques += unsteady_dilatation_batch;
 
-            return internal_torques;
           }
           //********************************************************************
 

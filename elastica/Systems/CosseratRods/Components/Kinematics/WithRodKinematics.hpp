@@ -424,7 +424,7 @@ namespace elastica {
         inline void update_acceleration() noexcept {
           auto& mass(blocks::get<Mass>(self()));
           auto& dilatation(blocks::get<tags::ElementDilatation>(self()));
-          auto& inv_mass_SMOI(blocks::get<InvMassSecondMomentOfInertia>(self()));
+          auto& inv_mass_SMOI(blocks::get<tags::InvMassSecondMomentOfInertia>(self()));
           auto& acceleration(blocks::get<Acceleration>(self()));
           auto& angular_acceleration(blocks::get<AngularAcceleration>(self()));
           auto& internal_loads(blocks::get<tags::InternalLoads>(self()));

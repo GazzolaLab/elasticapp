@@ -10,6 +10,7 @@
 #include "Systems/Block/Block.hpp"
 #include "Systems/CosseratRods/Traits/PlacementTrait.hpp"
 #include "Systems/CosseratRods/Traits/Protocols.hpp"
+#include "Systems/CosseratRods/Traits/DataOpsTraits.hpp"
 #include "Utilities/NonCreatable.hpp"
 
 // because Vec3 is a blaze vector we need to include constructors for it
@@ -33,6 +34,8 @@ namespace mock {
                                          std::size_t /*index*/) {
       return data;
     }
+    static inline void diagonal_assign(type const& data, std::size_t index,
+                                       type const& diag) {}
   };
 
   template <std::size_t>
@@ -98,10 +101,10 @@ namespace mock {
     using size_type = std::size_t;
 
     struct DataType {
-      using Scalar = ScalarType<real_type>;
-      using Vector = ScalarType<real_type>;
-      using Matrix = ScalarType<real_type>;
-      using Index = ScalarType<index_type>;
+      using Index = elastica::cosserat_rod::VectorTag<index_type>;
+      using Scalar = elastica::cosserat_rod::VectorTag<real_type>;
+      using Vector = elastica::cosserat_rod::MatrixTag<real_type>;
+      using Matrix = elastica::cosserat_rod::TensorTag<real_type>;
     };
 
     struct Place {
@@ -121,6 +124,10 @@ namespace mock {
     struct Operations {
       template<typename A>
       static auto voronoi_length(A& a){return 1UL;}
+      template<typename A, typename B>
+      static void quadrature_kernel(A, B){}
+      template<typename A, typename B>
+      static void subtract_quadrature(A, B){}
       template<typename A, typename B>
       static void difference_kernel(A, B){}
       template<typename B>

@@ -303,9 +303,9 @@ namespace elastica {
            *
            * \see fill later?
            */
-          inline auto compute_internal_forces() & {
+          inline auto compute_internal_forces() {
             auto& internal_loads(blocks::get<InternalLoads>(self()));
-            internal_loads = ElasticityModel::compute_internal_modeled_loads_impl();
+            ElasticityModel::compute_internal_modeled_loads_impl();
             return internal_loads;
           }
           //********************************************************************
@@ -320,9 +320,9 @@ namespace elastica {
            * \return void/None
            *
            */
-          inline auto compute_internal_torques() & {
-            auto* internal_torques(blocks::get<InternalTorques>(self()));
-            internal_torques = ElasticityModel::compute_internal_modeled_torques_impl();
+          inline auto compute_internal_torques() {
+            auto& internal_torques(blocks::get<InternalTorques>(self()));
+            ElasticityModel::compute_internal_modeled_torques_impl();
             return internal_torques;
           }
           //********************************************************************

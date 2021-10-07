@@ -10,6 +10,7 @@
 ///
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TMPLDebugging.hpp"
 
 namespace {
   using namespace elastica::cosserat_rod::component::detail;
@@ -87,28 +88,29 @@ namespace {
   template <typename C, typename B>
   class TestNoDataElasticityModel
       : public Adapt<TestNoDataElasticityImplementation<C, B>>::template with<
-            TestElasticityInterface> {};
-
+            TestElasticityInterface> {
+      //TypeDisplayer<> rd{};
+    };
 }  // namespace
 
-namespace {
-
-  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.ElasticityInterface.no_data",
-                     "[Systems][Unit]") {
-    using Model =
-        TestNoDataElasticityModel<mock::BasicCosseratRodTraits, DummyBlock>;
-    Model model{};
-
-    // static_assert(Model::parent_need_not_be_initialized(),
-    //               "Initialization logic error!");
-
-    model.compute_internal_forces();
-    CHECK(model.i == 1);
-    model.compute_internal_torques();
-    CHECK(model.i == 0);
-  }
-
-}  // namespace
+//namespace { // TODO: Revisit
+//
+//  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.ElasticityInterface.no_data",
+//                     "[Systems][Unit]") {
+//    using Model =
+//        TestNoDataElasticityModel<mock::BasicCosseratRodTraits, DummyBlock>;
+//    Model model{};
+//
+//    // static_assert(Model::parent_need_not_be_initialized(),
+//    //               "Initialization logic error!");
+//
+//    model.compute_internal_forces();
+//    CHECK(model.i == 1);
+//    model.compute_internal_torques();
+//    CHECK(model.i == 0);
+//  }
+//
+//}  // namespace
 
 namespace {
 
@@ -136,14 +138,14 @@ namespace {
     using Variables = ComputedVariables;
 
    protected:
-    auto compute_internal_modeled_loads_impl() {
-      // blocks::get<InternalLoads>(self()) = 3.14;
-      return 3.14;
+    void compute_internal_modeled_loads_impl() {
+      blocks::get<elastica::tags::InternalLoads>(self()) = 3.14;
+      //return 3.14;
     }
 
-    auto compute_internal_modeled_torques_impl() {
-      // blocks::get<InternalTorques>(self()) = 42.0;
-      return 42.0;
+    void compute_internal_modeled_torques_impl() {
+      blocks::get<elastica::tags::InternalTorques>(self()) = 42.0;
+      //return 42.0;
     }
 
     template <typename DownstreamBlock, typename CosseratInitializer>

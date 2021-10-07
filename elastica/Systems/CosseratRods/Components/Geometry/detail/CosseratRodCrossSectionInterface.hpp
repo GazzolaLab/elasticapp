@@ -353,7 +353,7 @@ namespace elastica {
             {
               using Variable = MassSecondMomentOfInertia;
               using Tag = blocks::initializer_t<Variable>;
-              using Traits::DataType::real_type;
+
 
               auto& variable(blocks::get<Tag>(downstream_block));
               const auto dofs = Variable::get_dofs(initializers.n_elems());
@@ -369,7 +369,6 @@ namespace elastica {
             {
               using Variable = InvMassSecondMomentOfInertia;
               using Tag = blocks::initializer_t<Variable>;
-              using Traits::DataType::real_type;
 
               auto& variable(blocks::get<Tag>(downstream_block));
               const auto dofs = Variable::get_dofs(initializers.n_elems());

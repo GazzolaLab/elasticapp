@@ -257,7 +257,7 @@ namespace elastica {
             {
               using Variable = BendingTwistRigidityMatrix;
               using Tag = blocks::initializer_t<Variable>;
-              using Traits::DataType::real_type;
+              using real_type = typename Traits::real_type;
 
               auto& variable(blocks::get<Tag>(downstream_block));
               auto&& stiffness_along_principal_directions_initializer =
@@ -284,7 +284,7 @@ namespace elastica {
             {
               using Variable = ShearStretchRigidityMatrix;
               using Tag = blocks::initializer_t<Variable>;
-              using Traits::DataType::real_type;
+              using real_type = typename Traits::real_type;
 
               auto& variable(blocks::get<Tag>(downstream_block));
               auto&& stiffness_along_principal_directions_initializer =

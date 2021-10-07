@@ -2,6 +2,7 @@
 // Created by Tejaswin Parthasarathy on 4/29/21.
 //
 #include "Framework/TestingFramework.hpp"
+#include "Systems/CosseratRods/Components/Tags.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/ExplicitDampingAdapter.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/detail/ElasticityInterface.hpp"
 #include "Systems/CosseratRods/Components/Geometry.hpp"

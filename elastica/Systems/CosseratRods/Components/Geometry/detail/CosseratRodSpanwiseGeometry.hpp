@@ -236,10 +236,11 @@ namespace elastica {
           using ComputedVariables =
               tmpl::list<ReferenceVoronoiLength, ElementLength,
                          ElementDilatation, VoronoiLength, VoronoiDilatation,
-                         Curvature, Tangent, ShearStretchStrain>;
+                         Curvature, Tangent, ShearStretchStrain,
+                         ReferenceElementLength, ReferenceCurvature, ReferenceShearStretchStrain>;
           //! List of initialized variables
           using InitializedVariables =
-              tmpl::list<ReferenceElementLength, ReferenceCurvature, ReferenceShearStretchStrain>;
+              tmpl::list<>;
           //! List of all variables
           using Variables =
               tmpl::append<InitializedVariables, ComputedVariables>;

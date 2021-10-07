@@ -119,7 +119,7 @@ namespace elastica {
 
       // TODO: Avoid repeating code. Try to reuse inv-rotate
       template <typename MT1, typename MT2>
-      void subtract_quadrature(MT1& out_matrix, const MT2& in_matrix) {
+      static inline void subtract_quadrature(MT1& out_matrix, const MT2& in_matrix) {
         constexpr std::size_t dimension(3UL);
         const std::size_t n_elems = in_matrix.columns();
         assert(in_matrix.rows() == dimension);

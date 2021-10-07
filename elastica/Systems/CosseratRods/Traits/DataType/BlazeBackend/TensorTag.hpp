@@ -36,6 +36,7 @@
 // should be in Systems instead
 #include "Simulator/Frames.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Math/Vec3.hpp"
 
 namespace elastica {
 
@@ -286,7 +287,7 @@ namespace elastica {
       //************************************************************************
       static inline void diagonal_assign(data_type const& data, std::size_t index,
                                          Vec3 const& diag) {
-        auto submatrix(blaze::columnslice(data, index));
+        auto submatrix = blaze::columnslice(data, index);
         submatrix(0UL, 0UL) = Real(diag[0UL]);
         submatrix(1UL, 1UL) = Real(diag[1UL]);
         submatrix(2UL, 2UL) = Real(diag[2UL]);

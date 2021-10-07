@@ -32,9 +32,9 @@ namespace {
   // using Model = blocks::Block<Plugin>;
   using Model = typename Plugin::Model;
 
-  static_assert(sizeof(Model) ==
-                    sizeof(double) * tmpl::size<Plugin::Variables>::value,
-                "EBO failure!");
+  static_assert(
+      sizeof(Model) == sizeof(double) * tmpl::size<Plugin::Variables>::value,
+      "EBO failure!");
   template <typename T>
   constexpr bool const_check = std::is_const<std::remove_reference_t<T>>::value;
 
