@@ -39,7 +39,10 @@ namespace elastica {
     template <>
     struct Operations<OptimizationLevel::basic> : private NonCreatable {
 
-      static inline int add(int x, int y) { return x + y; }
+      static inline int add(int x, int y)
+      { return x + y; }
+
+      // add axis=0 with size 3
       template<typename T>
       static inline auto expand_for_broadcast(const T& a)
       { return blaze::expand<3UL>(a); }
