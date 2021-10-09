@@ -82,7 +82,7 @@ namespace elastica {
       //! Type of size
       using size_type = typename Place::size_type;
       //! Operations type to act on the data, typically contains kernels
-      using Operation = typename TraitsForDataOps::Operations;
+      using Operations = typename TraitsForDataOps::Operations;
       //************************************************************************
 
       //************************************************************************

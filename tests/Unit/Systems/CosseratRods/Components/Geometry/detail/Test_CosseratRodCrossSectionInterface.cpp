@@ -73,9 +73,8 @@ namespace {
   //  using Model = blocks::Block<Plugin>;
   using Model = typename Plugin::Model;
 
-  static_assert(sizeof(Model) ==
-                    sizeof(double) * tmpl::size<Plugin::Variables>::value,
-                "EBO failure!");
+  CHECK_EBO(Model);
+
   template <typename T>
   constexpr bool const_check = std::is_const<std::remove_reference_t<T>>::value;
 
@@ -95,8 +94,8 @@ namespace {
       "[Systems][Unit]") {
     Model model{};
 
-    CHECK(approx(model.get_element_dimension()) == 0.0);
-    CHECK(approx(model.get_element_volume()) == 0.0);
+    CHECK(model.get_element_dimension() == 0.0);
+    CHECK(model.get_element_volume() == 0.0);
 
     constexpr auto n_initializers = 5UL;
     auto n_times_called = make_array<n_initializers>(0U);
@@ -132,17 +131,17 @@ namespace {
     // check if initialization is done as expected
     CHECK_ITERABLE_APPROX(n_times_called, make_array<n_initializers>(1U));
 
-    CHECK(approx(model.get_element_dimension()) == 4.0);
+    CHECK(model.get_element_dimension() == 4.0);
     // volume = dimension * length
-    CHECK(approx(model.get_element_volume()) == 4.0);
+    CHECK(model.get_element_volume() == 4.0);
 
-    CHECK(approx(model.get_area()) == 4.0);
-    CHECK(approx(model.shape_factor()) == 1.6);
+    CHECK(model.get_area() == 4.0);
+    CHECK(model.shape_factor() == 1.6);
 
     //    using LocalFrame = typename TestGeometry<Model>::Frame;
     using LocalFrame = typename Model::Frame;
-    CHECK(approx(model.get_second_moment_of_area<LocalFrame::D1>()) == 16.0);
-    CHECK(approx(model.get_second_moment_of_area<LocalFrame::D2>()) == 16.0);
+    CHECK(model.get_second_moment_of_area<LocalFrame::D1>() == 16.0);
+    CHECK(model.get_second_moment_of_area<LocalFrame::D2>() == 16.0);
     // CustomDouble has trouble with Catch for unknown reasons
     CHECK(double(model.get_second_moment_of_area<LocalFrame::D1>(0UL)) ==
           approx(16.0));

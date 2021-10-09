@@ -18,8 +18,7 @@
 #include "Systems/CosseratRods/Components/Elasticity/detail/Types.hpp"
 /////
 #include "Systems/Block.hpp"
-#include "Systems/common/Tags.hpp"
-#include "Systems/CosseratRods/Components/Geometry/Tags.hpp"
+#include "Systems/CosseratRods/Tags.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/detail/Tags/ExplicitDampingAdapterFacadeTags.hpp"
 #include "Utilities/CRTP.hpp"
 #include "Utilities/TMPL.hpp"
@@ -153,8 +152,7 @@ namespace elastica {
             );
           }
 
-          inline void compute_internal_modeled_torques_impl() const
-          /*noexcept*/ {
+          inline void compute_internal_modeled_torques_impl() const /*noexcept*/ {
             auto& internal_torque(blocks::get<tags::InternalTorques>(self()));
             auto& dissipation_constant(blocks::get<TorqueDampingCoefficient>(self()));
             auto& angular_velocity(blocks::get<tags::AngularVelocity>(self()));

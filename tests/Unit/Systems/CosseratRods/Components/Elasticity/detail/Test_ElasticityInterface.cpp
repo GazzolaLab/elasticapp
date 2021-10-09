@@ -3,6 +3,7 @@
 //
 
 #include "Framework/TestingFramework.hpp"
+#include "Systems/CosseratRods/CosseratRodTraits.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/detail/ElasticityInterface.hpp"
 #include "Systems/CosseratRods/Components/helpers.hpp"
 ///
@@ -15,6 +16,8 @@
 namespace {
   using namespace elastica::cosserat_rod::component::detail;
   using namespace elastica::cosserat_rod::component;
+
+  using Traits = typename elastica::cosserat_rod::DefaultCosseratRodTraits;
 
   // specialize for testing
   template <typename, typename, typename>
@@ -38,6 +41,7 @@ namespace {
         ElasticityInterface<CRT, ComputationalBlock,
                             ElasticityModelParam<CRT, ComputationalBlock,
                                                  ElasticityModelMetaArgs...>>;
+    using Traits = CRT;
     TestElasticityInterface() = default;
     /*
     using Parent::initialize;
@@ -98,7 +102,7 @@ namespace {
 //  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.ElasticityInterface.no_data",
 //                     "[Systems][Unit]") {
 //    using Model =
-//        TestNoDataElasticityModel<mock::BasicCosseratRodTraits, DummyBlock>;
+//        TestNoDataElasticityModel<BasicCosseratRodTraits, DummyBlock>;
 //    Model model{};
 //
 //    // static_assert(Model::parent_need_not_be_initialized(),
@@ -159,7 +163,7 @@ namespace {
   template <typename B>
   class TestDataElasticityModel
       : public elastica::cosserat_rod::component::Adapt<
-            TestWithDataElasticityImplementation<mock::BasicCosseratRodTraits,
+            TestWithDataElasticityImplementation<Traits,
                                                  B>>::
             template with<TestElasticityInterface> {};
 
@@ -174,20 +178,18 @@ namespace {
     Model model{};
     // using ElasiticityModel = TestDataElasticityModel<Model>;
 
-    static_assert(
-        sizeof(Model) == sizeof(double) * tmpl::size<Plugin::Variables>::value,
-        "EBO failure!");
+    CHECK_EBO(Model);
     // static_assert(ElasiticityModel::parent_need_not_be_initialized(),
     //               "Initialization logic error!");
 
-    CHECK(approx(model.compute_internal_forces()) == 3.14);
-    CHECK(approx(model.compute_internal_torques()) == 42.0);
+    CHECK(model.compute_internal_forces() == 3.14);
+    CHECK(model.compute_internal_torques() == 42.0);
 
     Model::initialize(model, []() {});
-    CHECK(approx(blocks::get<Model::InternalLoads>(model)) == 0.0);
-    CHECK(approx(blocks::get<Model::InternalTorques>(model)) == 0.0);
+    CHECK(blocks::get<Model::InternalLoads>(model) == 0.0);
+    CHECK(blocks::get<Model::InternalTorques>(model) == 0.0);
     // a custom variable gets passed on
-    CHECK(approx(blocks::get<Model::TestVar>(model)) == 0.0);
+    CHECK(blocks::get<Model::TestVar>(model) == 0.0);
   }
 
 }  // namespace
@@ -238,7 +240,7 @@ namespace {
   template <typename B>
   class TestInitializedElasticityModel
       : public Adapt<TestWithInitializerElasticityImplementation<
-            mock::BasicCosseratRodTraits,
+            Traits,
             B>>::template with<TestElasticityInterface> {};
 
 }  // namespace
@@ -258,12 +260,10 @@ namespace {
     // static_assert(ElasticityModelWithInterface::parent_to_be_initialized(),
     //               "Initialization logic error!");
 
-    static_assert(
-        sizeof(Model) == sizeof(double) * tmpl::size<Plugin::Variables>::value,
-        "EBO failure!");
+    CHECK_EBO(Model);
 
-    CHECK(approx(model.compute_internal_forces()) == 3.14);
-    CHECK(approx(model.compute_internal_torques()) == 42.0);
+    CHECK(model.compute_internal_forces() == 3.14);
+    CHECK(model.compute_internal_torques() == 42.0);
 
     constexpr auto n_initializers = 1UL;
     auto n_times_called = make_array<n_initializers>(0U);
@@ -276,10 +276,10 @@ namespace {
     // check if initialization is done as expected
     CHECK_ITERABLE_APPROX(n_times_called, make_array<n_initializers>(1U));
 
-    CHECK(approx(blocks::get<Model::InternalLoads>(model)) == 0.0);
-    CHECK(approx(blocks::get<Model::InternalTorques>(model)) == 0.0);
+    CHECK(blocks::get<Model::InternalLoads>(model) == 0.0);
+    CHECK(blocks::get<Model::InternalTorques>(model) == 0.0);
     // a custom variable gets passed on
-    CHECK(approx(blocks::get<Model::TestVariable>(model)) == 2.0);
+    CHECK(blocks::get<Model::TestVariable>(model) == 2.0);
   }
 
 }  // namespace

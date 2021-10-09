@@ -9,11 +9,14 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
+#include "Utilities/Math/Vec3.hpp"
+
 namespace {
 
   using namespace elastica::cosserat_rod;
 
   using real_type = double;
+  using Column = elastica::Vec3;
   // doesn't pass because of some issue that is not critical for now
   using Traits = TensorTag<real_type>;
   static_assert(tt::assert_conforms_to<
@@ -186,6 +189,44 @@ namespace {
         CHECK(data.pages() == 3UL);
         CHECK(data.rows() == 3UL);
         CHECK(data.columns() == 10UL);
+      }
+
+      // diagonal assignment
+      {
+        // 3x3 test (usage case)
+        const std::size_t n_pages(3UL);
+        const std::size_t n_rows(3UL);
+        const std::size_t n_cols(10UL);
+        Traits::data_type data33(n_pages, n_rows, n_cols);
+
+        // Initialization
+        for (std::size_t page_idx = 0UL; page_idx < n_pages; ++page_idx)
+          for (std::size_t row_idx = 0UL; row_idx < n_rows; ++row_idx)
+            for (std::size_t col_idx = 0UL; col_idx < n_cols; ++col_idx)
+              data(page_idx, row_idx, col_idx) =
+                  static_cast<real_type>(page_idx + row_idx + col_idx);
+
+        Traits::diagonal_assign(data33, 3UL, Column{3.5, 5.5, 7.5});
+        Traits::diagonal_assign(data33, 5UL, Column{2.0, 4.0, 8.0});
+        CHECK(data33(0UL, 0UL, 3UL) == approx(3.5));
+        CHECK(data33(1UL, 1UL, 3UL) == approx(5.5));
+        CHECK(data33(2UL, 2UL, 3UL) == approx(7.5));
+        CHECK(data33(0UL, 1UL, 3UL) == approx(0.0));
+        CHECK(data33(1UL, 2UL, 3UL) == approx(0.0));
+        CHECK(data33(2UL, 0UL, 3UL) == approx(0.0));
+        CHECK(data33(1UL, 0UL, 3UL) == approx(0.0));
+        CHECK(data33(2UL, 1UL, 3UL) == approx(0.0));
+        CHECK(data33(0UL, 2UL, 3UL) == approx(0.0));
+
+        CHECK(data33(0UL, 0UL, 5UL) == approx(2.0));
+        CHECK(data33(1UL, 1UL, 5UL) == approx(4.0));
+        CHECK(data33(2UL, 2UL, 5UL) == approx(8.0));
+        CHECK(data33(0UL, 1UL, 5UL) == approx(0.0));
+        CHECK(data33(1UL, 2UL, 5UL) == approx(0.0));
+        CHECK(data33(2UL, 0UL, 5UL) == approx(0.0));
+        CHECK(data33(1UL, 0UL, 5UL) == approx(0.0));
+        CHECK(data33(2UL, 1UL, 5UL) == approx(0.0));
+        CHECK(data33(0UL, 2UL, 5UL) == approx(0.0));
       }
     }
   }

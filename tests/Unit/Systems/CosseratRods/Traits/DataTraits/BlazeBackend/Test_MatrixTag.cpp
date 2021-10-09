@@ -5,7 +5,10 @@
 #include "Framework/TestingFramework.hpp"
 #include "Systems/CosseratRods/Traits/DataType/Protocols.hpp"
 #include "Systems/CosseratRods/Traits/DataType/BlazeBackend/MatrixTag.hpp"
+
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Math/Vec3.hpp"
+
 
 namespace {
 
@@ -101,7 +104,7 @@ namespace {
       }
 
       {
-        // chekc slice( data const &)
+        // check slice( data const &)
         auto const const_slice = Traits::slice(
             static_cast<decltype(data) const&>(data), col_slice_idx, 2UL);
         REQUIRE(const_slice.rows() == 3UL);

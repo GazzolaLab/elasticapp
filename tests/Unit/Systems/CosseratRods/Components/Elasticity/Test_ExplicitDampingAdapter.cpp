@@ -2,6 +2,7 @@
 // Created by Tejaswin Parthasarathy on 4/29/21.
 //
 #include "Framework/TestingFramework.hpp"
+#include "Systems/CosseratRods/CosseratRodTraits.hpp"
 #include "Systems/CosseratRods/Components/Tags.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/ExplicitDampingAdapter.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/detail/ElasticityInterface.hpp"
@@ -22,6 +23,8 @@ namespace {
   // using namespace elastica::cosserat_rod::detail;
   // using namespace elastica::cosserat_rod::component;
 
+
+
   // no data
   template <typename CRT, typename B>
   class TestElasticityModel
@@ -35,20 +38,22 @@ namespace {
     using ComputedVariables = InitializedVariables;
     using Variables = ComputedVariables;
 
-    auto compute_internal_modeled_loads_impl() const {
-      // blocks::get<InternalLoads>(self()) = 3.14;
-      return 3.14;
+    void compute_internal_modeled_loads_impl() const {
+//      auto& internal_load = blocks::get<elastica::tags::InternalLoads>(self());
+//      internal_load = 3.14;
+      //return 3.14;
     }
 
-    auto compute_internal_modeled_torques_impl() const {
-      // blocks::get<InternalTorques>(self()) = 42.0;
-      return 42.0;
+    void compute_internal_modeled_torques_impl() const {
+//      auto& internal_torque = blocks::get<elastica::tags::InternalTorques>(self());
+//      internal_torque = 42.0;
+      // return 42.0;
     }
   };
 
   template <typename CRT,                 // Cosserat Rod Traits
             typename ComputationalBlock>  // Block
-  class TestElasticityModelWithInterface
+  class TestElasticityModelWithInterfaceOnly
       : public Adapt<TestElasticityModel<CRT, ComputationalBlock>>::
             template with<ElasticityInterface> {};
 
@@ -75,20 +80,26 @@ namespace {
   //    using Parent::initialize;
   //  };
 
-  template <typename B>
-  using TestGeometry =
-      component::WithCircularCosseratRod<mock::BasicCosseratRodTraits, B>;
+
+  using Traits = DefaultCosseratRodTraits;
 
   template <typename B>
-  using TestElasticity =
-      TestElasticityModelWithInterface<mock::BasicCosseratRodTraits, B>;
+  struct TestGeometry: public WithCircularCosseratRod<Traits, B> {
+    using Traits = Traits;
+  };
+
+  template <typename B>
+  struct TestElasticity: public TestElasticityModelWithInterfaceOnly<Traits, B> {
+    using Traits = Traits;
+  };
 
   using Plugin = mock::MockPlugin<TestGeometry, TestElasticity>;
   using Model = typename Plugin::Model;
 
   template <typename B>
-  using TestDampedElasticity =
-      TestElasticityModelWithDamping<mock::BasicCosseratRodTraits, B>;
+  struct TestDampedElasticity: TestElasticityModelWithDamping<Traits, B>{
+    using Traits = Traits;
+  };
 
   using DampedPlugin = mock::MockPlugin<TestGeometry, TestDampedElasticity>;
   using DampedModel = typename DampedPlugin::Model;
@@ -102,19 +113,14 @@ namespace {
     Model model{};
     DampedModel damped_model{};
 
-    static_assert(
-        sizeof(Model) == sizeof(double) * tmpl::size<Plugin::Variables>::value,
-        "EBO failure!");
-    static_assert(
-        sizeof(DampedModel) ==
-            sizeof(double) * tmpl::size<DampedPlugin::Variables>::value,
-        "EBO failure!");
+    CHECK_EBO(Model);
+    CHECK_EBO(DampedModel);
 
-    CHECK(approx(model.compute_internal_forces()) == 3.14);
-    CHECK(approx(model.compute_internal_torques()) == 42.0);
+    CHECK(model.compute_internal_forces() == 3.14);
+    CHECK(model.compute_internal_torques() == 42.0);
 
-    CHECK(approx(damped_model.compute_internal_forces()) == 4.14);
-    CHECK(approx(damped_model.compute_internal_torques()) == 43.0);
+    CHECK(damped_model.compute_internal_forces() == 4.14);
+    CHECK(damped_model.compute_internal_torques() == 43.0);
 
     // DampedModel::initialize(damped_model, []() {});
   }

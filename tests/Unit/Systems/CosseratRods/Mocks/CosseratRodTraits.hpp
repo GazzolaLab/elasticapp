@@ -101,10 +101,10 @@ namespace mock {
     using size_type = std::size_t;
 
     struct DataType {
-      using Index = elastica::cosserat_rod::VectorTag<index_type>;
-      using Scalar = elastica::cosserat_rod::VectorTag<real_type>;
-      using Vector = elastica::cosserat_rod::MatrixTag<real_type>;
-      using Matrix = elastica::cosserat_rod::TensorTag<real_type>;
+      using Scalar = ScalarType<real_type>;
+      using Vector = ScalarType<real_type>;
+      using Matrix = ScalarType<real_type>;
+      using Index = ScalarType<index_type>;
     };
 
     struct Place {

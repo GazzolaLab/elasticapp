@@ -129,7 +129,6 @@ namespace elastica {
                 Traits::Operations::transpose(director, {1, 0, 2}),
                 internal_stress
               );
-            // TODO: Revisit division vs power+multiplication
             Traits::Operations::two_point_difference_kernel(
                 internal_force,
                 QT_into_internal_stress_batch /
@@ -218,7 +217,6 @@ namespace elastica {
             /* the lagrangian transport and dilatation terms */
             // allocating temp container (3, n_elems) for temporary storage
             auto& J_omega_upon_e_batch(dummy_elem_vector);
-            // TODO: Revisit division vs power+multiplication
             Traits::Operations::batch_matvec(
                 J_omega_upon_e_batch,
                 mass_SMOI,

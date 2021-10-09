@@ -5,6 +5,7 @@
 
 #include "Framework/TestingFramework.hpp"
 // #include "Systems/CosseratRods/Components/Geometry/Protocols.hpp"
+#include "Systems/CosseratRods/CosseratRodTraits.hpp"
 #include "Systems/CosseratRods/Components/Geometry/WithSquareCosseratRod.hpp"
 ///
 #include "Systems/CosseratRods/Mocks.hpp"
@@ -17,7 +18,9 @@ namespace {
   using namespace elastica::cosserat_rod::component::detail;
   using namespace elastica;
 
-  using Operations = SquareCrossSectionOperations<mock::BasicCosseratRodTraits>;
+  using Traits = typename elastica::cosserat_rod::DefaultCosseratRodTraits;
+
+  using Operations = SquareCrossSectionOperations<Traits>;
 
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.SquareCrossSectionOperations",
                      "[Systems][Unit]") {
@@ -34,17 +37,19 @@ namespace {
 
 namespace {
   using namespace elastica::cosserat_rod::component;
+  using Traits = typename elastica::cosserat_rod::DefaultCosseratRodTraits;
 
   template <typename B>
   class TestGeometry
-      : public WithSquareCosseratRod<mock::BasicCosseratRodTraits, B> {
+      : public WithSquareCosseratRod<Traits, B> {
     // The point of this class is to bring
     //    Frame;
     //    DirectionType;
     // into public scope for testing
    public:
-    using Parent = WithSquareCosseratRod<mock::BasicCosseratRodTraits, B>;
+    using Parent = WithSquareCosseratRod<Traits, B>;
     using Parent::Parent;
+    using Traits = Traits;
     using typename Parent::ComputedVariables;
     using typename Parent::InitializedVariables;
     using typename Parent::Variables;
@@ -57,10 +62,10 @@ namespace {
   using Plugin = mock::MockPlugin<TestGeometry>;
   // using Model = blocks::Block<Plugin>;
   using Model = typename Plugin::Model;
+  // TypeDisplayer<typename Model::MatrixVariables> td{};
 
-  static_assert(sizeof(Model) ==
-                    sizeof(double) * tmpl::size<Plugin::Variables>::value,
-                "EBO failure!");
+  // Assert Equal EBO test
+  CHECK_EBO(Model);
 
   //  static_assert(
   //      tt::assert_conforms_to<Plugin,
@@ -71,8 +76,8 @@ namespace {
     Model model{};
 
     // same as cross_section_interface
-    CHECK(approx(model.get_element_dimension()) == 0.0);
-    CHECK(approx(model.get_element_volume()) == 0.0);
+    CHECK(model.get_element_dimension() == 0.0);
+    CHECK(model.get_element_volume() == 0.0);
 
     constexpr auto n_initializers = 5UL;
     auto n_times_called = make_array<n_initializers>(0U);
@@ -109,23 +114,23 @@ namespace {
     CHECK_ITERABLE_APPROX(n_times_called, make_array<n_initializers>(1U));
 
     // only these are checked now
-    CHECK(approx(model.get_element_dimension()) == 4.0);
+    CHECK(model.get_element_dimension() == 4.0);
     // blocks::get<tags::ElementLength>(model) = 2.0;
     // volume = dimension * length, only calculated somewhere inside
-    CHECK(approx(model.get_element_volume()) == 0.0);
+    CHECK(model.get_element_volume() == 0.0);
 
-    CHECK(approx(model.get_area()) == 4.0 * 4.0 * 4.0);
+    CHECK(model.get_area() == 4.0 * 4.0 * 4.0);
     // this is a failure test, make it pass later on
-    CHECK(approx(model.shape_factor()) == 0.0);
+    CHECK(model.shape_factor() == 0.0);
 
     using LocalFrame = typename Model::Frame;
     const double expected_second_moment = (64. * 64.) / 12.;
-    CHECK(approx(model.get_second_moment_of_area<LocalFrame::D1>()) ==
+    CHECK(model.get_second_moment_of_area<LocalFrame::D1>() ==
           expected_second_moment);
-    CHECK(approx(model.get_second_moment_of_area<LocalFrame::D2>()) ==
+    CHECK(model.get_second_moment_of_area<LocalFrame::D2>() ==
           expected_second_moment);
     // symmetric
-    CHECK(approx(model.get_second_moment_of_area<LocalFrame::D3>()) ==
+    CHECK(model.get_second_moment_of_area<LocalFrame::D3>() ==
           2.0 * expected_second_moment);
   }
 

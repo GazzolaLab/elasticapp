@@ -358,3 +358,26 @@ struct check_matrix_approx {
   do {                \
     CHECK(true);      \
   } while (false)
+
+
+/*!
+ * \ingroup EBO Test
+ * \brief Test for EBO failure.
+ *
+ * \details
+ * The method calls static_assert to check EBO during the compilation.
+ * If the test fails, the error message displays the size of model versus the
+ * size of the block.
+ *
+ * \example
+ * \snippet
+ */
+template<size_t A, size_t B>
+struct CheckEbo{
+  static_assert(A == B, "EBO failure!");
+  static constexpr bool _result = (A == B);
+};
+//#define CHECK_EBO(MODEL) (void)CheckEbo<sizeof(MODEL),MODEL::size_of_block()>::_result
+#define CHECK_EBO(a) do { \
+    (void)CheckEbo < sizeof(a),a::size_of_block()>::_result; \
+  } while (false)
