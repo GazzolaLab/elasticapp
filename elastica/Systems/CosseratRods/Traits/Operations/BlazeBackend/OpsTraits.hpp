@@ -105,10 +105,11 @@ namespace elastica {
         two_point_difference_kernel(input_vector, output_vector);
       }
 
+      // Node to element (use for voronoi)
       template<typename V>
-      static inline auto voronoi_length(const V& input_vector){
-        using ::elastica::voronoi_length;
-        return voronoi_length(input_vector);
+      static inline auto average_kernel(const V& input_vector){
+        using ::elastica::average_kernel;
+        return average_kernel(input_vector);
       }
 
       template<typename MT1, typename MT2>

@@ -245,7 +245,7 @@ namespace elastica {
    * @param in_matrix
    */
   template <typename MT>  // blaze Matrix expression type 2
-  auto voronoi_length(const MT& in_matrix) {
+  auto average_kernel(const MT& in_matrix) {
     constexpr std::size_t dimension(3UL);
     assert(in_matrix.rows() == dimension);
     const std::size_t n_nodes = in_matrix.columns();

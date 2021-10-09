@@ -387,7 +387,7 @@ namespace elastica {
               // reference_voronoi_length_collection
               auto& reference_voronoi_length_collection(
                   blocks::get<ReferenceVoronoiLength>(downstream_block));
-              reference_voronoi_length_collection = Traits::Operations::voronoi_length(reference_length_collection);
+              reference_voronoi_length_collection = Traits::Operations::average_kernel(reference_length_collection);
 
               // element_length_collection
               auto& element_length_collection(
@@ -408,7 +408,7 @@ namespace elastica {
               // voronoi_length_collection
               auto& voronoi_length_collection(
                   blocks::get<VoronoiLength>(downstream_block));
-              voronoi_length_collection = Traits::Operations::voronoi_length(element_length_collection);
+              voronoi_length_collection = Traits::Operations::average_kernal(element_length_collection);
 
               // voronoi_dilatation
               auto& voronoi_dilatation(

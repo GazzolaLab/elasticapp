@@ -142,7 +142,7 @@ namespace elastica {
             auto& dissipation_constant(blocks::get<ForceDampingCoefficient>(self()));
             auto& velocity(blocks::get<tags::Velocity>(self()));
             auto& length(blocks::get<tags::ElementLength>(self()));
-            auto elemental_velocity = Traits::Operations::voronoi_length(velocity);
+            auto elemental_velocity = Traits::Operations::average_kernel(velocity);
 
             Parent::compute_internal_modeled_loads_impl();
             Traits::Operations::subtract_quadrature(
