@@ -1,0 +1,219 @@
+//
+// Created by Tejaswin Parthasarathy on 10/5/21.
+//
+
+#include "Framework/TestingFramework.hpp"
+#include "Systems/Block.hpp"
+#include "Systems/common/SymplecticStepperAdapter.hpp"
+#include "Systems/common/Tags.hpp"
+#include "Time/Time.hpp"
+#include "Utilities/AsConst.hpp"
+#include "Utilities/CRTP.hpp"
+#include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
+
+namespace {
+  using namespace elastica;
+
+  // copy pasted the plugin from Test_BlockFacade.cpp
+  template <typename Tag>
+  struct DummyVariable {
+    using Parameter = Tag;
+    using type = float;
+    using SliceType = float&;
+    using ConstSliceType = const float&;
+  };
+
+  template <typename B>
+  struct TestPlugin : public ::elastica::CRTPHelper<B, TestPlugin> {
+    // Declare the variables
+    // !! New !! Everything is a vector now!
+    struct ExamplePosition : DummyVariable<tags::Position> {};
+    struct ExampleVelocity : DummyVariable<tags::Velocity> {};
+    struct ExampleAcceleration : DummyVariable<tags::Acceleration> {};
+
+    struct ExampleDirector : DummyVariable<tags::Director> {};
+    struct ExampleAngularVelocity : DummyVariable<tags::AngularVelocity> {};
+    struct ExampleAngularAcceleration
+        : DummyVariable<tags::AngularAcceleration> {};
+
+    using ::elastica::CRTPHelper<B, TestPlugin>::self;
+
+    // All variables
+    using Variables =
+        tmpl::list<ExamplePosition, ExampleVelocity, ExampleAcceleration,
+                   ExampleDirector, ExampleAngularVelocity,
+                   ExampleAngularAcceleration>;
+
+    float& get_position() {
+      return tuples::get<ExamplePosition>(self().data());
+    }
+    float& get_velocity() {
+      return tuples::get<ExampleVelocity>(self().data());
+    }
+    float& get_acceleration() {
+      return tuples::get<ExampleAcceleration>(self().data());
+    }
+    float& get_director() {
+      return tuples::get<ExampleDirector>(self().data());
+    }
+    float& get_angular_velocity() {
+      return tuples::get<ExampleAngularVelocity>(self().data());
+    }
+    float& get_angular_acceleration() {
+      return tuples::get<ExampleAngularAcceleration>(self().data());
+    }
+
+    float const& get_position() const {
+      return tuples::get<ExamplePosition>(self().data());
+    }
+    float const& get_velocity() const {
+      return tuples::get<ExampleVelocity>(self().data());
+    }
+    float const& get_acceleration() const {
+      return tuples::get<ExampleAcceleration>(self().data());
+    }
+    float const& get_director() const {
+      return tuples::get<ExampleDirector>(self().data());
+    }
+    float const& get_angular_velocity() const {
+      return tuples::get<ExampleAngularVelocity>(self().data());
+    }
+    float const& get_angular_acceleration() const {
+      return tuples::get<ExampleAngularAcceleration>(self().data());
+    }
+  };
+
+  template <template <typename> class B, template <typename> class Plugin>
+  struct PluginHelper : public Plugin<B<PluginHelper<B, Plugin>>> {};
+
+  template <template <typename> class B>
+  using BoundTestPlugin = PluginHelper<B, TestPlugin>;
+
+}  // namespace
+
+namespace blocks {
+
+  template <>
+  class Block<BoundTestPlugin<Block>>
+      : public ::elastica::SymplecticPolicy<
+            BlockFacade<BoundTestPlugin<Block>>> {
+   public:
+    //////////////////////////// start conformance
+    ////////////////////////////////
+
+    //    // In this case, we do not check the business logic in this class, but
+    //    // only if the interfaces are OK.
+    //    inline std::size_t check(std::size_t /* index */) const noexcept {
+    //      return 0UL;
+    //    }
+    //    inline std::size_t check(elastica::from_end /* index */) const
+    //    noexcept {
+    //      return 0UL;
+    //    };
+
+    // customization point for generating a slice. Since all are vectors, a
+    // simple indexing should do
+    template <typename Tag>
+    inline constexpr typename Tag::slice_type slice(std::size_t /* index */) & {
+      return tuples::get<Tag>(this->data());
+    }
+    template <typename Tag>
+    inline constexpr typename Tag::const_slice_type slice(
+        std::size_t /* index */) const& {
+      return tuples::get<Tag>(this->data());
+    }
+    ///////////////////////////// end conformance
+    /////////////////////////////////
+
+    Block() = default;
+    ~Block() = default;
+  };
+
+}  // namespace blocks
+
+namespace elastica {
+
+  namespace states {
+
+//    // assign version doesnt care about vectorization
+//    auto SO3_primitive_assign(float& lhs, float const& rhs_matrix,
+//                              float const& rhs_vector) noexcept -> void {
+//      lhs += rhs_matrix + rhs_vector;
+//    };
+
+    // add assign version doesnt care about vectorization
+    template <typename LHSMatrix, typename RHSVector>
+    auto SO3_primitive_add_assign(LHSMatrix& lhs,
+                                  RHSVector const& rhs_vector) noexcept -> void{
+      lhs += rhs_vector;
+    };
+    template <>
+    inline auto size_backend<float>(float const&) noexcept -> std::size_t {
+      return 1UL;
+    };
+    template <>
+    inline auto resize_backend<float>(float&, std::size_t) -> void{};
+
+  }  // namespace states
+
+}  // namespace elastica
+
+namespace {
+
+  ELASTICA_TEST_CASE("Unit.Systems.SymplecticStepperAdapter",
+                     "[Systems][Unit]") {
+    using Plugin = BoundTestPlugin<blocks::Block>;
+    using MyBlock = blocks::Block<Plugin>;
+    MyBlock block;
+
+    block.get_position() = 1.F;
+    block.get_velocity() = 2.F;
+    block.get_acceleration() = 5.F;
+
+    block.get_director() = 3.F;
+    block.get_angular_velocity() = 4.F;
+    block.get_angular_acceleration() = 5.F;
+
+    ::elastica::Time time_v{};
+
+    // my god. what unreadable code.
+    {
+      constexpr std::size_t group = 0ul;  // checks the translation SE3 group
+      CHECK(block.kinematic_states().get<group>().get() == 1.0F);
+      CHECK(block.dynamic_states().get<group>().get() == 2.0F);
+      CHECK(cpp17::as_const(block).kinematic_rates(time_v).get<group>().get() ==
+            2.0F);
+      CHECK(cpp17::as_const(block).dynamic_rates(time_v).get<group>().get() ==
+            5.0F);
+    }
+
+    {
+      constexpr std::size_t group = 1ul;  // checks the translation SE3 group
+      CHECK(block.kinematic_states().get<group>().get() == 3.0F);
+      CHECK(block.dynamic_states().get<group>().get() == 4.0F);
+      CHECK(cpp17::as_const(block).kinematic_rates(time_v).get<group>().get() ==
+            4.0F);
+      CHECK(cpp17::as_const(block).dynamic_rates(time_v).get<group>().get() ==
+            5.0F);
+    }
+
+    {
+      // mimic a kinematic step
+      ::elastica::Time time_v{10.0};
+      ::elastica::TimeDelta time_delta{1.0};
+      block.kinematic_states() += time_delta * block.kinematic_rates(time_v);
+
+      CHECK(block.kinematic_states().get<0UL>().get() ==
+            1.0 + 2.0 * double(time_delta));
+      CHECK(block.kinematic_states().get<1UL>().get() ==
+            3.0 + 4.0 * double(time_delta));
+    }
+
+    //    CHECK(block.kinematic_states().get() == 1);
+    //    CHECK(block.dynamic_states().get() == 2);
+    //    CHECK(cpp17::as_const(block).kinematic_rates(time_v).get() == 2);
+    //    CHECK(cpp17::as_const(block).dynamic_rates(time_v).get() == 5);
+  }
+
+}  // namespace

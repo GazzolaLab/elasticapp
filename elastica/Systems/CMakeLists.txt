@@ -3,6 +3,7 @@ set(LIBRARY Systems)
 add_elastica_library(${LIBRARY} INTERFACE)
 
 add_subdirectory(Block)
+add_subdirectory(common)
 add_subdirectory(RigidBody)
 add_subdirectory(CosseratRods)
 add_subdirectory(States)
