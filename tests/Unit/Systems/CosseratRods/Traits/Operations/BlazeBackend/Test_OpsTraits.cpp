@@ -32,13 +32,13 @@ namespace {
 
   //************************************************************************
   // Simple Operations
-  ELASTICA_TEST_CASE("Unit.System.CosseratRods.Traits.Operation: add",
-                     "[System][Unit]") {
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: add",
+                     "[Systems][Unit]") {
     int a = 5, b = 7;
     CHECK(Operations::add(a, b) == 12UL);
   }
-  ELASTICA_TEST_CASE("Unit.System.CosseratRods.Traits.Operation: expand_for_broadcast",
-                     "[System][Unit]") {
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: expand_for_broadcast",
+                     "[Systems][Unit]") {
     const std::size_t n_cols(10UL);
     const std::size_t n_rows(15UL);
 
@@ -57,89 +57,166 @@ namespace {
     CHECK(vector_expand.columns() == n_cols);
     CHECK(vector_expand.rows() == n_rows);
   }
-  ELASTICA_TEST_CASE("Unit.System.CosseratRods.Traits.Operation: inverse_cube",
-                     "[System][Unit]") {
-    CHECK(1); // TODO: non-priority test. It directly uses
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: inverse_cube",
+                     "[Systems][Unit]") {
+    CHECK(1); // TODO - non-priority: simple function from blaze
   }
-  ELASTICA_TEST_CASE("Unit.System.CosseratRods.Traits.Operation: transpose",
-                     "[System][Unit]") {
-    CHECK(1);
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: transpose",
+                     "[Systems][Unit]") {
+    CHECK(1); // TODO - non-priority: simple function from blaze
   }
   //************************************************************************
   // Batch Operations
-  ELASTICA_TEST_CASE("Unit.System.CosseratRods.Traits.Operation: batch_matvec",
-                     "[System][Unit]") {
-    for (std::size_t n_elems : {1, 32, 128}) {
-      Matrix::data_type matrix_batch(dimension, dimension, n_elems);
-      Vector::data_type vector_batch(dimension, n_elems),
-          test_matvec_batch(dimension, n_elems),
-          correct_matvec_batch(dimension, n_elems);
-      Operations::batch_matvec(test_matvec_batch, matrix_batch, vector_batch);
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: batch_matvec",
+                     "[Systems][Unit]") {
+    const std::size_t n_elems(64UL);
+    Matrix::data_type matrix_batch(dimension, dimension, n_elems);
+    Vector::data_type vector_batch(dimension, n_elems),
+        test_matvec_batch(dimension, n_elems),
+        correct_matvec_batch(dimension, n_elems);
+    Operations::batch_matvec(test_matvec_batch, matrix_batch, vector_batch);
 
-      /* element-wise matvec product */
-      for (std::size_t i(0UL); i < n_elems; ++i)
-        blaze::column(correct_matvec_batch, i) =
-            blaze::columnslice(matrix_batch, i) *
-            blaze::column(vector_batch, i);
+    /* element-wise matvec product */
+    for (std::size_t i(0UL); i < n_elems; ++i)
+      Vector::slice(correct_matvec_batch, i) =
+          Matrix::slice(matrix_batch, i) * Vector::slice(vector_batch, i);
 
-      CHECK(test_matvec_batch == correct_matvec_batch);
-    }
-    CHECK(1);
+    CHECK(test_matvec_batch == correct_matvec_batch);
   }
-  ELASTICA_TEST_CASE("Unit.System.CosseratRods.Traits.Operation: batch_matmul",
-                     "[System][Unit]") {
-    CHECK(1);
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: batch_matmul",
+                     "[Systems][Unit]") {
+    CHECK(1); // TODO: non-priority: linked to public utility
   }
-  ELASTICA_TEST_CASE("Unit.System.CosseratRods.Traits.Operation: batch_cross",
-                     "[System][Unit]") {
-    CHECK(1);
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: batch_cross",
+                     "[Systems][Unit]") {
+    CHECK(1); // TODO: non-priority: linked to public utility
   }
-  ELASTICA_TEST_CASE("Unit.System.CosseratRods.Traits.Operation: batch_dot",
-                     "[System][Unit]") {
-    CHECK(1);
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: batch_dot",
+                     "[Systems][Unit]") {
+    CHECK(1); // TODO: non-priority: linked to public utility
   }
-  ELASTICA_TEST_CASE("Unit.System.CosseratRods.Traits.Operation: batch_norm",
-                     "[System][Unit]") {
-    CHECK(1);
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: batch_norm",
+                     "[Systems][Unit]") {
+    CHECK(1); // TODO: non-priority: linked to public utility
   }
   //************************************************************************
   // Vector Operations
-  ELASTICA_TEST_CASE("Unit.System.CosseratRods.Traits.Operation: difference_kernel",
-                     "[System][Unit]") {
-    CHECK(1);
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: difference_kernel",
+                     "[Systems][Unit]") {
+    CHECK(1); // TODO: non-priority: linked to public utility
   }
-  ELASTICA_TEST_CASE("Unit.System.CosseratRods.Traits.Operation: two_point_difference_kkernel",
-                     "[System][Unit]") {
-    CHECK(1);
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: two_point_difference_kkernel",
+                     "[Systems][Unit]") {
+    CHECK(1); // TODO: non-priority: linked to public utility
   }
-  ELASTICA_TEST_CASE("Unit.System.CosseratRods.Traits.Operation: average_kernel",
-                     "[System][Unit]") {
-    CHECK(1);
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: average_kernel",
+                     "[Systems][Unit]") {
+    CHECK(1); // TODO: non-priority: linked to public utility
   }
-  ELASTICA_TEST_CASE("Unit.System.CosseratRods.Traits.Operation: quadrature_kernel",
-                     "[System][Unit]") {
-    CHECK(1);
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: quadrature_kernel",
+                     "[Systems][Unit]") {
+    CHECK(1); // TODO: non-priority: linked to public utility
   }
-  ELASTICA_TEST_CASE("Unit.System.CosseratRods.Traits.Operation: subtract_quadrature",
-                     "[System][Unit]") {
-    CHECK(1);
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: subtract_quadrature",
+                     "[Systems][Unit]") {
+    for (std::size_t n_elems : {1, 32, 128}) {
+      // Define and Initialize
+      const std::size_t n_nodes = n_elems + 1UL;
+      Vector::data_type input_vector_batch(dimension, n_elems),
+                        test_vector_batch(dimension, n_nodes),
+                        correct_vector_batch(dimension, n_nodes);
+      input_vector_batch = real_type(1.0);
+      correct_vector_batch = real_type(1.0);
+
+      // Operation
+      Operations::subtract_quadrature(test_vector_batch, input_vector_batch);
+      Vector::slice(correct_vector_batch, 0UL) = real_type(0.5);
+      Vector::slice(correct_vector_batch, n_nodes - 1UL) = real_type(0.5);
+
+      CHECK(test_vector_batch == correct_vector_batch);
+    }
   }
 
   //************************************************************************
   // Rotation Operations
-  ELASTICA_TEST_CASE("Unit.System.CosseratRods.Traits.Operation: batch_inv_rotate",
-                     "[System][Unit]") {
-    CHECK(1);
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: batch_inv_rotate",
+                     "[Systems][Unit]") {
+    CHECK(1); // TODO: non-priority: linked to public utility
   }
-  ELASTICA_TEST_CASE("Unit.System.CosseratRods.Traits.Operation: batch_inv_rotate_and_divide",
-                     "[System][Unit]") {
-    CHECK(1);
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: batch_inv_rotate_and_divide",
+                     "[Systems][Unit]") {
+    for (std::size_t n_elems : {1, 32, 128}) {
+      Matrix::data_type test_rot_matrix_batch(dimension, dimension, n_elems),
+                        correct_rot_matrix_batch(dimension, dimension, n_elems);
+      Vector::data_type rot_axis_vector_batch(dimension, n_elems);
+
+      /* loop across X, Y, Z axes */
+      for (std::size_t rot_axis_vector_dir : {0, 1, 2}) {
+        rot_axis_vector_batch = real_type(0.0);
+        blaze::randomize( // Change to analytical
+            blaze::row(rot_axis_vector_batch, rot_axis_vector_dir));
+        elastica::exp_batch(test_rot_matrix_batch, rot_axis_vector_batch);
+
+        /* Notice that the correct_rot_mat seems to be a transpose */
+        /* ie if you take a vector v, and do Rv, it seems to do a */
+        /* rotation be -test_theta. */
+        /* The catch in this case is that our directors (d_1, d_2, d_3) */
+        /* are all aligned row-wise rather than columnwise. Thus we need */
+        /* to multiply them by a R.transpose, which is equivalent to */
+        /* multiplying by a R(-theta). */
+        auto theta_batch =
+            Vector::slice(rot_axis_vector_batch, rot_axis_vector_dir);
+        correct_rot_matrix_batch = real_type(0.0);
+
+        correct_rot_matrix_batch(rot_axis_vector_dir, rot_axis_vector_dir) = real_type(1.0);
+        correct_rot_matrix_batch((rot_axis_vector_dir+1UL) % dimension,
+                                 (rot_axis_vector_dir+1UL) % dimension) = blaze::cos(theta_batch);
+        correct_rot_matrix_batch((rot_axis_vector_dir+1UL) % dimension,
+                                 (rot_axis_vector_dir+2UL) % dimension) = blaze::sin(theta_batch);
+        correct_rot_matrix_batch((rot_axis_vector_dir+2UL) % dimension,
+                                 (rot_axis_vector_dir+1UL) % dimension) = -blaze::sin(theta_batch);
+        correct_rot_matrix_batch((rot_axis_vector_dir+2UL) % dimension,
+                                 (rot_axis_vector_dir+2UL) % dimension) = blaze::cos(theta_batch);
+        /*
+        blaze::row(Matrix::slice(correct_rot_matrix_batch, rot_axis_vector_dir),
+                   rot_axis_vector_dir) = real_type(1.0);
+        blaze::row(Matrix::slice(correct_rot_matrix_batch, (rot_axis_vector_dir + 1UL) % dimension),
+                   (rot_axis_vector_dir + 1UL) % dimension) = blaze::cos(theta_batch);
+        blaze::row(Matrix::slice(correct_rot_matrix_batch, (rot_axis_vector_dir + 1UL) % dimension),
+                   (rot_axis_vector_dir + 2UL) % dimension) = blaze::sin(theta_batch);
+        blaze::row(Matrix::slice(correct_rot_matrix_batch, (rot_axis_vector_dir + 2UL) % dimension),
+                   (rot_axis_vector_dir + 1UL) % dimension) = -blaze::sin(theta_batch);
+        blaze::row(Matrix::slice(correct_rot_matrix_batch, (rot_axis_vector_dir + 2UL) % dimension),
+                   (rot_axis_vector_dir + 2UL) % dimension) = blaze::cos(theta_batch);
+         */
+
+        /* CHECK(test_rot_matrix_batch == correct_rot_matrix_batch); */
+        /* sadly the above one gives invalid operand error for tensors */
+        for (std::size_t i(0UL); i < dimension; ++i)
+          CHECK(Matrix::slice(test_rot_matrix_batch, i) ==
+                Matrix::slice(correct_rot_matrix_batch, i));
+      }
+    }
   }
 
   //************************************************************************
-  // MiscOperations
-  ELASTICA_TEST_CASE("Unit.System.CosseratRods.Traits.Operation: batch_subtrace_z_unit",
-                     "[System][Unit]") {
-    CHECK(1);
+  // Misc Operations
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: batch_subtrace_z_unit",
+                     "[Systems][Unit]") {
+    const std::size_t n_elems(5UL);
+
+    // Initialize test vector
+    Vector::data_type vec(dimension, n_elems);
+    for (std::size_t row_idx = 0UL; row_idx < dimension; ++row_idx)
+      for (std::size_t col_idx = 0UL; col_idx < n_elems; ++col_idx)
+        vec(row_idx, col_idx) = static_cast<real_type>(row_idx + col_idx);
+
+    // Test Operation
+    CHECK(vec(2UL,1UL) == approx(3.0));
+    CHECK(vec(2UL,3UL) == approx(5.0));
+
+    Operations::batch_subtract_z_unit(vec);
+    CHECK(vec(2UL,1UL) == approx(2.0));
+    CHECK(vec(2UL,3UL) == approx(4.0));
   }
 } // NAMESPACE

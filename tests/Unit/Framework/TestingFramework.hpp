@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <iostream>
 #include <catch.hpp>
 #include <complex>
 #include <csignal>
@@ -373,11 +374,11 @@ struct check_matrix_approx {
  * \snippet
  */
 template<size_t A, size_t B>
-struct CheckEbo{
+struct NumericAssertEqualWithEvaluateIfFail{ // TODO: Refactor name later
   static_assert(A == B, "EBO failure!");
   static constexpr bool _result = (A == B);
 };
 //#define CHECK_EBO(MODEL) (void)CheckEbo<sizeof(MODEL),MODEL::size_of_block()>::_result
 #define CHECK_EBO(a) do { \
-    (void)CheckEbo < sizeof(a),a::size_of_block()>::_result; \
+    (void)NumericAssertEqualWithEvaluateIfFail<sizeof(a),a::size_of_block()>::_result; \
   } while (false)

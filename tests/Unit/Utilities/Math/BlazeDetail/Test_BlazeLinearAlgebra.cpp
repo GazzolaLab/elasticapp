@@ -19,7 +19,7 @@ namespace {
   using TT = blaze::DynamicTensor<ValueType>;
   constexpr std::size_t dimension(3UL);
 
-  ELASTICA_TEST_CASE("Randomised batch matrix-vector product test",
+  ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeLinearAlgebra: Randomized batch matrix-vector product test",
                      "[Unit][Utilities]") {
     for (std::size_t n_elems : {1, 32, 128}) {
       TT matrix_batch(dimension, dimension, n_elems);
@@ -40,7 +40,7 @@ namespace {
     }
   }
 
-  ELASTICA_TEST_CASE("Analytical batch matrix-vector product test",
+  ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeLinearAlgebra: Analytical batch matrix-vector product test",
             "[Unit][Utilities]") {
     //! [batch_matvec_example]
     const size_t n_elems = 1UL;
@@ -56,7 +56,7 @@ namespace {
     CHECK(test_matvec == correct_matvec);
   }
 
-  ELASTICA_TEST_CASE("Randomised batch matrix-matrix product test",
+  ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeLinearAlgebra: Randomised batch matrix-matrix product test",
             "[Unit][Utilities]") {
     for (std::size_t n_elems : {1, 32, 128}) {
       TT first_matrix_batch(dimension, dimension, n_elems),
@@ -78,7 +78,7 @@ namespace {
     }
   }
 
-  ELASTICA_TEST_CASE("Analytical batch matrix-matrix product test",
+  ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeLinearAlgebra: Analytical batch matrix-matrix product test",
             "[Unit][Utilities]") {
     //! [batch_matmul_example]
     const size_t n_elems = 1UL;
@@ -99,7 +99,7 @@ namespace {
     CHECK(test_matmul == correct_matmul);
   }
 
-  ELASTICA_TEST_CASE("Randomised batch cross product test",
+  ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeLinearAlgebra: Randomised batch cross product test",
                      "[Unit][Utilities]") {
     for (std::size_t n_elems : {1, 32, 128}) {
       MT first_vector_batch(dimension, n_elems),
@@ -121,7 +121,7 @@ namespace {
     }
   }
 
-  ELASTICA_TEST_CASE("Analytical batch cross product test",
+  ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeLinearAlgebra: Analytical batch cross product test",
                      "[Unit][Utilities]") {
     //! [batch_cross_example]
     const size_t n_elems = 1UL;
@@ -136,7 +136,7 @@ namespace {
     CHECK(test_cross_product == correct_cross_product);
   }
 
-  ELASTICA_TEST_CASE("Randomised batch dot product test",
+  ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeLinearAlgebra: Randomised batch dot product test",
                      "[Unit][Utilities]") {
     for (std::size_t n_elems : {1, 32, 128}) {
       MT first_vector_batch(dimension, n_elems),
@@ -156,7 +156,7 @@ namespace {
     }
   }
 
-  ELASTICA_TEST_CASE("Analytical batch dot product test",
+  ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeLinearAlgebra: Analytical batch dot product test",
                      "[Unit][Utilities]") {
     //! [batch_dot_example]
     const size_t n_elems = 1UL;
@@ -171,7 +171,7 @@ namespace {
     CHECK(test_dot_product == correct_dot_product);
   }
 
-  ELASTICA_TEST_CASE("Randomised batch norm test",
+  ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeLinearAlgebra: Randomised batch norm test",
                      "[Unit][Utilities]") {
     for (std::size_t n_elems : {1, 32, 128}) {
       MT vector_batch(dimension, n_elems);
@@ -188,7 +188,7 @@ namespace {
     }
   }
 
-  ELASTICA_TEST_CASE("Analytical batch norm test",
+  ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeLinearAlgebra: Analytical batch norm test",
                      "[Unit][Utilities]") {
     //! [batch_norm_example]
     const size_t n_elems = 1UL;

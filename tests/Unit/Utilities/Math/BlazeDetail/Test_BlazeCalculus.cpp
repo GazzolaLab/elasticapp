@@ -15,7 +15,7 @@ namespace {
   using MT = blaze::DynamicMatrix<ValueType, blaze::rowMajor>;
   constexpr std::size_t dimension(3UL);
 
-  ELASTICA_TEST_CASE("Trapezoidal quadrature test for f(x) = 1",
+  ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeCalculus: Trapezoidal quadrature test for f(x) = 1",
                      "[Unit][Utilities]") {
     for (std::size_t n_elems : {1, 32, 128}) {
       //! [quadrature_kernel_example]
@@ -34,7 +34,7 @@ namespace {
     }
   }
 
-  ELASTICA_TEST_CASE("Two point difference test for f(x) = 1",
+  ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeCalculus: Two point difference test for f(x) = 1",
                      "[Unit][Utilities]") {
     for (std::size_t n_elems : {1, 32, 128}) {
       //! [difference_kernel_example]
@@ -53,7 +53,7 @@ namespace {
     }
   }
 
-  ELASTICA_TEST_CASE("Trapezoidal quadrature test for f(x) = sin(x)",
+  ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeCalculus: Trapezoidal quadrature test for f(x) = sin(x)",
                      "[Unit][Utilities]") {
     for (std::size_t n_elems : {64, 128, 256}) {
       const std::size_t n_voronoi = n_elems - 1;
@@ -89,7 +89,7 @@ namespace {
     }
   }
 
-  ELASTICA_TEST_CASE("Two point difference test for f(x) = sin(x)",
+  ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeCalculus: Two point difference test for f(x) = sin(x)",
                      "[Unit][Utilities]") {
     for (std::size_t n_elems : {128, 256, 512}) {
       const std::size_t n_voronoi = n_elems - 1;

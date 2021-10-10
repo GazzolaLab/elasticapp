@@ -23,7 +23,7 @@ namespace {
    */
   /* and compares to rotation matrix forms along the given axes */
   ELASTICA_TEST_CASE(
-      "Batch matrix exp() (vector(X, Y, Z axis) --> rotation matrix) test",
+      "Unit.Utilities.Math.BlazeDetail.BlazeRotation: Batch matrix exp() (vector(X, Y, Z axis) --> rotation matrix) test",
       "[Unit][Utilities]") {
     for (std::size_t n_elems : {1, 32, 128}) {
       TT test_rot_matrix_batch(dimension, dimension, n_elems),
@@ -80,7 +80,7 @@ namespace {
   /* example for user convenience: Computer test code at page 5-7 from */
   /* "Rotation, Reflection, and Frame Changes Orthogonal tensors in */
   /* computational engineering  mechanics" by Rebecca Brennen, 2018, IOP */
-  ELASTICA_TEST_CASE("Batch matrix exp() (axis vector --> rotation matrix) user example",
+  ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeRotation: Batch matrix exp() (axis vector --> rotation matrix) user example",
                      "[Unit][Utilities]") {
     //! [exp_batch_example]
     const size_t n_elems = 1UL;
@@ -108,7 +108,7 @@ namespace {
   /* example: Computer test code at page 5-7 from "Rotation, Reflection, */
   /* and Frame Changes Orthogonal tensors in computational engineering */
   /* mechanics" by Rebecca Brennen, 2018, IOP */
-  ELASTICA_TEST_CASE("Batch matrix exp() (axis vector --> rotation matrix) canned test",
+  ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeRotation: Batch matrix exp() (axis vector --> rotation matrix) canned test",
                      "[Unit][Utilities]") {
     for (std::size_t n_elems : {1, 32, 128}) {
       TT test_rot_matrix_batch(dimension, dimension, n_elems),
@@ -143,7 +143,7 @@ namespace {
     }
   }
 
-  ELASTICA_TEST_CASE("Batch matrix exp() gives orthonormal rotation matrix) test",
+  ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeRotation: Batch matrix exp() gives orthonormal rotation matrix) test",
             "[Unit][Utilities]") {
     for (std::size_t n_elems : {1, 32, 128}) {
       TT rot_matrix_batch(dimension, dimension, n_elems),
@@ -171,7 +171,7 @@ namespace {
     }
   }
 
-  ELASTICA_TEST_CASE("Batch matrix exp() gives unit determinant matrix) test",
+  ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeRotation: Batch matrix exp() gives unit determinant matrix) test",
             "[Unit][Utilities]") {
     for (std::size_t n_elems : {1, 32, 128}) {
       TT rot_matrix_batch(dimension, dimension, n_elems),
@@ -207,7 +207,7 @@ namespace {
   /* Y, Z axes by taking rotation matrix forms along the given axes and */
   /* comparing output axes */
   ELASTICA_TEST_CASE(
-      "Batch matrix log() (rotation matrix --> vector(X, Y, Z axis)) test",
+      "Unit.Utilities.Math.BlazeDetail.BlazeRotation: Batch matrix log() (rotation matrix --> vector(X, Y, Z axis)) test",
       "[Unit][Utilities]") {
     for (std::size_t n_elems : {1, 32, 128}) {
       TT rot_matrix_batch(dimension, dimension, n_elems);
@@ -260,7 +260,7 @@ namespace {
   /* example for user convenience: Computer test code at page 5-7 from */
   /* "Rotation, Reflection, and Frame Changes Orthogonal tensors in */
   /* computational engineering mechanics" by Rebecca Brennen, 2018, IOP */
-  ELASTICA_TEST_CASE("Batch matrix log() (rotation matrix --> axis vector) user example",
+  ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeRotation: Batch matrix log() (rotation matrix --> axis vector) user example",
                         "[Unit][Utilities]") {
     //! [log_batch_example]
     const size_t n_elems = 1UL;
@@ -287,7 +287,7 @@ namespace {
   /* example: Computer test code at page 5-7 from "Rotation, Reflection, */
   /* and Frame Changes Orthogonal tensors in computational engineering */
   /* mechanics" by Rebecca Brennen, 2018, IOP */
-  ELASTICA_TEST_CASE("Batch matrix log() (rotation matrix --> axis vector) canned test",
+  ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeRotation: Batch matrix log() (rotation matrix --> axis vector) canned test",
             "[Unit][Utilities]") {
     for (std::size_t n_elems : {1, 32, 128}) {
       TT rot_matrix_batch(dimension, dimension, n_elems);
