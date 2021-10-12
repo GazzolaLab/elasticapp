@@ -122,17 +122,23 @@ namespace {
     for (std::size_t n_elems : {1, 32, 128}) {
       // Define and Initialize
       const std::size_t n_nodes = n_elems + 1UL;
+
+      // Define and initialize test vectors
       Vector::data_type input_vector_batch(dimension, n_elems),
-                        test_vector_batch(dimension, n_nodes),
-                        correct_vector_batch(dimension, n_nodes);
+                        test_vector_batch(dimension, n_nodes);
+      test_vector_batch = real_type(5.0);
       input_vector_batch = real_type(1.0);
-      correct_vector_batch = real_type(1.0);
 
-      // Operation
+      // Define and initialize solution vectors
+      Vector::data_type correct_vector_batch(dimension, n_nodes);
+      correct_vector_batch = real_type(4.0);
+      Vector::slice(correct_vector_batch, 0UL) = real_type(4.5);
+      Vector::slice(correct_vector_batch, n_nodes - 1UL) = real_type(4.5);
+
+      // Testing Operation
       Operations::subtract_quadrature(test_vector_batch, input_vector_batch);
-      Vector::slice(correct_vector_batch, 0UL) = real_type(0.5);
-      Vector::slice(correct_vector_batch, n_nodes - 1UL) = real_type(0.5);
 
+      // Check
       CHECK(test_vector_batch == correct_vector_batch);
     }
   }
@@ -146,56 +152,40 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: batch_inv_rotate_and_divide",
                      "[Systems][Unit]") {
     for (std::size_t n_elems : {1, 32, 128}) {
-      Matrix::data_type test_rot_matrix_batch(dimension, dimension, n_elems),
-                        correct_rot_matrix_batch(dimension, dimension, n_elems);
-      Vector::data_type rot_axis_vector_batch(dimension, n_elems);
+      Matrix::data_type rot_matrix_batch(dimension, dimension, n_elems);
+      Vector::data_type test_rot_axis_vector_batch(dimension, n_elems),
+                        correct_rot_axis_vector_batch(dimension, n_elems),
+                        normalize_vector_batch(dimension, n_elems);
 
-      /* loop across X, Y, Z axes */
-      for (std::size_t rot_axis_vector_dir : {0, 1, 2}) {
-        rot_axis_vector_batch = real_type(0.0);
-        blaze::randomize( // Change to analytical
-            blaze::row(rot_axis_vector_batch, rot_axis_vector_dir));
-        elastica::exp_batch(test_rot_matrix_batch, rot_axis_vector_batch);
+      const real_type norm_factor(0.25);
+      normalize_vector_batch = norm_factor;
 
-        /* Notice that the correct_rot_mat seems to be a transpose */
-        /* ie if you take a vector v, and do Rv, it seems to do a */
-        /* rotation be -test_theta. */
-        /* The catch in this case is that our directors (d_1, d_2, d_3) */
-        /* are all aligned row-wise rather than columnwise. Thus we need */
-        /* to multiply them by a R.transpose, which is equivalent to */
-        /* multiplying by a R(-theta). */
-        auto theta_batch =
-            Vector::slice(rot_axis_vector_batch, rot_axis_vector_dir);
-        correct_rot_matrix_batch = real_type(0.0);
+      /* Previous correct matrix, which did not have a transpose */
+      /* rot_matrix = [[0.254506, -0.834834, 0.488138], */
+      /*            [0.915374, 0.370785, 0.156873], */
+      /*            [-0.311957, 0.406903, 0.858552]] */
+      const Vector::data_type rot_matrix = {
+          {0.254506, -0.834834, 0.488138}, \
+          {0.915374, 0.370785, 0.156873}, \
+          {-0.311957, 0.406903, 0.858552} \
+        };
+      /* Transpose for similar reasons mentioned before */
+      for (std::size_t i(0UL); i < dimension; ++i)
+        for (std::size_t j(0UL); j < dimension; ++j)
+          blaze::row(blaze::pageslice(rot_matrix_batch, i), j) =
+              rot_matrix(j, i);
+      Operations::batch_inv_rotate_and_divide(test_rot_axis_vector_batch, rot_matrix_batch, normalize_vector_batch);
+      Scalar::data_type rot_axis_vector = {1.0, 3.2, 7.0};
+      rot_axis_vector /= blaze::length(rot_axis_vector);
+      const real_type theta = 76.0 * M_PI / 180.0;  // 76.0 degrees
+      rot_axis_vector *= theta;
+      for (std::size_t i(0UL); i < dimension; ++i)
+        blaze::row(correct_rot_axis_vector_batch, i) = rot_axis_vector[i] / norm_factor;
 
-        correct_rot_matrix_batch(rot_axis_vector_dir, rot_axis_vector_dir) = real_type(1.0);
-        correct_rot_matrix_batch((rot_axis_vector_dir+1UL) % dimension,
-                                 (rot_axis_vector_dir+1UL) % dimension) = blaze::cos(theta_batch);
-        correct_rot_matrix_batch((rot_axis_vector_dir+1UL) % dimension,
-                                 (rot_axis_vector_dir+2UL) % dimension) = blaze::sin(theta_batch);
-        correct_rot_matrix_batch((rot_axis_vector_dir+2UL) % dimension,
-                                 (rot_axis_vector_dir+1UL) % dimension) = -blaze::sin(theta_batch);
-        correct_rot_matrix_batch((rot_axis_vector_dir+2UL) % dimension,
-                                 (rot_axis_vector_dir+2UL) % dimension) = blaze::cos(theta_batch);
-        /*
-        blaze::row(Matrix::slice(correct_rot_matrix_batch, rot_axis_vector_dir),
-                   rot_axis_vector_dir) = real_type(1.0);
-        blaze::row(Matrix::slice(correct_rot_matrix_batch, (rot_axis_vector_dir + 1UL) % dimension),
-                   (rot_axis_vector_dir + 1UL) % dimension) = blaze::cos(theta_batch);
-        blaze::row(Matrix::slice(correct_rot_matrix_batch, (rot_axis_vector_dir + 1UL) % dimension),
-                   (rot_axis_vector_dir + 2UL) % dimension) = blaze::sin(theta_batch);
-        blaze::row(Matrix::slice(correct_rot_matrix_batch, (rot_axis_vector_dir + 2UL) % dimension),
-                   (rot_axis_vector_dir + 1UL) % dimension) = -blaze::sin(theta_batch);
-        blaze::row(Matrix::slice(correct_rot_matrix_batch, (rot_axis_vector_dir + 2UL) % dimension),
-                   (rot_axis_vector_dir + 2UL) % dimension) = blaze::cos(theta_batch);
-         */
-
-        /* CHECK(test_rot_matrix_batch == correct_rot_matrix_batch); */
-        /* sadly the above one gives invalid operand error for tensors */
-        for (std::size_t i(0UL); i < dimension; ++i)
-          CHECK(Matrix::slice(test_rot_matrix_batch, i) ==
-                Matrix::slice(correct_rot_matrix_batch, i));
-      }
+      /* tolerance taken from pyelastica */
+      /* TODO refactor 1e-6 */
+      CHECK((test_rot_axis_vector_batch - correct_rot_axis_vector_batch) ==
+            Approx(real_type(0.0)).margin(real_type(1e-6)));
     }
   }
 

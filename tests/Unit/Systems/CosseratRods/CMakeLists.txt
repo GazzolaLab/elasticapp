@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
         Test_Serialize.cpp
         Test_Specialize.cpp
         Test_Tagged.cpp
+        Test_Utilities.cpp
         )
 
 add_test_library(

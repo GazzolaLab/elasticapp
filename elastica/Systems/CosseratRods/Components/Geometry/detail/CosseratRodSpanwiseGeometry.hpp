@@ -32,6 +32,10 @@
 #include "Systems/CosseratRods/Components/Geometry/detail/RodSpanwiseGeometry.hpp"
 #include "Systems/CosseratRods/Components/Geometry/detail/Tags/CosseratRodSpanwiseGeometryTags.hpp"
 
+// Temporary
+#include "blaze/Blaze.h"
+#include "blaze_tensor/Blaze.h"
+
 namespace elastica {
 
   namespace cosserat_rod {
@@ -377,12 +381,12 @@ namespace elastica {
               // position difference
               auto& position(blocks::get<::elastica::tags::Position>(downstream_block));
               auto& director(blocks::get<::elastica::tags::Director>(downstream_block));
-              auto position_diff(Traits::Operations::difference_kernel(position));
+              auto position_diff = Traits::Operations::difference_kernel(position);
 
               // reference_length_collection
               auto& reference_length_collection(
                   blocks::get<ReferenceElementLength>(downstream_block));
-              reference_length_collection = Traits::Operations::batch_norm(position_diff);
+              reference_length_collection = Traits::Operations::transpose(Traits::Operations::batch_norm(position_diff));
 
               // reference_voronoi_length_collection
               auto& reference_voronoi_length_collection(
@@ -392,7 +396,7 @@ namespace elastica {
               // element_length_collection
               auto& element_length_collection(
                   blocks::get<ElementLength>(downstream_block));
-              element_length_collection = Traits::Operations::batch_norm(position_diff);
+              element_length_collection = Traits::Operations::transpose(Traits::Operations::batch_norm(position_diff));
 
               // element_dilatation
               auto& element_dilatation_collection(
@@ -408,35 +412,31 @@ namespace elastica {
               // voronoi_length_collection
               auto& voronoi_length_collection(
                   blocks::get<VoronoiLength>(downstream_block));
-              voronoi_length_collection = Traits::Operations::average_kernal(element_length_collection);
+              voronoi_length_collection = Traits::Operations::average_kernel(element_length_collection);
 
               // voronoi_dilatation
               auto& voronoi_dilatation(
                   blocks::get<VoronoiDilatation>(downstream_block));
               voronoi_dilatation = voronoi_length_collection / reference_voronoi_length_collection;
-                /* Deprecated Code
-                 get_slice(VoronoiDilatationCollectionTag{}) =
-                 get_slice(VoronoiLengthCollectionTag{}) /
-                 get_slice(ReferenceVoronoiLengthCollectionTag{});
-               */
 
               // tangent_collection
               auto& tangent_collection(
                   blocks::get<Tangent>(downstream_block));
-              tangent_collection = position_diff / reference_length_collection;
+              //tangent_collection = position_diff / reference_length_collection;
+              Traits::Operations::batch_division_matvec(tangent_collection, position_diff, reference_length_collection);
 
               // curvature_collection (kappa)
               auto& curvature_collection(
                   blocks::get<Curvature>(downstream_block));
               Traits::Operations::batch_inv_rotate_and_divide(curvature_collection,
                                                               director,
-                                                              reference_voronoi_length_collection);
+                                                              Traits::Operations::expand_for_broadcast(reference_voronoi_length_collection));
               // TODO: Use copy consturctor for reference curvature collection
               auto& reference_curvature_collection(
                   blocks::get<ReferenceCurvature>(downstream_block));
               Traits::Operations::batch_inv_rotate_and_divide(reference_curvature_collection,
                                                               director,
-                                                              reference_voronoi_length_collection);
+                                                              Traits::Operations::expand_for_broadcast(reference_voronoi_length_collection));
               //auto rot_vec = Traits::Operations::batch_inv_rotate(director);
               //curvature_collection = rot_vec / reference_voronoi_length_collection;
 
@@ -447,7 +447,7 @@ namespace elastica {
               Traits::Operations::batch_matvec(
                   shear_stretch_strains_collection,
                   director,
-                  tangent_collection * element_dilatation_collection // matvecexpr
+                  tangent_collection * Traits::Operations::expand_for_broadcast(element_dilatation_collection) // matvecexpr
                 );
               Traits::Operations::batch_subtract_z_unit(shear_stretch_strains_collection);
               auto& ref_shear_stretch_strains_collection(
@@ -455,7 +455,7 @@ namespace elastica {
               Traits::Operations::batch_matvec(
                   ref_shear_stretch_strains_collection,
                   director,
-                  tangent_collection * element_dilatation_collection // matvecexpr
+                  tangent_collection * Traits::Operations::expand_for_broadcast(element_dilatation_collection) // matvecexpr
               );
               Traits::Operations::batch_subtract_z_unit(ref_shear_stretch_strains_collection);
             }

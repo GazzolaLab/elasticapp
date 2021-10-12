@@ -58,13 +58,16 @@ namespace {
 
   using Plugin = mock::MockPlugin<TestGeometry>;
   using Model = typename Plugin::Model;
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.WithCircularCosseratRod: EBO",
+                     "[Systems][Unit]") {
+    CHECK_EBO(Model);
+  }
 
   //  static_assert(
   //      tt::assert_conforms_to<Plugin,
   //      ::elastica::cosserat_rod::protocols::Shape>, "failure!");
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.WithCircularCosseratRod.data",
                      "[Systems][Unit]") {
-    CHECK_EBO(Model);
 
     Model model{};
 

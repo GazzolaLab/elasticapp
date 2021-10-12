@@ -54,6 +54,8 @@ namespace elastica {
     struct VectorTag : public ::tt::ConformsTo<protocols::DataTrait> {
       //**Type definitions******************************************************
       //! The main type for a TaggedTuple
+      /*
+       */
       using type =
           blaze::DynamicVector<Real, blaze::columnVector,
                                blaze::AlignedAllocator<Real> /*, TagType*/>;

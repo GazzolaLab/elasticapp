@@ -15,7 +15,7 @@ namespace {
 
   using ValueType = double;
   using VT = blaze::DynamicVector<ValueType, blaze::rowVector>;
-  using MT = blaze::DynamicMatrix<ValueType, blaze::rowMajor>;
+  using MT = blaze::DynamicMatrix<ValueType>;
   using TT = blaze::DynamicTensor<ValueType>;
   constexpr std::size_t dimension(3UL);
 

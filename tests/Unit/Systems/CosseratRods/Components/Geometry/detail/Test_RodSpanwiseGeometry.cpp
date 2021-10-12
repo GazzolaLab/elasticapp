@@ -36,8 +36,11 @@ namespace {
   // using Model = blocks::Block<Plugin>;
   using Model = typename Plugin::Model;
 
-  // Assert Equal EBO test
-  CHECK_EBO(Model);
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.RodSpanwiseGeometry:EBO",
+                     "[Systems][Unit]") {
+    // Assert Equal EBO test
+    CHECK_EBO(Model);
+  }
 
   template <typename T>
   constexpr bool const_check = std::is_const<std::remove_reference_t<T>>::value;

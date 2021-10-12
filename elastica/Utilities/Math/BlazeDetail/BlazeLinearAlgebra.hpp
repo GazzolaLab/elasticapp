@@ -30,8 +30,8 @@ namespace elastica {
     const std::size_t n_nodes = in_vector.columns();
     const std::size_t n_elems = n_nodes - 1UL;
 
-    return blaze::subvector(in_vector, 0UL, 0UL, dimension, n_nodes-1UL) -
-           blaze::subvector(in_vector, 0UL, 1UL, dimension, n_nodes);
+    return blaze::submatrix(in_vector, 0UL, 0UL, dimension, n_elems) -
+           blaze::submatrix(in_vector, 0UL, 1UL, dimension, n_elems);
   }
 
   //**************************************************************************
@@ -202,8 +202,7 @@ namespace elastica {
     assert(second_vector_batch.rows() == dimension);
     assert(second_vector_batch.columns() == n_elems);
 
-    return blaze::sum<blaze::columnwise>(first_vector_batch %
-                                                        second_vector_batch);
+    return blaze::sum<blaze::columnwise>(first_vector_batch % second_vector_batch);
   }
   //**************************************************************************
 
@@ -232,29 +231,7 @@ namespace elastica {
     const std::size_t n_elems = vector_batch.columns();
     assert(vector_batch.rows() == dimension);
 
-    return blaze::sqrt(blaze::sum<blaze::columnwise>(blaze::pow(vector_batch, 2)));
+    return blaze::sqrt(blaze::sum<blaze::columnwise>(vector_batch % vector_batch));
   }
 
-  //**************************************************************************
-  /*!\brief Voronoi length computation
-   *
-   * Equivalent to 'node_to_element_pos_or_vel' in pyelastica
-   *
-   * @tparam MT1
-   * @tparam MT2
-   * @param in_matrix
-   */
-  template <typename MT>  // blaze Matrix expression type 2
-  auto average_kernel(const MT& in_matrix) {
-    constexpr std::size_t dimension(3UL);
-    assert(in_matrix.rows() == dimension);
-    const std::size_t n_nodes = in_matrix.columns();
-    const std::size_t n_elems = n_nodes - 1UL;
-    using ValueType = typename MT::ElementType;
-
-    // 0.5*(ref_length[1:] + ref_length[:-1])
-    return ValueType(0.5) * (blaze::submatrix(in_matrix, 0UL, 0UL, dimension, n_elems) +
-        blaze::submatrix(in_matrix, 0UL, 1UL, dimension, n_elems + 1UL));
-  }
-  //**************************************************************************
 }  // namespace rod

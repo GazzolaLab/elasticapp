@@ -39,7 +39,11 @@ namespace {
 //  using Model = blocks::Block<Plugin>;
   using Model = typename Plugin::Model;
 
-  static constexpr bool _result = CheckEbo<sizeof(Model), sizeof(double)*tmpl::size<Plugin::Variables>::value>::_result;
+  ELASTICA_TEST_CASE(
+      "Unit.Systems.CosseratRods.CosseratRodSpanwiseGeometry: EBO",
+      "[Systems][Unit]") {
+    CHECK_EBO(Model);
+  }
 
   template <typename T>
   constexpr bool const_check = std::is_const<std::remove_reference_t<T>>::value;
