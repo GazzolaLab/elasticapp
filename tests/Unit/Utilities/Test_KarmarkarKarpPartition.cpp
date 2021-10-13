@@ -2,6 +2,8 @@
 // Created by Tejaswin Parthasarathy on 10/10/21.
 //
 
+#include <algorithm>
+
 #include "Framework/TestingFramework.hpp"
 #include "Utilities/KarmarkarKarpPartition.hpp"
 
@@ -9,19 +11,37 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Utilities.karmarkar_karp_partitioner",
                      "[Unit][Utilities]") {
-    const std::size_t partition_size = 3UL;
-    auto partition_result = elastica::karmarkar_karp_partition(
-        std::vector<int>({1, 7, 5, 10, 9, 3}), partition_size);
-    //    CHECK(partitions.subset(0UL).numbers() == {7, 5});
-    //    CHECK(partitions.subset(1UL).numbers() == {9, 3});
-    //    CHECK(partitions.subset(2UL).numbers() == {1, 10});
-    //    CHECK(partitions.subset(0UL).numbers().begin()->value() == 7);
-    //    CHECK(std::next(partitions.subset(0UL).numbers().begin())->value() ==
-    //    5); CHECK(partitions.subset(1UL).numbers().begin()->value() == 9);
-    CHECK(partition_result.n_subsets() == partition_size);
-    CHECK(partition_result.subset(0UL) == std::vector<int>{7, 5});
-    CHECK(partition_result.subset(1UL) == std::vector<int>{9, 3});
-    CHECK(partition_result.subset(2UL) == std::vector<int>{1, 10});
+    SECTION("Single partition") {
+      const std::size_t partition_size = 1UL;
+      std::vector<int> input_vector{1, 7, 5, 10, 9, 3};
+      auto partition_result =
+          elastica::karmarkar_karp_partition(input_vector, partition_size);
+      CHECK(partition_result.n_subsets() == partition_size);
+
+      // we cannot guarntee order, but only guarantee that elements are within
+      // the subset
+      auto& only_subset = partition_result.subset(0UL);
+      for (int item : input_vector) {
+        CHECK(std::find(std::begin(only_subset), std::end(only_subset), item) !=
+              std::end(only_subset));
+      }
+    }
+    SECTION("Multiple partition") {
+      const std::size_t partition_size = 3UL;
+      auto partition_result = elastica::karmarkar_karp_partition(
+          std::vector<int>({1, 7, 5, 10, 9, 3}), partition_size);
+      //    CHECK(partitions.subset(0UL).numbers() == {7, 5});
+      //    CHECK(partitions.subset(1UL).numbers() == {9, 3});
+      //    CHECK(partitions.subset(2UL).numbers() == {1, 10});
+      //    CHECK(partitions.subset(0UL).numbers().begin()->value() == 7);
+      //    CHECK(std::next(partitions.subset(0UL).numbers().begin())->value()
+      //    == 5); CHECK(partitions.subset(1UL).numbers().begin()->value() ==
+      //    9);
+      CHECK(partition_result.n_subsets() == partition_size);
+      CHECK(partition_result.subset(0UL) == std::vector<int>{7, 5});
+      CHECK(partition_result.subset(1UL) == std::vector<int>{9, 3});
+      CHECK(partition_result.subset(2UL) == std::vector<int>{1, 10});
+    }
   }
 
   struct NForcings {
