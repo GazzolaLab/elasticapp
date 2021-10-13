@@ -31,6 +31,7 @@ elastica_target_headers(
         Approx.hpp
         AsConst.hpp
         Byte.hpp
+        Clamp.hpp
         CRTP.hpp
         DefineTypes.h
         Demangle.hpp
@@ -41,6 +42,7 @@ elastica_target_headers(
         # Geometry.hpp
         IgnoreUnused.hpp
         Invoke.hpp
+        KarmarkarKarpPartition.hpp
         ListRequires.hpp
         Logging.hpp
         MakeArray.hpp
@@ -70,6 +72,7 @@ elastica_target_headers(
         StaticConst.hpp
         StaticWarning.hpp
         StdHelpers.hpp
+        StdVectorHelpers.hpp
         SystemClock.hpp
         TaggedTuple.hpp
         Thresholds.hpp
