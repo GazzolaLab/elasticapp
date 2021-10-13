@@ -41,8 +41,6 @@ namespace elastica {
       //
       //========================================================================
 
-      // TODO : should be batched if parallelized
-
       //************************************************************************
       /*!\brief Execution policy for Constraints module
        * \ingroup interface
@@ -122,7 +120,7 @@ namespace elastica {
           /*!\brief Policy constructor (copy constructed)
            */
           explicit ConstrainPrimitivesOp(
-              std::tuple<ConstraintsModule*, ConstraintsTraits const&>&& args)
+              std::tuple<ConstraintsModule*, ConstraintsTraits const&> args)
               : ConstrainPrimitivesOp(
                     cpp17::make_from_tuple<ConstrainPrimitivesOp>(
                         std::move(args))) {}
@@ -172,7 +170,7 @@ namespace elastica {
           /*!\brief Policy constructor (copy constructed)
            */
           explicit ConstrainPrimitivesOp(
-              std::tuple<ConstraintsModule*, ConstraintsTraits const&>&& args)
+              std::tuple<ConstraintsModule*, ConstraintsTraits const&> args)
               : ConstrainPrimitivesOp(
                     cpp17::make_from_tuple<ConstrainPrimitivesOp>(
                         std::move(args))) {}
@@ -231,7 +229,7 @@ namespace elastica {
           /*!\brief Policy constructor (copy constructed)
            */
           explicit ConstrainPrimitivesOp(
-              std::tuple<ConstraintsModule*, ConstraintsTraits const&>&& args)
+              std::tuple<ConstraintsModule*, ConstraintsTraits const&> args)
               : ConstrainPrimitivesOp(
                     cpp17::make_from_tuple<ConstrainPrimitivesOp>(
                         std::move(args))) {}
@@ -296,7 +294,7 @@ namespace elastica {
           /*!\brief Policy constructor (copy constructed)
            */
           explicit ConstrainRatesOp(
-              std::tuple<ConstraintsModule*, ConstraintsTraits const&>&& args)
+              std::tuple<ConstraintsModule*, ConstraintsTraits const&> args)
               : ConstrainRatesOp(
                     cpp17::make_from_tuple<ConstrainRatesOp>(std::move(args))) {
           }
@@ -346,7 +344,7 @@ namespace elastica {
           /*!\brief Policy constructor (copy constructed)
            */
           explicit ConstrainRatesOp(
-              std::tuple<ConstraintsModule*, ConstraintsTraits const&>&& args)
+              std::tuple<ConstraintsModule*, ConstraintsTraits const&> args)
               : ConstrainRatesOp(
                     cpp17::make_from_tuple<ConstrainRatesOp>(std::move(args))) {
           }
@@ -405,7 +403,7 @@ namespace elastica {
           /*!\brief Policy constructor (copy constructed)
            */
           explicit ConstrainRatesOp(
-              std::tuple<ConstraintsModule*, ConstraintsTraits const&>&& args)
+              std::tuple<ConstraintsModule*, ConstraintsTraits const&> args)
               : ConstrainRatesOp(
                     cpp17::make_from_tuple<ConstrainRatesOp>(std::move(args))) {
           }

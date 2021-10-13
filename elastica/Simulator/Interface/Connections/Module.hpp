@@ -166,6 +166,11 @@ namespace elastica {
       using ConnectionID =
           std::unique_ptr<::elastica::interface::connections::ConnectionBase<
               ConnectionsRegistrars>>;
+      struct ConnectionFillerBatchAlgorithm {
+        ConnectionFillerBatchAlgorithm(SimTraits const&) {}
+      };
+      using BatchingAlgorithm =
+          tmpl::list<tmpl::type_<ConnectionFillerBatchAlgorithm>>;
       //************************************************************************
 
       //**Friendships***********************************************************
@@ -544,8 +549,8 @@ namespace elastica {
        *
        * \param connection_uuid The key using which we retrieve the connections
        */
-      inline auto retrieve_from_query(UUID const& connection_uuid) noexcept
-          -> typename ConnecterID::pointer {
+      inline auto retrieve_from_query(UUID const& connection_uuid) noexcept ->
+          typename ConnecterID::pointer {
         /*
          * dev note:
          * 1. the retrieval is noexcept as by construction the

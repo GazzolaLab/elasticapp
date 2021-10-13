@@ -28,6 +28,7 @@
 #include "Simulator/Constraints/Types.hpp"
 #include "Simulator/Interface/Constraints/Types.hpp"
 /// Interface methods
+#include "Simulator/Interface/Constraints/BatchingPolicy.hpp"
 #include "Simulator/Interface/Constraints/Configuration.hpp"
 #include "Simulator/Interface/Constraints/Constrainer.hpp"
 #include "Simulator/Interface/Constraints/ConstrainerBase.hpp"
@@ -119,7 +120,9 @@ namespace elastica {
           public NonCopyable,
           private detail::HasConstraintsConfiguration<SimTraits>,
           protected ::elastica::interface::constraints::ExecutionPolicy<
-              SimTraits, Constraints<SimTraits, Sim>> {
+              SimTraits, Constraints<SimTraits, Sim>>,
+          protected ::elastica::interface::constraints::BatchingPolicy<
+              SimTraits> {
      private:
       //**Compile-time checks***************************************************
       //
@@ -139,6 +142,9 @@ namespace elastica {
       //! Algorithm type
       using Algorithm =
           ::elastica::interface::constraints::ExecutionPolicy<SimTraits, This>;
+      //! Batch type
+      using BatchAlgorithm =
+          ::elastica::interface::constraints::BatchingPolicy<SimTraits>;
       //! UUID type
       using UUID = ::elastica::interface::constraints::ConstraintUUID;
       //! Map from system to uuid
@@ -169,6 +175,8 @@ namespace elastica {
       //**Friendships***********************************************************
       //! Friend the Algorithm
       friend Algorithm;
+      //! Friend the batcher (not necessary)
+      friend BatchAlgorithm;
       //! Friendship with Serialize
       friend struct ::elastica::io::Serialize<This>;
       //************************************************************************
@@ -467,6 +475,19 @@ namespace elastica {
       }
       //************************************************************************
 
+      //************************************************************************
+      /*!\brief Gets the total number of batches
+       */
+      inline auto n_batches() const noexcept -> std::size_t {
+        // this is internal so a member function suffices.
+        auto const& algorithm =
+            self()
+                .template get_batching_algorithm<
+                    typename BatchAlgorithm::ConstraintsBatcher>();
+        return algorithm(n_constraints());
+      };
+      //************************************************************************
+
       //@}
       //************************************************************************
 
@@ -571,8 +592,6 @@ namespace elastica {
         try {
           check_and_report_errors();
 
-          auto partition_size = []() { return 3UL; };
-
           // logic for batching
           batch_from = [](auto uuids_batched_per_system,
                           std::size_t partition_size) {
@@ -588,10 +607,10 @@ namespace elastica {
             }
             return ::elastica::interface::detail::make_uuid_to_batch_map(
                 std::move(flattened_uuid_subsets));
-          }(std::move(uuid_map_).as_vector(), partition_size());
+          }(std::move(uuid_map_).as_vector(), n_batches());
 
-          constrainer_batches_.reserve(partition_size());
-          constrainer_batches_.resize(partition_size());
+          constrainer_batches_.reserve(n_batches());
+          constrainer_batches_.resize(n_batches());
 
           for (ConstraintID const& constraint : constraints_) {
             // guaranteed to be [0, partition_size() - 1]

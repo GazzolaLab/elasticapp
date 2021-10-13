@@ -47,6 +47,7 @@
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/ValueTraits/IsInf.hpp"
+#include "Utilities/WidthStream.hpp"
 
 // DONE : Check for mixins to simulator class should always be default
 //  constructible (not trivial, but default)
@@ -273,6 +274,17 @@ namespace elastica {
                        PreDynamicUpdateSteps, PostDynamicUpdateSteps>;
       //! Algorithm cache type
       using Algorithms = tmpl::as_tagged_tuple<AlgorithmSteps>;
+      //@}
+      //************************************************************************
+
+      //************************************************************************
+      /*!\name Batch Algorithm Type definitions */
+      //@{
+      //! Get all batchers algorithm steps
+      using Batchers =
+          tmpl::append<typename Modules<SimTraits, This>::BatchingAlgorithm...>;
+      //! Batching algorithm cache type
+      using BatchingAlgorithms = tmpl::as_tagged_tuple<Batchers>;
       //@}
       //************************************************************************
 
@@ -541,6 +553,27 @@ reorganizing your code logic.
       //************************************************************************
 
       //************************************************************************
+      /*!\brief Access to the batching algorithms
+       */
+      inline constexpr auto batching_algorithms() const noexcept
+          -> BatchingAlgorithms const& {
+        return *batching_algorithms_;
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Get a batching algorithm from the simulator cache
+       *
+       * \tparam BatchingAlgorithmTag Tag for obtaining the algorithm
+       * \return Algorithm callable
+       */
+      template <typename BatchingAlgorithmTag>
+      inline constexpr decltype(auto) get_batching_algorithm() const noexcept {
+        return tuples::get<BatchingAlgorithmTag>(batching_algorithms());
+      }
+      //************************************************************************
+
+      //************************************************************************
       /*!\brief Apply algorithmic updates across modules occurring after the
        * kinematic update step (of a symplectic stepper).
        *
@@ -620,6 +653,90 @@ reorganizing your code logic.
       //@}
       //************************************************************************
 
+     protected:
+      //**information methods***************************************************
+      /*!\name Info methods*/
+      //@{
+      int info_tab_width() const noexcept { return 4; }
+
+      struct InfoPrinter {
+        InfoPrinter(This const& simulator, ::elastica::widthstream& stream)
+            : sim_(simulator), os_(stream) {}
+        ~InfoPrinter() = default;
+
+        template <typename TagWrappedAsType>
+        void operator()(TagWrappedAsType /*meta*/) const {
+          using Update = tmpl::type_from<TagWrappedAsType>;
+          // do not use pretty type here as the template carries with it some
+          // useful information which gets missed.
+          os_ << pretty_type::short_name<Update>() << "\n";
+
+          // clang-format off
+          Indent(os_, sim_.info_tab_width())
+              // clang-format on
+              ([&](::elastica::widthstream& stream) {
+                stream << sim_.get_algorithm<Update>().info();
+              });
+        }
+
+        This const& sim_;
+        ::elastica::widthstream& os_;
+      };
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Prints information of the post kinematic update steps
+       *
+       * \param os Stream for printing out
+       * \return void
+       */
+      auto info_update(::elastica::widthstream& os) const noexcept -> void {
+        // here we already put in the info that there is only 1 update step
+        using Update = tmpl::front<UpdateSteps>;
+        os << pretty_type::short_name<Update>() << "\n"
+           << get_algorithm<Update>().info();
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Prints information of the post kinematic update steps
+       *
+       * \param os Stream for printing out
+       * \return void
+       */
+      auto info_post_kinematic_updates(
+          ::elastica::widthstream& os) const noexcept -> void {
+        tmpl::for_each<PostKinematicUpdateSteps>(Printer(*this, os));
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Prints information of the pre dynamic update steps
+       *
+       * \param os Stream for printing out
+       * \return void
+       */
+      auto info_pre_dynamic_updates(::elastica::widthstream& os) const noexcept
+          -> void {
+        tmpl::for_each<PreDynamicUpdateSteps>(Printer(*this, os));
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Prints information of the post dynamic update steps
+       *
+       * \param os Stream for printing out
+       * \return void
+       */
+      auto info_post_dynamic_updates(::elastica::widthstream& os) const noexcept
+          -> void {
+        tmpl::for_each<PostDynamicUpdateSteps>(Printer(*this, os));
+      }
+      //************************************************************************
+
+      //@}
+      //************************************************************************
+
      public:
       //**Destructor************************************************************
       /*!\name Destructor */
@@ -651,6 +768,8 @@ reorganizing your code logic.
        */
       void initialize_from_traits(SimTraits&& traits) {
         constexpr std::size_t n_algorithms = tmpl::size<AlgorithmSteps>::value;
+        constexpr std::size_t n_batching_algorithms =
+            tmpl::size<Batchers>::value;
         // simulator
         domain_ = std::make_unique<DomainType>(std::move(traits).domain());
         algorithms_ = std::make_unique<Algorithms>(
@@ -665,6 +784,18 @@ reorganizing your code logic.
                 repeat_as_tuple<n_algorithms>(
                     // can use forward as tuple here in case
                     std::tuple<This*, SimTraits const&>(this, traits))));
+        batching_algorithms_ = std::make_unique<BatchingAlgorithms>(
+            // tagged tuple does not have a tuple constructor but has a
+            // variadic constructor
+            cpp17::apply(
+                [](auto&&... initializer_trait) noexcept {
+                  return BatchingAlgorithms(
+                      std::forward<decltype(initializer_trait)>(
+                          initializer_trait)...);
+                },
+                repeat_as_tuple<n_batching_algorithms>(
+                    // can use forward as tuple here in case
+                    traits)));
         // systems modules
         // the () functions return the dereferenced result which cannot be
         // assigned
@@ -705,6 +836,7 @@ reorganizing your code logic.
             SymplecticInterface(),
             ExplicitInterface(),
             algorithms_(nullptr),
+            batching_algorithms_(nullptr),
             domain_(nullptr),
             ready_for_integration_(false) {
         using namespace ::elastica::logging;
@@ -727,6 +859,8 @@ reorganizing your code logic.
 
       //! Handle to algorithms
       std::unique_ptr<Algorithms const> algorithms_;
+      //! Handle to batching algorithms
+      std::unique_ptr<BatchingAlgorithms const> batching_algorithms_;
       //! Handle to a domain object
       std::unique_ptr<DomainType const> domain_;
       //! State of simulation finalization

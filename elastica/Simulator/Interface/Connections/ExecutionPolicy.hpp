@@ -106,7 +106,7 @@ namespace elastica {
           /*!\brief Policy constructor (copy constructed)
            */
           explicit ConnectSystemsOp(
-              std::tuple<ConnectionsModule*, ConnectionsTraits const&>&& args)
+              std::tuple<ConnectionsModule*, ConnectionsTraits const&> args)
               : ConnectSystemsOp(
                     cpp17::make_from_tuple<ConnectSystemsOp>(std::move(args))) {
           }
@@ -156,7 +156,7 @@ namespace elastica {
           /*!\brief Policy constructor (copy constructed)
            */
           explicit ConnectSystemsOp(
-              std::tuple<ConnectionsModule*, ConnectionsTraits const&>&& args)
+              std::tuple<ConnectionsModule*, ConnectionsTraits const&> args)
               : ConnectSystemsOp(
                     cpp17::make_from_tuple<ConnectSystemsOp>(std::move(args))) {
           }
@@ -211,7 +211,7 @@ namespace elastica {
           /*!\brief Policy constructor (copy constructed)
            */
           explicit ConnectSystemsOp(
-              std::tuple<ConnectionsModule*, ConnectionsTraits const&>&& args)
+              std::tuple<ConnectionsModule*, ConnectionsTraits const&> args)
               : ConnectSystemsOp(
                     cpp17::make_from_tuple<ConnectSystemsOp>(std::move(args))) {
           }

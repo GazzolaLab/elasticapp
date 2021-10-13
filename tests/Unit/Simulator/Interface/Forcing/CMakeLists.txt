@@ -4,6 +4,7 @@
 set(LIBRARY "Test_Interface_Forcing")
 
 set(LIBRARY_SOURCES
+        Test_BatchPolicy.cpp
         Test_ForcerBase.cpp
         Test_Forcer.cpp
         Test_ForcingBase.cpp

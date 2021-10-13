@@ -4,6 +4,7 @@
 set(LIBRARY "Test_Interface_Constraints")
 
 set(LIBRARY_SOURCES
+        Test_BatchingPolicy.cpp
         Test_Constraint.cpp
         Test_ConstrainerBase.cpp
         Test_Constrainer.cpp

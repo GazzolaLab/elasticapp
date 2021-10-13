@@ -28,6 +28,7 @@
 #include "Simulator/Forcing/Types.hpp"
 #include "Simulator/Interface/Forcing/Types.hpp"
 /// Interface methods
+#include "Simulator/Interface/Forcing/BatchingPolicy.hpp"
 #include "Simulator/Interface/Forcing/Configuration.hpp"
 #include "Simulator/Interface/Forcing/ExecutionPolicy.hpp"
 #include "Simulator/Interface/Forcing/Forcer.hpp"
@@ -118,7 +119,8 @@ namespace elastica {
           public NonCopyable,
           private detail::HasForcingConfiguration<SimTraits>,
           protected ::elastica::interface::forcing::ExecutionPolicy<
-              SimTraits, Forcing<SimTraits, Sim>> {
+              SimTraits, Forcing<SimTraits, Sim>>,
+          protected ::elastica::interface::forcing::BatchingPolicy<SimTraits> {
      private:
       //**Compile-time checks***************************************************
       //
@@ -138,6 +140,9 @@ namespace elastica {
       //! Algorithm type
       using Algorithm =
           ::elastica::interface::forcing::ExecutionPolicy<SimTraits, This>;
+      //! Batch type
+      using BatchAlgorithm =
+          ::elastica::interface::forcing::BatchingPolicy<SimTraits>;
       //! UUID type
       using UUID = ::elastica::interface::forcing::ForcingUUID;
       //! Map from system to uuid
@@ -167,6 +172,8 @@ namespace elastica {
       //**Friendships***********************************************************
       //! Friend the Algorithm
       friend Algorithm;
+      //! Friend the batcher (not necessary)
+      friend BatchAlgorithm;
       //! Friendship with Serialize
       friend struct ::elastica::io::Serialize<This>;
       //************************************************************************
@@ -437,6 +444,19 @@ namespace elastica {
       }
       //************************************************************************
 
+      //************************************************************************
+      /*!\brief Gets the total number of batches
+       */
+      inline auto n_batches() const noexcept -> std::size_t {
+        // this is internal so a member function suffices.
+        auto const& algorithm =
+            self()
+                .template get_batching_algorithm<
+                    typename BatchAlgorithm::ForcingBatcher>();
+        return algorithm(n_forcings());
+      };
+      //************************************************************************
+
       //@}
       //************************************************************************
 
@@ -540,8 +560,6 @@ namespace elastica {
         try {
           check_and_report_errors();
 
-          auto partition_size = []() { return 3UL; };
-
           // logic for batching
           batch_from = [](auto uuids_batched_per_system,
                           std::size_t partition_size) {
@@ -557,10 +575,10 @@ namespace elastica {
             }
             return ::elastica::interface::detail::make_uuid_to_batch_map(
                 std::move(flattened_uuid_subsets));
-          }(std::move(uuid_map_).as_vector(), partition_size());
+          }(std::move(uuid_map_).as_vector(), n_batches());
 
-          forcer_batches_.reserve(partition_size());
-          forcer_batches_.resize(partition_size());
+          forcer_batches_.reserve(n_batches());
+          forcer_batches_.resize(n_batches());
 
           for (ForcingID const& forcing : forcing_) {
             // guaranteed to be [0, partition_size() - 1]
