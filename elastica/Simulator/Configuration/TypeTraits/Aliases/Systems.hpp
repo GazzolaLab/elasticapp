@@ -118,8 +118,8 @@ namespace elastica {
          using Type2 = system_type_t<T>;
        \endcode
     */
-    template <typename SystemTag>
-    using system_type_t = typename SystemTag::SystemType;
+    // template <typename SystemTag>
+    // using system_type_t = typename SystemTag::SystemType;
     //**************************************************************************
 
   }  // namespace tt

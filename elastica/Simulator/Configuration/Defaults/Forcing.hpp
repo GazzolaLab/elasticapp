@@ -46,7 +46,7 @@ namespace elastica {
      *
      * \details
      * DefaultForcingConfiguration is the default compile-time customization
-     * of @ref connections in \elastica
+     * of @ref forcing in \elastica
      * It is default-constructible and the default settings can be changed using
      * ELASTICA_DEFAULT_EXECUTION_POLICY_FOR_FORCING() and
      * ELASTICA_DEFAULT_REGISTRARS_FOR_FORCING()

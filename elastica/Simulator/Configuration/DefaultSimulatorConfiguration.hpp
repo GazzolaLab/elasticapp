@@ -62,14 +62,16 @@ namespace elastica {
         : public SimulatorConfiguration<
               DefaultConnectionsConfiguration, DefaultConstraintsConfiguration,
               DefaultDomainConfiguration, DefaultEnvironmentsConfiguration,
-              DefaultForcingConfiguration, DefaultSystemsConfiguration> {
+              DefaultForcingConfiguration, DefaultParallelConfiguration,
+              DefaultSystemsConfiguration> {
       // all should be default constructible
      private:
       //**Type definitions******************************************************
       using Parent = SimulatorConfiguration<
           DefaultConnectionsConfiguration, DefaultConstraintsConfiguration,
           DefaultDomainConfiguration, DefaultEnvironmentsConfiguration,
-          DefaultForcingConfiguration, DefaultSystemsConfiguration>;
+          DefaultForcingConfiguration, DefaultParallelConfiguration,
+          DefaultSystemsConfiguration>;
       //************************************************************************
 
      public:
@@ -81,7 +83,8 @@ namespace elastica {
                 DefaultConnectionsConfiguration{},
                 DefaultConstraintsConfiguration{}, DefaultDomainConfiguration{},
                 DefaultEnvironmentsConfiguration{},
-                DefaultForcingConfiguration{}, DefaultSystemsConfiguration{}){};
+                DefaultForcingConfiguration{}, DefaultParallelConfiguration{},
+                DefaultSystemsConfiguration{}){};
       //@}
       //************************************************************************
 

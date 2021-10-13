@@ -23,7 +23,7 @@ namespace elastica {
     //
     ////////////////////////////////////////////////////////////////////////////
 
-    //****************************************************************************
+    //**************************************************************************
     /*! \cond ELASTICA_INTERNAL */
     /// details, to nclude exexcution?
     template <typename Criterion>
@@ -47,8 +47,9 @@ namespace elastica {
     template <typename SystemPlugins, typename BlockingStrategy,
               typename IterationStrategy>
     class SystemsConfiguration;
+    class ParallelConfiguration;
     /*! \endcond */
-    //****************************************************************************
+    //**************************************************************************
 
   }  // namespace configuration
 

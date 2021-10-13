@@ -47,3 +47,11 @@
 #define ELASTICA_USE_SHARED_MEMORY_PARALLELIZATION @ELASTICA_SMP@
 #endif
 //******************************************************************************
+
+//******************************************************************************
+/*!\brief Compile time hint for number of threads to be used in an elastica
+ * application
+ * \ingroup config parallel
+ */
+constexpr std::size_t elastica_threads_hint() { return 2UL; }
+//******************************************************************************

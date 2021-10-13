@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
         Test_Constraints.cpp
         Environments.cpp
         Test_Forcing.cpp
+        Test_Parallel.cpp
         Test_Serialize.cpp
         Test_Systems.cpp
         )
