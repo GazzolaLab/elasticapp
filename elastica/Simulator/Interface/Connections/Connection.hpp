@@ -497,7 +497,7 @@ connections::Connection?
           // retrun a key for querying after finalizing
           using ::elastica::interface::detail::id;
           using RT = const ConnectionQueryID<std::decay_t<ConcreteConnection>>;
-          return RT{id(this->id())};
+          return RT{this->id()};
         }
         //**********************************************************************
 

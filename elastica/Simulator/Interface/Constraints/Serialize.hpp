@@ -104,25 +104,36 @@ namespace elastica {
                   << n_constraints_from_file));
         }
 
+        ar(constraints_module.batch_map());
+        const std::size_t map_size = constraints_module.batch_map().size();
+        if (map_size != n_constraints_from_file) {
+          throw std::runtime_error(
+              std::string(
+                  MakeString{}
+                  << "Number of constraints from the saved archive : "
+                  << n_constraints_from_file
+                  << " does not match the number of constraints from the "
+                     "obtained from the mapping : "
+                  << map_size));
+        }
+
         // instead of de-serializing the vector of unique pointers, we call
         // for each, because the memory for the unique pointers is already
         // allocated
-
-        auto& constrainers = constraints_module.constrainers();
         // this can also throw if the ID does not match
-        std::for_each(constrainers.begin(),
-                      constrainers.end(),
-                      [&](auto& constrainer_ptr) { ar(*constrainer_ptr); });
+        for (auto& batch : constraints_module.constrainer_batches())
+          for (auto& constrainer_ptr : batch)
+            ar(*constrainer_ptr);
       }
 
       template <typename OutArchive>
       static inline void save(OutArchive& ar, type const& constraints_module) {
         ar(constraints_module.n_constraints());
-        auto const& constrainers = constraints_module.constrainers();
-        std::for_each(
-            constrainers.cbegin(),
-            constrainers.cend(),
-            [&](auto const& constrainer_ptr) { ar(*constrainer_ptr); });
+        ar(constraints_module.batch_map());
+
+        for (auto& batch : constraints_module.constrainer_batches())
+          for (auto& constrainer_ptr : batch)
+            ar(*constrainer_ptr);
       }
     };
     /*! \endcond */

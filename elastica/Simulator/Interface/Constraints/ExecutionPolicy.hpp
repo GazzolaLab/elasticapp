@@ -22,8 +22,11 @@
 #include "Simulator/Configuration/ModuleConfiguration/ExecutionPolicy.hpp"
 #include "Simulator/Interface/Connections/Types.hpp"
 ///
+#include "Parallel/for_each.hpp"  // uses elastica's, not GLIBCXX
+///
 #include "Utilities/CRTP.hpp"
 #include "Utilities/MakeFromTuple.hpp"
+#include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace elastica {
@@ -137,9 +140,9 @@ namespace elastica {
            * \param time_v The current time of simulation
            */
           inline auto operator()(TimeType time_v) const noexcept -> void {
-            for (auto const& constrainer : module_handle.constrainers()) {
-              constrainer->constrain_primitives(time_v);
-            }
+            for (auto const& batch : module_handle.constrainer_batches())
+              for (auto const& constrainer : batch)
+                constrainer->constrain_primitives(time_v);
           }
           //********************************************************************
 
@@ -187,10 +190,15 @@ namespace elastica {
            * \param time_v The current time of simulation
            */
           inline auto operator()(TimeType time_v) const noexcept -> void {
-            // TODO : parallelism
-            for (auto const& constrainer : module_handle.constrainers()) {
-              constrainer->constrain_primitives(time_v);
-            }
+            // DONE : parallelization occurs across independent batches
+            using ::elastica::size;
+            ::elastica::parallel::for_each(
+                0UL, size(module_handle.constrainer_batches()),
+                [&, time_v](std::size_t const idx) {
+                  auto const& batch = module_handle.constrainer_batches()[idx];
+                  for (auto const& constrainer : batch)
+                    constrainer->constrain_primitives(time_v);
+                });
           }
           //********************************************************************
 
@@ -212,8 +220,8 @@ namespace elastica {
            */
           ConstrainPrimitivesOp(ConstraintsModule* sim,
                                 ConstraintsTraits const& traits)
-              : connect_primitives_in_sequence_(sim, traits),
-                connect_primitives_in_parallel_(sim, traits),
+              : constrain_primitives_in_sequence_(sim, traits),
+                constrain_primitives_in_parallel_(sim, traits),
                 module_handle(*sim),
                 parallelism_threshold_(
                     traits.constraints_parallelism_threshold()) {}
@@ -243,17 +251,17 @@ namespace elastica {
           inline auto operator()(TimeType time_v) const noexcept -> void {
             // Is this if() check viable when put in a flow graph?
             if (module_handle.n_constraints() < parallelism_threshold_)
-              connect_primitives_in_sequence_(time_v);
+              constrain_primitives_in_sequence_(time_v);
             else
-              connect_primitives_in_parallel_(time_v);
+              constrain_primitives_in_parallel_(time_v);
           }
           //********************************************************************
 
           //**Member variables**************************************************
           //! Serial forcing functor
-          ConstrainPrimitivesInSequence connect_primitives_in_sequence_;
+          ConstrainPrimitivesInSequence constrain_primitives_in_sequence_;
           //! Parallel forcing functor
-          ConstrainPrimitivesInParallel connect_primitives_in_parallel_;
+          ConstrainPrimitivesInParallel constrain_primitives_in_parallel_;
           //! Handle to the ConstraintsModule
           ConstraintsModule const& module_handle;
           //! Threshold to switch between serial and parallel execution
@@ -306,9 +314,9 @@ namespace elastica {
            * \param time_v The current time of simulation
            */
           inline auto operator()(TimeType time_v) const noexcept -> void {
-            for (auto const& constrainer : module_handle.constrainers()) {
-              constrainer->constrain_rates(time_v);
-            }
+            for (auto const& batch : module_handle.constrainer_batches())
+              for (auto const& constrainer : batch)
+                constrainer->constrain_rates(time_v);
           }
           //********************************************************************
 
@@ -329,7 +337,8 @@ namespace elastica {
           //********************************************************************
           /*!\brief Policy constructor.
            */
-          ConstrainRatesOp(ConstraintsModule* sim, ConstraintsTraits const& /* meta*/)
+          ConstrainRatesOp(ConstraintsModule* sim,
+                           ConstraintsTraits const& /* meta*/)
               : module_handle(*sim) {}
           //********************************************************************
 
@@ -355,10 +364,15 @@ namespace elastica {
            * \param time_v The current time of simulation
            */
           inline auto operator()(TimeType time_v) const noexcept -> void {
-            // TODO : parllale
-            for (auto const& constrainer : module_handle.constrainers()) {
-              constrainer->constrain_rates(time_v);
-            }
+            // DONE : parallelism in batches
+            using ::elastica::size;
+            ::elastica::parallel::for_each(
+                0UL, size(module_handle.constrainer_batches()),
+                [&, time_v](std::size_t const idx) {
+                  auto const& batch = module_handle.constrainer_batches()[idx];
+                  for (auto const& constrainer : batch)
+                    constrainer->constrain_rates(time_v);
+                });
           }
           //********************************************************************
 
@@ -380,8 +394,8 @@ namespace elastica {
            */
           ConstrainRatesOp(ConstraintsModule* sim,
                            ConstraintsTraits const& traits)
-              : connect_rates_in_sequence_(sim, traits),
-                connect_rates_in_parallel_(sim, traits),
+              : constrain_rates_in_sequence_(sim, traits),
+                constrain_rates_in_parallel_(sim, traits),
                 module_handle(*sim),
                 parallelism_threshold_(
                     traits.constraints_parallelism_threshold()) {}
@@ -411,17 +425,17 @@ namespace elastica {
           inline auto operator()(TimeType time_v) const noexcept -> void {
             // Is this if() check viable when put in a flow graph?
             if (module_handle.n_constraints() < parallelism_threshold_)
-              connect_rates_in_sequence_(time_v);
+              constrain_rates_in_sequence_(time_v);
             else
-              connect_rates_in_parallel_(time_v);
+              constrain_rates_in_parallel_(time_v);
           }
           //********************************************************************
 
           //**Member variables**************************************************
           //! Serial forcing functor
-          ConstrainRatesInSequence connect_rates_in_sequence_;
+          ConstrainRatesInSequence constrain_rates_in_sequence_;
           //! Parallel forcing functor
-          ConstrainRatesInParallel connect_rates_in_parallel_;
+          ConstrainRatesInParallel constrain_rates_in_parallel_;
           //! Handle to the ConstraintsModule
           ConstraintsModule const& module_handle;
           //! Threshold to switch between serial and parallel execution

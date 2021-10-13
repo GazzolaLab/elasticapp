@@ -16,8 +16,14 @@
 //******************************************************************************
 // Includes
 //******************************************************************************
+#include <functional>
+#include <limits>
+#include <ostream>
 #include <string>
 #include <utility>
+
+/// Serialization support
+#include "Simulator/IO/Serialization/Types.hpp"
 
 namespace elastica {
 
@@ -42,13 +48,20 @@ namespace elastica {
       template <typename ParameterTag>
       struct UUID {
         //**Type definitions****************************************************
-        using IndexType = std::size_t;  //!< The index type
-        using TagType = ParameterTag;   //!< The tag type
+        using IndexType = std::size_t;    //!< The index type
+        using TagType = ParameterTag;     //!< The tag type
+        using This = UUID<ParameterTag>;  //!< This type
         //**********************************************************************
 
         //**Constructors********************************************************
         /*!\name Constructors */
         //@{
+
+        //**********************************************************************
+        /*!\brief default constructor for map initialization
+         */
+        UUID() : uuid(std::numeric_limits<IndexType>::max()), name() {}
+        //**********************************************************************
 
         //**********************************************************************
         /*!\brief The sole constructor.
@@ -69,7 +82,7 @@ namespace elastica {
         //**********************************************************************
         /*!\brief The move constructor.
          */
-        UUID(UUID&& other) noexcept = default;
+        // UUID(UUID&& other) noexcept = default;
         //**********************************************************************
 
         //@}
@@ -86,6 +99,11 @@ namespace elastica {
         //**********************************************************************
 
         //@}
+        //**********************************************************************
+
+        //**Friendships*********************************************************
+        //! Friendship with Serialize
+        friend struct ::elastica::io::Serialize<This>;
         //**********************************************************************
 
         //**Member variables****************************************************
@@ -155,8 +173,39 @@ namespace elastica {
       }
       //************************************************************************
 
+      //************************************************************************
+      /*!\brief Global output operator for UUID
+       *
+       * \param os Reference to the output stream.
+       * \param uuid Reference to an axis-aligned bounding box.
+       * \return Reference to the output stream.
+       */
+      template <typename ParameterTag>
+      inline std::ostream& operator<<(std::ostream& os,
+                                      UUID<ParameterTag> const& uuid) {
+        return os << "(" << id(uuid) << ", " << name(uuid) << ")";
+      }
+      //************************************************************************
+
     }  // namespace detail
 
   }  // namespace interface
 
 }  // namespace elastica
+
+namespace std {
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  template <typename ParameterTag>
+  struct hash< ::elastica::interface::detail::UUID<ParameterTag> > {
+    using T = ::elastica::interface::detail::UUID<ParameterTag>;
+    inline auto operator()(const T& t) const -> std::size_t {
+      return hash<typename T::IndexType>{}(
+          ::elastica::interface::detail::id(t));
+    }
+  };
+  /*! \endcond */
+  //****************************************************************************
+
+}  // namespace std

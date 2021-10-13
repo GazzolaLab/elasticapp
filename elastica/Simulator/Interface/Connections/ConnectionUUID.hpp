@@ -86,11 +86,11 @@ namespace elastica {
        */
       template <typename Type_>
       struct ConnectionQueryID
-          : public ::elastica::interface::detail::QueryID<ConnectionIDTag,
+          : public ::elastica::interface::detail::QueryID<ConnectionUUID,
                                                           Type_> {
         //**Type definitions****************************************************
         using Parent =
-            ::elastica::interface::detail::QueryID<ConnectionIDTag, Type_>;
+            ::elastica::interface::detail::QueryID<ConnectionUUID, Type_>;
         //**********************************************************************
 
         //**Constructors********************************************************

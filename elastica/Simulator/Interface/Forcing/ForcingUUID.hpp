@@ -16,6 +16,7 @@
 //******************************************************************************
 // Includes
 //******************************************************************************
+#include <functional>
 #include <string>
 #include <utility>
 
@@ -85,10 +86,10 @@ namespace elastica {
        */
       template <typename Type_>
       struct ForcingQueryID
-          : public ::elastica::interface::detail::QueryID<ForcingIDTag, Type_> {
+          : public ::elastica::interface::detail::QueryID<ForcingUUID, Type_> {
         //**Type definitions****************************************************
         using Parent =
-            ::elastica::interface::detail::QueryID<ForcingIDTag, Type_>;
+            ::elastica::interface::detail::QueryID<ForcingUUID, Type_>;
         //**********************************************************************
 
         //**Constructors********************************************************
@@ -106,3 +107,20 @@ namespace elastica {
   }  // namespace interface
 
 }  // namespace elastica
+
+namespace std {
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  template <>
+  struct hash< ::elastica::interface::forcing::ForcingUUID> {
+    using T = ::elastica::interface::forcing::ForcingUUID;
+    inline auto operator()(const T& t) const -> std::size_t {
+      using Parent = typename T::Parent;
+      return hash<typename T::Parent>{}(static_cast<Parent const&>(t));
+    }
+  };
+  /*! \endcond */
+  //****************************************************************************
+
+}  // namespace std

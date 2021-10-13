@@ -336,11 +336,11 @@ namespace {
       // order of with() and at() don't matter
       // but put the with_name() immediately after launching force()
       sim.force(sys)
-          .with_name((optional_forcing_name))
+          // .with_name(optional_forcing_name)
           .with(ExampleForcing{})
-          .at(end - 50UL, 32UL, 64UL);
+          .at(end - 50UL, 31UL, 64UL);
       sim.force(sys)
-          .with_name(std::move(optional_forcing_name))
+          // .with_name(std::move(optional_forcing_name))
           .at(end - 50UL, 32UL, 64UL)
           .with(ExampleForcing{});
       /// [force_eg_with_name]
@@ -359,7 +359,11 @@ namespace {
 
       CHECK(force_counter_in_forcing.count == expected_count);
       CHECK(torque_counter_in_forcing.count == expected_count);
-      CHECK(sim.forcers().size() == 7UL);
+      // CHECK(sim.forcers().size() == 7UL);
+      std::size_t sum = std::accumulate(
+          std::cbegin(sim.forcer_batches()), std::cend(sim.forcer_batches()),
+          0UL, [](std::size_t sum, auto const& batch) { return sum + batch.size(); });
+      CHECK(sum == 7UL);
     }
   }
 

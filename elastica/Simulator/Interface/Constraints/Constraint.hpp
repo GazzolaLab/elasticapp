@@ -466,7 +466,7 @@ constraints::Constraint?
           // return a key for querying after finalizing
           using ::elastica::interface::detail::id;
           using RT = const ConstraintQueryID<std::decay_t<ConcreteConstraint>>;
-          return RT{id(this->id())};
+          return RT{this->id()};
         }
         //**********************************************************************
 
@@ -613,9 +613,9 @@ constraints::Constraint?
          * \param name of the constraint
          * \return void
          */
-        inline decltype(auto) with_name(std::string name) noexcept {
-          return set_name(std::move(name));
-        }
+        // inline decltype(auto) with_name(std::string name) noexcept {
+        //   return set_name(std::move(name));
+        // }
         //**********************************************************************
 
         //**********************************************************************

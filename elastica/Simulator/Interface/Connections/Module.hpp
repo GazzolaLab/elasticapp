@@ -149,6 +149,8 @@ namespace elastica {
       //! Algorithm type
       using Algorithm =
           ::elastica::interface::connections::ExecutionPolicy<SimTraits, This>;
+      //! UUID type
+      using UUID = ::elastica::interface::connections::ConnectionUUID;
       //************************************************************************
 
      public:
@@ -542,7 +544,7 @@ namespace elastica {
        *
        * \param connection_uuid The key using which we retrieve the connections
        */
-      inline auto retrieve_from_query(IndexType const connection_uuid) noexcept
+      inline auto retrieve_from_query(UUID const& connection_uuid) noexcept
           -> typename ConnecterID::pointer {
         /*
          * dev note:
@@ -550,7 +552,8 @@ namespace elastica {
          * connection uuid here is < size of array.
          * 2. if we batch the logic here changes and we need to do a search.
          */
-        return connecters_[connection_uuid].get();
+        using ::elastica::interface::detail::id;
+        return connecters_[id(connection_uuid)].get();
       }
       /*! \endcond */
       //************************************************************************
@@ -663,7 +666,6 @@ namespace elastica {
          * Unfortunately its a nullptr which upon dereferencing results in a
          * segfault
          */
-        using UUID = ::elastica::interface::connections::ConnectionUUID;
         struct ConnectionInfo {
           UUID uuid;
           std::string connection_typename;

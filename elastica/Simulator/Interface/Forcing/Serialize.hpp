@@ -60,7 +60,7 @@ namespace elastica {
     /*!\brief Specialization of Serialize template for a ForcerBase
      * \ingroup interface
      */
-     template <>
+    template <>
     struct Serialize<::elastica::interface::forcing::ForcerBase> {
       using type = ::elastica::interface::forcing::ForcerBase;
 
@@ -94,13 +94,23 @@ namespace elastica {
 
         if (n_forcings_from_file != n_forcings_from_config) {
           throw std::runtime_error(
-              std::string(
-                  MakeString{}
-                  << "Number of forcings from the configuration file : "
-                  << n_forcings_from_config
-                  << " which does not match the number of forcings from the "
-                     "earlier saved archive : "
-                  << n_forcings_from_file));
+              std::string(MakeString{}
+                          << "Number of forcings from the configuration file : "
+                          << n_forcings_from_config
+                          << " does not match the number of forcings from the "
+                             "earlier saved archive : "
+                          << n_forcings_from_file));
+        }
+
+        ar(forcings_module.batch_map());
+        const std::size_t map_size = forcings_module.batch_map().size();
+        if (map_size != n_forcings_from_file) {
+          throw std::runtime_error(std::string(
+              MakeString{} << "Number of forcings from the saved archive : "
+                           << n_forcings_from_file
+                           << " does not match the number of forcings from the "
+                              "obtained from the mapping : "
+                           << map_size));
         }
 
         // instead of de-serializing the vector of unique pointers, we call
@@ -108,17 +118,19 @@ namespace elastica {
         // allocated
 
         // this can also throw if the ID does not match
-        auto & forcers = forcings_module.forcers();
-        std::for_each(forcers.begin(), forcers.end(),
-                      [&](auto& forcer_ptr) { ar(*forcer_ptr); });
+        for (auto& batch : forcings_module.forcer_batches())
+          for (auto& forcer_ptr : batch)
+            ar(*forcer_ptr);
       }
 
       template <typename OutArchive>
       static inline void save(OutArchive& ar, type const& forcings_module) {
         ar(forcings_module.n_forcings());
-        auto const& forcers = forcings_module.forcers();
-        std::for_each(forcers.cbegin(), forcers.cend(),
-                      [&](auto const& forcer_ptr) { ar(*forcer_ptr); });
+        ar(forcings_module.batch_map());
+
+        for (auto const& batch : forcings_module.forcer_batches())
+          for (auto const& forcer_ptr : batch)
+            ar(*forcer_ptr);
       }
     };
     /*! \endcond */

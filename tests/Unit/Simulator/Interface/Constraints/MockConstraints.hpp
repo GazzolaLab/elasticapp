@@ -13,8 +13,8 @@
 #include "Simulator/Interface/Constraints/ExecutionPolicy.hpp"
 #include "Simulator/Interface/Constraints/Module.hpp"
 #include "Time/SimulationTime.hpp"
-#include "Utilities/NonCopyable.hpp"
 #include "Utilities/IgnoreUnused.hpp"
+#include "Utilities/NonCopyable.hpp"
 /// seraizlie
 #include "Simulator/Interface/Constraints/Serialize.hpp"
 
@@ -58,21 +58,21 @@ namespace mock {
   template <typename System, typename ConcreteConstraint>
   struct TestConstraintImpl
       : public ::elastica::interface::constraints::Constraint<
-          System, ConcreteConstraint> {
+            System, ConcreteConstraint> {
    public:
     using Parent =
-    ::elastica::interface::constraints::Constraint<System,
-        ConcreteConstraint>;
+        ::elastica::interface::constraints::Constraint<System,
+                                                       ConcreteConstraint>;
     using typename Parent::IndexType;
 
     // functions
     using Parent::at;
-    using Parent::is_not_valid;
-    using Parent::unsafe_with;
-    using Parent::with;
-    using Parent::record_name_of;
     using Parent::concrete_constraint_type;
     using Parent::concrete_system_type;
+    using Parent::is_not_valid;
+    using Parent::record_name_of;
+    using Parent::unsafe_with;
+    using Parent::with;
 
     // protected
     using Parent::finalize;  // gives a constrainer, we shouldn't test it here
@@ -120,7 +120,7 @@ namespace mock {
     using C = Constrainer;
     using Pointer = std::unique_ptr<C>;
     using TimeType = typename ConstraintsTraits::TimeType;
-    SimulatorWithConstraints() : constrainers_() {}
+    SimulatorWithConstraints() : constrainer_batches_() {}
     ~SimulatorWithConstraints() = default;
     SimulatorWithConstraints(SimulatorWithConstraints&&) noexcept = default;
 
@@ -130,15 +130,22 @@ namespace mock {
     using RateAlgorithm = typename Policy::ConstrainRates::type;
 
     // n_con
-    std::size_t n_constraints() const { return constrainers_.size(); }
+    std::size_t n_constraints() const {
+      return std::accumulate(std::cbegin(constrainer_batches()),
+                             std::cend(constrainer_batches()), 0UL,
+                             [](std::size_t sum, auto const& batch) {
+                               return sum + batch.size();
+                             });
+    }
     using Container = std::vector<Pointer>;
-    inline constexpr auto constrainers() & -> Container& {
-      return constrainers_;
+    using CC = std::vector<Container>;
+    inline constexpr auto constrainer_batches() & -> CC& {
+      return constrainer_batches_;
     }
-    inline constexpr auto constrainers() const& -> Container const& {
-      return constrainers_;
+    inline constexpr auto constrainer_batches() const& -> CC const& {
+      return constrainer_batches_;
     }
-    Container constrainers_;
+    CC constrainer_batches_;
   };
 
   //////////////////////////////////////////////////////////////////////////////
@@ -160,7 +167,7 @@ namespace mock {
     using P::check_and_report_errors;
     using P::check_if_system_can_be_constrained;
     using P::constrain;
-    using P::constrainers;
+    using P::constrainer_batches;
     using P::finalize;
   };
 

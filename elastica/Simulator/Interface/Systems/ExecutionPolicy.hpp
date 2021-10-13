@@ -24,10 +24,14 @@
 #include "Simulator/Configuration/ModuleConfiguration/ExecutionPolicy.hpp"
 #include "Simulator/Interface/Systems/Types.hpp"
 ///
+#include "Parallel/for_each.hpp"  // uses elastica's, not GLIBCXX
+#include "Parallel/invoke.hpp"
+///
 #include "Utilities/CRTP.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Invoke.hpp"
 #include "Utilities/MakeFromTuple.hpp"
+#include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace elastica {
@@ -139,16 +143,15 @@ namespace elastica {
              */
             return [func = FWD_CAPTURE(func)](
                        auto /*const*/& system_collection) mutable
-                   -> /*void*/ decltype(auto) {
+                   -> void /*decltype(auto)*/ {
               // parallelism should go here
               using std::begin;
               using std::end;
-              return std::for_each(
-                  begin(system_collection), end(system_collection),
-                  // If rvalue, func is a tuple of the type so we can move
-                  // If lvalue, func is a tuple of the lvalue of the type
-                  // so move does nothing really
-                  std::move(detail::access(func)));
+              std::for_each(begin(system_collection), end(system_collection),
+                            // If rvalue, func is a tuple of the type so we can
+                            // move If lvalue, func is a tuple of the lvalue of
+                            // the type so move does nothing really
+                            std::move(detail::access(func)));
               // std::forward<F>(func));
             };
           }
@@ -195,15 +198,19 @@ namespace elastica {
              */
             return [func = FWD_CAPTURE(func)](
                        auto /*const*/& system_collection) mutable
-                   -> /*void*/ decltype(auto) {
+                   -> void /*decltype(auto)*/ {
               // parallelism should go here
-              using std::begin;
-              using std::end;
+              using ::elastica::size;
               // since its not mutable, calls the copy-constructor always
-              return std::for_each(begin(system_collection),
-                                   end(system_collection),
-                                   // same logic as sequential for moving it
-                                   std::move(detail::access(func)));
+              // func is copied here, so its state may not be preserved
+              ::elastica::parallel::for_each(
+                  0UL, size(system_collection),
+                  // same logic as sequential for moving it
+                  [&system_collection, f = detail::access(func)](
+                      std::size_t const idx) { f(system_collection[idx]); });
+              // detail::access returns a & to a non-existing value, which is
+              // dangerous
+              // return static_cast<std::decay_t<F>>(detail::access(func));
               // std::forward<F>(func));
             };
           }
@@ -258,15 +265,15 @@ namespace elastica {
              * type
              */
             return [&, func = FWD_CAPTURE(func)](
-                       auto /*const*/& system_collection) mutable
-                   -> /*void*/ decltype(auto) {
+                       auto /*const*/& system_collection) /*mutable*/
+                   -> void /*decltype(auto)*/ {
               // Is this if() check viable when put in a flow graph?
               if (module_handle.to_be_iterated_sequentially(system_collection))
-                return ForEachSystemInSequence::operator()(
-                    detail::access(func))(system_collection);
+                ForEachSystemInSequence::operator()(detail::access(func))(
+                    system_collection);
               else
-                return ForEachSystemInParallel::operator()(
-                    detail::access(func))(system_collection);
+                ForEachSystemInParallel::operator()(detail::access(func))(
+                    system_collection);
             };
           }
           //********************************************************************
@@ -368,12 +375,17 @@ namespace elastica {
           template <typename ForEachOp>
           ELASTICA_ALWAYS_INLINE constexpr auto invoke_over_systems(
               ForEachOp&& for_each_op) const noexcept {
-            // TODO : parallel invoke here
             return
                 [op_for_each = FWD_CAPTURE(for_each_op)](
                     auto&... system_collections) mutable -> void /*ForEachOp*/ {
-                  EXPAND_PACK_LEFT_TO_RIGHT(
-                      detail::access(op_for_each)(system_collections));
+                  // op_for_each is copied to each thread here, so pay attention
+                  // to state
+                  parallel::invoke([op_for_each = detail::access(op_for_each),
+                                    &system_collections]() mutable {
+                    op_for_each(system_collections);
+                  }...);
+                  //  EXPAND_PACK_LEFT_TO_RIGHT(
+                  //      detail::access(op_for_each)(system_collections));
                 };
           }
           //********************************************************************
@@ -433,12 +445,14 @@ namespace elastica {
            * \param func Callable to be applied over one system type
            */
           template <typename F, typename SystemsBlock>
-          inline decltype(auto) subset_for_each(
-              F&& do_func, tmpl::list<SystemsBlock>) const noexcept {
+          inline auto subset_for_each(F do_func,
+                                      tmpl::list<SystemsBlock>) const noexcept
+              -> F {
             // this cannot happen serially, so push resposibility to for_each
-            return for_each_system(std::forward<F>(do_func))(
+            for_each_system(std::ref(do_func))(
                 module_handle
                     .template get_system_collection_container<SystemsBlock>());
+            return do_func;
           }
           /*! \endcond */
           //********************************************************************
