@@ -2,10 +2,18 @@
 
 #include "ErrorHandling/Assert.hpp"
 
+#if ELASTICA_TBB_PARALLEL_MODE
+#include <tbb/blocked_range.h>
+#endif
+
 namespace elastica {
 
   namespace parallel {
 
+#if ELASTICA_TBB_PARALLEL_MODE
+    template <typename Value>
+    using blocked_range = ::tbb::blocked_range<Value>;
+#else
     template <typename Value>
     class blocked_range {
      public:
@@ -20,7 +28,8 @@ namespace elastica {
       //! Size of the range
       /** Unspecified if end()<begin(). */
       size_type size() const noexcept {
-        ELASTICA_ASSERT(!(end() < begin()), "size) unspecified if end()<begin()");
+        ELASTICA_ASSERT(!(end() < begin()),
+                        "size) unspecified if end()<begin()");
         return size_type(mend_ - mbegin_);
       }
 
@@ -28,6 +37,7 @@ namespace elastica {
       Value mbegin_;
       Value mend_;
     };
+#endif
 
   }  // namespace parallel
 

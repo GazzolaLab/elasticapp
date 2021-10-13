@@ -19,7 +19,7 @@
 #include "ModuleSettings/Parallel.hpp"
 
 #if ELASTICA_TBB_PARALLEL_MODE
-#include "tbb/parallel_for.hpp"
+#include <tbb/parallel_for.hpp>
 #endif
 
 #include "Parallel/blocked_range.hpp"

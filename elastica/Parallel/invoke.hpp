@@ -19,7 +19,7 @@
 #include "ModuleSettings/Parallel.hpp"
 
 #if ELASTICA_TBB_PARALLEL_MODE
-#include "tbb/parallel_invoke.hpp"
+#include <tbb/parallel_invoke.hpp>
 #endif
 
 #include "Parallel/detail.hpp"
