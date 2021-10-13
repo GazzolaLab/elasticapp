@@ -1,6 +1,6 @@
 #pragma once
 
-#include "elastica/ErrorHandling/Assert.hpp"
+#include "ErrorHandling/Assert.hpp"
 
 namespace elastica {
 
@@ -22,7 +22,6 @@ namespace elastica {
       size_type size() const noexcept {
         ELASTICA_ASSERT(!(end() < begin()), "size) unspecified if end()<begin()");
         return size_type(mend_ - mbegin_);
-
       }
 
      private:

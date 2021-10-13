@@ -3,7 +3,7 @@
 # ##############################################################################
 # Distributed under the MIT License. See LICENSE for details.
 # ##############################################################################
-cmake_minimum_required(VERSION 3.12.0)
+cmake_minimum_required(VERSION 3.13.0)
 
 # ##############################################################################
 # Set policies
@@ -20,7 +20,7 @@ endif ()
 # ##############################################################################
 # Project and host details
 # ##############################################################################
-project(Elastica LANGUAGES CXX C)
+project(Elastica LANGUAGES CXX)
 
 site_name(HOSTNAME)
 
@@ -38,10 +38,9 @@ include(Logging)
 set_logs_on()
 set_log_level("DEBUG") # INFO  DEBUG  HEAVYDEBUG
 
-option(
-        DOCS_ONLY
-        "Skip all initialization not required for rendering documentation"
-)
+option(DOCS_ONLY "Skip all initialization not required for rendering documentation")
+option(ELASTICA_SMP "Enable/Disable the shared-memory parallelization." ON)
+option(ELASTICA_BUILD_TESTS "Build test programs" ON)
 
 if (DOCS_ONLY)
     include(SetupDoxygen)
@@ -82,26 +81,44 @@ include(SetupBlaze)
 include(SetupBlazeTensor)
 include(SetupBrigand)
 include(SetupBoost)
-include(SetupCatch)
+if (ELASTICA_BUILD_TESTS)
+    include(SetupCatch)
+endif ()
 include(SetupFilesystem)
-include(SetupTBB)
+
+if (ELASTICA_SMP)
+    include(SetupTBB)
+    set(ELASTICA_SMP ON)
+    # target_compile_definitions(elastica INTERFACE ELASTICA_USE_TBB)
+else ()
+    set(ELASTICA_SMP OFF)
+endif ()
+configure_file("${CMAKE_CURRENT_LIST_DIR}/elastica/Configuration/Parallel.hpp.in"
+        "${CMAKE_CURRENT_LIST_DIR}/elastica/Configuration/Parallel.hpp")
+
 include(SetupYamlCpp)
 # include(SetupVTK)
 
 include(SetupDoxygen)
 include(CodeCoverageDetection)
 
-enable_testing(true)
-include(ElasticaAddTestLibs)
-include(ElasticaAddCatchTests)
+if (ELASTICA_BUILD_TESTS)
+    enable_testing(true)
+    include(ElasticaAddTestLibs)
+    include(ElasticaAddCatchTests)
+endif ()
 
 # directly call Simulator/ABC instead of elastica/Simulator/ABC
 include_directories(${CMAKE_SOURCE_DIR}/elastica)
-include_directories(${CMAKE_SOURCE_DIR}/tests/Unit)
+if (ELASTICA_BUILD_TESTS)
+    include_directories(${CMAKE_SOURCE_DIR}/tests/Unit)
+endif ()
 #include_directories(${CMAKE_SOURCE_DIR})
 
 add_subdirectory(elastica)
-add_subdirectory(tests)
+if (ELASTICA_BUILD_TESTS)
+    add_subdirectory(tests)
+endif ()
 add_subdirectory(examples)
 
 include(PrintUsefulCMakeInfo)
