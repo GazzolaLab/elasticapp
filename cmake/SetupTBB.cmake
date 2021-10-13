@@ -4,7 +4,7 @@
 
 log_info("Finding TBB")
 
-find_package(TBB REQUIRED COMPONENTS tbbmalloc)
+find_package(TBB COMPONENTS tbbmalloc)
 
 file(APPEND "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
         "TBB Version:  ${TBB_VERSION}\n")
@@ -30,4 +30,3 @@ log_debug("TBB_LIBRARIES: ${TBB_LIBRARIES}")
 log_debug("TBB_MALLOC_INCLUDE_DIRS: ${TBB_MALLOC_INCLUDE_DIRS}")
 log_debug("TBB_MALLOC_LIBRARIES: ${TBB_MALLOC_LIBRARIES}")
 log_debug("TBB_VERSION: ${TBB_VERSION}")
-
