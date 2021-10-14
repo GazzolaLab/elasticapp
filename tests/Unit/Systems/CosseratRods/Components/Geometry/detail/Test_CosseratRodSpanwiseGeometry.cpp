@@ -1,6 +1,4 @@
 //
-// Created by Tejaswin Parthasarathy on 4/26/21.
-//
 #include "Framework/TestingFramework.hpp"
 #include "Systems/CosseratRods/Components/Geometry/detail/CosseratRodSpanwiseGeometry.hpp"
 #include "Systems/CosseratRods/Components/Geometry/detail/RodSpanwiseGeometry.hpp"
@@ -12,6 +10,7 @@
 //
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/Math/sqrt.hpp"
 
 namespace {
 
@@ -75,13 +74,14 @@ namespace {
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
         // from before
-        blocks::initialize<tags::Position>([&i = n_times_called[0]](...) {
+        blocks::initialize<tags::Position>([&i = n_times_called[0]](std::size_t index) {
           ++i;
+          return index * 1.0;
           return 2.0;
         }),
-        blocks::initialize<tags::Director>([&i = n_times_called[1]](...) {
+        blocks::initialize<tags::Director>([&i = n_times_called[1]](std::size_t index) {
           ++i;
-          return 3.0;
+          return 0.5;
         }),
         // from before
         blocks::initialize<tags::ReferenceElementLength>([](...) { return 2.0; }),
@@ -91,11 +91,11 @@ namespace {
     Model::initialize(model, std::move(initializer));
 
     // check if initialization is done as expected
-    CHECK_ITERABLE_APPROX(n_times_called, make_array<2>(1U));
+    CHECK_ITERABLE_APPROX(n_times_called, make_array<n_initializers>(1U));
 
-    CHECK(model.get_element_length() == 1.0);
-    CHECK(model.get_reference_element_length() == 1.0);
-    CHECK(model.get_reference_curvature() == 2.0);
+    CHECK(model.get_element_length() == blaze::sqrt(3.0));
+    CHECK(model.get_reference_element_length() == blaze::sqrt(3.0));
+    CHECK(model.get_reference_curvature() == 0.0);
   }
 
 }  // namespace

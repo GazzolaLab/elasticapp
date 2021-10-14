@@ -62,7 +62,7 @@ namespace elastica {
                                    (rot_matrix_trace_batch - ValueType(1.0) -
                                     ValueType(1e-12)));  // TODO refactor 1e-12
     auto R_minus_RT =
-        rot_matrix_batch - blaze::trans(rot_matrix_batch, {1, 0, 2});
+        rot_matrix_batch - blaze::trans(rot_matrix_batch, {1, 0, 2}); // TODO Something is wrong
     /* theta (u) = -theta * inv_skew([R - RT]) / 2 sin(theta) */
     for (std::size_t i(0UL); i < dimension; ++i) {
       auto inv_skew_symmetric_map = blaze::row(

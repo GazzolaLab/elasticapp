@@ -11,6 +11,7 @@
 #include "Systems/CosseratRods/Mocks.hpp"
 ///
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Math/sqrt.hpp"
 
 namespace {
 
@@ -86,24 +87,15 @@ namespace {
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
         // from before
-        blocks::initialize<tags::Position>([&i = n_times_called[0]](...) {
+        blocks::initialize<tags::Position>([&i = n_times_called[0]](std::size_t index) {
           ++i;
+          return index * 1.0;
           return 2.0;
         }),
-        blocks::initialize<tags::Director>([&i = n_times_called[1]](...) {
+        blocks::initialize<tags::Director>([&i = n_times_called[1]](std::size_t index) {
           ++i;
-          return 3.0;
+          return 0.5;
         }),
-        blocks::initialize<tags::ReferenceElementLength>(
-            [&i = n_times_called[3]](...) {
-              ++i;
-              return 2.0;
-            }),
-        blocks::initialize<tags::ReferenceCurvature>(
-            [&i = n_times_called[4]](...) {
-              ++i;
-              return 2.0;
-            }),
         // from before
         blocks::initialize<tags::ElementDimension>(
             [&i = n_times_called[2]](...) {
@@ -120,7 +112,7 @@ namespace {
     CHECK(model.get_element_dimension() == 4.0);
     // blocks::get<tags::ElementLength>(model) = 2.0;
     // volume = dimension * length, only calculated somewhere inside
-    CHECK(model.get_element_volume() == 0.0);
+    CHECK(model.get_element_volume() == approx(4.0*4.0*4.0*blaze::sqrt(3)));
 
     CHECK(model.get_area() == 4.0 * 4.0 * 4.0);
     // this is a failure test, make it pass later on

@@ -417,7 +417,7 @@ namespace elastica {
           //@{
           /*!\brief Gets volume of the current rod
            */
-          inline constexpr decltype(auto) get_element_volume() & noexcept {
+          inline constexpr decltype(auto) get_element_volume() & /*noexcept*/ {
             // Do we need it here, or should it be under update volume?
             //          (blocks::get<ElementVolume>(self())) =
             //              (blocks::get<ElementDimension>(self())) *
@@ -593,7 +593,7 @@ namespace elastica {
             // 2. Update tangents
             auto& tangent_collection(blocks::get<Tangent>(self()));
             auto& reference_length_collection(blocks::get<ReferenceElementLength>(self()));
-            tangent_collection = position_diff / reference_length_collection;
+            Traits::Operations::batch_division_matvec(tangent_collection, position_diff, reference_length_collection);
 
             // 3. Compute new radius based on above lengths
             // volume conservation
@@ -651,10 +651,12 @@ namespace elastica {
             //sigma[:] = dilatation * _batch_matvec(director_collection, tangents) - z_vector
             auto& shear_stretch_strains_collection(
                 blocks::get<::elastica::tags::ShearStretchStrain>(self()));
+            auto expanded_transposed_EDC = Traits::Operations::expand_for_broadcast(Traits::Operations::transpose(
+                blocks::get<::elastica::tags::ElementDilatation>(self())));
             Traits::Operations::batch_matvec(
                 shear_stretch_strains_collection,
                 blocks::get<::elastica::tags::Director>(self()),
-                blocks::get<::elastica::tags::Tangent>(self()) * blocks::get<::elastica::tags::ElementDilatation>(self()) // matvecexpr
+                blocks::get<::elastica::tags::Tangent>(self()) % expanded_transposed_EDC // matvecexpr
             );
             Traits::Operations::batch_subtract_z_unit(shear_stretch_strains_collection);
           }
@@ -668,9 +670,9 @@ namespace elastica {
             auto& reference_voronoi_length_collection(
                 blocks::get<::elastica::tags::ReferenceVoronoiLength>(self()));
             auto& director(blocks::get<::elastica::tags::Director>(self()));
-            Traits::Operations::batch_inv_rotate_and_divide(curvature_collection,
-                                                            director,
-                                                            reference_voronoi_length_collection);
+            Traits::Operations::spanwise_inv_rotate_and_divide(
+                curvature_collection, director,
+                reference_voronoi_length_collection);
             //auto rot_vec = Traits::Operations::batch_inv_rotate();
             //curvature_collection = rot_vec / reference_voronoi_length_collection;
 

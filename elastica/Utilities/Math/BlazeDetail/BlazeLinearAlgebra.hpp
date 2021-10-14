@@ -62,12 +62,21 @@ namespace elastica {
                     const MT2& vector_batch) {
     constexpr std::size_t dimension(3UL);
     const std::size_t n_elems = matrix_batch.columns();
-    assert(matvec_batch.columns() == n_elems);
-    assert(matvec_batch.rows() == dimension);
-    assert(matrix_batch.pages() == dimension);
-    assert(matrix_batch.rows() == dimension);
-    assert(vector_batch.columns() == n_elems);
-    assert(vector_batch.rows() == dimension);
+
+    const std::size_t vbatch_columns = vector_batch.columns();
+    const std::size_t vbatch_rows = vector_batch.rows();
+    const std::size_t mbatch_pages = matrix_batch.pages();
+    const std::size_t mbatch_columns = matrix_batch.columns();
+    const std::size_t mbatch_rows = matrix_batch.rows();
+
+    const std::size_t size1 = blaze::pageslice(matrix_batch,0UL).columns();
+    const std::size_t size0 = blaze::pageslice(matrix_batch,0UL).rows();
+//    assert(matvec_batch.columns() == n_elems);
+//    assert(matvec_batch.rows() == dimension);
+//    assert(matrix_batch.pages() == dimension);
+//    assert(matrix_batch.rows() == dimension);
+//    assert(vector_batch.columns() == n_elems);
+//    assert(vector_batch.rows() == dimension);
 
     for (std::size_t i(0UL); i < dimension; ++i)
       blaze::row(matvec_batch, i) = blaze::sum<blaze::columnwise>(

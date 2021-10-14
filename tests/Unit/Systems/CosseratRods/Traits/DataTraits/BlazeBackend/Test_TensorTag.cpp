@@ -203,7 +203,7 @@ namespace {
         for (std::size_t page_idx = 0UL; page_idx < n_pages; ++page_idx)
           for (std::size_t row_idx = 0UL; row_idx < n_rows; ++row_idx)
             for (std::size_t col_idx = 0UL; col_idx < n_cols; ++col_idx)
-              data(page_idx, row_idx, col_idx) =
+              data33(page_idx, row_idx, col_idx) =
                   static_cast<real_type>(page_idx + row_idx + col_idx);
 
         Traits::diagonal_assign(data33, 3UL, Column{3.5, 5.5, 7.5});
@@ -211,22 +211,22 @@ namespace {
         CHECK(data33(0UL, 0UL, 3UL) == approx(3.5));
         CHECK(data33(1UL, 1UL, 3UL) == approx(5.5));
         CHECK(data33(2UL, 2UL, 3UL) == approx(7.5));
-        CHECK(data33(0UL, 1UL, 3UL) == approx(0.0));
-        CHECK(data33(1UL, 2UL, 3UL) == approx(0.0));
-        CHECK(data33(2UL, 0UL, 3UL) == approx(0.0));
-        CHECK(data33(1UL, 0UL, 3UL) == approx(0.0));
-        CHECK(data33(2UL, 1UL, 3UL) == approx(0.0));
-        CHECK(data33(0UL, 2UL, 3UL) == approx(0.0));
+        CHECK(data33(0UL, 1UL, 3UL) == approx(4.0));
+        CHECK(data33(1UL, 2UL, 3UL) == approx(6.0));
+        CHECK(data33(2UL, 0UL, 3UL) == approx(5.0));
+        CHECK(data33(1UL, 0UL, 3UL) == approx(4.0));
+        CHECK(data33(2UL, 1UL, 3UL) == approx(6.0));
+        CHECK(data33(0UL, 2UL, 3UL) == approx(5.0));
 
         CHECK(data33(0UL, 0UL, 5UL) == approx(2.0));
         CHECK(data33(1UL, 1UL, 5UL) == approx(4.0));
         CHECK(data33(2UL, 2UL, 5UL) == approx(8.0));
-        CHECK(data33(0UL, 1UL, 5UL) == approx(0.0));
-        CHECK(data33(1UL, 2UL, 5UL) == approx(0.0));
-        CHECK(data33(2UL, 0UL, 5UL) == approx(0.0));
-        CHECK(data33(1UL, 0UL, 5UL) == approx(0.0));
-        CHECK(data33(2UL, 1UL, 5UL) == approx(0.0));
-        CHECK(data33(0UL, 2UL, 5UL) == approx(0.0));
+        CHECK(data33(0UL, 1UL, 5UL) == approx(6.0));
+        CHECK(data33(1UL, 2UL, 5UL) == approx(8.0));
+        CHECK(data33(2UL, 0UL, 5UL) == approx(7.0));
+        CHECK(data33(1UL, 0UL, 5UL) == approx(6.0));
+        CHECK(data33(2UL, 1UL, 5UL) == approx(8.0));
+        CHECK(data33(0UL, 2UL, 5UL) == approx(7.0));
       }
     }
   }

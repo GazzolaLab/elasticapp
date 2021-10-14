@@ -75,11 +75,33 @@ namespace mock {
              This::size_of<VectorType>() + This::size_of<MatrixType>();
     }
 
+    //**************************************************************************
+    /*!\brief Resizes variables placed `OnStaggerType`
+     *
+     * \param total_elements The total elements across rods
+     *
+     * \tparam OnStaggerType The staggering/placement type
+     */
+    void resize_members(std::size_t const total_elements) {
+      // new size does not depend on the variable, so we can factor it outside
+      // the lambda
+      tmpl::for_each<Variables>([this, total_elements](auto v) {
+        using Variable = tmpl::type_from<decltype(v)>;
+        auto& var = blocks::get<Variable>(static_cast<Model&>(*this));
+        const std::size_t new_size = Variable::get_dofs(total_elements);
+        Variable::resize(var, new_size);
+      });
+    }
+    //**************************************************************************
+
     template <class DownstreamBlock, class CosseratInitializer>
     static void initialize(DownstreamBlock& downstream_block,
                            CosseratInitializer&& initializers) {
-      EXPAND_PACK_LEFT_TO_RIGHT(T<Model>::initialize(
-          downstream_block, std::forward<CosseratInitializer>(initializers)));
+      downstream_block.resize_members(initializers.n_elems());
+      EXPAND_PACK_LEFT_TO_RIGHT(
+          T<Model>::initialize(downstream_block,
+                               std::forward<CosseratInitializer>(initializers))
+        );
     }
   };
 

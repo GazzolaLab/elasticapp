@@ -9,6 +9,7 @@
 #include "Systems/CosseratRods/Mocks.hpp"
 ///
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Math/sqrt.hpp"
 
 namespace {
 
@@ -25,7 +26,7 @@ namespace {
     template <typename Radius>
     static inline decltype(auto) compute_second_moment_of_area(
         Radius const& r) noexcept {
-      return r;
+      return r*r;
     }
 
     template <typename Volume, typename Length>
@@ -97,46 +98,45 @@ namespace {
       "[Systems][Unit]") {
     Model model{};
 
-    CHECK(model.get_element_dimension() == approx(0.0));
-    CHECK(model.get_element_volume() == approx(0.0));
-
     constexpr auto n_initializers = 5UL;
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
         // from before
-        blocks::initialize<tags::Position>([&i = n_times_called[0]](...) {
+        blocks::initialize<tags::Position>([&i = n_times_called[0]](std::size_t index){
           ++i;
+          return index*1.0;
           return 2.0;
         }),
-        blocks::initialize<tags::Director>([&i = n_times_called[1]](...) {
+        blocks::initialize<tags::Director>([&i = n_times_called[1]](std::size_t index){
           ++i;
-          return 3.0;
+          return 0.5;
         }),
-        blocks::initialize<tags::ReferenceElementLength>(
-            [&i = n_times_called[3]](...) {
-              ++i;
-              return 2.0;
-            }),
-        blocks::initialize<tags::ReferenceCurvature>(
-            [&i = n_times_called[4]](...) {
-              ++i;
-              return 2.0;
-            }),
+//        blocks::initialize<tags::ReferenceElementLength>([&i = n_times_called[3]](...) {
+//          ++i;
+//          return 2.0;
+//        }),
+//        blocks::initialize<tags::ReferenceCurvature>([&i = n_times_called[4]](...) {
+//          ++i;
+//          return 2.0;
+//        }),
         // from before
-        blocks::initialize<tags::ElementDimension>(
-            [&i = n_times_called[2]](...) {
-              ++i;
-              return 4.0;
-            }));
+        blocks::initialize<tags::ElementDimension>([&i = n_times_called[2]](...) {
+          ++i;
+          return 4.0;
+        })
+      );
 
     Model::initialize(model, std::move(initializer));
+
+    CHECK(model.get_element_dimension() == approx(4.0));
+    CHECK(model.get_element_volume() == approx(4.0 * blaze::sqrt(3)));
 
     // check if initialization is done as expected
     CHECK_ITERABLE_APPROX(n_times_called, make_array<n_initializers>(1U));
 
     CHECK(model.get_element_dimension() == approx(4.0));
     // volume = dimension * length
-    CHECK(model.get_element_volume() == approx(4.0));
+    CHECK(model.get_element_volume() == approx(4.0*blaze::sqrt(3)));
 
     CHECK(model.get_area() == approx(4.0));
     CHECK(model.shape_factor() == approx(1.6));

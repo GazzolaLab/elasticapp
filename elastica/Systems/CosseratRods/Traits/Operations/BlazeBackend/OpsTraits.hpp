@@ -174,8 +174,8 @@ namespace elastica {
         const std::size_t n_elems = get_batch_elems(arr);
 
         // 0.5*(ref_length[1:] + ref_length[:-1])
-        return ValueType(0.5) * (batch_slice(arr, 0UL, n_elems) +
-                                 batch_slice(arr, 1UL, n_elems));
+        return ValueType(0.5) * (batch_slice(arr, 0UL, n_elems-1) +
+                                 batch_slice(arr, 1UL, n_elems-1));
       };
       //**************************************************************************
 
@@ -207,22 +207,22 @@ namespace elastica {
       //************************************************************************
       // Batch Rotation Operation
       // TODO: Documentation
-      template <typename MT,  // blaze Matrix expression type
-                typename TT>  // blaze Tensor expression type
-      static inline void batch_inv_rotate(MT& rot_axis_vector_batch, const TT& rot_matrix_batch) {
-        using ::elastica::batch_inv_rotate;
-        batch_inv_rotate(rot_axis_vector_batch, rot_matrix_batch);
-      }
+//      template <typename MT,  // blaze Matrix expression type
+//                typename TT>  // blaze Tensor expression type
+//      static inline void batch_inv_rotate(MT& rot_axis_vector_batch, const TT& rot_matrix_batch) {
+//        using ::elastica::batch_inv_rotate;
+//        batch_inv_rotate(rot_axis_vector_batch, rot_matrix_batch);
+//      }
 
       //************************************************************************
-      // Batch Rotation + Division Operation (specific for compute-curvature)
+      // Spanwise Inverse Rotation + Division Operation (specific for compute-curvature)
       // Inverse rodrigues and division always comes together.
       // TODO: Avoid repeating code. Try to reuse inv-rotate
       // TODO: Documentation
       template <typename MT,  // blaze Matrix expression type
                 typename TT, // blaze Tensor expression type
                 typename VT>  // blaze Matrix expression type
-      static inline void batch_inv_rotate_and_divide(MT& rot_axis_vector_batch,
+      static inline void spanwise_inv_rotate_and_divide(MT& rot_axis_vector_batch,
                                                      const TT& rot_matrix_batch,
                                                      const VT& normalize_vector_batch) {
         constexpr std::size_t dimension(3UL);
@@ -231,32 +231,42 @@ namespace elastica {
         assert(rot_matrix_batch.pages() == dimension);
         assert(rot_matrix_batch.rows() == dimension);
         assert(rot_axis_vector_batch.rows() == dimension);
-        assert(rot_axis_vector_batch.columns() == n_elems);
-        assert(get_batch_elems(normalize_vector_batch) == n_elems);
-        assert(normalize_vector_batch.columns() == n_elems);
-        assert(normalize_vector_batch.rows() == dimension);
 
         /* hardcoded to avoid external memory passing */
         /* also now operates only on views */
+        // TODO: Check the math
+        auto qqt =
+            blaze::subtensor(rot_matrix_batch, 0UL, 0UL, 0UL, dimension, dimension, n_elems-1) %
+              blaze::subtensor(rot_matrix_batch, 0UL, 0UL, 1UL, dimension, dimension, n_elems-1);
         auto rot_matrix_trace_batch =
-            blaze::row(blaze::pageslice(rot_matrix_batch, 0UL), 0UL) +
-            blaze::row(blaze::pageslice(rot_matrix_batch, 1UL), 1UL) +
-            blaze::row(blaze::pageslice(rot_matrix_batch, 2UL), 2UL);
+            blaze::row(blaze::pageslice(qqt, 0UL), 0UL) +
+            blaze::row(blaze::pageslice(qqt, 0UL), 1UL) +
+            blaze::row(blaze::pageslice(qqt, 0UL), 2UL) +
+            blaze::row(blaze::pageslice(qqt, 1UL), 0UL) +
+            blaze::row(blaze::pageslice(qqt, 1UL), 1UL) +
+            blaze::row(blaze::pageslice(qqt, 1UL), 2UL) +
+            blaze::row(blaze::pageslice(qqt, 2UL), 0UL) +
+            blaze::row(blaze::pageslice(qqt, 2UL), 1UL) +
+            blaze::row(blaze::pageslice(qqt, 2UL), 2UL);
         /* theta = acos((tr(R) - 1) / 2) */
         auto theta_batch = blaze::acos(ValueType(0.5) *
                                        (rot_matrix_trace_batch - ValueType(1.0) -
                                         ValueType(1e-12)));  // TODO refactor 1e-12
         auto R_minus_RT =
-            rot_matrix_batch - blaze::trans(rot_matrix_batch, {1, 0, 2});
+            blaze::subtensor(rot_matrix_batch, 0UL, 0UL, 0UL, dimension, dimension, n_elems-1) -
+            blaze::trans(
+                blaze::subtensor(rot_matrix_batch, 0UL, 0UL, 1UL, dimension, dimension, n_elems-1),
+                {1, 0, 2});
+        auto trans_normalize_vector_batch = blaze::trans(normalize_vector_batch);
         /* theta (u) = -theta * inv_skew([R - RT]) / 2 sin(theta) */
         for (std::size_t i(0UL); i < dimension; ++i) {
           auto inv_skew_symmetric_map = blaze::row(
               blaze::pageslice(R_minus_RT, (i + 2UL) % dimension),
               (i + 1UL) % dimension);  // % for the cyclic rotation of indices
+          auto div_inv_skew_symmetric_map = inv_skew_symmetric_map / trans_normalize_vector_batch;
           blaze::row(rot_axis_vector_batch, i) =
-              ValueType(-0.5) * theta_batch * inv_skew_symmetric_map /
-              (blaze::sin(theta_batch) + ValueType(1e-14)) / // TODO refactor 1e-14
-              blaze::row(normalize_vector_batch, i);
+              ValueType(-0.5) * theta_batch * div_inv_skew_symmetric_map /
+              (blaze::sin(theta_batch)+10);// + ValueType(1e-14)); // TODO refactor 1e-14
         }
       }
 

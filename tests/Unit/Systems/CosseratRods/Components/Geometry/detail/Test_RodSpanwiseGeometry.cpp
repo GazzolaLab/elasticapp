@@ -20,8 +20,7 @@ namespace {
 
   // conform to protocol and assert
   template <typename B>
-  struct TestRodSpanwiseGeometry
-      : public RodSpanwiseGeometry<Traits, B> {
+  struct TestRodSpanwiseGeometry : public RodSpanwiseGeometry<Traits, B> {
     using Traits = Traits;
   };
 
@@ -38,7 +37,6 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.RodSpanwiseGeometry:EBO",
                      "[Systems][Unit]") {
-    // Assert Equal EBO test
     CHECK_EBO(Model);
   }
 
@@ -56,16 +54,14 @@ namespace {
                      "[Systems][Unit]") {
     Model model{};
 
-    CHECK(model.get_position() == 0.0);
-    CHECK(model.get_director() == 0.0);
-
-    Model::initialize(
-      model,
-      mock::initialize_block<Plugin>(
+    auto initializer = mock::initialize_block<Plugin>(
         blocks::initialize<tags::Position>([](...) { return 2.0; }),
-        blocks::initialize<tags::Director>([](...) { return 3.0; })
-      )
-    );
+        blocks::initialize<tags::Director>([](...) { return 3.0; }));
+
+//    model.get_position().resize(3UL, 2 + initializer.n_elems());
+//    model.get_director().resize(3UL, 3UL, 2 + initializer.n_elems());
+
+    Model::initialize(model, std::move(initializer));
 
     CHECK(model.get_position() == 2.0);
     CHECK(model.get_director() == 3.0);
