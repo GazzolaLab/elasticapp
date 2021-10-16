@@ -6,6 +6,7 @@
 #include "Systems/CosseratRods/CosseratRodTraits.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/WithExplicitlyDampedDiagonalLinearHyperElasticModel.hpp"
 #include "Systems/CosseratRods/Components/Geometry.hpp"
+#include "Systems/CosseratRods/Components/Kinematics.hpp"
 ///
 ///
 #include "Systems/CosseratRods/Mocks.hpp"
@@ -14,7 +15,8 @@
 namespace {
   using namespace elastica;
   using namespace elastica::cosserat_rod;
-  using Traits = typename elastica::cosserat_rod::DefaultCosseratRod;
+  using namespace elastica::cosserat_rod::component;
+  using Traits = typename elastica::cosserat_rod::DefaultCosseratRodTraits;
 
   template <typename B>
   struct TestGeometry : WithCircularCosseratRod<Traits, B>{
@@ -22,12 +24,16 @@ namespace {
   };
 
   template <typename B>
-  struct estElasticity : WithExplicitlyDampedDiagonalLinearHyperElasticModel<Traits, B> {
+  struct TestKinematics : WithRodKinematics<Traits, B>{
     using Traits = Traits;
   };
-};
 
-  using Plugin = mock::MockPlugin<TestGeometry, TestElasticity>;
+  template <typename B>
+  struct TestElasticity : WithExplicitlyDampedDiagonalLinearHyperElasticModel<Traits, B> {
+    using Traits = Traits;
+  };
+
+  using Plugin = mock::MockPlugin<TestGeometry, TestElasticity, TestKinematics>;
   using Model = typename Plugin::Model;
 
   //  static_assert(
@@ -54,24 +60,14 @@ namespace {
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
         // from before
-        blocks::initialize<tags::Position>([&i = n_times_called[0]](...) {
+        blocks::initialize<tags::Position>([&i = n_times_called[0]](std::size_t index) {
           ++i;
-          return 2.0;
+          return index * 1.0;
         }),
         blocks::initialize<tags::Director>([&i = n_times_called[1]](...) {
           ++i;
-          return 3.0;
+          return 0.5;
         }),
-        blocks::initialize<tags::ReferenceElementLength>(
-            [&i = n_times_called[2]](...) {
-              ++i;
-              return 2.0;
-            }),
-        blocks::initialize<tags::ReferenceCurvature>(
-            [&i = n_times_called[3]](...) {
-              ++i;
-              return 2.0;
-            }),
         blocks::initialize<tags::ElementDimension>(
             [&i = n_times_called[4]](...) {
               ++i;
@@ -95,7 +91,13 @@ namespace {
         blocks::initialize<tags::TorqueDampingCoefficient>([&i = n_times_called[8]](...) {
           ++i;
           return 4.0;
-        }));
+        }),
+        blocks::initialize<tags::Density>([](...) { return 4.0; }),
+        blocks::initialize<tags::Velocity>([](...) { return 4.0; }),
+        blocks::initialize<tags::AngularVelocity>([](...) { return 4.0; }),
+        blocks::initialize<tags::Acceleration>([](...) { return 4.0; }),
+        blocks::initialize<tags::AngularAcceleration>([](...) { return 4.0; })
+      );
 
     Model::initialize(model, std::move(initializer));
 

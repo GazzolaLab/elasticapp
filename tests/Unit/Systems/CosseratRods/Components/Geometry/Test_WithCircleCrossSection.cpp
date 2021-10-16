@@ -13,7 +13,7 @@
 #include "Systems/CosseratRods/Mocks.hpp"
 ///
 #include "Utilities/MakeArray.hpp"
-#include "Utilities/Math/sqrt.hpp"
+#include "Utilities/Math/Sqrt.hpp"
 
 namespace {
 
@@ -64,9 +64,9 @@ namespace {
     CHECK_EBO(Model);
   }
 
-  //  static_assert(
-  //      tt::assert_conforms_to<Plugin,
-  //      ::elastica::cosserat_rod::protocols::Shape>, "failure!");
+//  static_assert(
+//      tt::assert_conforms_to<Plugin,
+//      ::elastica::cosserat_rod::protocols::Shape>, "failure!");
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.WithCircularCosseratRod.data",
                      "[Systems][Unit]") {
 
@@ -90,11 +90,11 @@ namespace {
           return 0.5;
         }),
         // from before
-        blocks::initialize<elastica::tags::ElementDimension>(
-            [&i = n_times_called[2]](...) {
-              ++i;
-              return 4.0;
-            }));
+        blocks::initialize<elastica::tags::ElementDimension>( [&i = n_times_called[2]](...) {
+          ++i;
+          return 4.0;
+        })
+    );
 
     Model::initialize(model, std::move(initializer));
 
@@ -119,6 +119,8 @@ namespace {
     // symmetric
     CHECK(model.get_second_moment_of_area<LocalFrame::D3>() ==
           2.0 * expected_second_moment);
+
+    model.compute_shear_strains();
   }
 
 }  // namespace

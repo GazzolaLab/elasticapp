@@ -21,9 +21,8 @@
 #include <utility>
 
 ///// Types always first
-#include "Systems/CosseratRods/Components/Elasticity/Types.hpp"
+#include "Systems/CosseratRods/Components/Tags.hpp"
 /////
-#include "Systems/CosseratRods/Components/Geometry/Tags.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/Protocols.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/detail/ElasticityInterface.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/detail/LinearHyperElasticityFacade.hpp"
@@ -105,37 +104,40 @@ namespace elastica {
           /*!\brief Computes the modeled internal loads from the elasticity
            * model
            */
-          inline void compute_internal_modeled_loads_impl() const noexcept {
+          inline void compute_internal_modeled_loads_impl() noexcept {
             auto& strain(blocks::get<tags::ShearStretchStrain>(self()));
             auto& reference_strain(blocks::get<tags::ReferenceShearStretchStrain>(self()));
             auto& shear_matrix(blocks::get<tags::ShearStretchRigidityMatrix>(self()));
             auto& internal_stress(blocks::get<tags::InternalStress>(self()));
-            auto& internal_force(blocks::get<tags::InternalLoads>(self()));
+            auto& internal_load(blocks::get<tags::InternalLoads>(self()));
             auto& element_dilatation(blocks::get<tags::ElementDilatation>(self()));
             auto& director(blocks::get<tags::Director>(self()));
 
-            auto& dummy_matrix(blocks::get<tags::_DummyMatrix>(self()));
-
-            self().compute_shear_strain();
+            self().compute_shear_strains();
 
             Traits::Operations::batch_matvec(internal_stress,
                                              shear_matrix,
                                              strain - reference_strain);
 
             // allocating temp container (3, n_elems) for temporary storage
-            auto& QT_into_internal_stress_batch(dummy_matrix);
-            Traits::Operations::batch_matvec(
-                QT_into_internal_stress_batch,
-                Traits::Operations::transpose(director, {1, 0, 2}),
+            auto& QT_into_internal_stress(blocks::get<tags::_DummyElementVector>(self()));
+            auto& temp_vec(blocks::get<tags::_DummyElementVector2>(self()));
+            Traits::Operations::batch_mattranspvec(
+                temp_vec,
+                director,
                 internal_stress
               );
+            Traits::Operations::batch_division_matvec(
+                QT_into_internal_stress,
+                temp_vec,
+                element_dilatation
+              );
             Traits::Operations::two_point_difference_kernel(
-                internal_force,
-                QT_into_internal_stress_batch /
-                    Traits::Operations::expand_for_broadcast(element_dilatation)
+                internal_load,
+                QT_into_internal_stress
               );
 
-            // return internal_force;
+            // return internal_load;
           }
           //********************************************************************
 
@@ -143,7 +145,7 @@ namespace elastica {
           /*!\brief Computes the modeled internal torques from the elasticity
            * model
            */
-          inline void compute_internal_modeled_torques_impl() const noexcept {
+          inline void compute_internal_modeled_torques_impl() noexcept {
             auto& director(blocks::get<tags::Director>(self()));
             auto& omega(blocks::get<tags::AngularVelocity>(self()));
             auto& curvature(blocks::get<tags::Curvature>(self()));
@@ -180,7 +182,7 @@ namespace elastica {
             Traits::Operations::two_point_difference_kernel(
                   internal_torques, // bend_twist_couple_2D_batch,
                   internal_couple %
-                    Traits::Operations::expand_for_broadcast(voronoi_dilatation_inv_cube)
+                    Traits::Operations::transpose(Traits::Operations::expand_for_broadcast(voronoi_dilatation_inv_cube))
                 );
 
             // allocating temp container (3, n_voronoi) for temporary storage
@@ -193,8 +195,8 @@ namespace elastica {
             Traits::Operations::quadrature_kernel(
                 bend_twist_couple_3D_batch,
                 curvature_cross_internal_couple_batch %
-                    Traits::Operations::expand_for_broadcast(
-                      reference_voronoi_length * voronoi_dilatation_inv_cube)
+                    Traits::Operations::transpose(Traits::Operations::expand_for_broadcast(
+                      reference_voronoi_length * voronoi_dilatation_inv_cube))
                 );
             internal_torques += bend_twist_couple_3D_batch;
 
@@ -203,28 +205,30 @@ namespace elastica {
             Traits::Operations::batch_matvec(Q_into_t_batch, director, tangent);
 
             // allocating temp container (3, n_elems) for temporary storage
-            auto& Q_into_t_cross_internal_stress_batch(dummy_voro_vector);
+            auto& Q_into_t_cross_internal_stress_batch(dummy_elem_vector2);
             Traits::Operations::batch_cross(
                 Q_into_t_cross_internal_stress_batch,
                 Q_into_t_batch,
                 internal_stress
               );
             auto shear_stretch_couple_batch = Q_into_t_cross_internal_stress_batch %
-                 Traits::Operations::expand_for_broadcast(reference_element_length);
+                 Traits::Operations::transpose(Traits::Operations::expand_for_broadcast(reference_element_length));
             internal_torques += shear_stretch_couple_batch;
 
             /* common sub expression elimination here, as J w / e is used in both */
             /* the lagrangian transport and dilatation terms */
             // allocating temp container (3, n_elems) for temporary storage
             auto& J_omega_upon_e_batch(dummy_elem_vector);
+            auto& temp_vec(dummy_elem_vector2);
             Traits::Operations::batch_matvec(
-                J_omega_upon_e_batch,
+                temp_vec,
                 mass_SMOI,
-                omega / Traits::Operations::expand_for_broadcast(dilatation) // J_omega
+                omega
               );
+            Traits::Operations::batch_division_matvec(J_omega_upon_e_batch, temp_vec, dilatation);
 
             // allocating temp container (3, n_elems) for temporary storage
-            auto& lagrangian_transport_batch(dummy_elem_vector2);
+            auto& lagrangian_transport_batch(temp_vec);
             Traits::Operations::batch_cross(
                 lagrangian_transport_batch,
                 J_omega_upon_e_batch,
@@ -233,8 +237,10 @@ namespace elastica {
             internal_torques += lagrangian_transport_batch;
 
             // unsteady_dilatation_batch
+            auto dilatation_ratio = dilatation_rate / Traits::Operations::transpose(dilatation);
+            auto dilatation_ratio_expanded = Traits::Operations::expand_for_broadcast(dilatation_ratio);
             auto unsteady_dilatation_batch = J_omega_upon_e_batch %
-                Traits::Operations::expand_for_broadcast(dilatation_rate / dilatation);
+                                             dilatation_ratio_expanded;
             internal_torques += unsteady_dilatation_batch;
 
           }

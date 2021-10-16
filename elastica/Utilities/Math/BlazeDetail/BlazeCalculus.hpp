@@ -37,7 +37,7 @@ namespace elastica{
     assert(out_matrix.rows() == dimension);
     const std::size_t n_elems = in_matrix.columns();
     const std::size_t n_nodes = n_elems + 1UL;
-    assert(out_matrix.columns() == n_nodes);
+    //assert(out_matrix.columns() == n_nodes);
 
     blaze::column(out_matrix, 0UL) = blaze::column(in_matrix, 0UL);
     blaze::column(out_matrix, n_nodes - 1UL) =

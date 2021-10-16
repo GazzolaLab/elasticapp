@@ -187,7 +187,7 @@ namespace {
     {
       // no resize version
       // TODO : complete with results
-      H result_h(dimensions, dimensions, size, 0.0);
+      H result_h(dimensions, dimensions, size, 0.0); // DUMMY
       P result(&result_h);
       // assignment
       result = expr;

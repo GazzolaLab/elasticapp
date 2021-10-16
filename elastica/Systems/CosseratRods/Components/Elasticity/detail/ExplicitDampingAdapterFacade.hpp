@@ -18,7 +18,7 @@
 #include "Systems/CosseratRods/Components/Elasticity/detail/Types.hpp"
 /////
 #include "Systems/Block.hpp"
-#include "Systems/CosseratRods/Tags.hpp"
+#include "Systems/CosseratRods/Components/Tags.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/detail/Tags/ExplicitDampingAdapterFacadeTags.hpp"
 #include "Utilities/CRTP.hpp"
 #include "Utilities/TMPL.hpp"
@@ -137,30 +137,33 @@ namespace elastica {
           }
 
          protected:
-          inline void compute_internal_modeled_loads_impl() const /*noexcept*/ {
+          inline void compute_internal_modeled_loads_impl() /*noexcept*/ {
             auto& internal_force(blocks::get<tags::InternalLoads>(self()));
             auto& dissipation_constant(blocks::get<ForceDampingCoefficient>(self()));
-            auto& velocity(blocks::get<tags::Velocity>(self()));
             auto& length(blocks::get<tags::ElementLength>(self()));
+            auto& velocity(blocks::get<tags::Velocity>(self()));
+            auto& dummy_vec(blocks::get<tags::_DummyNodeVector>(self()));
             auto elemental_velocity = Traits::Operations::average_kernel(velocity);
 
             Parent::compute_internal_modeled_loads_impl();
-            Traits::Operations::subtract_quadrature(
-                internal_force,
-                dissipation_constant * elemental_velocity %
-                    Traits::Operations::expand_for_broadcast(length)
+            Traits::Operations::quadrature_kernel(
+                dummy_vec,
+                elemental_velocity %
+                    Traits::Operations::transpose(Traits::Operations::expand_for_broadcast(length))
             );
+            internal_force -= Traits::Operations::transpose(Traits::Operations::expand_for_broadcast(dissipation_constant)) %
+                              dummy_vec;
           }
 
-          inline void compute_internal_modeled_torques_impl() const /*noexcept*/ {
+          inline void compute_internal_modeled_torques_impl() /*noexcept*/ {
             auto& internal_torque(blocks::get<tags::InternalTorques>(self()));
             auto& dissipation_constant(blocks::get<TorqueDampingCoefficient>(self()));
             auto& angular_velocity(blocks::get<tags::AngularVelocity>(self()));
             auto& length(blocks::get<tags::ElementLength>(self()));
 
             Parent::compute_internal_modeled_torques_impl();
-            internal_torque -= dissipation_constant * angular_velocity %
-                     Traits::Operations::expand_for_broadcast(length);
+            internal_torque -= angular_velocity %
+                     Traits::Operations::transpose(Traits::Operations::expand_for_broadcast(length * dissipation_constant));
           }
 
         };

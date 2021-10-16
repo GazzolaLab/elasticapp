@@ -29,7 +29,7 @@ namespace mock {
   // B can be block or block slice
   template <template <typename> class B, template <typename> class... T>
   struct MultiComponentPlugin
-      : public T<B<MultiComponentPlugin<B, T...>>>...,
+      : public T<B<MultiComponentPlugin<B, T...>> >...,
         public ::tt::ConformsTo<blocks::protocols::Plugin> {
     using This = MultiComponentPlugin<B, T...>;
     using Model = B<This>;
@@ -49,12 +49,6 @@ namespace mock {
     using ScalarType = typename Traits::DataType::Scalar;
     using VectorType = typename Traits::DataType::Vector;
     using MatrixType = typename Traits::DataType::Matrix;
-    //    using ScalarVariables = tmpl::filter<Variables,
-    //    std::is_same<ScalarType, tmpl::bind<tmpl::type_from, tmpl::_1>>>;
-    //    using VectorVariables = tmpl::filter<Variables,
-    //    std::is_same<VectorType, tmpl::bind<tmpl::type_from, tmpl::_1>>>;
-    //    using MatrixVariables = tmpl::filter<Variables,
-    //    std::is_same<MatrixType, tmpl::bind<tmpl::type_from, tmpl::_1>>>;
 
     template <typename DataType>
     static constexpr auto n_variables_of() noexcept -> std::size_t {

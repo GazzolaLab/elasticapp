@@ -32,7 +32,7 @@ namespace elastica {
     template <typename T, typename RHSVectorBatch>
     auto SO3_primitive_assign(blaze::DynamicTensor<T>& lhs_matrix_batch,
                               blaze::DynamicTensor<T> const& /*rhs_matrix_batch*/,
-                              RHSVectorBatch const& /*vector_batch*/) noexcept
+                              RHSVectorBatch const& /*vector_batch*/) noexcept // vector bacth includes (omega*dt)
         -> void {
       lhs_matrix_batch = 1.0;
     }
