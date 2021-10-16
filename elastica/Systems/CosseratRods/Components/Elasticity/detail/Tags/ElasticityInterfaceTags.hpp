@@ -27,6 +27,7 @@ namespace elastica {
     struct InternalTorques;
     struct InternalCouple;
 
+    struct _DummyNodeVector;
     struct _DummyElementVector;
     struct _DummyElementVector2;
     struct _DummyVoronoiVector;

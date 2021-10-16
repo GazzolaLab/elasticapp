@@ -16,6 +16,7 @@
 #include "Utilities/StdHelpers.hpp"
 
 #if defined(ELASTICA_USE_BLAZE)
+#include "Utilities/Math/BlazeDetail/BlazeRotation.hpp"
 // this file is to be executed after Test_S03.cpp
 namespace {
   template <typename BlazeStruct>
@@ -160,24 +161,27 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Systems.States.SO3RotRotAddExpr_assign_blaze",
                      "[Systems][Unit]") {
     using namespace elastica::states;
-    using H = blaze::DynamicTensor<float>;
+
+    using H_mat = blaze::DynamicTensor<float>;
+    using H_SO3 = SO3<H_mat, tags::PrimitiveTag>;
+
+    using DH_mat = blaze::DynamicMatrix<float>;
+    using DH_SO3 = SO3<DH_mat, tags::DerivativeTag>;
+
     ::elastica::Time first(1.0), second(1.1);
-    const ::elastica::TimeDelta td(second - first);
+    const ::elastica::TimeDelta td(second - first); // dt
 
     // TODO : Fix after correcting the kernel
     const std::size_t dimensions = 1UL;
     const std::size_t size = 1UL;
 
     float f = 5.0F;
-    H data(dimensions, dimensions, size, f);
-    using P = SO3<H, tags::PrimitiveTag>;
-    P primitive(&data);
+    H_mat data(dimensions, dimensions, size, f); // Q
+    H_SO3 primitive(&data);
 
     float another_f = 25.0F;
-    using DH = blaze::DynamicMatrix<float>;
-    DH derivative_data(dimensions, size, another_f);
-    using D = SO3<DH, tags::DerivativeTag>;
-    D derivative(&derivative_data);
+    DH_mat derivative_data(dimensions, size, another_f); // omega
+    DH_SO3 derivative(&derivative_data);
 
     auto const expr = primitive + td * derivative;
     using E = decltype(expr);
@@ -187,30 +191,30 @@ namespace {
     {
       // no resize version
       // TODO : complete with results
-      H result_h(dimensions, dimensions, size, 0.0);
-      P result(&result_h);
+      H_mat result_h(dimensions, dimensions, size, 0.0);
+      H_SO3 result(&result_h);
       // assignment
       result = expr;
       // 25.0 * 0.1 + 5.0F
       CHECK_ITERABLE_APPROX(to_vec(result.get()),
-                            to_vec(H(dimensions, dimensions, size, 2.0F)));
+                            to_vec(H_mat(dimensions, dimensions, size, 2.0F)));
 
       result = expr + 2.0 * (td * derivative);
       // 5.0F + 2.0 * 0.1 * 25.0 + 0.1 * 25.0 = 12.5F
       CHECK_ITERABLE_APPROX(to_vec(result.get()),
-                            to_vec(H(dimensions, dimensions, size, 2.0F)));
+                            to_vec(H_mat(dimensions, dimensions, size, 2.0F)));
     }
 
     {
       // resize version
-      H result_h;
-      P result(&result_h);
+      H_mat result_h;
+      H_SO3 result(&result_h);
 
       // assignment, this needs to be resized
       result = expr;
       // 25.0 * 0.1 + 5.0F
       CHECK_ITERABLE_APPROX(to_vec(result.get()),
-                            to_vec(H(dimensions, dimensions, size, 2.0F)));
+                            to_vec(H_mat(dimensions, dimensions, size, 2.0F)));
     }
   }
 

@@ -117,31 +117,6 @@ namespace {
                      "[Systems][Unit]") {
     CHECK(1); // TODO: non-priority: linked to public utility
   }
-  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: subtract_quadrature",
-                     "[Systems][Unit]") {
-    for (std::size_t n_elems : {1, 32, 128}) {
-      // Define and Initialize
-      const std::size_t n_nodes = n_elems + 1UL;
-
-      // Define and initialize test vectors
-      Vector::data_type input_vector_batch(dimension, n_elems),
-                        test_vector_batch(dimension, n_nodes);
-      test_vector_batch = real_type(5.0);
-      input_vector_batch = real_type(1.0);
-
-      // Define and initialize solution vectors
-      Vector::data_type correct_vector_batch(dimension, n_nodes);
-      correct_vector_batch = real_type(4.0);
-      Vector::slice(correct_vector_batch, 0UL) = real_type(4.5);
-      Vector::slice(correct_vector_batch, n_nodes - 1UL) = real_type(4.5);
-
-      // Testing Operation
-      Operations::subtract_quadrature(test_vector_batch, input_vector_batch);
-
-      // Check
-      CHECK(test_vector_batch == correct_vector_batch);
-    }
-  }
 
   //************************************************************************
   // Rotation Operations

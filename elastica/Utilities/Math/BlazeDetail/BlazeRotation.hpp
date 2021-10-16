@@ -113,12 +113,12 @@ namespace elastica {
       typename MT>  // blaze Matrix expression type
   void exp_batch(TT& rot_matrix_batch, const MT& rot_axis_vector_batch) {
     constexpr std::size_t dimension(3UL);
-    const std::size_t n_elems = rot_axis_vector_batch.columns();
+    //const std::size_t n_elems = rot_axis_vector_batch.columns();
     using ValueType = typename MT::ElementType;
     assert(rot_axis_vector_batch.rows() == dimension);
     assert(rot_matrix_batch.pages() == dimension);
     assert(rot_matrix_batch.rows() == dimension);
-    assert(rot_matrix_batch.columns() == n_elems);
+    //assert(rot_matrix_batch.columns() == n_elems);
 
     auto theta_batch = blaze::sqrt(
         blaze::sum<blaze::columnwise>(blaze::pow(rot_axis_vector_batch, 2)));

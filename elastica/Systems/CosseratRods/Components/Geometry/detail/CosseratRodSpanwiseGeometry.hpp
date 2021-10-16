@@ -446,6 +446,8 @@ namespace elastica {
               auto& shear_stretch_strains_collection(
                   blocks::get<ShearStretchStrain>(downstream_block));
               auto expanded_transposed_EDC = Traits::Operations::expand_for_broadcast(Traits::Operations::transpose(element_dilatation_collection));
+              const size_t aa = expanded_transposed_EDC.rows();
+              const size_t bb = expanded_transposed_EDC.columns();
               Traits::Operations::batch_matvec(
                   shear_stretch_strains_collection,
                   director,

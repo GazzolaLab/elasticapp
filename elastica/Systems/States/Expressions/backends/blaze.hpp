@@ -25,23 +25,52 @@
 // should be in Systems instead
 #include "Simulator/Frames.hpp"
 
+#include "Utilities/Math/BlazeDetail/BlazeRotation.hpp"
+
 namespace elastica {
 
   namespace states {
 
     template <typename T, typename RHSVectorBatch>
     auto SO3_primitive_assign(blaze::DynamicTensor<T>& lhs_matrix_batch,
-                              blaze::DynamicTensor<T> const& /*rhs_matrix_batch*/,
-                              RHSVectorBatch const& /*vector_batch*/) noexcept
+                              blaze::DynamicTensor<T> const& rhs_matrix_batch,
+                              RHSVectorBatch const& vector_batch) noexcept // vector bacth includes (omega*dt). Must include minus sign here
         -> void {
-      lhs_matrix_batch = 1.0;
+      using ::elastica::exp_batch;
+//      exp_batch(lhs_matrix_batch, -vector_batch);
+//      lhs_matrix_batch = lhs_matrix_batch * rhs_matrix_batch; // TODO batch matrix multiplication
+      // TODO:
+      auto theta;
+      auto alpha = 1.0 - blaze::cos(theta);
+      auto beta = blaze::sin(theta);
+      auto u0 =;
+      auto u1 =;
+      auto u2 =;
+      auto q0 =;
+      auto q1 =;
+      auto q2 =;
+      auto q3 =;
+      auto q4 =;
+      auto q5 =;
+      auto q6 =;
+      auto q7 =;
+      auto q8 =;
+      blaze::row(blaze::pageslice(lhs_matrix_batch, 0UL), 0UL) = alpha*((-blaze::pow(u1, 2) - blaze::pow(u2, 2))*q0 + q3*u0*u1 + q6*u0*u2) + beta*(q3*u2 - q6*u1) + q0;
+      blaze::row(blaze::pageslice(lhs_matrix_batch, 1UL), 0UL) = alpha*((-blaze::pow(u1, 2) - blaze::pow(u2, 2))*q1 + q4*u0*u1 + q7*u0*u2) + beta*(q4*u2 - q7*u1) + q1;
+      blaze::row(blaze::pageslice(lhs_matrix_batch, 2UL), 0UL) = alpha*((-blaze::pow(u1, 2) - blaze::pow(u2, 2))*q2 + q5*u0*u1 + q8*u0*u2) + beta*(q5*u2 - q8*u1) + q2;
+      blaze::row(blaze::pageslice(lhs_matrix_batch, 0UL), 1UL) = alpha*((-blaze::pow(u0, 2) - blaze::pow(u2, 2))*q3 + q0*u0*u1 + q6*u1*u2) + beta*(-q0*u2 + q6*u0) + q3;
+      blaze::row(blaze::pageslice(lhs_matrix_batch, 1UL), 1UL) = alpha*((-blaze::pow(u0, 2) - blaze::pow(u2, 2))*q4 + q1*u0*u1 + q7*u1*u2) + beta*(-q1*u2 + q7*u0) + q4;
+      blaze::row(blaze::pageslice(lhs_matrix_batch, 2UL), 1UL) = alpha*((-blaze::pow(u0, 2) - blaze::pow(u2, 2))*q5 + q2*u0*u1 + q8*u1*u2) + beta*(-q2*u2 + q8*u0) + q5;
+      blaze::row(blaze::pageslice(lhs_matrix_batch, 0UL), 2UL) = alpha*((-blaze::pow(u0, 2) - blaze::pow(u1, 2))*q6 + q0*u0*u2 + q3*u1*u2) + beta*(q0*u1 - q3*u0) + q6;
+      blaze::row(blaze::pageslice(lhs_matrix_batch, 1UL), 2UL) = alpha*((-blaze::pow(u0, 2) - blaze::pow(u1, 2))*q7 + q1*u0*u2 + q4*u1*u2) + beta*(q1*u1 - q4*u0) + q7;
+      blaze::row(blaze::pageslice(lhs_matrix_batch, 2UL), 2UL) = alpha*((-blaze::pow(u0, 2) - blaze::pow(u1, 2))*q8 + q2*u0*u2 + q5*u1*u2) + beta*(q2*u1 - q5*u0) + q8;
     }
 
     template <typename T, typename RHSVectorBatch>
     auto SO3_primitive_add_assign(blaze::DynamicTensor<T>& lhs_matrix_batch,
-                                  RHSVectorBatch const& /*rhs_vector*/) noexcept
+                                  RHSVectorBatch const& rhs_vector) noexcept
         -> void {
-      lhs_matrix_batch = 1.0;
+      SO3_primitive_assign(lhs_matrix_batch, lhs_matrix_batch, rhs_vector);
     }
 
     template <typename T>

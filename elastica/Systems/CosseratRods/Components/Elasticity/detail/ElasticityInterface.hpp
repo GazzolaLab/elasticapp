@@ -75,7 +75,7 @@ namespace elastica {
           struct InternalLoads : public Traits::template CosseratRodVariable<
               ::elastica::tags::InternalLoads,    //
               typename Traits::DataType::Vector,  //
-              typename Traits::Place::OnElement> {};
+              typename Traits::Place::OnNode> {};
           //********************************************************************
 
           //********************************************************************
@@ -95,7 +95,7 @@ namespace elastica {
           struct InternalTorques : public Traits::template CosseratRodVariable<
                                        ::elastica::tags::InternalTorques,  //
                                        typename Traits::DataType::Vector,  //
-                                       typename Traits::Place::OnVoronoi> {};
+                                       typename Traits::Place::OnElement> {};
           //********************************************************************
 
           //********************************************************************
@@ -113,6 +113,10 @@ namespace elastica {
            * TODO try to refactor : avoid temp memory allocations
            *  - Some exception: branch of operation
            */
+          struct _DummyNodeVector: public Traits::template CosseratRodVariable<
+              ::elastica::tags::_DummyNodeVector,
+              typename Traits::DataType::Vector,
+              typename Traits::Place::OnNode> {};
           struct _DummyElementVector: public Traits::template CosseratRodVariable<
               ::elastica::tags::_DummyElementVector,
               typename Traits::DataType::Vector,
@@ -138,12 +142,16 @@ namespace elastica {
           //! List of initialized variables
           using InitializedVariables = tmpl::list<>;
           //! List of computed variables
-          using ComputedVariables = tmpl::list<InternalLoads, InternalTorques,
-                                               InternalStress, InternalCouple,
-                                               _DummyElementVector,
-                                               _DummyElementVector2,
-                                               _DummyVoronoiVector,
-                                               _DummyMatrix>;
+          using ComputedVariables = tmpl::list<
+              InternalLoads,
+              InternalTorques,
+              InternalStress,
+              InternalCouple,
+              _DummyNodeVector,
+              _DummyElementVector,
+              _DummyElementVector2,
+              _DummyVoronoiVector,
+              _DummyMatrix>;
           //! List of all variables
           using Variables =
               tmpl::append<InitializedVariables, ComputedVariables>;

@@ -69,18 +69,20 @@ namespace elastica {
     const std::size_t mbatch_columns = matrix_batch.columns();
     const std::size_t mbatch_rows = matrix_batch.rows();
 
-    const std::size_t size1 = blaze::pageslice(matrix_batch,0UL).columns();
-    const std::size_t size0 = blaze::pageslice(matrix_batch,0UL).rows();
-//    assert(matvec_batch.columns() == n_elems);
-//    assert(matvec_batch.rows() == dimension);
-//    assert(matrix_batch.pages() == dimension);
-//    assert(matrix_batch.rows() == dimension);
-//    assert(vector_batch.columns() == n_elems);
-//    assert(vector_batch.rows() == dimension);
+    const std::size_t size1 = blaze::pageslice(matrix_batch, 0UL).columns();
+    const std::size_t size0 = blaze::pageslice(matrix_batch, 0UL).rows();
+    //    assert(matvec_batch.columns() == n_elems);
+    //    assert(matvec_batch.rows() == dimension);
+    //    assert(matrix_batch.pages() == dimension);
+    //    assert(matrix_batch.rows() == dimension);
+    //    assert(vector_batch.columns() == n_elems);
+    //    assert(vector_batch.rows() == dimension);
 
-    for (std::size_t i(0UL); i < dimension; ++i)
-      blaze::row(matvec_batch, i) = blaze::sum<blaze::columnwise>(
-          blaze::pageslice(matrix_batch, i) % vector_batch);
+    for (std::size_t i(0UL); i < dimension; ++i) {
+      auto val1 = blaze::trans(blaze::rowslice(matrix_batch, i));
+      auto val2 = blaze::sum<blaze::columnwise>(val1 % vector_batch);
+      blaze::row(matvec_batch, i) = val2;
+    }
   }
   //**************************************************************************
 
@@ -164,10 +166,10 @@ namespace elastica {
     constexpr std::size_t dimension(3UL);
     const std::size_t n_elems = first_vector_batch.columns();
     assert(cross_batch.rows() == dimension);
-    assert(cross_batch.columns() == n_elems);
+    //assert(cross_batch.columns() == n_elems);
     assert(first_vector_batch.rows() == dimension);
     assert(second_vector_batch.rows() == dimension);
-    assert(second_vector_batch.columns() == n_elems);
+    //assert(second_vector_batch.columns() == n_elems);
 
     for (std::size_t i(0UL); i < dimension; ++i)
       /* loop over dimensions, lesser iterations, bigger slices */

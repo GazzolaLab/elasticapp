@@ -100,10 +100,18 @@ namespace elastica {
       static inline void batch_division_matvec(MT1& out_matrix, const MT2& denominator, const VT& numerator){
         using ValueType = typename MT2::ElementType;
         const std::size_t n_elems = denominator.columns();
-        blaze::row(out_matrix, 0UL) = blaze::row(denominator, 0UL)/transpose(numerator);
-        blaze::row(out_matrix, 1UL) = blaze::row(denominator, 1UL)/transpose(numerator);
-        blaze::row(out_matrix, 2UL) = blaze::row(denominator, 2UL)/transpose(numerator);
+        blaze::row(out_matrix, 0UL) = blaze::row(denominator, 0UL) / transpose(numerator);
+        blaze::row(out_matrix, 1UL) = blaze::row(denominator, 1UL) / transpose(numerator);
+        blaze::row(out_matrix, 2UL) = blaze::row(denominator, 2UL) / transpose(numerator);
       }
+//      template <typename MT, typename VT>
+//      static inline void batch_division_matvec(MT& out_matrix, const VT& numerator){
+//        using ValueType = typename MT::ElementType;
+//        const std::size_t n_elems = out_matrix.columns();
+//        blaze::row(out_matrix, 0UL) = blaze::row(out_matrix, 0UL) / transpose(numerator);
+//        blaze::row(out_matrix, 1UL) = blaze::row(out_matrix, 1UL) / transpose(numerator);
+//        blaze::row(out_matrix, 2UL) = blaze::row(out_matrix, 2UL) / transpose(numerator);
+//      }
 
       // TODO: Documentation
       template <typename VT1, typename MT, typename VT2>
@@ -111,6 +119,19 @@ namespace elastica {
                                       const VT2& vector_batch) {
         using ::elastica::batch_matvec;
         batch_matvec(matvec_batch, matrix_batch, vector_batch);
+      }
+      template <typename MT1,  // blaze Matrix expression type 1
+          typename TT,   // blaze Tensor expression type
+          typename MT2>  // blaze Matrix expression type 2
+      static inline void batch_mattranspvec(MT1& matvec_batch,
+                        const TT& matrix_batch,
+                        const MT2& vector_batch) {
+        constexpr std::size_t dimension(3UL);
+        for (std::size_t i(0UL); i < dimension; ++i) {
+          auto val1 = blaze::pageslice(matrix_batch, i);
+          auto val2 = blaze::sum<blaze::columnwise>(val1 % vector_batch);
+          blaze::row(matvec_batch, i) = val2;
+        }
       }
 
       template <typename M1, typename M2, typename M3>
@@ -185,25 +206,6 @@ namespace elastica {
         quadrature_kernel(out_matrix, in_matrix);
       }
 
-      // TODO: Avoid repeating code. Try to reuse inv-rotate
-      template <typename MT1, typename MT2>
-      static inline void subtract_quadrature(MT1& out_matrix, const MT2& in_matrix) {
-        constexpr std::size_t dimension(3UL);
-        const std::size_t n_elems = in_matrix.columns();
-        assert(in_matrix.rows() == dimension);
-        assert(out_matrix.rows() == dimension);
-        const std::size_t n_nodes = n_elems + 1UL;
-        assert(out_matrix.columns() == n_nodes);
-        using ValueType = typename MT1::ElementType;
-
-        blaze::column(out_matrix, 0UL) -= ValueType(0.5) * blaze::column(in_matrix, 0UL);
-        blaze::column(out_matrix, n_nodes - 1UL) -= ValueType(0.5) * blaze::column(in_matrix, n_elems - 1UL);
-        blaze::submatrix(out_matrix, 0UL, 1UL, dimension, n_elems - 1UL) -=
-            ValueType(0.5) *
-            (blaze::submatrix(in_matrix, 0UL, 1UL, dimension, n_elems - 1UL) +
-             blaze::submatrix(in_matrix, 0UL, 0UL, dimension, n_elems - 1UL));
-      }
-
       //************************************************************************
       // Batch Rotation Operation
       // TODO: Documentation
@@ -213,6 +215,16 @@ namespace elastica {
 //        using ::elastica::batch_inv_rotate;
 //        batch_inv_rotate(rot_axis_vector_batch, rot_matrix_batch);
 //      }
+
+      //************************************************************************
+      // Batch Rotation (exponential) Operation
+      // TODO: Documentation
+      template <typename MT,  // blaze Matrix expression type
+                typename TT>  // blaze Tensor expression type
+      static inline void batch_mat_exp(MT& rot_matrix_batch, const TT& rot_axis_vector_batch) {
+        using ::elastica::exp_batch;
+        exp_batch(rot_matrix_batch, rot_axis_vector_batch);
+      }
 
       //************************************************************************
       // Spanwise Inverse Rotation + Division Operation (specific for compute-curvature)
@@ -234,7 +246,7 @@ namespace elastica {
 
         /* hardcoded to avoid external memory passing */
         /* also now operates only on views */
-        // TODO: Check the math
+        // TODO: Revisit - try to optimize using reduced operations (if any)
         auto qqt =
             blaze::subtensor(rot_matrix_batch, 0UL, 0UL, 0UL, dimension, dimension, n_elems-1) %
               blaze::subtensor(rot_matrix_batch, 0UL, 0UL, 1UL, dimension, dimension, n_elems-1);
@@ -266,7 +278,7 @@ namespace elastica {
           auto div_inv_skew_symmetric_map = inv_skew_symmetric_map / trans_normalize_vector_batch;
           blaze::row(rot_axis_vector_batch, i) =
               ValueType(-0.5) * theta_batch * div_inv_skew_symmetric_map /
-              (blaze::sin(theta_batch)+10);// + ValueType(1e-14)); // TODO refactor 1e-14
+              (blaze::sin(theta_batch)+ValueType(1e-12));// + ValueType(1e-14)); // TODO refactor 1e-12
         }
       }
 

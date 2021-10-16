@@ -81,7 +81,7 @@ namespace elastica {
               : public Traits::template CosseratRodInitializedVariable<
                   ::elastica::tags::Density,
                   typename Traits::DataType::Scalar,
-                  typename Traits::Place::OnNode> {};
+                  typename Traits::Place::OnElement> {};
           //********************************************************************
 
           //********************************************************************
@@ -91,7 +91,7 @@ namespace elastica {
               : public Traits::template CosseratRodInitializedVariable<
                   ::elastica::tags::Mass,         //
                   typename Traits::DataType::Scalar,  //
-                  typename Traits::Place::OnNode> {};
+                  typename Traits::Place::OnElement> {};
           //********************************************************************
 
           //********************************************************************
@@ -143,7 +143,7 @@ namespace elastica {
           struct ExternalLoads: public Traits::template CosseratRodVariable<
               ::elastica::tags::ExternalLoads,    //
               typename Traits::DataType::Vector,  //
-              typename Traits::Place::OnElement> {};
+              typename Traits::Place::OnNode> {};
           //********************************************************************
 
           //********************************************************************
@@ -305,7 +305,7 @@ namespace elastica {
           {
             auto& density(blocks::get<Density>(downstream_block));
             auto& mass(blocks::get<Mass>(downstream_block));
-            auto volume = downstream_block.element_get_volume();
+            auto volume = downstream_block.get_element_volume();
             mass = density * volume;
           }
 
@@ -313,8 +313,8 @@ namespace elastica {
           {
             auto& external_loads(blocks::get<ExternalLoads>(downstream_block));
             auto& external_torques(blocks::get<ExternalTorques>(downstream_block));
-            external_loads = Traits::DataType::real_type(0.0);
-            external_torques = Traits::DataType::real_type(0.0);
+            external_loads = 0.0;
+            external_torques = 0.0;
           }
         }
         //**********************************************************************
@@ -382,7 +382,7 @@ namespace elastica {
           auto& velocity(blocks::get<Velocity>(self()));
           return Traits::Operations::batch_dot(
               Traits::Operations::difference_kernel(position),
-              Traits::Operations::difference_kernel(velocity)) / (length * reference_length);
+              Traits::Operations::difference_kernel(velocity)) / Traits::Operations::transpose(length * reference_length);
         }
         //**********************************************************************
 
