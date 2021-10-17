@@ -81,12 +81,6 @@ namespace elastica {
       //************************************************************************
 
       //************************************************************************
-      /*!\brief Move constructor.
-       */
-      BlockingPolicy(BlockingPolicy&&) noexcept = default;
-      //************************************************************************
-
-      //************************************************************************
       /*!\brief Determine which block to add new systems to
        *
        * \param collection The collection of blocks::Block

@@ -16,7 +16,7 @@
 //  CONFIGURATION
 //
 //==============================================================================
-#include "Configuration/Parallel.hpp"  // for threading hint
+#include "ModuleSettings/Parallel.hpp"  // for threading hint
 
 namespace elastica {
 

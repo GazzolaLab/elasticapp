@@ -85,25 +85,6 @@ namespace elastica {
       using This =
           ForcingConfiguration<ForcingExecutionPolicy, ForcingRegistrars>;
       //************************************************************************
-
-      //**Constructors**********************************************************
-      /*!\name Constructors*/
-      //@{
-     public:
-      constexpr ForcingConfiguration() noexcept = default;
-      constexpr ForcingConfiguration(ForcingConfiguration const&) noexcept =
-          default;
-      constexpr ForcingConfiguration(ForcingConfiguration&&) noexcept = default;
-      //@}
-      //************************************************************************
-
-     public:
-      //**Destructor************************************************************
-      /*!\name Destructor*/
-      //@{
-      ~ForcingConfiguration() = default;
-      //@}
-      //************************************************************************
     };
     /*! \endcond */
     //**************************************************************************
@@ -139,20 +120,10 @@ namespace elastica {
           std::size_t const parallel_threshold) noexcept
           : threshold(parallel_threshold){};
       constexpr ForcingConfiguration() = delete;
-      constexpr ForcingConfiguration(ForcingConfiguration const&) noexcept =
-          default;
-      constexpr ForcingConfiguration(ForcingConfiguration&&) noexcept = default;
       //@}
       //************************************************************************
 
      public:
-      //**Destructor************************************************************
-      /*!\name Destructor*/
-      //@{
-      ~ForcingConfiguration() = default;
-      //@}
-      //************************************************************************
-
       //************************************************************************
       /*!\brief Obtains the threshold for parallelism
        */
