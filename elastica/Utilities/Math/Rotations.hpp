@@ -3,11 +3,12 @@
 #include <cmath>
 #include <type_traits>
 
+#include "Utilities/Math/Equal.hpp"
 #include "elastica/ErrorHandling/Assert.hpp"
 #include "elastica/Utilities/DefineTypes.h"
+#include "elastica/Utilities/Math/Normalize.hpp"
 #include "elastica/Utilities/Math/Rot3.hpp"
 #include "elastica/Utilities/Math/SqrLength.hpp"
-#include "elastica/Utilities/Math/Normalize.hpp"
 #include "elastica/Utilities/Math/Vec3.hpp"
 
 namespace elastica {
@@ -15,7 +16,8 @@ namespace elastica {
   Rot3 rotation_from_axis_angle(const Vec3& axis, real_t angle) {
     //    static_assert(std::is_floating_point<Axis>::value, "Not floating!");
 
-    ELASTICA_ASSERT((sqrLength(axis) > real_t(0) or angle == real_t(0)),
+    using ::elastica::equal;
+    ELASTICA_ASSERT((sqrLength(axis) > real_t(0) or equal(angle, real_t(0))),
                     "Invalid rotation parameters");
 
     const real_t sina(std::sin(angle));

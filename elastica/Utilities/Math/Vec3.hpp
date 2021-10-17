@@ -2,7 +2,7 @@
 
 #include <blaze/math/StaticVector.h>
 
-#include "elastica/Utilities/DefineTypes.h"
+#include "Utilities/DefineTypes.h"
 
 namespace elastica {
   //  using namespace blaze;

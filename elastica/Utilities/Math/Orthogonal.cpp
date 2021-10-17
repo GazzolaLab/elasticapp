@@ -1,0 +1,115 @@
+//
+// Created by Tejaswin Parthasarathy on 9/25/21.
+//
+
+#include "Utilities/Math/Orthogonal.hpp"
+
+#include "Utilities/Math/Length.hpp"
+#include "Utilities/Math/Normalize.hpp"
+
+namespace elastica {
+
+  auto orthogonalize(const Rot3& input_R) -> Rot3 {
+    // TODO : very general, need not do a QR
+    //  https://stackoverflow.com/a/23082112
+    throw std::runtime_error("Not implemented");
+    //    Rot3 Q, R;
+    //    blaze::qr(input_R, Q, R);
+    //    ELASTICA_ASSERT(input_R == Q * R, "QR fails");
+    return input_R;
+  }
+
+  namespace detail {
+    auto make_orthogonal_bases_impl(Vec3 const& vector) noexcept
+        -> std::array<Vec3, 3UL> {
+      Vec3 v2 = normalize(vector);
+
+      // Any initial guess thats not in the normal direction
+      Vec3 v1{0.8, 0.6, 0.0};
+
+      Vec3 v3(normalize(v1 % v2));
+
+      v1 = v2 % v3;
+      // If its collinear, iterate till its not
+      // should be parallel threshold but thats in simluator
+      // and we want to make it not depend on simluator
+      if /*while*/ (equal(length(v1), 0.0)) {
+        v1 = {0.6, -0.8, 0.0};
+        v3 = normalize(v1 % v2);
+        v1 = v2 % v3;
+      }
+      return {v1, v2, v3};
+    }
+  }  // namespace detail
+
+  auto make_orthogonal_bases_from_binormal(Vec3 const& vector) noexcept
+      -> Rot3 {
+    auto bases = detail::make_orthogonal_bases_impl(vector);
+
+    // bases[1] always contains the vector
+    // bases[1] x bases[2] = bases[3]
+    // bases[0] , bases[1], bases[2]
+    constexpr std::size_t d1 = 1UL;
+    constexpr std::size_t d2 = 2UL;
+    constexpr std::size_t d3 = 0UL;
+    return Rot3{{bases[d1][0], bases[d1][1], bases[d1][2]},
+                {bases[d2][0], bases[d2][1], bases[d2][2]},
+                {bases[d3][0], bases[d3][1], bases[d3][2]}};
+  }
+
+  auto make_orthogonal_bases_from_normal(Vec3 const& vector) noexcept -> Rot3 {
+    auto bases = detail::make_orthogonal_bases_impl(vector);
+
+    // bases[1] always contains the vector
+    // bases[1] x bases[2] = bases[3]
+    // bases[0] , bases[1], bases[2]
+    constexpr std::size_t d1 = 0UL;
+    constexpr std::size_t d2 = 1UL;
+    constexpr std::size_t d3 = 2UL;
+    return Rot3{{bases[d1][0], bases[d1][1], bases[d1][2]},
+                {bases[d2][0], bases[d2][1], bases[d2][2]},
+                {bases[d3][0], bases[d3][1], bases[d3][2]}};
+  }
+
+  auto make_orthogonal_bases_from_tangent(Vec3 const& vector) noexcept -> Rot3 {
+    auto bases = detail::make_orthogonal_bases_impl(vector);
+
+    // bases[1] always contains the vector
+    // bases[1] x bases[2] = bases[3]
+    // bases[0] , bases[1], bases[2]
+    constexpr std::size_t d1 = 2UL;
+    constexpr std::size_t d2 = 0UL;
+    constexpr std::size_t d3 = 1UL;
+    return Rot3{{bases[d1][0], bases[d1][1], bases[d1][2]},
+                {bases[d2][0], bases[d2][1], bases[d2][2]},
+                {bases[d3][0], bases[d3][1], bases[d3][2]}};
+  }
+
+  //  auto make_orthogonal_bases(const Vec3& arg_normal) noexcept -> Rot3 {
+  //    // TODO : Doesn't work, seems like a bug in blaze
+  //    Vec3 normal = normalize(arg_normal);
+  //
+  //    // Any initial guess thats not in the normal direction
+  //    Vec3 binormal{0.8, 0.6, 0.0};
+  //
+  //    Vec3 tangent(normalize(binormal % normal));
+  //
+  //    binormal = normal % tangent;
+  //    // If its collinear, iterate till its not
+  //    // should be parallel threshold but thats in simluator
+  //    // and we want to make it not depend on simluator
+  //    if /*while*/ (equal(length(binormal), 0.0)) {
+  //      // TODO : Arbitrary, revisit
+  //      //      std::cout << binormal << " " << tangent << std::endl;
+  //      binormal = {0.6, -0.8, 0.0};
+  //      tangent = normalize(binormal % normal);
+  //      binormal = normal % tangent;
+  //    }
+  //
+  //    // Normal is in the 2nd row, d2
+  //    return Rot3{{binormal[0], binormal[1], binormal[2]},
+  //                {normal[0], normal[1], normal[2]},
+  //                {tangent[0], tangent[1], tangent[2]}};
+  //  }
+
+}  // namespace elastica

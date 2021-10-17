@@ -64,7 +64,6 @@ elastica_target_headers(
         Overloader.hpp
         PrettyType.hpp
         PrintHelpers.hpp
-        ProfilingSection.hpp
         ProtocolHelpers.hpp
         Registration.hpp
         Requires.hpp
