@@ -32,10 +32,6 @@
 #include "Systems/CosseratRods/Components/Geometry/detail/RodSpanwiseGeometry.hpp"
 #include "Systems/CosseratRods/Components/Geometry/detail/Tags/CosseratRodSpanwiseGeometryTags.hpp"
 
-// Temporary
-#include "blaze/Blaze.h"
-#include "blaze_tensor/Blaze.h"
-
 namespace elastica {
 
   namespace cosserat_rod {

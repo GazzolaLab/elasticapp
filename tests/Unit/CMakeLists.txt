@@ -32,8 +32,7 @@ add_executable(${executable} ${executable}.cpp)
 target_link_libraries(${executable} ${ELASTICA_TESTS_LIBRARIES}
         ${ELASTICA_LIBRARIES})
 
-# TODO: Need to restore later
-#elastica_add_catch_tests(${executable} "${ELASTICA_TESTS_LIBRARIES}")
+elastica_add_catch_tests(${executable} "${ELASTICA_TESTS_LIBRARIES}")
 
 
 # Setup code coverage for unit tests

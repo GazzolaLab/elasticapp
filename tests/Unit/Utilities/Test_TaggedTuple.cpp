@@ -67,6 +67,7 @@ ELASTICA_TEST_CASE("Unit.Utilities.TaggedTuple", "[Utilities][Unit]") {
   static_assert(tuples::TaggedTuple<name, age, email>::size() == 3,
                 "Failed to test size of TaggedTuple");
   {
+    // TODO: commented out due to compilation (g++) bug
     /*
     std::stringstream ss;
     ss << test;
@@ -92,6 +93,7 @@ ELASTICA_TEST_CASE("Unit.Utilities.TaggedTuple", "[Utilities][Unit]") {
   CHECK(17 == tuples::get<age>(test2));
 
   {
+    // TODO: commented out due to compilation (g++) bug
     /*
     std::stringstream ss;
     ss << tuples::TaggedTuple<>{};
