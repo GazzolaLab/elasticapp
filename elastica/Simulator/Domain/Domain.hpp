@@ -78,8 +78,6 @@ namespace elastica {
       //@{
       template <typename... Args>
       explicit Domain(Args&&... args) : Policy(std::forward<Args>(args)...) {}
-      Domain(Domain&&) noexcept = default;
-      Domain& operator=(Domain&&) noexcept = default;
       //@}
       //************************************************************************
     };
