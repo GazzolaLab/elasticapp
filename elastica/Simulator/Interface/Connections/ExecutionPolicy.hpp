@@ -24,6 +24,7 @@
 ///
 #include "Utilities/CRTP.hpp"
 #include "Utilities/MakeFromTuple.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace elastica {
@@ -263,6 +264,16 @@ namespace elastica {
           //! Type for tagged tuple
           using type = ConnectSystemsOp<
               typename ConnectionsTraits::ConnectionsExecutionPolicy>;
+          //********************************************************************
+
+          //**Info method*******************************************************
+          static std::string info(
+              ConnectionsModule const& module_handle) noexcept {
+            return std::string(MakeString{}
+                               << "--Apply " << module_handle.n_connections()
+                               << "connections over "
+                               << module_handle.n_systems() << " systems\n");
+          }
           //********************************************************************
         };
         //@}

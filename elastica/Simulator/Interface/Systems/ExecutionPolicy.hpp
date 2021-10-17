@@ -31,6 +31,7 @@
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Invoke.hpp"
 #include "Utilities/MakeFromTuple.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -535,6 +536,13 @@ namespace elastica {
                                       ExecutionPolicyForEachSystemType,
                                   typename SystemsTraits::IterationPolicy::
                                       ExecutionPolicyAcrossSystemTypes>;
+          //********************************************************************
+
+          //**Info method*******************************************************
+          static std::string info(SystemsModule const& module_handle) noexcept {
+            return (MakeString{} << "--Update " << module_handle.n_systems()
+                                 << " systems by ");
+          }
           //********************************************************************
         };
         //@}

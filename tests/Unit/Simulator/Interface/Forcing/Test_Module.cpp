@@ -22,6 +22,7 @@
 #include "Simulator/Interface/MockSystems.hpp"
 /// serializatoin
 #include "Simulator/IO/Serialization.hpp"
+#include "Simulator/Interface/Forcing/Serialize.hpp"
 #include "Simulator/Interface/MockSimulatorSerialize.hpp"
 
 namespace {
@@ -360,9 +361,11 @@ namespace {
       CHECK(force_counter_in_forcing.count == expected_count);
       CHECK(torque_counter_in_forcing.count == expected_count);
       // CHECK(sim.forcers().size() == 7UL);
-      std::size_t sum = std::accumulate(
-          std::cbegin(sim.forcer_batches()), std::cend(sim.forcer_batches()),
-          0UL, [](std::size_t sum, auto const& batch) { return sum + batch.size(); });
+      std::size_t sum = std::accumulate(std::cbegin(sim.forcer_batches()),
+                                        std::cend(sim.forcer_batches()), 0UL,
+                                        [](std::size_t sum, auto const& batch) {
+                                          return sum + batch.size();
+                                        });
       CHECK(sum == 7UL);
     }
   }

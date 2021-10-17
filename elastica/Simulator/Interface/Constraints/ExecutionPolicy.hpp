@@ -26,6 +26,7 @@
 ///
 #include "Utilities/CRTP.hpp"
 #include "Utilities/MakeFromTuple.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -456,12 +457,34 @@ namespace elastica {
           using type = ConstrainPrimitivesOp<
               typename ConstraintsTraits::ConstraintsExecutionPolicy>;
           //********************************************************************
+
+          //**Info method*******************************************************
+          static std::string info(
+              ConstraintsModule const& module_handle) noexcept {
+            return std::string(MakeString{}
+                               << "--Apply " << module_handle.n_constraints()
+                               << "constraints on positions and rotations over "
+                               << module_handle.n_systems() << " systems\n");
+          }
+          //********************************************************************
         };
+
         struct ConstrainRates {
           //**Type definitions**************************************************
           //! Type for tagged tuple
           using type = ConstrainRatesOp<
               typename ConstraintsTraits::ConstraintsExecutionPolicy>;
+          //********************************************************************
+
+          //**Info method*******************************************************
+          static std::string info(
+              ConstraintsModule const& module_handle) noexcept {
+            return std::string(
+                MakeString{}
+                << "--Apply " << module_handle.n_constraints()
+                << "constraints on velocities and angular velocities over "
+                << module_handle.n_systems() << " systems\n");
+          }
           //********************************************************************
         };
         //@}

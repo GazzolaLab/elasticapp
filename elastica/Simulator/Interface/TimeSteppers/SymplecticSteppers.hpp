@@ -17,6 +17,9 @@
 // Includes
 //******************************************************************************
 
+// For printing algorithmic information
+#include <ostream>
+
 ///
 #include "Simulator/Interface/TimeSteppers/Types.hpp"
 /// Temporal interfaces
@@ -29,6 +32,7 @@
 #include "Utilities/Logging.hpp"
 #include "Utilities/NonCopyable.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/WidthStream.hpp"
 
 namespace elastica {
 
@@ -195,6 +199,70 @@ namespace elastica {
       }
       //************************************************************************
 
+      //************************************************************************
+      /*!\brief Prints the algorithmic steps
+       *
+       * \param outstream Stream for printing out
+       * \return outstream
+       */
+      auto stream_symplectic_algorithm_to(
+          std::ostream& outstream) const /*noexcept*/ -> std::ostream& {
+        const std::size_t line_length = 80UL;
+        using Stream = ::elastica::widthstream;
+        Stream os(line_length, outstream);
+
+        // Adapter indent, paragraph;
+        // Indent indent(os, self().info_tab_width());
+        auto indent = [&os, this]() noexcept {
+          return Indent(os, self().info_tab_width());
+        };
+        auto paragraph = [&os]() noexcept { return Paragraph(os); };
+        // Paragraph paragraph(os);
+
+        paragraph()([](Stream& stream) { stream << "For each time-step:\n"; });
+
+        // clang-format off
+        indent()([/*indent,*/ paragraph, this](Stream&) {
+
+          paragraph()([/*indent,*/ paragraph, this](Stream& os) {
+
+          paragraph()([/*indent,*/ this](Stream& os) {
+          self().info_update(os) << "updating kinematic (position, director) information\n";
+            // indent()([](Stream& os) {
+            //       os << " updating kinematic (position, director) information";
+            // });
+          });
+
+          // paragraph()([this](Stream& os) {self().info_post_kinematic_updates(os);});
+          self().info_post_kinematic_updates(os);
+
+          paragraph()([/*indent,*/ this](Stream& os){
+          self().info_update(os) << "computing dynamics (forces and torques)\n";
+            // indent()([](Stream& os) {
+            //       os << " computing dynamics (forces and torques)";
+            // });
+          });
+
+          // paragraph()([this](Stream& os) {self().info_pre_dynamic_updates(os);});
+          self().info_pre_dynamic_updates(os);
+
+          paragraph()([/*indent,*/ this](Stream& os){
+          self().info_update(os) << "updating dynamics (velocity, angular velocity) information\n";
+          // indent()([](Stream& os) {
+          //       os << " updating dynamics (velocity, angular velocity) information";
+          // });
+          });
+
+          // paragraph()([this](Stream& os) {self().info_post_dynamic_updates(os);});
+          self().info_post_dynamic_updates(os);
+
+          });
+
+        });
+        // clang-format on
+
+        return outstream;
+      }
       //@}
       //************************************************************************
     };

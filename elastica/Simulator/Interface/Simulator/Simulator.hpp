@@ -17,6 +17,8 @@
 // Includes
 //******************************************************************************
 
+#define ELASTICA_EXPLICIT_STEPPER 0
+
 #include <algorithm>
 #include <memory>
 #include <stdexcept>
@@ -29,20 +31,27 @@
 #include "Simulator/Domain/Domain.hpp"
 /// Interface methods
 #include "Simulator/Interface/Simulator/Configuration.hpp"
+#include "Simulator/Interface/Simulator/Profiling.hpp"
 #include "Simulator/Interface/Systems/Module.hpp"
+#if (ELASTICA_EXPLICIT_STEPPER)
 #include "Simulator/Interface/TimeSteppers/ExplicitSteppers.hpp"
+#endif
+#include "Simulator/Interface/Batching/DefaultBatcher.hpp"
 #include "Simulator/Interface/TimeSteppers/SymplecticSteppers.hpp"
 #include "Simulator/Interface/TypeTraits.hpp"
 #include "Simulator/Interface/Types.hpp"
 /// Serialization support
-#include "Simulator/IO/Serialization/Types.hpp"
-/// Utilities
-#include "ErrorHandling/NestedExceptions.hpp"
 #include "Simulator/Configuration/TypeTraits/Aliases.hpp"
+#include "Simulator/IO/Serialization/Types.hpp"
+///
+#include "ErrorHandling/NestedExceptions.hpp"
+/// Utilities
+#include "Utilities/Invoke.hpp"
 #include "Utilities/Logging.hpp"
 #include "Utilities/Logging/Logger.hpp"
 #include "Utilities/RepeatAsTuple.hpp"
 #include "Utilities/Singleton.hpp"
+#include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -221,9 +230,13 @@ namespace elastica {
                                               Simulator<SimTraits, Modules...>>,
           public Modules<SimTraits, Simulator<SimTraits, Modules...>>...,
           public InterfaceWithSymplecticSteppers<
-              SimTraits, Simulator<SimTraits, Modules...>>,
-          public InterfaceWithExplicitSteppers<
-              SimTraits, Simulator<SimTraits, Modules...>> {
+              SimTraits, Simulator<SimTraits, Modules...>>
+#if (ELASTICA_EXPLICIT_STEPPER)
+        ,
+          public InterfaceWithExplicitSteppers<SimTraits,
+                                               Simulator<SimTraits, Modules...>>
+#endif
+    {
      private:
       //**Compile-time checks***************************************************
       static_assert(
@@ -250,10 +263,13 @@ namespace elastica {
       using SymplecticInterface =
           InterfaceWithSymplecticSteppers<SimTraits, This>;
       //! Explicit Interface
+#if (ELASTICA_EXPLICIT_STEPPER)
       using ExplicitInterface = InterfaceWithExplicitSteppers<SimTraits, This>;
+#endif
       //@}
       //************************************************************************
 
+     protected:
       //************************************************************************
       /*!\name Algorithm Type definitions */
       //@{
@@ -280,14 +296,29 @@ namespace elastica {
       //************************************************************************
       /*!\name Batch Algorithm Type definitions */
       //@{
+      //! Default
+      using DefaultBatcher = ::elastica::interface::detail::DefaultBatcher;
       //! Get all batchers algorithm steps
       using Batchers =
-          tmpl::append<typename Modules<SimTraits, This>::BatchingAlgorithm...>;
+          tmpl::append<tmpl::list<DefaultBatcher>,
+                       typename Modules<SimTraits, This>::BatchingAlgorithm...>;
       //! Batching algorithm cache type
       using BatchingAlgorithms = tmpl::as_tagged_tuple<Batchers>;
       //@}
       //************************************************************************
 
+      //************************************************************************
+      /*!\name Profiler type definitions */
+      //@{
+      template <typename T>
+      struct Transform {
+        using type = tags::WcProfilerTag<T>;
+      };
+      //! Tags for timers profiling the code
+      using TimerTags = tmpl::transform<AlgorithmSteps, Transform<tmpl::_1>>;
+      //! Cache for timers for profiling the code
+      using Timers = tmpl::as_tagged_tuple<TimerTags>;
+      //@}
       //************************************************************************
 
      public:
@@ -314,8 +345,10 @@ namespace elastica {
       BEFRIEND_SINGLETON;
       //! Friendship with Symplectic Interface
       friend SymplecticInterface;
+#if (ELASTICA_EXPLICIT_STEPPER)
       //! Friendship with Explicit Interface
       friend ExplicitInterface;
+#endif
       //! Friendship with Serialize
       friend struct ::elastica::io::Serialize<This>;
 
@@ -351,7 +384,7 @@ namespace elastica {
       /*!\name Domain methods*/
       //@{
 
-     private:
+     protected:
       //**Domain range check****************************************************
       /*!\brief Validity check for a periodic simulator domain
        *
@@ -362,16 +395,16 @@ namespace elastica {
                 Requires<std::is_same<D, PeriodicDomain>::value> = nullptr>
       void check_domain() const {
         // https://stackoverflow.com/a/12958954
-#define CHECK_DOMAIN_PERIODIC_ALONG(DIRECTION)                            \
-  if (std::is_same<BoundaryTypeAlong<DomainType::DIRECTION>,              \
-                   IsPeriodic>::value and                                 \
-      (is_inf(domain_.template get_lower_bound<DomainType::DIRECTION>) or \
-       is_inf(domain_.template get_upper_bound<DomainType::DIRECTION>)))  \
-    throw std::runtime_error(                                             \
-        "DomainType is set to be Periodic along " #DIRECTION              \
-        " yet span of the domain along is unset (or) infinite "           \
-        "Please call the simulators set_domain method with finite "       \
-        "values in the periodic direction "                               \
+#define CHECK_DOMAIN_PERIODIC_ALONG(DIRECTION)                               \
+  if (std::is_same<BoundaryTypeAlong<DomainType::DIRECTION>,                 \
+                   IsPeriodic>::value and                                    \
+      (is_inf(domain_->template get_lower_bound<DomainType::DIRECTION>()) or \
+       is_inf(domain_->template get_upper_bound<DomainType::DIRECTION>())))  \
+    throw std::runtime_error(                                                \
+        "DomainType is set to be Periodic along " #DIRECTION                 \
+        " yet span of the domain along is unset (or) infinite "              \
+        "Please call the simulators set_domain method with finite "          \
+        "values in the periodic direction "                                  \
         "before the call to integrate() or finalize()!");
 
         CHECK_DOMAIN_PERIODIC_ALONG(X);
@@ -400,7 +433,7 @@ namespace elastica {
        */
       template <typename... Args>  // Domain arguments
       [[deprecated("Set domain from configuration instead")]] void set_domain(
-          Args&&... args) {
+          Args&&... /*args*/) {
         check_if_not_final();
         // domain_.set(std::forward<Args>(args)...);
       }
@@ -422,7 +455,7 @@ namespace elastica {
       //**Utility methods*******************************************************
       /*!\name Utility methods*/
       //@{
-     private:
+     protected:
       //**ready method**********************************************************
       /*!\brief Throw if simulation is already finalized
        *
@@ -496,6 +529,7 @@ reorganizing your code logic.
       }
       //************************************************************************
 
+     public:
       //************************************************************************
       /*!\brief Finalize simulation
        *
@@ -509,7 +543,7 @@ reorganizing your code logic.
        * \exception std::runtime_error, if finalization of modules fail
        * \return void
        */
-      void finalize(TimeType time_v = 0.0) {
+      void finalize(TimeType time_v = TimeType{0.0}) {
         try {
           finalize_modules(time_v);
         } catch (const std::exception& e) {
@@ -585,11 +619,20 @@ reorganizing your code logic.
        */
       inline auto apply_post_kinematic_updates(TimeType time_v) const noexcept
           -> void {
-        tuples::apply<PostKinematicUpdateSteps>(
-            [=](auto const&... post_kinematic_updates) {
-              EXPAND_PACK_LEFT_TO_RIGHT(post_kinematic_updates(time_v));
-            },
-            algorithms());
+        // if no profiling this is fine
+        // tuples::apply<PostKinematicUpdateSteps>(
+        //     [=](auto const&... post_kinematic_updates) {
+        //       EXPAND_PACK_LEFT_TO_RIGHT(post_kinematic_updates(time_v));
+        //     },
+        //     algorithms());
+
+        // else do this
+        tmpl::for_each<PostKinematicUpdateSteps>([this, time_v](auto update) {
+          using UpdateStep = tmpl::type_from<decltype(update)>;
+          ELASTICA_PROFILING_SECTION { get_timer<UpdateStep>().start(); }
+          tuples::get<UpdateStep>(algorithms())(time_v);
+          ELASTICA_PROFILING_SECTION { get_timer<UpdateStep>().stop(); }
+        });
       }
       //************************************************************************
 
@@ -605,11 +648,18 @@ reorganizing your code logic.
        */
       inline auto apply_pre_dynamic_updates(TimeType time_v) const noexcept
           -> void {
-        tuples::apply<PreDynamicUpdateSteps>(
-            [=](auto const&... pre_dynamic_updates) {
-              EXPAND_PACK_LEFT_TO_RIGHT(pre_dynamic_updates(time_v));
-            },
-            algorithms());
+        // tuples::apply<PreDynamicUpdateSteps>(
+        //     [=](auto const&... pre_dynamic_updates) {
+        //       EXPAND_PACK_LEFT_TO_RIGHT(pre_dynamic_updates(time_v));
+        //     },
+        //     algorithms());
+
+        tmpl::for_each<PreDynamicUpdateSteps>([this, time_v](auto update) {
+          using UpdateStep = tmpl::type_from<decltype(update)>;
+          ELASTICA_PROFILING_SECTION { get_timer<UpdateStep>().start(); }
+          tuples::get<UpdateStep>(algorithms())(time_v);
+          ELASTICA_PROFILING_SECTION { get_timer<UpdateStep>().stop(); }
+        });
       }
       //************************************************************************
 
@@ -625,11 +675,18 @@ reorganizing your code logic.
        */
       inline auto apply_post_dynamic_updates(TimeType time_v) const noexcept
           -> void {
-        tuples::apply<PostDynamicUpdateSteps>(
-            [=](auto const&... post_dynamic_updates) {
-              EXPAND_PACK_LEFT_TO_RIGHT(post_dynamic_updates(time_v));
-            },
-            algorithms());
+        // tuples::apply<PostDynamicUpdateSteps>(
+        //     [=](auto const&... post_dynamic_updates) {
+        //       EXPAND_PACK_LEFT_TO_RIGHT(post_dynamic_updates(time_v));
+        //     },
+        //     algorithms());
+
+        tmpl::for_each<PostDynamicUpdateSteps>([this, time_v](auto update) {
+          using UpdateStep = tmpl::type_from<decltype(update)>;
+          ELASTICA_PROFILING_SECTION { get_timer<UpdateStep>().start(); }
+          tuples::get<UpdateStep>(algorithms())(time_v);
+          ELASTICA_PROFILING_SECTION { get_timer<UpdateStep>().stop(); }
+        });
       }
       //************************************************************************
 
@@ -649,7 +706,106 @@ reorganizing your code logic.
       }
       //************************************************************************
 
+      //@}
       //************************************************************************
+
+     protected:
+      //**Profiling methods*****************************************************
+      /*!\name Profiling methods*/
+      //@{
+
+      //************************************************************************
+      /*!\brief Get a timer corresponding to an algorithm
+       *
+       * \tparam AlgorithmTag Tag for obtaining the algorithm
+       * \return Algorithm callable
+       */
+      template <typename AlgorithmTag>
+      inline constexpr decltype(auto) get_timer() const noexcept {
+        using Tag = typename Transform<AlgorithmTag>::type;
+        return tuples::get<Tag>(timers_);
+      }
+      //************************************************************************
+
+     public:
+      //************************************************************************
+      /*!\brief Logs the profiling information into a stream
+       *
+       * \param os Output stream for streaming into
+       * \return os
+       */
+      inline void stream_profiling_summary_to(std::ostream& os) const {
+        ELASTICA_PROFILING_SECTION {
+          constexpr std::size_t n_timers = tmpl::size<Timers>::value;
+          std::array<double, n_timers> minValues, maxValues, totalValues;
+          std::array<std::size_t, n_timers> numValues;
+
+          auto populate_timers = [this, &minValues, &maxValues, &totalValues,
+                                  &numValues](auto Is) {
+            auto const& timer =
+                this->get_timer<tmpl::at_c<AlgorithmSteps, Is>>();
+            minValues[Is] = timer.min();
+            maxValues[Is] = timer.max();
+            totalValues[Is] = timer.total();
+            numValues[Is] = timer.getCounter();
+          };
+
+          // Compile time for-each, don't like brigands' type_ ID
+          index_apply<n_timers>([populate_timers](auto... Is) {
+            EXPAND_PACK_LEFT_TO_RIGHT(populate_timers(Is));
+          });
+
+          const std::size_t named_width = 30UL;
+          const std::size_t field_width = 10UL;
+          const auto delimiter = ",";  // ?
+          const std::string header_indicator = "#";
+          // os << std::setw(name_width) << TimerTag::log_name() << delimiter;
+
+          std::ostringstream ss;
+          ss << std::left  //
+             << std::setw(named_width) << header_indicator + " code_part"
+             << delimiter << std::right  //
+             << std::setw(field_width) << "min_time" << delimiter
+             << std::setw(field_width) << "max_time" << delimiter
+             << std::setw(field_width) << "avg_time" << delimiter
+             << std::setw(field_width) << "tot_time" << delimiter
+             << std::setw(field_width) << "n_samples";
+          std::string header = ss.str();
+          std::string horizontal_line =
+              std::string(::elastica::size(header), '-');
+          os << horizontal_line << "\n";
+          os << header << "\n";
+
+          auto pretty_printer = [this, &os, &minValues, &maxValues,
+                                 &totalValues, &numValues,
+                                 delimiter = ","](auto Is) {
+            using TimerTag = tmpl::at_c<Timers, Is>;
+            const double average_time = totalValues[Is] / numValues[Is];
+            os << std::left  //
+               << std::setw(named_width) << TimerTag::log_name() << delimiter
+               << std::right  //
+               << std::setw(field_width) << minValues[Is] << delimiter
+               << std::setw(field_width) << maxValues[Is] << delimiter
+               << std::setw(field_width) << average_time << delimiter
+               << std::setw(field_width) << totalValues[Is] << delimiter
+               << std::setw(field_width) << numValues[Is] << "\n";
+          };
+          // Compile time for-each, don't like brigands' type_ ID
+          index_apply<n_timers>([pretty_printer](auto... Is) {
+            EXPAND_PACK_LEFT_TO_RIGHT(pretty_printer(Is));
+          });
+        }
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Prints the profiling information to standard output
+       */
+      inline void print_profiling_summary() const {
+        (void)stream_profiling_summary_to(std::cout);
+      }
+      //************************************************************************
+
       //@}
       //************************************************************************
 
@@ -657,44 +813,76 @@ reorganizing your code logic.
       //**information methods***************************************************
       /*!\name Info methods*/
       //@{
-      int info_tab_width() const noexcept { return 4; }
 
+      //************************************************************************
+      /*! \cond ELASTICA_INTERNAL */
+      // needed by the time-stepper as well to format
+      int info_tab_width() const noexcept { return 4; }
+      /*! \endcond */
+      //************************************************************************
+
+      //************************************************************************
+      /*! \cond ELASTICA_INTERNAL */
       struct InfoPrinter {
         InfoPrinter(This const& simulator, ::elastica::widthstream& stream)
             : sim_(simulator), os_(stream) {}
         ~InfoPrinter() = default;
 
+        auto stream() noexcept -> ::elastica::widthstream& { return os_; }
+
+        template <typename Update>
+        static auto format_functor_name(::elastica::widthstream& os)
+            -> ::elastica::widthstream& {
+          // may not be a good idea to pretty type here as the template carries
+          // with it some useful information which gets missed.
+          std::string op_name = pretty_type::short_name<Update>();
+          os << op_name << "\n"
+             << std::string(::elastica::size(op_name), '-') << "\n";
+          return os;
+        }
+
         template <typename TagWrappedAsType>
         void operator()(TagWrappedAsType /*meta*/) const {
           using Update = tmpl::type_from<TagWrappedAsType>;
-          // do not use pretty type here as the template carries with it some
-          // useful information which gets missed.
-          os_ << pretty_type::short_name<Update>() << "\n";
+          Paragraph{os_}([&](::elastica::widthstream& os) {
+            format_functor_name<Update>(os);
 
-          // clang-format off
-          Indent(os_, sim_.info_tab_width())
-              // clang-format on
-              ([&](::elastica::widthstream& stream) {
-                stream << sim_.get_algorithm<Update>().info();
-              });
+            // clang-format off
+            Indent(os, sim_.info_tab_width())
+                // clang-format on
+                ([&](::elastica::widthstream& stream) {
+                  stream << Update::info(sim_);
+                });
+          });
         }
 
         This const& sim_;
         ::elastica::widthstream& os_;
       };
+      /*! \endcond */
       //************************************************************************
 
       //************************************************************************
-      /*!\brief Prints information of the post kinematic update steps
+      /*!\brief Prints information of the update steps
        *
        * \param os Stream for printing out
        * \return void
        */
-      auto info_update(::elastica::widthstream& os) const noexcept -> void {
+      auto info_update(::elastica::widthstream& os) const noexcept
+          -> ::elastica::widthstream& {
         // here we already put in the info that there is only 1 update step
         using Update = tmpl::front<UpdateSteps>;
-        os << pretty_type::short_name<Update>() << "\n"
-           << get_algorithm<Update>().info();
+        InfoPrinter::template format_functor_name<Update>(os);
+
+        // TODO : this doesn't indent. Why?
+        // clang-format off
+          Indent(os, info_tab_width())
+            // clang-format on
+            ([&](::elastica::widthstream& stream) {
+              stream << Update::info(*this);
+            });
+        // we don't need no paragraph here, so i specialized it
+        return os;
       }
       //************************************************************************
 
@@ -704,9 +892,10 @@ reorganizing your code logic.
        * \param os Stream for printing out
        * \return void
        */
-      auto info_post_kinematic_updates(
-          ::elastica::widthstream& os) const noexcept -> void {
-        tmpl::for_each<PostKinematicUpdateSteps>(Printer(*this, os));
+      auto info_post_kinematic_updates(::elastica::widthstream& os)
+          const noexcept -> ::elastica::widthstream& {
+        return tmpl::for_each<PostKinematicUpdateSteps>(InfoPrinter(*this, os))
+            .stream();
       }
       //************************************************************************
 
@@ -717,8 +906,9 @@ reorganizing your code logic.
        * \return void
        */
       auto info_pre_dynamic_updates(::elastica::widthstream& os) const noexcept
-          -> void {
-        tmpl::for_each<PreDynamicUpdateSteps>(Printer(*this, os));
+          -> ::elastica::widthstream& {
+        return tmpl::for_each<PreDynamicUpdateSteps>(InfoPrinter(*this, os))
+            .stream();
       }
       //************************************************************************
 
@@ -729,9 +919,28 @@ reorganizing your code logic.
        * \return void
        */
       auto info_post_dynamic_updates(::elastica::widthstream& os) const noexcept
-          -> void {
-        tmpl::for_each<PostDynamicUpdateSteps>(Printer(*this, os));
+          -> ::elastica::widthstream& {
+        return tmpl::for_each<PostDynamicUpdateSteps>(InfoPrinter(*this, os))
+            .stream();
       }
+      //************************************************************************
+
+     public:
+      //************************************************************************
+      /*!\brief Prints the algorithmic steps
+       *
+       * \param outstream Stream for printing out
+       * \return outstream
+       */
+      auto stream_algorithm_to(std::ostream& outstream) const -> std::ostream& {
+        return SymplecticInterface::stream_symplectic_algorithm_to(outstream);
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Prints the algorithmic steps
+       */
+      void print_algorithm() const { (void)(stream_algorithm_to(std::cout)); }
       //************************************************************************
 
       //@}
@@ -766,7 +975,7 @@ reorganizing your code logic.
        * \param traits Traits to initialize the simulator from
        * \return void
        */
-      void initialize_from_traits(SimTraits&& traits) {
+      void initialize_from_traits(SimTraits traits) {
         constexpr std::size_t n_algorithms = tmpl::size<AlgorithmSteps>::value;
         constexpr std::size_t n_batching_algorithms =
             tmpl::size<Batchers>::value;
@@ -799,10 +1008,10 @@ reorganizing your code logic.
         // systems modules
         // the () functions return the dereferenced result which cannot be
         // assigned
-        SystemsModule::blocking_policy_ =
+        SystemsModule::blocking_policy_id() =
             std::make_unique<typename SimTraits::BlockingPolicy>(
                 std::move(traits).blocking_policy());
-        SystemsModule::iteration_policy_ =
+        SystemsModule::iteration_policy_id() =
             std::make_unique<typename SimTraits::IterationPolicy>(
                 std::move(traits).iteration_policy());
       }
@@ -814,7 +1023,7 @@ reorganizing your code logic.
        *
        * \return Handle to the sole singleton of type T
        */
-      static auto initialize(SimTraits&& traits) {
+      static auto initialize(SimTraits traits) {
         auto simulator = This::instance();
         simulator->initialize_from_traits(std::move(traits));
         return simulator;
@@ -834,10 +1043,13 @@ reorganizing your code logic.
             SystemsModule(),
             Modules<SimTraits, This>()...,
             SymplecticInterface(),
+#if ELASTICA_EXPLICIT_STEPPER
             ExplicitInterface(),
+#endif
             algorithms_(nullptr),
             batching_algorithms_(nullptr),
             domain_(nullptr),
+            timers_(),
             ready_for_integration_(false) {
         using namespace ::elastica::logging;
         log<info>([](auto const& log) {
@@ -863,6 +1075,8 @@ reorganizing your code logic.
       std::unique_ptr<BatchingAlgorithms const> batching_algorithms_;
       //! Handle to a domain object
       std::unique_ptr<DomainType const> domain_;
+      //! Timer caches
+      mutable Timers timers_;
       //! State of simulation finalization
       bool ready_for_integration_;
       //************************************************************************

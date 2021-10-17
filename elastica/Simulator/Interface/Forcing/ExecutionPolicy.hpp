@@ -26,6 +26,7 @@
 ///
 #include "Utilities/CRTP.hpp"
 #include "Utilities/MakeFromTuple.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -270,6 +271,15 @@ namespace elastica {
           //! Type for tagged tuple
           using type =
               ForceSystemsOp<typename ForcingTraits::ForcingExecutionPolicy>;
+          //********************************************************************
+
+          //**Info method*******************************************************
+          static std::string info(ForcingModule const& module_handle) noexcept {
+            return std::string(MakeString{}
+                               << "--Apply " << module_handle.n_forcing()
+                               << "external user-defined forces over "
+                               << module_handle.n_systems() << " systems\n");
+          }
           //********************************************************************
         };
         //@}

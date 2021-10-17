@@ -5,15 +5,16 @@
 
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Configuration.hpp"
+#include "Simulator/Interface/Simulator/Profiling.hpp"
 #include "Simulator/Interface/Systems/Mocks.hpp"
 #include "Simulator/Interface/Systems/Module.hpp"
 #include "Simulator/Interface/TimeSteppers/SymplecticSteppers.hpp"
 #include "Systems/Block.hpp"
 #include "Systems/CosseratRods/CosseratRods.hpp"
 #include "Systems/CosseratRods/Mocks/CosseratRodTraits.hpp"
+#include "Time/Protocols.hpp"
 #include "Time/SimulationTime.hpp"
 #include "Time/SymplecticSteppers/Algorithms.hpp"
-#include "Time/Protocols.hpp"
 #include "Time/SymplecticSteppers/SymplecticStepper.hpp"
 #include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -133,6 +134,16 @@ namespace mock {
     using Algorithms = tmpl::as_tagged_tuple<AlgorithmSteps>;
     static constexpr std::size_t n_algorithms =
         tmpl::size<AlgorithmSteps>::value;
+
+    template <typename T>
+    struct Transform {
+      using type = ::elastica::interface::tags::WcProfilerTag<T>;
+    };
+    //! Tags for timers profiling the code
+    using TimerTags = tmpl::transform<AlgorithmSteps, Transform<tmpl::_1>>;
+    //! Cache for timers for profiling the code
+    using Timers = tmpl::as_tagged_tuple<TimerTags>;
+
     ////////////  This piece of code is copy-pasted yo
 
     using T = Traits;
@@ -205,10 +216,17 @@ reorganizing your code logic.
     }
     //************************************************************************
 
+    template <typename AlgorithmTag>
+    inline constexpr decltype(auto) get_timer() const noexcept {
+      using Tag = typename Transform<AlgorithmTag>::type;
+      return tuples::get<Tag>(timers_);
+    }
+
    public:
     Algorithms algorithms;
     bool is_final = false;
     std::vector<std::string> order_of_steps;
+    mutable Timers timers_;
   };
 
 }  // namespace mock
@@ -245,7 +263,7 @@ namespace {
     using ListOfSystems = tmpl::list<ECBlock, ECNamedBlock, AnotherECBlock>;
     auto sim = make_systems_simulator<ListOfSystems>(
         make_blocking_policy(RestrictSizeAcrossBlockTypes{20UL}));
-    using Sim = decltype(sim);
+    using Sim IGNORE_UNUSED = decltype(sim);
     elastica::ignore_unused(sim);
 
     using Algorithm = ::elastica::timestepper::symplectic::PositionVerlet;
