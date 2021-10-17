@@ -59,7 +59,15 @@ class Overloader;
 template <class F1, class F2, class F3, class F4, class F5, class F6, class F7,
           class F8, class... Fs>
 class Overloader<F1, F2, F3, F4, F5, F6, F7, F8, Fs...>
-    : F1, F2, F3, F4, F5, F6, F7, F8, Overloader<Fs...> {
+    : public F1,
+      public F2,
+      public F3,
+      public F4,
+      public F5,
+      public F6,
+      public F7,
+      public F8,
+      public Overloader<Fs...> {
  public:
   OVERLOADER_CONSTEXPR Overloader(F1 f1, F2 f2, F3 f3, F4 f4, F5 f5, F6 f6,
                                   F7 f7, F8 f8, Fs... fs)
@@ -92,7 +100,8 @@ class Overloader<F1, F2, F3, F4, F5, F6, F7, F8, Fs...>
  * \ingroup UtilitiesGroup
  */
 template <class F1, class F2, class F3, class F4, class... Fs>
-class Overloader<F1, F2, F3, F4, Fs...> : F1, F2, F3, F4, Overloader<Fs...> {
+class Overloader<F1, F2, F3, F4, Fs...>
+    : public F1, public F2, public F3, public F4, public Overloader<Fs...> {
  public:
   OVERLOADER_CONSTEXPR Overloader(F1 f1, F2 f2, F3 f3, F4 f4, Fs... fs)
       : F1(std::move(f1)),
@@ -116,7 +125,8 @@ class Overloader<F1, F2, F3, F4, Fs...> : F1, F2, F3, F4, Overloader<Fs...> {
  * \ingroup UtilitiesGroup
  */
 template <class F1, class F2, class... Fs>
-class Overloader<F1, F2, Fs...> : F1, F2, Overloader<Fs...> {
+class Overloader<F1, F2, Fs...>
+    : public F1, public F2, public Overloader<Fs...> {
  public:
   OVERLOADER_CONSTEXPR Overloader(F1 f1, F2 f2, Fs... fs)
       : F1(std::move(f1)),
@@ -136,7 +146,7 @@ class Overloader<F1, F2, Fs...> : F1, F2, Overloader<Fs...> {
  * \ingroup UtilitiesGroup
  */
 template <class F>
-class Overloader<F> : F {
+class Overloader<F> : public F {
  public:
   explicit OVERLOADER_CONSTEXPR Overloader(F f) : F(std::move(f)) {}
 
