@@ -10,7 +10,7 @@
 //
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/Math/sqrt.hpp"
+#include "Utilities/Math/Sqrt.hpp"
 
 namespace {
 

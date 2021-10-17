@@ -98,7 +98,6 @@ namespace elastica {
       // TODO: Documentation
       template <typename MT1, typename MT2, typename VT>
       static inline void batch_division_matvec(MT1& out_matrix, const MT2& denominator, const VT& numerator){
-        using ValueType = typename MT2::ElementType;
         const std::size_t n_elems = denominator.columns();
         blaze::row(out_matrix, 0UL) = blaze::row(denominator, 0UL) / transpose(numerator);
         blaze::row(out_matrix, 1UL) = blaze::row(denominator, 1UL) / transpose(numerator);

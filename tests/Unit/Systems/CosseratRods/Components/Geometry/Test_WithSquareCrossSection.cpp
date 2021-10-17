@@ -11,7 +11,7 @@
 #include "Systems/CosseratRods/Mocks.hpp"
 ///
 #include "Utilities/MakeArray.hpp"
-#include "Utilities/Math/sqrt.hpp"
+#include "Utilities/Math/Sqrt.hpp"
 
 namespace {
 
@@ -92,7 +92,7 @@ namespace {
           return index * 1.0;
           return 2.0;
         }),
-        blocks::initialize<tags::Director>([&i = n_times_called[1]](std::size_t index) {
+        blocks::initialize<tags::Director>([&i = n_times_called[1]](...) {
           ++i;
           return 0.5;
         }),
