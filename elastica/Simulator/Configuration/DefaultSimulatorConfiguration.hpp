@@ -47,14 +47,16 @@ namespace elastica {
      * \code
      *  // A simulation configuration with bare minimum requirements
      *  using BareMinimumDefaultSimulatorConfiguration =
-     *     SimulatorConfiguration<defaults::DomainConfiguration,
-     *                            defaults::SystemsConfiguration>;
+     *     SimulatorConfiguration<DefaultDomainConfiguration,
+     *                            DefaultSystemsConfiguration,
+     *                            DefaultParallelConfiguration>;
      *
      *  // A simulation configuration with more modules
      *  using SimulatorConfigurationWithEnvironments =
-     *     SimulatorConfiguration<defaults::DomainConfiguration,
-     *                            defaults::SystemsConfiguration,
-     *                            defaults::EnvironmentsConfiguration>;
+     *     SimulatorConfiguration<DefaultDomainConfiguration,
+     *                            DefaultSystemsConfiguration,
+     *                            DefaultParallelConfiguration,
+     *                            DefaultEnvironmentsConfiguration>;
      * \endcode
      * \see SimulatorConfiguration, make_simulator()
      */
