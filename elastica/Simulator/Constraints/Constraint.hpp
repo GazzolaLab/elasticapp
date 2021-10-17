@@ -23,7 +23,7 @@
 #include "Simulator/Constraints/Types.hpp"
 ///
 #include "Simulator/Constraints/Protocols.hpp"
-//#include "Simulator/Constraints/InitialConditionsCache.hpp"
+#include "Simulator/Constraints/InitialConditionsCache.hpp"
 ///
 #include "Utilities/CRTP.hpp"
 #include "Utilities/FakeVirtual.hpp"
