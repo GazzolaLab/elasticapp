@@ -36,25 +36,25 @@ namespace elastica {
                               blaze::DynamicTensor<T> const& rhs_matrix_batch,
                               RHSVectorBatch const& vector_batch) noexcept // vector bacth includes (omega*dt). Must include minus sign here
         -> void {
-      using ::elastica::exp_batch;
+//      using ::elastica::exp_batch;
 //      exp_batch(lhs_matrix_batch, -vector_batch);
 //      lhs_matrix_batch = lhs_matrix_batch * rhs_matrix_batch; // TODO batch matrix multiplication
-      // TODO:
-      auto theta;
+      // TODO: Double check. Place the function externally. Double check the sign
+      auto theta = blaze::sqrt(blaze::sum<blaze::columnwise>(vector_batch % vector_batch));
       auto alpha = 1.0 - blaze::cos(theta);
       auto beta = blaze::sin(theta);
-      auto u0 =;
-      auto u1 =;
-      auto u2 =;
-      auto q0 =;
-      auto q1 =;
-      auto q2 =;
-      auto q3 =;
-      auto q4 =;
-      auto q5 =;
-      auto q6 =;
-      auto q7 =;
-      auto q8 =;
+      auto u0 = blaze::row(vector_batch, 0UL) / (theta+1e-14);
+      auto u1 = blaze::row(vector_batch, 1UL) / (theta+1e-14);
+      auto u2 = blaze::row(vector_batch, 2UL) / (theta+1e-14);
+      auto q0 = blaze::row(blaze::pageslice(rhs_matrix_batch, 0UL), 0UL);
+      auto q1 = blaze::row(blaze::pageslice(rhs_matrix_batch, 1UL), 0UL);
+      auto q2 = blaze::row(blaze::pageslice(rhs_matrix_batch, 2UL), 0UL);
+      auto q3 = blaze::row(blaze::pageslice(rhs_matrix_batch, 0UL), 1UL);
+      auto q4 = blaze::row(blaze::pageslice(rhs_matrix_batch, 1UL), 1UL);
+      auto q5 = blaze::row(blaze::pageslice(rhs_matrix_batch, 2UL), 1UL);
+      auto q6 = blaze::row(blaze::pageslice(rhs_matrix_batch, 0UL), 2UL);
+      auto q7 = blaze::row(blaze::pageslice(rhs_matrix_batch, 1UL), 2UL);
+      auto q8 = blaze::row(blaze::pageslice(rhs_matrix_batch, 2UL), 2UL);
       blaze::row(blaze::pageslice(lhs_matrix_batch, 0UL), 0UL) = alpha*((-blaze::pow(u1, 2) - blaze::pow(u2, 2))*q0 + q3*u0*u1 + q6*u0*u2) + beta*(q3*u2 - q6*u1) + q0;
       blaze::row(blaze::pageslice(lhs_matrix_batch, 1UL), 0UL) = alpha*((-blaze::pow(u1, 2) - blaze::pow(u2, 2))*q1 + q4*u0*u1 + q7*u0*u2) + beta*(q4*u2 - q7*u1) + q1;
       blaze::row(blaze::pageslice(lhs_matrix_batch, 2UL), 0UL) = alpha*((-blaze::pow(u1, 2) - blaze::pow(u2, 2))*q2 + q5*u0*u1 + q8*u0*u2) + beta*(q5*u2 - q8*u1) + q2;
