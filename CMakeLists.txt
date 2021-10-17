@@ -40,6 +40,7 @@ set_log_level("DEBUG") # INFO  DEBUG  HEAVYDEBUG
 
 option(DOCS_ONLY "Skip all initialization not required for rendering documentation")
 option(ELASTICA_SMP "Enable/Disable the shared-memory parallelization." ON)
+option(ELASTICA_PROFILING_MODE "Enable/Disable intrusive code profiling." ON)
 option(ELASTICA_BUILD_TESTS "Build test programs" ON)
 
 if (DOCS_ONLY)
@@ -93,14 +94,25 @@ if (ELASTICA_SMP)
 else ()
     set(ELASTICA_SMP OFF)
 endif ()
-configure_file("${CMAKE_CURRENT_LIST_DIR}/elastica/Configuration/Parallel.hpp.in"
-        "${CMAKE_CURRENT_LIST_DIR}/elastica/Configuration/Parallel.hpp")
 
 include(SetupYamlCpp)
 # include(SetupVTK)
 
 include(SetupDoxygen)
 include(CodeCoverageDetection)
+
+# Configure files
+configure_file("${CMAKE_CURRENT_LIST_DIR}/elastica/Configuration/Parallel.hpp.in"
+        "${CMAKE_CURRENT_LIST_DIR}/elastica/Configuration/Parallel.hpp")
+
+if (ELASTICA_PROFILING_MODE)
+    set(ELASTICA_PROFILING_MODE 1)
+    # target_compile_definitions(elastica INTERFACE ELASTICA_USE_TBB)
+else ()
+    set(ELASTICA_PROFILING_MODE 0)
+endif ()
+configure_file("${CMAKE_CURRENT_LIST_DIR}/elastica/Configuration/Profiling.hpp.in"
+        "${CMAKE_CURRENT_LIST_DIR}/elastica/Configuration/Profiling.hpp")
 
 if (ELASTICA_BUILD_TESTS)
     enable_testing(true)
