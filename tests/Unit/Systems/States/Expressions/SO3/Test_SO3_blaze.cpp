@@ -193,6 +193,7 @@ namespace {
       // TODO : complete with results
       H_mat result_h(dimensions, dimensions, size, 0.0);
       H_SO3 result(&result_h);
+
       // assignment
       result = expr;
       // 25.0 * 0.1 + 5.0F
