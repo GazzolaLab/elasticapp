@@ -11,6 +11,7 @@ elastica_target_headers(
         Domain.hpp
         Environments.hpp
         Forcing.hpp
+        Parallel.hpp
         Systems.hpp
         Types.hpp
 )

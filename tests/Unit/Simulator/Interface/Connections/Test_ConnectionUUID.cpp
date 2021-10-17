@@ -30,13 +30,13 @@ namespace {
     using Type_ = int;
     using Q = ConnectionQueryID<Type_>;
     {
-      Q id(1UL);
-      CHECK(id.uuid == 1UL);
+      Q id(ConnectionUUID(1UL, ""));
+      CHECK(id.uuid.uuid == 1UL);
     }
 
     {
-      CHECK(Q(2UL).uuid == 2UL);
-      CHECK(id(Q(5UL)) == 5UL);
+      CHECK(Q(ConnectionUUID(2UL, "")).uuid.uuid == 2UL);
+      CHECK(id(id(Q(ConnectionUUID(5UL, "")))) == 5UL);
     }
   }
 

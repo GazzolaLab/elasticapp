@@ -8,4 +8,5 @@ elastica_target_headers(
         HEADERS
         SymplecticSteppers.hpp
         ExplicitSteppers.hpp
+        Types.hpp
 )

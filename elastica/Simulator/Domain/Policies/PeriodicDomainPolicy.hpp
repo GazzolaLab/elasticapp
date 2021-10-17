@@ -51,7 +51,7 @@ namespace elastica {
    * \tparam Real Any floating point type
    */
   template <typename Real>  // Any real type
-  class PeriodicDomainPolicy : public NonCopyable {
+  class PeriodicDomainPolicy /*: public NonCopyable*/ {
    public:
     //**Type definitions********************************************************
     //! The type of direction ID
@@ -81,14 +81,37 @@ namespace elastica {
     friend struct ::elastica::io::Serialize<PeriodicDomainPolicy<Real>>;
     //**************************************************************************
 
+   private:
+    // Default constructor of array is not valid, so we set one ourselves
+    explicit PeriodicDomainPolicy()
+        : spans_(make_array<3UL>(
+              make_span(-123456789.123456789, 123456789.123456789))) {}
+
    protected:
     //**Constructors************************************************************
     /*!\name Constructors */
     //@{
-    template <typename... Args>
-    explicit PeriodicDomainPolicy(Args&&... args);
-    PeriodicDomainPolicy(PeriodicDomainPolicy&&) noexcept = default;
-    PeriodicDomainPolicy& operator=(PeriodicDomainPolicy&&) noexcept = default;
+    // This is too perfect forwarding, and doesnt make the copy constructor
+    // template <typename... Args>
+    // explicit PeriodicDomainPolicy(Args&&... args);
+    explicit PeriodicDomainPolicy(SpanType const& x_span,
+                                  SpanType const& y_span,
+                                  SpanType const& z_span)
+        : PeriodicDomainPolicy() {
+      set(x_span, y_span, z_span);
+    }
+
+    explicit PeriodicDomainPolicy(Real min_x, Real max_x, Real min_y,
+                                  Real max_y, Real min_z, Real max_z)
+        : PeriodicDomainPolicy() {
+      set(min_x, max_x, min_y, max_y, min_z, max_z);
+    }
+
+    explicit PeriodicDomainPolicy(const Vec3& mins, const Vec3& maxs)
+        : PeriodicDomainPolicy() {
+      set(mins, maxs);
+    }
+
     //@}
     //**************************************************************************
 
@@ -115,10 +138,11 @@ namespace elastica {
      *
      * \return void
      */
-    void set(SpanType&& x_span, SpanType&& y_span, SpanType&& z_span) noexcept {
-      spans_[detail::cast_along(X)] = std::move(x_span);
-      spans_[detail::cast_along(Y)] = std::move(y_span);
-      spans_[detail::cast_along(Z)] = std::move(z_span);
+    void set(SpanType const& x_span, SpanType const& y_span,
+             SpanType const& z_span) noexcept {
+      spans_[detail::cast_along(X)] = (x_span);
+      spans_[detail::cast_along(Y)] = (y_span);
+      spans_[detail::cast_along(Z)] = (z_span);
     }
     //**************************************************************************
 
@@ -284,33 +308,6 @@ namespace elastica {
     SpanStorage spans_;  //!< Storage of spans in the domain
     //**************************************************************************
   };
-  //****************************************************************************
-
-  //============================================================================
-  //
-  //  CONSTRUCTORS
-  //
-  //============================================================================
-
-  //**Constructor***************************************************************
-  /*!\brief Constructor for the PeriodicDomainPolicy class.
-   */
-  template <typename Real>  // Any real type
-  template <typename... Args>
-  PeriodicDomainPolicy<Real>::PeriodicDomainPolicy(Args&&... args)
-      :  // Default constructor of array is not valid, so we set one ourselves
-        spans_(make_array<3UL>(
-            make_span(-123456789.123456789, 123456789.123456789))) {
-    set(std::forward<Args>(args)...);
-    //#ifdef ELASTICA_DEBUG
-    //    auto infty = make_signaling_NaN<Real>();
-    //#else
-    //    auto infty = inf;
-    //#endif
-    //    spans_[X] = SpanType(-infty, infty);
-    //    spans_[Y] = SpanType(-infty, infty);
-    //    spans_[Z] = SpanType(-infty, infty);
-  }
   //****************************************************************************
 
 }  // namespace elastica

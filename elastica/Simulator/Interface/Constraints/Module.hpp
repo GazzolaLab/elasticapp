@@ -28,6 +28,7 @@
 #include "Simulator/Constraints/Types.hpp"
 #include "Simulator/Interface/Constraints/Types.hpp"
 /// Interface methods
+#include "Simulator/Interface/Constraints/BatchingPolicy.hpp"
 #include "Simulator/Interface/Constraints/Configuration.hpp"
 #include "Simulator/Interface/Constraints/Constrainer.hpp"
 #include "Simulator/Interface/Constraints/ConstrainerBase.hpp"
@@ -36,14 +37,17 @@
 #include "Simulator/Interface/Constraints/ConstraintUUID.hpp"
 #include "Simulator/Interface/Constraints/ExecutionPolicy.hpp"
 #include "Simulator/Interface/Protocols/Constraints.hpp"
+#include "Simulator/Interface/Wrappers/UUIDMap.hpp"
 /// Serialization support
 #include "Simulator/IO/Serialization/Types.hpp"
 ///
 #include "ErrorHandling/NestedExceptions.hpp"
 #include "Utilities/CRTP.hpp"
+#include "Utilities/KarmarkarKarpPartition.hpp"
 #include "Utilities/Logging.hpp"
 #include "Utilities/NonCopyable.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/StdVectorHelpers.hpp"
 
 namespace elastica {
 
@@ -116,7 +120,9 @@ namespace elastica {
           public NonCopyable,
           private detail::HasConstraintsConfiguration<SimTraits>,
           protected ::elastica::interface::constraints::ExecutionPolicy<
-              SimTraits, Constraints<SimTraits, Sim>> {
+              SimTraits, Constraints<SimTraits, Sim>>,
+          protected ::elastica::interface::constraints::BatchingPolicy<
+              SimTraits> {
      private:
       //**Compile-time checks***************************************************
       //
@@ -136,6 +142,15 @@ namespace elastica {
       //! Algorithm type
       using Algorithm =
           ::elastica::interface::constraints::ExecutionPolicy<SimTraits, This>;
+      //! Batch type
+      using BatchAlgorithm =
+          ::elastica::interface::constraints::BatchingPolicy<SimTraits>;
+      //! UUID type
+      using UUID = ::elastica::interface::constraints::ConstraintUUID;
+      //! Map from system to uuid
+      using UUIDMap = ::elastica::interface::detail::UUIDMap<UUID>;
+      //! Map from uuid to batch
+      using UUIDToBatch = ::elastica::interface::detail::UUIDToBatch<UUID>;
       //************************************************************************
 
      public:
@@ -151,11 +166,17 @@ namespace elastica {
       using ConstraintID =
           std::unique_ptr<::elastica::interface::constraints::ConstraintBase<
               ConstraintsRegistrars>>;
+      //! A batch of constrainers
+      using ConstrainerBatch = std::vector<ConstrainerID>;
+      //! Batches of constrainers
+      using ConstrainerBatches = std::vector<ConstrainerBatch>;
       //************************************************************************
 
       //**Friendships***********************************************************
       //! Friend the Algorithm
       friend Algorithm;
+      //! Friend the batcher (not necessary)
+      friend BatchAlgorithm;
       //! Friendship with Serialize
       friend struct ::elastica::io::Serialize<This>;
       //************************************************************************
@@ -168,7 +189,11 @@ namespace elastica {
       /*!\brief Constructor of the Constraints class.
        */
       Constraints()
-          : n_total_constraints(0UL), constraints_(), constrainers_() {
+          : n_total_constraints(0UL),
+            constraints_(),
+            constrainer_batches_(),
+            uuid_map_(),
+            batch_from() {
         using namespace ::elastica::logging;
         log<info>([](auto const& log) {
           log << "Successfully initialized the Constraint module";
@@ -185,7 +210,9 @@ namespace elastica {
       Constraints(Constraints&& other) noexcept
           : n_total_constraints(other.n_total_constraints),
             constraints_(std::move(other.constraints_)),
-            constrainers_(std::move(other.constrainers_)){};
+            constrainer_batches_(std::move(other.constrainer_batches_)),
+            uuid_map_(std::move(other.uuid_map_)),
+            batch_from(std::move(other.batch_from)){};
       //************************************************************************
 
       //@}
@@ -289,6 +316,9 @@ namespace elastica {
         // 3. increment counter
         ++n_total_constraints;
 
+        // 4. map it within
+        uuid_map_.map(system).with(constraints_.back()->id());
+
         return static_cast<::elastica::interface::constraints::Constraint<
             System, ConstraintsRegistrars>&>(*(constraints_.back()));
       }
@@ -301,15 +331,26 @@ namespace elastica {
        *
        * \param constraint_uuid The key using which we retrieve the constraints
        */
-      inline auto retrieve_from_query(IndexType const constraint_uuid) noexcept
-          -> typename ConstrainerID::pointer {
+      inline auto retrieve_from_query(UUID const& constraint_uuid) noexcept ->
+          typename ConstrainerID::pointer {
         /*
          * dev note:
          * 1. the retrieval is noexcept as by construction the
          * constraint uuid here is < size of array.
          * 2. if we batch the logic here changes and we need to do a search.
          */
-        return constrainers_[constraint_uuid].get();
+        ConstrainerBatch& batch =
+            constrainer_batches_[batch_from[constraint_uuid]];
+        // its bound to find it, so no need checking
+        return std::find_if(std::begin(batch), std::end(batch),
+                            [&](ConstrainerID const& constrainer_id) {
+                              // if same
+                              using ::elastica::interface::detail::id;
+                              // don't compare ids directly since its changed
+                              return id(constraint_uuid) ==
+                                     id(constrainer_id->id());
+                            })
+            ->get();
       }
       /*! \endcond */
       //************************************************************************
@@ -403,10 +444,48 @@ namespace elastica {
       //************************************************************************
       /*!\brief Gets the constrainer buffer
        */
-      inline constexpr auto constrainers() const& noexcept
-          -> std::vector<ConstrainerID> const& {
-        return constrainers_;
+      inline constexpr auto constrainer_batches() & noexcept
+          -> ConstrainerBatches& {
+        return constrainer_batches_;
       }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Gets the constrainer buffer
+       */
+      inline constexpr auto constrainer_batches() const& noexcept
+          -> ConstrainerBatches const& {
+        return constrainer_batches_;
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Gets the uuid->batch mapping
+       */
+      inline constexpr auto batch_map() & noexcept -> UUIDToBatch& {
+        return batch_from;
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Gets the uuid->batch mapping
+       */
+      inline constexpr auto batch_map() const& noexcept -> UUIDToBatch const& {
+        return batch_from;
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Gets the total number of batches
+       */
+      inline auto n_batches() const noexcept -> std::size_t {
+        // this is internal so a member function suffices.
+        auto const& algorithm =
+            self()
+                .template get_batching_algorithm<
+                    typename BatchAlgorithm::ConstraintsBatcher>();
+        return algorithm(n_constraints());
+      };
       //************************************************************************
 
       //@}
@@ -439,7 +518,6 @@ namespace elastica {
          * Unfortunately its a nullptr which upon dereferencing results in a
          * segfault
          */
-        using UUID = ::elastica::interface::constraints::ConstraintUUID;
         struct ConstraintInfo {
           UUID uuid;
           std::string constraint_typename;
@@ -514,12 +592,35 @@ namespace elastica {
         try {
           check_and_report_errors();
 
-          constrainers_.reserve(n_total_constraints);
-          std::transform(constraints_.cbegin(), constraints_.cend(),
-                         std::back_inserter(constrainers_),
-                         [](const ConstraintID& constraint) {
-                           return constraint->finalize();
-                         });
+          // logic for batching
+          batch_from = [](auto uuids_batched_per_system,
+                          std::size_t partition_size) {
+            auto partition_result = elastica::karmarkar_karp_partition(
+                uuids_batched_per_system, partition_size,
+                [](auto const& v) { return ::elastica::size(v); });
+            using UUIDSubsets = decltype(::flatten(partition_result.subsets()));
+            UUIDSubsets flattened_uuid_subsets;
+            flattened_uuid_subsets.reserve(partition_size);
+            // flatten the inner-most subset dimension
+            for (auto& sub : partition_result.subsets()) {
+              flattened_uuid_subsets.emplace_back(::flatten(std::move(sub)));
+            }
+            return ::elastica::interface::detail::make_uuid_to_batch_map(
+                std::move(flattened_uuid_subsets));
+          }(std::move(uuid_map_).as_vector(), n_batches());
+
+          constrainer_batches_.reserve(n_batches());
+          constrainer_batches_.resize(n_batches());
+
+          for (ConstraintID const& constraint : constraints_) {
+            // guaranteed to be [0, partition_size() - 1]
+            const std::size_t batch_number = batch_from[constraint->id()];
+
+            // careful in pushing back unique ptr
+            constrainer_batches_[batch_number].push_back(
+                constraint->finalize());
+          }
+
         } catch (...) {
           const char* error_message =
               "Preparing the constraints module failed because";
@@ -542,8 +643,12 @@ namespace elastica {
       SizeType n_total_constraints;
       //! The temporary constraint information before finalizing
       std::vector<ConstraintID> constraints_;
-      //! The constraint information applied on runtime
-      std::vector<ConstrainerID> constrainers_;
+      //! The forcing information applied on runtime
+      ConstrainerBatches constrainer_batches_;
+      //! A map from systems to IDs for
+      UUIDMap uuid_map_;
+      //! A map from uuid to batch
+      UUIDToBatch batch_from;
       //************************************************************************
     };
     //**************************************************************************

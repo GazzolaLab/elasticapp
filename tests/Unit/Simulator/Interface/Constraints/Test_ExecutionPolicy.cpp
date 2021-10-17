@@ -56,8 +56,10 @@ namespace {
     std::vector<int> fill_values(10UL);
     std::iota(fill_values.begin(), fill_values.end(), 0);
 
+    sim.constrainer_batches().resize(5UL);
     for (std::size_t i = 0UL; i < fill_values.size(); ++i) {
-      sim.constrainers().emplace_back(std::make_unique<C>(i));
+      for (std::size_t idx = 0UL; idx < 5UL; ++idx)
+        sim.constrainer_batches()[idx].emplace_back(std::make_unique<C>(i));
     }
 
     TimeType time_v{};
@@ -66,15 +68,18 @@ namespace {
 
     // now check
     std::vector<int> check_values;
-    std::transform(fill_values.begin(), fill_values.end(),
-                   std::back_inserter(check_values),
-                   [](int i) -> int { return i + 2; });
+    for (std::size_t idx = 0UL; idx < 5UL; ++idx) {
+      std::transform(fill_values.begin(), fill_values.end(),
+                     std::back_inserter(check_values),
+                     [](int i) -> int { return i + 2; });
+    }
 
     //
     std::vector<int> current_values;
-    std::transform(sim.constrainers().begin(), sim.constrainers().end(),
-                   std::back_inserter(current_values),
-                   [](auto const& ptr) -> int { return ptr->value(); });
+    for (auto const& batch : sim.constrainer_batches())
+      std::transform(batch.begin(), batch.end(),
+                     std::back_inserter(current_values),
+                     [](auto const& ptr) -> int { return ptr->value(); });
 
     CHECK(current_values == check_values);
 
@@ -82,11 +87,21 @@ namespace {
     rate_algorithm(time_v);
     rate_algorithm(time_v);
 
-    std::transform(sim.constrainers().begin(), sim.constrainers().end(),
-                   current_values.begin(),
-                   [](auto const& ptr) -> int { return ptr->value(); });
+    current_values.clear();
+    for (auto const& batch : sim.constrainer_batches())
+      std::transform(batch.begin(), batch.end(),
+                     std::back_inserter(current_values),
+                     [](auto const& ptr) -> int { return ptr->value(); });
 
-    CHECK(current_values == fill_values);
+    std::vector<int> filled_values;
+    filled_values.reserve(5UL * (fill_values).size());
+    for (std::size_t idx = 0UL; idx < 5UL; ++idx) {
+      std::copy(fill_values.begin(), fill_values.end(),
+                std::back_inserter(filled_values));
+    }
+    // std::iota(fill_values.begin(), fill_values.end(), 0);
+
+    CHECK(current_values == filled_values);
 
     return tmpl::type_<Sim>{};
   }

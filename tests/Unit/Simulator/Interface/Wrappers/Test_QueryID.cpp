@@ -8,7 +8,7 @@
 namespace {
 
   using namespace ::elastica::interface::detail;
-  struct ModuleTag;
+  using ModuleTag = std::size_t;
   struct TypeTag;
   using Q = QueryID<ModuleTag, TypeTag>;
 

@@ -16,12 +16,13 @@
 //******************************************************************************
 // Includes
 //******************************************************************************
-#include "Simulator/Configuration/Defaults/Types.hpp"
 #include "Simulator/Configuration/ModuleConfiguration/Types.hpp"
+//
+#include "Simulator/Configuration/Defaults/Types.hpp"
 
-namespace elastica{
+namespace elastica {
 
-  namespace configuration{
+  namespace configuration {
 
     ////////////////////////////////////////////////////////////////////////////
     //
@@ -38,5 +39,6 @@ namespace elastica{
     /*! \endcond */
     //**************************************************************************
 
-  }
-}
+  }  // namespace configuration
+
+}  // namespace elastica

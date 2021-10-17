@@ -85,28 +85,6 @@ namespace elastica {
       using This = ConnectionsConfiguration<ConnectionsExecutionPolicy,
                                             ConnectionsRegistrars>;
       //************************************************************************
-
-      //**Constructors**********************************************************
-      /*!\name Constructors*/
-      //@{
-     public:
-      constexpr ConnectionsConfiguration() noexcept = default;
-
-     public:
-      constexpr ConnectionsConfiguration(
-          ConnectionsConfiguration const&) noexcept = default;
-      constexpr ConnectionsConfiguration(ConnectionsConfiguration&&) noexcept =
-          default;
-      //@}
-      //************************************************************************
-
-     public:
-      //**Destructor************************************************************
-      /*!\name Destructor*/
-      //@{
-      ~ConnectionsConfiguration() = default;
-      //@}
-      //************************************************************************
     };
     /*! \endcond */
     //**************************************************************************
@@ -142,12 +120,6 @@ namespace elastica {
           std::size_t const parallel_threshold) noexcept
           : threshold(parallel_threshold){};
       constexpr ConnectionsConfiguration() = delete;
-
-     public:
-      constexpr ConnectionsConfiguration(
-          ConnectionsConfiguration const&) noexcept = default;
-      constexpr ConnectionsConfiguration(ConnectionsConfiguration&&) noexcept =
-          default;
       //@}
       //************************************************************************
 
@@ -160,14 +132,6 @@ namespace elastica {
         return This::threshold;
       }
       //************************************************************************
-
-      //**Destructor************************************************************
-      /*!\name Destructor*/
-      //@{
-      ~ConnectionsConfiguration() = default;
-      //@}
-      //************************************************************************
-      //
 
      private:
       //**Member variables******************************************************

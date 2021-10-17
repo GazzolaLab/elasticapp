@@ -137,7 +137,7 @@ namespace elastica {
         //@}
         //**********************************************************************
 
-       protected:
+       public:
         //**Friendships*********************************************************
         //! Friendship with Serialize
         friend struct ::elastica::io::Serialize<ConstrainerBase>;

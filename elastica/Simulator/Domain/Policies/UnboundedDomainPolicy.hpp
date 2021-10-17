@@ -47,7 +47,7 @@ namespace elastica {
    * \tparam Real Any floating point type
    */
   template <typename Real>  // Any real type
-  class UnboundedDomainPolicy : public NonCopyable {
+  class UnboundedDomainPolicy /*: public NonCopyable*/ {
    public:
     //**Type definitions********************************************************
     //! The type of direction ID
@@ -77,9 +77,6 @@ namespace elastica {
     /*!\name Constructors */
     //@{
     explicit UnboundedDomainPolicy(...) {}
-    UnboundedDomainPolicy(UnboundedDomainPolicy&&) noexcept = default;
-    UnboundedDomainPolicy& operator=(UnboundedDomainPolicy&&) noexcept =
-        default;
     //@}
     //**************************************************************************
 

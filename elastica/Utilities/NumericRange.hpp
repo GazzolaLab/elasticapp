@@ -119,7 +119,7 @@ namespace elastica {
     // \snippet Test_NumericRange.cpp is_numeric_range_example
     */
     template <typename T>
-    struct IsNumericRange : ::tt::is_a<detail::NumericRangeImpl, T> {};
+    struct IsNumericRange : ::tt::is_a<::elastica::detail::NumericRangeImpl, T> {};
     //**************************************************************************
   }  // namespace tt
 

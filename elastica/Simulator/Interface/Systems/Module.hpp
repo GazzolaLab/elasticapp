@@ -18,7 +18,9 @@
 //******************************************************************************
 
 #include <algorithm>  // find
+#include <array>
 #include <memory>
+#include <numeric>
 #include <stdexcept>
 #include <tuple>
 #include <utility>  // forward
@@ -38,10 +40,14 @@
 /// Serialization support
 #include "Simulator/IO/Serialization/Types.hpp"
 ///
+/// Profiling support
+#include "ModuleSettings/Profiling.hpp"
+///
 #include "ErrorHandling/NestedExceptions.hpp"
 #include "Utilities/AsConst.hpp"
 #include "Utilities/CRTP.hpp"
 #include "Utilities/Logging.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/NonCopyable.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Requires.hpp"
@@ -182,7 +188,9 @@ namespace elastica {
       /*!\brief Constructor of the Systems module.
        */
       Systems()
-          : system_collection_containers_(),
+          : n_total_systems_(
+                make_array<get_number_of_system_collections()>(0UL)),
+            system_collection_containers_(),
             blocking_policy_(nullptr),
             iteration_policy_(nullptr) {
         using namespace ::elastica::logging;
@@ -199,7 +207,8 @@ namespace elastica {
        * singleton class by the Simulator). However, while testing it is useful.
        */
       Systems(Systems&& other) noexcept
-          : system_collection_containers_(
+          : n_total_systems_(other.n_total_systems_),
+            system_collection_containers_(
                 std::move(other.system_collection_containers_)),
             blocking_policy_(std::move(other.blocking_policy_)),
             iteration_policy_(std::move(other.iteration_policy_)){};
@@ -405,10 +414,14 @@ namespace elastica {
        */
       template <typename F>
       inline decltype(auto) for_each_block(F func) const noexcept {
-        auto const& algorithm =
-            self()
-                .template get_algorithm<typename Algorithm::ApplyOverSystems>();
-        return algorithm(std::move(func));
+        using Alg = typename Algorithm::ApplyOverSystems;
+
+        ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().start(); }
+        auto const& algorithm = self().template get_algorithm<Alg>();
+        F another_func(algorithm(std::move(func)));
+        ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().stop(); }
+
+        return another_func;
       }
       //************************************************************************
 
@@ -433,10 +446,15 @@ namespace elastica {
        */
       template <typename BlocksTypeList, typename F>
       inline decltype(auto) for_each_block(F func) const noexcept {
-        auto const& algorithm =
-            self()
-                .template get_algorithm<typename Algorithm::ApplyOverSystems>();
-        return algorithm.template operator()<BlocksTypeList>(std::move(func));
+        using Alg = typename Algorithm::ApplyOverSystems;
+
+        ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().start(); }
+        auto const& algorithm = self().template get_algorithm<Alg>();
+        F another_func(
+            algorithm.template operator()<BlocksTypeList>(std::move(func)));
+        ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().stop(); }
+
+        return another_func;
       }
       //************************************************************************
 
@@ -513,7 +531,7 @@ namespace elastica {
       inline auto blocking_policy() const& noexcept -> BlockingPolicy const& {
         return *blocking_policy_;
       }
-      inline auto blocking_policy() & noexcept -> BlockingPolicy const& {
+      inline auto blocking_policy() & noexcept -> BlockingPolicy /*const*/& {
         return *blocking_policy_;
       }
       //************************************************************************
@@ -522,7 +540,7 @@ namespace elastica {
       /*!\brief Sets the blocking policy, useful for initialization
        */
       inline auto blocking_policy_id() & noexcept
-          -> std::unique_ptr<BlockingPolicy const>& {
+          -> std::unique_ptr<BlockingPolicy /*const*/>& {
         return blocking_policy_;
       }
       //************************************************************************
@@ -533,7 +551,7 @@ namespace elastica {
       inline auto iteration_policy() const& noexcept -> IterationPolicy const& {
         return *iteration_policy_;
       }
-      inline auto iteration_policy() & noexcept -> IterationPolicy const& {
+      inline auto iteration_policy() & noexcept -> IterationPolicy /*const*/& {
         return *iteration_policy_;
       }
       //************************************************************************
@@ -542,7 +560,7 @@ namespace elastica {
       /*!\brief Sets the iteration policy, useful for initialization
        */
       inline auto iteration_policy_id() & noexcept
-          -> std::unique_ptr<IterationPolicy const>& {
+          -> std::unique_ptr<IterationPolicy /*const*/>& {
         return iteration_policy_;
       }
       //************************************************************************
@@ -617,6 +635,12 @@ the above type-list, using SystemsConfiguration.
         auto& system_collection_container =
             get_system_collection_container<SystemCollection>();
         system_collection_container.emplace_back(std::forward<Args>(args)...);
+
+        constexpr std::size_t n =
+            tmpl::index_of<ListOfAdmissibleSystemCollections,
+                           SystemCollection>::value;
+        ++n_total_systems_[n];
+
         // return non-owning handle to the System just pushed back
         return system_collection_container.back();
       }
@@ -638,9 +662,21 @@ the above type-list, using SystemsConfiguration.
         auto& system_block = blocking_policy()(
             system_block_container,
             ::elastica::size(std::forward<Initializer>(initializer)));
+
+        constexpr std::size_t n =
+            tmpl::index_of<ListOfAdmissibleSystemCollections, Key>::value;
+        ++n_total_systems_[n];
+
         return system_block.emplace_back(
             std::forward<Initializer>(initializer));
       }
+      //************************************************************************
+
+     protected:
+      //************************************************************************
+      //! Internal record of sizes for different system
+      using NTotalSystems =
+          std::array<SizeType, get_number_of_system_collections()>;
       //************************************************************************
 
      public:
@@ -672,14 +708,48 @@ the above type-list, using SystemsConfiguration.
       //@}
       //************************************************************************
 
+      //**NSystems methods******************************************************
+      /*!\name size methods*/
+      //@{
+
+     protected:
+      //************************************************************************
+      /*!\brief Access to the counting buffer, useful for serialization
+       */
+      inline auto n_total_systems() const& noexcept -> NTotalSystems const& {
+        return n_total_systems_;
+      }
+      inline auto n_total_systems() & noexcept -> NTotalSystems /*const*/& {
+        return n_total_systems_;
+      }
+      //************************************************************************
+
+     public:
+      //************************************************************************
+      /*!\brief Gets the number of systems registered in the present
+       * simulator
+       */
+      inline auto n_systems() const noexcept -> SizeType {
+        return std::accumulate(std::begin(n_total_systems_),
+                               std::end(n_total_systems_), 0UL);
+      }
+      //************************************************************************
+
+      //@}
+      //************************************************************************
+
      private:
       //**Member variables******************************************************
+      //! The total number of registered systems
+      NTotalSystems n_total_systems_;
       //! Heterogeneous storage of homogeneous collection of systems
       SystemCollections system_collection_containers_;
+      //// not marked const because we need serialization to work here and
+      //// load up values
       //! Handle to blocking policy, initialized downstream!!
-      std::unique_ptr<BlockingPolicy const> blocking_policy_;
+      std::unique_ptr<BlockingPolicy /*const*/> blocking_policy_;
       //! Handle to iteration policy, initialized downstream!!
-      std::unique_ptr<IterationPolicy const> iteration_policy_;
+      std::unique_ptr<IterationPolicy /*const*/> iteration_policy_;
       //************************************************************************
     };
     //**************************************************************************

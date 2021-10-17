@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
         Test_AtWrapper.cpp
         Test_QueryID.cpp
         Test_UUID.cpp
+        Test_UUIDMap.cpp
         Test_Serialize.cpp
         Test_ToWrapper.cpp
         )

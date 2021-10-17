@@ -22,8 +22,12 @@
 #include "Simulator/Configuration/ModuleConfiguration/ExecutionPolicy.hpp"
 #include "Simulator/Interface/Forcing/Types.hpp"
 ///
+#include "Parallel/for_each.hpp"  // uses elastica's, not GLIBCXX
+///
 #include "Utilities/CRTP.hpp"
 #include "Utilities/MakeFromTuple.hpp"
+#include "Utilities/MakeString.hpp"
+#include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace elastica {
@@ -75,13 +79,13 @@ namespace elastica {
         struct ForceSystemsOp;
         //! Sequential connection op
         using ForceSystemsInSequence =
-        ForceSystemsOp<::elastica::configuration::sequential_policy>;
+            ForceSystemsOp<::elastica::configuration::sequential_policy>;
         //! Parallel connection op
         using ForceSystemsInParallel =
-        ForceSystemsOp<::elastica::configuration::parallel_policy>;
+            ForceSystemsOp<::elastica::configuration::parallel_policy>;
         //! Hybrid connection op
         using ForceSystemsInHybrid =
-        ForceSystemsOp<::elastica::configuration::hybrid_policy>;
+            ForceSystemsOp<::elastica::configuration::hybrid_policy>;
         //**********************************************************************
 
         //**Forcing class*******************************************************
@@ -105,7 +109,7 @@ namespace elastica {
           /*!\brief Policy constructor (copy constructed)
            */
           explicit ForceSystemsOp(
-              std::tuple<ForcingModule*, ForcingTraits const&>&& args)
+              std::tuple<ForcingModule*, ForcingTraits const&> args)
               : ForceSystemsOp(
                     cpp17::make_from_tuple<ForceSystemsOp>(std::move(args))) {}
           //********************************************************************
@@ -122,9 +126,11 @@ namespace elastica {
            * \param time_v The current time of simulation
            */
           inline auto operator()(TimeType time_v) const noexcept -> void {
-            for (auto const& forcer : module_handle.forcers()) {
-              forcer->apply_forces(time_v);
-              forcer->apply_torques(time_v);
+            for (auto const& batch : module_handle.forcer_batches()) {
+              for (auto const& forcer : batch) {
+                forcer->apply_forces(time_v);
+                forcer->apply_torques(time_v);
+              }
             }
           }
           //********************************************************************
@@ -153,7 +159,7 @@ namespace elastica {
           /*!\brief Policy constructor (copy constructed)
            */
           explicit ForceSystemsOp(
-              std::tuple<ForcingModule*, ForcingTraits const&>&& args)
+              std::tuple<ForcingModule*, ForcingTraits const&> args)
               : ForceSystemsOp(
                     cpp17::make_from_tuple<ForceSystemsOp>(std::move(args))) {}
           //********************************************************************
@@ -170,13 +176,20 @@ namespace elastica {
            * \param time_v The current time of simulation
            */
           inline auto operator()(TimeType time_v) const noexcept -> void {
-            // TODO : ideally this will call the serial functor multiple times
+            // ideally this will call the serial functor multiple times
             // over, but that might not scale due to construction costs (one
             // ptr)
-            for (auto const& forcer : module_handle.forcers()) {
-              forcer->apply_forces(time_v);
-              forcer->apply_torques(time_v);
-            }
+            // DONE : parallelism across batches
+            using ::elastica::size;
+            ::elastica::parallel::for_each(
+                0UL, size(module_handle.forcer_batches()),
+                [&, time_v](std::size_t const idx) {
+                  auto const& batch = module_handle.forcer_batches()[idx];
+                  for (auto const& forcer : batch) {
+                    forcer->apply_forces(time_v);
+                    forcer->apply_torques(time_v);
+                  }
+                });
           }
           //********************************************************************
 
@@ -207,7 +220,7 @@ namespace elastica {
           /*!\brief Policy constructor (copy constructed)
            */
           explicit ForceSystemsOp(
-              std::tuple<ForcingModule*, ForcingTraits const&>&& args)
+              std::tuple<ForcingModule*, ForcingTraits const&> args)
               : ForceSystemsOp(
                     cpp17::make_from_tuple<ForceSystemsOp>(std::move(args))) {}
           //********************************************************************
@@ -258,6 +271,15 @@ namespace elastica {
           //! Type for tagged tuple
           using type =
               ForceSystemsOp<typename ForcingTraits::ForcingExecutionPolicy>;
+          //********************************************************************
+
+          //**Info method*******************************************************
+          static std::string info(ForcingModule const& module_handle) noexcept {
+            return std::string(MakeString{}
+                               << "--Apply " << module_handle.n_forcing()
+                               << "external user-defined forces over "
+                               << module_handle.n_systems() << " systems\n");
+          }
           //********************************************************************
         };
         //@}

@@ -29,8 +29,6 @@
 #include "Utilities/Overloader.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-#pragma once
-
 namespace elastica {
 
   namespace io {

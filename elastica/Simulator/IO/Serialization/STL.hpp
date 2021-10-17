@@ -34,4 +34,5 @@
 #include "Simulator/IO/Serialization/STL/array.hpp"
 #include "Simulator/IO/Serialization/STL/string.hpp"
 #include "Simulator/IO/Serialization/STL/tuple.hpp"
+#include "Simulator/IO/Serialization/STL/unordered_map.hpp"
 #include "Simulator/IO/Serialization/STL/vector.hpp"

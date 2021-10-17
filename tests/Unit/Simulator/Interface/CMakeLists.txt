@@ -1,3 +1,4 @@
+add_subdirectory(Batching)
 add_subdirectory(Connections)
 add_subdirectory(Constraints)
 add_subdirectory(Forcing)
@@ -5,6 +6,7 @@ add_subdirectory(Systems)
 add_subdirectory(Wrappers)
 add_subdirectory(Indexers)
 add_subdirectory(TimeSteppers)
+add_subdirectory(Simulator)
 
 set(LIBRARY "Test_Interface")
 

@@ -9,6 +9,9 @@
 
 #include <sstream>
 
+//
+#include "Framework/TestingFramework.hpp"
+//
 #include "Simulator/IO/Serialization/Archives.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/HasEquivalence.hpp"

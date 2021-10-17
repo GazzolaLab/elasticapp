@@ -459,9 +459,8 @@ forcing::Forcing?
           }
 
           // return a key for querying after finalizing
-          using ::elastica::interface::detail::id;
           using RT = const ForcingQueryID<std::decay_t<ConcreteForcing>>;
-          return RT{id(this->id())};
+          return RT{this->id()};
         }
         //**********************************************************************
 
@@ -604,9 +603,9 @@ forcing::Forcing?
          * \param name of the forcing
          * \return void
          */
-        inline decltype(auto) with_name(std::string name) noexcept {
-          return set_name(std::move(name));
-        }
+        // inline decltype(auto) with_name(std::string name) noexcept {
+        //   return set_name(std::move(name));
+        // }
         //**********************************************************************
 
         //**********************************************************************

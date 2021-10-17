@@ -28,6 +28,7 @@
 #include "Simulator/Forcing/Types.hpp"
 #include "Simulator/Interface/Forcing/Types.hpp"
 /// Interface methods
+#include "Simulator/Interface/Forcing/BatchingPolicy.hpp"
 #include "Simulator/Interface/Forcing/Configuration.hpp"
 #include "Simulator/Interface/Forcing/ExecutionPolicy.hpp"
 #include "Simulator/Interface/Forcing/Forcer.hpp"
@@ -36,14 +37,17 @@
 #include "Simulator/Interface/Forcing/ForcingBase.hpp"
 #include "Simulator/Interface/Forcing/ForcingUUID.hpp"
 #include "Simulator/Interface/Protocols/Forcing.hpp"
+#include "Simulator/Interface/Wrappers/UUIDMap.hpp"
 /// Serialization support
 #include "Simulator/IO/Serialization/Types.hpp"
 ///
 #include "ErrorHandling/NestedExceptions.hpp"
 #include "Utilities/CRTP.hpp"
+#include "Utilities/KarmarkarKarpPartition.hpp"
 #include "Utilities/Logging.hpp"
 #include "Utilities/NonCopyable.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/StdVectorHelpers.hpp"
 
 namespace elastica {
 
@@ -115,7 +119,8 @@ namespace elastica {
           public NonCopyable,
           private detail::HasForcingConfiguration<SimTraits>,
           protected ::elastica::interface::forcing::ExecutionPolicy<
-              SimTraits, Forcing<SimTraits, Sim>> {
+              SimTraits, Forcing<SimTraits, Sim>>,
+          protected ::elastica::interface::forcing::BatchingPolicy<SimTraits> {
      private:
       //**Compile-time checks***************************************************
       //
@@ -135,6 +140,15 @@ namespace elastica {
       //! Algorithm type
       using Algorithm =
           ::elastica::interface::forcing::ExecutionPolicy<SimTraits, This>;
+      //! Batch type
+      using BatchAlgorithm =
+          ::elastica::interface::forcing::BatchingPolicy<SimTraits>;
+      //! UUID type
+      using UUID = ::elastica::interface::forcing::ForcingUUID;
+      //! Map from system to uuid
+      using UUIDMap = ::elastica::interface::detail::UUIDMap<UUID>;
+      //! Map from uuid to batch
+      using UUIDToBatch = ::elastica::interface::detail::UUIDToBatch<UUID>;
       //************************************************************************
 
      public:
@@ -149,11 +163,17 @@ namespace elastica {
       //! ID Type of forcing
       using ForcingID = std::unique_ptr<
           ::elastica::interface::forcing::ForcingBase<ForcingRegistrars>>;
+      //! A batch of forcers
+      using ForcerBatch = std::vector<ForcerID>;
+      //! Batches of forcers
+      using ForcerBatches = std::vector<ForcerBatch>;
       //************************************************************************
 
       //**Friendships***********************************************************
       //! Friend the Algorithm
       friend Algorithm;
+      //! Friend the batcher (not necessary)
+      friend BatchAlgorithm;
       //! Friendship with Serialize
       friend struct ::elastica::io::Serialize<This>;
       //************************************************************************
@@ -166,7 +186,12 @@ namespace elastica {
       /*!\brief Constructor of the Forcing class.
        */
       // TODO : mark protected
-      Forcing() : n_total_forcing(0UL), forcing_(), forcers_() {
+      Forcing()
+          : n_total_forcing(0UL),
+            forcing_(),
+            forcer_batches_(),
+            uuid_map_(),
+            batch_from() {
         using namespace ::elastica::logging;
         log<info>([](auto const& log) {
           log << "Successfully initialized the Forcing module";
@@ -183,7 +208,9 @@ namespace elastica {
       Forcing(Forcing&& other) noexcept
           : n_total_forcing(other.n_total_forcing),
             forcing_(std::move(other.forcing_)),
-            forcers_(std::move(other.forcers_)){};
+            forcer_batches_(std::move(other.forcer_batches_)),
+            uuid_map_(std::move(other.uuid_map_)),
+            batch_from(std::move(other.batch_from)){};
       //************************************************************************
       //@}
       //************************************************************************
@@ -279,6 +306,9 @@ namespace elastica {
         // 3. increment counter
         ++n_total_forcing;
 
+        // 4. map it within
+        uuid_map_.map(system).with(forcing_.back()->id());
+
         return static_cast<::elastica::interface::forcing::Forcing<
             System, ForcingRegistrars>&>(*(forcing_.back()));
       }
@@ -291,7 +321,7 @@ namespace elastica {
        *
        * \param forcing_uuid The key using which we retrieve the forcings
        */
-      inline auto retrieve_from_query(IndexType const forcing_uuid) noexcept ->
+      inline auto retrieve_from_query(UUID const& forcing_uuid) noexcept ->
           typename ForcerID::pointer {
         /*
          * dev note:
@@ -299,7 +329,16 @@ namespace elastica {
          * forcing uuid here is < size of array.
          * 2. if we batch the logic here changes and we need to do a search.
          */
-        return forcers_[forcing_uuid].get();
+        ForcerBatch& batch = forcer_batches_[batch_from[forcing_uuid]];
+        // its bound to find it, so no need checking
+        return std::find_if(std::begin(batch), std::end(batch),
+                            [&](ForcerID const& forcer_id) {
+                              // if same
+                              using ::elastica::interface::detail::id;
+                              // don't compare ids directly since its changed
+                              return id(forcing_uuid) == id(forcer_id->id());
+                            })
+            ->get();
       }
       /*! \endcond */
       //************************************************************************
@@ -375,10 +414,47 @@ namespace elastica {
       //************************************************************************
       /*!\brief Gets the forcer buffer
        */
-      inline constexpr auto forcers() const& noexcept
-          -> std::vector<ForcerID> const& {
-        return forcers_;
+      inline constexpr auto forcer_batches() & noexcept -> ForcerBatches& {
+        return forcer_batches_;
       }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Gets the forcer buffer
+       */
+      inline constexpr auto forcer_batches() const& noexcept
+          -> ForcerBatches const& {
+        return forcer_batches_;
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Gets the uuid->batch mapping
+       */
+      inline constexpr auto batch_map() & noexcept -> UUIDToBatch& {
+        return batch_from;
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Gets the uuid->batch mapping
+       */
+      inline constexpr auto batch_map() const& noexcept -> UUIDToBatch const& {
+        return batch_from;
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Gets the total number of batches
+       */
+      inline auto n_batches() const noexcept -> std::size_t {
+        // this is internal so a member function suffices.
+        auto const& algorithm =
+            self()
+                .template get_batching_algorithm<
+                    typename BatchAlgorithm::ForcingBatcher>();
+        return algorithm(n_forcings());
+      };
       //************************************************************************
 
       //@}
@@ -411,7 +487,6 @@ namespace elastica {
          * Unfortunately its a nullptr which upon dereferencing results in a
          * segfault
          */
-        using UUID = ::elastica::interface::forcing::ForcingUUID;
         struct ForcingInfo {
           UUID uuid;
           std::string forcing_typename;
@@ -485,10 +560,40 @@ namespace elastica {
         try {
           check_and_report_errors();
 
-          forcers_.reserve(n_total_forcing);
-          std::transform(
-              forcing_.cbegin(), forcing_.cend(), std::back_inserter(forcers_),
-              [](const ForcingID& forcing) { return forcing->finalize(); });
+          // logic for batching
+          batch_from = [](auto uuids_batched_per_system,
+                          std::size_t partition_size) {
+            auto partition_result = elastica::karmarkar_karp_partition(
+                uuids_batched_per_system, partition_size,
+                [](auto const& v) { return ::elastica::size(v); });
+            using UUIDSubsets = decltype(::flatten(partition_result.subsets()));
+            UUIDSubsets flattened_uuid_subsets;
+            flattened_uuid_subsets.reserve(partition_size);
+            // flatten the inner-most subset dimension
+            for (auto& sub : partition_result.subsets()) {
+              flattened_uuid_subsets.emplace_back(::flatten(std::move(sub)));
+            }
+            return ::elastica::interface::detail::make_uuid_to_batch_map(
+                std::move(flattened_uuid_subsets));
+          }(std::move(uuid_map_).as_vector(), n_batches());
+
+          forcer_batches_.reserve(n_batches());
+          forcer_batches_.resize(n_batches());
+
+          for (ForcingID const& forcing : forcing_) {
+            // guaranteed to be [0, partition_size() - 1]
+            const std::size_t batch_number = batch_from[forcing->id()];
+
+            // careful in pushing back unique ptr
+            forcer_batches_[batch_number].push_back(forcing->finalize());
+          }
+
+          //          forcers_.reserve(n_total_forcing);
+          //          std::transform(
+          //              forcing_.cbegin(), forcing_.cend(),
+          //              std::back_inserter(forcers_),
+          //              [](const ForcingID& forcing) { return
+          //              forcing->finalize(); });
 
         } catch (...) {
           const char* error_message =
@@ -512,7 +617,11 @@ namespace elastica {
       //! The temporary forcing information before finalizing
       std::vector<ForcingID> forcing_;
       //! The forcing information applied on runtime
-      std::vector<ForcerID> forcers_;
+      ForcerBatches forcer_batches_;
+      //! A map from systems to IDs for
+      UUIDMap uuid_map_;
+      //! A map from uuid to batch
+      UUIDToBatch batch_from;
       //************************************************************************
     };
     //**************************************************************************

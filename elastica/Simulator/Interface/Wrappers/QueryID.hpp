@@ -40,11 +40,11 @@ namespace elastica {
        * QueryID is a helper class to uniquely identify a
        * constraint/forcing/etc.
        */
-      template <typename ModuleParameterTag, typename Type_>
+      template <typename UUIDType, typename Type_>
       struct QueryID {
         //**Type definitions****************************************************
-        using IndexType = std::size_t;  //!< The index type
-        using Type = Type_;  //! The type for conversion in interfaces
+        using IndexType = UUIDType;  //!< The index type
+        using Type = Type_;          //! The type for conversion in interfaces
         //**********************************************************************
 
         //**Constructors********************************************************
@@ -94,10 +94,9 @@ namespace elastica {
        * \param uuid The QueryID object.
        * \return Unique index of QueryID object
        */
-      template <typename ModuleParameterTag, typename Type_>
-      inline auto id(
-          QueryID<ModuleParameterTag, Type_> const& query_id) noexcept ->
-          typename QueryID<ModuleParameterTag, Type_>::IndexType {
+      template <typename UUIDType, typename Type_>
+      inline auto id(QueryID<UUIDType, Type_> const& query_id) noexcept ->
+          typename QueryID<UUIDType, Type_>::IndexType {
         return query_id.uuid;
       }
       //************************************************************************
@@ -109,10 +108,10 @@ namespace elastica {
        * \param rhs The right-hand side uuid.
        * \return \a true if the query ids are same, else \a false
        */
-      template <typename ModuleParameterTag, typename Type_>
-      inline auto operator==(
-          QueryID<ModuleParameterTag, Type_> const& lhs,
-          QueryID<ModuleParameterTag, Type_> const& rhs) noexcept -> bool {
+      template <typename UUIDType, typename Type_>
+      inline auto operator==(QueryID<UUIDType, Type_> const& lhs,
+                             QueryID<UUIDType, Type_> const& rhs) noexcept
+          -> bool {
         return (id(lhs) == id(rhs));
       }
       //************************************************************************
@@ -124,10 +123,10 @@ namespace elastica {
        * \param rhs The right-hand side uuid.
        * \return \a true if the query ids are not the same, else \a false
        */
-      template <typename ModuleParameterTag, typename Type_>
-      inline auto operator!=(
-          QueryID<ModuleParameterTag, Type_> const& lhs,
-          QueryID<ModuleParameterTag, Type_> const& rhs) noexcept -> bool {
+      template <typename UUIDType, typename Type_>
+      inline auto operator!=(QueryID<UUIDType, Type_> const& lhs,
+                             QueryID<UUIDType, Type_> const& rhs) noexcept
+          -> bool {
         return not(lhs == rhs);
       }
       //************************************************************************

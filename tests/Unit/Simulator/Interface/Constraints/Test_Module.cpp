@@ -340,11 +340,11 @@ namespace {
       // order of with() and at() don't matter but put the with_name()
       // immediately after launching constrain()
       sim.constrain(sys)
-          .with_name((optional_constraint_name))
+          // .with_name((optional_constraint_name))
           .with(ExampleConstraint{})
           .at(end - 50UL, 32UL, 64UL);
       sim.constrain(sys)
-          .with_name(std::move(optional_constraint_name))
+          // .with_name(std::move(optional_constraint_name))
           .at(end - 50UL, 32UL, 64UL)
           .with(ExampleConstraint{});
       /// [constrain_eg_with_name]
@@ -363,7 +363,11 @@ namespace {
 
       CHECK(primitive_counter.count == expected_count);
       CHECK(rate_counter.count == expected_count);
-      CHECK(sim.constrainers().size() == 7UL);
+      std::size_t sum = std::accumulate(
+          std::cbegin(sim.constrainer_batches()), std::cend(sim.constrainer_batches()),
+          0UL, [](std::size_t sum, auto const& batch) { return sum + batch.size(); });
+      CHECK(sum == 7UL);
+//      CHECK(sim.constrainers().size() == 7UL);
     }
   }
 

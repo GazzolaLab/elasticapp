@@ -24,6 +24,7 @@
 #include "Simulator/Configuration/Defaults/Domain.hpp"
 #include "Simulator/Configuration/Defaults/Environments.hpp"
 #include "Simulator/Configuration/Defaults/Forcing.hpp"
+#include "Simulator/Configuration/Defaults/Parallel.hpp"
 #include "Simulator/Configuration/Defaults/Systems.hpp"
 
 //==============================================================================

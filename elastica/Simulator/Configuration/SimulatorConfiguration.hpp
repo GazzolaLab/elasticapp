@@ -263,12 +263,6 @@ namespace elastica {
           : ModuleConfigs(std::move(module_configs))... {}
       //************************************************************************
 
-      //************************************************************************
-      /*!\brief Default move constructor
-       */
-      SimulatorConfiguration(SimulatorConfiguration&&) noexcept = default;
-      //************************************************************************
-
       //@}
       //************************************************************************
 
@@ -351,6 +345,23 @@ namespace elastica {
       //@}
       //************************************************************************
 
+     public:
+      //////////////////////////////////////////////////////////////////////////
+      // Index Type
+      //////////////////////////////////////////////////////////////////////////
+      /*!\name Index Configuration*/
+      //@{
+
+      //**Type definitions******************************************************
+      //!< Type of index
+      using IndexType = std::size_t;
+      //!< Type of size
+      using SizeType = std::size_t;
+      //************************************************************************
+
+      //@}
+      //************************************************************************
+
      private:
       //////////////////////////////////////////////////////////////////////////
       // Systems Configuration
@@ -393,7 +404,7 @@ provided a Systems configuration and ensure it derives publicly from
       // almost free!
 
       //! Typelist of admissible systems
-      using AdmissibleSystemCollections = tmpl::transform<
+      using ListOfAdmissibleSystemCollections = tmpl::transform<
           typename SystemsConfiguration::AdmissibleSystemPlugins,
           tmpl::bind<AddBlockType, tmpl::_1>>;
       //! Alias template to obtain the shape primitive from a system tag
@@ -408,8 +419,9 @@ provided a Systems configuration and ensure it derives publicly from
        * Instead, one can ise the GetPrimitiveType metafunction above
        */
       //! Typelist of admissible primitives in the simulator
-      using AdmissiblePrimitives = tmpl::remove_duplicates<tmpl::transform<
-          AdmissibleSystemCollections, tmpl::bind<GetPrimitiveType, tmpl::_1>>>;
+      using AdmissiblePrimitives = tmpl::remove_duplicates<
+          tmpl::transform<ListOfAdmissibleSystemCollections,
+                          tmpl::bind<GetPrimitiveType, tmpl::_1>>>;
       // TODO : Private!?
       //! Typelist of collections of admissible primitives in the simulator
       using PrimitiveCollection =

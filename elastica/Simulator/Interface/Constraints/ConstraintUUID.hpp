@@ -20,8 +20,8 @@
 #include <utility>
 
 #include "Simulator/Interface/Constraints/Types.hpp"
-#include "Simulator/Interface/Wrappers/UUID.hpp"
 #include "Simulator/Interface/Wrappers/QueryID.hpp"
+#include "Simulator/Interface/Wrappers/UUID.hpp"
 
 namespace elastica {
 
@@ -85,11 +85,11 @@ namespace elastica {
        */
       template <typename Type_>
       struct ConstraintQueryID
-          : public ::elastica::interface::detail::QueryID<ConstraintIDTag,
+          : public ::elastica::interface::detail::QueryID<ConstraintUUID,
                                                           Type_> {
         //**Type definitions****************************************************
         using Parent =
-            ::elastica::interface::detail::QueryID<ConstraintIDTag, Type_>;
+            ::elastica::interface::detail::QueryID<ConstraintUUID, Type_>;
         //**********************************************************************
 
         //**Constructors********************************************************
@@ -107,3 +107,20 @@ namespace elastica {
   }  // namespace interface
 
 }  // namespace elastica
+
+namespace std {
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  template <>
+  struct hash< ::elastica::interface::constraints::ConstraintUUID> {
+    using T = ::elastica::interface::constraints::ConstraintUUID;
+    inline auto operator()(const T& t) const -> std::size_t {
+      using Parent = typename T::Parent;
+      return hash<typename T::Parent>{}(static_cast<Parent const&>(t));
+    }
+  };
+  /*! \endcond */
+  //****************************************************************************
+
+}  // namespace std

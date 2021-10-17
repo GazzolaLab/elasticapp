@@ -68,24 +68,6 @@ namespace elastica {
               typename ExecutionPolicy>
     class EnvironmentsConfiguration
         : public ::tt::ConformsTo<protocols::EnvironmentsConfiguration> {
-      //**Constructor***********************************************************
-      /*!\name Constructor*/
-      //@{
-     public:
-      //************************************************************************
-      /*!\brief The default constructor.
-       */
-      EnvironmentsConfiguration() noexcept = default;
-      //************************************************************************
-
-      //************************************************************************
-      /*!\brief The copy constructor
-       */
-      EnvironmentsConfiguration(EnvironmentsConfiguration const&) = default;
-      //************************************************************************
-      //@}
-      //************************************************************************
-
      public:
       //**Type definitions******************************************************
       // TODO : Ensure ordering with collision last
@@ -103,13 +85,6 @@ namespace elastica {
           >;
       //! Type of execution policy
       using EnvironmentsExecutionPolicy = ExecutionPolicy;
-      //************************************************************************
-
-      //**Destructor************************************************************
-      /*!\name Destructor*/
-      //@{
-      ~EnvironmentsConfiguration() = default;
-      //@}
       //************************************************************************
     };
     //**************************************************************************

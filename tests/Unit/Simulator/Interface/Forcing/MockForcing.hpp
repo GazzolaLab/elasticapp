@@ -13,8 +13,8 @@
 #include "Simulator/Interface/Forcing/ForcingUUID.hpp"
 #include "Simulator/Interface/Forcing/Module.hpp"
 #include "Time/SimulationTime.hpp"
-#include "Utilities/NonCopyable.hpp"
 #include "Utilities/IgnoreUnused.hpp"
+#include "Utilities/NonCopyable.hpp"
 /// seraizlie
 #include "Simulator/Interface/Forcing/Serialize.hpp"
 
@@ -39,9 +39,7 @@ namespace mock {
     using Parent::id;
     void apply_forces(TimeType) const noexcept override { i += 2; }
     void apply_torques(TimeType) const noexcept override { --i; }
-    void* get_forcing_unsafe() noexcept final {
-      return nullptr;
-    }
+    void* get_forcing_unsafe() noexcept final { return nullptr; }
 
     int value() const { return i; };
 
@@ -114,7 +112,7 @@ namespace mock {
     using C = Forcer;
     using Pointer = std::unique_ptr<C>;
     using TimeType = typename ForcingTraits::TimeType;
-    SimulatorWithForcing() : forcers_() {}
+    SimulatorWithForcing() : forcer_batches_() {}
     ~SimulatorWithForcing() = default;
     SimulatorWithForcing(SimulatorWithForcing&&) noexcept = default;
 
@@ -123,15 +121,18 @@ namespace mock {
     using Algorithm = typename Policy::ForceSystems::type;
 
     // n_con
-    std::size_t n_forcings() const { return forcers_.size(); }
+    std::size_t n_forcings() const {
+      return std::accumulate(
+          std::cbegin(forcer_batches()), std::cend(forcer_batches()), 0UL,
+          [](std::size_t sum, auto const& batch) { return sum + batch.size(); });
+    }
     using Container = std::vector<Pointer>;
-    inline constexpr auto forcers() & -> Container& {
-      return forcers_;
+    using CC = std::vector<Container>;
+    inline constexpr auto forcer_batches() & -> CC& { return forcer_batches_; }
+    inline constexpr auto forcer_batches() const& -> CC const& {
+      return forcer_batches_;
     }
-    inline constexpr auto forcers() const& -> Container const& {
-      return forcers_;
-    }
-    Container forcers_;
+    CC forcer_batches_;
   };
 
   //////////////////////////////////////////////////////////////////////////////
@@ -151,9 +152,9 @@ namespace mock {
 
     using P::check_and_report_errors;
     using P::check_if_system_can_be_forced;
-    using P::force;
-    using P::forcers;
     using P::finalize;
+    using P::force;
+    using P::forcer_batches;
   };
 
   //////////////////////////////////////////////////////////////////////////////

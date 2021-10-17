@@ -19,11 +19,14 @@
 /// serializatoin
 #include "Simulator/IO/Serialization.hpp"
 #include "Simulator/Interface/MockSimulatorSerialize.hpp"
+#include "Simulator/Interface/Systems/Serialize.hpp"
 ///
 // instead of mocking a block with an emplace() method here, I just chose to
 // use a Cosserat rod.
+#include "Simulator/Interface/Simulator/Profiling.hpp"
 #include "Systems/CosseratRods/CosseratRods.hpp"
 #include "Systems/CosseratRods/Mocks/CosseratRodTraits.hpp"
+#include "Systems/CosseratRods/Serialize.hpp"  // because you decided to put cosserat rods in
 #include "Utilities/AsTaggedTuple.hpp"
 #include "Utilities/Invoke.hpp"
 #include "Utilities/Overloader.hpp"
@@ -105,6 +108,15 @@ namespace mock {
     using Algorithms = tmpl::as_tagged_tuple<AlgorithmSteps>;
     static constexpr std::size_t n_algorithms =
         tmpl::size<AlgorithmSteps>::value;
+
+    template <typename T>
+    struct Transform {
+      using type = ::elastica::interface::tags::WcProfilerTag<T>;
+    };
+    //! Tags for timers profiling the code
+    using TimerTags = tmpl::transform<AlgorithmSteps, Transform<tmpl::_1>>;
+    //! Cache for timers for profiling the code
+    using Timers = tmpl::as_tagged_tuple<TimerTags>;
     ////////////  This piece of code is copy-pasted yo
 
     using T = Traits;
@@ -160,9 +172,16 @@ reorganizing your code logic.
     }
     //************************************************************************
 
+    template <typename AlgorithmTag>
+    inline constexpr decltype(auto) get_timer() const noexcept {
+      using Tag = typename Transform<AlgorithmTag>::type;
+      return tuples::get<Tag>(timers_);
+    }
+
    public:
     Algorithms algorithms;
     bool is_final = false;
+    mutable Timers timers_;
 
     // meta
     using typename P::SystemCollections;
@@ -198,6 +217,30 @@ reorganizing your code logic.
   };
 
 }  // namespace mock
+
+namespace elastica {
+
+  namespace io {
+    template <class Traits>
+    struct Serialize<::mock::SystemsSimulator<Traits>> {
+      using type = ::mock::SystemsSimulator<Traits>;
+      using actual_type = typename type::P;
+
+      // 1. check if blocking is the same, else abort
+      template <typename InArchive>
+      static inline void load(InArchive& ar, type& systems_module) {
+        ar(static_cast<actual_type&>(systems_module));
+      }
+
+      template <typename InArchive>
+      static inline void save(InArchive& ar, type const& systems_module) {
+        ar(static_cast<actual_type const&>(systems_module));
+      }
+    };
+
+  }  // namespace io
+
+}  // namespace elastica
 
 namespace {
 
@@ -403,6 +446,44 @@ namespace {
     test_emplace_back_by_LooselyRestrictSizeAcrossBlockTypes();
     test_emplace_back_by_RestrictSizeAcrossBlockTypes();
     test_emplace_back_by_LooselyRestrictCustomizedToBlockTypes();
+  }
+
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Systems.Module.n_systems",
+                     "[Unit][Simulator][Interface][Systems]") {
+    // clang-format on
+    // I just test the two most complex here as if they work, the rest will
+    // also work.
+
+    using ListOfSystems = tmpl::list<ECBlock, ECNamedBlock>;
+    auto sim = make_systems_simulator<ListOfSystems>(
+        make_blocking_policy(LooselyRestrictSizeAcrossBlockTypes{20UL}));
+
+    CHECK(sim.template get_system_collection_container<ECBlock>().empty());
+
+    // check if push back works in accordance with the blocking policy
+    const std::size_t n_elements = 13UL;  // boo!
+    std::size_t n_system_count = 0UL;
+
+    tmpl::for_each<ListOfSystems>([&](auto p) {
+      using Block = tmpl::type_from<decltype(p)>;
+      using Plugin = GetPluginFromBlock<Block>;
+
+      sim.emplace_back<Plugin>(
+          ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
+              blocks::initialize<::elastica::tags::NElement>(n_elements)));
+      CHECK(sim.n_systems() == ++n_system_count);
+
+      // another
+      sim.emplace_back<Plugin>(
+          ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
+              blocks::initialize<::elastica::tags::NElement>(n_elements)));
+      CHECK(sim.n_systems() == ++n_system_count);
+
+      sim.emplace_back<Plugin>(
+          ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
+              blocks::initialize<::elastica::tags::NElement>(n_elements)));
+      CHECK(sim.n_systems() == ++n_system_count);
+    });
   }
 
   // clang-format off
@@ -630,5 +711,51 @@ namespace {
   }
 
   // TODO : test serialization
+  // clang-format off
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Systems.Module.serialize",
+                     "[Unit][Simulator][Interface][Systems]") {
+    // clang-format on
+    using namespace elastica::io;
+    // NOTHROW case
+    {
+      auto sim = setup_sim_with_state(20UL);
+      std::stringstream ss;  // any stream can be used
+      std::size_t n_elements(16UL);
+
+      {
+        BinaryOutputArchive oarchive(ss);  //  Create an output archive
+
+        // modify the members a little
+        sim.for_each_system([](auto& b) {
+          // for minimal cosserat traits we have a vector
+          blocks::get<::elastica::tags::NElement>(b)[0UL] += 2UL;
+        });
+
+        CHECK_NOTHROW(sim.finalize());
+        CHECK_NOTHROW(oarchive(sim));
+      }
+
+      {
+        // from sim
+        auto another_sim = setup_sim_with_state(20UL);
+        BinaryInputArchive iarchive(ss);  //  Create an output archive
+
+        // modify the members a little
+        another_sim.for_each_system([](auto const& b) {
+          // for minimal cosserat traits we have a vector
+          CHECK(blocks::get<::elastica::tags::NElement>(b)[0UL] == 16UL);
+        });
+
+        CHECK_NOTHROW(another_sim.finalize());
+        CHECK_NOTHROW(iarchive(another_sim));
+
+        // after no throw see if it has the correct ones
+        another_sim.for_each_system([](auto const& b) {
+          // for minimal cosserat traits we have a vector
+          CHECK(blocks::get<::elastica::tags::NElement>(b)[0UL] == 18UL);
+        });
+      }
+    } // nothrow case
+  }
 
 }  // namespace

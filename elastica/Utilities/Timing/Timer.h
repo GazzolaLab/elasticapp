@@ -29,318 +29,323 @@
 
 #include <limits>
 
-#include "../TimeStamps.h"
+#include "Utilities/TimeStamps.h"
 
 namespace elastica {
 
-namespace timing {
+  namespace timing {
 
-//=================================================================================================
-//
-//  CLASS DEFINITION
-//
-//=================================================================================================
+    //=================================================================================================
+    //
+    //  CLASS DEFINITION
+    //
+    //=================================================================================================
 
-//*************************************************************************************************
-/*!\brief Progress timer for time and performance measurements.
- * \ingroup timing
- *
- * The Timer class offers timing & benchmarking functionality for all kinds of
- applications.
- * The following example code demonstrates the use of the WcTimer class, which
- combines the
- * Timer class template with the WcPolicy for wall clock time measurements, for
- a single time
- * measurement:
+    //*************************************************************************************************
+    /*!\brief Progress timer for time and performance measurements.
+     * \ingroup timing
+     *
+     * The Timer class offers timing & benchmarking functionality for all kinds
+     of applications.
+     * The following example code demonstrates the use of the WcTimer class,
+     which combines the
+     * Timer class template with the WcPolicy for wall clock time measurements,
+     for a single time
+     * measurement:
 
-   \code
-   // Creating a new wall clock timer
-   WcTimer timer;
+       \code
+       // Creating a new wall clock timer
+       WcTimer timer;
 
-   // Starting the time measurement
-   timer.start();
+       // Starting the time measurement
+       timer.start();
 
-   ...  // Programm or code fragment to be measured
+       ...  // Programm or code fragment to be measured
 
-   // Stopping the time measurement
-   timer.stop();
+       // Stopping the time measurement
+       timer.stop();
 
-   // Evaluation of the measured time
-   double time = timer.last();
-   \endcode
+       // Evaluation of the measured time
+       double time = timer.last();
+       \endcode
 
- * The timer class additionally offers the functionality to start several time
- measurements in
- * order to evaluate minimal, maximal or average times. The next example
- demonstrates a possible
- * setup for such a series of time measurements:
+     * The timer class additionally offers the functionality to start several
+     time measurements in
+     * order to evaluate minimal, maximal or average times. The next example
+     demonstrates a possible
+     * setup for such a series of time measurements:
 
-   \code
-   // Creating a new wall clock timer
-   WcTimer timer;
+       \code
+       // Creating a new wall clock timer
+       WcTimer timer;
 
-   ...  // Additional setup code
+       ...  // Additional setup code
 
-   // Starting 10 wall clock time measurements
-   for( unsigned int i=0; i<10; ++i ) {
-      timer.start();
-      ...  // Programm or code fragment to be measured
-      timer.stop();
-   }
+       // Starting 10 wall clock time measurements
+       for( unsigned int i=0; i<10; ++i ) {
+          timer.start();
+          ...  // Programm or code fragment to be measured
+          timer.stop();
+       }
 
-   // After the measurements, the desired timing results can be calculated, as
- for instance the
-   // average wall clock time
-   double average = timer.average();
-   \endcode
- */
-template <typename TP> // Timing policy
-class Timer {
-public:
-  //**Type
-  // definitions****************************************************************************
-  typedef TP TimingPolicy; //!< Timing policy of the Timer.
-  //**********************************************************************************************
+       // After the measurements, the desired timing results can be calculated,
+     as for instance the
+       // average wall clock time
+       double average = timer.average();
+       \endcode
+     */
+    template <typename TP>  // Timing policy
+    class Timer {
+     public:
+      //**Type
+      // definitions****************************************************************************
+      typedef TP TimingPolicy;  //!< Timing policy of the Timer.
+      //**********************************************************************************************
 
-  //**Constructor*********************************************************************************
-  /*!\name Constructor */
-  //@{
-  explicit inline Timer();
-  //@}
-  //**********************************************************************************************
+      //**Constructor*********************************************************************************
+      /*!\name Constructor */
+      //@{
+      explicit inline Timer();
+      //@}
+      //**********************************************************************************************
 
-  //**Destructor**********************************************************************************
-  // No explicitly declared destructor.
-  //**********************************************************************************************
+      //**Destructor**********************************************************************************
+      // No explicitly declared destructor.
+      //**********************************************************************************************
 
-  //**Timing
-  // functions****************************************************************************
-  /*!\name Timing functions */
-  //@{
-  inline void start();
-  inline void stop();
-  inline void lap();
-  inline void reset();
-  //@}
-  //**********************************************************************************************
+      //**Timing
+      // functions****************************************************************************
+      /*!\name Timing functions */
+      //@{
+      inline void start();
+      inline void stop();
+      inline void lap();
+      inline void reset();
+      //@}
+      //**********************************************************************************************
 
-  //**Get
-  // functions*******************************************************************************
-  /*!\name Get functions */
-  //@{
-  inline size_t getCounter() const;
-  //@}
-  //**********************************************************************************************
+      //**Get
+      // functions*******************************************************************************
+      /*!\name Get functions */
+      //@{
+      inline size_t getCounter() const;
+      //@}
+      //**********************************************************************************************
 
-  //**Time evaluation
-  // functions*******************************************************************
-  /*!\name Time evaluation functions */
-  //@{
-  inline double total() const;
-  inline double average() const;
-  inline double min() const;
-  inline double max() const;
-  inline double last() const;
-  //@}
-  //**********************************************************************************************
+      //**Time evaluation
+      // functions*******************************************************************
+      /*!\name Time evaluation functions */
+      //@{
+      inline double total() const;
+      inline double average() const;
+      inline double min() const;
+      inline double max() const;
+      inline double last() const;
+      //@}
+      //**********************************************************************************************
 
-private:
-  size_t counter_; //!< Number of performed time measurements.
-  double start_;   //!< Start of the current time measurement.
-  double stop_;     //!< End of the current time measurement.
-  double time_;    //!< The total elapsed time of all measurements.
-  double min_;     //!< The minimal time of all measurements.
-  double max_;     //!< The maximal time of all measurements.
-  double last_;    //!< The last measured time.
-};
-//*************************************************************************************************
+     private:
+      size_t counter_;  //!< Number of performed time measurements.
+      double start_;    //!< Start of the current time measurement.
+      double stop_;     //!< End of the current time measurement.
+      double time_;     //!< The total elapsed time of all measurements.
+      double min_;      //!< The minimal time of all measurements.
+      double max_;      //!< The maximal time of all measurements.
+      double last_;     //!< The last measured time.
+    };
+    //*************************************************************************************************
 
-//=================================================================================================
-//
-//  CONSTRUCTOR
-//
-//=================================================================================================
+    //=================================================================================================
+    //
+    //  CONSTRUCTOR
+    //
+    //=================================================================================================
 
-//*************************************************************************************************
-/*!\brief Constructor of the Timer class.
- */
-template <typename TP> // Timing policy
-inline Timer<TP>::Timer()
-    : counter_(0), start_(0.0),
-      stop_(0.0), time_(0.0),
-      min_(std::numeric_limits<double>::max()), max_(0.0), last_(0.0) {}
-//*************************************************************************************************
+    //*************************************************************************************************
+    /*!\brief Constructor of the Timer class.
+     */
+    template <typename TP>  // Timing policy
+    inline Timer<TP>::Timer()
+        : counter_(0),
+          start_(0.0),
+          stop_(0.0),
+          time_(0.0),
+          min_(std::numeric_limits<double>::max()),
+          max_(0.0),
+          last_(0.0) {}
+    //*************************************************************************************************
 
-//=================================================================================================
-//
-//  TIMING FUNCTIONS
-//
-//=================================================================================================
+    //=================================================================================================
+    //
+    //  TIMING FUNCTIONS
+    //
+    //=================================================================================================
 
-//*************************************************************************************************
-/*!\brief Starting a single time measurement.
- *
- * \return void
- *
- * This function starts a single time measurement.
- */
-template <typename TP> // Timing policy
-inline void Timer<TP>::start() {
-  // Starting the time measurement and calculating a time stamp
-  start_ = TimingPolicy::get_time_stamp();
-}
-//*************************************************************************************************
+    //*************************************************************************************************
+    /*!\brief Starting a single time measurement.
+     *
+     * \return void
+     *
+     * This function starts a single time measurement.
+     */
+    template <typename TP>  // Timing policy
+    inline void Timer<TP>::start() {
+      // Starting the time measurement and calculating a time stamp
+      start_ = TimingPolicy::get_time_stamp();
+    }
+    //*************************************************************************************************
 
-//*************************************************************************************************
-/*!\brief Ending a single time measurement.
- *
- * \return void
- *
- * This function ends the currently running time measurement and performs the
- * necessary statistical calculations.
- */
-template <typename TP> // Timing policy
-inline void Timer<TP>::stop() {
-  // Stopping the time measurement and calculating a time stamp
-  stop_ = TimingPolicy::get_time_stamp();
+    //*************************************************************************************************
+    /*!\brief Ending a single time measurement.
+     *
+     * \return void
+     *
+     * This function ends the currently running time measurement and performs
+     * the necessary statistical calculations.
+     */
+    template <typename TP>  // Timing policy
+    inline void Timer<TP>::stop() {
+      // Stopping the time measurement and calculating a time stamp
+      stop_ = TimingPolicy::get_time_stamp();
 
-  // Increasing the counter
-  ++counter_;
+      // Increasing the counter
+      ++counter_;
 
-  // Calculating the wallclock and CPU time
-  const double diff(stop_ - start_);
+      // Calculating the wallclock and CPU time
+      const double diff(stop_ - start_);
 
-  // Average time measurement
-  time_ += diff;
+      // Average time measurement
+      time_ += diff;
 
-  // Minimum time measurement
-  if (diff < min_)
-    min_ = diff;
+      // Minimum time measurement
+      if (diff < min_)
+        min_ = diff;
 
-  // Maximum time measurement
-  if (diff > max_)
-    max_ = diff;
+      // Maximum time measurement
+      if (diff > max_)
+        max_ = diff;
 
-  // Last time measurement
-  last_ = diff;
-}
-//*************************************************************************************************
+      // Last time measurement
+      last_ = diff;
+    }
+    //*************************************************************************************************
 
-//*************************************************************************************************
-/*!\brief Ending a single time measurement and starting a new one.
- *
- * \return void
- *
- * This function ends the currently running time measurement, performs the
- * necessary statistical calculations and starts the next time measurement
- * without delay.
- */
-template <typename TP> // Timing policy
-inline void Timer<TP>::lap() {
-  stop();
-  start_ = stop_;
-}
-//*************************************************************************************************
+    //*************************************************************************************************
+    /*!\brief Ending a single time measurement and starting a new one.
+     *
+     * \return void
+     *
+     * This function ends the currently running time measurement, performs the
+     * necessary statistical calculations and starts the next time measurement
+     * without delay.
+     */
+    template <typename TP>  // Timing policy
+    inline void Timer<TP>::lap() {
+      stop();
+      start_ = stop_;
+    }
+    //*************************************************************************************************
 
-//*************************************************************************************************
-/*!\brief Resetting the timer.
- *
- * \return void
- *
- * This function completely resets the timer and all information on the
- * performed time measurements. In order to start a new time measurement, the
- * start() function has to be used.
- */
-template <typename TP> // Timing policy
-inline void Timer<TP>::reset() {
-  counter_ = 0;
-  start_ = 0.0;
-  stop_ = 0.0;
-  time_ = 0.0;
-  min_ = std::numeric_limits<double>::max();
-  max_ = 0.0;
-  last_ = 0.0;
-}
-//*************************************************************************************************
+    //*************************************************************************************************
+    /*!\brief Resetting the timer.
+     *
+     * \return void
+     *
+     * This function completely resets the timer and all information on the
+     * performed time measurements. In order to start a new time measurement,
+     * the start() function has to be used.
+     */
+    template <typename TP>  // Timing policy
+    inline void Timer<TP>::reset() {
+      counter_ = 0;
+      start_ = 0.0;
+      stop_ = 0.0;
+      time_ = 0.0;
+      min_ = std::numeric_limits<double>::max();
+      max_ = 0.0;
+      last_ = 0.0;
+    }
+    //*************************************************************************************************
 
-//=================================================================================================
-//
-//  GET FUNCTIONS
-//
-//=================================================================================================
+    //=================================================================================================
+    //
+    //  GET FUNCTIONS
+    //
+    //=================================================================================================
 
-//*************************************************************************************************
-/*!\brief Returns the total number of time measurements performed by this timer.
- *
- * \return The number of performed time measurements.
- */
-template <typename TP> // Timing policy
-inline size_t Timer<TP>::getCounter() const {
-  return counter_;
-}
-//*************************************************************************************************
+    //*************************************************************************************************
+    /*!\brief Returns the total number of time measurements performed by this
+     * timer.
+     *
+     * \return The number of performed time measurements.
+     */
+    template <typename TP>  // Timing policy
+    inline size_t Timer<TP>::getCounter() const {
+      return counter_;
+    }
+    //*************************************************************************************************
 
-//=================================================================================================
-//
-//  TIME EVALUATION FUNCTIONS
-//
-//=================================================================================================
+    //=================================================================================================
+    //
+    //  TIME EVALUATION FUNCTIONS
+    //
+    //=================================================================================================
 
-//*************************************************************************************************
-/*!\brief Returns the total elapsed time of all performed time measurements.
- *
- * \return The total elapsed time of all time measurements.
- */
-template <typename TP> // Timing policy
-inline double Timer<TP>::total() const {
-  return time_;
-}
-//*************************************************************************************************
+    //*************************************************************************************************
+    /*!\brief Returns the total elapsed time of all performed time measurements.
+     *
+     * \return The total elapsed time of all time measurements.
+     */
+    template <typename TP>  // Timing policy
+    inline double Timer<TP>::total() const {
+      return time_;
+    }
+    //*************************************************************************************************
 
-//*************************************************************************************************
-/*!\brief Returns the average time of all performed time measurements.
- *
- * \return The average time.
- */
-template <typename TP> // Timing policy
-inline double Timer<TP>::average() const {
-  return time_ / counter_;
-}
-//*************************************************************************************************
+    //*************************************************************************************************
+    /*!\brief Returns the average time of all performed time measurements.
+     *
+     * \return The average time.
+     */
+    template <typename TP>  // Timing policy
+    inline double Timer<TP>::average() const {
+      return time_ / counter_;
+    }
+    //*************************************************************************************************
 
-//*************************************************************************************************
-/*!\brief Returns the minimal time of all performed time measurements.
- *
- * \return The minimal time.
- */
-template <typename TP> // Timing policy
-inline double Timer<TP>::min() const {
-  return min_;
-}
-//*************************************************************************************************
+    //*************************************************************************************************
+    /*!\brief Returns the minimal time of all performed time measurements.
+     *
+     * \return The minimal time.
+     */
+    template <typename TP>  // Timing policy
+    inline double Timer<TP>::min() const {
+      return min_;
+    }
+    //*************************************************************************************************
 
-//*************************************************************************************************
-/*!\brief Returns the maximal time of all performed time measurements.
- *
- * \return The maximal time.
- */
-template <typename TP> // Timing policy
-inline double Timer<TP>::max() const {
-  return max_;
-}
-//*************************************************************************************************
+    //*************************************************************************************************
+    /*!\brief Returns the maximal time of all performed time measurements.
+     *
+     * \return The maximal time.
+     */
+    template <typename TP>  // Timing policy
+    inline double Timer<TP>::max() const {
+      return max_;
+    }
+    //*************************************************************************************************
 
-//*************************************************************************************************
-/*!\brief Returns the last measured time.
- *
- * \return The last measured time.
- */
-template <typename TP> // Timing policy
-inline double Timer<TP>::last() const {
-  return last_;
-}
-//*************************************************************************************************
+    //*************************************************************************************************
+    /*!\brief Returns the last measured time.
+     *
+     * \return The last measured time.
+     */
+    template <typename TP>  // Timing policy
+    inline double Timer<TP>::last() const {
+      return last_;
+    }
+    //*************************************************************************************************
 
-} // namespace timing
+  }  // namespace timing
 
-} // namespace elastica
+}  // namespace elastica

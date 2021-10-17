@@ -91,18 +91,6 @@ namespace elastica {
       //@{
      public:
       constexpr ConstraintsConfiguration() noexcept = default;
-      constexpr ConstraintsConfiguration(
-          ConstraintsConfiguration const&) noexcept = default;
-      constexpr ConstraintsConfiguration(ConstraintsConfiguration&&) noexcept =
-          default;
-      //@}
-      //************************************************************************
-
-     public:
-      //**Destructor************************************************************
-      /*!\name Destructor*/
-      //@{
-      ~ConstraintsConfiguration() = default;
       //@}
       //************************************************************************
     };
@@ -140,21 +128,10 @@ namespace elastica {
           std::size_t const parallel_threshold) noexcept
           : threshold(parallel_threshold){};
       constexpr ConstraintsConfiguration() = delete;
-      constexpr ConstraintsConfiguration(
-          ConstraintsConfiguration const&) noexcept = default;
-      constexpr ConstraintsConfiguration(ConstraintsConfiguration&&) noexcept =
-          default;
       //@}
       //************************************************************************
 
      public:
-      //**Destructor************************************************************
-      /*!\name Destructor*/
-      //@{
-      ~ConstraintsConfiguration() = default;
-      //@}
-      //************************************************************************
-
       //************************************************************************
       /*!\brief Obtains the threshold for parallelism
        */

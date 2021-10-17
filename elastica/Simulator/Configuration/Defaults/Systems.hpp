@@ -25,7 +25,7 @@
 #include "Simulator/Configuration/ModuleConfiguration/BlockingPolicy.hpp"
 #include "Simulator/Configuration/ModuleConfiguration/IterationPolicy.hpp"
 #include "Simulator/Configuration/ModuleConfiguration/Systems.hpp"
-#include "Systems/Tags.hpp"
+// #include "Systems/Tags.hpp"
 #include "Utilities/TMPL.hpp"  // needed because the Macro is a typelist
 
 //==============================================================================
@@ -104,8 +104,6 @@ namespace elastica {
                 ELASTICA_DEFAULT_BLOCKING_POLICY_FOR_SYSTEMS{
                     default_blocking_policy_size()},
                 DefaultIterationPolicy{}){};
-      DefaultSystemsConfiguration(DefaultSystemsConfiguration&&) noexcept =
-          default;
       ~DefaultSystemsConfiguration() = default;
       //************************************************************************
     };

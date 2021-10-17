@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "Utilities/TMPL.hpp"
 #include "Utilities/MakeFromTuple.hpp"
+#include "Utilities/TMPL.hpp"
 
 // useful to test a bare-bones simulator
 namespace mock {
@@ -40,9 +40,17 @@ namespace mock {
       using type = UpdateStep;
     };
 
+    struct Batcher {
+      struct MockBatcher {
+        MockBatcher(T const&){};
+      };
+      using type = MockBatcher;
+    };
+
     using PostKinematicUpdateSteps = tmpl::list<FirstUpdateStep>;
     using PreDynamicUpdateSteps = tmpl::list<SecondUpdateStep>;
     using PostDynamicUpdateSteps = tmpl::list<ThirdUpdateStep>;
+    using BatchingAlgorithm = tmpl::list<Batcher>;
   };
 
 }  // namespace mock

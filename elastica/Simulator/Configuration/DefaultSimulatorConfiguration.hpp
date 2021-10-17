@@ -47,14 +47,16 @@ namespace elastica {
      * \code
      *  // A simulation configuration with bare minimum requirements
      *  using BareMinimumDefaultSimulatorConfiguration =
-     *     SimulatorConfiguration<defaults::DomainConfiguration,
-     *                            defaults::SystemsConfiguration>;
+     *     SimulatorConfiguration<DefaultDomainConfiguration,
+     *                            DefaultSystemsConfiguration,
+     *                            DefaultParallelConfiguration>;
      *
      *  // A simulation configuration with more modules
      *  using SimulatorConfigurationWithEnvironments =
-     *     SimulatorConfiguration<defaults::DomainConfiguration,
-     *                            defaults::SystemsConfiguration,
-     *                            defaults::EnvironmentsConfiguration>;
+     *     SimulatorConfiguration<DefaultDomainConfiguration,
+     *                            DefaultSystemsConfiguration,
+     *                            DefaultParallelConfiguration,
+     *                            DefaultEnvironmentsConfiguration>;
      * \endcode
      * \see SimulatorConfiguration, make_simulator()
      */
@@ -62,14 +64,16 @@ namespace elastica {
         : public SimulatorConfiguration<
               DefaultConnectionsConfiguration, DefaultConstraintsConfiguration,
               DefaultDomainConfiguration, DefaultEnvironmentsConfiguration,
-              DefaultForcingConfiguration, DefaultSystemsConfiguration> {
+              DefaultForcingConfiguration, DefaultParallelConfiguration,
+              DefaultSystemsConfiguration> {
       // all should be default constructible
      private:
       //**Type definitions******************************************************
       using Parent = SimulatorConfiguration<
           DefaultConnectionsConfiguration, DefaultConstraintsConfiguration,
           DefaultDomainConfiguration, DefaultEnvironmentsConfiguration,
-          DefaultForcingConfiguration, DefaultSystemsConfiguration>;
+          DefaultForcingConfiguration, DefaultParallelConfiguration,
+          DefaultSystemsConfiguration>;
       //************************************************************************
 
      public:
@@ -81,7 +85,8 @@ namespace elastica {
                 DefaultConnectionsConfiguration{},
                 DefaultConstraintsConfiguration{}, DefaultDomainConfiguration{},
                 DefaultEnvironmentsConfiguration{},
-                DefaultForcingConfiguration{}, DefaultSystemsConfiguration{}){};
+                DefaultForcingConfiguration{}, DefaultParallelConfiguration{},
+                DefaultSystemsConfiguration{}){};
       //@}
       //************************************************************************
 

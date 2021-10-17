@@ -24,6 +24,18 @@ namespace {
     auto pi = std::make_unique<int>(2);
     auto repeated_pi = repeat_as_tuple<1UL>(std::move(pi));
     CHECK(*std::get<0UL>(repeated_pi) == 2);
+
+    // check for strucst
+    auto a = [x = 20](){ return x;};
+    auto repeated_a = repeat_as_tuple<3UL>(a);
+    CHECK(std::get<0UL>(repeated_a)() == 20);
+
+    // check if zero arguments make sense even with custom types
+    auto another_pi = std::make_unique<int>(5);
+    auto repeated_another_pi = repeat_as_tuple<0UL>(std::move(pi));
+
+    auto another_func = [x = 10](){ return x;};
+    auto repeated_func = repeat_as_tuple<0UL>(a);
   }
 
 }  // namespace

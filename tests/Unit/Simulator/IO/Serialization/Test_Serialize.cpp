@@ -1,8 +1,8 @@
 
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/IO/Serialization/Archives.hpp"
-#include "Utilities/TMPL.hpp"
 #include "Utilities/IgnoreUnused.hpp"
+#include "Utilities/TMPL.hpp"
 
 // all test routines
 #include "detail/Test_Array.hpp"
@@ -14,6 +14,7 @@
 #include "detail/Test_String.hpp"
 #include "detail/Test_TaggedTuple.hpp"
 #include "detail/Test_Tuple.hpp"
+#include "detail/Test_UnorderedMap.hpp"
 #include "detail/Test_Vector.hpp"
 
 /// [custom_serialize]
@@ -138,6 +139,11 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.array",
                      "[Unit][Simulator][IO][Serialization]") {
     run_for_archives<TestArray>();
+  }
+
+  ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.unordered_map",
+                     "[Unit][Simulator][IO][Serialization]") {
+    run_for_archives<TestUnorderedMap>();
   }
 
   ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.tagged_tuple",

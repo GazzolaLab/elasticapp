@@ -159,7 +159,7 @@ namespace elastica {
     template <typename Real>
     const Approx SimulationTime<Real>::approx =
         Approx::custom()
-            .epsilon(std::numeric_limits<double>::epsilon() * 100)
+            .epsilon(std::numeric_limits<Real>::epsilon() * 100)
             .scale(1.0);
     /*! \endcond */
     //**************************************************************************

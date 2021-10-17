@@ -23,7 +23,7 @@ namespace elastica {
     //
     ////////////////////////////////////////////////////////////////////////////
 
-    //****************************************************************************
+    //**************************************************************************
     /*! \cond ELASTICA_INTERNAL */
     class DefaultConnectionsConfiguration;
     class DefaultConstraintsConfiguration;
@@ -32,8 +32,9 @@ namespace elastica {
     class DefaultForcingConfiguration;
     struct DefaultIterationPolicy;
     class DefaultSystemsConfiguration;
+    class DefaultParallelConfiguration;
     /*! \endcond */
-    //****************************************************************************
+    //**************************************************************************
 
   }  // namespace configuration
 

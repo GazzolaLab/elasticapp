@@ -21,9 +21,11 @@
 
 /// types to serialize
 #include "Simulator/Interface/Wrappers/UUID.hpp"
+#include "Simulator/Interface/Wrappers/UUIDMap.hpp"
 ///
 #include "Simulator/IO/Serialization.hpp"  // all custom, stl and so on
 #include "Utilities/MakeString.hpp"
+#include "Utilities/AsConst.hpp"
 
 namespace elastica {
 
@@ -45,16 +47,10 @@ namespace elastica {
         ar(uuid.name);
 
         if (uuid_from_config != uuid) {
-          auto pretty_print = [](type const& oo_oo_id) {
-            using ::elastica::interface::detail::id;
-            using ::elastica::interface::detail::name;
-            return MakeString{} << "(" << id(oo_oo_id) << ", " << name(oo_oo_id)
-                                << ")";
-          };
-          throw std::runtime_error(std::string(
-              MakeString{} << "Restored UUID : " << pretty_print(uuid_from_config)
-                           << " does not match the"
-                           << " saved UUID : " << pretty_print(uuid)));
+          throw std::runtime_error(
+              std::string(MakeString{} << "Restored UUID : " << uuid_from_config
+                                       << " does not match the"
+                                       << " saved UUID : " << uuid));
         }
       }
 
@@ -68,6 +64,42 @@ namespace elastica {
     };
     /*! \endcond */
     //**************************************************************************
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    /*!\brief Specialization of Serialize template for a UUID Map
+     * \ingroup interface
+     */
+    template <typename UID>
+    struct Serialize<::elastica::interface::detail::UUIDToBatch<UID>> {
+      using type = ::elastica::interface::detail::UUIDToBatch<UID>;
+
+      template <typename InArchive>
+      static inline void load(InArchive& ar, type& uuid_map) {
+        using L = decltype(cpp17::as_const(uuid_map).as_vectors());
+        L loader;
+        ar(loader);
+        uuid_map.from_vectors(std::move(loader));
+      }
+
+      template <typename OutArchive>
+      static inline void save(OutArchive& ar, type const& uuid_map) {
+        // If you directly save the data, it causes heartbreak
+        /*
+         * Loading UUIDToBatch failed :
+         * Loading unordered_map failed :
+         * Loading ForcingUUID failed :
+         * Loading UUID failed :
+         * Restored UUID : (18446744073709551615, ) does not match the saved
+         * UUID : (0, )
+         *
+         * Because UUID types have a check while restoring. Hence we use
+         * special methods here
+         */
+        ar(uuid_map.as_vectors());
+        // ar(uuid_map.data());
+      }
+    };
 
   }  // namespace io
 
