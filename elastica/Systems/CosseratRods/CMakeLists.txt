@@ -1,5 +1,5 @@
 add_subdirectory(Components)
-#add_subdirectory(Utility)
+add_subdirectory(Utility)
 
 set(LIBRARY Systems)
 
