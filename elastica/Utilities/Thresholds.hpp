@@ -1,24 +1,14 @@
 //==============================================================================
 /*!
- *  \file pe/core/Thresholds.h
- *  \brief Numerical thresholds for the physics engine
- *
- *  Copyright (C) 2009 Klaus Iglberger
- *
- *  This file is part of pe.
- *
- *  pe is free software: you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- *
- *  pe is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with
- * pe. If not, see <http://www.gnu.org/licenses/>.
- */
+//  \file
+//  \brief Numerical thresholds for \elastica physics
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
 //==============================================================================
 
 #pragma once
@@ -27,7 +17,7 @@
 // Includes
 //******************************************************************************
 
-#include "elastica/Utilities/DefineTypes.h"
+#include "Utilities/DefineTypes.h"
 
 namespace elastica {
 
@@ -39,47 +29,37 @@ namespace elastica {
 
   //****************************************************************************
   /*!\brief Collection of numerical threshold values.
-   * \ingroup core
+   * \ingroup utils
    *
    * The Thresholds class defines numerical floating point thresholds for the
-   elastica physics engine.
-   * The following thresholds can be used:
+   * \elastica physics engine. The following thresholds can be used:
    *
-   * - \b collision_threshold: This threshold is used for the contact
-   classification. It is used to
-   *      separate between separating, resting and colliding contacts.
-   * - \b contact_threshold: This threshold is used to tell whether two rigid
-   bodies are in contact or
-   *      not. If the distance between two bodies is smaller than this
-   threshold, they are considered
-   *      to be in contact with each other.
-   * - \b restitution_threshold: In case the relative velocity between two
-   colliding rigid bodies is
-   *      smaller than this threshold, a coefficient of restitution of 0 is used
-   to avoid an infinite
-   *      number of collisions during a single time step.
-   * - \b friction_threshold: This threshold represents the boundary between
-   static and dynamic
-   *      friction. In case the relative tangential velocity of two contacting
-   rigid bodies is
-   *      smaller than this threshold, static friction is applied, else dynamic
-   friction is used.
-   * - \b surface_threshold: This threshold is used for surface checks. Only
-   points with a distance
-   *      to the surface smaller than this threshold are considered surface
-   point.
-   * - \b parallel_threshold: This threshold is used for parallelism checks. If
-   the scalar product
-   *      of two vectors is smaller than this threshold the vectors are
-   considered to be parallel.
+   * - `collision_threshold`: Used for contact classification in distinguishing
+   * between separating, resting and colliding contacts.
+   * - `contact_threshold`: Used to tell whether two rigid bodies are in contact
+   * or not. If the distance between two bodies is smaller than this threshold,
+   * they are considered to be in contact with each other.
+   * - `restitution_threshold`: In case the relative velocity between two
+   * colliding rigid bodies is smaller than this threshold, a coefficient of
+   * restitution of 0 is used to avoid an infinite number of collisions during a
+   * single time step.
+   * - `friction_threshold`: Represents the boundary between
+   * static and dynamic friction. In case the relative tangential velocity of
+   * two contacting rigid bodies is smaller than this threshold, static
+   * friction is applied, else dynamic friction is used.
+   * - `surface_threshold`: Used for surface checks. Only points with a distance
+   * to the surface smaller than this threshold are considered surface point.
+   * - `parallel_threshold`: Used for parallelism checks. If the scalar product
+   * of two vectors is smaller than this threshold the vectors are considered to
+   * be parallel.
    *
-   * The Thresholds class is used in the following manner:
-
-     \code
-     const double acc = Thresholds<double>::accuracy();
-     if( dist < Thresholds<double>::surface_threshold ) {...}
-     \endcode
-
+   * The Thresholds class is used in the following manner
+   *
+   * \example
+   * \code
+   * const double p = Thresholds<double>::parallel_threshold();
+   * if( dist < Thresholds<double>::surface_threshold ) {...}
+   * \endcode
    * \b Note: The Thresholds class is not defined for integral data types.
    */
   template <typename Float>
@@ -239,50 +219,90 @@ namespace elastica {
   //============================================================================
 
   //****************************************************************************
-  //! _threshold for the contact classification.
-  /*! This threshold separates between separating, resting and colliding
-   * contacts. */
+  /*! \brief _threshold for the contact classification.
+   *  \ingroup utils
+   *
+   *  \details
+   *  Used for contact classification in distinguishing
+   *  between separating, resting and colliding contacts.
+   */
   constexpr real_t collision_threshold =
       Thresholds<real_t>::collision_threshold();
   //****************************************************************************
 
   //****************************************************************************
-  //! _threshold for the distance between two rigid bodies.
-  /*! Rigid bodies with a distance smaller than this threshold are in contact.
+  /*!\brief _threshold for the distance between two rigid bodies.
+   * \ingroup utils
+   *
+   * \details
+   *
+   * Used to tell whether two rigid bodies are in contact
+   * or not. If the distance between two bodies is smaller than this threshold,
+   * they are considered to be in contact with each other.
+   *
    */
   constexpr real_t contact_threshold = Thresholds<real_t>::contact_threshold();
   //****************************************************************************
 
   //****************************************************************************
-  //! _threshold for the restriction of the coefficient of restitution.
-  /*! In case the relative velocity between two colliding rigid bodies is
-     smaller than this threshold, a coefficient of restitution of 0 is used to
-     avoid an infinite number of collisions during a single time step. */
+  /*!\brief _threshold for restriction of the coefficient of restitution.
+   * \ingroup utils
+   *
+   * \details
+   * In case the relative velocity between two
+   * colliding rigid bodies is smaller than this threshold, a coefficient of
+   * restitution of 0 is used to avoid an infinite number of collisions during a
+   * single time step.
+   */
   constexpr real_t restitution_threshold =
       Thresholds<real_t>::restitution_threshold();
   //****************************************************************************
 
   //****************************************************************************
-  //! _threshold for the separation between static and dynamic friction.
-  /*! This threshold represents the boundary between static and dynamic
-   * friction. */
+  /*!\brief _threshold for the separation between static and dynamic friction.
+   * \ingroup utils
+   *
+   * \details
+   * Represents the boundary between static and dynamic friction. In case the
+   * relative tangential velocity of two contacting rigid bodies is smaller than
+   * this threshold, static friction is applied, else dynamic friction is used.
+   */
   constexpr real_t friction_threshold =
       Thresholds<real_t>::friction_threshold();
   //****************************************************************************
 
   //****************************************************************************
-  //! _threshold for surface points/checks.
-  /*! Only points with a distance to the surface smaller than this threshold are
-     considered surface point. */
+  /*!\brief _threshold for surface points/checks.
+   * \ingroup utils
+   *
+   * \details
+   * Used for surface checks. Only points with a distance
+   * to the surface smaller than this threshold are considered surface point.
+   */
   constexpr real_t surface_threshold = Thresholds<real_t>::surface_threshold();
   //****************************************************************************
 
   //****************************************************************************
-  //! _threshold for parallelism checks.
-  /*! Scalar products smaller than this threshold value indicate parallel
-   * vectors. */
+  /*!\brief _threshold for parallelism checks.
+   * \ingroup utils
+   *
+   * \details
+   * Used for parallelism checks. If the scalar product of two vectors is
+   * smaller than this threshold the vectors are considered to be parallel.
+   */
   constexpr real_t parallel_threshold =
       Thresholds<real_t>::parallel_threshold();
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief  _threshold for normalization checks.
+   * \ingroup utils
+   *
+   * \details
+   * A (length of a vector - 1) smaller than this threshold value indicate
+   *  a normalized vector.
+   */
+  constexpr real_t normal_threshold = Thresholds<real_t>::parallel_threshold();
   //****************************************************************************
 
 }  // namespace elastica
