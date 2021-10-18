@@ -54,17 +54,17 @@
 
   * Elasticity layer
    - Prerequisites : Geometry Component
-  [ ] rest_B
-  [ ] rest_S
-  [ ] internal_model_loads_ (n_l)
-  [ ] internal_model_couples_ (tau_l)
+  [x] rest_B
+  [x] rest_S
+  [x] internal_model_loads_ (n_l)
+  [x] internal_model_couples_ (tau_l)
 
   * Kinematics Component
    - Prerequisites : Geometry Component
-  [ ] velocities_;
-  [ ] omega_;
-  [ ] dilatation_rate_ (calculation, may be lazy)
-  [ ] curvature_rate_ (calculation, may be lazy)
+  [x] velocities_;
+  [x] omega_;
+  [x] dilatation_rate_ (calculation, may be lazy)
+  [x] curvature_rate_ (calculation, may be lazy)
 
     tangents
       |
