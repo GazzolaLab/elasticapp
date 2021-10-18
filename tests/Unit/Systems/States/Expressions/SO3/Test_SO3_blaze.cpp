@@ -172,8 +172,8 @@ namespace {
     const ::elastica::TimeDelta td(second - first); // dt
 
     // TODO : Fix after correcting the kernel
-    const std::size_t dimensions = 1UL;
-    const std::size_t size = 1UL;
+    const std::size_t dimensions = 3UL;
+    const std::size_t size = 5UL;
 
     float f = 5.0F;
     H_mat data(dimensions, dimensions, size, f); // Q
@@ -232,8 +232,8 @@ namespace {
     using D = SO3<DH, tags::DerivativeTag>;
 
     // TODO : Fix after correcting the kernel
-    const std::size_t dimensions = 1UL;
-    const std::size_t size = 1UL;
+    const std::size_t dimensions = 3UL;
+    const std::size_t size = 7UL;
 
     float another_f = 10.0F;
 

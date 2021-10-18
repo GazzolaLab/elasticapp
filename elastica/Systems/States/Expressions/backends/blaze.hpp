@@ -43,9 +43,9 @@ namespace elastica {
       auto theta = blaze::sqrt(blaze::sum<blaze::columnwise>(vector_batch % vector_batch));
       auto alpha = 1.0 - blaze::cos(theta);
       auto beta = blaze::sin(theta);
-      auto u0 = blaze::row(vector_batch, 0UL) / (theta+1e-14);
-      auto u1 = blaze::row(vector_batch, 1UL) / (theta+1e-14);
-      auto u2 = blaze::row(vector_batch, 2UL) / (theta+1e-14);
+      auto u0 = blaze::row(vector_batch, 0UL) / (theta+1e-12);
+      auto u1 = blaze::row(vector_batch, 1UL) / (theta+1e-12);
+      auto u2 = blaze::row(vector_batch, 2UL) / (theta+1e-12);
       auto q0 = blaze::row(blaze::pageslice(rhs_matrix_batch, 0UL), 0UL);
       auto q1 = blaze::row(blaze::pageslice(rhs_matrix_batch, 1UL), 0UL);
       auto q2 = blaze::row(blaze::pageslice(rhs_matrix_batch, 2UL), 0UL);
