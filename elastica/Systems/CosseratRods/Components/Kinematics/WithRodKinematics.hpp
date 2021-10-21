@@ -382,7 +382,7 @@ namespace elastica {
           auto& velocity(blocks::get<Velocity>(self()));
           return Traits::Operations::batch_dot(
               Traits::Operations::difference_kernel(position),
-              Traits::Operations::difference_kernel(velocity)) / Traits::Operations::transpose(length * reference_length);
+              Traits::Operations::difference_kernel(velocity)) / (length * reference_length);
         }
         //**********************************************************************
 

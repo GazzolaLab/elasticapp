@@ -14,7 +14,7 @@
 namespace {
 
   using ValueType = double;
-  using VT = blaze::DynamicVector<ValueType, blaze::rowVector>;
+  using VT = blaze::DynamicVector<ValueType>; //, blaze::rowVector>;
   using MT = blaze::DynamicMatrix<ValueType>;
   using TT = blaze::DynamicTensor<ValueType>;
   constexpr std::size_t dimension(3UL);
@@ -47,13 +47,15 @@ namespace {
     const MT expanded_vector{{1.0}, {2.0}, {3.0}};
     const TT expanded_matrix{{{1.0}, {2.0}, {3.0}},
                              {{4.0}, {5.0}, {6.0}},
-                             {{7.0}, {8.0}, {9.0}}};  //
+                             {{7.0}, {8.0}, {9.0}}};  // row-slice gives page-wise direction vector 1,4,7
     MT test_matvec(dimension, n_elems);
+    auto matmul_solution = blaze::columnslice(expanded_matrix, 0) * blaze::column(expanded_vector, 0);
     elastica::batch_matvec(test_matvec, expanded_matrix, expanded_vector);
     const MT correct_matvec{{14.0}, {32.0}, {50.0}};
     //! [batch_matvec_example]
 
     CHECK(test_matvec == correct_matvec);
+    CHECK(matmul_solution == blaze::column(correct_matvec, 0));
   }
 
   ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeLinearAlgebra: Randomised batch matrix-matrix product test",

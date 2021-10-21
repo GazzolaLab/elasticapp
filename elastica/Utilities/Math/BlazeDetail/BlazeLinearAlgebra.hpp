@@ -80,7 +80,7 @@ namespace elastica {
     //    assert(vector_batch.rows() == dimension);
 
     for (std::size_t i(0UL); i < dimension; ++i) {
-      auto val1 = blaze::trans(blaze::rowslice(matrix_batch, i));
+      auto val1 = blaze::pageslice(matrix_batch, i);
       auto val2 = blaze::sum<blaze::columnwise>(val1 % vector_batch);
       blaze::row(matvec_batch, i) = val2;
     }
@@ -214,7 +214,8 @@ namespace elastica {
     assert(second_vector_batch.rows() == dimension);
     assert(second_vector_batch.columns() == n_elems);
 
-    return blaze::sum<blaze::columnwise>(first_vector_batch % second_vector_batch);
+    return blaze::trans(
+        blaze::sum<blaze::columnwise>(first_vector_batch % second_vector_batch));
   }
   //**************************************************************************
 
@@ -243,7 +244,7 @@ namespace elastica {
     const std::size_t n_elems = vector_batch.columns();
     assert(vector_batch.rows() == dimension);
 
-    return blaze::sqrt(blaze::sum<blaze::columnwise>(vector_batch % vector_batch));
+    return blaze::sqrt(blaze::trans(blaze::sum<blaze::columnwise>(vector_batch % vector_batch)));
   }
 
 }  // namespace rod

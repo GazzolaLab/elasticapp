@@ -237,8 +237,9 @@ namespace elastica {
             internal_torques += lagrangian_transport_batch;
 
             // unsteady_dilatation_batch
-            auto dilatation_ratio = dilatation_rate / Traits::Operations::transpose(dilatation);
-            auto dilatation_ratio_expanded = Traits::Operations::expand_for_broadcast(dilatation_ratio);
+            //auto dilatation_ratio = dilatation_rate / Traits::Operations::transpose(dilatation);
+            auto dilatation_ratio = dilatation_rate / dilatation;
+            auto dilatation_ratio_expanded = Traits::Operations::expand_for_broadcast(Traits::Operations::transpose(dilatation_ratio));
             auto unsteady_dilatation_batch = J_omega_upon_e_batch %
                                              dilatation_ratio_expanded;
             internal_torques += unsteady_dilatation_batch;

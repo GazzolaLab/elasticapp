@@ -66,30 +66,11 @@ namespace {
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
         // Geometry Variables
-        blocks::initialize<tags::Position>([&i = n_times_called[0]](std::size_t index) {
-          ++i;
-          return index * 1.0;
-        }),
-        blocks::initialize<tags::Director>([&i = n_times_called[1]](...) {
-          ++i;
-          return 0.5;
-        }),
-        blocks::initialize<tags::ElementDimension>([&i = n_times_called[2]](...) {
-          ++i;
-          return 4.0;
-        }),
-        // Elasticity Variables
-        blocks::initialize<tags::ShearStretchRigidityMatrix>(
-            [&i = n_times_called[5]](...) {
-              ++i;
-              return 4.0;
-            }),
-        blocks::initialize<tags::BendingTwistRigidityMatrix>(
-            [&i = n_times_called[6]](...) {
-              ++i;
-              return 4.0;
-            }),
-        // Kinematics Variables
+        blocks::initialize<tags::Position>([&i = n_times_called[0]](std::size_t index) { ++i; return index * 1.0; }),
+        blocks::initialize<tags::Director>([&i = n_times_called[1]](...) { ++i; return 0.5; }),
+        blocks::initialize<tags::ElementDimension>([&i = n_times_called[2]](...) { ++i; return 4.0; }),
+        blocks::initialize<tags::ShearStretchRigidityMatrix>( [&i = n_times_called[5]](...) { ++i; return 4.0; }),
+        blocks::initialize<tags::BendingTwistRigidityMatrix>( [&i = n_times_called[6]](...) { ++i; return 4.0; }),
         blocks::initialize<tags::Density>([](...) { return 1.0; }),
         blocks::initialize<tags::Velocity>([](...) { return 0.0; }),
         blocks::initialize<tags::AngularVelocity>([](...) { return 0.0; }),
@@ -104,15 +85,52 @@ namespace {
 
 
     // check if initialization is done as expected
-    //CHECK_ITERABLE_APPROX(n_times_called, make_array<n_initializers>(1U));
+    CHECK_ITERABLE_APPROX(n_times_called, make_array<n_initializers>(1U));
 
+    // Check RigidityMatrix
     // [0] element : stiff  * I_0
     const double area = M_PI * 4.0 * 4.0;
     const double I_0 = area * area * 0.25 * M_1_PI;
-    CHECK(blocks::get<tags::BendingTwistRigidityMatrix>(model) ==
-          4.0 * I_0);
-    CHECK(blocks::get<tags::ShearStretchRigidityMatrix>(model) ==
-          4.0 * area * 4.0 / 3.0);
+
+    auto ssr_matrix = blocks::get<tags::ShearStretchRigidityMatrix>(model);
+    auto ssr_I0 = Traits::DataType::Matrix::slice(ssr_matrix,2UL)(0UL,0UL);
+    auto ssr_I1 = Traits::DataType::Matrix::slice(ssr_matrix,2UL)(1UL,1UL);
+    auto ssr_I2 = Traits::DataType::Matrix::slice(ssr_matrix,2UL)(2UL,2UL);
+    auto ssr_Id0 = Traits::DataType::Matrix::slice(ssr_matrix,3UL)(0UL,1UL);
+    auto ssr_Id1 = Traits::DataType::Matrix::slice(ssr_matrix,3UL)(0UL,2UL);
+    auto ssr_Id2 = Traits::DataType::Matrix::slice(ssr_matrix,3UL)(1UL,2UL);
+    auto ssr_Id3 = Traits::DataType::Matrix::slice(ssr_matrix,4UL)(1UL,0UL);
+    auto ssr_Id4 = Traits::DataType::Matrix::slice(ssr_matrix,4UL)(2UL,0UL);
+    auto ssr_Id5 = Traits::DataType::Matrix::slice(ssr_matrix,4UL)(2UL,1UL);
+    CHECK(ssr_I0 ==       4.0 * area * 4.0 / 3.0);
+    CHECK(ssr_I1 ==       4.0 * area * 4.0 / 3.0);
+    CHECK(ssr_I2 ==       4.0 * area);
+    CHECK(ssr_Id0 == 0.0);
+    CHECK(ssr_Id1 == 0.0);
+    CHECK(ssr_Id2 == 0.0);
+    CHECK(ssr_Id3 == 0.0);
+    CHECK(ssr_Id4 == 0.0);
+    CHECK(ssr_Id5 == 0.0);
+
+    auto btr_matrix = blocks::get<tags::BendingTwistRigidityMatrix>(model);
+    auto btr_I0 = Traits::DataType::Matrix::slice(btr_matrix,2UL)(0UL,0UL);
+    auto btr_I1 = Traits::DataType::Matrix::slice(btr_matrix,2UL)(1UL,1UL);
+    auto btr_I2 = Traits::DataType::Matrix::slice(btr_matrix,2UL)(2UL,2UL);
+    auto btr_Id0 = Traits::DataType::Matrix::slice(btr_matrix,3UL)(0UL,1UL);
+    auto btr_Id1 = Traits::DataType::Matrix::slice(btr_matrix,3UL)(0UL,2UL);
+    auto btr_Id2 = Traits::DataType::Matrix::slice(btr_matrix,3UL)(1UL,2UL);
+    auto btr_Id3 = Traits::DataType::Matrix::slice(btr_matrix,4UL)(1UL,0UL);
+    auto btr_Id4 = Traits::DataType::Matrix::slice(btr_matrix,4UL)(2UL,0UL);
+    auto btr_Id5 = Traits::DataType::Matrix::slice(btr_matrix,4UL)(2UL,1UL);
+    CHECK(btr_I0 ==       4.0 * I_0);
+    CHECK(btr_I1 ==       4.0 * I_0);
+    CHECK(btr_I2 == 2.0 * 4.0 * I_0);
+    CHECK(btr_Id0 == 0.0);
+    CHECK(btr_Id1 == 0.0);
+    CHECK(btr_Id2 == 0.0);
+    CHECK(btr_Id3 == 0.0);
+    CHECK(btr_Id4 == 0.0);
+    CHECK(btr_Id5 == 0.0);
   }
 
 }  // namespace

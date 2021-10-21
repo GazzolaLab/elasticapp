@@ -382,7 +382,7 @@ namespace elastica {
               // reference_length_collection
               auto& reference_length_collection(
                   blocks::get<ReferenceElementLength>(downstream_block));
-              reference_length_collection = Traits::Operations::transpose(Traits::Operations::batch_norm(position_diff));
+              reference_length_collection = Traits::Operations::batch_norm(position_diff);
 
               // reference_voronoi_length_collection
               auto& reference_voronoi_length_collection(
@@ -392,7 +392,7 @@ namespace elastica {
               // element_length_collection
               auto& element_length_collection(
                   blocks::get<ElementLength>(downstream_block));
-              element_length_collection = Traits::Operations::transpose(Traits::Operations::batch_norm(position_diff));
+              element_length_collection = Traits::Operations::batch_norm(position_diff);
 
               // element_dilatation
               auto& element_dilatation_collection(

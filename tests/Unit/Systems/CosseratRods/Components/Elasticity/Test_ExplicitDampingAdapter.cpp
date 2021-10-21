@@ -45,15 +45,13 @@ namespace {
                            CosseratInitializer&& initializers) {}
 
     void compute_internal_modeled_loads_impl() {
-//      auto& internal_load = blocks::get<elastica::tags::InternalLoads>(self());
-//      internal_load = 3.14;
-      //return 3.14;
+      auto& internal_load = blocks::get<elastica::tags::InternalLoads>(self());
+      internal_load = 3.14;
     }
 
     void compute_internal_modeled_torques_impl() {
-//      auto& internal_torque = blocks::get<elastica::tags::InternalTorques>(self());
-//      internal_torque = 42.0;
-      // return 42.0;
+      auto& internal_torque = blocks::get<elastica::tags::InternalTorques>(self());
+      internal_torque = 42.0;
     }
   };
 

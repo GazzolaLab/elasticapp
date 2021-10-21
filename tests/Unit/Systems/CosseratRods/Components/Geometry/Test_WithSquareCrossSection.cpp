@@ -83,30 +83,19 @@ namespace {
     CHECK(model.get_element_dimension() == 0.0);
     CHECK(model.get_element_volume() == 0.0);
 
-    constexpr auto n_initializers = 5UL;
+    constexpr auto n_initializers = 3UL;
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
-        // from before
-        blocks::initialize<tags::Position>([&i = n_times_called[0]](std::size_t index) {
-          ++i;
-          return index * 1.0;
-          return 2.0;
-        }),
-        blocks::initialize<tags::Director>([&i = n_times_called[1]](...) {
-          ++i;
-          return 0.5;
-        }),
-        // from before
-        blocks::initialize<tags::ElementDimension>(
-            [&i = n_times_called[2]](...) {
-              ++i;
-              return 4.0;
-            }));
+        blocks::initialize<tags::Position>([&i = n_times_called[0]](std::size_t index) { ++i; return index * 1.0; }),
+        blocks::initialize<tags::Director>([&i = n_times_called[1]](...) { ++i; return 0.5; }),
+        blocks::initialize<tags::ElementDimension>( [&i = n_times_called[2]](...) { ++i; return 4.0; })
+      );
 
     Model::initialize(model, std::move(initializer));
 
     // check if initialization is done as expected
-    CHECK_ITERABLE_APPROX(n_times_called, make_array<n_initializers>(1U));
+    auto expected_call_count = make_array(11U, 10U, 10U);
+    CHECK_ITERABLE_APPROX(n_times_called, expected_call_count);
 
     // only these are checked now
     CHECK(model.get_element_dimension() == 4.0);

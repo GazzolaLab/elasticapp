@@ -588,7 +588,7 @@ namespace elastica {
             // 1. Compute new lengths
             auto position_diff(Traits::Operations::difference_kernel(position));
             auto& element_length_collection(blocks::get<ElementLength>(self()));
-            element_length_collection = Traits::Operations::transpose(Traits::Operations::batch_norm(position_diff));
+            element_length_collection = Traits::Operations::batch_norm(position_diff);
 
             // 2. Update tangents
             auto& tangent_collection(blocks::get<Tangent>(self()));
