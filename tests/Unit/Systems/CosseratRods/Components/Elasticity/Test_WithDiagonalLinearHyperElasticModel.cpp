@@ -62,15 +62,15 @@ namespace {
       "[Systems][Unit]") {
     Model model{};
 
-    constexpr auto n_initializers = 7UL;
+    constexpr auto n_initializers = 5UL;
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
         // Geometry Variables
         blocks::initialize<tags::Position>([&i = n_times_called[0]](std::size_t index) { ++i; return index * 1.0; }),
         blocks::initialize<tags::Director>([&i = n_times_called[1]](...) { ++i; return 0.5; }),
         blocks::initialize<tags::ElementDimension>([&i = n_times_called[2]](...) { ++i; return 4.0; }),
-        blocks::initialize<tags::ShearStretchRigidityMatrix>( [&i = n_times_called[5]](...) { ++i; return 4.0; }),
-        blocks::initialize<tags::BendingTwistRigidityMatrix>( [&i = n_times_called[6]](...) { ++i; return 4.0; }),
+        blocks::initialize<tags::ShearStretchRigidityMatrix>( [&i = n_times_called[3]](...) { ++i; return 4.0; }),
+        blocks::initialize<tags::BendingTwistRigidityMatrix>( [&i = n_times_called[4]](...) { ++i; return 4.0; }),
         blocks::initialize<tags::Density>([](...) { return 1.0; }),
         blocks::initialize<tags::Velocity>([](...) { return 0.0; }),
         blocks::initialize<tags::AngularVelocity>([](...) { return 0.0; }),
@@ -80,12 +80,13 @@ namespace {
 
     Model::initialize(model, std::move(initializer));
 
-    CHECK(model.compute_internal_forces() == 1.00);
-    CHECK(model.compute_internal_torques() == 2.0);
+    CHECK(model.compute_internal_forces() == 0.0);
+    CHECK(model.compute_internal_torques() == 0.0);
 
 
     // check if initialization is done as expected
-    CHECK_ITERABLE_APPROX(n_times_called, make_array<n_initializers>(1U));
+    auto expected_call_count = make_array(11U, 10U, 10U, 10U, 9U);
+    CHECK_ITERABLE_APPROX(n_times_called, expected_call_count);
 
     // Check RigidityMatrix
     // [0] element : stiff  * I_0

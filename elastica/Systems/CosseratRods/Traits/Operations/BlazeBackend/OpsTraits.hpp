@@ -127,7 +127,7 @@ namespace elastica {
                         const MT2& vector_batch) {
         constexpr std::size_t dimension(3UL);
         for (std::size_t i(0UL); i < dimension; ++i) {
-          auto val1 = blaze::pageslice(matrix_batch, i);
+          auto val1 = blaze::trans(blaze::rowslice(matrix_batch, i));
           auto val2 = blaze::sum<blaze::columnwise>(val1 % vector_batch);
           blaze::row(matvec_batch, i) = val2;
         }

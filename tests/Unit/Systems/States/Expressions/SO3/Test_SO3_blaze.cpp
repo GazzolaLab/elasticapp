@@ -168,19 +168,24 @@ namespace {
     using DH_mat = blaze::DynamicMatrix<float>;
     using DH_SO3 = SO3<DH_mat, tags::DerivativeTag>;
 
-    ::elastica::Time first(1.0), second(1.1);
+    ::elastica::Time first(1.0), second(2.0);
     const ::elastica::TimeDelta td(second - first); // dt
 
-    // TODO : Fix after correcting the kernel
     const std::size_t dimensions = 3UL;
-    const std::size_t size = 5UL;
+    const std::size_t size = 1UL;
 
-    float f = 5.0F;
-    H_mat data(dimensions, dimensions, size, f); // Q
+    //float f = 5.0F;
+    //H_mat data(dimensions, dimensions, size, f); // Q
+    H_mat data{{{1.0}, {0.0}, {0.0}},
+               {{0.0}, {1.0}, {0.0}},
+               {{0.0}, {0.0}, {1.0}}};
     H_SO3 primitive(&data);
 
-    float another_f = 25.0F;
-    DH_mat derivative_data(dimensions, size, another_f); // omega
+    //float another_f = 25.0F;
+    //DH_mat derivative_data(dimensions, size, another_f); // omega
+    DH_mat derivative_data{{1.0}, {3.2}, {7.0}};
+    derivative_data /= blaze::norm(derivative_data);
+    derivative_data *= 76.0 * M_PI / 180.0;
     DH_SO3 derivative(&derivative_data);
 
     auto const expr = primitive + td * derivative;
@@ -188,26 +193,39 @@ namespace {
     static_assert(::elastica::states::tt::is_vectorized_t<E>::value,
                   "SO3 blaze meta failure");
 
+
     {
       // no resize version
-      // TODO : complete with results
-      H_mat result_h(dimensions, dimensions, size, 0.0);
+      H_mat result_h(dimensions, dimensions, size);
       H_SO3 result(&result_h);
-
-      // assignment
+      H_mat expected_result1{{{0.254506},  {0.915374}, {-0.311957}},
+                            {{-0.834834}, {0.370785}, {0.406903}},
+                            {{0.488138},  {0.156873}, {0.858552}}};
+      H_mat expected_result2{{{    -0.85169 },{    0.523437 },{   0.0252415 }},
+                             {{    -0.32339 },{   -0.562872 },{    0.760654 }},
+                             {{    0.412363 },{    0.639679 },{    0.648667 }}};
+      H_mat expected_result3{{{ -0.641423 },{ -0.581572 },{  0.500351 } },
+                             {{  0.758904 },{ -0.385401 },{  0.524911 } },
+                             {{ -0.112438 },{  0.716408 },{  0.688562 } }};
       result = expr;
+
       // 25.0 * 0.1 + 5.0F
       CHECK_ITERABLE_APPROX(to_vec(result.get()),
-                            to_vec(H_mat(dimensions, dimensions, size, 2.0F)));
+                            to_vec(expected_result1));
+
+      result = expr + 1.0 * (td * derivative);
+      // 5.0F + 2.0 * 0.1 * 25.0 + 0.1 * 25.0 = 12.5F
+      CHECK_ITERABLE_APPROX(to_vec(result.get()),
+                            to_vec(expected_result2));
 
       result = expr + 2.0 * (td * derivative);
       // 5.0F + 2.0 * 0.1 * 25.0 + 0.1 * 25.0 = 12.5F
       CHECK_ITERABLE_APPROX(to_vec(result.get()),
-                            to_vec(H_mat(dimensions, dimensions, size, 2.0F)));
+                            to_vec(expected_result3));
     }
 
     {
-      // resize version
+      // TODO: resize version
       H_mat result_h;
       H_SO3 result(&result_h);
 
@@ -223,39 +241,54 @@ namespace {
       "Unit.Systems.States.SO3TimeDeltaMultExpr_primitive_add_assign_blaze",
       "[Systems][Unit]") {
     using namespace elastica::states;
-    ::elastica::Time first(1.0), second(3.0);
+    ::elastica::Time first(1.0), second(2.0);
     const ::elastica::TimeDelta td(second - first);
 
-    using H = blaze::DynamicTensor<float>;
-    using DH = blaze::DynamicMatrix<float>;
-    using P = SO3<H, tags::PrimitiveTag>;
-    using D = SO3<DH, tags::DerivativeTag>;
+    using H_mat = blaze::DynamicTensor<float>;
+    using H_SO3 = SO3<H_mat, tags::PrimitiveTag>;
+    using DH_mat = blaze::DynamicMatrix<float>;
+    using DH_SO3 = SO3<DH_mat, tags::DerivativeTag>;
 
-    // TODO : Fix after correcting the kernel
-    const std::size_t dimensions = 3UL;
-    const std::size_t size = 7UL;
+    //const std::size_t dimensions = 3UL;
+    //const std::size_t size = 1UL;
 
-    float another_f = 10.0F;
+    //float another_f = 25.0F;
+    //DH_mat derivative_data(dimensions, size, another_f); // omega
+    DH_mat derivative_data{{1.0}, {3.2}, {7.0}};
+    derivative_data /= blaze::norm(derivative_data);
+    derivative_data *= 76.0 * M_PI / 180.0;
+    DH_SO3 derivative(&derivative_data);
 
-    DH derivative_data(dimensions, size, another_f);
-    D derivative(&derivative_data);
+    H_mat result_h{{{1.0}, {0.0}, {0.0}},
+               {{0.0}, {1.0}, {0.0}},
+               {{0.0}, {0.0}, {1.0}}};
+    H_SO3 result(&result_h);
 
-    auto expr = td * derivative;
-
-    float f = 5.0F;
-    H result_h(dimensions, dimensions, size, f);
-    P result(&result_h);
+    H_mat expected_result1{{{ 0.254506}, {0.915374}, {-0.311957}},
+                           {{-0.834834}, {0.370785}, { 0.406903}},
+                           {{ 0.488138}, {0.156873}, { 0.858552}}};
+    H_mat expected_result2{{{    -0.85169 },{    0.523437 },{   0.0252415 }},
+                           {{    -0.32339 },{   -0.562872 },{    0.760654 }},
+                           {{    0.412363 },{    0.639679 },{    0.648667 }}};
+    H_mat expected_result3{{{ -0.641423 },{ -0.581572 },{  0.500351 } },
+                           {{  0.758904 },{ -0.385401 },{  0.524911 } },
+                           {{ -0.112438 },{  0.716408 },{  0.688562 } }};
 
     // assignment
+    auto expr = td * derivative;
     result += expr;
-
     CHECK_ITERABLE_APPROX(to_vec(result.get()),
-                          to_vec(H(dimensions, dimensions, size, 2.0F)));
+                          to_vec(expected_result1));
 
     auto another_expr = derivative * td;
     result += another_expr;
     CHECK_ITERABLE_APPROX(to_vec(result.get()),
-                          to_vec(H(dimensions, dimensions, size, 2.0F)));
+                          to_vec(expected_result2));
+
+    auto yet_another_expr = derivative * td;
+    result += yet_another_expr;
+    CHECK_ITERABLE_APPROX(to_vec(result.get()),
+                          to_vec(expected_result3));
   }
 
 }  // namespace
