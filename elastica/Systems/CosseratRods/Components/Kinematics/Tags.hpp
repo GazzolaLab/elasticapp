@@ -33,11 +33,11 @@ namespace elastica{
     /*!\brief Tag indicating mass and density
      * \ingroup systems
      */
-    struct Mass;
-    struct Density;
+    struct Mass{};
+    struct Density{};
 
-    struct ExternalLoads;
-    struct ExternalTorques;
+    struct ExternalLoads{};
+    struct ExternalTorques{};
 
   }
 }

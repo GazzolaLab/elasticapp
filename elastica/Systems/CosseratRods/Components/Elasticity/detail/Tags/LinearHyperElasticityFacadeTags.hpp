@@ -22,8 +22,8 @@ namespace elastica {
   //============================================================================
   namespace tags {
 
-    struct BendingTwistRigidityMatrix;
-    struct ShearStretchRigidityMatrix;
+    struct BendingTwistRigidityMatrix{};
+    struct ShearStretchRigidityMatrix{};
 
   }  // namespace tags
 

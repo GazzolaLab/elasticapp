@@ -29,21 +29,21 @@ namespace elastica {
     /*!\brief Tag indicating element positions
      * \ingroup systems
      */
-    struct Position;
+    struct Position{};
     //**************************************************************************
 
     //**************************************************************************
     /*!\brief Tag indicating velocity
      * \ingroup systems
      */
-    struct Velocity;
+    struct Velocity{};
     //**************************************************************************
 
     //**************************************************************************
     /*!\brief Tag indicating translational acceleration
      * \ingroup systems
      */
-    struct Acceleration;
+    struct Acceleration{};
     //**************************************************************************
 
     // so3 group
@@ -52,21 +52,21 @@ namespace elastica {
     /*!\brief Tag indicating element orientations (director)
      * \ingroup systems
      */
-    struct Director;
+    struct Director{};
     //**************************************************************************
 
     //**************************************************************************
     /*!\brief Tag indicating angular velocity
      * \ingroup systems
      */
-    struct AngularVelocity;
+    struct AngularVelocity{};
     //**************************************************************************
 
     //**************************************************************************
     /*!\brief Tag indicating angular accelerations
      * \ingroup systems
      */
-    struct AngularAcceleration;
+    struct AngularAcceleration{};
     //**************************************************************************
 
     // D1, D2, D3

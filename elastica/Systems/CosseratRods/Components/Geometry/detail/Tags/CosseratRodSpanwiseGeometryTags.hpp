@@ -23,17 +23,17 @@ namespace elastica {
   namespace tags {
 
     // 1D Geometry types
-    struct ReferenceElementLength;
-    struct ReferenceCurvature;
-    struct ReferenceShearStretchStrain;
-    struct ReferenceVoronoiLength;
-    struct ElementLength;
-    struct ElementDilatation;
-    struct VoronoiLength;
-    struct VoronoiDilatation;
-    struct Curvature;
-    struct Tangent;
-    struct ShearStretchStrain;
+    struct ReferenceElementLength{};
+    struct ReferenceCurvature{};
+    struct ReferenceShearStretchStrain{};
+    struct ReferenceVoronoiLength{};
+    struct ElementLength{};
+    struct ElementDilatation{};
+    struct VoronoiLength{};
+    struct VoronoiDilatation{};
+    struct Curvature{};
+    struct Tangent{};
+    struct ShearStretchStrain{};
 
   }  // namespace tags
 

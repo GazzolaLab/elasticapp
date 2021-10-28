@@ -22,16 +22,16 @@ namespace elastica {
   //============================================================================
   namespace tags {
 
-    struct InternalLoads;
-    struct InternalStress;
-    struct InternalTorques;
-    struct InternalCouple;
+    struct InternalLoads{};
+    struct InternalStress{};
+    struct InternalTorques{};
+    struct InternalCouple{};
 
-    struct _DummyNodeVector;
-    struct _DummyElementVector;
-    struct _DummyElementVector2;
-    struct _DummyVoronoiVector;
-    struct _DummyMatrix;
+    struct _DummyNodeVector{};
+    struct _DummyElementVector{};
+    struct _DummyElementVector2{};
+    struct _DummyVoronoiVector{};
+    struct _DummyMatrix{};
 
   }  // namespace tags
 

@@ -23,15 +23,15 @@ namespace elastica {
 
   namespace tags {
 
-    struct ElementDimension;
-    struct ElementVolume;
+    struct ElementDimension{};
+    struct ElementVolume{};
     // so3 group
 
     //**************************************************************************
     /*!\brief Tag indicating mass second moment of inertia
      * \ingroup systems
      */
-    struct MassSecondMomentOfInertia;
+    struct MassSecondMomentOfInertia{};
     //**************************************************************************
 
     //**************************************************************************
@@ -39,7 +39,7 @@ namespace elastica {
      * equivalent to inverse of mass second moment of inertia.
      * \ingroup systems
      */
-    struct InvMassSecondMomentOfInertia;
+    struct InvMassSecondMomentOfInertia{};
     //**************************************************************************
 
 
