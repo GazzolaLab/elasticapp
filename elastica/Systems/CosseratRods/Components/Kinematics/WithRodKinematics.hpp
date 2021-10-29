@@ -74,24 +74,26 @@ namespace elastica {
           /*!\name Variable definitions*/
           //@{
 
-          //********************************************************************
-          /*!\brief Variable scalar density within the Cosserat rod hierarchy
-           */
-          struct Density
-              : public Traits::template CosseratRodInitializedVariable<
-                  ::elastica::tags::Density,
-                  typename Traits::DataType::Scalar,
-                  typename Traits::Place::OnElement> {};
-          //********************************************************************
+          // Deprecated - TODO Remove after check
+//          //********************************************************************
+//          /*!\brief Variable scalar density within the Cosserat rod hierarchy
+//           */
+//          struct Density
+//              : public Traits::template CosseratRodInitializedVariable<
+//                  ::elastica::tags::Density,
+//                  typename Traits::DataType::Scalar,
+//                  typename Traits::Place::OnElement> {};
+//          //********************************************************************
 
           //********************************************************************
           /*!\brief Variable scalar mass within the Cosserat rod hierarchy
+           *  Lumped mass on node. (should be in element)
            */
           struct Mass
               : public Traits::template CosseratRodInitializedVariable<
                   ::elastica::tags::Mass,         //
                   typename Traits::DataType::Scalar,  //
-                  typename Traits::Place::OnElement> {};
+                  typename Traits::Place::OnNode> {};
           //********************************************************************
 
           //********************************************************************
@@ -306,7 +308,7 @@ namespace elastica {
             auto& density(blocks::get<Density>(downstream_block));
             auto& mass(blocks::get<Mass>(downstream_block));
             auto volume = downstream_block.get_element_volume();
-            mass = density * volume;
+            mass *= volume; // Mass will be initialized by density externally
           }
 
           /* Reset forces and torques */
@@ -391,10 +393,36 @@ namespace elastica {
          * of the current rod
          */
         inline constexpr decltype(auto) get_curvature_rate() const& noexcept {
-          // TODO
-          return 1.0;
+          // TODO get curvature rate
+          auto& curvature(blocks::get<tags::Curvature>(self()));
+          auto& omega(blocks::get<tags::AngularAcceleration>(self()));
+          auto averaged_omega = Traits::Operations::average_kernel(omega);
+          return Traits::Operations::difference_kernel(omega) +
+                 Traits::Operations::batch_cross(curvature, averaged_omega);
         }
         //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Gets temporal rate of curvature based on the current state
+         * of the current rod
+         */
+        inline constexpr decltype(auto) get_shear_stretch_strain_rate() const& noexcept {
+          // TODO get shear stretch strain rate
+          auto& director(blocks::get<tags::Director>(self()));
+          auto& velocity(blocks::get<tags::Velocity>(self()));
+          auto& reference_length(blocks::get<tags::ReferenceElementLength>(self()));
+          auto& sigma(blocks::get<tags::ShearStretchStrain>(self()));
+          auto& omega(blocks::get<tags::AngularAcceleration>(self()));
+
+          auto sigma_rate(sigma);
+          auto diff_velocity = Traits::Operations::difference_kernel(velocity);
+          Traits::Operations::batch_add_z_unit(sigma_rate);
+          // z_vector = np.array([ 0.0, 0.0, 1.0 ]).reshape(3, -1);
+          return Traits::Operations::batch_cross(sigma_rate, omega) -
+                          Traits::Operations::batch_matvec(director, diff_velocity) / reference_length;
+        }
+        //**********************************************************************
+
 
        protected:
         //**********************************************************************

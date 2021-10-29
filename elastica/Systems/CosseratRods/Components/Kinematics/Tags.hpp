@@ -34,7 +34,6 @@ namespace elastica{
      * \ingroup systems
      */
     struct Mass{};
-    struct Density{};
 
     struct ExternalLoads{};
     struct ExternalTorques{};
