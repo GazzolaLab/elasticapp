@@ -121,7 +121,7 @@ namespace elastica {
            * Cosserat rod hierarchy (kappa)
            */
           struct ReferenceShearStretchStrain
-              : public Traits::template CosseratRodVariable<
+              : public Traits::template CosseratRodInitializedVariable<
                   ::elastica::tags::ReferenceShearStretchStrain,  //
                   typename Traits::DataType::Vector,     //
                   typename Traits::Place::OnElement> {};
@@ -237,10 +237,10 @@ namespace elastica {
               tmpl::list<ReferenceVoronoiLength, ElementLength,
                          ElementDilatation, VoronoiLength, VoronoiDilatation,
                          Curvature, Tangent, ShearStretchStrain,
-                         ReferenceElementLength, ReferenceCurvature, ReferenceShearStretchStrain>;
+                         ReferenceElementLength>;
           //! List of initialized variables
           using InitializedVariables =
-              tmpl::list<>;
+              tmpl::list<ReferenceCurvature, ReferenceShearStretchStrain>;
           //! List of all variables
           using Variables =
               tmpl::append<InitializedVariables, ComputedVariables>;
@@ -427,7 +427,6 @@ namespace elastica {
               Traits::Operations::spanwise_inv_rotate_and_divide(
                   curvature_collection, director,
                   reference_voronoi_length_collection);
-              // TODO: Use copy consturctor for reference curvature collection
               auto& reference_curvature_collection(
                   blocks::get<ReferenceCurvature>(downstream_block));
               reference_curvature_collection = curvature_collection;

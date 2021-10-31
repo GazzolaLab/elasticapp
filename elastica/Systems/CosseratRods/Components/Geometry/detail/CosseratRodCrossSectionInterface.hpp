@@ -131,7 +131,7 @@ namespace elastica {
            * Cosserat rod hierarchy
            */
           struct MassSecondMomentOfInertia
-              : public Traits::template CosseratRodInitializedVariable<
+              : public Traits::template CosseratRodVariable<
                   ::elastica::tags::MassSecondMomentOfInertia,  //
                   typename Traits::DataType::Matrix,
                   typename Traits::Place::OnElement> {};
@@ -142,7 +142,7 @@ namespace elastica {
            * Cosserat rod hierarchy
            */
           struct InvMassSecondMomentOfInertia
-              : public Traits::template CosseratRodInitializedVariable<
+              : public Traits::template CosseratRodVariable<
                   ::elastica::tags::InvMassSecondMomentOfInertia,  //
                   typename Traits::DataType::Matrix,
                   typename Traits::Place::OnElement> {};
@@ -330,8 +330,6 @@ namespace elastica {
 
                   auto dofs = Variable::get_dofs(cap.value.n_elems());
                   for (std::size_t i = 0; i < dofs; ++i) {
-                    // TODO : This doesn't work on slices, consider having the
-                    // slice member in the initializer itself
                     Variable::slice(variable, i) = initializer(i);
                   }
                 });
