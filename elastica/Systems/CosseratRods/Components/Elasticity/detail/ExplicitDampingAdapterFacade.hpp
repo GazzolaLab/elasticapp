@@ -129,8 +129,6 @@ namespace elastica {
                   auto dofs =
                       Variable::get_dofs(std::move(cap.value).n_elems());
                   for (std::size_t i = 0UL; i < dofs; ++i) {
-                    // TODO : This doesn't work on slices, consider having the
-                    // slice member in the initializer itself
                     Variable::slice(variable, i) = initializer(i);
                   }
                 });

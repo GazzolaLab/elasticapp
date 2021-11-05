@@ -167,7 +167,7 @@ namespace elastica {
                                                ExternalLoads,
                                                ExternalTorques>;
           //! List of initialized variables
-          using InitializedVariables = tmpl::list<Density, Velocity,
+          using InitializedVariables = tmpl::list<Velocity,
               AngularVelocity, Acceleration, AngularAcceleration>;
           //! List of all variables
           using Variables =

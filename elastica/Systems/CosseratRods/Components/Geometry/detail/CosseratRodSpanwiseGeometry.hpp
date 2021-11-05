@@ -76,7 +76,7 @@ namespace elastica {
            * rod hierarchy
            */
           struct ReferenceElementLength
-              : public Traits::template CosseratRodInitializedVariable<
+              : public Traits::template CosseratRodVariable<
                     ::elastica::tags::ReferenceElementLength,  //
                     typename Traits::DataType::Scalar,         //
                     typename Traits::Place::OnElement> {

@@ -110,7 +110,7 @@ namespace elastica {
 
           //********************************************************************
           /*!\brief Temporary vector and matrix for dummy purpose
-           * TODO try to refactor : avoid temp memory allocations
+           * Avoid temp memory allocations. Use only if must
            *  - Some exception: branch of operation
            */
           struct _DummyNodeVector: public Traits::template CosseratRodVariable<

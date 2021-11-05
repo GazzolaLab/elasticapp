@@ -28,7 +28,6 @@ namespace cosserat_rod {
 
     namespace detail {
 
-      // TODO : Static test : assure that the size is 0 or 1
       /* DONE : Make shape protocol with
        *  1. get_dimension
        *  2. get_area
