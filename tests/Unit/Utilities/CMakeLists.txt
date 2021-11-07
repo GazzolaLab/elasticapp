@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
         Test_Defer.cpp
         Test_End.cpp
         Test_FakeVirtual.cpp
+        Test_Generators.cpp
         Test_GetOutput.cpp
         Test_Invoke.cpp
         Test_KarmarkarKarpPartition.cpp
