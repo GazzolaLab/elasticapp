@@ -1,4 +1,5 @@
 add_subdirectory(Components)
+add_subdirectory(Initializers)
 
 set(LIBRARY Systems)
 
