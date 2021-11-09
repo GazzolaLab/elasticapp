@@ -111,7 +111,7 @@ namespace elastica {
                   typename... ExtraTaggedInitializers>
         decltype(auto) initialize(
             TaggedInitializer&& initializer,
-            ExtraTaggedInitializers&&... extra_initializers) const noexcept {
+            ExtraTaggedInitializers&&... extra_initializers) const /*noexcept*/ {
           // cannot automate this fully as as we repack it into functors that
           // can give out vectors or tensors
           return cosserat_rod::initialize_cosserat_rod<Plugin>(std::tuple_cat(

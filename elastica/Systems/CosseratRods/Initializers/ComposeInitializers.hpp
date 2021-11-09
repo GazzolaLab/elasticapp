@@ -87,7 +87,7 @@ namespace elastica {
           : ComposeInitializers(std::make_tuple(std::forward<Args>(args)...)) {}
 
      protected:
-      decltype(auto) get_required_parameters() const noexcept {
+      decltype(auto) get_required_parameters() const /*noexcept*/ {
         // pass directly as references
         // return detail::pass_as_wrapped<tmpl::list<NElement,
         // Radius>>(data());

@@ -77,7 +77,7 @@ namespace elastica {
        protected:
         template <typename OptionsTuple>
         decltype(auto) get_required_parameters(
-            OptionsTuple const& options_cache) const noexcept {
+            OptionsTuple const& options_cache) const /*noexcept*/ {
           // pass directly as references
           // return detail::pass_as_wrapped<tmpl::list<NElement,
           // Radius>>(data());
