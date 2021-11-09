@@ -6,6 +6,7 @@
 
 #include "Utilities/Math/Length.hpp"
 #include "Utilities/Math/Normalize.hpp"
+#include "Utilities/Math/Zero.hpp"
 
 namespace elastica {
 
@@ -33,7 +34,7 @@ namespace elastica {
       // If its collinear, iterate till its not
       // should be parallel threshold but thats in simluator
       // and we want to make it not depend on simluator
-      if /*while*/ (equal(length(v1), 0.0)) {
+      if /*while*/ (is_zero_length(v1)) {
         v1 = {0.6, -0.8, 0.0};
         v3 = normalize(v1 % v2);
         v1 = v2 % v3;
