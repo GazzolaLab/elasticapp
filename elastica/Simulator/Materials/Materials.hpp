@@ -136,15 +136,16 @@ namespace elastica {
     /*!\name Constructor */
     //@{
     explicit inline Material(std::string name, real_t density, real_t cor,
-                             real_t poisson, real_t young, real_t stiffness,
-                             real_t normal_damping, real_t tangential_damping,
-                             real_t csf, real_t cdf);
+                             real_t poisson, real_t young, real_t shear_modulus,
+                             real_t stiffness, real_t normal_damping,
+                             real_t tangential_damping, real_t csf, real_t cdf);
     explicit inline Material(std::string name, real_t density, real_t cor,
-                             real_t poisson, real_t young, real_t stiffness,
-                             real_t normal_damping, real_t tangential_damping,
-                             real_t forward_csf, real_t backward_csf,
-                             real_t lateral_csf, real_t forward_cdf,
-                             real_t backward_cdf, real_t lateral_cdf);
+                             real_t poisson, real_t young, real_t shear_modulus,
+                             real_t stiffness, real_t normal_damping,
+                             real_t tangential_damping, real_t forward_csf,
+                             real_t backward_csf, real_t lateral_csf,
+                             real_t forward_cdf, real_t backward_cdf,
+                             real_t lateral_cdf);
     // No explicitly declared copy constructor.
     //@}
     //**************************************************************************
@@ -161,6 +162,7 @@ namespace elastica {
     inline real_t get_restitution() const noexcept;
     inline real_t get_poisson_ratio() const noexcept;
     inline real_t get_youngs_modulus() const noexcept;
+    inline real_t get_shear_modulus() const noexcept;
     inline real_t get_stiffness() const noexcept;
     inline real_t get_normal_damping() const noexcept;
     inline real_t get_tangential_damping() const noexcept;
@@ -215,6 +217,7 @@ namespace elastica {
     static inline real_t get_youngs_modulus(MaterialID material) noexcept;
     static inline real_t get_youngs_modulus(MaterialID material1,
                                             MaterialID material2) noexcept;
+    static inline real_t get_shear_modulus(MaterialID material) noexcept;
     static inline real_t get_stiffness(MaterialID material) noexcept;
     static inline real_t get_stiffness(MaterialID material1,
                                        MaterialID material2) noexcept;
@@ -257,6 +260,14 @@ namespace elastica {
     static inline void set_lateral_dynamic_friction(
         MaterialID material1, MaterialID material2,
         real_t lateral_cdf) noexcept;
+    //@}
+    //**************************************************************************
+
+    //**Calculate functions*****************************************************
+    /*!\name Calculate functions */
+    //@{
+    static inline real_t calculate_shear_modulus(real_t young,
+                                                 real_t poisson) noexcept;
     //@}
     //**************************************************************************
 
@@ -372,6 +383,13 @@ namespace elastica {
      * holds. The SI unit for Young's modulus is \f$ Pa \f$ or \f$ N/m^2 \f$.
      */
     real_t young_;
+    //! The shear modulus for the material \f$ (0..\infty) \f$.
+    /* The shear modulus is a measure for the stiffness of an an-isotropic
+     * elastic material. It is defined as the ratio of the shear stress
+     * over the shear strain in the range of stress in which Hooke's law
+     * holds. The SI unit for Young's modulus is \f$ Pa \f$ or \f$ N/m^2 \f$.
+     */
+    real_t shear_;
     //! The stiffness of the contact region \f$ (0..\infty) \f$.
     /* Rigid body theory assumes that the deformation during contact is
      * localized to the contact region. This local compliance can be modelled
@@ -418,25 +436,26 @@ namespace elastica {
     //**Friend declarations*****************************************************
     /*! \cond ELASTICA_INTERNAL */
     friend MaterialID create_material(const std::string& name, real_t density,
-                                      real_t cor, real_t young,
+                                      real_t cor, real_t young, real_t shear,
                                       real_t stiffness, real_t dampingN,
                                       real_t dampingT, real_t csf, real_t cdf);
     friend MaterialID create_material(const std::string& name, real_t density,
-                                      real_t cor, real_t young,
+                                      real_t cor, real_t young, real_t shear,
                                       real_t stiffness, real_t dampingN,
                                       real_t dampingT, real_t forward_csf,
                                       real_t backward_csf, real_t lateral_csf,
                                       real_t forward_cdf, real_t backward_cdf,
                                       real_t lateral_cdf);
     friend MaterialID create_material(real_t density, real_t cor, real_t young,
-                                      real_t stiffness, real_t dampingN,
-                                      real_t dampingT, real_t csf, real_t cdf);
+                                      real_t shear, real_t stiffness,
+                                      real_t dampingN, real_t dampingT,
+                                      real_t csf, real_t cdf);
     friend MaterialID create_material(real_t density, real_t cor, real_t young,
-                                      real_t stiffness, real_t dampingN,
-                                      real_t dampingT, real_t forward_csf,
-                                      real_t backward_csf, real_t lateral_csf,
-                                      real_t forward_cdf, real_t backward_cdf,
-                                      real_t lateral_cdf);
+                                      real_t shear, real_t stiffness,
+                                      real_t dampingN, real_t dampingT,
+                                      real_t forward_csf, real_t backward_csf,
+                                      real_t lateral_csf, real_t forward_cdf,
+                                      real_t backward_cdf, real_t lateral_cdf);
     /*! \endcond */
     //**************************************************************************
   };
@@ -451,6 +470,7 @@ namespace elastica {
    * \f$ [0..1] \f$.
    * \param poisson The Poisson's ratio of the material \f$ [-1..0.5] \f$.
    * \param young The Young's modulus of the material \f$ (0..\infty) \f$.
+   * \param shear The Shear modulus of the material \f$ (0..\infty) \f$.
    * \param stiffness The stiffness in normal direction of the material's
    * contact region.
    * \param normal_damping The damping coefficient in normal direction of the
@@ -468,11 +488,12 @@ namespace elastica {
    * [0..\infty) \f$.
    */
   inline Material::Material(std::string name, real_t density, real_t cor,
-                            real_t poisson, real_t young, real_t stiffness,
-                            real_t normal_damping, real_t tangential_damping,
-                            real_t forward_csf, real_t backward_csf,
-                            real_t lateral_csf, real_t forward_cdf,
-                            real_t backward_cdf, real_t lateral_cdf)
+                            real_t poisson, real_t young, real_t shear,
+                            real_t stiffness, real_t normal_damping,
+                            real_t tangential_damping, real_t forward_csf,
+                            real_t backward_csf, real_t lateral_csf,
+                            real_t forward_cdf, real_t backward_cdf,
+                            real_t lateral_cdf)
       : name_(std::move(name)),  // The name of the material
         density_(density),       // The density of the material
         restitution_(cor),     // The coefficient of restitution of the material
@@ -485,6 +506,7 @@ namespace elastica {
         lateral_dynamic_(lateral_cdf),
         poisson_(poisson),      // The Poisson's ratio for the material
         young_(young),          // The Young's modulus for the material
+        shear_(shear),          // The shear modulus for the material
         stiffness_(stiffness),  // The stiffness in normal direction of the
                                 // material's contact region.
         dampingN_(
@@ -515,12 +537,12 @@ namespace elastica {
    * coefficient of dynamic friction (CDF) of the material \f$ [0..\infty) \f$.
    */
   inline Material::Material(std::string name, real_t density, real_t cor,
-                            real_t poisson, real_t young, real_t stiffness,
-                            real_t normal_damping, real_t tangential_damping,
-                            real_t csf, real_t cdf)
-      : Material(std::move(name), density, cor, poisson, young, stiffness,
-                 normal_damping, tangential_damping, csf, csf, csf, cdf, cdf,
-                 cdf) {}
+                            real_t poisson, real_t young, real_t shear,
+                            real_t stiffness, real_t normal_damping,
+                            real_t tangential_damping, real_t csf, real_t cdf)
+      : Material(std::move(name), density, cor, poisson, young, shear,
+                 stiffness, normal_damping, tangential_damping, csf, csf, csf,
+                 cdf, cdf, cdf) {}
   //****************************************************************************
 
   //****************************************************************************
@@ -648,6 +670,14 @@ namespace elastica {
    * \return The Young's modulus of the material.
    */
   inline real_t Material::get_youngs_modulus() const noexcept { return young_; }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Returns the shear modulus of the material.
+   *
+   * \return The Shear modulus of the material.
+   */
+  inline real_t Material::get_shear_modulus() const noexcept { return shear_; }
   //****************************************************************************
 
   //****************************************************************************
@@ -1053,6 +1083,19 @@ namespace elastica {
   //****************************************************************************
 
   //****************************************************************************
+  /*!\brief Returns the Shear modulus of the given material.
+   * \ingroup materials
+   *
+   * \param material The material to be queried.
+   * \return The Shear modulus of the given material.
+   */
+  inline real_t Material::get_shear_modulus(MaterialID material) noexcept {
+    ELASTICA_ASSERT(material < materials_.size(), "Invalid material ID");
+    return materials_[material].get_shear_modulus();
+  }
+  //****************************************************************************
+
+  //****************************************************************************
   /*!\brief Returns the stiffness in normal direction of the material's contact
    * region.
    * \ingroup materials
@@ -1343,13 +1386,26 @@ namespace elastica {
   }
   //****************************************************************************
 
-  //=================================================================================================
+  //****************************************************************************
+  /*!\brief Computes the shear modulus given the youngs modulus and the poisson
+   * ratio
+   * \ingroup materials
+   *
+   */
+  inline real_t Material::calculate_shear_modulus(real_t young,
+                                                  real_t poisson) noexcept {
+    return static_cast<real_t>(0.5) * young /
+           (static_cast<real_t>(1.0) + poisson);
+  }
+  //****************************************************************************
+
+  //============================================================================
   //
   //  MATERIAL IRON
   //
-  //=================================================================================================
+  //============================================================================
 
-  //*************************************************************************************************
+  //****************************************************************************
   /*!\brief Specification of the material iron.
    * \ingroup materials
    *
@@ -1391,28 +1447,29 @@ namespace elastica {
    */
   class Iron : public Material {
    public:
-    //**Constructor*********************************************************************************
+    //**Constructor*************************************************************
     /*!\name Constructor */
     //@{
     explicit inline Iron();
     //@}
-    //**********************************************************************************************
+    //**************************************************************************
   };
-  //*************************************************************************************************
+  //****************************************************************************
 
-  //*************************************************************************************************
+  //****************************************************************************
   /*!\brief Default constructor for the Iron class.
    */
   inline Iron::Iron()
       : Material("iron", static_cast<real_t>(7.874), static_cast<real_t>(0.5),
                  static_cast<real_t>(0.24), static_cast<real_t>(200),
+                 Material::calculate_shear_modulus(200, 0.24),
                  static_cast<real_t>(200), static_cast<real_t>(1e-10),
                  static_cast<real_t>(1e-10), static_cast<real_t>(0.1),
                  static_cast<real_t>(0.1)) {
     // Added small dampingN and damping T to prevent division by 0 in inv.
     static_assert(sizeof(Material) == sizeof(Iron), "Not same size");
   }
-  //*************************************************************************************************
+  //****************************************************************************
 
   //=================================================================================================
   //
@@ -1477,6 +1534,7 @@ namespace elastica {
   inline Copper::Copper()
       : Material("copper", static_cast<real_t>(8.92), static_cast<real_t>(0.5),
                  static_cast<real_t>(0.33), static_cast<real_t>(117),
+                 Material::calculate_shear_modulus(117, 0.33),
                  static_cast<real_t>(117), static_cast<real_t>(0),
                  static_cast<real_t>(0), static_cast<real_t>(0.1),
                  static_cast<real_t>(0.1)) {
@@ -1547,6 +1605,7 @@ namespace elastica {
   inline Granite::Granite()
       : Material("granite", static_cast<real_t>(2.8), static_cast<real_t>(0.5),
                  static_cast<real_t>(0.25), static_cast<real_t>(55),
+                 Material::calculate_shear_modulus(55, 0.25),
                  static_cast<real_t>(55), static_cast<real_t>(0),
                  static_cast<real_t>(0), static_cast<real_t>(0.1),
                  static_cast<real_t>(0.1)) {
@@ -1617,6 +1676,7 @@ namespace elastica {
   inline Oak::Oak()
       : Material("oak", static_cast<real_t>(0.8), static_cast<real_t>(0.5),
                  static_cast<real_t>(0.35), static_cast<real_t>(11),
+                 Material::calculate_shear_modulus(11, 0.35),
                  static_cast<real_t>(11), static_cast<real_t>(0),
                  static_cast<real_t>(0), static_cast<real_t>(0.1),
                  static_cast<real_t>(0.1)) {
@@ -1687,6 +1747,7 @@ namespace elastica {
   inline Fir::Fir()
       : Material("fir", static_cast<real_t>(0.5), static_cast<real_t>(0.5),
                  static_cast<real_t>(0.34), static_cast<real_t>(13),
+                 Material::calculate_shear_modulus(13, 0.34),
                  static_cast<real_t>(13), static_cast<real_t>(0),
                  static_cast<real_t>(0), static_cast<real_t>(0.1),
                  static_cast<real_t>(0.1)) {
@@ -1778,23 +1839,24 @@ namespace elastica {
   /*!\name Material functions */
   //@{
   MaterialID create_material(const std::string& name, real_t density,
-                             real_t cor, real_t young, real_t stiffness,
-                             real_t dampingN, real_t dampingT,
-                             real_t forward_csf, real_t backward_csf,
-                             real_t lateral_csf, real_t forward_cdf,
-                             real_t backward_cdf, real_t lateral_cdf);
-  MaterialID create_material(real_t density, real_t cor, real_t young,
+                             real_t cor, real_t young, real_t shear,
                              real_t stiffness, real_t dampingN, real_t dampingT,
                              real_t forward_csf, real_t backward_csf,
                              real_t lateral_csf, real_t forward_cdf,
                              real_t backward_cdf, real_t lateral_cdf);
-  MaterialID create_material(const std::string& name, real_t density,
-                             real_t cor, real_t young, real_t stiffness,
-                             real_t dampingN, real_t dampingT, real_t csf,
-                             real_t cdf);
   MaterialID create_material(real_t density, real_t cor, real_t young,
+                             real_t shear, real_t stiffness, real_t dampingN,
+                             real_t dampingT, real_t forward_csf,
+                             real_t backward_csf, real_t lateral_csf,
+                             real_t forward_cdf, real_t backward_cdf,
+                             real_t lateral_cdf);
+  MaterialID create_material(const std::string& name, real_t density,
+                             real_t cor, real_t young, real_t shear,
                              real_t stiffness, real_t dampingN, real_t dampingT,
                              real_t csf, real_t cdf);
+  MaterialID create_material(real_t density, real_t cor, real_t young,
+                             real_t shear, real_t stiffness, real_t dampingN,
+                             real_t dampingT, real_t csf, real_t cdf);
   //@}
   //****************************************************************************
 

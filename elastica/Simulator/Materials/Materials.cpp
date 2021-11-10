@@ -211,6 +211,7 @@ namespace elastica {
    * \param cor The coefficient of restitution (COR) of the material
    * \f$ [0..1] \f$.
    * \param young The Young's modulus of the material \f$ (0..\infty) \f$.
+   * \param shear The Shear modulus of the material \f$ (0..\infty) \f$.
    * \param stiffness The stiffness in normal direction of the material's
    * contact region.
    * \param dampingN The damping coefficient in normal direction of the
@@ -234,8 +235,8 @@ namespace elastica {
    * \exception std::invalid_argument Invalid material parameter.
    */
   MaterialID create_material(const std::string& name, real_t density,
-                             real_t cor, real_t young, real_t stiffness,
-                             real_t dampingN, real_t dampingT,
+                             real_t cor, real_t young, real_t shear,
+                             real_t stiffness, real_t dampingN, real_t dampingT,
                              real_t forward_csf, real_t backward_csf,
                              real_t lateral_csf, real_t forward_cdf,
                              real_t backward_cdf, real_t lateral_cdf) {
@@ -295,6 +296,9 @@ namespace elastica {
     if (young <= real_t(0))
       throw std::invalid_argument("Invalid Young's modulus");
 
+    if (shear <= real_t(0))
+      throw std::invalid_argument("Invalid shear modulus");
+
     // Checking the stiffness
     if (stiffness <= real_t(0))
       throw std::invalid_argument("Invalid stiffness");
@@ -305,7 +309,7 @@ namespace elastica {
 
     // Registering the new material
     const real_t poisson(0.5);
-    M::materials_.push_back(Material(name, density, cor, poisson, young,
+    M::materials_.push_back(Material(name, density, cor, poisson, young, shear,
                                      stiffness, dampingN, dampingT, forward_csf,
                                      backward_csf, lateral_csf, forward_cdf,
                                      backward_cdf, lateral_cdf));
@@ -390,6 +394,7 @@ namespace elastica {
    * \param cor The coefficient of restitution (COR) of the material
    * \f$ [0..1] \f$.
    * \param young The Young's modulus of the material \f$ (0..\infty) \f$.
+   * \param shear The Shear modulus of the material \f$ (0..\infty) \f$.
    * \param stiffness The stiffness in normal direction of the material's
    * contact region.
    * \param dampingN The damping coefficient in normal direction of the
@@ -413,10 +418,11 @@ namespace elastica {
    * \exception std::invalid_argument Invalid material parameter.
    */
   MaterialID create_material(real_t density, real_t cor, real_t young,
-                             real_t stiffness, real_t dampingN, real_t dampingT,
-                             real_t forward_csf, real_t backward_csf,
-                             real_t lateral_csf, real_t forward_cdf,
-                             real_t backward_cdf, real_t lateral_cdf) {
+                             real_t shear, real_t stiffness, real_t dampingN,
+                             real_t dampingT, real_t forward_csf,
+                             real_t backward_csf, real_t lateral_csf,
+                             real_t forward_cdf, real_t backward_cdf,
+                             real_t lateral_cdf) {
     std::ostringstream sstr;
 
     do {
@@ -426,9 +432,9 @@ namespace elastica {
       sstr << "Material" << ++Material::anonymousMaterials_;
     } while (Material::find(sstr.str()) != invalid_material);
 
-    return create_material(sstr.str(), density, cor, young, stiffness, dampingN,
-                           dampingT, forward_csf, backward_csf, lateral_csf,
-                           forward_cdf, backward_cdf, lateral_cdf);
+    return create_material(sstr.str(), density, cor, young, shear, stiffness,
+                           dampingN, dampingT, forward_csf, backward_csf,
+                           lateral_csf, forward_cdf, backward_cdf, lateral_cdf);
   }
   //****************************************************************************
 
@@ -469,6 +475,7 @@ namespace elastica {
    * \param cor The coefficient of restitution (COR) of the material
    * \f$ [0..1] \f$.
    * \param young The Young's modulus of the material \f$ (0..\infty) \f$.
+   * \param shear The Shear modulus of the material \f$ (0..\infty) \f$.
    * \param stiffness The stiffness in normal direction of the material's
    * contact region.
    * \param dampingN The damping coefficient in normal direction of the
@@ -484,11 +491,11 @@ namespace elastica {
    * \exception std::invalid_argument Invalid material parameter.
    */
   MaterialID create_material(const std::string& name, real_t density,
-                             real_t cor, real_t young, real_t stiffness,
-                             real_t dampingN, real_t dampingT, real_t csf,
-                             real_t cdf) {
-    return create_material(name, density, cor, young, stiffness, dampingN,
-                           dampingT, csf, csf, csf, cdf, cdf, cdf);
+                             real_t cor, real_t young, real_t shear,
+                             real_t stiffness, real_t dampingN, real_t dampingT,
+                             real_t csf, real_t cdf) {
+    return create_material(name, density, cor, young, shear, stiffness,
+                           dampingN, dampingT, csf, csf, csf, cdf, cdf, cdf);
   }
   //****************************************************************************
 
@@ -505,6 +512,7 @@ namespace elastica {
    * \f$ [0..1] \f$.
    * \param poisson The Poisson's ratio of the material \f$ [-1..0.5] \f$.
    * \param young The Young's modulus of the material \f$ (0..\infty) \f$.
+   * \param shear The Shear modulus of the material \f$ (0..\infty) \f$.
    * \param stiffness The stiffness in normal direction of the material's
    * contact region.
    * \param dampingN The damping coefficient in normal direction of the
@@ -520,10 +528,10 @@ namespace elastica {
    * \exception std::invalid_argument Invalid material parameter.
    */
   MaterialID create_material(real_t density, real_t cor, real_t young,
-                             real_t stiffness, real_t dampingN, real_t dampingT,
-                             real_t csf, real_t cdf) {
-    return create_material(density, cor, young, stiffness, dampingN, dampingT,
-                           csf, csf, csf, cdf, cdf, cdf);
+                             real_t shear, real_t stiffness, real_t dampingN,
+                             real_t dampingT, real_t csf, real_t cdf) {
+    return create_material(density, cor, young, shear, stiffness, dampingN,
+                           dampingT, csf, csf, csf, cdf, cdf, cdf);
   }
   //****************************************************************************
 
