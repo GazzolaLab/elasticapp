@@ -104,7 +104,7 @@ namespace elastica {
            * hierarchy
            */
           struct ElementVolume
-              : public Traits::template CosseratRodInitializedVariable<
+              : public Traits::template CosseratRodVariable<
                     ::elastica::tags::ElementVolume,    //
                     typename Traits::DataType::Scalar,  //
                     typename Traits::Place::OnElement> {
@@ -590,7 +590,7 @@ namespace elastica {
             // 2. Update tangents
             auto& tangent_collection(blocks::get<Tangent>(self()));
             auto& reference_length_collection(blocks::get<ReferenceElementLength>(self()));
-            Traits::Operations::batch_division_matvec(tangent_collection, position_diff, reference_length_collection);
+            Traits::Operations::batch_division_matvec(tangent_collection, position_diff, element_length_collection); // TODO should be length_collection
 
             // 3. Compute new radius based on above lengths
             // volume conservation

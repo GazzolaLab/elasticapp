@@ -292,16 +292,17 @@ namespace elastica {
 
           // Variables Initialization
           {
+            using MassVariable = typename Traits::DataType::Scalar;
+
             auto& mass(blocks::get<Mass>(downstream_block));
             auto volume = downstream_block.get_element_volume();
-            auto n_elem = Traits::Operations::get_batch_elems(mass);
+            //auto n_elem = elastica::cosserat_rod::get_batch_elems(volume);
+            auto n_elem = (*volume).size();
 
-            using MassVariable = tmpl::type_from<decltype(mass)>;
-            using VolumeVariable = tmpl::type_from<decltype(mass)>;
-
-            // TODO
-            // MassVariable.slice(mass, 0) *=
-            mass = mass * volume; // Mass will be initialized by density externally
+            auto mass_on_element = MassVariable::slice(mass, 0, n_elem) % volume;
+            //Traits::Operations::quadrature_kernel(mass, mass_on_element);
+            MassVariable::slice(mass, 0UL, n_elem)  = 0.5 * mass_on_element;
+            MassVariable::slice(mass, 1UL, n_elem) += 0.5 * mass_on_element;
           }
 
           /* Reset forces and torques */

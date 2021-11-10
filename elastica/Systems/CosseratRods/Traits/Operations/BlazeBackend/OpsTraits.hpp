@@ -283,11 +283,16 @@ namespace elastica {
 
       //************************************************************************
       // Misc Operation
-      // TODO: Documentation
+      // TODO: Try to use slice instead
       template <typename MT>
       static inline void batch_subtract_z_unit(MT& matrix) {
         using ValueType = typename MT::ElementType;
         blaze::row(matrix, 2UL) -= ValueType(1.0);
+      }
+      template <typename MT>
+      static inline void batch_add_z_unit(MT& matrix) {
+        using ValueType = typename MT::ElementType;
+        blaze::row(matrix, 2UL) += ValueType(1.0);
       }
 
     };
