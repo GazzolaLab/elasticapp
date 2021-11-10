@@ -35,7 +35,7 @@ namespace elastica {
           static constexpr Options::String help = {
               "Velocity and angular velocity damping coefficient"};
           static type lower_bound() noexcept { return 0.0; }
-          using TagType = tags::ForceDamping;
+          using TagType = tags::ForceDampingCoefficient;
         };
 
         // can be used for torque damping as well
@@ -45,7 +45,7 @@ namespace elastica {
           static constexpr Options::String help = {
               "Velocity and angular velocity damping coefficient"};
           static type lower_bound() noexcept { return 0.0; }
-          using TagType = tags::TorqueDamping;
+          using TagType = tags::TorqueDampingCoefficient;
         };
 
       }  // namespace option_tags
