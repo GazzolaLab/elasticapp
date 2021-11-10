@@ -26,18 +26,19 @@ namespace elastica {
 
     }  // namespace detail
 
-    class StraightCosseratRod
+    class StraightCosseratRodInitializer
         : public ComposeInitializers<
               Initializers::CosseratRod,                                     //
               Initializers::Geometry::StraightRod,                           //
               Initializers::Elasticity::LinearHyperElasticModelWithDamping,  //
               Initializers::Kinematics::DefaultRodKinematics> {
-      //     public:
-      //      using P = detail::ComposeInitializers<
-      //          typename Initializers::CommonInitializerToAllCosseratRods,
-      //          typename Initializers::Geometry::StraightRod,
-      //          typename Initializers::Kinematics::DefaultRodKinematics>;
-      //      using P::P;
+     public:
+      using P = ComposeInitializers<
+          Initializers::CosseratRod,                                     //
+          Initializers::Geometry::StraightRod,                           //
+          Initializers::Elasticity::LinearHyperElasticModelWithDamping,  //
+          Initializers::Kinematics::DefaultRodKinematics>;
+      using P::P;
 
      public:
       using options = RequiredParameters;
@@ -139,12 +140,12 @@ namespace elastica {
     //    };
 
     struct straight_rod {
-      using type = StraightCosseratRod;
+      using type = StraightCosseratRodInitializer;
       static constexpr Options::String help = {"Initialize a straight rod"};
       using group = detail::CosseratRodOptionGroup;
     };
 
-    class StraightCosseratRodWithoutDamping
+    class StraightCosseratRodWithoutDampingInitializer
         : public ComposeInitializers<
               Initializers::CosseratRod,                          //
               Initializers::Geometry::StraightRod,                //

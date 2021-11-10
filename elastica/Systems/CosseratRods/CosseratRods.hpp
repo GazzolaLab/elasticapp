@@ -26,6 +26,7 @@
 #include "Systems/CosseratRods/Block.hpp"
 #include "Systems/CosseratRods/BlockInitializer.hpp"
 #include "Systems/CosseratRods/BlockSlice.hpp"
+#include "Systems/CosseratRods/Initializers.hpp"
 #include "Systems/CosseratRods/Components.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
 ///
