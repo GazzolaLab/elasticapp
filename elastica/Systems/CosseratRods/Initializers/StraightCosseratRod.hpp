@@ -28,8 +28,9 @@ namespace elastica {
 
     class StraightCosseratRod
         : public ComposeInitializers<
-              Initializers::CosseratRod,            //
-              Initializers::Geometry::StraightRod,  //
+              Initializers::CosseratRod,                                     //
+              Initializers::Geometry::StraightRod,                           //
+              Initializers::Elasticity::LinearHyperElasticModelWithDamping,  //
               Initializers::Kinematics::DefaultRodKinematics> {
       //     public:
       //      using P = detail::ComposeInitializers<
@@ -142,6 +143,13 @@ namespace elastica {
       static constexpr Options::String help = {"Initialize a straight rod"};
       using group = detail::CosseratRodOptionGroup;
     };
+
+    class StraightCosseratRodWithoutDamping
+        : public ComposeInitializers<
+              Initializers::CosseratRod,                          //
+              Initializers::Geometry::StraightRod,                //
+              Initializers::Elasticity::LinearHyperElasticModel,  //
+              Initializers::Kinematics::DefaultRodKinematics> {};
 
     //    struct StraightCosseratRodWithTwist : public StraightCosseratRod {
     //      using Parent = StraightCosseratRod;

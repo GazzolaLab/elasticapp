@@ -48,10 +48,17 @@ namespace elastica {
             CRTPHelper<Initializer, EnableOptionalParameterInitialization>;
         using CRTP::self;
 
+        template <typename... Tags>
+        auto get_subset_of(tmpl::list<Tags...>) const /*noexcept*/ {
+          // may not be noexcept, but whatever
+          return std::make_tuple(
+              std::get<Tags>(self().default_initializers())...);
+        }
+
        protected:
         template <typename... ExtraInitializers>
         decltype(auto) get_optional_parameters(
-            ExtraInitializers&&... extra_initializers) const noexcept {
+            ExtraInitializers&&... extra_initializers) const /*noexcept*/ {
           using default_initializers =
               typename Initializer::DefaultInitializers;
           using Mapping = ::blocks::FormMap::from<::named_type::tag_type>::to<
@@ -71,24 +78,26 @@ namespace elastica {
           using default_initializers_needed = tmpl::transform<
               tag_difference,
               tmpl::bind<tmpl::lookup, tmpl::pin<Mapping>, tmpl::_1>>;
-          using DefaultInitializersNeededCache =
-              tmpl::as_tuple<default_initializers_needed>;
+          // using DefaultInitializersNeededCache =
+          //     tmpl::as_tuple<default_initializers_needed>;
 
-          auto needed_cache = [this]() {
-            DefaultInitializersNeededCache needed_cache;
-            tmpl::for_each<default_initializers_needed>([&](auto di) {
-              using DefaultInitializer = tmpl::type_from<decltype(di)>;
-              // force a copy here
-              std::get<DefaultInitializer>(needed_cache) =
-                  std::get<DefaultInitializer>(self().default_initializers());
-            });
-            return needed_cache;
-          }();
-
-          return std::tuple_cat(
-              std::forward_as_tuple(
-                  std::forward<ExtraInitializers>(extra_initializers)...),
-              std::move(needed_cache));
+          //          auto needed_cache = [this]() {
+          //            DefaultInitializersNeededCache needed_cache;
+          //            cpp17::apply(, self().default_initializers())
+          //                tmpl::for_each<default_initializers_needed>([&](auto
+          //                di) {
+          //                  using DefaultInitializer =
+          //                  tmpl::type_from<decltype(di)>;
+          //                  // force a copy here
+          //                  std::get<DefaultInitializer>(needed_cache) =
+          //                      std::get<DefaultInitializer>(
+          //                          self().default_initializers());
+          //                });
+          //            return needed_cache;
+          //          }();
+          return std::tuple_cat(std::make_tuple(std::forward<ExtraInitializers>(
+                                    extra_initializers)...),
+                                get_subset_of(default_initializers_needed{}));
         }
       };
 
@@ -111,7 +120,8 @@ namespace elastica {
                   typename... ExtraTaggedInitializers>
         decltype(auto) initialize(
             TaggedInitializer&& initializer,
-            ExtraTaggedInitializers&&... extra_initializers) const /*noexcept*/ {
+            ExtraTaggedInitializers&&... extra_initializers) const
+        /*noexcept*/ {
           // cannot automate this fully as as we repack it into functors that
           // can give out vectors or tensors
           return cosserat_rod::initialize_cosserat_rod<Plugin>(std::tuple_cat(

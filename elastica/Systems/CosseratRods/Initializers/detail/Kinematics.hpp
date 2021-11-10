@@ -8,30 +8,21 @@
 
 #include "Options/Options.hpp"
 #include "Options/Parameter.hpp"
+///
 #include "Simulator/Materials.hpp"
-#include "Systems/CosseratRods/BlockInitializer.hpp"
+///
 #include "Systems/CosseratRods/Tags.hpp"
+///
 #include "Utilities/DefineTypes.h"
 #include "Utilities/TMPL.hpp"
+///
+#include "Systems/CosseratRods/Initializers/detail/Common.hpp"
 
 namespace elastica {
 
   namespace cosserat_rod {
 
     namespace detail {
-
-      namespace option_tags {
-
-        // can be used for torque damping as well
-        struct Material : Options::Parameter<::elastica::MaterialID> {
-          using P = Options::Parameter<::elastica::MaterialID>;
-          using P::P;
-          static constexpr Options::String help = {
-              "Material of the cosserat rod"};
-          static type lower_bound() noexcept { return 0; }
-        };
-
-      }  // namespace option_tags
 
       namespace {
 
@@ -67,8 +58,7 @@ namespace elastica {
 
       class DefaultRodKinematics {
        public:
-        using Material = option_tags::Material;
-        using RequiredParameters = tmpl::list<Material>;
+        using RequiredParameters = tmpl::list<>;
         using DefaultParameters =
             tmpl::list<VelocityDefaultParameter, AccelerationDefaultParameter,
                        AngularVelocityDefaultParameter,
@@ -78,13 +68,11 @@ namespace elastica {
         template <typename OptionsTuple>
         decltype(auto) get_required_parameters(
             OptionsTuple const& options_cache) const /*noexcept*/ {
-          // pass directly as references
-          // return detail::pass_as_wrapped<tmpl::list<NElement,
-          // Radius>>(data());
-          return std::tuple_cat(
-              // for things that do need processing, process them here and put
-              // into a tuple
-              std::make_tuple());
+          const auto material_id =
+              std::get<option_tags::Material>(options_cache);
+          return std::make_tuple(blocks::initialize<tags::Mass>(
+              [density = Material::get_density(material_id)](
+                  std::size_t /*meta_index*/) { return density; }));
         }
       };
 

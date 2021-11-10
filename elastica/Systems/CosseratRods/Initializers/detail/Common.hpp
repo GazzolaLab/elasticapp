@@ -4,8 +4,11 @@
 
 #pragma once
 
+#include <tuple>
+
 #include "Options/Options.hpp"
 #include "Options/Parameter.hpp"
+#include "Simulator/Materials.hpp"
 #include "Systems/CosseratRods/Tags.hpp"
 ///
 #include "Systems/CosseratRods/Initializers/detail/Transformations.hpp"
@@ -34,20 +37,34 @@ namespace elastica {
           using TagType = tags::NElement;
         };
 
+        // can be used for torque damping as well
+        struct Material : Options::Parameter<::elastica::MaterialID> {
+          using P = Options::Parameter<::elastica::MaterialID>;
+          using P::P;
+          static constexpr Options::String help = {
+              "Material of the cosserat rod"};
+        };
+
       }  // namespace option_tags
 
       class CommonInitializerToAllCosseratRods {
        public:
         using NElement = option_tags::NElement;
-        using RequiredParameters = tmpl::list<NElement>;
+        using Material = option_tags::Material;
+        using RequiredParameters = tmpl::list<NElement, Material>;
         using DefaultParameters = tmpl::list<>;
 
        protected:
         template <typename OptionsTuple>
         decltype(auto) get_required_parameters(
-            OptionsTuple const& options_cache) const noexcept {
-          // for things that don't need to be processed, pass as wrapped
-          return pass_as_wrapped(options_cache, tmpl::list<NElement>{});
+            OptionsTuple const& options_cache) const /*noexcept*/ {
+          using Tag = NElement;
+          check_lower_bounds(options_cache, tmpl::list<Tag>{});
+          // Make a special concession for n elements alone?!
+          return std::make_tuple(blocks::initialize<typename Tag::TagType>(
+              // do a copy here of tuple of initializers
+              [value = (std::get<Tag>(options_cache).value())](...) ->
+              typename Tag::type { return value; }));
         }
       };
 
