@@ -4,8 +4,12 @@
 
 #include "Utilities/Math/Orthogonal.hpp"
 
+#include <stdexcept>
+
+#include "Utilities/Math/Dot.hpp"
 #include "Utilities/Math/Length.hpp"
 #include "Utilities/Math/Normalize.hpp"
+#include "Utilities/Math/Zero.hpp"
 
 namespace elastica {
 
@@ -20,12 +24,15 @@ namespace elastica {
   }
 
   namespace detail {
-    auto make_orthogonal_bases_impl(Vec3 const& vector) noexcept
+    // v1 is binormal, v2 is normal, v3 is tangent
+    auto make_orthogonal_bases_impl(Vec3 const& normal_guess,
+                                    Vec3 const& binormal_guess = {0.8, 0.6,
+                                                                  0.0}) noexcept
         -> std::array<Vec3, 3UL> {
-      Vec3 v2 = normalize(vector);
+      Vec3 v2 = normalize(normal_guess);
 
       // Any initial guess thats not in the normal direction
-      Vec3 v1{0.8, 0.6, 0.0};
+      Vec3 v1 = binormal_guess;
 
       Vec3 v3(normalize(v1 % v2));
 
@@ -33,7 +40,7 @@ namespace elastica {
       // If its collinear, iterate till its not
       // should be parallel threshold but thats in simluator
       // and we want to make it not depend on simluator
-      if /*while*/ (equal(length(v1), 0.0)) {
+      if /*while*/ (is_zero_length(v1)) {
         v1 = {0.6, -0.8, 0.0};
         v3 = normalize(v1 % v2);
         v1 = v2 % v3;
@@ -59,6 +66,27 @@ namespace elastica {
 
   auto make_orthogonal_bases_from_normal(Vec3 const& vector) noexcept -> Rot3 {
     auto bases = detail::make_orthogonal_bases_impl(vector);
+
+    // bases[1] always contains the vector
+    // bases[1] x bases[2] = bases[3]
+    // bases[0] , bases[1], bases[2]
+    constexpr std::size_t d1 = 0UL;
+    constexpr std::size_t d2 = 1UL;
+    constexpr std::size_t d3 = 2UL;
+    return Rot3{{bases[d1][0], bases[d1][1], bases[d1][2]},
+                {bases[d2][0], bases[d2][1], bases[d2][2]},
+                {bases[d3][0], bases[d3][1], bases[d3][2]}};
+  }
+
+  auto make_orthogonal_bases_from_normal_and_tangent(
+      Vec3 const& proposed_normal, Vec3 const& proposed_tangent) -> Rot3 {
+    if (not is_zero(::elastica::dot(proposed_normal, proposed_tangent))) {
+      throw std::logic_error(
+          "The proposed normal and tangent are non-orthogonal!");
+    }
+
+    auto bases = detail::make_orthogonal_bases_impl(
+        proposed_normal, proposed_normal % proposed_tangent);
 
     // bases[1] always contains the vector
     // bases[1] x bases[2] = bases[3]

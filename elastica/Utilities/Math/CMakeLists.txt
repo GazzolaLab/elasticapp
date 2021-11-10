@@ -25,4 +25,5 @@ elastica_target_headers(
         Square.hpp
         Trans.hpp
         Vec3.hpp
+        Zero.hpp
 )

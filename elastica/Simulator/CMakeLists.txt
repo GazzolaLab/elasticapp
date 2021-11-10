@@ -7,7 +7,6 @@ add_elastica_library(${LIBRARY})
 elastica_target_sources(
         ${LIBRARY}
         PRIVATE
-        Materials.cpp
         Trigger.cpp
         Visualization.cpp
 )
@@ -21,6 +20,7 @@ add_subdirectory(Forcing)
 add_subdirectory(Frames)
 add_subdirectory(Interface)
 add_subdirectory(IO)
+add_subdirectory(Materials)
 
 elastica_target_headers(
         ${LIBRARY}
@@ -37,7 +37,6 @@ elastica_target_headers(
         Modules.hpp
         Protocols.hpp
         Simulator.hpp
-        Thresholds.hpp
         Trigger.hpp
         Types.hpp
         Visualization.hpp
@@ -50,6 +49,7 @@ target_link_libraries(
         ErrorHandling
         Utilities
         Domain
+        Parallel
 )
 #set(LIBRARY_SOURCES Trigger.cpp Visualization.cpp Materials.cpp)
 

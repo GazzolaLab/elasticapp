@@ -24,12 +24,14 @@ namespace elastica {
 
   namespace detail {
     // ?
-    auto make_orthogonal_bases_impl(Vec3 const& v) noexcept
+    auto make_orthogonal_bases_impl(Vec3 const&, Vec3 const&) noexcept
         -> std::array<Vec3, 3UL>;
   }  // namespace detail
 
   auto make_orthogonal_bases_from_binormal(Vec3 const& vector) noexcept -> Rot3;
   auto make_orthogonal_bases_from_normal(Vec3 const& vector) noexcept -> Rot3;
+  auto make_orthogonal_bases_from_normal_and_tangent(Vec3 const&, Vec3 const&)
+      -> Rot3;
   auto make_orthogonal_bases_from_tangent(Vec3 const& vector) noexcept -> Rot3;
 
 }  // namespace elastica
