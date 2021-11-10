@@ -23,6 +23,14 @@
 namespace elastica {
 
   //****************************************************************************
+  /*!\brief Checks for a zero number
+   */
+  inline auto is_zero(real_t real_number) noexcept -> bool {
+    return ::blaze::isZero(real_number);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
   /*!\brief Checks for a zero vector
    */
   inline auto is_zero(const Vec3& vec) noexcept -> bool {
