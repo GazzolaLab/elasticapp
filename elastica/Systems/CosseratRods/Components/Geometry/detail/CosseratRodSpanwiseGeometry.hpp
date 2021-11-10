@@ -76,7 +76,7 @@ namespace elastica {
            * rod hierarchy
            */
           struct ReferenceElementLength
-              : public Traits::template CosseratRodVariable<
+              : public Traits::template CosseratRodInitializedVariable<
                     ::elastica::tags::ReferenceElementLength,  //
                     typename Traits::DataType::Scalar,         //
                     typename Traits::Place::OnElement> {
@@ -236,11 +236,10 @@ namespace elastica {
           using ComputedVariables =
               tmpl::list<ReferenceVoronoiLength, ElementLength,
                          ElementDilatation, VoronoiLength, VoronoiDilatation,
-                         Curvature, Tangent, ShearStretchStrain,
-                         ReferenceElementLength>;
+                         Curvature, Tangent, ShearStretchStrain>;
           //! List of initialized variables
           using InitializedVariables =
-              tmpl::list<ReferenceCurvature, ReferenceShearStretchStrain>;
+              tmpl::list<ReferenceElementLength, ReferenceCurvature, ReferenceShearStretchStrain>;
           //! List of all variables
           using Variables =
               tmpl::append<InitializedVariables, ComputedVariables>;

@@ -350,10 +350,9 @@ namespace elastica {
             /* mass second moment of inertia */
             {
               using Variable = MassSecondMomentOfInertia;
-              using Tag = blocks::initializer_t<Variable>;
+//              using Tag = blocks::initializer_t<Variable>;
 
-
-              auto& variable(blocks::get<Tag>(downstream_block));
+              auto& variable(blocks::get<Variable>(downstream_block));
               const auto dofs = Variable::get_dofs(initializers.n_elems());
               for (std::size_t idx = 0U; idx < dofs; ++idx) {
                 // (I_1, I_2, I_3)
@@ -366,9 +365,9 @@ namespace elastica {
             /* inverse mass second moment of inertia */
             {
               using Variable = InvMassSecondMomentOfInertia;
-              using Tag = blocks::initializer_t<Variable>;
+//              using Tag = blocks::initializer_t<Variable>;
 
-              auto& variable(blocks::get<Tag>(downstream_block));
+              auto& variable(blocks::get<Variable>(downstream_block));
               const auto dofs = Variable::get_dofs(initializers.n_elems());
               for (std::size_t idx = 0U; idx < dofs; ++idx) {
                 // inv(I_1, I_2, I_3)

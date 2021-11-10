@@ -74,17 +74,6 @@ namespace elastica {
           /*!\name Variable definitions*/
           //@{
 
-          // Deprecated - TODO Remove after check
-//          //********************************************************************
-//          /*!\brief Variable scalar density within the Cosserat rod hierarchy
-//           */
-//          struct Density
-//              : public Traits::template CosseratRodInitializedVariable<
-//                  ::elastica::tags::Density,
-//                  typename Traits::DataType::Scalar,
-//                  typename Traits::Place::OnElement> {};
-//          //********************************************************************
-
           //********************************************************************
           /*!\brief Variable scalar mass within the Cosserat rod hierarchy
            *  Lumped mass on node. (should be in element)
@@ -163,11 +152,10 @@ namespace elastica {
 
           //**Type definitions**************************************************
           //! List of computed variables
-          using ComputedVariables = tmpl::list<Mass,
-                                               ExternalLoads,
+          using ComputedVariables = tmpl::list<ExternalLoads,
                                                ExternalTorques>;
           //! List of initialized variables
-          using InitializedVariables = tmpl::list<Velocity,
+          using InitializedVariables = tmpl::list<Mass, Velocity,
               AngularVelocity, Acceleration, AngularAcceleration>;
           //! List of all variables
           using Variables =
@@ -249,7 +237,6 @@ namespace elastica {
         using typename VariableDefinitions::Variables;
 
         //! Current Variable definitions
-        using typename VariableDefinitions::Density;
         using typename VariableDefinitions::Mass;
         using typename VariableDefinitions::Velocity;
         using typename VariableDefinitions::AngularVelocity;
@@ -305,10 +292,16 @@ namespace elastica {
 
           // Variables Initialization
           {
-            auto& density(blocks::get<Density>(downstream_block));
             auto& mass(blocks::get<Mass>(downstream_block));
             auto volume = downstream_block.get_element_volume();
-            mass *= volume; // Mass will be initialized by density externally
+            auto n_elem = Traits::Operations::get_batch_elems(mass);
+
+            using MassVariable = tmpl::type_from<decltype(mass)>;
+            using VolumeVariable = tmpl::type_from<decltype(mass)>;
+
+            // TODO
+            // MassVariable.slice(mass, 0) *=
+            mass = mass * volume; // Mass will be initialized by density externally
           }
 
           /* Reset forces and torques */
