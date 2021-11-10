@@ -11,7 +11,7 @@
 #include "Systems/CosseratRods/CosseratRodTraits.hpp"
 ///
 #include "Systems/CosseratRods/Mocks.hpp"
-///
+///j
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Math/Sqrt.hpp"
 
@@ -76,30 +76,24 @@ namespace {
     CHECK(model.get_element_dimension() == 0.0);
     CHECK(model.get_element_volume() == 0.0);
 
-    constexpr auto n_initializers = 3UL;
+    constexpr auto n_initializers = 6UL;
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
         // from before
-        blocks::initialize<elastica::tags::Position>([&i = n_times_called[0]](std::size_t index) {
-          ++i;
-          return index * 1.0;
-          return 2.0;
-        }),
-        blocks::initialize<elastica::tags::Director>([&i = n_times_called[1]](std::size_t index) {
-          ++i;
-          return 0.5;
-        }),
+        blocks::initialize<elastica::tags::Position>([&i = n_times_called[0]](std::size_t index) { ++i; return index * 1.0; return 2.0; }),
+        blocks::initialize<elastica::tags::Director>([&i = n_times_called[1]](std::size_t index) { ++i; return 0.5; }),
         // from before
-        blocks::initialize<elastica::tags::ElementDimension>( [&i = n_times_called[2]](...) {
-          ++i;
-          return 4.0;
-        })
-    );
+        blocks::initialize<elastica::tags::ElementDimension>( [&i = n_times_called[2]](...) { ++i; return 4.0; }),
+        blocks::initialize<elastica::tags::ReferenceCurvature>( [&i = n_times_called[3]](...) { ++i; return 1.0; }),
+        blocks::initialize<elastica::tags::ReferenceShearStretchStrain>( [&i = n_times_called[4]](...) { ++i; return 1.0; }),
+
+        blocks::initialize<elastica::tags::ElementDilatation>([&i = n_times_called[5]](std::size_t index) { ++i; return 1.0; })
+      );
 
     Model::initialize(model, std::move(initializer));
 
     // check if initialization is done as expected
-    auto expected_call_count = make_array(11U, 10U, 10U);
+    auto expected_call_count = make_array(11U, 10U, 10U, 9U, 10U, 10U);
     CHECK_ITERABLE_APPROX(n_times_called, expected_call_count);
 
     // only these are checked now

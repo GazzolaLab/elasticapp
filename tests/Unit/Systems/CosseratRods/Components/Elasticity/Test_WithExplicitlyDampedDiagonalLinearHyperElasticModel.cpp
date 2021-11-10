@@ -59,27 +59,31 @@ namespace {
 
     CHECK_EBO(Model);
 
-    constexpr auto n_initializers = 12UL;
+    constexpr auto n_initializers = 15UL;
     auto n_times_called = make_array<n_initializers>(0U);
+    auto j = 0UL;
     auto initializer = mock::initialize_block<Plugin>(
-        blocks::initialize<tags::Position>([&i = n_times_called[0]](std::size_t index) { ++i; return Vec3({0.0, 1.0*index, 0.0}); }),
-        blocks::initialize<tags::Director>([&i = n_times_called[1]](...) { ++i; return 0.5; }),
-        blocks::initialize<tags::ElementDimension>( [&i = n_times_called[2]](...) { ++i; return 1.0; }),
-        blocks::initialize<tags::ShearStretchRigidityMatrix>( [&i = n_times_called[3]](...) { ++i; return 4.0; }),
-        blocks::initialize<tags::BendingTwistRigidityMatrix>( [&i = n_times_called[4]](...) { ++i; return 4.0; }),
-        blocks::initialize<tags::ForceDampingCoefficient>([&i = n_times_called[5]](...) { ++i; return 4.0; }),
-        blocks::initialize<tags::TorqueDampingCoefficient>([&i = n_times_called[6]](...) { ++i; return 0.0; }),
-        blocks::initialize<tags::Density>([&i = n_times_called[7]](...) { ++i; return 4.0; }),
-        blocks::initialize<tags::Velocity>([&i = n_times_called[8]](...) { ++i; return 1.0; }),
-        blocks::initialize<tags::AngularVelocity>([&i = n_times_called[9]](...) { ++i; return 1.0; }),
-        blocks::initialize<tags::Acceleration>([&i = n_times_called[10]](...) { ++i; return 0.0; }),
-        blocks::initialize<tags::AngularAcceleration>([&i = n_times_called[11]](...) { ++i; return 0.0; })
+        blocks::initialize<tags::Position>([&i = n_times_called[j++]](std::size_t index) { ++i; return Vec3({0.0, 1.0*index, 0.0}); }),
+        blocks::initialize<tags::Director>([&i = n_times_called[j++]](...) { ++i; return 0.5; }),
+        blocks::initialize<tags::ElementDimension>( [&i = n_times_called[j++]](...) { ++i; return 1.0; }),
+        blocks::initialize<tags::ElementDilatation>([&i = n_times_called[j++]](...) { ++i; return 1.0; }),
+        blocks::initialize<tags::ReferenceCurvature>( [&i = n_times_called[j++]](...) { ++i; return 1.0; }),
+        blocks::initialize<tags::ReferenceShearStretchStrain>( [&i = n_times_called[j++]](...) { ++i; return 1.0; }),
+        blocks::initialize<tags::ShearStretchRigidityMatrix>( [&i = n_times_called[j++]](...) { ++i; return 4.0; }),
+        blocks::initialize<tags::BendingTwistRigidityMatrix>( [&i = n_times_called[j++]](...) { ++i; return 4.0; }),
+        blocks::initialize<tags::ForceDampingCoefficient>([&i = n_times_called[j++]](...) { ++i; return 4.0; }),
+        blocks::initialize<tags::TorqueDampingCoefficient>([&i = n_times_called[j++]](...) { ++i; return 0.0; }),
+        blocks::initialize<tags::Mass>([&i = n_times_called[j++]](...) { ++i; return 1.0; }),
+        blocks::initialize<tags::Velocity>([&i = n_times_called[j++]](...) { ++i; return 1.0; }),
+        blocks::initialize<tags::AngularVelocity>([&i = n_times_called[j++]](...) { ++i; return 1.0; }),
+        blocks::initialize<tags::Acceleration>([&i = n_times_called[j++]](...) { ++i; return 0.0; }),
+        blocks::initialize<tags::AngularAcceleration>([&i = n_times_called[j++]](...) { ++i; return 0.0; })
       );
 
     Model::initialize(model, std::move(initializer));
 
     // check if initialization is done as expected
-    auto expected_call_count = make_array(11U, 10U, 10U, 10U, 9U, 11U, 10U, 10U, 11U, 10U, 11U, 10U);
+    auto expected_call_count = make_array(11U, 10U, 10U, 0U, 0U, 0U, 0U, 10U, 9U, 11U, 10U, 11U, 10U, 11U, 10U);
     CHECK_ITERABLE_APPROX(n_times_called, expected_call_count);
 
     // 1 + whatever

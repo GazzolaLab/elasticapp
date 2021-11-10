@@ -49,34 +49,20 @@ namespace {
     //CHECK(model.get_element_dimension() == 0.0);
     //CHECK(model.get_element_volume() == 0.0);
 
-    constexpr auto n_initializers = 7UL;
+    constexpr auto n_initializers = 10UL;
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
         // from before
-        blocks::initialize<tags::Position>([&i = n_times_called[0]](std::size_t index) {
-          ++i;
-          return index * 1.0;
-        }),
-        blocks::initialize<tags::Director>([&i = n_times_called[1]](...) {
-          ++i;
-          return 0.5;
-        }),
-        blocks::initialize<tags::ElementDimension>(
-            [&i = n_times_called[4]](...) {
-              ++i;
-              return 4.0;
-            }),
+        blocks::initialize<tags::Position>([&i = n_times_called[0]](std::size_t index) { ++i; return index * 1.0; }),
+        blocks::initialize<tags::Director>([&i = n_times_called[1]](...) { ++i; return 0.5; }),
+        blocks::initialize<tags::ElementDimension>([&i = n_times_called[2]](...) { ++i; return 4.0; }),
         // from before
-        blocks::initialize<tags::ShearStretchRigidityMatrix>(
-            [&i = n_times_called[5]](...) {
-              ++i;
-              return 4.0;
-            }),
-        blocks::initialize<tags::BendingTwistRigidityMatrix>(
-            [&i = n_times_called[6]](...) {
-              ++i;
-              return 4.0;
-            }));
+        blocks::initialize<tags::ShearStretchRigidityMatrix>( [&i = n_times_called[3]](...) { ++i; return 4.0; }),
+        blocks::initialize<tags::BendingTwistRigidityMatrix>( [&i = n_times_called[4]](...) { ++i; return 4.0; }),
+        blocks::initialize<tags::ReferenceCurvature>( [&i = n_times_called[5]](...) { ++i; return 1.0; }),
+        blocks::initialize<tags::ReferenceShearStretchStrain>( [&i = n_times_called[6]](...) { ++i; return 1.0; }),
+        blocks::initialize<tags::ElementDilatation>([&i = n_times_called[7]](...) { ++i; return 1.0; })
+      );
 
     Model::initialize(model, std::move(initializer));
 
@@ -84,7 +70,8 @@ namespace {
     CHECK(model.get_element_volume() == 4.0*4.0*M_PI*blaze::sqrt(3));
 
     // check if initialization is done as expected
-    // CHECK_ITERABLE_APPROX(n_times_called, make_array<n_initializers>(1U));
+    auto expected_call_count = make_array(11U, 10U, 10U, 10U, 9U, 9U, 10U, 10U, 0U, 0U);
+    CHECK_ITERABLE_APPROX(n_times_called, expected_call_count);
 
     // [0] element : stiff  * I_0
     const double area = M_PI * 4.0 * 4.0;
@@ -92,6 +79,7 @@ namespace {
 //    CHECK(double(blocks::get<tags::BendingTwistRigidityMatrix>(model)) ==
 //          approx(4.0 * I_0));
 //    CHECK(double(blocks::get<tags::ShearStretchRigidityMatrix>(model)) ==
+
 //          approx(4.0 * area * 4.0 / 3.0));
   }
 

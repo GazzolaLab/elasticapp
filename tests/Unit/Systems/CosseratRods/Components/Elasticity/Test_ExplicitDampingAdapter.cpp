@@ -131,11 +131,14 @@ namespace {
         blocks::initialize<tags::Position>([](std::size_t index) { return index * 1.0; }),
         blocks::initialize<tags::Director>([](...) { return 0.5; }),
         blocks::initialize<tags::ElementDimension>([](...) { return 4.0; }),
+        blocks::initialize<tags::ElementDilatation>([](...) { return 1.0; }),
+        blocks::initialize<tags::ReferenceCurvature>([](...) { return 1.0; }),
+        blocks::initialize<tags::ReferenceShearStretchStrain>([](...) { return 1.0; }),
         // Elasticity Variables
         blocks::initialize<tags::ShearStretchRigidityMatrix>( [](...) { return 4.0; }),
         blocks::initialize<tags::BendingTwistRigidityMatrix>( [](...) { return 4.0; }),
         // Kinematics Variables
-        blocks::initialize<tags::Density>([](...) { return 1.0; }),
+        blocks::initialize<tags::Mass>([](...) { return 0.0; }),
         blocks::initialize<tags::Velocity>([](...) { return 0.0; }),
         blocks::initialize<tags::AngularVelocity>([](...) { return 0.0; }),
         blocks::initialize<tags::Acceleration>([](...) { return 0.0; }),
@@ -158,13 +161,16 @@ namespace {
         blocks::initialize<tags::Position>([](std::size_t index) { return index * 1.0; }),
         blocks::initialize<tags::Director>([](...) { return 0.5; }),
         blocks::initialize<tags::ElementDimension>([](...) { return 4.0; }),
+        blocks::initialize<tags::ElementDilatation>([](...) { return 1.0; }),
+        blocks::initialize<tags::ReferenceCurvature>([](...) { return 1.0; }),
+        blocks::initialize<tags::ReferenceShearStretchStrain>([](...) { return 1.0; }),
         // Elasticity Variables
         blocks::initialize<tags::ShearStretchRigidityMatrix>( [](...) { return 4.0; }),
         blocks::initialize<tags::BendingTwistRigidityMatrix>( [](...) { return 4.0; }),
         blocks::initialize<tags::ForceDampingCoefficient>( [](...) { return 4.0; }),
         blocks::initialize<tags::TorqueDampingCoefficient>( [](...) { return 4.0; }),
         // Kinematics Variables
-        blocks::initialize<tags::Density>([](...) { return 1.0; }),
+        blocks::initialize<tags::Mass>([](...) { return 0.0; }),
         blocks::initialize<tags::Velocity>([](...) { return 0.0; }),
         blocks::initialize<tags::AngularVelocity>([](...) { return 0.0; }),
         blocks::initialize<tags::Acceleration>([](...) { return 0.0; }),
