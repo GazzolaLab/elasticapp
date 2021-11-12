@@ -98,7 +98,7 @@ namespace elastica {
       // TODO: Documentation
       template <typename MT1, typename MT2, typename VT>
       static inline void batch_division_matvec(MT1& out_matrix, const MT2& denominator, const VT& numerator){
-        const std::size_t n_elems = denominator.columns();
+        //const std::size_t n_elems = denominator.columns();
         blaze::row(out_matrix, 0UL) = blaze::row(denominator, 0UL) / transpose(numerator);
         blaze::row(out_matrix, 1UL) = blaze::row(denominator, 1UL) / transpose(numerator);
         blaze::row(out_matrix, 2UL) = blaze::row(denominator, 2UL) / transpose(numerator);
@@ -237,7 +237,7 @@ namespace elastica {
                                                      const TT& rot_matrix_batch,
                                                      const VT& normalize_vector_batch) {
         constexpr std::size_t dimension(3UL);
-        const std::size_t n_elems = rot_matrix_batch.columns();
+        const std::size_t blocksize = rot_axis_vector_batch.columns();
         using ValueType = typename TT::ElementType;
         assert(rot_matrix_batch.pages() == dimension);
         assert(rot_matrix_batch.rows() == dimension);
@@ -246,9 +246,13 @@ namespace elastica {
         /* hardcoded to avoid external memory passing */
         /* also now operates only on views */
         // TODO: Revisit - try to optimize using reduced operations (if any)
-        auto qqt =
-            blaze::subtensor(rot_matrix_batch, 0UL, 0UL, 0UL, dimension, dimension, n_elems-1) %
-              blaze::subtensor(rot_matrix_batch, 0UL, 0UL, 1UL, dimension, dimension, n_elems-1);
+        /*
+         * R = Q_t Q_{t+1} (elementwise)
+         * theta = acos((tr(R) - 1) / 2)
+         */
+        auto q_next = blaze::subtensor(rot_matrix_batch, 0UL, 0UL, 1UL, dimension, dimension, blocksize);
+        auto q = blaze::subtensor(rot_matrix_batch, 0UL, 0UL, 0UL, dimension, dimension, blocksize);
+        auto qqt = q % q_next;
         auto rot_matrix_trace_batch =
             blaze::row(blaze::pageslice(qqt, 0UL), 0UL) +
             blaze::row(blaze::pageslice(qqt, 0UL), 1UL) +
@@ -259,25 +263,24 @@ namespace elastica {
             blaze::row(blaze::pageslice(qqt, 2UL), 0UL) +
             blaze::row(blaze::pageslice(qqt, 2UL), 1UL) +
             blaze::row(blaze::pageslice(qqt, 2UL), 2UL);
-        /* theta = acos((tr(R) - 1) / 2) */
-        auto theta_batch = blaze::acos(ValueType(0.5) *
-                                       (rot_matrix_trace_batch - ValueType(1.0) -
-                                        ValueType(1e-12)));  // TODO refactor 1e-12
+        auto theta_batch = blaze::acos(ValueType(0.5) * rot_matrix_trace_batch - ValueType(0.5) -
+                                        ValueType(1e-12));  // TODO refactor 1e-12
+
         auto R_minus_RT =
-            blaze::subtensor(rot_matrix_batch, 0UL, 0UL, 0UL, dimension, dimension, n_elems-1) -
+            blaze::subtensor(rot_matrix_batch, 0UL, 0UL, 0UL, dimension, dimension, blocksize) -
             blaze::trans(
-                blaze::subtensor(rot_matrix_batch, 0UL, 0UL, 1UL, dimension, dimension, n_elems-1),
+                blaze::subtensor(rot_matrix_batch, 0UL, 0UL, 1UL, dimension, dimension, blocksize),
                 {1, 0, 2});
         auto trans_normalize_vector_batch = blaze::trans(normalize_vector_batch);
         /* theta (u) = -theta * inv_skew([R - RT]) / 2 sin(theta) */
         for (std::size_t i(0UL); i < dimension; ++i) {
-          auto inv_skew_symmetric_map = blaze::row(
-              blaze::pageslice(R_minus_RT, (i + 2UL) % dimension),
-              (i + 1UL) % dimension);  // % for the cyclic rotation of indices
-          auto div_inv_skew_symmetric_map = inv_skew_symmetric_map / trans_normalize_vector_batch;
+          auto idx1 = (i + 1UL) % dimension;
+          auto idx2 = (i + 2UL) % dimension;
           blaze::row(rot_axis_vector_batch, i) =
-              ValueType(-0.5) * theta_batch * div_inv_skew_symmetric_map /
-              (blaze::sin(theta_batch)+ValueType(1e-12));// + ValueType(1e-14)); // TODO refactor 1e-12
+              blaze::sum<blaze::rowwise>(blaze::pageslice(q_next, idx2) % blaze::pageslice(q, idx1) -
+                                         blaze::pageslice(q_next, idx1) % blaze::pageslice(q, idx2)) *
+              ( ValueType(-0.5) * theta_batch * (blaze::sin(theta_batch)+ValueType(1e-12)) ) / // TODO: refactor 1e-12
+              trans_normalize_vector_batch;
         }
       }
 
