@@ -299,7 +299,7 @@ namespace elastica {
             //auto n_elem = elastica::cosserat_rod::get_batch_elems(volume);
             auto n_elem = (*volume).size();
 
-            auto mass_on_element = MassVariable::slice(mass, 0, n_elem) % volume;
+            auto mass_on_element = MassVariable::slice(mass, 0, n_elem) * volume;
             //Traits::Operations::quadrature_kernel(mass, mass_on_element);
             MassVariable::slice(mass, 0UL, n_elem)  = 0.5 * mass_on_element;
             MassVariable::slice(mass, 1UL, n_elem) += 0.5 * mass_on_element;
