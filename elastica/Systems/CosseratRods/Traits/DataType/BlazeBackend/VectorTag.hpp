@@ -214,6 +214,10 @@ namespace elastica {
                                std::size_t size) -> slice_type {
         return blaze::subvector(data, start_index, size);
       }
+      static inline auto slice(slice_type& data, std::size_t start_index,
+                               std::size_t size) -> slice_type {
+        return blaze::subvector(data, start_index, size);
+      }
       //************************************************************************
 
       //************************************************************************

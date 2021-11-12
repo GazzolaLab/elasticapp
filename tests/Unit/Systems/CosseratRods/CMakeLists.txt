@@ -6,10 +6,12 @@ add_subdirectory(Traits)
 set(LIBRARY "Test_CosseratRod")
 
 set(LIBRARY_SOURCES
-        Test_CosseratRodPlugin.cpp
-        Test_BlockInitializer.cpp
-        Test_Block.cpp
         Test_Access.cpp
+        Test_Block.cpp
+        Test_BlockInitializer.cpp
+        Test_CosseratRodPlugin.cpp
+        Test_CosseratRodTraits.cpp
+        Test_PerturbedRod.cpp
         Test_Serialize.cpp
         Test_Specialize.cpp
         Test_Tagged.cpp

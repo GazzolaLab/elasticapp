@@ -81,7 +81,7 @@ namespace elastica {
        */
       //! The type of a ghost element for the data type
       using ghost_type =
-          blaze::StaticTensor<Real, Frames::Dimension, Frames::Dimension, 1UL>;
+          blaze::StaticMatrix<Real, Frames::Dimension, Frames::Dimension>;
       //! The type of a reference to the underlying data type
       using reference_type = blaze::ColumnSlice_<data_type>;
       //! The type of const reference to the underlying data type
@@ -285,6 +285,14 @@ namespace elastica {
        * @return
        */
       //************************************************************************
+      static inline void diagonal_assign(slice_type& data, std::size_t index,
+                                         Vec3 const& diag) {
+        auto submatrix = blaze::columnslice(data, index);
+        submatrix(0UL, 0UL) = static_cast<Real>(diag[0UL]);
+        submatrix(1UL, 1UL) = static_cast<Real>(diag[1UL]);
+        submatrix(2UL, 2UL) = static_cast<Real>(diag[2UL]);
+      }
+
       static inline void diagonal_assign(data_type& data, std::size_t index,
                                          Vec3 const& diag) {
         auto submatrix = blaze::columnslice(data, index);
