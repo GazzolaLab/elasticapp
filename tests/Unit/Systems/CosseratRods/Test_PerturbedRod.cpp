@@ -19,8 +19,7 @@ namespace {
   using Plugin = elastica::cosserat_rod::CosseratRodPlugin<
       Traits, blocks::Block,
       elastica::cosserat_rod::component::WithCircularCosseratRod,
-      elastica::cosserat_rod::component::
-      WithExplicitlyDampedDiagonalLinearHyperElasticModel,
+      elastica::cosserat_rod::component::WithExplicitlyDampedDiagonalLinearHyperElasticModel,
       elastica::cosserat_rod::component::WithRodKinematics>;
   using Model = blocks::Block<Plugin>;
 
@@ -33,41 +32,35 @@ namespace {
         // Variables
         blocks::initialize<elastica::tags::NElement>([](...) { return 5; }),
         // Geometry Variables
-        blocks::initialize<elastica::tags::Position>([](...) { return 1.0; }),
+        blocks::initialize<elastica::tags::Position>([](std::size_t index){ return 1.0 * index; }),
         blocks::initialize<elastica::tags::Director>([](...) { return 0.5; }),
-        blocks::initialize<elastica::tags::ElementDimension>(
-            [](...) { return 4.0; }),
-        blocks::initialize<elastica::tags::ReferenceCurvature>(
-            [](...) { return 1.0; }),
-        blocks::initialize<elastica::tags::ReferenceShearStretchStrain>(
-            [](...) { return 1.0; }),
-        blocks::initialize<elastica::tags::ShearStretchRigidityMatrix>(
-            [](...) { return 4.0; }),
-        blocks::initialize<elastica::tags::BendingTwistRigidityMatrix>(
-            [](...) { return 4.0; }),
-        blocks::initialize<elastica::tags::ElementDilatation>(
-            [](...) { return 1.0; }),
-        blocks::initialize<elastica::tags::ForceDampingCoefficient>(
-            [](...) { return 4.0; }),
-        blocks::initialize<elastica::tags::TorqueDampingCoefficient>(
-            [](...) { return 1.0; }),
+        blocks::initialize<elastica::tags::ElementDimension>( [](...) { return 4.0; }),
+        blocks::initialize<elastica::tags::ReferenceCurvature>( [](...) { return 1.0; }),
+        blocks::initialize<elastica::tags::ReferenceShearStretchStrain>( [](...) { return 1.0; }),
+        blocks::initialize<elastica::tags::ShearStretchRigidityMatrix>( [](...) { return 4.0; }),
+        blocks::initialize<elastica::tags::BendingTwistRigidityMatrix>( [](...) { return 4.0; }),
+        blocks::initialize<elastica::tags::ElementDilatation>( [](...) { return 1.0; }),
+        blocks::initialize<elastica::tags::ForceDampingCoefficient>( [](...) { return 4.0; }),
+        blocks::initialize<elastica::tags::TorqueDampingCoefficient>( [](...) { return 1.0; }),
         // Kinematics Variables
         blocks::initialize<elastica::tags::Mass>([](...) { return 1.0; }),
         blocks::initialize<elastica::tags::Velocity>([](...) { return 0.0; }),
-        blocks::initialize<elastica::tags::AngularVelocity>(
-            [](...) { return 0.0; }),
-        blocks::initialize<elastica::tags::Acceleration>(
-            [](...) { return 0.0; }),
-        blocks::initialize<elastica::tags::AngularAcceleration>(
-            [](...) { return 0.0; }));
+        blocks::initialize<elastica::tags::AngularVelocity>( [](...) { return 0.0; }),
+        blocks::initialize<elastica::tags::Acceleration>( [](...) { return 0.0; }),
+        blocks::initialize<elastica::tags::AngularAcceleration>( [](...) { return 0.0; })
+      );
 
     auto slicedrod = simple_rod.emplace_back(std::move(initializer));
+
+    CHECK(slicedrod.get_element_dimension() == 0.007522);
   }
 
   ELASTICA_TEST_CASE("Integrated.CosseratRods.PerturbedRodTest",
   "[Systems][Integrated]") {
-    Model simple_rod{};
+
     using Init = ::elastica::cosserat_rod::StraightCosseratRodInitializer;
+
+    Model simple_rod{};
     Init straight_initializer{ // Initialization Wrapper
           Init::NElement{5UL},
           Init::Material{::elastica::iron},
@@ -104,6 +97,8 @@ namespace {
     //std::cout << Traits::DataType::Scalar::slice(mass, 0, n_elem) << std::endl;
 
     std::cout << slicedrod.get_element_volume() << std::endl;
+
+    CHECK(slicedrod.get_element_dimension() == 0.007522);
 
   }
 }  // namespace

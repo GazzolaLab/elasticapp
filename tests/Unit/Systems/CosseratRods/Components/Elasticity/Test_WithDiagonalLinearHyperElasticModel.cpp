@@ -87,7 +87,7 @@ namespace {
     CHECK(model.compute_internal_torques() == 0.0);
 
     // check if initialization is done as expected
-    auto expected_call_count = make_array(11U, 10U, 10U, 0U, 0U, 10U, 9U);
+    auto expected_call_count = make_array(11U, 10U, 10U, 9U, 10U, 10U, 9U);
     CHECK_ITERABLE_APPROX(n_times_called, expected_call_count);
 
     // Check RigidityMatrix
