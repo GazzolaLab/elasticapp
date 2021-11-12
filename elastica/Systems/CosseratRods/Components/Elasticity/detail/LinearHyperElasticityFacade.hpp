@@ -256,7 +256,7 @@ namespace elastica {
             // shear and stretch only
             {
               using Variable = BendingTwistRigidityMatrix;
-              using Tag = blocks::initializer_t<Variable>;
+              using Tag = blocks::parameter_t<Variable>;
               using real_type = typename Traits::real_type;
 
               auto& variable(blocks::get<Tag>(downstream_block));
@@ -283,7 +283,7 @@ namespace elastica {
             // bending and twisting only
             {
               using Variable = ShearStretchRigidityMatrix;
-              using Tag = blocks::initializer_t<Variable>;
+              using Tag = blocks::parameter_t<Variable>;
               using real_type = typename Traits::real_type;
 
               auto& variable(blocks::get<Tag>(downstream_block));

@@ -61,7 +61,7 @@ namespace elastica {
                     const TT& matrix_batch,
                     const MT2& vector_batch) {
     constexpr std::size_t dimension(3UL);
-    const std::size_t n_elems = matrix_batch.columns();
+    //const std::size_t n_elems = matrix_batch.columns();
 
     // Written for debugging purpose
 //    const std::size_t vbatch_columns = vector_batch.columns();
@@ -165,7 +165,7 @@ namespace elastica {
                    const MT2& first_vector_batch,
                    const MT3& second_vector_batch) {
     constexpr std::size_t dimension(3UL);
-    const std::size_t n_elems = first_vector_batch.columns();
+    //const std::size_t n_elems = first_vector_batch.columns();
     assert(cross_batch.rows() == dimension);
     //assert(cross_batch.columns() == n_elems);
     assert(first_vector_batch.rows() == dimension);
@@ -241,7 +241,7 @@ namespace elastica {
   template <typename MT>  // blaze vector expression type
   auto batch_norm(const MT& vector_batch) {
     constexpr std::size_t dimension(3UL);
-    const std::size_t n_elems = vector_batch.columns();
+    //const std::size_t n_elems = vector_batch.columns();
     assert(vector_batch.rows() == dimension);
 
     return blaze::sqrt(blaze::trans(blaze::sum<blaze::columnwise>(vector_batch % vector_batch)));

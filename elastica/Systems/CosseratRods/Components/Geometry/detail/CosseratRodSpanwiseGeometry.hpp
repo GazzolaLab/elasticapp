@@ -381,39 +381,39 @@ namespace elastica {
 
               // element_length_collection
               auto& element_length_collection(
-                  blocks::get<ElementLength>(downstream_block));
+                  blocks::get<::elastica::tags::ElementLength>(downstream_block));
               element_length_collection = Traits::Operations::batch_norm(position_diff);
 
               // reference_length_collection
               auto& reference_length_collection(
-                  blocks::get<ReferenceElementLength>(downstream_block));
+                  blocks::get<::elastica::tags::ReferenceElementLength>(downstream_block));
               //reference_length_collection = Traits::Operations::batch_norm(position_diff);
               reference_length_collection = element_length_collection / dilatation;
 
               // reference_voronoi_length_collection
               auto& reference_voronoi_length_collection(
-                  blocks::get<ReferenceVoronoiLength>(downstream_block));
+                  blocks::get<::elastica::tags::ReferenceVoronoiLength>(downstream_block));
               reference_voronoi_length_collection = Traits::Operations::average_kernel(reference_length_collection);
 
               // element_dilatation
               auto& element_dilatation_collection(
-                  blocks::get<ElementDilatation>(downstream_block));
+                  blocks::get<::elastica::tags::ElementDilatation>(downstream_block));
               element_dilatation_collection = element_length_collection /
                                               reference_length_collection;
 
               // voronoi_length_collection
               auto& voronoi_length_collection(
-                  blocks::get<VoronoiLength>(downstream_block));
+                  blocks::get<::elastica::tags::VoronoiLength>(downstream_block));
               voronoi_length_collection = Traits::Operations::average_kernel(element_length_collection);
 
               // voronoi_dilatation
               auto& voronoi_dilatation(
-                  blocks::get<VoronoiDilatation>(downstream_block));
+                  blocks::get<::elastica::tags::VoronoiDilatation>(downstream_block));
               voronoi_dilatation = voronoi_length_collection / reference_voronoi_length_collection;
 
               // tangent_collection
               auto& tangent_collection(
-                  blocks::get<Tangent>(downstream_block));
+                  blocks::get<::elastica::tags::Tangent>(downstream_block));
               //tangent_collection = position_diff / reference_length_collection;
               Traits::Operations::batch_division_matvec(tangent_collection, position_diff, reference_length_collection);
 

@@ -749,6 +749,7 @@ namespace tuples {
           // TODO why is this bugging out?
           //using ::operator<<;
           //os << element;
+          (void)element;
           current_value++;
           if (current_value < sizeof...(Tags)) {
             os << ", ";

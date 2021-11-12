@@ -137,7 +137,7 @@ namespace elastica {
          protected:
           inline void compute_internal_modeled_loads_impl() /*noexcept*/ {
             auto& internal_force(blocks::get<tags::InternalLoads>(self()));
-            auto& dissipation_constant(blocks::get<ForceDampingCoefficient>(self()));
+            auto& dissipation_constant(blocks::get<tags::ForceDampingCoefficient>(self()));
             auto& length(blocks::get<tags::ElementLength>(self()));
             auto& velocity(blocks::get<tags::Velocity>(self()));
             auto& dummy_vec(blocks::get<tags::_DummyNodeVector>(self()));
@@ -155,7 +155,7 @@ namespace elastica {
 
           inline void compute_internal_modeled_torques_impl() /*noexcept*/ {
             auto& internal_torque(blocks::get<tags::InternalTorques>(self()));
-            auto& dissipation_constant(blocks::get<TorqueDampingCoefficient>(self()));
+            auto& dissipation_constant(blocks::get<tags::TorqueDampingCoefficient>(self()));
             auto& angular_velocity(blocks::get<tags::AngularVelocity>(self()));
             auto& length(blocks::get<tags::ElementLength>(self()));
 

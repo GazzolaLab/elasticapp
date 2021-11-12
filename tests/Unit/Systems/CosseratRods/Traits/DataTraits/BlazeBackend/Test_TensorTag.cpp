@@ -34,8 +34,10 @@ namespace {
       // (page, row, column)
       auto checker = [&ghost, &expected_ghost](auto Is) {
         CHECK_ITERABLE_APPROX(
-            blaze::row<Is>(blaze::columnslice(ghost, 0UL)),
-            blaze::row<Is>(blaze::columnslice(expected_ghost, 0UL)));
+            //blaze::row<Is>(blaze::columnslice(ghost, 0UL)),
+            blaze::row<Is>(ghost, 0UL),
+        //    blaze::row<Is>(blaze::columnslice(expected_ghost, 0UL)));
+            blaze::row<Is>(expected_ghost, 0UL));
       };
       index_apply<3UL>(
           [checker](auto... Is) { EXPAND_PACK_LEFT_TO_RIGHT(checker(Is)); });

@@ -720,7 +720,7 @@ namespace {
     {
       auto sim = setup_sim_with_state(20UL);
       std::stringstream ss;  // any stream can be used
-      std::size_t n_elements(16UL);
+      //std::size_t n_elements(16UL);
 
       {
         BinaryOutputArchive oarchive(ss);  //  Create an output archive
