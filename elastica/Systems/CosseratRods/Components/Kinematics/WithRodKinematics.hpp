@@ -294,10 +294,10 @@ namespace elastica {
           {
             using MassVariable = typename Traits::DataType::Scalar;
 
-            auto& mass(blocks::get<Mass>(downstream_block));
+            auto& mass(blocks::get<::elastica::tags::Mass>(downstream_block));
             auto volume = downstream_block.get_element_volume();
             //auto n_elem = elastica::cosserat_rod::get_batch_elems(volume);
-            auto n_elem = (*volume).size();
+            auto n_elem = (*volume).size(); // TODO: use other method to get number of elements
 
             auto mass_on_element = MassVariable::slice(mass, 0, n_elem) * volume;
             //Traits::Operations::quadrature_kernel(mass, mass_on_element);
@@ -307,8 +307,8 @@ namespace elastica {
 
           /* Reset forces and torques */
           {
-            auto& external_loads(blocks::get<ExternalLoads>(downstream_block));
-            auto& external_torques(blocks::get<ExternalTorques>(downstream_block));
+            auto& external_loads(blocks::get<::elastica::tags::ExternalLoads>(downstream_block));
+            auto& external_torques(blocks::get<::elastica::tags::ExternalTorques>(downstream_block));
             external_loads = 0.0;
             external_torques = 0.0;
           }
@@ -375,7 +375,7 @@ namespace elastica {
           auto& position(blocks::get<tags::Position>(self()));
           auto& length(blocks::get<tags::ElementLength>(self()));
           auto& reference_length(blocks::get<tags::ReferenceElementLength>(self()));
-          auto& velocity(blocks::get<Velocity>(self()));
+          auto& velocity(blocks::get<tags::Velocity>(self()));
           return Traits::Operations::batch_dot(
               Traits::Operations::difference_kernel(position),
               Traits::Operations::difference_kernel(velocity)) / (length * reference_length);
@@ -418,7 +418,7 @@ namespace elastica {
         //**********************************************************************
 
 
-       protected:
+       public: // TODO: temporary change from protected
         //**********************************************************************
         /*!\brief Update acceleration based on the current state
          *
@@ -444,19 +444,21 @@ namespace elastica {
          */
         // TODO: double check how external force and external torque comes into play
         inline void update_acceleration() noexcept {
-          auto& mass(blocks::get<Mass>(self()));
+          auto& mass(blocks::get<tags::Mass>(self()));
           auto& dilatation(blocks::get<tags::ElementDilatation>(self()));
           auto& inv_mass_SMOI(blocks::get<tags::InvMassSecondMomentOfInertia>(self()));
-          auto& acceleration(blocks::get<Acceleration>(self()));
-          auto& angular_acceleration(blocks::get<AngularAcceleration>(self()));
+          auto& acceleration(blocks::get<tags::Acceleration>(self()));
+          auto& angular_acceleration(blocks::get<tags::AngularAcceleration>(self()));
           auto& internal_loads(blocks::get<tags::InternalLoads>(self()));
           auto& internal_torques(blocks::get<tags::InternalTorques>(self()));
-          auto& external_loads(blocks::get<ExternalLoads>(self()));
-          auto& external_torques(blocks::get<ExternalTorques>(self()));
+          auto& external_loads(blocks::get<tags::ExternalLoads>(self()));
+          auto& external_torques(blocks::get<tags::ExternalTorques>(self()));
 
           auto total_loads = internal_loads + external_loads;
           // TODO: Revisit division vs power+multiplication
-          acceleration = total_loads / Traits::Operations::expand_for_broadcast(mass);
+          // TODO: remove transpose if possible
+          //acceleration = total_loads / Traits::Operations::expand_for_broadcast(mass);
+          Traits::Operations::batch_division_matvec(acceleration, total_loads, mass);
 
           auto total_torque= internal_torques + external_torques;
           Traits::Operations::batch_matvec(
@@ -467,8 +469,8 @@ namespace elastica {
             );
 
           /* Reset forces and torques */
-          external_loads = Traits::DataType::real_type(0.0);
-          external_torques = Traits::DataType::real_type(0.0);
+          external_loads = 0.0;
+          external_torques = 0.0;
         }
         //*********************************************************************
 
