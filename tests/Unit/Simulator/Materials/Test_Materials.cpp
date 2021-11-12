@@ -154,6 +154,42 @@ namespace {
             approx(backward_dynamic_friction_coefficient));
       CHECK(Material::get_lateral_dynamic_friction(first_mID) ==
             approx(lateral_dynamic_friction_coefficient));
+
+      // it should be flipped, but whatever.
+      auto zeroth_mID =
+          create_material(density, cor, youngs_modulus, shear_modulus,
+                          stiffness, normal_damping, tangential_damping,
+                          forward_static_friction_coefficient,
+                          backward_static_friction_coefficient,
+                          lateral_static_friction_coefficient,
+                          forward_dynamic_friction_coefficient,
+                          backward_dynamic_friction_coefficient,
+                          lateral_dynamic_friction_coefficient);
+      CHECK(Material::get_density(zeroth_mID) == approx(density));
+      CHECK(Material::get_restitution(zeroth_mID) == approx(cor));
+      CHECK(Material::get_poisson_ratio(zeroth_mID) == approx(0.5));
+      CHECK(Material::get_youngs_modulus(zeroth_mID) == approx(youngs_modulus));
+      CHECK(Material::get_shear_modulus(zeroth_mID) == approx(shear_modulus));
+      CHECK(Material::get_stiffness(zeroth_mID) == approx(stiffness));
+      CHECK(Material::get_normal_damping(zeroth_mID) == approx(normal_damping));
+      CHECK(Material::get_tangential_damping(zeroth_mID) ==
+            approx(tangential_damping));
+      CHECK(Material::get_static_friction(zeroth_mID) ==
+            approx(forward_static_friction_coefficient));
+      CHECK(Material::get_forward_static_friction(zeroth_mID) ==
+            approx(forward_static_friction_coefficient));
+      CHECK(Material::get_backward_static_friction(zeroth_mID) ==
+            approx(backward_static_friction_coefficient));
+      CHECK(Material::get_lateral_static_friction(zeroth_mID) ==
+            approx(lateral_static_friction_coefficient));
+      CHECK(Material::get_dynamic_friction(zeroth_mID) ==
+            approx(forward_dynamic_friction_coefficient));
+      CHECK(Material::get_forward_dynamic_friction(zeroth_mID) ==
+            approx(forward_dynamic_friction_coefficient));
+      CHECK(Material::get_backward_dynamic_friction(zeroth_mID) ==
+            approx(backward_dynamic_friction_coefficient));
+      CHECK(Material::get_lateral_dynamic_friction(zeroth_mID) ==
+            approx(lateral_dynamic_friction_coefficient));
     }
 
     SECTION("create_material : Partially detailed") {
@@ -198,6 +234,37 @@ namespace {
       CHECK(Material::get_backward_dynamic_friction(second_mID) ==
             approx(dynamic_friction_coefficient));
       CHECK(Material::get_lateral_dynamic_friction(second_mID) ==
+            approx(dynamic_friction_coefficient));
+
+      auto third_mID = create_material(
+          density, cor, youngs_modulus, shear_modulus, stiffness,
+          normal_damping, tangential_damping, static_friction_coefficient,
+          dynamic_friction_coefficient);
+
+      CHECK(Material::get_density(third_mID) == approx(density));
+      CHECK(Material::get_restitution(third_mID) == approx(cor));
+      CHECK(Material::get_poisson_ratio(third_mID) == approx(0.5));
+      CHECK(Material::get_youngs_modulus(third_mID) == approx(youngs_modulus));
+      CHECK(Material::get_shear_modulus(third_mID) == approx(shear_modulus));
+      CHECK(Material::get_stiffness(third_mID) == approx(stiffness));
+      CHECK(Material::get_normal_damping(third_mID) == approx(normal_damping));
+      CHECK(Material::get_tangential_damping(third_mID) ==
+            approx(tangential_damping));
+      CHECK(Material::get_static_friction(third_mID) ==
+            approx(static_friction_coefficient));
+      CHECK(Material::get_forward_static_friction(third_mID) ==
+            approx(static_friction_coefficient));
+      CHECK(Material::get_backward_static_friction(third_mID) ==
+            approx(static_friction_coefficient));
+      CHECK(Material::get_lateral_static_friction(third_mID) ==
+            approx(static_friction_coefficient));
+      CHECK(Material::get_dynamic_friction(third_mID) ==
+            approx(dynamic_friction_coefficient));
+      CHECK(Material::get_forward_dynamic_friction(third_mID) ==
+            approx(dynamic_friction_coefficient));
+      CHECK(Material::get_backward_dynamic_friction(third_mID) ==
+            approx(dynamic_friction_coefficient));
+      CHECK(Material::get_lateral_dynamic_friction(third_mID) ==
             approx(dynamic_friction_coefficient));
     }
 

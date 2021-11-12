@@ -183,6 +183,7 @@ namespace elastica {
    * //  - material density               : 2.54
    * //  - coefficient of restitution     : 0.8
    * //  - Young's modulus                : 80
+   * //  - Shear modulus                  : 120
    * //  - Contact stiffness              : 100
    * //  - dampingN                       : 10
    * //  - dampingT                       : 11
@@ -193,7 +194,7 @@ namespace elastica {
    * //  - coefficient of backward dynamic friction: 0.1
    * //  - coefficient of lateral dynamic friction: 0.075
    * MaterialID myMaterial = create_material("myMaterial", 2.54, 0.8, 80,
-   *                                          100, 10, 11, 0.1, 0.2, 0.15,
+   *                                          120, 100, 10, 11, 0.1, 0.2, 0.15,
    *                                          0.05, 0.1, 0.075);
    * \endcode
    *
@@ -452,13 +453,14 @@ namespace elastica {
    * //  - material density               : 2.54
    * //  - coefficient of restitution     : 0.8
    * //  - Young's modulus                : 80
+   * //  - Shear modulus                  : 120
    * //  - Contact stiffness              : 100
    * //  - dampingN                       : 10
    * //  - dampingT                       : 11
    * //  - coefficient of static friction : 0.1
    * //  - coefficient of dynamic friction: 0.05
    * MaterialID myMaterial = create_material("myMaterial", 2.54, 0.8,
-   *                                          80, 100, 10, 11, 0.1, 0.05);
+   *                                          80, 120, 100, 10, 11, 0.1, 0.05);
    * \endcode
    *
    * In case the name of the material is already in use or if any of the
@@ -548,15 +550,15 @@ namespace elastica {
    * material is found, the corresponding MaterialID is returned. Otherwise, \a
    * invalid_material is returned.
    */
-  MaterialID Material::find(const std::string& name) {
+  MaterialID Material::find(const std::string& name) noexcept {
     for (Material::SizeType i = 0; i < Material::materials_.size(); ++i) {
       if (Material::materials_[i].get_name() == name) {
         return i;
       }
     }
-    // this seems like an error return code, rather we should raise an
-    // exception
-    throw std::runtime_error("Invalid name of material");
+    // We return invalid material rather than raise an exception here for
+    // having anonymous materials
+    return invalid_material;
   }
   //****************************************************************************
 
