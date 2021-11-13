@@ -34,8 +34,8 @@ namespace mock {
                                          std::size_t /*index*/) {
       return data;
     }
-    static inline void diagonal_assign(type const& data, std::size_t index,
-                                       type const& diag) {}
+    static inline void diagonal_assign(type const&, std::size_t,
+                                       type const&) {}
   };
 
   template <std::size_t>

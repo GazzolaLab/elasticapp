@@ -103,7 +103,7 @@ namespace {
     auto initializer = mock::initialize_block<Plugin>(
         // from before
         blocks::initialize<tags::Position>([&i = n_times_called[0]](std::size_t index){ ++i; return index*1.0; }),
-        blocks::initialize<tags::Director>([&i = n_times_called[1]](std::size_t index){ ++i; return 0.5; }),
+        blocks::initialize<tags::Director>([&i = n_times_called[1]](...){ ++i; return 0.5; }),
         // from before
         blocks::initialize<tags::ElementDimension>([&i = n_times_called[2]](...) { ++i; return 4.0; }),
         blocks::initialize<tags::ReferenceCurvature>([&i = n_times_called[3]](...) { ++i; return 1.0; }),

@@ -76,7 +76,7 @@ namespace {
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
         blocks::initialize<tags::Position>([&i = n_times_called[0]](std::size_t index) { ++i; return index * 1.0; }),
-        blocks::initialize<tags::Director>([&i = n_times_called[1]](std::size_t index) { ++i; return 0.5; }),
+        blocks::initialize<tags::Director>([&i = n_times_called[1]](...) { ++i; return 0.5; }),
         blocks::initialize<tags::ReferenceCurvature>([&i = n_times_called[2]](...) { ++i; return 1.0; }),
         blocks::initialize<tags::ReferenceShearStretchStrain>([&i = n_times_called[3]](...) { ++i; return 1.0; }),
         blocks::initialize<tags::ElementDilatation>([&i = n_times_called[4]](...) { ++i; return 1.0; }),
@@ -91,8 +91,8 @@ namespace {
 
     CHECK(model.get_element_length() == blaze::sqrt(3.0));
     CHECK(model.get_reference_element_length() == blaze::sqrt(3.0));
-    CHECK(model.get_reference_curvature() == 0.0);
-    CHECK(model.get_reference_shear_stretch_strain() == 0.0);
+    CHECK(model.get_reference_curvature() == 1.0);
+    CHECK(model.get_reference_shear_stretch_strain() == 1.0);
   }
 
 }  // namespace

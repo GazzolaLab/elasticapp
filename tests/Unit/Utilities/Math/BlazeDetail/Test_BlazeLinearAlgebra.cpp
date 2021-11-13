@@ -21,7 +21,7 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeLinearAlgebra: Randomized batch matrix-vector product test",
                      "[Unit][Utilities]") {
-    for (std::size_t n_elems : {1, 32, 128}) {
+    for (std::size_t n_elems : {1UL, 32UL, 128UL}) {
       TT matrix_batch(dimension, dimension, n_elems);
       MT vector_batch(dimension, n_elems),
           test_matvec_batch(dimension, n_elems),
@@ -60,7 +60,7 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeLinearAlgebra: Randomised batch matrix-matrix product test",
             "[Unit][Utilities]") {
-    for (std::size_t n_elems : {1, 32, 128}) {
+    for (std::size_t n_elems : {1UL, 32UL, 128UL}) {
       TT first_matrix_batch(dimension, dimension, n_elems),
           second_matrix_batch(dimension, dimension, n_elems),
           test_matmul_batch(dimension, dimension, n_elems),
@@ -103,7 +103,7 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeLinearAlgebra: Randomised batch cross product test",
                      "[Unit][Utilities]") {
-    for (std::size_t n_elems : {1, 32, 128}) {
+    for (std::size_t n_elems : {1UL, 32UL, 128UL}) {
       MT first_vector_batch(dimension, n_elems),
           second_vector_batch(dimension, n_elems),
           test_cross_product_batch(dimension, n_elems),
@@ -140,7 +140,7 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeLinearAlgebra: Randomised batch dot product test",
                      "[Unit][Utilities]") {
-    for (std::size_t n_elems : {1, 32, 128}) {
+    for (std::size_t n_elems : {1UL, 32UL, 128UL}) {
       MT first_vector_batch(dimension, n_elems),
           second_vector_batch(dimension, n_elems);
       VT test_dot_product_batch(n_elems), correct_dot_product_batch(n_elems);
@@ -175,7 +175,7 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeLinearAlgebra: Randomised batch norm test",
                      "[Unit][Utilities]") {
-    for (std::size_t n_elems : {1, 32, 128}) {
+    for (std::size_t n_elems : {1UL, 32UL, 128UL}) {
       MT vector_batch(dimension, n_elems);
       VT test_norm_batch(n_elems), correct_norm_batch(n_elems);
       blaze::randomize(vector_batch);

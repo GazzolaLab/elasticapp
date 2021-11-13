@@ -80,14 +80,14 @@ namespace {
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
         // from before
-        blocks::initialize<elastica::tags::Position>([&i = n_times_called[0]](std::size_t index) { ++i; return index * 1.0; return 2.0; }),
-        blocks::initialize<elastica::tags::Director>([&i = n_times_called[1]](std::size_t index) { ++i; return 0.5; }),
+        blocks::initialize<elastica::tags::Position>([&i = n_times_called[0]](std::size_t index) { ++i; return index * 1.0; }),
+        blocks::initialize<elastica::tags::Director>([&i = n_times_called[1]](...) { ++i; return 0.5; }),
         // from before
         blocks::initialize<elastica::tags::ElementDimension>( [&i = n_times_called[2]](...) { ++i; return 4.0; }),
         blocks::initialize<elastica::tags::ReferenceCurvature>( [&i = n_times_called[3]](...) { ++i; return 1.0; }),
         blocks::initialize<elastica::tags::ReferenceShearStretchStrain>( [&i = n_times_called[4]](...) { ++i; return 1.0; }),
 
-        blocks::initialize<elastica::tags::ElementDilatation>([&i = n_times_called[5]](std::size_t index) { ++i; return 1.0; })
+        blocks::initialize<elastica::tags::ElementDilatation>([&i = n_times_called[5]](...) { ++i; return 1.0; })
       );
 
     Model::initialize(model, std::move(initializer));
@@ -115,7 +115,7 @@ namespace {
     CHECK(model.get_second_moment_of_area<LocalFrame::D3>() ==
           2.0 * expected_second_moment);
 
-    model.compute_shear_strains();
+    //model.compute_shear_strains();
   }
 
 }  // namespace

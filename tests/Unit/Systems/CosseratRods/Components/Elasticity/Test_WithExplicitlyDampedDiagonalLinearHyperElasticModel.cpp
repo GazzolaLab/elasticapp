@@ -63,21 +63,21 @@ namespace {
     auto n_times_called = make_array<n_initializers>(0U);
     auto j = 0UL;
     auto initializer = mock::initialize_block<Plugin>(
-        blocks::initialize<tags::Position>([&i = n_times_called[j++]](std::size_t index) { ++i; return Vec3({0.0, 1.0*index, 0.0}); }),
-        blocks::initialize<tags::Director>([&i = n_times_called[j++]](...) { ++i; return 0.5; }),
-        blocks::initialize<tags::ElementDimension>( [&i = n_times_called[j++]](...) { ++i; return 1.0; }),
-        blocks::initialize<tags::ElementDilatation>([&i = n_times_called[j++]](...) { ++i; return 1.0; }),
-        blocks::initialize<tags::ReferenceCurvature>( [&i = n_times_called[j++]](...) { ++i; return 1.0; }),
-        blocks::initialize<tags::ReferenceShearStretchStrain>( [&i = n_times_called[j++]](...) { ++i; return 1.0; }),
-        blocks::initialize<tags::ShearStretchRigidityMatrix>( [&i = n_times_called[j++]](...) { ++i; return 4.0; }),
-        blocks::initialize<tags::BendingTwistRigidityMatrix>( [&i = n_times_called[j++]](...) { ++i; return 4.0; }),
-        blocks::initialize<tags::ForceDampingCoefficient>([&i = n_times_called[j++]](...) { ++i; return 4.0; }),
-        blocks::initialize<tags::TorqueDampingCoefficient>([&i = n_times_called[j++]](...) { ++i; return 0.0; }),
-        blocks::initialize<tags::Mass>([&i = n_times_called[j++]](...) { ++i; return 1.0; }),
-        blocks::initialize<tags::Velocity>([&i = n_times_called[j++]](...) { ++i; return 1.0; }),
-        blocks::initialize<tags::AngularVelocity>([&i = n_times_called[j++]](...) { ++i; return 1.0; }),
-        blocks::initialize<tags::Acceleration>([&i = n_times_called[j++]](...) { ++i; return 0.0; }),
-        blocks::initialize<tags::AngularAcceleration>([&i = n_times_called[j++]](...) { ++i; return 0.0; })
+        blocks::initialize<tags::Position>([&i = n_times_called[++j]](std::size_t index) { ++i; return Vec3({0.0, 1.0*index, 0.0}); }),
+        blocks::initialize<tags::Director>([&i = n_times_called[++j]](...) { ++i; return 0.5; }),
+        blocks::initialize<tags::ElementDimension>( [&i = n_times_called[++j]](...) { ++i; return 1.0; }),
+        blocks::initialize<tags::ElementDilatation>([&i = n_times_called[++j]](...) { ++i; return 1.0; }),
+        blocks::initialize<tags::ReferenceCurvature>( [&i = n_times_called[++j]](...) { ++i; return 1.0; }),
+        blocks::initialize<tags::ReferenceShearStretchStrain>( [&i = n_times_called[++j]](...) { ++i; return 1.0; }),
+        blocks::initialize<tags::ShearStretchRigidityMatrix>( [&i = n_times_called[++j]](...) { ++i; return 4.0; }),
+        blocks::initialize<tags::BendingTwistRigidityMatrix>( [&i = n_times_called[++j]](...) { ++i; return 4.0; }),
+        blocks::initialize<tags::ForceDampingCoefficient>([&i = n_times_called[++j]](...) { ++i; return 4.0; }),
+        blocks::initialize<tags::TorqueDampingCoefficient>([&i = n_times_called[++j]](...) { ++i; return 0.0; }),
+        blocks::initialize<tags::Mass>([&i = n_times_called[++j]](...) { ++i; return 1.0; }),
+        blocks::initialize<tags::Velocity>([&i = n_times_called[++j]](...) { ++i; return 1.0; }),
+        blocks::initialize<tags::AngularVelocity>([&i = n_times_called[++j]](...) { ++i; return 1.0; }),
+        blocks::initialize<tags::Acceleration>([&i = n_times_called[++j]](...) { ++i; return 0.0; }),
+        blocks::initialize<tags::AngularAcceleration>([&i = n_times_called[++j]](...) { ++i; return 0.0; })
       );
 
     Model::initialize(model, std::move(initializer));

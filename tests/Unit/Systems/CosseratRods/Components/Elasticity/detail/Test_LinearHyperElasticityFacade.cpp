@@ -12,7 +12,7 @@
 ///
 #include "Utilities/CRTP.hpp"
 #include "Utilities/MakeArray.hpp"
-#include "Utilities/Math/sqrt.hpp"
+#include "Utilities/Math/Sqrt.hpp"
 
 namespace {
 
@@ -74,8 +74,8 @@ namespace {
     CHECK_ITERABLE_APPROX(n_times_called, expected_call_count);
 
     // [0] element : stiff  * I_0
-    const double area = M_PI * 4.0 * 4.0;
-    const double I_0 = area * area * 0.25 * M_1_PI;
+    // const double area = M_PI * 4.0 * 4.0;
+    // const double I_0 = area * area * 0.25 * M_1_PI;
 //    CHECK(double(blocks::get<tags::BendingTwistRigidityMatrix>(model)) ==
 //          approx(4.0 * I_0));
 //    CHECK(double(blocks::get<tags::ShearStretchRigidityMatrix>(model)) ==

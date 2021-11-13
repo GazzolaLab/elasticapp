@@ -375,7 +375,7 @@ namespace elastica {
             {
               // position difference
               auto& position(blocks::get<::elastica::tags::Position>(downstream_block));
-              auto& director(blocks::get<::elastica::tags::Director>(downstream_block));
+              //auto& director(blocks::get<::elastica::tags::Director>(downstream_block));
               auto& dilatation(blocks::get<::elastica::tags::ElementDilatation>(downstream_block));
               auto position_diff = Traits::Operations::difference_kernel(position);
 
@@ -415,40 +415,43 @@ namespace elastica {
               auto& tangent_collection(
                   blocks::get<::elastica::tags::Tangent>(downstream_block));
               //tangent_collection = position_diff / reference_length_collection;
-              Traits::Operations::batch_division_matvec(tangent_collection, position_diff, reference_length_collection);
+              Traits::Operations::batch_division_matvec(tangent_collection, position_diff, element_length_collection);
 
               // curvature_collection (kappa)
-              auto& curvature_collection(
-                  blocks::get<Curvature>(downstream_block));
-              Traits::Operations::spanwise_inv_rotate_and_divide(
-                  curvature_collection, director,
-                  reference_voronoi_length_collection);
-              auto& reference_curvature_collection(
-                  blocks::get<ReferenceCurvature>(downstream_block));
-              reference_curvature_collection = curvature_collection;
-//              Traits::Operations::spanwise_inv_rotate_and_divide(reference_curvature_collection,
-//                                                              director,
-//                                                              Traits::Operations::expand_for_broadcast(reference_voronoi_length_collection));
-              //auto rot_vec = Traits::Operations::batch_inv_rotate(director);
-              //curvature_collection = rot_vec / reference_voronoi_length_collection;
+              This().update_curvature(downstream_block);
 
               // shear_stretch_strains_collection (sigma)
               // eqt-z
-              auto& shear_stretch_strains_collection(
-                  blocks::get<ShearStretchStrain>(downstream_block));
-              auto expanded_transposed_EDC = Traits::Operations::expand_for_broadcast(Traits::Operations::transpose(element_dilatation_collection));
-              Traits::Operations::batch_matvec(
-                  shear_stretch_strains_collection,
-                  director,
-                  tangent_collection % expanded_transposed_EDC // matvecexpr
-                );
-              Traits::Operations::batch_subtract_z_unit(shear_stretch_strains_collection);
-              auto& ref_shear_stretch_strains_collection(
-                  blocks::get<ReferenceShearStretchStrain>(downstream_block));
-              ref_shear_stretch_strains_collection = shear_stretch_strains_collection;
+              This().update_shear_stretch_strain(downstream_block);
             }
           }
           //********************************************************************
+
+         protected:
+          template<typename Block>
+          inline void update_curvature(Block& B) noexcept {
+            auto& curvature(blocks::get<::elastica::tags::Curvature>(B));
+            auto& director(blocks::get<::elastica::tags::Director>(B));
+            auto& reference_voronoi_length(blocks::get<::elastica::tags::ReferenceVoronoiLength>(B));
+            Traits::Operations::spanwise_inv_rotate_and_divide(
+                curvature, director,
+                reference_voronoi_length);
+          }
+
+          template<typename Block>
+          inline void update_shear_stretch_strain(Block& B) noexcept {
+            auto& shear_stretch_strains(blocks::get<::elastica::tags::ShearStretchStrain>(B));
+            auto& element_dilatation(blocks::get<::elastica::tags::ElementDilatation>(B));
+            auto& director(blocks::get<::elastica::tags::Director>(B));
+            auto& tangent(blocks::get<::elastica::tags::Tangent>(B));
+            auto expanded_transposed_EDC = Traits::Operations::expand_for_broadcast(Traits::Operations::transpose(element_dilatation));
+            Traits::Operations::batch_matvec(
+                shear_stretch_strains,
+                director,
+                tangent % expanded_transposed_EDC // matvecexpr
+            );
+            Traits::Operations::batch_subtract_z_unit(shear_stretch_strains);
+          }
 
          public:
           // decide the API bro
