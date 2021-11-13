@@ -126,36 +126,12 @@ namespace elastica {
           };
           //********************************************************************
 
-          //********************************************************************
-          /*!\brief Variable marking MassSecondMomentOfInertia within the
-           * Cosserat rod hierarchy
-           */
-          struct MassSecondMomentOfInertia
-              : public Traits::template CosseratRodVariable<
-                  ::elastica::tags::MassSecondMomentOfInertia,  //
-                  typename Traits::DataType::Matrix,
-                  typename Traits::Place::OnElement> {};
-          //********************************************************************
-
-          //********************************************************************
-          /*!\brief Variable marking InvMassSecondMomentOfInertia within the
-           * Cosserat rod hierarchy
-           */
-          struct InvMassSecondMomentOfInertia
-              : public Traits::template CosseratRodVariable<
-                  ::elastica::tags::InvMassSecondMomentOfInertia,  //
-                  typename Traits::DataType::Matrix,
-                  typename Traits::Place::OnElement> {};
-          //********************************************************************
-
           //@}
           //********************************************************************
 
           //**Type definitions**************************************************
           //! List of computed variables
-          using ComputedVariables = tmpl::list<ElementVolume,
-                                               MassSecondMomentOfInertia,
-                                               InvMassSecondMomentOfInertia>;
+          using ComputedVariables = tmpl::list<ElementVolume>;
           //! List of initialized variables
           using InitializedVariables = tmpl::list<ElementDimension>;
           //! List of all variables
@@ -262,8 +238,6 @@ namespace elastica {
           using typename Parent::VoronoiLength;
           using typename Parent::ElementLength;
 
-          using typename VariableDefinitions::MassSecondMomentOfInertia;
-          using typename VariableDefinitions::InvMassSecondMomentOfInertia;
           using typename VariableDefinitions::ElementDimension;
           using typename VariableDefinitions::ElementVolume;
           //********************************************************************
@@ -346,36 +320,6 @@ namespace elastica {
 
               volumes = compute_cross_section_area(dimensions) * lengths;
             }
-
-            /* mass second moment of inertia */
-            {
-              using Variable = MassSecondMomentOfInertia;
-//              using Tag = blocks::initializer_t<Variable>;
-
-              auto& variable(blocks::get<Variable>(downstream_block));
-              const auto dofs = Variable::get_dofs(initializers.n_elems());
-              for (std::size_t idx = 0U; idx < dofs; ++idx) {
-                // (I_1, I_2, I_3)
-                Variable::slice(variable, idx) = real_type(0.0);
-                Variable::diagonal_assign(variable, idx,
-                    downstream_block.get_second_moment_of_area(idx));
-              }
-            }
-
-            /* inverse mass second moment of inertia */
-            {
-              using Variable = InvMassSecondMomentOfInertia;
-//              using Tag = blocks::initializer_t<Variable>;
-
-              auto& variable(blocks::get<Variable>(downstream_block));
-              const auto dofs = Variable::get_dofs(initializers.n_elems());
-              for (std::size_t idx = 0U; idx < dofs; ++idx) {
-                // inv(I_1, I_2, I_3)
-                Variable::slice(variable, idx) = real_type(0.0);
-                  Variable::diagonal_assign(variable, idx,
-                      real_type(1.0)/downstream_block.get_second_moment_of_area(idx));
-              }
-            }
           }
           //********************************************************************
 
@@ -392,11 +336,11 @@ namespace elastica {
           /*!\brief Gets dimension of the current rod
            */
           inline constexpr decltype(auto) get_element_dimension() & noexcept {
-            return blocks::get<ElementDimension>(self());
+            return blocks::get<tags::ElementDimension>(self());
           }
           inline constexpr decltype(auto) get_element_dimension()
               const& noexcept {
-            return blocks::get<ElementDimension>(self());
+            return blocks::get<tags::ElementDimension>(self());
           }
           inline constexpr decltype(auto) get_element_dimension(
               index_type idx) & noexcept {
@@ -419,10 +363,10 @@ namespace elastica {
             //          (blocks::get<ElementVolume>(self())) =
             //              (blocks::get<ElementDimension>(self())) *
             //              (blocks::get<ElementLength>(self()));
-            return blocks::get<ElementVolume>(self());
+            return blocks::get<::elastica::tags::ElementVolume>(self());
           }
           inline constexpr decltype(auto) get_element_volume() const& noexcept {
-            return blocks::get<ElementVolume>(self());
+            return blocks::get<::elastica::tags::ElementVolume>(self());
           }
           inline constexpr decltype(auto) get_element_volume(
               index_type idx) & noexcept {
@@ -576,38 +520,43 @@ namespace elastica {
           // \return void/None
           //
           */
-          void compute_translation_diagnostics() noexcept {
+          void compute_translation_diagnostics() noexcept { // TODO: maybe rewriting code is not a good idea. try to collapse with the code in spanwise geometry.
             // Compute eq (3.3) from 2018 RSOS paper
             // 0. Create reference variables
             auto& position(blocks::get<::elastica::tags::Position>(self()));
-            auto& director(blocks::get<::elastica::tags::Director>(self()));
+            //auto& director(blocks::get<::elastica::tags::Director>(self()));
 
             // 1. Compute new lengths
             auto position_diff(Traits::Operations::difference_kernel(position));
-            auto& element_length_collection(blocks::get<ElementLength>(self()));
+            auto& element_length_collection(blocks::get<tags::ElementLength>(self()));
             element_length_collection = Traits::Operations::batch_norm(position_diff);
 
             // 2. Update tangents
-            auto& tangent_collection(blocks::get<Tangent>(self()));
-            auto& reference_length_collection(blocks::get<ReferenceElementLength>(self()));
+            auto& tangent_collection(blocks::get<tags::Tangent>(self()));
+            auto& reference_length_collection(blocks::get<tags::ReferenceElementLength>(self()));
             Traits::Operations::batch_division_matvec(tangent_collection, position_diff, element_length_collection); // TODO should be length_collection
 
             // 3. Compute new radius based on above lengths
             // volume conservation
-            auto& volume_collection(blocks::get<ElementVolume>(self()));
-            auto& dimensions_collection(blocks::get<ElementDimension>(self()));
+            auto& volume_collection(blocks::get<tags::ElementVolume>(self()));
+            auto& dimensions_collection(blocks::get<tags::ElementDimension>(self()));
             dimensions_collection =
                 CrossSection::update_dimension(volume_collection, element_length_collection);
 
             // 4. Compute dilatation of elements
-            auto& element_dilatation_collection(blocks::get<ElementDilatation>(self()));
+            auto& element_dilatation_collection(blocks::get<tags::ElementDilatation>(self()));
             element_dilatation_collection = element_length_collection /
                                             reference_length_collection;
 
-            // 5. Compute dilatation of voronoi regions
-            auto& voronoi_dilatation(blocks::get<VoronoiDilatation>(self()));
-            voronoi_dilatation = blocks::get<VoronoiLength>(self()) /
-                                 blocks::get<ReferenceVoronoiLength>(self());
+            // 5. Compute voronoi length
+            auto& voronoi_length_collection(
+                blocks::get<::elastica::tags::VoronoiLength>(self()));
+            voronoi_length_collection = Traits::Operations::average_kernel(element_length_collection);
+
+            // 6. Compute dilatation of voronoi regions
+            auto& voronoi_dilatation(blocks::get<tags::VoronoiDilatation>(self()));
+            voronoi_dilatation = blocks::get<tags::VoronoiLength>(self()) /
+                                 blocks::get<tags::ReferenceVoronoiLength>(self());
           }
 
          public:
@@ -643,40 +592,13 @@ namespace elastica {
             // Q (et - d_3)
             // Q is always latest, only e and t need to be computed
             compute_translation_diagnostics(); // Dilatation updated here!
-
-            //z_vector = np.array([0.0, 0.0, 1.0]).reshape(3, -1)
-            //sigma[:] = dilatation * _batch_matvec(director_collection, tangents) - z_vector
-            auto& shear_stretch_strains_collection(
-                blocks::get<::elastica::tags::ShearStretchStrain>(self()));
-            auto expanded_transposed_EDC = Traits::Operations::expand_for_broadcast(Traits::Operations::transpose(
-                blocks::get<::elastica::tags::ElementDilatation>(self())));
-            Traits::Operations::batch_matvec(
-                shear_stretch_strains_collection,
-                blocks::get<::elastica::tags::Director>(self()),
-                blocks::get<::elastica::tags::Tangent>(self()) % expanded_transposed_EDC // matvecexpr
-            );
-            Traits::Operations::batch_subtract_z_unit(shear_stretch_strains_collection);
+            self().update_shear_stretch_strain(self());
           }
 
           void compute_curvature() noexcept {
             // kappa is the only rotational diagnostic, so we direcelty compute
             // that here
-
-            auto& curvature_collection(
-                blocks::get<::elastica::tags::Curvature>(self()));
-            auto& reference_voronoi_length_collection(
-                blocks::get<::elastica::tags::ReferenceVoronoiLength>(self()));
-            auto& director(blocks::get<::elastica::tags::Director>(self()));
-            Traits::Operations::spanwise_inv_rotate_and_divide(
-                curvature_collection, director,
-                reference_voronoi_length_collection);
-            //auto rot_vec = Traits::Operations::batch_inv_rotate();
-            //curvature_collection = rot_vec / reference_voronoi_length_collection;
-
-            // Deprecated Code:
-            // std::get<typename GeometryParent::CurvatureCollectionTag>(
-            // self().data()) = 1.0;
-            // get_curvature() = log(get_rotation_matrices())
+            self().update_curvature(self());
           }
 
           //@}
