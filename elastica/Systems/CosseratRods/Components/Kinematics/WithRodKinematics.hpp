@@ -147,13 +147,38 @@ namespace elastica {
               typename Traits::Place::OnElement> {};
           //********************************************************************
 
+          //********************************************************************
+          /*!\brief Variable marking MassSecondMomentOfInertia within the
+           * Cosserat rod hierarchy
+           */
+          struct MassSecondMomentOfInertia
+              : public Traits::template CosseratRodVariable<
+                  ::elastica::tags::MassSecondMomentOfInertia,  //
+                  typename Traits::DataType::Matrix,
+                  typename Traits::Place::OnElement> {};
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Variable marking InvMassSecondMomentOfInertia within the
+           * Cosserat rod hierarchy
+           */
+          struct InvMassSecondMomentOfInertia
+              : public Traits::template CosseratRodVariable<
+                  ::elastica::tags::InvMassSecondMomentOfInertia,  //
+                  typename Traits::DataType::Matrix,
+                  typename Traits::Place::OnElement> {};
+          //********************************************************************
+
+
           //@}
           //********************************************************************
 
           //**Type definitions**************************************************
           //! List of computed variables
           using ComputedVariables = tmpl::list<ExternalLoads,
-                                               ExternalTorques>;
+                                               ExternalTorques,
+                                               MassSecondMomentOfInertia,
+                                               InvMassSecondMomentOfInertia>;
           //! List of initialized variables
           using InitializedVariables = tmpl::list<Mass, Velocity,
               AngularVelocity, Acceleration, AngularAcceleration>;
@@ -225,6 +250,8 @@ namespace elastica {
         using CRTP = CRTPHelper<ComputationalBlock, WithRodKinematics>;
         //! CRTP methods
         using CRTP::self;
+        //! Real number type
+        using real_type = typename Traits::real_type;
         //**********************************************************************
 
        protected:
@@ -244,6 +271,8 @@ namespace elastica {
         using typename VariableDefinitions::Acceleration;
         using typename VariableDefinitions::ExternalLoads;
         using typename VariableDefinitions::ExternalTorques;
+        using typename VariableDefinitions::MassSecondMomentOfInertia;
+        using typename VariableDefinitions::InvMassSecondMomentOfInertia;
         //**********************************************************************
 
         //**********************************************************************
@@ -289,6 +318,45 @@ namespace elastica {
                   Variable::slice(variable, i) = initializer(i);
                 }
               });
+
+
+          /* mass second moment of inertia */
+          {
+            using Variable = MassSecondMomentOfInertia;
+            using Tag = blocks::parameter_t<Variable>;
+
+            auto& variable(blocks::get<Tag>(downstream_block));
+            auto density(blocks::get<tags::Mass>(downstream_block)); // TODO: must be density. check the order of initialization
+            auto reference_lengths(blocks::get<tags::ReferenceElementLength>(downstream_block));
+            const auto dofs = Variable::get_dofs(initializers.n_elems());
+            for (std::size_t idx = 0U; idx < dofs; ++idx) {
+              // (I_1, I_2, I_3)
+              Variable::slice(variable, idx) = real_type(0.0);
+              auto I_idx = downstream_block.get_second_moment_of_area(idx) *
+                           Traits::DataType::Scalar::slice(density,idx) *
+                           Traits::DataType::Scalar::slice(reference_lengths,idx);
+              Variable::diagonal_assign(variable, idx, I_idx);
+            }
+          }
+
+          /* inverse mass second moment of inertia */
+          {
+            using Variable = InvMassSecondMomentOfInertia;
+            using Tag = blocks::parameter_t<Variable>;
+
+            auto& variable(blocks::get<Tag>(downstream_block));
+            auto density(blocks::get<tags::Mass>(downstream_block)); // TODO: must be density. check the order of initialization
+            auto reference_lengths(blocks::get<tags::ReferenceElementLength>(downstream_block));
+            const auto dofs = Variable::get_dofs(initializers.n_elems());
+            for (std::size_t idx = 0U; idx < dofs; ++idx) {
+              // inv(I_1, I_2, I_3)
+              Variable::slice(variable, idx) = real_type(0.0);
+              auto I_idx = downstream_block.get_second_moment_of_area(idx) *
+                           Traits::DataType::Scalar::slice(density,idx) *
+                           Traits::DataType::Scalar::slice(reference_lengths,idx);
+              Variable::diagonal_assign(variable, idx, real_type(1.0)/I_idx);
+            }
+          }
 
           // Variables Initialization
           {
