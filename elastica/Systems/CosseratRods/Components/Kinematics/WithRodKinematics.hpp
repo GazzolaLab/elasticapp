@@ -366,11 +366,13 @@ namespace elastica {
             auto volume = downstream_block.get_element_volume();
             //auto n_elem = elastica::cosserat_rod::get_batch_elems(volume);
             auto n_elem = (*volume).size(); // TODO: use other method to get number of elements
-
-            auto mass_on_element = MassVariable::slice(mass, 0, n_elem) * volume;
+            typename MassVariable::type mass_on_element(n_elem);
+            mass_on_element = 0.5 * MassVariable::slice(mass, 0, n_elem) * volume;
             //Traits::Operations::quadrature_kernel(mass, mass_on_element);
-            MassVariable::slice(mass, 0UL, n_elem)  = 0.5 * mass_on_element;
-            MassVariable::slice(mass, 1UL, n_elem) += 0.5 * mass_on_element;
+            MassVariable::slice(mass, 0UL, n_elem)  = mass_on_element;
+            MassVariable::slice(mass, n_elem) = 0.0;
+            MassVariable::slice(mass, 1UL, n_elem) += mass_on_element;
+            MassVariable::slice(mass, 0UL) += 0.0;
           }
 
           /* Reset forces and torques */
@@ -528,12 +530,12 @@ namespace elastica {
           //acceleration = total_loads / Traits::Operations::expand_for_broadcast(mass);
           Traits::Operations::batch_division_matvec(acceleration, total_loads, mass);
 
-          auto total_torque= internal_torques + external_torques;
+          auto total_torque = internal_torques + external_torques;
           Traits::Operations::batch_matvec(
               angular_acceleration,
               inv_mass_SMOI,
               total_torque %
-              Traits::Operations::expand_for_broadcast(dilatation)
+              Traits::Operations::expand_for_broadcast(Traits::Operations::transpose(dilatation))
             );
 
           /* Reset forces and torques */

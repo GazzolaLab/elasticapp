@@ -30,8 +30,8 @@ namespace elastica {
     const std::size_t n_nodes = in_vector.columns();
     const std::size_t n_elems = n_nodes - 1UL;
 
-    return blaze::submatrix(in_vector, 0UL, 0UL, dimension, n_elems) -
-           blaze::submatrix(in_vector, 0UL, 1UL, dimension, n_elems);
+    return blaze::submatrix(in_vector, 0UL, 1UL, dimension, n_elems) -
+           blaze::submatrix(in_vector, 0UL, 0UL, dimension, n_elems);
   }
 
   //**************************************************************************

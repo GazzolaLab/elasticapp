@@ -277,10 +277,9 @@ namespace elastica {
           auto idx1 = (i + 1UL) % dimension;
           auto idx2 = (i + 2UL) % dimension;
           blaze::row(rot_axis_vector_batch, i) =
-              blaze::sum<blaze::rowwise>(blaze::pageslice(q_next, idx2) % blaze::pageslice(q, idx1) -
-                                         blaze::pageslice(q_next, idx1) % blaze::pageslice(q, idx2)) *
-              ( ValueType(-0.5) * theta_batch * (blaze::sin(theta_batch)+ValueType(1e-12)) ) / // TODO: refactor 1e-12
-              trans_normalize_vector_batch;
+              ( ValueType(-0.5) * theta_batch * (blaze::sin(theta_batch)+ValueType(1e-12)) / trans_normalize_vector_batch) * // TODO: refactor 1e-12
+              blaze::sum<blaze::columnwise>(blaze::pageslice(q_next, idx2) % blaze::pageslice(q, idx1) -
+                                            blaze::pageslice(q_next, idx1) % blaze::pageslice(q, idx2));
         }
       }
 
