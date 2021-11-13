@@ -60,7 +60,7 @@ namespace {
     CHECK(std::get<position_initializer>(required_params).get()(20UL) ==
           Vec3{0.0, 0.0, 1.0});
     const Rot3 expected_director{
-        {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}};
+        {0.0, 1.0, 0.0}, {-1.0, 0.0, 0.0}, {0.0, 0.0, 1.0}};
     CHECK(std::get<director_initializer>(required_params).get()(dummy_index) ==
           expected_director);
     CHECK(std::get<director_initializer>(required_params).get()(20UL - 5UL) ==
