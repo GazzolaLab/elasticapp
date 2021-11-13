@@ -264,22 +264,17 @@ namespace elastica {
             blaze::row(blaze::pageslice(qqt, 2UL), 1UL) +
             blaze::row(blaze::pageslice(qqt, 2UL), 2UL);
         auto theta_batch = blaze::acos(ValueType(0.5) * rot_matrix_trace_batch - ValueType(0.5) -
-                                        ValueType(1e-12));  // TODO refactor 1e-12
+                                        ValueType(1e-10));
 
-        auto R_minus_RT =
-            blaze::subtensor(rot_matrix_batch, 0UL, 0UL, 0UL, dimension, dimension, blocksize) -
-            blaze::trans(
-                blaze::subtensor(rot_matrix_batch, 0UL, 0UL, 1UL, dimension, dimension, blocksize),
-                {1, 0, 2});
         auto trans_normalize_vector_batch = blaze::trans(normalize_vector_batch);
         /* theta (u) = -theta * inv_skew([R - RT]) / 2 sin(theta) */
         for (std::size_t i(0UL); i < dimension; ++i) {
-          auto idx1 = (i + 1UL) % dimension;
-          auto idx2 = (i + 2UL) % dimension;
+          std::size_t idx1 = (i + 1UL) % dimension;
+          std::size_t idx2 = (i + 2UL) % dimension;
           blaze::row(rot_axis_vector_batch, i) =
-              ( ValueType(-0.5) * theta_batch * (blaze::sin(theta_batch)+ValueType(1e-12)) / trans_normalize_vector_batch) * // TODO: refactor 1e-12
-              blaze::sum<blaze::columnwise>(blaze::pageslice(q_next, idx2) % blaze::pageslice(q, idx1) -
-                                            blaze::pageslice(q_next, idx1) % blaze::pageslice(q, idx2));
+              ( ValueType(-0.5) * theta_batch / blaze::sin(theta_batch+ValueType(1e-14)) / trans_normalize_vector_batch) *
+              blaze::sum<blaze::columnwise>((blaze::pageslice(q_next, idx2) % blaze::pageslice(q, idx1)) -
+                                            (blaze::pageslice(q_next, idx1) % blaze::pageslice(q, idx2)));
         }
       }
 
