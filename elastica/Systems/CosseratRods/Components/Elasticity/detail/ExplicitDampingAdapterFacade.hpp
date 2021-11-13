@@ -140,17 +140,17 @@ namespace elastica {
             auto& dissipation_constant(blocks::get<tags::ForceDampingCoefficient>(self()));
             auto& length(blocks::get<tags::ElementLength>(self()));
             auto& velocity(blocks::get<tags::Velocity>(self()));
-            auto& dummy_vec(blocks::get<tags::_DummyNodeVector>(self()));
+            auto& damping_load(blocks::get<tags::_DummyNodeVector>(self()));
             auto elemental_velocity = Traits::Operations::average_kernel(velocity);
 
             Parent::compute_internal_modeled_loads_impl();
             Traits::Operations::quadrature_kernel(
-                dummy_vec,
+                damping_load,
                 elemental_velocity %
                     Traits::Operations::transpose(Traits::Operations::expand_for_broadcast(length))
             );
             internal_force -= Traits::Operations::transpose(Traits::Operations::expand_for_broadcast(dissipation_constant)) %
-                              dummy_vec;
+                              damping_load;
           }
 
           inline void compute_internal_modeled_torques_impl() /*noexcept*/ {

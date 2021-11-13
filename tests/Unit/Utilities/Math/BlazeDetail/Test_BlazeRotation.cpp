@@ -25,13 +25,13 @@ namespace {
   ELASTICA_TEST_CASE(
       "Unit.Utilities.Math.BlazeDetail.BlazeRotation: Batch matrix exp() (vector(X, Y, Z axis) --> rotation matrix) test",
       "[Unit][Utilities]") {
-    for (std::size_t n_elems : {1, 32, 128}) {
+    for (std::size_t n_elems : {1UL, 32UL, 128UL}) {
       TT test_rot_matrix_batch(dimension, dimension, n_elems),
           correct_rot_matrix_batch(dimension, dimension, n_elems);
       MT rot_axis_vector_batch(dimension, n_elems);
 
       /* loop across X, Y, Z axes */
-      for (std::size_t rot_axis_vector_dir : {0, 1, 2}) {
+      for (std::size_t rot_axis_vector_dir : {0UL, 1UL, 2UL}) {
         rot_axis_vector_batch = ValueType(0.0);
         blaze::randomize(
             blaze::row(rot_axis_vector_batch, rot_axis_vector_dir));
@@ -110,7 +110,7 @@ namespace {
   /* mechanics" by Rebecca Brennen, 2018, IOP */
   ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeRotation: Batch matrix exp() (axis vector --> rotation matrix) canned test",
                      "[Unit][Utilities]") {
-    for (std::size_t n_elems : {1, 32, 128}) {
+    for (std::size_t n_elems : {1UL, 32UL, 128UL}) {
       TT test_rot_matrix_batch(dimension, dimension, n_elems),
           correct_rot_matrix_batch(dimension, dimension, n_elems);
       MT rot_axis_vector_batch(dimension, n_elems);
@@ -145,7 +145,7 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeRotation: Batch matrix exp() gives orthonormal rotation matrix) test",
             "[Unit][Utilities]") {
-    for (std::size_t n_elems : {1, 32, 128}) {
+    for (std::size_t n_elems : {1UL, 32UL, 128UL}) {
       TT rot_matrix_batch(dimension, dimension, n_elems),
           R_RT_batch(dimension, dimension, n_elems),
           RT_R_batch(dimension, dimension, n_elems),
@@ -173,7 +173,7 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeRotation: Batch matrix exp() gives unit determinant matrix) test",
             "[Unit][Utilities]") {
-    for (std::size_t n_elems : {1, 32, 128}) {
+    for (std::size_t n_elems : {1UL, 32UL, 128UL}) {
       TT rot_matrix_batch(dimension, dimension, n_elems),
           R_RT_batch(dimension, dimension, n_elems),
           RT_R_batch(dimension, dimension, n_elems);
@@ -209,7 +209,7 @@ namespace {
   ELASTICA_TEST_CASE(
       "Unit.Utilities.Math.BlazeDetail.BlazeRotation: Batch matrix log() (rotation matrix --> vector(X, Y, Z axis)) test",
       "[Unit][Utilities]") {
-    for (std::size_t n_elems : {1, 32, 128}) {
+    for (std::size_t n_elems : {1UL, 32UL, 128UL}) {
       TT rot_matrix_batch(dimension, dimension, n_elems);
       MT test_rot_axis_vector_batch(dimension, n_elems),
           correct_rot_axis_vector_batch(dimension, n_elems);
@@ -217,7 +217,7 @@ namespace {
       blaze::randomize(theta_batch);
 
       /* loop across X, Y, Z axes */
-      for (std::size_t rot_axis_vector_dir : {0, 1, 2}) {
+      for (std::size_t rot_axis_vector_dir : {0UL, 1UL, 2UL}) {
         /* Notice that the correct_rot_mat seems to be a transpose */
         /* ie if you take a vector v, and do Rv, it seems to do a */
         /* rotation be -test_theta. */
@@ -289,7 +289,7 @@ namespace {
   /* mechanics" by Rebecca Brennen, 2018, IOP */
   ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeRotation: Batch matrix log() (rotation matrix --> axis vector) canned test",
             "[Unit][Utilities]") {
-    for (std::size_t n_elems : {1, 32, 128}) {
+    for (std::size_t n_elems : {1UL, 32UL, 128UL}) {
       TT rot_matrix_batch(dimension, dimension, n_elems);
       MT test_rot_axis_vector_batch(dimension, n_elems),
           correct_rot_axis_vector_batch(dimension, n_elems);

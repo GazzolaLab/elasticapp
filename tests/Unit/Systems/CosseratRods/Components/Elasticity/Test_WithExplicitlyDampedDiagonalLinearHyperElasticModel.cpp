@@ -83,7 +83,7 @@ namespace {
     Model::initialize(model, std::move(initializer));
 
     // check if initialization is done as expected
-    auto expected_call_count = make_array(11U, 10U, 10U, 10U, 9U, 10U, 10U, 9U, 11U, 10U, 11U, 11U, 10U, 11U, 10U);
+    auto expected_call_count = make_array(0U, 11U, 10U, 10U, 10U, 9U, 10U, 10U, 9U, 11U, 10U, 11U, 11U, 10U, 11U);
     CHECK_ITERABLE_APPROX(n_times_called, expected_call_count);
 
     // 1 + whatever
