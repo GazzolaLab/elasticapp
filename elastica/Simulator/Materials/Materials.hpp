@@ -175,7 +175,7 @@ namespace elastica {
     inline real_t get_backward_dynamic_friction() const noexcept;
     inline real_t get_lateral_dynamic_friction() const noexcept;
 
-    static MaterialID find(const std::string& name);
+    static MaterialID find(const std::string& name) noexcept;
     static std::vector<MaterialID> find_prefix(const std::string& prefix);
     static inline const std::string& get_name(MaterialID material) noexcept;
     static inline real_t get_density(MaterialID material) noexcept;
