@@ -255,8 +255,11 @@ struct check_matrix_approx {
     // generalize to a row-major matrix because the iterator
     // `blaze::DynamicMatrix<T, SO>::cbegin(i)` traverses either a row or a
     // column, and takes its index as argument.
-    CHECK(a.columns() == b.columns());
-    for (size_t j = 0; j < a.columns(); j++) {
+
+    //TODO: double check matrix is row-wise
+    //Better way would be flatten the matrix/tensor and use check_iterable_approx
+    CHECK(a.rows() == b.rows());
+    for (size_t j = 0UL; j < a.rows(); ++j) {
       CAPTURE(a);
       CAPTURE(b);
       auto a_it = a.cbegin(j);
