@@ -20,6 +20,9 @@ namespace elastica {
   struct SphereCollectionTag {
     using SystemType = SphereCollection;
     using PrimitiveType = collision::SpherePrimitive;
+
+    // temporary
+    using SystemType = PrimitiveType;
   };
 
   namespace collision {

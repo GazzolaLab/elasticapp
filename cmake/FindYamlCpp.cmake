@@ -32,7 +32,7 @@ else (YAMLCPP_STATIC_LIBRARY)
 endif ()
 
 find_library(YAMLCPP_LIBRARIES
-        PATH_SUFFIXES lib64 lib
+        PATH_SUFFIXES lib64 lib build
         NAMES ${YAMLCPP_STATIC} yaml-cpp
         HINTS ${YAMLCPP_ROOT} ${ENV_YAMLCPP_ROOT})
 

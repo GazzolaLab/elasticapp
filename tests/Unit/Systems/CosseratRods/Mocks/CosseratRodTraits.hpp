@@ -4,12 +4,13 @@
 
 #pragma once
 
-#include <functional> // ref_wrapper
+#include <functional>  // ref_wrapper
 
 #include "ErrorHandling/Assert.hpp"
 #include "Systems/Block/Block.hpp"
 #include "Systems/CosseratRods/Traits/PlacementTrait.hpp"
 #include "Systems/CosseratRods/Traits/Protocols.hpp"
+#include "Systems/CosseratRods/Traits/DataOpsTraits.hpp"
 #include "Utilities/NonCreatable.hpp"
 
 // because Vec3 is a blaze vector we need to include constructors for it
@@ -33,6 +34,8 @@ namespace mock {
                                          std::size_t /*index*/) {
       return data;
     }
+    static inline void diagonal_assign(type const&, std::size_t,
+                                       type const&) {}
   };
 
   template <std::size_t>
@@ -86,6 +89,7 @@ namespace mock {
     return static_cast<double>(lhs) == static_cast<double>(rhs);
   }
 
+
 }  // namespace mock
 
 namespace mock {
@@ -107,15 +111,38 @@ namespace mock {
       // to prevent  error: multiple overloads of 'n_ghosts' instantiate to the
       // same signature 'auto
       // (elastica::cosserat_rod::CosseratRodPlugin<mock::BasicCosseratRodTraits,
-      // DummyBlock, WithCircleCrossSection>::OnNode) noexcept ->
+      // DummyBlock, WithCircularCosseratRod>::OnNode) noexcept ->
       // elastica::cosserat_rod::CosseratRodPlugin<mock::BasicCosseratRodTraits,
-      // DummyBlock, WithCircleCrossSection>::size_type' (aka 'auto
+      // DummyBlock, WithCircularCosseratRod>::size_type' (aka 'auto
       // (mock::PlacementMarker) noexcept -> unsigned long')
       using OnNode = PlacementMarker<0UL>;
       using OnElement = PlacementMarker<1UL>;
       using OnVoronoi = PlacementMarker<2UL>;
       using OnRod = PlacementMarker<3UL>;
     };
+
+//    struct Operations {
+//      template<typename A>
+//      static auto voronoi_length(A& a){return 1UL;}
+//      template<typename A, typename B>
+//      static void quadrature_kernel(A, B){}
+//      template<typename A, typename B>
+//      static void subtract_quadrature(A, B){}
+//      template<typename A, typename B>
+//      static void difference_kernel(A, B){}
+//      template<typename B>
+//      static auto difference_kernel(B){return 1UL;}
+//      template<typename A, typename B, typename C>
+//      static void batch_matvec(A, B, C){}
+//      template<typename A>
+//      static auto batch_norm(A){return 1UL;}
+//      template<typename A, typename B>
+//      static void batch_inv_rotate(A, B){}
+//      template<typename A, typename B, typename C>
+//      static void batch_inv_rotate_and_divide(A, B, C){}
+//      template<typename A>
+//      static void batch_subtract_z_unit(A){}
+//    };
 
     // declare variables
     template <typename ParameterTag, typename RankTag, typename StaggerTag,

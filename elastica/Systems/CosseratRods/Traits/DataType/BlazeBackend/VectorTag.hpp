@@ -19,8 +19,8 @@
 
 // assert
 #include "ErrorHandling/Assert.hpp"
-#include "Systems/CosseratRods/Traits/DataTraits/Protocols.hpp"
-#include "Systems/CosseratRods/Traits/DataTraits/Rank.hpp"
+#include "Systems/CosseratRods/Traits/DataType/Protocols.hpp"
+#include "Systems/CosseratRods/Traits/DataType/Rank.hpp"
 
 // Vector types
 #include <blaze/math/AlignmentFlag.h>
@@ -54,6 +54,8 @@ namespace elastica {
     struct VectorTag : public ::tt::ConformsTo<protocols::DataTrait> {
       //**Type definitions******************************************************
       //! The main type for a TaggedTuple
+      /*
+       */
       using type =
           blaze::DynamicVector<Real, blaze::columnVector,
                                blaze::AlignedAllocator<Real> /*, TagType*/>;
@@ -209,6 +211,10 @@ namespace elastica {
        * \param size        Size of the data
        */
       static inline auto slice(data_type& data, std::size_t start_index,
+                               std::size_t size) -> slice_type {
+        return blaze::subvector(data, start_index, size);
+      }
+      static inline auto slice(slice_type& data, std::size_t start_index,
                                std::size_t size) -> slice_type {
         return blaze::subvector(data, start_index, size);
       }

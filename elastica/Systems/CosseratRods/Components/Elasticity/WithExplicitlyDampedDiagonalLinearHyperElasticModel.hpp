@@ -82,7 +82,7 @@ namespace elastica {
        * // pre-declare RodTraits, Blocks
        * using CircularCosseratRod = CosseratRodPlugin<RodTraits, Block,
        * // Conforms to protocols::Geometry1D!
-       * components::WithCircleCrossSection,
+       * components::WithCircularCosseratRod,
        * components::WithExplicitlyDampedDiagonalLinearHyperElasticModel>;
        * \endcode
        *

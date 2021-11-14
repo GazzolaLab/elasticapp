@@ -57,8 +57,8 @@ namespace elastica {
     struct ShearStretchRigidityMatrixCollectionTag;
 
     // Linear visco-elasticity
-    struct ForceDamping;
-    struct TorqueDamping;
+    struct ForceDampingCoefficient;
+    struct TorqueDampingCoefficient;
     */
 
   }  // namespace tags

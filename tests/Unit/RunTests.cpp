@@ -24,5 +24,5 @@ int main(int argc, char* argv[]) {
 // [[OutputRegex, I passed]]
 ELASTICA_TEST_CASE("TestFramework.Hello", "[Unit]") {
   OUTPUT_TEST();
-  printf("I failed");
+  printf("Elastica run test failed");
 }

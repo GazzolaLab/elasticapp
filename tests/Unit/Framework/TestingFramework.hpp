@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <iostream>
 #include <catch.hpp>
 #include <complex>
 #include <csignal>
@@ -128,7 +129,7 @@ static Approx approx =                                          // NOLINT
                                                                       appx); \
   } while (false)
 
-/// \cond HIDDEN_SYMBOLS
+/// \cond HIDDEN_SYMBOL
 template <typename T, typename = std::nullptr_t>
 struct check_iterable_approx {
   // clang-tidy: non-const reference
@@ -254,8 +255,11 @@ struct check_matrix_approx {
     // generalize to a row-major matrix because the iterator
     // `blaze::DynamicMatrix<T, SO>::cbegin(i)` traverses either a row or a
     // column, and takes its index as argument.
-    CHECK(a.columns() == b.columns());
-    for (size_t j = 0; j < a.columns(); j++) {
+
+    //TODO: double check matrix is row-wise
+    //Better way would be flatten the matrix/tensor and use check_iterable_approx
+    CHECK(a.rows() == b.rows());
+    for (size_t j = 0UL; j < a.rows(); ++j) {
       CAPTURE(a);
       CAPTURE(b);
       auto a_it = a.cbegin(j);
@@ -357,4 +361,27 @@ struct check_matrix_approx {
 #define OUTPUT_TEST() \
   do {                \
     CHECK(true);      \
+  } while (false)
+
+
+/*!
+ * \ingroup EBO Test
+ * \brief Test for EBO failure.
+ *
+ * \details
+ * The method calls static_assert to check EBO during the compilation.
+ * If the test fails, the error message displays the size of model versus the
+ * size of the block.
+ *
+ * \example
+ * \snippet
+ */
+template<size_t A, size_t B>
+struct NumericAssertEqualWithEvaluateIfFail{ // TODO: Refactor name later
+  static_assert(A == B, "EBO failure!");
+  static constexpr bool _result = (A == B);
+};
+//#define CHECK_EBO(MODEL) (void)CheckEbo<sizeof(MODEL),MODEL::size_of_block()>::_result
+#define CHECK_EBO(a) do { \
+    (void)NumericAssertEqualWithEvaluateIfFail<sizeof(a),a::size_of_block()>::_result; \
   } while (false)

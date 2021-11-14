@@ -75,6 +75,17 @@ namespace elastica {
           //@{
 
           //********************************************************************
+          /*!\brief Variable scalar mass within the Cosserat rod hierarchy
+           *  Lumped mass on node. (should be in element)
+           */
+          struct Mass
+              : public Traits::template CosseratRodInitializedVariable<
+                  ::elastica::tags::Mass,         //
+                  typename Traits::DataType::Scalar,  //
+                  typename Traits::Place::OnNode> {};
+          //********************************************************************
+
+          //********************************************************************
           /*!\brief Variable marking Velocity within the Cosserat rod hierarchy
            */
           struct Velocity
@@ -95,14 +106,82 @@ namespace elastica {
                     typename Traits::Place::OnElement> {};
           //********************************************************************
 
+          //********************************************************************
+          /*!\brief Variable marking Acceleration within the Cosserat rod hierarchy
+           */
+          struct Acceleration
+              : public Traits::template CosseratRodInitializedVariable<
+                  ::elastica::tags::Acceleration,         //
+                  typename Traits::DataType::Vector,  //
+                  typename Traits::Place::OnNode> {};
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Variable marking AngularAcceleration within the
+           * Cosserat rod hierarchy
+           */
+          struct AngularAcceleration
+              : public Traits::template CosseratRodInitializedVariable<
+                  ::elastica::tags::AngularAcceleration,  //
+                  typename Traits::DataType::Vector,
+                  typename Traits::Place::OnElement> {};
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Variable marking external load within the Cosserat rod
+           * hierarchy
+           */
+          struct ExternalLoads: public Traits::template CosseratRodVariable<
+              ::elastica::tags::ExternalLoads,    //
+              typename Traits::DataType::Vector,  //
+              typename Traits::Place::OnNode> {};
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Variable marking external torque within the Cosserat rod
+           * hierarchy
+           */
+          struct ExternalTorques: public Traits::template CosseratRodVariable<
+              ::elastica::tags::ExternalTorques,    //
+              typename Traits::DataType::Vector,  //
+              typename Traits::Place::OnElement> {};
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Variable marking MassSecondMomentOfInertia within the
+           * Cosserat rod hierarchy
+           */
+          struct MassSecondMomentOfInertia
+              : public Traits::template CosseratRodVariable<
+                  ::elastica::tags::MassSecondMomentOfInertia,  //
+                  typename Traits::DataType::Matrix,
+                  typename Traits::Place::OnElement> {};
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Variable marking InvMassSecondMomentOfInertia within the
+           * Cosserat rod hierarchy
+           */
+          struct InvMassSecondMomentOfInertia
+              : public Traits::template CosseratRodVariable<
+                  ::elastica::tags::InvMassSecondMomentOfInertia,  //
+                  typename Traits::DataType::Matrix,
+                  typename Traits::Place::OnElement> {};
+          //********************************************************************
+
+
           //@}
           //********************************************************************
 
           //**Type definitions**************************************************
           //! List of computed variables
-          using ComputedVariables = tmpl::list<>;
+          using ComputedVariables = tmpl::list<ExternalLoads,
+                                               ExternalTorques,
+                                               MassSecondMomentOfInertia,
+                                               InvMassSecondMomentOfInertia>;
           //! List of initialized variables
-          using InitializedVariables = tmpl::list<Velocity, AngularVelocity>;
+          using InitializedVariables = tmpl::list<Mass, Velocity,
+              AngularVelocity, Acceleration, AngularAcceleration>;
           //! List of all variables
           using Variables =
               tmpl::append<InitializedVariables, ComputedVariables>;
@@ -142,7 +221,7 @@ namespace elastica {
        * // pre-declare RodTraits, Blocks
        * using CircularCosseratRod = CosseratRodPlugin<RodTraits, Block,
        * // Conforms to protocols::Geometry1D!
-       * components::WithCircleCrossSection,
+       * components::WithCircularCosseratRod,
        * components::WithRodKinematics>;
        * \endcode
        *
@@ -171,6 +250,8 @@ namespace elastica {
         using CRTP = CRTPHelper<ComputationalBlock, WithRodKinematics>;
         //! CRTP methods
         using CRTP::self;
+        //! Real number type
+        using real_type = typename Traits::real_type;
         //**********************************************************************
 
        protected:
@@ -183,8 +264,15 @@ namespace elastica {
         using typename VariableDefinitions::Variables;
 
         //! Current Variable definitions
-        using typename VariableDefinitions::AngularVelocity;
+        using typename VariableDefinitions::Mass;
         using typename VariableDefinitions::Velocity;
+        using typename VariableDefinitions::AngularVelocity;
+        using typename VariableDefinitions::AngularAcceleration;
+        using typename VariableDefinitions::Acceleration;
+        using typename VariableDefinitions::ExternalLoads;
+        using typename VariableDefinitions::ExternalTorques;
+        using typename VariableDefinitions::MassSecondMomentOfInertia;
+        using typename VariableDefinitions::InvMassSecondMomentOfInertia;
         //**********************************************************************
 
         //**********************************************************************
@@ -230,6 +318,70 @@ namespace elastica {
                   Variable::slice(variable, i) = initializer(i);
                 }
               });
+
+
+          /* mass second moment of inertia */
+          {
+            using Variable = MassSecondMomentOfInertia;
+            using Tag = blocks::parameter_t<Variable>;
+
+            auto& variable(blocks::get<Tag>(downstream_block));
+            auto density(blocks::get<tags::Mass>(downstream_block)); // TODO: must be density. check the order of initialization
+            auto reference_lengths(blocks::get<tags::ReferenceElementLength>(downstream_block));
+            const auto dofs = Variable::get_dofs(initializers.n_elems());
+            for (std::size_t idx = 0U; idx < dofs; ++idx) {
+              // (I_1, I_2, I_3)
+              Variable::slice(variable, idx) = real_type(0.0);
+              auto I_idx = downstream_block.get_second_moment_of_area(idx) *
+                           Traits::DataType::Scalar::slice(density,idx) *
+                           Traits::DataType::Scalar::slice(reference_lengths,idx);
+              Variable::diagonal_assign(variable, idx, I_idx);
+            }
+          }
+
+          /* inverse mass second moment of inertia */
+          {
+            using Variable = InvMassSecondMomentOfInertia;
+            using Tag = blocks::parameter_t<Variable>;
+
+            auto& variable(blocks::get<Tag>(downstream_block));
+            auto density(blocks::get<tags::Mass>(downstream_block)); // TODO: must be density. check the order of initialization
+            auto reference_lengths(blocks::get<tags::ReferenceElementLength>(downstream_block));
+            const auto dofs = Variable::get_dofs(initializers.n_elems());
+            for (std::size_t idx = 0U; idx < dofs; ++idx) {
+              // inv(I_1, I_2, I_3)
+              Variable::slice(variable, idx) = real_type(0.0);
+              auto I_idx = downstream_block.get_second_moment_of_area(idx) *
+                           Traits::DataType::Scalar::slice(density,idx) *
+                           Traits::DataType::Scalar::slice(reference_lengths,idx);
+              Variable::diagonal_assign(variable, idx, real_type(1.0)/I_idx);
+            }
+          }
+
+          // Variables Initialization
+          {
+            using MassVariable = typename Traits::DataType::Scalar;
+
+            auto& mass(blocks::get<::elastica::tags::Mass>(downstream_block));
+            auto volume = downstream_block.get_element_volume();
+            //auto n_elem = elastica::cosserat_rod::get_batch_elems(volume);
+            auto n_elem = (*volume).size(); // TODO: use other method to get number of elements
+            typename MassVariable::type mass_on_element(n_elem);
+            mass_on_element = 0.5 * MassVariable::slice(mass, 0, n_elem) * volume;
+            //Traits::Operations::quadrature_kernel(mass, mass_on_element);
+            MassVariable::slice(mass, 0UL, n_elem)  = mass_on_element;
+            MassVariable::slice(mass, n_elem) = 0.0;
+            MassVariable::slice(mass, 1UL, n_elem) += mass_on_element;
+            MassVariable::slice(mass, 0UL) += 0.0;
+          }
+
+          /* Reset forces and torques */
+          {
+            auto& external_loads(blocks::get<::elastica::tags::ExternalLoads>(downstream_block));
+            auto& external_torques(blocks::get<::elastica::tags::ExternalTorques>(downstream_block));
+            external_loads = 0.0;
+            external_torques = 0.0;
+          }
         }
         //**********************************************************************
 
@@ -276,9 +428,27 @@ namespace elastica {
         //**********************************************************************
         /*!\brief Gets temporal rate of dilatation based on the current state
          * of the current rod
+         *
+         * \details
+         * Computes rate of change of elemental dilatations (de / dt) given the
+         * rod positions and velocities (state). \n
+         * dilatation_rate{i} =
+         * (position{i+1} - position{i}) dot
+         * (velocity{i+1} - velocity{i}) /
+         * (length{i} * rest_length{i}) \n
+         * Assumes compute_all_dilatations() has been called.
+         *
+         * \return dilatation rate
+         *
          */
         inline constexpr decltype(auto) get_dilatation_rate() const& noexcept {
-          return 1.0;
+          auto& position(blocks::get<tags::Position>(self()));
+          auto& length(blocks::get<tags::ElementLength>(self()));
+          auto& reference_length(blocks::get<tags::ReferenceElementLength>(self()));
+          auto& velocity(blocks::get<tags::Velocity>(self()));
+          return Traits::Operations::batch_dot(
+              Traits::Operations::difference_kernel(position),
+              Traits::Operations::difference_kernel(velocity)) / (length * reference_length);
         }
         //**********************************************************************
 
@@ -287,9 +457,92 @@ namespace elastica {
          * of the current rod
          */
         inline constexpr decltype(auto) get_curvature_rate() const& noexcept {
-          return 1.0;
+          // TODO get curvature rate
+          auto& curvature(blocks::get<tags::Curvature>(self()));
+          auto& omega(blocks::get<tags::AngularAcceleration>(self()));
+          auto averaged_omega = Traits::Operations::average_kernel(omega);
+          return Traits::Operations::difference_kernel(omega) +
+                 Traits::Operations::batch_cross(curvature, averaged_omega);
         }
         //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Gets temporal rate of curvature based on the current state
+         * of the current rod
+         */
+        inline constexpr decltype(auto) get_shear_stretch_strain_rate() const& noexcept {
+          // TODO get shear stretch strain rate
+          auto& director(blocks::get<tags::Director>(self()));
+          auto& velocity(blocks::get<tags::Velocity>(self()));
+          auto& reference_length(blocks::get<tags::ReferenceElementLength>(self()));
+          auto& sigma(blocks::get<tags::ShearStretchStrain>(self()));
+          auto& omega(blocks::get<tags::AngularAcceleration>(self()));
+
+          auto sigma_rate(sigma);
+          auto diff_velocity = Traits::Operations::difference_kernel(velocity);
+          Traits::Operations::batch_add_z_unit(sigma_rate);
+          // z_vector = np.array([ 0.0, 0.0, 1.0 ]).reshape(3, -1);
+          return Traits::Operations::batch_cross(sigma_rate, omega) -
+                          Traits::Operations::batch_matvec(director, diff_velocity) / reference_length;
+        }
+        //**********************************************************************
+
+
+       public: // TODO: temporary change from protected
+        //**********************************************************************
+        /*!\brief Update acceleration based on the current state
+         *
+         * \details
+         * Updates accelerations of the system (translational and angular) given
+         * the state of the system. \n
+         * acceleration_batch{i} =
+         * (internal_force_batch{i} + external_force_batch{i})
+         * / mass_batch{i} \n
+         * alpha_batch{i} = inv_mass_second_moment_of_inertia_batch{i} *
+         * (internal_torque_batch{i} + external_torque_batch{i}) *
+         * dilatation_batch{i} \n
+         * Also resets external_force_batch and external_torque_batch = 0.0
+         *
+         * \example
+         * The following shows a typical use of the update_acceleration()
+         * function with the expected (correct) result also shown.
+         * \snippet test_gov_eqns.cpp update_acceleration_example
+         *
+         * \return void/None
+         *
+         * \see fill later?
+         */
+        // TODO: double check how external force and external torque comes into play
+        inline void update_acceleration() noexcept {
+          auto& mass(blocks::get<tags::Mass>(self()));
+          auto& dilatation(blocks::get<tags::ElementDilatation>(self()));
+          auto& inv_mass_SMOI(blocks::get<tags::InvMassSecondMomentOfInertia>(self()));
+          auto& acceleration(blocks::get<tags::Acceleration>(self()));
+          auto& angular_acceleration(blocks::get<tags::AngularAcceleration>(self()));
+          auto& internal_loads(blocks::get<tags::InternalLoads>(self()));
+          auto& internal_torques(blocks::get<tags::InternalTorques>(self()));
+          auto& external_loads(blocks::get<tags::ExternalLoads>(self()));
+          auto& external_torques(blocks::get<tags::ExternalTorques>(self()));
+
+          auto total_loads = internal_loads + external_loads;
+          // TODO: Revisit division vs power+multiplication
+          // TODO: remove transpose if possible
+          //acceleration = total_loads / Traits::Operations::expand_for_broadcast(mass);
+          Traits::Operations::batch_division_matvec(acceleration, total_loads, mass);
+
+          auto total_torque = internal_torques + external_torques;
+          Traits::Operations::batch_matvec(
+              angular_acceleration,
+              inv_mass_SMOI,
+              total_torque %
+              Traits::Operations::expand_for_broadcast(Traits::Operations::transpose(dilatation))
+            );
+
+          /* Reset forces and torques */
+          external_loads = 0.0;
+          external_torques = 0.0;
+        }
+        //*********************************************************************
 
         //@}
         //**********************************************************************

@@ -1,4 +1,4 @@
-add_subdirectory(blaze_backend)
+add_subdirectory(BlazeBackend)
 
 set(LIBRARY "Test_CosseratRod_Traits_DataTraits")
 

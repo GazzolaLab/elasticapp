@@ -3,11 +3,13 @@
 //
 
 #include "Framework/TestingFramework.hpp"
+#include "Systems/CosseratRods/CosseratRodTraits.hpp"
 #include "Systems/CosseratRods/Components/Geometry/detail/CosseratRodCrossSectionInterface.hpp"
 ///
 #include "Systems/CosseratRods/Mocks.hpp"
 ///
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Math/Sqrt.hpp"
 
 namespace {
 
@@ -18,13 +20,13 @@ namespace {
    public:
     template <typename Radius>
     static inline decltype(auto) compute_cross_section_area(
-        Radius const&) noexcept {
-      return 4.0;
+        Radius const& r) noexcept {
+      return r ;
     }
     template <typename Radius>
     static inline decltype(auto) compute_second_moment_of_area(
-        Radius const&) noexcept {
-      return 16.0;
+        Radius const& r) noexcept {
+      return r*r;
     }
 
     template <typename Volume, typename Length>
@@ -42,22 +44,20 @@ namespace {
 }  // namespace
 
 namespace {
+  using Traits = typename elastica::cosserat_rod::DefaultCosseratRodTraits;
 
-  //  template <typename B>
-  //  using TestGeometry =
-  //      CosseratRodCrossSectionInterface<mock::BasicCosseratRodTraits, B,
-  //                                       MockCrossSectionOperations>;
   template <typename B>
   class TestGeometry
-      : public CosseratRodCrossSectionInterface<mock::BasicCosseratRodTraits, B,
+      : public CosseratRodCrossSectionInterface<Traits, B,
                                                 MockCrossSectionOperations> {
     // The point of this class is to bring
     //    Frame;
     //    DirectionType;
     // into public scope for testing
    public:
+    using Traits = Traits;
     using Parent =
-        CosseratRodCrossSectionInterface<mock::BasicCosseratRodTraits, B,
+        CosseratRodCrossSectionInterface<Traits, B,
                                          MockCrossSectionOperations>;
     using Parent::Parent;
     using typename Parent::ComputedVariables;
@@ -73,9 +73,12 @@ namespace {
   //  using Model = blocks::Block<Plugin>;
   using Model = typename Plugin::Model;
 
-  static_assert(sizeof(Model) ==
-                    sizeof(double) * tmpl::size<Plugin::Variables>::value,
-                "EBO failure!");
+  ELASTICA_TEST_CASE(
+      "Unit.Systems.CosseratRods.CosseratRodCrossSectionInterface: EBO",
+      "[Systems][Unit]") {
+    CHECK_EBO(Model);
+  }
+
   template <typename T>
   constexpr bool const_check = std::is_const<std::remove_reference_t<T>>::value;
 
@@ -95,69 +98,56 @@ namespace {
       "[Systems][Unit]") {
     Model model{};
 
-    CHECK(approx(model.get_element_dimension()) == 0.0);
-    CHECK(approx(model.get_element_volume()) == 0.0);
-
-    constexpr auto n_initializers = 5UL;
+    constexpr auto n_initializers = 6UL;
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
         // from before
-        blocks::initialize<tags::Position>([&i = n_times_called[0]](...) {
-          ++i;
-          return 2.0;
-        }),
-        blocks::initialize<tags::Director>([&i = n_times_called[1]](...) {
-          ++i;
-          return 3.0;
-        }),
-        blocks::initialize<tags::ReferenceElementLength>(
-            [&i = n_times_called[3]](...) {
-              ++i;
-              return 2.0;
-            }),
-        blocks::initialize<tags::ReferenceCurvature>(
-            [&i = n_times_called[4]](...) {
-              ++i;
-              return 2.0;
-            }),
+        blocks::initialize<tags::Position>([&i = n_times_called[0]](std::size_t index){ ++i; return index*1.0; }),
+        blocks::initialize<tags::Director>([&i = n_times_called[1]](...){ ++i; return 0.5; }),
         // from before
-        blocks::initialize<tags::ElementDimension>(
-            [&i = n_times_called[2]](...) {
-              ++i;
-              return 4.0;
-            }));
+        blocks::initialize<tags::ElementDimension>([&i = n_times_called[2]](...) { ++i; return 4.0; }),
+        blocks::initialize<tags::ReferenceCurvature>([&i = n_times_called[3]](...) { ++i; return 1.0; }),
+        blocks::initialize<tags::ReferenceShearStretchStrain>([&i = n_times_called[4]](...) { ++i; return 1.0; }),
+        blocks::initialize<tags::ElementDilatation>([&i = n_times_called[5]](...) { ++i; return 2.0;})
+        //blocks::initialize<tags::MassSecondMomentOfInertia>([&i = n_times_called[5]](...) { ++i; return 1.0; })
+      );
 
     Model::initialize(model, std::move(initializer));
 
+    CHECK(model.get_element_dimension() == approx(4.0));
+    CHECK(model.get_element_volume() == approx(4.0 * blaze::sqrt(3)));
+
     // check if initialization is done as expected
-    CHECK_ITERABLE_APPROX(n_times_called, make_array<n_initializers>(1U));
+    auto expected_call_count = make_array(11U, 10U, 10U, 9U, 10U, 10U);
+    CHECK_ITERABLE_APPROX(n_times_called, expected_call_count);
+    // CHECK_ITERABLE_APPROX(n_times_called, make_array<n_initializers>(1U));
 
-    CHECK(approx(model.get_element_dimension()) == 4.0);
+    CHECK(model.get_element_dimension() == approx(4.0));
     // volume = dimension * length
-    CHECK(approx(model.get_element_volume()) == 0.0);
+    CHECK(model.get_element_volume() == approx(4.0*blaze::sqrt(3)));
 
-    CHECK(approx(model.get_area()) == 4.0);
-    CHECK(approx(model.shape_factor()) == 1.6);
+    CHECK(model.get_area() == approx(4.0));
+    CHECK(model.shape_factor() == approx(1.6));
 
     //    using LocalFrame = typename TestGeometry<Model>::Frame;
     using LocalFrame = typename Model::Frame;
-    CHECK(approx(model.get_second_moment_of_area<LocalFrame::D1>()) == 16.0);
-    CHECK(approx(model.get_second_moment_of_area<LocalFrame::D2>()) == 16.0);
+    CHECK(model.get_second_moment_of_area<LocalFrame::D1>() == approx(16.0));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D2>() == approx(16.0));
     // CustomDouble has trouble with Catch for unknown reasons
-    CHECK(double(model.get_second_moment_of_area<LocalFrame::D1>(0UL)) ==
+    CHECK(model.get_second_moment_of_area<LocalFrame::D1>(0UL) ==
           approx(16.0));
-    CHECK(double(model.get_second_moment_of_area<LocalFrame::D2>(0UL)) ==
+    CHECK(model.get_second_moment_of_area<LocalFrame::D2>(0UL) ==
           approx(16.0));
-    CHECK(double(model.get_second_moment_of_area<LocalFrame::D1>(5UL)) ==
+    CHECK(model.get_second_moment_of_area<LocalFrame::D1>(5UL) ==
           approx(16.0));
-    CHECK(double(model.get_second_moment_of_area<LocalFrame::D2>(5UL)) ==
+    CHECK(model.get_second_moment_of_area<LocalFrame::D2>(5UL) ==
           approx(16.0));
     // symmetric
-    CHECK(double(model.get_second_moment_of_area<LocalFrame::D3>()) ==
+    CHECK(model.get_second_moment_of_area<LocalFrame::D3>() ==
           approx(32.0));
-    CHECK(double(model.get_second_moment_of_area<LocalFrame::D3>(0UL)) ==
+    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(0UL) ==
           approx(32.0));
-    CHECK(double(model.get_second_moment_of_area<LocalFrame::D3>(5UL)) ==
+    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(5UL) ==
           approx(32.0));
 
     // This is not a good test case to have, or even a good API. So we ignore

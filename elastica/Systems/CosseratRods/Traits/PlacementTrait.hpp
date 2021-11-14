@@ -37,7 +37,7 @@ namespace elastica {
      *
      * \details
      * PlacementTrait is the customization point for altering the placement of
-     * data-structures (defined by DataTrait) to be used within the Cosserat rod
+     * data-structures (defined by DataOpsTraits) to be used within the Cosserat rod
      * hierarchy implemented using @ref blocks in \elastica. It defines
      * (domain-specific) types corresponding to placement on a Cosserat rod
      * (such as on the nodes, elements etc.), and is intended for use as a

@@ -1,4 +1,4 @@
-set(LIBRARY "Test_CosseratRod_Traits_DataTraits_Blaze")
+set(LIBRARY "Test_CosseratRod_Traits_DataTraits_BlazeBackend")
 
 set(LIBRARY_SOURCES
         Test_MatrixTag.cpp
@@ -8,7 +8,7 @@ set(LIBRARY_SOURCES
 
 add_test_library(
         ${LIBRARY}
-        "Systems/CosseratRods/Traits/DataTraits/blaze_backend"
+        "Systems/CosseratRods/Traits/DataTraits/BlazeBackend"
         "${LIBRARY_SOURCES}"
         "ErrorHandling;Utilities;Systems"
 )

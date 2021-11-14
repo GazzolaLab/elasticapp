@@ -1,7 +1,7 @@
 //==============================================================================
 /*!
 //  \file
-//  \brief Tags for adding explicit damping to an Elasticity component
+//  \brief Tags for full description of a Cosserat Rod geometry
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
@@ -22,9 +22,18 @@ namespace elastica {
   //============================================================================
   namespace tags {
 
-    // Damping such that F \prop v and \tau \prop \omega
-    struct ForceDamping;
-    struct TorqueDamping;
+    // 1D Geometry types
+    struct ReferenceElementLength{};
+    struct ReferenceCurvature{};
+    struct ReferenceShearStretchStrain{};
+    struct ReferenceVoronoiLength{};
+    struct ElementLength{};
+    struct ElementDilatation{};
+    struct VoronoiLength{};
+    struct VoronoiDilatation{};
+    struct Curvature{};
+    struct Tangent{};
+    struct ShearStretchStrain{};
 
   }  // namespace tags
 

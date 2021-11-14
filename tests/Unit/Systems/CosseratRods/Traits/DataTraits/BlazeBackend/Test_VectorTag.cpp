@@ -3,17 +3,16 @@
 //
 
 #include "Framework/TestingFramework.hpp"
-#include "Systems/CosseratRods/Traits/DataTraits/Protocols.hpp"
-#include "Systems/CosseratRods/Traits/DataTraits/blaze_backend/VectorTag.hpp"
+#include "Systems/CosseratRods/Traits/DataType/Protocols.hpp"
+#include "Systems/CosseratRods/Traits/DataType/BlazeBackend/VectorTag.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 
 namespace {
 
   using namespace elastica::cosserat_rod;
-
   using real_type = double;
-  // doesn't pass because of some issue that is not critical for now
   using Traits = VectorTag<real_type>;
+
   static_assert(tt::assert_conforms_to<
                     Traits, elastica::cosserat_rod::protocols::DataTrait>,
                 "Protocol Failure!");

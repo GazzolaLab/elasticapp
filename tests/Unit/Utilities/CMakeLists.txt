@@ -42,6 +42,7 @@ add_test_library(${LIBRARY}
         "${LIBRARY_SOURCES}"
         "Utilities;Options;ErrorHandling")
 
+add_subdirectory(Math/BlazeDetail)
 add_subdirectory(Geometry)
 add_subdirectory(NamedType)
 add_subdirectory(TypeTraits)

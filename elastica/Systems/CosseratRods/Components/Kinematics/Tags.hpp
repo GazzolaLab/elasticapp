@@ -17,3 +17,26 @@
 // Includes
 //******************************************************************************
 #include "Systems/common/Tags.hpp" // velocity and angular velocity
+
+namespace elastica{
+  namespace tags{
+
+    //==========================================================================
+    //
+    //  TAG DEFINITIONS
+    //
+    //==========================================================================
+
+    // Scalar
+
+    //**************************************************************************
+    /*!\brief Tag indicating mass and density
+     * \ingroup systems
+     */
+    struct Mass{};
+
+    struct ExternalLoads{};
+    struct ExternalTorques{};
+
+  }
+}

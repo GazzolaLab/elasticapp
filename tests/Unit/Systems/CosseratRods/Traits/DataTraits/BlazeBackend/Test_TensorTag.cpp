@@ -1,22 +1,22 @@
 //
 // Created by Tejaswin Parthasarathy on 5/11/21.
 //
-//
-// Created by Tejaswin Parthasarathy on 5/11/21.
-//
 
 #include "Framework/TestingFramework.hpp"
-#include "Systems/CosseratRods/Traits/DataTraits/Protocols.hpp"
-#include "Systems/CosseratRods/Traits/DataTraits/blaze_backend/TensorTag.hpp"
+#include "Systems/CosseratRods/Traits/DataType/Protocols.hpp"
+#include "Systems/CosseratRods/Traits/DataType/BlazeBackend/TensorTag.hpp"
 #include "Utilities/Invoke.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
+
+#include "Utilities/Math/Vec3.hpp"
 
 namespace {
 
   using namespace elastica::cosserat_rod;
 
   using real_type = double;
+  using Column = elastica::Vec3;
   // doesn't pass because of some issue that is not critical for now
   using Traits = TensorTag<real_type>;
   static_assert(tt::assert_conforms_to<
@@ -34,8 +34,10 @@ namespace {
       // (page, row, column)
       auto checker = [&ghost, &expected_ghost](auto Is) {
         CHECK_ITERABLE_APPROX(
-            blaze::row<Is>(blaze::columnslice(ghost, 0UL)),
-            blaze::row<Is>(blaze::columnslice(expected_ghost, 0UL)));
+            //blaze::row<Is>(blaze::columnslice(ghost, 0UL)),
+            blaze::row<Is>(ghost, 0UL),
+        //    blaze::row<Is>(blaze::columnslice(expected_ghost, 0UL)));
+            blaze::row<Is>(expected_ghost, 0UL));
       };
       index_apply<3UL>(
           [checker](auto... Is) { EXPAND_PACK_LEFT_TO_RIGHT(checker(Is)); });
@@ -189,6 +191,44 @@ namespace {
         CHECK(data.pages() == 3UL);
         CHECK(data.rows() == 3UL);
         CHECK(data.columns() == 10UL);
+      }
+
+      // diagonal assignment
+      {
+        // 3x3 test (usage case)
+        const std::size_t n_pages(3UL);
+        const std::size_t n_rows(3UL);
+        const std::size_t n_cols(10UL);
+        Traits::data_type data33(n_pages, n_rows, n_cols);
+
+        // Initialization
+        for (std::size_t page_idx = 0UL; page_idx < n_pages; ++page_idx)
+          for (std::size_t row_idx = 0UL; row_idx < n_rows; ++row_idx)
+            for (std::size_t col_idx = 0UL; col_idx < n_cols; ++col_idx)
+              data33(page_idx, row_idx, col_idx) =
+                  static_cast<real_type>(page_idx + row_idx + col_idx);
+
+        Traits::diagonal_assign(data33, 3UL, Column{3.5, 5.5, 7.5});
+        Traits::diagonal_assign(data33, 5UL, Column{2.0, 4.0, 8.0});
+        CHECK(data33(0UL, 0UL, 3UL) == approx(3.5));
+        CHECK(data33(1UL, 1UL, 3UL) == approx(5.5));
+        CHECK(data33(2UL, 2UL, 3UL) == approx(7.5));
+        CHECK(data33(0UL, 1UL, 3UL) == approx(4.0));
+        CHECK(data33(1UL, 2UL, 3UL) == approx(6.0));
+        CHECK(data33(2UL, 0UL, 3UL) == approx(5.0));
+        CHECK(data33(1UL, 0UL, 3UL) == approx(4.0));
+        CHECK(data33(2UL, 1UL, 3UL) == approx(6.0));
+        CHECK(data33(0UL, 2UL, 3UL) == approx(5.0));
+
+        CHECK(data33(0UL, 0UL, 5UL) == approx(2.0));
+        CHECK(data33(1UL, 1UL, 5UL) == approx(4.0));
+        CHECK(data33(2UL, 2UL, 5UL) == approx(8.0));
+        CHECK(data33(0UL, 1UL, 5UL) == approx(6.0));
+        CHECK(data33(1UL, 2UL, 5UL) == approx(8.0));
+        CHECK(data33(2UL, 0UL, 5UL) == approx(7.0));
+        CHECK(data33(1UL, 0UL, 5UL) == approx(6.0));
+        CHECK(data33(2UL, 1UL, 5UL) == approx(8.0));
+        CHECK(data33(0UL, 2UL, 5UL) == approx(7.0));
       }
     }
   }
