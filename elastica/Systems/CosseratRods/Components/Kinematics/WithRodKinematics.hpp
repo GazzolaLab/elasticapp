@@ -418,6 +418,34 @@ namespace elastica {
         //@}
         //**********************************************************************
 
+        //**********************************************************************
+        /*!\name Aceeleration methods*/
+        //@{
+        /*!\brief Gets acceleration of the current rod
+         */
+        inline constexpr decltype(auto) get_acceleration() & noexcept {
+          return blocks::get<Acceleration>(self());
+        }
+        inline constexpr decltype(auto) get_acceleration() const& noexcept {
+          return blocks::get<Acceleration>(self());
+        }
+        //@}
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\name Angular acceleration methods*/
+        //@{
+        /*!\brief Gets angular acceleration of the current rod
+         */
+        inline constexpr decltype(auto) get_angular_acceleration() & noexcept {
+          return blocks::get<AngularAcceleration>(self());
+        }
+        inline constexpr decltype(auto) get_angular_acceleration() const& noexcept {
+          return blocks::get<AngularAcceleration>(self());
+        }
+        //@}
+        //**********************************************************************
+
         //@}
         //**********************************************************************
 
@@ -512,6 +540,7 @@ namespace elastica {
          *
          * \see fill later?
          */
+
         // TODO: double check how external force and external torque comes into play
         inline void update_acceleration() noexcept {
           auto& mass(blocks::get<tags::Mass>(self()));
@@ -539,6 +568,7 @@ namespace elastica {
             );
 
           /* Reset forces and torques */
+          // TODO: what if someone wants to check external load/torques before reset
           external_loads = 0.0;
           external_torques = 0.0;
         }
