@@ -21,7 +21,7 @@
 #include "Simulator/Environments/CollisionSystem/Transfer/Types.hpp"
 ////
 #include "Simulator/Environments/CollisionSystem/Transfer/TransferTags.hpp"
-#include "Simulator/Interface/TypeTraits/Aliases/Systems.hpp"
+#include "Simulator/Configuration/TypeTraits/Aliases/Systems.hpp"
 
 namespace elastica {
 
@@ -45,16 +45,16 @@ namespace elastica {
     //
     // \see Transfer
     */
-    template <typename SystemTag>
+    template <typename System>
     struct TransferTraits {
       //**Type definitions******************************************************
       using from_t = tags::from_t;  //!< From type of transfer
       using to_t = tags::to_t;      //!< To type of transfer
 
       //! Type of system
-      using SystemType = tt::system_type_t<SystemTag>;
+      using SystemType = System;
       //! Type of contained primitive
-      using PrimitiveType = tt::primitive_type_t<SystemTag>;
+      using PrimitiveType = ::elastica::tt::primitive_type_t<System>;
       //************************************************************************
 
       /* NOT POSSIBLE

@@ -13,8 +13,12 @@
 
 namespace elastica {
 
+
+  // Note that one should not qualify the tags in this type list by a reference or
+  // cv qulifiers for the systemtype and primitivetype, else a hard error is
+  // thrown
   struct SphereCollectionTag {
-    using SystemCollectionType = SphereCollection;
+    using SystemType = SphereCollection;
     using PrimitiveType = collision::SpherePrimitive;
   };
 
@@ -25,7 +29,7 @@ namespace elastica {
         : public TransferTraits<SphereCollectionTag> {
       template <typename PrimIter>
       static void do_transfer(from_t /* meta */,
-                              SystemCollectionType const& collection,
+                              SystemType const& collection,
                               to_t /* meta */, PrimIter start, PrimIter end) {
         ELASTICA_ASSERT(
             collection.size() == static_cast<std::size_t>(end - start), "Oops");
@@ -48,7 +52,7 @@ namespace elastica {
       }
 
       template <typename ConstPrimIter>
-      static void do_transfer(to_t /* meta */, SystemCollectionType& collection,
+      static void do_transfer(to_t /* meta */, SystemType& collection,
                               from_t /* meta */, ConstPrimIter start,
                               ConstPrimIter end) {
         ELASTICA_ASSERT(
