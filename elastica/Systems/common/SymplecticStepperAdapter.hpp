@@ -1,5 +1,8 @@
 #pragma once
 
+#include <type_traits>
+
+#include "Systems/Block/Block/TypeTraits.hpp"
 #include "Systems/States/States.hpp"
 #include "Systems/common/Tags.hpp"
 #include "Time/SimulationTime.hpp"
@@ -32,6 +35,18 @@ namespace elastica {
           downstream_block, std::forward<CosseratInitializer>(initializers)));
     }
   };
+
+  namespace {
+
+    // TODO : can be optimized and refactored
+    template <typename B, typename Variable>
+    using SymplecticData = std::conditional_t<
+        ::blocks::IsBlock<B>::value, typename Variable::type,
+        // can be BlockSlice or ConstBlockSlice
+        std::conditional_t<::blocks::IsBlockSlice<B>::value,
+                           typename Variable::SliceType::type,
+                           typename Variable::ConstSliceType::type>>;
+  }  // namespace
 
   //****************************************************************************
   /*!\brief Adapter for enabling symplectic temporal integration
@@ -80,37 +95,32 @@ namespace elastica {
     //**************************************************************************
     /*!\name State types */
     //@{
-    using PositionData =
-        std::remove_reference_t<decltype(std::declval<P>().get_position())>;
+    using PositionData = SymplecticData<Block, Position>;
+    // std::remove_reference_t<decltype(std::declval<P>().get_position())>;
     using PositionState =
         ::elastica::states::SE3<PositionData,
                                 ::elastica::states::tags::PrimitiveTag>;
-    using VelocityData =
-        std::remove_reference_t<decltype(std::declval<P>().get_velocity())>;
+    using VelocityData = SymplecticData<Block, Velocity>;
     using VelocityState =
         ::elastica::states::SE3<VelocityData,
                                 ::elastica::states::tags::DerivativeTag>;
-    using AccelerationData =
-        std::remove_reference_t<decltype(std::declval<P>().get_acceleration())>;
+    using AccelerationData = SymplecticData<Block, Acceleration>;
     using AccelerationState =
         ::elastica::states::SE3<AccelerationData,
                                 ::elastica::states::tags::DoubleDerivativeTag>;
 
-    using DirectorData =
-        std::remove_reference_t<decltype(std::declval<P>().get_director())>;
+    using DirectorData = SymplecticData<Block, Director>;
     using DirectorState =
         ::elastica::states::SO3<DirectorData,
                                 ::elastica::states::tags::PrimitiveTag>;
-    using AngularVelocityData = std::remove_reference_t<
-        decltype(std::declval<P>().get_angular_velocity())>;
+    using AngularVelocityData = SymplecticData<Block, AngularVelocity>;
     using AngularVelocityState =
         ::elastica::states::SO3<AngularVelocityData,
                                 ::elastica::states::tags::DerivativeTag>;
 
-    using AngularAccelerationData = std::remove_reference_t<
-        decltype(std::declval<P>().get_angular_acceleration())>;
+    using AngularAccelerationData = SymplecticData<Block, AngularAcceleration>;
     using AngularAccelerationState =
-        ::elastica::states::SE3<AngularAccelerationData,
+        ::elastica::states::SO3<AngularAccelerationData,
                                 ::elastica::states::tags::DoubleDerivativeTag>;
     //@}
     //**************************************************************************

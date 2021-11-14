@@ -86,7 +86,7 @@ namespace elastica {
       explicit ComposeInitializers(Args&&... args)
           : ComposeInitializers(std::make_tuple(std::forward<Args>(args)...)) {}
 
-     protected:
+     public: // TODO : temporary, needs to be refactored
       decltype(auto) get_required_parameters() const /*noexcept*/ {
         // pass directly as references
         // return detail::pass_as_wrapped<tmpl::list<NElement,
@@ -94,6 +94,9 @@ namespace elastica {
         return std::tuple_cat(
             ModularizedInitializers::get_required_parameters(data())...);
       }
+
+      // TODO : needs to be refactored as not public
+      using Interface::get_optional_parameters;
 
      public:
       auto data() const& noexcept -> OptionsCache const& { return cache_; }

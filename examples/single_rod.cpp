@@ -56,10 +56,12 @@ int main() {
 
   auto simulator = elastica::make_simulator<>(simulator_config);
 
-  auto rod = simulator->emplace_back<Plugin>(
-      straight_initializer.initialize<Plugin>());
-  auto second_rod = simulator->emplace_back<Plugin>(
-      straight_initializer.initialize<Plugin>());
+  auto rod =
+      simulator->emplace_back<Plugin>(straight_initializer.initialize<Plugin>(
+          ::blocks::initialize<::elastica::tags::Velocity>(
+              [](std::size_t) { return 0.1; })));
+  // auto second_rod = simulator->emplace_back<Plugin>(
+  //     straight_initializer.initialize<Plugin>());
 
   std::cout << ::elastica::position(rod) << std::endl;
 
@@ -73,6 +75,9 @@ int main() {
   ::elastica::Time time_v{0.0};
   ::elastica::TimeDelta time_delta{0.2};
   simulator->step(time_stepper, time_v, time_delta);
+  simulator->step(time_stepper, time_v, time_delta);
+
+  std::cout << ::elastica::position(rod) << std::endl;
 
   return 0;
 }
