@@ -15,14 +15,15 @@
 namespace {
   using namespace elastica;
 
+  struct DummyRank {
+    using type = float;
+    using slice_type = float&;
+    using const_slice_type = float const&;
+  };
+
   // copy pasted the plugin from Test_BlockFacade.cpp
   template <typename Tag>
-  struct DummyVariable {
-    using Parameter = Tag;
-    using type = float;
-    using SliceType = float&;
-    using ConstSliceType = const float&;
-  };
+  struct DummyVariable : public ::blocks::Variable<Tag, DummyRank> {};
 
   template <typename /*Traits*/, typename B>
   struct TestPlugin : public ::elastica::CRTPHelper<B, TestPlugin> {
