@@ -35,10 +35,10 @@ namespace elastica {
       //************************************************************************
       /*! \cond ELASTICA_INTERNAL */
       template <typename /* Cosserat Rod Traits */, typename /* Block */>
-      class WithCircleCrossSection;
+      class WithCircularCosseratRod;
 
       template <typename /* Cosserat Rod Traits */, typename /* Block */>
-      class WithSquareCrossSection;
+      class WithSquareCosseratRod;
       /*! \endcond */
       //************************************************************************
 

@@ -16,6 +16,6 @@
 //******************************************************************************
 // Includes
 //******************************************************************************
-#include "Systems/CosseratRods/Components/Geometry/detail/CosseratRodCrossSectionInterfaceTags.hpp"
-#include "Systems/CosseratRods/Components/Geometry/detail/CosseratRodSpanwiseGeometryTags.hpp"
-#include "Systems/CosseratRods/Components/Geometry/detail/RodSpanwiseGeometryTags.hpp"
+#include "Systems/CosseratRods/Components/Geometry/detail/Tags/CosseratRodCrossSectionInterfaceTags.hpp"
+#include "Systems/CosseratRods/Components/Geometry/detail/Tags/CosseratRodSpanwiseGeometryTags.hpp"
+#include "Systems/CosseratRods/Components/Geometry/detail/Tags/RodSpanwiseGeometryTags.hpp"

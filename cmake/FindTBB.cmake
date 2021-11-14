@@ -359,7 +359,7 @@ findpkg_finish(TBB_MALLOC_PROXY)
 # parse all the version numbers from tbb
 if(NOT TBB_VERSION)
 
-    # only read the start of the file
+    # only read the start of the file (use version.h for later version)
     file(READ "${TBB_INCLUDE_DIR}/tbb/tbb_stddef.h" TBB_VERSION_CONTENTS
          LIMIT 2048)
 

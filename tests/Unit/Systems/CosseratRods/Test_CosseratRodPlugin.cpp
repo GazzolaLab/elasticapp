@@ -34,17 +34,17 @@ namespace {
   struct DummyBlock : public D {};
 
   using PluginsToBeTested = tmpl::list<
-      TestCosseratRodPlugin<DummyBlock, component::WithCircleCrossSection>,
-      TestCosseratRodPlugin<DummyBlock, component::WithSquareCrossSection>,
-      TestCosseratRodPlugin<DummyBlock, component::WithCircleCrossSection,
+      TestCosseratRodPlugin<DummyBlock, component::WithCircularCosseratRod>,
+      TestCosseratRodPlugin<DummyBlock, component::WithSquareCosseratRod>,
+      TestCosseratRodPlugin<DummyBlock, component::WithCircularCosseratRod,
                             component::WithDiagonalLinearHyperElasticModel>,
-      TestCosseratRodPlugin<DummyBlock, component::WithSquareCrossSection,
+      TestCosseratRodPlugin<DummyBlock, component::WithSquareCosseratRod,
                             component::WithDiagonalLinearHyperElasticModel>,
       TestCosseratRodPlugin<
-          DummyBlock, component::WithCircleCrossSection,
+          DummyBlock, component::WithCircularCosseratRod,
           component::WithExplicitlyDampedDiagonalLinearHyperElasticModel>,
       TestCosseratRodPlugin<
-          DummyBlock, component::WithSquareCrossSection,
+          DummyBlock, component::WithSquareCosseratRod,
           component::WithExplicitlyDampedDiagonalLinearHyperElasticModel>>;
 
   template <typename Plugin>

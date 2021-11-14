@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
         Test_Defer.cpp
         Test_End.cpp
         Test_FakeVirtual.cpp
+        Test_Generators.cpp
         Test_GetOutput.cpp
         Test_Invoke.cpp
         Test_KarmarkarKarpPartition.cpp
@@ -41,6 +42,7 @@ add_test_library(${LIBRARY}
         "${LIBRARY_SOURCES}"
         "Utilities;Options;ErrorHandling")
 
+add_subdirectory(Math/BlazeDetail)
 add_subdirectory(Geometry)
 add_subdirectory(NamedType)
 add_subdirectory(TypeTraits)

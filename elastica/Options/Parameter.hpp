@@ -41,6 +41,10 @@ namespace Options {
   //
   //============================================================================
 
+  //****************************************************************************
+  /*!\brief A keyword argument parameter for cleaner client interfaces
+   * \ingroup OptionParsingGroup
+   */
   template <typename T>  // The value type
   struct Parameter : ::elastica::NonCopyable {
     //**Type definitions********************************************************
@@ -57,9 +61,10 @@ namespace Options {
     // Clang-Tidy: Single-argument constructors must be marked explicit to avoid
     // unintentional implicit conversions
     Parameter() = delete;
-    /*explicit*/ Parameter(type const& t) : t_(t){};       /* NOLINT */
-    /*explicit*/ Parameter(type&& t) : t_(std::move(t)){}; /* NOLINT */
+    /*explicit*/ Parameter(type t) : t_(std::move(t)){}; /* NOLINT */
+    // /*explicit*/ Parameter(type&& t) : t_(std::move(t)){}; /* NOLINT */
     ~Parameter() = default;
+    Parameter(Parameter&& other) noexcept : t_(std::move(other.t_)) {}
     //**************************************************************************
 
     //==========================================================================
@@ -73,11 +78,20 @@ namespace Options {
 
     //==========================================================================
     //
+    //  NON-MUTATING VALUE OPERATOR
+    //
+    //==========================================================================
+    inline auto value() const -> type { return t_; }
+    //**************************************************************************
+
+    //==========================================================================
+    //
     //  MEMBERS
     //
     //==========================================================================
     //! The value of the parameter
     type t_;
   };
+  //****************************************************************************
 
 }  // namespace Options

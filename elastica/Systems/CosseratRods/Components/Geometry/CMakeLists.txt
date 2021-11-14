@@ -10,6 +10,6 @@ elastica_target_headers(
         Protocols.hpp
         Tags.hpp
         Types.hpp
-        WithCircleCrossSection.hpp
-        WithSquareCrossSection.hpp
+        WithCircularCosseratRod.hpp
+        WithSquareCosseratRod.hpp
 )

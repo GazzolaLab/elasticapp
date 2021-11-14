@@ -5,11 +5,13 @@
 
 #include "Framework/TestingFramework.hpp"
 // #include "Systems/CosseratRods/Components/Geometry/Protocols.hpp"
-#include "Systems/CosseratRods/Components/Geometry/WithSquareCrossSection.hpp"
+#include "Systems/CosseratRods/CosseratRodTraits.hpp"
+#include "Systems/CosseratRods/Components/Geometry/WithSquareCosseratRod.hpp"
 ///
 #include "Systems/CosseratRods/Mocks.hpp"
 ///
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Math/Sqrt.hpp"
 
 namespace {
 
@@ -17,7 +19,9 @@ namespace {
   using namespace elastica::cosserat_rod::component::detail;
   using namespace elastica;
 
-  using Operations = SquareCrossSectionOperations<mock::BasicCosseratRodTraits>;
+  using Traits = typename elastica::cosserat_rod::DefaultCosseratRodTraits;
+
+  using Operations = SquareCrossSectionOperations<Traits>;
 
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.SquareCrossSectionOperations",
                      "[Systems][Unit]") {
@@ -34,17 +38,19 @@ namespace {
 
 namespace {
   using namespace elastica::cosserat_rod::component;
+  using Traits = typename elastica::cosserat_rod::DefaultCosseratRodTraits;
 
   template <typename B>
   class TestGeometry
-      : public WithSquareCrossSection<mock::BasicCosseratRodTraits, B> {
+      : public WithSquareCosseratRod<Traits, B> {
     // The point of this class is to bring
     //    Frame;
     //    DirectionType;
     // into public scope for testing
    public:
-    using Parent = WithSquareCrossSection<mock::BasicCosseratRodTraits, B>;
+    using Parent = WithSquareCosseratRod<Traits, B>;
     using Parent::Parent;
+    using Traits = Traits;
     using typename Parent::ComputedVariables;
     using typename Parent::InitializedVariables;
     using typename Parent::Variables;
@@ -57,75 +63,59 @@ namespace {
   using Plugin = mock::MockPlugin<TestGeometry>;
   // using Model = blocks::Block<Plugin>;
   using Model = typename Plugin::Model;
+  // TypeDisplayer<typename Model::MatrixVariables> td{};
 
-  static_assert(sizeof(Model) ==
-                    sizeof(double) * tmpl::size<Plugin::Variables>::value,
-                "EBO failure!");
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.WithSquareCosseratRod: EBO",
+                     "[Systems][Unit]") {
+    // Assert Equal EBO test
+    CHECK_EBO(Model);
+  }
 
   //  static_assert(
   //      tt::assert_conforms_to<Plugin,
   //      ::elastica::cosserat_rod::protocols::Shape>, "failure!");
 
-  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.WithSquareCrossSection.data",
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.WithSquareCosseratRod.data",
                      "[Systems][Unit]") {
     Model model{};
 
     // same as cross_section_interface
-    CHECK(approx(model.get_element_dimension()) == 0.0);
-    CHECK(approx(model.get_element_volume()) == 0.0);
+    CHECK(model.get_element_dimension() == 0.0);
+    CHECK(model.get_element_volume() == 0.0);
 
-    constexpr auto n_initializers = 5UL;
+    constexpr auto n_initializers = 6UL;
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
-        // from before
-        blocks::initialize<tags::Position>([&i = n_times_called[0]](...) {
-          ++i;
-          return 2.0;
-        }),
-        blocks::initialize<tags::Director>([&i = n_times_called[1]](...) {
-          ++i;
-          return 3.0;
-        }),
-        blocks::initialize<tags::ReferenceElementLength>(
-            [&i = n_times_called[3]](...) {
-              ++i;
-              return 2.0;
-            }),
-        blocks::initialize<tags::ReferenceCurvature>(
-            [&i = n_times_called[4]](...) {
-              ++i;
-              return 2.0;
-            }),
-        // from before
-        blocks::initialize<tags::ElementDimension>(
-            [&i = n_times_called[2]](...) {
-              ++i;
-              return 4.0;
-            }));
+        blocks::initialize<tags::Position>([&i = n_times_called[0]](std::size_t index) { ++i; return index * 1.0; }),
+        blocks::initialize<tags::Director>([&i = n_times_called[1]](...) { ++i; return 0.5; }),
+        blocks::initialize<tags::ElementDimension>( [&i = n_times_called[2]](...) { ++i; return 4.0; }),
+        blocks::initialize<tags::ReferenceCurvature>( [&i = n_times_called[3]](...) { ++i; return 1.0; }),
+        blocks::initialize<tags::ReferenceShearStretchStrain>( [&i = n_times_called[4]](...) { ++i; return 1.0; }),
+        blocks::initialize<tags::ElementDilatation>( [&i = n_times_called[5]](...) { ++i; return 1.0; })
+      );
 
     Model::initialize(model, std::move(initializer));
 
     // check if initialization is done as expected
-    CHECK_ITERABLE_APPROX(n_times_called, make_array<n_initializers>(1U));
+    auto expected_call_count = make_array(11U, 10U, 10U, 9U, 10U, 10U);
+    CHECK_ITERABLE_APPROX(n_times_called, expected_call_count);
 
     // only these are checked now
-    CHECK(approx(model.get_element_dimension()) == 4.0);
+    CHECK(model.get_element_dimension() == 4.0);
     // blocks::get<tags::ElementLength>(model) = 2.0;
     // volume = dimension * length, only calculated somewhere inside
-    CHECK(approx(model.get_element_volume()) == 0.0);
+    CHECK(model.get_element_volume() == approx(4.0*4.0*4.0*blaze::sqrt(3)));
 
-    CHECK(approx(model.get_area()) == 4.0 * 4.0 * 4.0);
-    // this is a failure test, make it pass later on
-    CHECK(approx(model.shape_factor()) == 0.0);
+    CHECK(model.get_area() == 4.0 * 4.0 * 4.0);
 
     using LocalFrame = typename Model::Frame;
     const double expected_second_moment = (64. * 64.) / 12.;
-    CHECK(approx(model.get_second_moment_of_area<LocalFrame::D1>()) ==
+    CHECK(model.get_second_moment_of_area<LocalFrame::D1>() ==
           expected_second_moment);
-    CHECK(approx(model.get_second_moment_of_area<LocalFrame::D2>()) ==
+    CHECK(model.get_second_moment_of_area<LocalFrame::D2>() ==
           expected_second_moment);
     // symmetric
-    CHECK(approx(model.get_second_moment_of_area<LocalFrame::D3>()) ==
+    CHECK(model.get_second_moment_of_area<LocalFrame::D3>() ==
           2.0 * expected_second_moment);
   }
 

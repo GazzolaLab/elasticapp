@@ -29,8 +29,8 @@
 ///// Types always first
 #include "Systems/CosseratRods/Components/Geometry/detail/Types.hpp"
 /////
-#include "Systems/CosseratRods/Components/Geometry/detail/CosseratRodCrossSectionInterfaceTags.hpp"
 #include "Systems/CosseratRods/Components/Geometry/detail/CosseratRodSpanwiseGeometry.hpp"
+#include "Systems/CosseratRods/Components/Geometry/detail/Tags/CosseratRodCrossSectionInterfaceTags.hpp"
 
 namespace elastica {
 
@@ -104,7 +104,7 @@ namespace elastica {
            * hierarchy
            */
           struct ElementVolume
-              : public Traits::template CosseratRodInitializedVariable<
+              : public Traits::template CosseratRodVariable<
                     ::elastica::tags::ElementVolume,    //
                     typename Traits::DataType::Scalar,  //
                     typename Traits::Place::OnElement> {
@@ -227,7 +227,17 @@ namespace elastica {
               tmpl::append<typename Parent::Variables,
                            typename VariableDefinitions::Variables>;
           //! Current Variable definitions
+          using typename Parent::ReferenceCurvature;
+          using typename Parent::ReferenceElementLength;
+          using typename Parent::Curvature;
+          using typename Parent::ElementDilatation;
+          using typename Parent::ReferenceVoronoiLength;
+          using typename Parent::ShearStretchStrain;
+          using typename Parent::Tangent;
+          using typename Parent::VoronoiDilatation;
+          using typename Parent::VoronoiLength;
           using typename Parent::ElementLength;
+
           using typename VariableDefinitions::ElementDimension;
           using typename VariableDefinitions::ElementVolume;
           //********************************************************************
@@ -294,8 +304,6 @@ namespace elastica {
 
                   auto dofs = Variable::get_dofs(cap.value.n_elems());
                   for (std::size_t i = 0; i < dofs; ++i) {
-                    // TODO : This doesn't work on slices, consider having the
-                    // slice member in the initializer itself
                     Variable::slice(variable, i) = initializer(i);
                   }
                 });
@@ -310,7 +318,7 @@ namespace elastica {
               auto& lengths(blocks::get<::elastica::tags::ElementLength>(
                   downstream_block));
 
-              volumes = dimensions * lengths;
+              volumes = compute_cross_section_area(dimensions) * lengths;
             }
           }
           //********************************************************************
@@ -328,11 +336,11 @@ namespace elastica {
           /*!\brief Gets dimension of the current rod
            */
           inline constexpr decltype(auto) get_element_dimension() & noexcept {
-            return blocks::get<ElementDimension>(self());
+            return blocks::get<tags::ElementDimension>(self());
           }
           inline constexpr decltype(auto) get_element_dimension()
               const& noexcept {
-            return blocks::get<ElementDimension>(self());
+            return blocks::get<tags::ElementDimension>(self());
           }
           inline constexpr decltype(auto) get_element_dimension(
               index_type idx) & noexcept {
@@ -350,15 +358,15 @@ namespace elastica {
           //@{
           /*!\brief Gets volume of the current rod
            */
-          inline constexpr decltype(auto) get_element_volume() & noexcept {
+          inline constexpr decltype(auto) get_element_volume() & /*noexcept*/ {
             // Do we need it here, or should it be under update volume?
             //          (blocks::get<ElementVolume>(self())) =
             //              (blocks::get<ElementDimension>(self())) *
             //              (blocks::get<ElementLength>(self()));
-            return blocks::get<ElementVolume>(self());
+            return blocks::get<::elastica::tags::ElementVolume>(self());
           }
           inline constexpr decltype(auto) get_element_volume() const& noexcept {
-            return blocks::get<ElementVolume>(self());
+            return blocks::get<::elastica::tags::ElementVolume>(self());
           }
           inline constexpr decltype(auto) get_element_volume(
               index_type idx) & noexcept {
@@ -419,7 +427,7 @@ namespace elastica {
           }
 
           // do not have APIs return vec3, seems to reduce customizability and
-          // promores bad code
+          // promotes bad code
           inline constexpr auto get_second_moment_of_area(index_type idx) const
           /*noexcept*/ {
             return Vec3{real_t(This::get_second_moment_of_area<D1>(idx)),
@@ -484,40 +492,115 @@ namespace elastica {
           /*!\name Computation methods*/
           //@{
 
+          //**************************************************************************
+          /*!\brief Updates rod geometric properties given state.
+          //
+          // \details
           // Translational functions
-          void compute_translation_diagnostics() noexcept {
+          // Updates rod elemental geometric properties (elemental lengths,
+          // tangents and radii) from given nodal positions (state).
+          // Ref: eq (3.3) from \cite gazzola2018forward. \n
+          // length{i} = || position{i+1} - position{i} || \n
+          // tangent{i} = (position{i+1} - position{i}) / length{i} \n
+          // radius{i} = (volume{i} / M_PI / length{i})^0.5
+          //
+          // The following members are modified:
+          //  - length_batch(n_elems)
+          //  - tangent_batch(3, n_elems)
+          //  - radius_batch(n_elems)
+          //
+          // with the following inputs:
+          //  - position_batch(3, n_nodes)
+          //  - volume_batch(n_elems)
+          //
+          // \example
+          // The following shows a typical use of the compute_geometry_from_state()
+          // function with the expected (correct) result also shown.
+          //
+          // \return void/None
+          //
+          */
+          void compute_translation_diagnostics() noexcept { // TODO: maybe rewriting code is not a good idea. try to collapse with the code in spanwise geometry.
+            // Compute eq (3.3) from 2018 RSOS paper
+            // 0. Create reference variables
+            auto& position(blocks::get<::elastica::tags::Position>(self()));
+            //auto& director(blocks::get<::elastica::tags::Director>(self()));
+
             // 1. Compute new lengths
+            auto position_diff(Traits::Operations::difference_kernel(position));
+            auto& element_length_collection(blocks::get<tags::ElementLength>(self()));
+            element_length_collection = Traits::Operations::batch_norm(position_diff);
 
             // 2. Update tangents
+            auto& tangent_collection(blocks::get<tags::Tangent>(self()));
+            auto& reference_length_collection(blocks::get<tags::ReferenceElementLength>(self()));
+            Traits::Operations::batch_division_matvec(tangent_collection, position_diff, element_length_collection); // TODO should be length_collection
 
             // 3. Compute new radius based on above lengths
-            // Note! Here we need a CRTP method to get r from l
-            // self().dimension_from_volume_impl(get_volumes(), get_lengths());
+            // volume conservation
+            auto& volume_collection(blocks::get<tags::ElementVolume>(self()));
+            auto& dimensions_collection(blocks::get<tags::ElementDimension>(self()));
+            dimensions_collection =
+                CrossSection::update_dimension(volume_collection, element_length_collection);
 
             // 4. Compute dilatation of elements
+            auto& element_dilatation_collection(blocks::get<tags::ElementDilatation>(self()));
+            element_dilatation_collection = element_length_collection /
+                                            reference_length_collection;
 
-            // 5. Compute dilatation of voronoi regions
+            // 5. Compute voronoi length
+            auto& voronoi_length_collection(
+                blocks::get<::elastica::tags::VoronoiLength>(self()));
+            voronoi_length_collection = Traits::Operations::average_kernel(element_length_collection);
+
+            // 6. Compute dilatation of voronoi regions
+            auto& voronoi_dilatation(blocks::get<tags::VoronoiDilatation>(self()));
+            voronoi_dilatation = blocks::get<tags::VoronoiLength>(self()) /
+                                 blocks::get<tags::ReferenceVoronoiLength>(self());
           }
 
-         protected:
+         public:
+          //**************************************************************************
+          /*!\brief Compute elemental shear and stretch mode strains
+          //
+          // \details
+          // Computes elemental shear and stretch modes strains given the rod
+          // positions and directors (state), calls compute_all_dilatations() inside.
+          // Ref: eq (2.9) from \cite gazzola2018forward. \n
+          // strain_batch{i} =
+          // dilatation_batch{i} * director_collection_batch{i} *
+          // tangent_batch{i} - {0.0, 0.0, 1.0}
+          //
+          // The following members are modified:
+          // - strain_batch(3, n_elems)
+          //
+          // with the following inputs:
+          // - director_collection_batch(3, 3, n_elems)
+          // - temp container of (3, n_elems) for intermediate storage \n
+          // given inputs of compute_all_dilatations() are set.
+          //
+          // \example
+          // The following shows a typical use of the compute_shear_stretch_strains()
+          // function with the expected (correct) result also shown.
+          // \snippet test_gov_eqns.cpp compute_shear_stretch_strains_example
+          //
+          // \return void/None
+          //
+          // \see fill later?
+          */
           void compute_shear_strains() noexcept {
             // Q (et - d_3)
             // Q is always latest, only e and t need to be computed
-            compute_translation_diagnostics();
-
-            //          This::get<
-            //              typename
-            //              GeometryParent::ShearStretchStrainCollectionTag>()
-            //              = 1.0;
+            compute_translation_diagnostics(); // Dilatation updated here!
+            self().update_shear_stretch_strain(self());
           }
 
           void compute_curvature() noexcept {
             // kappa is the only rotational diagnostic, so we direcelty compute
             // that here
-            // std::get<typename GeometryParent::CurvatureCollectionTag>(
-            // self().data()) = 1.0;
-            // get_curvature() = log(get_rotation_matrices());
+            self().update_curvature(self());
           }
+
           //@}
           //********************************************************************
         };

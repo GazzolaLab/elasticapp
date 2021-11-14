@@ -3,6 +3,7 @@
 //
 #include "Framework/TestingFramework.hpp"
 #include "Systems/CosseratRods/Components/Geometry/detail/RodSpanwiseGeometry.hpp"
+#include "Systems/CosseratRods/CosseratRodTraits.hpp"
 ///
 #include "Systems/CosseratRods/Mocks.hpp"
 ///
@@ -15,29 +16,32 @@ namespace {
   using namespace elastica::cosserat_rod::component::detail;
   using namespace elastica;
 
-  //  // conform to protocol and assert
-  //  template <typename B>
-  //  struct TestRodSpanwiseGeometry
-  //      : public RodSpanwiseGeometry<mock::BasicCosseratRodTraits, B>,
-  //        public ::tt::ConformsTo<blocks::protocols::Plugin> {};
+  using Traits = typename elastica::cosserat_rod::DefaultCosseratRodTraits;
+
+  // conform to protocol and assert
+  template <typename B>
+  struct TestRodSpanwiseGeometry : public RodSpanwiseGeometry<Traits, B> {
+    using Traits = Traits;
+  };
 
 }  // namespace
 
 namespace {
 
   template <typename B>
-  using TestGeometry = RodSpanwiseGeometry<mock::BasicCosseratRodTraits, B>;
+  using TestGeometry = TestRodSpanwiseGeometry<B>;
 
   using Plugin = mock::MockPlugin<TestGeometry>;
-  //  using Model = blocks::Block<Plugin>;
+  // using Model = blocks::Block<Plugin>;
   using Model = typename Plugin::Model;
 
-  static_assert(sizeof(Model) ==
-                    sizeof(double) * tmpl::size<Plugin::Variables>::value,
-                "EBO failure!");
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.RodSpanwiseGeometry:EBO",
+                     "[Systems][Unit]") {
+    CHECK_EBO(Model);
+  }
+
   template <typename T>
   constexpr bool const_check = std::is_const<std::remove_reference_t<T>>::value;
-
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.RodSpanwiseGeometry.getters",
                      "[Systems][Unit]") {
     Model model{};
@@ -50,17 +54,17 @@ namespace {
                      "[Systems][Unit]") {
     Model model{};
 
-    CHECK(approx(model.get_position()) == 0.0);
-    CHECK(approx(model.get_director()) == 0.0);
+    auto initializer = mock::initialize_block<Plugin>(
+        blocks::initialize<tags::Position>([](...) { return 2.0; }),
+        blocks::initialize<tags::Director>([](...) { return 3.0; }));
 
-    Model::initialize(
-        model,
-        mock::initialize_block<Plugin>(
-            blocks::initialize<tags::Position>([](...) { return 2.0; }),
-            blocks::initialize<tags::Director>([](...) { return 3.0; })));
+//    model.get_position().resize(3UL, 2 + initializer.n_elems());
+//    model.get_director().resize(3UL, 3UL, 2 + initializer.n_elems());
 
-    CHECK(approx(model.get_position()) == 2.0);
-    CHECK(approx(model.get_director()) == 3.0);
+    Model::initialize(model, std::move(initializer));
+
+    CHECK(model.get_position() == 2.0);
+    CHECK(model.get_director() == 3.0);
   }
 
 }  // namespace

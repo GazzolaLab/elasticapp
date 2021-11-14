@@ -78,39 +78,53 @@ namespace {
                      "[Unit][Utilities]") {
     using namespace elastica;
     SECTION("Works for common vectors") {
-      auto R = make_orthogonal_bases_from_normal(Vec3{0.0, 1.0, 0.0});
+      auto R = make_orthogonal_bases_from_normal(Vec3{1.0, 0.0, 0.0});
 
-      // ( binormal | normal | tangent)^T
-      Vec3 predicted_binormal = {1.0, 0.0, 0.0};
-      Vec3 predicted_normal = {0.0, 1.0, 0.0};
+      // ( normal | binormal | tangent)^T
+      Vec3 predicted_normal = {1.0, 0.0, 0.0};
+      Vec3 predicted_binormal = {0.0, 1.0, 0.0};
       Vec3 predicted_tangent = {0.0, 0.0, 1.0};
 
-      CHECK_NOFAIL(blaze::row<0UL>(R) == predicted_binormal);
-      CHECK(blaze::row<1UL>(R) == predicted_normal);
+      CHECK(blaze::row<0UL>(R) == predicted_normal);
+      CHECK_NOFAIL(blaze::row<1UL>(R) == predicted_binormal);
       CHECK_NOFAIL(blaze::row<2UL>(R) == predicted_tangent);
 
       CHECK(is_orthogonal(R));
 
-      predicted_binormal = {0.0, 1.0, 0.0};
       predicted_normal = {0.0, 0.0, 1.0};
-      predicted_tangent = {1.0, 0.0, 0.0};
-
-      R = make_orthogonal_bases_from_binormal(Vec3{0.0, 1.0, 0.0});
-      CHECK(blaze::row<0UL>(R) == predicted_binormal);
-      CHECK_NOFAIL(blaze::row<1UL>(R) == predicted_normal);
-      CHECK_NOFAIL(blaze::row<2UL>(R) == predicted_tangent);
-
-      CHECK(is_orthogonal(R));
-
-
-      predicted_binormal = {0.0, 0.0, 1.0};
-      predicted_normal = {1.0, 0.0, 0.0};
+      predicted_binormal = {1.0, 0.0, 0.0};
       predicted_tangent = {0.0, 1.0, 0.0};
 
-      R = make_orthogonal_bases_from_tangent(Vec3{0.0, 1.0, 0.0});
-      CHECK_NOFAIL(blaze::row<0UL>(R) == predicted_binormal);
-      CHECK_NOFAIL(blaze::row<1UL>(R) == predicted_normal);
+      R = make_orthogonal_bases_from_binormal(Vec3{1.0, 0.0, 0.0});
+      CHECK_NOFAIL(blaze::row<0UL>(R) == predicted_normal);
+      CHECK(blaze::row<1UL>(R) == predicted_binormal);
+      CHECK_NOFAIL(blaze::row<2UL>(R) == predicted_tangent);
+
+      CHECK(is_orthogonal(R));
+
+      predicted_normal = {0.0, 1.0, 0.0};
+      predicted_binormal = {0.0, 0.0, 1.0};
+      predicted_tangent = {1.0, 0.0, 0.0};
+
+      R = make_orthogonal_bases_from_tangent(Vec3{1.0, 0.0, 0.0});
+      CHECK_NOFAIL(blaze::row<0UL>(R) == predicted_normal);
+      CHECK_NOFAIL(blaze::row<1UL>(R) == predicted_binormal);
       CHECK(blaze::row<2UL>(R) == predicted_tangent);
+
+      CHECK(is_orthogonal(R));
+    }
+
+    SECTION("Works even if the vectors are not scaled") {
+      auto R = make_orthogonal_bases_from_normal(5.0 * Vec3{1.0, 0.0, 0.0});
+
+      // ( normal | binormal | tangent)^T
+      Vec3 predicted_normal = {1.0, 0.0, 0.0};
+      Vec3 predicted_binormal = {0.0, 1.0, 0.0};
+      Vec3 predicted_tangent = {0.0, 0.0, 1.0};
+
+      CHECK(blaze::row<0UL>(R) == predicted_normal);
+      CHECK_NOFAIL(blaze::row<1UL>(R) == predicted_binormal);
+      CHECK_NOFAIL(blaze::row<2UL>(R) == predicted_tangent);
 
       CHECK(is_orthogonal(R));
     }
@@ -122,37 +136,78 @@ namespace {
       auto R = make_orthogonal_bases_from_normal(Vec3{0.8, 0.6, 0.0});
 
       // ( binormal | normal | tangent)^T
-      Vec3 predicted_binormal = {0.6, -0.8, 0.0};
       Vec3 predicted_normal = {0.8, 0.6, 0.0};
+      Vec3 predicted_binormal = {0.6, -0.8, 0.0};
       Vec3 predicted_tangent = {0.0, 0.0, 1.0};
 
-      CHECK_NOFAIL(blaze::row<0UL>(R) == predicted_binormal);
-      CHECK(blaze::row<1UL>(R) == predicted_normal);
+      CHECK(blaze::row<0UL>(R) == predicted_normal);
+      CHECK_NOFAIL(blaze::row<1UL>(R) == predicted_binormal);
       CHECK_NOFAIL(blaze::row<2UL>(R) == predicted_tangent);
 
       CHECK(is_orthogonal(R));
 
-      predicted_binormal = {0.8, 0.6, 0.0};
       predicted_normal = {0.0, 0.0, 1.0};
+      predicted_binormal = {0.8, 0.6, 0.0};
       predicted_tangent = {0.6, -0.8, 0.0};
 
       R = make_orthogonal_bases_from_binormal(Vec3{0.8, 0.6, 0.0});
-      CHECK(blaze::row<0UL>(R) == predicted_binormal);
-      CHECK_NOFAIL(blaze::row<1UL>(R) == predicted_normal);
+      CHECK_NOFAIL(blaze::row<0UL>(R) == predicted_normal);
+      CHECK(blaze::row<1UL>(R) == predicted_binormal);
       CHECK_NOFAIL(blaze::row<2UL>(R) == predicted_tangent);
 
       CHECK(is_orthogonal(R));
 
-      predicted_binormal = {0.0, 0.0, 1.0};
       predicted_normal = {0.6, -0.8, 0.0};
+      predicted_binormal = {0.0, 0.0, 1.0};
       predicted_tangent = {0.8, 0.6, 0.0};
 
       R = make_orthogonal_bases_from_tangent(Vec3{0.8, 0.6, 0.0});
-      CHECK_NOFAIL(blaze::row<0UL>(R) == predicted_binormal);
-      CHECK_NOFAIL(blaze::row<1UL>(R) == predicted_normal);
+      CHECK_NOFAIL(blaze::row<0UL>(R) == predicted_normal);
+      CHECK_NOFAIL(blaze::row<1UL>(R) == predicted_binormal);
       CHECK(blaze::row<2UL>(R) == predicted_tangent);
 
       CHECK(is_orthogonal(R));
+    }
+
+    SECTION("Works for pairs of normals and tangents") {
+      SECTION("Aligned") {
+        auto R = make_orthogonal_bases_from_normal_and_tangent(
+            Vec3{0.0, 1.0, 0.0}, Vec3{0.0, 0.0, 1.0});
+
+        // ( normal | binormal | tangent)^T
+        Vec3 const predicted_normal = {0.0, 1.0, 0.0};
+        Vec3 const predicted_binormal = {-1.0, 0.0, 0.0};
+        Vec3 const predicted_tangent = {0.0, 0.0, 1.0};
+
+        CHECK(blaze::row<0UL>(R) == predicted_normal);
+        // ensure that it follows the right hand rule
+        CHECK(blaze::row<1UL>(R) == predicted_binormal);
+        CHECK(blaze::row<2UL>(R) == predicted_tangent);
+
+        CHECK(is_orthogonal(R));
+      }
+      SECTION("Not aligned with axes") {
+        // ( normal | binormal | tangent)^T
+        Vec3 const predicted_normal = {0.6, -0.8, 0.0};
+        Vec3 const predicted_binormal = {0.0, 0.0, -1.0};
+        Vec3 const predicted_tangent = {0.8, 0.6, 0.0};
+
+        const Rot3 R = make_orthogonal_bases_from_normal_and_tangent(
+            3 * Vec3{0.6, -0.8, 0.0}, 3 * Vec3{0.8, 0.6, 0.0});
+        CHECK(blaze::row<0UL>(R) == predicted_normal);
+        CHECK(blaze::row<1UL>(R) == predicted_binormal);
+        CHECK(blaze::row<2UL>(R) == predicted_tangent);
+
+        CHECK(is_orthogonal(R));
+      }
+      SECTION("Not orthogonal to one another") {
+        Vec3 const predicted_normal = {0.6, -0.8, 0.0};
+        Vec3 const predicted_tangent = {7.0 / 25.0, 24.0 / 25.0, 0.0};
+
+        CHECK_THROWS_WITH(make_orthogonal_bases_from_normal_and_tangent(
+                              predicted_normal, predicted_tangent),
+                          Catch::Contains("non-orthogonal"));
+      }
     }
   }
 

@@ -40,6 +40,7 @@ elastica_target_headers(
         FakeVirtual.hpp
         ForceInline.hpp
         # Geometry.hpp
+        Generators.hpp
         IgnoreUnused.hpp
         Invoke.hpp
         KarmarkarKarpPartition.hpp

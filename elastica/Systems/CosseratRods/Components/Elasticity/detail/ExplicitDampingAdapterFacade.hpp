@@ -18,7 +18,8 @@
 #include "Systems/CosseratRods/Components/Elasticity/detail/Types.hpp"
 /////
 #include "Systems/Block.hpp"
-#include "Systems/CosseratRods/Components/Elasticity/detail/ExplicitDampingAdapterFacadeTags.hpp"
+#include "Systems/CosseratRods/Components/Tags.hpp"
+#include "Systems/CosseratRods/Components/Elasticity/detail/Tags/ExplicitDampingAdapterFacadeTags.hpp"
 #include "Utilities/CRTP.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -78,8 +79,8 @@ namespace elastica {
           using Variables =
               tmpl::append<typename Parent::Variables,
                            typename VariableDefinitions::Variables>;
-          using typename VariableDefinitions::ForceDamping;
-          using typename VariableDefinitions::TorqueDamping;
+          using typename VariableDefinitions::ForceDampingCoefficient;
+          using typename VariableDefinitions::TorqueDampingCoefficient;
 
          private:
           // Form friendships
@@ -101,23 +102,6 @@ namespace elastica {
 
           inline constexpr auto self() const& noexcept -> ConstReference {
             return static_cast<ConstReference>(*this);
-          }
-
-         protected:
-          // TODO Implementation functions
-          inline auto compute_internal_modeled_loads_impl() const /*noexcept*/ {
-            return 1.0 + Parent::compute_internal_modeled_loads_impl();
-            // Geometry interface function
-            //  std::cout << "Adding damping to forces";
-            //        self().compute_shear_strains();
-          }
-
-          // TODO Implementation functions
-          inline auto compute_internal_modeled_torques_impl() const
-          /*noexcept*/ {
-            return 1.0 + Parent::compute_internal_modeled_torques_impl();
-            // Geometry interface function
-            //        self().compute_shear_strains();
           }
 
          protected:
@@ -145,12 +129,41 @@ namespace elastica {
                   auto dofs =
                       Variable::get_dofs(std::move(cap.value).n_elems());
                   for (std::size_t i = 0UL; i < dofs; ++i) {
-                    // TODO : This doesn't work on slices, consider having the
-                    // slice member in the initializer itself
                     Variable::slice(variable, i) = initializer(i);
                   }
                 });
           }
+
+         protected:
+          inline void compute_internal_modeled_loads_impl() /*noexcept*/ {
+            auto& internal_force(blocks::get<tags::InternalLoads>(self()));
+            auto& dissipation_constant(blocks::get<tags::ForceDampingCoefficient>(self()));
+            auto& length(blocks::get<tags::ElementLength>(self()));
+            auto& velocity(blocks::get<tags::Velocity>(self()));
+            auto& damping_load(blocks::get<tags::_DummyNodeVector>(self()));
+            auto elemental_velocity = Traits::Operations::average_kernel(velocity);
+
+            Parent::compute_internal_modeled_loads_impl();
+            Traits::Operations::quadrature_kernel(
+                damping_load,
+                elemental_velocity %
+                    Traits::Operations::transpose(Traits::Operations::expand_for_broadcast(length))
+            );
+            internal_force -= Traits::Operations::transpose(Traits::Operations::expand_for_broadcast(dissipation_constant)) %
+                              damping_load;
+          }
+
+          inline void compute_internal_modeled_torques_impl() /*noexcept*/ {
+            auto& internal_torque(blocks::get<tags::InternalTorques>(self()));
+            auto& dissipation_constant(blocks::get<tags::TorqueDampingCoefficient>(self()));
+            auto& angular_velocity(blocks::get<tags::AngularVelocity>(self()));
+            auto& length(blocks::get<tags::ElementLength>(self()));
+
+            Parent::compute_internal_modeled_torques_impl();
+            internal_torque -= angular_velocity %
+                     Traits::Operations::transpose(Traits::Operations::expand_for_broadcast(length * dissipation_constant));
+          }
+
         };
 
       }  // namespace detail

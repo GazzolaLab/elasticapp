@@ -16,6 +16,9 @@ namespace elastica {
   struct SphereCollectionTag {
     using SystemCollectionType = SphereCollection;
     using PrimitiveType = collision::SpherePrimitive;
+
+    // temporary
+    using SystemType = PrimitiveType;
   };
 
   namespace collision {
@@ -24,9 +27,9 @@ namespace elastica {
     struct Transfer<SphereCollectionTag>
         : public TransferTraits<SphereCollectionTag> {
       template <typename PrimIter>
-      static void do_transfer(from_t /* meta */,
-                              SystemCollectionType const& collection,
-                              to_t /* meta */, PrimIter start, PrimIter end) {
+      static void do_transfer(tags::from_t /* meta */,
+                              SphereCollectionTag::SystemCollectionType const& collection,
+                              tags::to_t /* meta */, PrimIter start, PrimIter end) {
         ELASTICA_ASSERT(
             collection.size() == static_cast<std::size_t>(end - start), "Oops");
         // TODO : Check if a local copy on stack of spheres members using
@@ -48,8 +51,8 @@ namespace elastica {
       }
 
       template <typename ConstPrimIter>
-      static void do_transfer(to_t /* meta */, SystemCollectionType& collection,
-                              from_t /* meta */, ConstPrimIter start,
+      static void do_transfer(tags::to_t /* meta */, SphereCollectionTag::SystemCollectionType& collection,
+                              tags::from_t /* meta */, ConstPrimIter start,
                               ConstPrimIter end) {
         ELASTICA_ASSERT(
             collection.size() == static_cast<std::size_t>(end - start), "Oops");

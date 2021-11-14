@@ -29,8 +29,8 @@
 /// Types always first
 #include "Systems/CosseratRods/Components/Geometry/detail/Types.hpp"
 ///
-#include "Systems/CosseratRods/Components/Geometry/detail/CosseratRodSpanwiseGeometryTags.hpp"
 #include "Systems/CosseratRods/Components/Geometry/detail/RodSpanwiseGeometry.hpp"
+#include "Systems/CosseratRods/Components/Geometry/detail/Tags/CosseratRodSpanwiseGeometryTags.hpp"
 
 namespace elastica {
 
@@ -76,7 +76,7 @@ namespace elastica {
            * rod hierarchy
            */
           struct ReferenceElementLength
-              : public Traits::template CosseratRodInitializedVariable<
+              : public Traits::template CosseratRodVariable<
                     ::elastica::tags::ReferenceElementLength,  //
                     typename Traits::DataType::Scalar,         //
                     typename Traits::Place::OnElement> {
@@ -114,6 +114,17 @@ namespace elastica {
                     ::elastica::tags::ReferenceCurvature,  //
                     typename Traits::DataType::Vector,     //
                     typename Traits::Place::OnVoronoi> {};
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Variable marking ReferenceShearStretchStrain within the
+           * Cosserat rod hierarchy (kappa)
+           */
+          struct ReferenceShearStretchStrain
+              : public Traits::template CosseratRodInitializedVariable<
+                  ::elastica::tags::ReferenceShearStretchStrain,  //
+                  typename Traits::DataType::Vector,     //
+                  typename Traits::Place::OnElement> {};
           //********************************************************************
 
           //********************************************************************
@@ -158,7 +169,7 @@ namespace elastica {
            * rod hierarchy
            */
           struct ElementDilatation
-              : public Traits::template CosseratRodVariable<
+              : public Traits::template CosseratRodInitializedVariable<
                     ::elastica::tags::ElementDilatation,  //
                     typename Traits::DataType::Scalar,    //
                     typename Traits::Place::OnElement> {};
@@ -205,7 +216,7 @@ namespace elastica {
 
           //********************************************************************
           /*!\brief Variable marking ShearStretchStrain within the Cosserat
-           * rod hierarchy
+           * rod hierarchy (kappa)
            */
           struct ShearStretchStrain
               : public Traits::template CosseratRodVariable<
@@ -223,12 +234,12 @@ namespace elastica {
           //**Type definitions**************************************************
           //! List of computed variables
           using ComputedVariables =
-              tmpl::list<ReferenceVoronoiLength, ElementLength,
-                         ElementDilatation, VoronoiLength, VoronoiDilatation,
+              tmpl::list<ReferenceElementLength, ReferenceVoronoiLength, ElementLength,
+                         VoronoiLength, VoronoiDilatation,
                          Curvature, Tangent, ShearStretchStrain>;
           //! List of initialized variables
           using InitializedVariables =
-              tmpl::list<ReferenceElementLength, ReferenceCurvature>;
+              tmpl::list<ElementDilatation, ReferenceCurvature, ReferenceShearStretchStrain>;
           //! List of all variables
           using Variables =
               tmpl::append<InitializedVariables, ComputedVariables>;
@@ -300,6 +311,7 @@ namespace elastica {
                            typename VariableDefinitions::Variables>;
           //! Initialized variables
           using typename VariableDefinitions::ReferenceCurvature;
+          using typename VariableDefinitions::ReferenceShearStretchStrain;
           using typename VariableDefinitions::ReferenceElementLength;
           //! Computed variables
           using typename VariableDefinitions::Curvature;
@@ -359,104 +371,87 @@ namespace elastica {
                   }
                 });
 
-            // 3. Finally do the computed variables
+            // 3. Finally do the computed variables (Initialization)
             {
-                //            using Variable = ReferenceVoronoiLength;
-                //            auto& reference_voronoi_length_collection(
-                //                blocks::get<Variable>(downstream_block));
-                /* TODO
-                reference_voronoi_length_collection =
-                    Traits::calculate_voronoi_length(
-                        downstream_block
-                            .template
-                get<ReferenceElementLengthCollectionTag>());
-                            */
-            }
+              // position difference
+              auto& position(blocks::get<::elastica::tags::Position>(downstream_block));
+              //auto& director(blocks::get<::elastica::tags::Director>(downstream_block));
+              auto& dilatation(blocks::get<::elastica::tags::ElementDilatation>(downstream_block));
+              auto position_diff = Traits::Operations::difference_kernel(position);
 
-            {
-                //            using Variable = ElementLength;
-                //            auto& element_length_collection(
-                //                blocks::get<Variable>(downstream_block));
-                /*
-                 * TODO
-                 * element_length_collection = 2.0;
-                 */
-            }
+              // element_length_collection
+              auto& element_length_collection(
+                  blocks::get<::elastica::tags::ElementLength>(downstream_block));
+              element_length_collection = Traits::Operations::batch_norm(position_diff);
 
-            {
-                //            using Variable = ElementDilatation;
-                //            auto&
-                //            element_dilatation(blocks::get<Variable>(downstream_block));
-                /*
-                 * TODO
-              //        {
-              //          //          dilatations_ = lengths_ /
-              reference_lengths_;
-              //          get_slice(ElementDilatationCollectionTag{}) =
-              //              get_slice(ElementLengthCollectionTag{}) /
-              //              get_slice(ReferenceElementLengthCollectionTag{});
-              //        }
-              //
-                 */
-            }
+              // reference_length_collection
+              auto& reference_length_collection(
+                  blocks::get<::elastica::tags::ReferenceElementLength>(downstream_block));
+              //reference_length_collection = Traits::Operations::batch_norm(position_diff);
+              reference_length_collection = element_length_collection / dilatation;
 
-            {
-                //            using Variable = VoronoiLength;
-                //            auto& voronoi_length_collection(
-                //                blocks::get<Variable>(downstream_block));
-                /*
-                 * TODO
-                 * voronoi_length_collection = 1.0;
-                 */
-            }
+              // reference_voronoi_length_collection
+              auto& reference_voronoi_length_collection(
+                  blocks::get<::elastica::tags::ReferenceVoronoiLength>(downstream_block));
+              reference_voronoi_length_collection = Traits::Operations::average_kernel(reference_length_collection);
 
-            {
-                //            using Variable = VoronoiDilatation;
-                //            auto&
-                //            voronoi_dilatation(blocks::get<Variable>(downstream_block));
-                /*
-                 * TODO
-              //        {
-              //          get_slice(VoronoiDilatationCollectionTag{}) =
-              //              get_slice(VoronoiLengthCollectionTag{}) /
-              //              get_slice(ReferenceVoronoiLengthCollectionTag{});
-              //        }
-              //
-              //
-                 */
-            }
+              // element_dilatation
+              auto& element_dilatation_collection(
+                  blocks::get<::elastica::tags::ElementDilatation>(downstream_block));
+              element_dilatation_collection = element_length_collection /
+                                              reference_length_collection;
 
-            {
-                //            using Variable = Curvature;
-                //            auto&
-                //            curvature_collection(blocks::get<Variable>(downstream_block));
-                /*
-                 * TODO
-               curvature_collection = 1.0;
-                 */
-            }
+              // voronoi_length_collection
+              auto& voronoi_length_collection(
+                  blocks::get<::elastica::tags::VoronoiLength>(downstream_block));
+              voronoi_length_collection = Traits::Operations::average_kernel(element_length_collection);
 
-            {
-                //            using Variable = Tangent;
-                //            auto&
-                //            tangent_collection(blocks::get<Variable>(downstream_block));
-                /*
-                 * TODO
-                tangent_collection = 1.0;
-                 */
-            }
+              // voronoi_dilatation
+              auto& voronoi_dilatation(
+                  blocks::get<::elastica::tags::VoronoiDilatation>(downstream_block));
+              voronoi_dilatation = voronoi_length_collection / reference_voronoi_length_collection;
 
-            {
-              //            using Variable = ShearStretchStrain;
-              //            auto& shear_stretch_strains_collection(
-              //                blocks::get<Variable>(downstream_block));
-              /*
-               * TODO
-             shear_stretch_strains_collection = 1.0;
-               */
+              // tangent_collection
+              auto& tangent_collection(
+                  blocks::get<::elastica::tags::Tangent>(downstream_block));
+              //tangent_collection = position_diff / reference_length_collection;
+              Traits::Operations::batch_division_matvec(tangent_collection, position_diff, element_length_collection);
+
+              // curvature_collection (kappa)
+              This().update_curvature(downstream_block);
+
+              // shear_stretch_strains_collection (sigma)
+              // eqt-z
+              This().update_shear_stretch_strain(downstream_block);
             }
           }
           //********************************************************************
+
+         protected:
+          template<typename Block>
+          inline void update_curvature(Block& B) noexcept {
+            auto& curvature(blocks::get<::elastica::tags::Curvature>(B));
+            auto& director(blocks::get<::elastica::tags::Director>(B));
+            auto& reference_voronoi_length(blocks::get<::elastica::tags::ReferenceVoronoiLength>(B));
+            Traits::Operations::spanwise_inv_rotate_and_divide(
+                curvature, director,
+                reference_voronoi_length);
+          }
+
+          template<typename Block>
+          inline void update_shear_stretch_strain(Block& B) noexcept {
+            auto& shear_stretch_strains(blocks::get<::elastica::tags::ShearStretchStrain>(B));
+            auto& element_dilatation(blocks::get<::elastica::tags::ElementDilatation>(B));
+            auto& director(blocks::get<::elastica::tags::Director>(B));
+            auto& tangent(blocks::get<::elastica::tags::Tangent>(B));
+            auto expanded_transposed_EDC = Traits::Operations::expand_for_broadcast(Traits::Operations::transpose(element_dilatation));
+            Traits::Operations::batch_matvec(
+                shear_stretch_strains,
+                director,
+                tangent % expanded_transposed_EDC // matvecexpr
+            );
+            Traits::Operations::batch_subtract_z_unit(shear_stretch_strains);
+          }
 
          public:
           // decide the API bro
@@ -507,6 +502,22 @@ namespace elastica {
           inline constexpr decltype(auto) get_reference_curvature()
               const& noexcept {
             return blocks::get<ReferenceCurvature>(self());
+          }
+          //@}
+          //********************************************************************
+
+          //********************************************************************
+          /*!\name reference curvature methods*/
+          //@{
+          /*!\brief Gets reference curvature of the current rod
+           */
+          inline constexpr decltype(auto) get_reference_shear_stretch_strain() & noexcept {
+            return blocks::get<ReferenceShearStretchStrain>(self());
+          }
+
+          inline constexpr decltype(auto) get_reference_shear_stretch_strain()
+          const& noexcept {
+            return blocks::get<ReferenceShearStretchStrain>(self());
           }
           //@}
           //********************************************************************

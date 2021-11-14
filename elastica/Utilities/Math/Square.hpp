@@ -40,7 +40,7 @@ namespace elastica {
    */
 
   template <typename T>
-  ELASTICA_ALWAYS_INLINE constexpr T sq(const T& a) {
+  ELASTICA_ALWAYS_INLINE constexpr decltype(auto) sq(const T& a) {
     return a * a;
   }
 }  // namespace elastica
