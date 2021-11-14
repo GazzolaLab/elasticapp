@@ -418,6 +418,8 @@ provided a Systems configuration and ensure it derives publicly from
        * can have the same primitives)
        * Instead, one can ise the GetPrimitiveType metafunction above
        */
+// #define ELASTICA_WITH_ENVIRONMENTS
+#if defined(ELASTICA_WITH_ENVIRONMENTS)
       //! Typelist of admissible primitives in the simulator
       using AdmissiblePrimitives = tmpl::remove_duplicates<
           tmpl::transform<ListOfAdmissibleSystemCollections,
@@ -429,6 +431,7 @@ provided a Systems configuration and ensure it derives publicly from
                           tmpl::bind<AddPrimitiveStorageType, tmpl::_1>>;
       //! Type of heterogeneous storage of admissible primitives collections
       using PrimitiveStorage = tmpl::as_tuple<PrimitiveCollection>;
+#endif
       //************************************************************************
 
       //@}

@@ -3,6 +3,7 @@
 #include "Systems/States/States.hpp"
 #include "Systems/common/Tags.hpp"
 #include "Time/SimulationTime.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace elastica {
 
@@ -11,6 +12,26 @@ namespace elastica {
   //  CLASS DEFINITION
   //
   //============================================================================
+
+  template <typename... X>
+  struct Der : public X... {
+    //**Block type definitions************************************************
+    //! List of computed variables
+    using ComputedVariables = tmpl::append<typename X::ComputedVariables...>;
+    //! List of initialized variables
+    using InitializedVariables =
+        tmpl::append<typename X::InitializedVariables...>;
+    //! List of all variables
+    using Variables = tmpl::append<typename X::Variables...>;
+    //************************************************************************
+
+    template <class DownstreamBlock, class CosseratInitializer>
+    static void initialize(DownstreamBlock& downstream_block,
+                           CosseratInitializer&& initializers) {
+      EXPAND_PACK_LEFT_TO_RIGHT(X::initialize(
+          downstream_block, std::forward<CosseratInitializer>(initializers)));
+    }
+  };
 
   //****************************************************************************
   /*!\brief Adapter for enabling symplectic temporal integration
@@ -26,50 +47,68 @@ namespace elastica {
    * \example
    * \snippet Test_SymplecticStepperAdapter.cpp
    */
-  template <typename BlockCache>
-  class SymplecticPolicy : public BlockCache {
+  template <typename Traits, typename Block,
+            template <typename, typename> class... OtherComponents>
+  class SymplecticPolicy : public Der<OtherComponents<Traits, Block>...> {
    private:
     //**Type definitions********************************************************
+    //! Parent type
+    using P = Der<OtherComponents<Traits, Block>...>;
     //! This type
-    using This = SymplecticPolicy<BlockCache>;
-    //! Variable map
-    using typename BlockCache::VariableMap;
-    //! Obtains type of data from Tag
-    template <typename Tag>
-    using DataType = typename VariableMap::template variable_from<Tag>::type;
-    //**************************************************************************
+    using This = SymplecticPolicy<Traits, Block, OtherComponents...>;
+
+   protected:
+    using typename P::ComputedVariables;
+    //! List of initialized variables
+    using typename P::InitializedVariables;
+    //! List of all variables
+    using typename P::Variables;
 
     //**************************************************************************
     /*!\name Variable data */
     //@{
-    using PositionData = DataType<::elastica::tags::Position>;
-    using VelocityData = DataType<::elastica::tags::Velocity>;
-    using AccelerationData = DataType<::elastica::tags::Acceleration>;
-    using DirectorData = DataType<::elastica::tags::Director>;
-    using AngularVelocityData = DataType<::elastica::tags::AngularVelocity>;
-    using AngularAccelerationData =
-        DataType<::elastica::tags::AngularAcceleration>;
+    using typename P::Acceleration;
+    using typename P::AngularAcceleration;
+    using typename P::AngularVelocity;
+    using typename P::Director;
+    using typename P::Position;
+    using typename P::Velocity;
     //@}
     //**************************************************************************
 
+   private:
     //**************************************************************************
     /*!\name State types */
     //@{
+    using PositionData =
+        std::remove_reference_t<decltype(std::declval<P>().get_position())>;
     using PositionState =
         ::elastica::states::SE3<PositionData,
                                 ::elastica::states::tags::PrimitiveTag>;
+    using VelocityData =
+        std::remove_reference_t<decltype(std::declval<P>().get_velocity())>;
     using VelocityState =
         ::elastica::states::SE3<VelocityData,
                                 ::elastica::states::tags::DerivativeTag>;
+    using AccelerationData =
+        std::remove_reference_t<decltype(std::declval<P>().get_acceleration())>;
     using AccelerationState =
         ::elastica::states::SE3<AccelerationData,
                                 ::elastica::states::tags::DoubleDerivativeTag>;
+
+    using DirectorData =
+        std::remove_reference_t<decltype(std::declval<P>().get_director())>;
     using DirectorState =
         ::elastica::states::SO3<DirectorData,
                                 ::elastica::states::tags::PrimitiveTag>;
+    using AngularVelocityData = std::remove_reference_t<
+        decltype(std::declval<P>().get_angular_velocity())>;
     using AngularVelocityState =
         ::elastica::states::SO3<AngularVelocityData,
                                 ::elastica::states::tags::DerivativeTag>;
+
+    using AngularAccelerationData = std::remove_reference_t<
+        decltype(std::declval<P>().get_angular_acceleration())>;
     using AngularAccelerationState =
         ::elastica::states::SE3<AngularAccelerationData,
                                 ::elastica::states::tags::DoubleDerivativeTag>;
@@ -90,12 +129,20 @@ namespace elastica {
     // At this point the facade would be instantiated so hopefully
     // retrieving the data stored in the tuple will not be a problem.
     SymplecticPolicy()
-        : kinematic_states_(&BlockCache::get_position(),
-                            &BlockCache::get_director()),
-          dynamic_states_(&BlockCache::get_velocity(),
-                          &BlockCache::get_angular_velocity()),
-          dynamic_rates_(&BlockCache::get_acceleration(),
-                         &BlockCache::get_angular_acceleration()) {}
+        : P(),
+          kinematic_states_(PositionState(&P::get_position()),
+                            DirectorState(&P::get_director())),
+          dynamic_states_(VelocityState(&P::get_velocity()),
+                          AngularVelocityState(&P::get_angular_velocity())),
+          dynamic_rates_(
+              AccelerationState(&P::get_acceleration()),
+              AngularAccelerationState(&P::get_angular_acceleration())) {}
+
+    SymplecticPolicy(SymplecticPolicy&& other) noexcept
+        : P(std::move(other)),
+          kinematic_states_(std::move(other.kinematic_states_)),
+          dynamic_states_(std::move(other.dynamic_states_)),
+          dynamic_rates_(std::move(other.dynamic_rates_)) {}
 
    public:
     // Do not need const overloads : if its const, it should be a hard

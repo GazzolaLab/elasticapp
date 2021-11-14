@@ -202,10 +202,10 @@ reorganizing your code logic.
     void apply_post_kinematic_updates(TimeType) {
       order_of_steps.emplace_back("post_kinematic_update");
     }
-    void apply_pre_dynamic_update_substeps(TimeType) {
+    void apply_pre_dynamic_updates(TimeType) {
       order_of_steps.emplace_back("pre_dynamic_update");
     }
-    void apply_post_dynamic_update_substeps(TimeType) {
+    void apply_post_dynamic_updates(TimeType) {
       order_of_steps.emplace_back("post_dynamic_update");
     }
 

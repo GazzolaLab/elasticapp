@@ -28,6 +28,7 @@
 #include "Systems/CosseratRods/Mocks/CosseratRodTraits.hpp"
 #include "Systems/CosseratRods/Serialize.hpp"  // because you decided to put cosserat rods in
 #include "Utilities/AsTaggedTuple.hpp"
+#include "Utilities/CRTP.hpp"
 #include "Utilities/Invoke.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/RepeatAsTuple.hpp"
@@ -40,32 +41,121 @@ namespace {
 
 namespace {
 
-  template <typename, typename>
-  struct EmptyComponent {
-    using InitializedVariables = tmpl::list<>;
+  //////// The following code block is copy pasted from another source
+  template <typename Traits, typename Block>
+  struct AlwaysNeededComponentFaked
+      : public ::elastica::CRTPHelper<Block, AlwaysNeededComponentFaked> {
+    using CRTP = ::elastica::CRTPHelper<Block, AlwaysNeededComponentFaked>;
+    using CRTP::self;
+
+    struct Position : public Traits::template CosseratRodVariable<
+                          ::elastica::tags::Position,         //
+                          typename Traits::DataType::Vector,  //
+                          typename Traits::Place::OnNode> {};
+    struct Director : public Traits::template CosseratRodInitializedVariable<
+                          ::elastica::tags::Director,  //
+                          typename Traits::DataType::Matrix,
+                          typename Traits::Place::OnElement> {};
+    struct Velocity : public Traits::template CosseratRodInitializedVariable<
+                          ::elastica::tags::Velocity,         //
+                          typename Traits::DataType::Vector,  //
+                          typename Traits::Place::OnNode> {};
+    struct AngularVelocity
+        : public Traits::template CosseratRodInitializedVariable<
+              ::elastica::tags::AngularVelocity,  //
+              typename Traits::DataType::Vector,
+              typename Traits::Place::OnElement> {};
+    struct Acceleration
+        : public Traits::template CosseratRodInitializedVariable<
+              ::elastica::tags::Acceleration,     //
+              typename Traits::DataType::Vector,  //
+              typename Traits::Place::OnNode> {};
+    struct AngularAcceleration
+        : public Traits::template CosseratRodInitializedVariable<
+              ::elastica::tags::AngularAcceleration,  //
+              typename Traits::DataType::Vector,
+              typename Traits::Place::OnElement> {};
+    inline constexpr decltype(auto) get_position() & noexcept {
+      return blocks::get<::elastica::tags::Position>(self());
+    }
+    inline constexpr decltype(auto) get_position() const& noexcept {
+      return blocks::get<::elastica::tags::Position>(self());
+    }
+
+    inline constexpr decltype(auto) get_director() & noexcept {
+      return blocks::get<::elastica::tags::Director>(self());
+    }
+    inline constexpr decltype(auto) get_director() const& noexcept {
+      return blocks::get<::elastica::tags::Director>(self());
+    }
+
+    inline constexpr decltype(auto) get_velocity() & noexcept {
+      return blocks::get<::elastica::tags::Velocity>(self());
+    }
+    inline constexpr decltype(auto) get_velocity() const& noexcept {
+      return blocks::get<::elastica::tags::Velocity>(self());
+    }
+
+    inline constexpr decltype(auto) get_angular_velocity() & noexcept {
+      return blocks::get<::elastica::tags::AngularVelocity>(self());
+    }
+    inline constexpr decltype(auto) get_angular_velocity() const& noexcept {
+      return blocks::get<::elastica::tags::AngularVelocity>(self());
+    }
+    inline constexpr decltype(auto) get_acceleration() & noexcept {
+      return blocks::get<::elastica::tags::Acceleration>(self());
+    }
+    inline constexpr decltype(auto) get_acceleration() const& noexcept {
+      return blocks::get<::elastica::tags::Acceleration>(self());
+    }
+    inline constexpr decltype(auto) get_angular_acceleration() & noexcept {
+      return blocks::get<::elastica::tags::AngularAcceleration>(self());
+    }
+    inline constexpr decltype(auto) get_angular_acceleration() const& noexcept {
+      return blocks::get<::elastica::tags::AngularAcceleration>(self());
+    }
+
+    using ComputedVariables =
+        tmpl::list<Position, Director, Velocity, AngularVelocity, Acceleration,
+                   AngularAcceleration>;
+  };
+  ////////
+
+  template <typename Traits, typename Block>
+  struct AlwaysNeededComponent {
     using ComputedVariables = tmpl::list<>;
-    using Variables = tmpl::list<>;
+  };
+
+  template <typename T, typename B>
+  struct EmptyComponent : public AlwaysNeededComponent<T, B> {
+    using P = AlwaysNeededComponent<T, B>;
+    using InitializedVariables = tmpl::list<>;
+    using typename P::ComputedVariables;
+    using Variables = ComputedVariables;
 
     template <class DownstreamBlock, class CosseratInitializer>
     static void initialize(DownstreamBlock&, CosseratInitializer&&) {}
   };
 
-  template <typename, typename>
-  struct EmptyComponentButWithADifferentName {
+  template <typename T, typename B>
+  struct EmptyComponentButWithADifferentName
+      : public AlwaysNeededComponent<T, B> {
+    using P = AlwaysNeededComponent<T, B>;
     using InitializedVariables = tmpl::list<>;
-    using ComputedVariables = tmpl::list<>;
-    using Variables = tmpl::list<>;
+    using typename P::ComputedVariables;
+    using Variables = ComputedVariables;
 
     template <class DownstreamBlock, class CosseratInitializer>
     static void initialize(DownstreamBlock&, CosseratInitializer&&) {}
   };
 
   // to test for_each() over a subset of systems
-  template <typename, typename>
-  struct AnotherEmptyComponent {
+  template <typename T, typename B>
+  struct AnotherEmptyComponent : public AlwaysNeededComponent<T, B> {
+    using P = AlwaysNeededComponent<T, B>;
     using InitializedVariables = tmpl::list<>;
-    using ComputedVariables = tmpl::list<>;
-    using Variables = tmpl::list<>;
+    using typename P::ComputedVariables;
+    using Variables = ComputedVariables;
 
     template <class DownstreamBlock, class CosseratInitializer>
     static void initialize(DownstreamBlock&, CosseratInitializer&&) {}
@@ -720,7 +810,7 @@ namespace {
     {
       auto sim = setup_sim_with_state(20UL);
       std::stringstream ss;  // any stream can be used
-      //std::size_t n_elements(16UL);
+      // std::size_t n_elements(16UL);
 
       {
         BinaryOutputArchive oarchive(ss);  //  Create an output archive
@@ -755,7 +845,7 @@ namespace {
           CHECK(blocks::get<::elastica::tags::NElement>(b)[0UL] == 18UL);
         });
       }
-    } // nothrow case
+    }  // nothrow case
   }
 
 }  // namespace

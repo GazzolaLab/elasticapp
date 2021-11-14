@@ -147,7 +147,7 @@ namespace elastica {
      */
     template <typename Type, typename DerivativeOrder>
     class SE3 : public SE3Base<SE3<Type, DerivativeOrder>>,
-                private NonCopyable {
+                public NonCopyable {
      private:
       //**Type definitions******************************************************
       //! NonOwningPointer Type of the Groups instantiated
