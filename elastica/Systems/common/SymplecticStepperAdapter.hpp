@@ -175,7 +175,7 @@ namespace elastica {
       return dynamic_states_;
     }
 
-    inline auto dynamic_rates(::elastica::Time /*time_v*/) const noexcept
+    inline auto dynamic_rates(::elastica::Time /*time_v*/) /*const*/ noexcept
         -> DynamicRate const& {
       /* To be truly lazy, one should only compute acceleration
        * data and internal dynamics here.
@@ -183,6 +183,7 @@ namespace elastica {
        * for environment effects etc. so we can skip that here
        */
       // return std::get<SymplecticAccelerations>(self().data());
+      P::update_acceleration();
       return dynamic_rates_;
     }
 

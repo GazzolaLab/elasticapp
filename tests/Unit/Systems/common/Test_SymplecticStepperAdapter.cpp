@@ -76,6 +76,8 @@ namespace {
     float const& get_angular_acceleration() const {
       return tuples::get<AngularAcceleration>(self().data());
     }
+
+    void update_acceleration() noexcept {};
   };
 
   template <typename T, template <typename> class B,
@@ -183,8 +185,10 @@ namespace {
       CHECK(block.dynamic_states().get<group>().get() == 2.0F);
       CHECK(cpp17::as_const(block).kinematic_rates(time_v).get<group>().get() ==
             2.0F);
-      CHECK(cpp17::as_const(block).dynamic_rates(time_v).get<group>().get() ==
-            5.0F);
+      CHECK(/*cpp17::as_const*/ (block)
+                .dynamic_rates(time_v)
+                .get<group>()
+                .get() == 5.0F);
     }
 
     {
@@ -193,8 +197,10 @@ namespace {
       CHECK(block.dynamic_states().get<group>().get() == 4.0F);
       CHECK(cpp17::as_const(block).kinematic_rates(time_v).get<group>().get() ==
             4.0F);
-      CHECK(cpp17::as_const(block).dynamic_rates(time_v).get<group>().get() ==
-            5.0F);
+      CHECK(/*cpp17::as_const*/ (block)
+                .dynamic_rates(time_v)
+                .get<group>()
+                .get() == 5.0F);
     }
 
     {
