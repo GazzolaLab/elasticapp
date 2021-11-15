@@ -32,7 +32,7 @@ namespace {
 
   using real_type = typename Traits::DataType::real_type;
 
-  ELASTICA_TEST_CASE("Integrated.CosseratRods.SimpleInitialization",
+  ELASTICA_TEST_CASE("Unit.z.Integrated.CosseratRods.SimpleInitialization",
                      "[Systems][Integrated]") {
     Model simple_rod{};
 
@@ -78,7 +78,7 @@ namespace {
     CHECK(slicedrod.get_element_dimension() == 4);
   }
 
-  ELASTICA_TEST_CASE("Integrated.CosseratRods.InitializeStraightRod",
+  ELASTICA_TEST_CASE("Unit.z.Integrated.CosseratRods.InitializeStraightRod",
                      "[Systems][Integrated]") {
     /*
      * rng_seed = 100
@@ -222,7 +222,7 @@ namespace {
     // clang-format on
   }
 
-  ELASTICA_TEST_CASE("Integrated.CosseratRods.PerturbedInternalKinematics",
+  ELASTICA_TEST_CASE("Unit.z.Integrated.CosseratRods.PerturbedInternalKinematics",
                      "[Systems][Integrated]") {
     /*
      * rng_seed = 100
@@ -396,7 +396,7 @@ namespace {
     // clang-format on
   }
 
-  ELASTICA_TEST_CASE("Integrated.CosseratRods.WithDynamicAndExternal",
+  ELASTICA_TEST_CASE("Unit.z.Integrated.CosseratRods.WithDynamicAndExternal",
                      "[Systems][Integrated]") {
     /*
      * rng_seed = 150
@@ -592,7 +592,7 @@ namespace {
       CHECK( (blaze::row(AngularAcceleration, i) - blaze::row(AngularAcceleration_PYEL, i)) == Approx(0.0).margin(1e-6));
     // clang-format on
   }
-  ELASTICA_TEST_CASE("Integrated.CosseratRods.FullWithDirector",
+  ELASTICA_TEST_CASE("Unit.z.Integrated.CosseratRods.FullWithDirector",
                      "[Systems][Integrated]") {
     /*
      * rng_seed = 250
@@ -780,7 +780,7 @@ namespace {
     // clang-format on
   }
 
-  ELASTICA_TEST_CASE("Integrated.CosseratRods.JustDirector",
+  ELASTICA_TEST_CASE("Unit.z.Integrated.CosseratRods.JustDirector",
                      "[Systems][Integrated]") {
     /*
      * rng_seed = 250
