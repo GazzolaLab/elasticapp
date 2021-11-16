@@ -67,7 +67,7 @@ namespace {
     };
 
     auto system_config = ec::make_systems_configuration<tmpl::list<Plugin>>(
-        ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{8UL}),
+        ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{80UL}),
         ec::make_iteration_policy(ec::iterate_across_system_types_in(ec::seq),
                                   ec::iterate_over_systems_in(ec::seq)));
 
@@ -77,9 +77,9 @@ namespace {
 
     auto simulator = elastica::make_simulator<>(simulator_config);
 
-    auto slicedrod_00000 = simulator->emplace_back<Plugin>(
+    auto slicedrod_00000_it = simulator->emplace_back<Plugin>(
         straight_initializer.initialize<Plugin>());
-    auto slicedrod_00001 = simulator->emplace_back<Plugin>(
+    auto slicedrod_00001_it = simulator->emplace_back<Plugin>(
         straight_initializer.initialize<Plugin>());
 
     auto& ref = simulator->get_system_collection_container();
@@ -94,6 +94,9 @@ namespace {
 
     ::elastica::Time time_v{0.0};
     ::elastica::TimeDelta time_delta{0.002};
+
+    auto slicedrod_00000 = *slicedrod_00000_it;
+    auto slicedrod_00001 = *slicedrod_00001_it;
 
     //**************************************************************************
     // clang-format off

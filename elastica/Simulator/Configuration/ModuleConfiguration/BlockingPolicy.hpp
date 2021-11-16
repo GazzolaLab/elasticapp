@@ -80,6 +80,26 @@ namespace elastica {
           : BlockingPolicy(Criterion{std::forward<Args>(args)...}) {}
       //************************************************************************
 
+      template <typename T>
+      auto get_it(std::vector<T>& collection, std::size_t new_dofs) const ->
+          typename std::vector<T>::iterator {
+        static_assert(std::is_default_constructible<T>::value,
+                      R"error(
+The vector type passed in does not meet requirements of a Block!
+)error");
+        const auto it = std::find_if(collection.cbegin(), collection.cend(),
+                                     [this, new_dofs](T const& t) -> bool {
+                                       return criterion_(t, new_dofs);
+                                     });
+
+        if (it == std::cend(collection)) {
+          collection.emplace_back();
+          return (collection.end() - 1UL);
+        } else {
+          return collection.begin() + std::distance(collection.cbegin(), it);
+        }
+      }
+
       //************************************************************************
       /*!\brief Determine which block to add new systems to
        *
@@ -91,21 +111,14 @@ namespace elastica {
       template <typename T>
       auto operator()(std::vector<T>& collection, std::size_t new_dofs) const
           -> T& {
-        static_assert(std::is_default_constructible<T>::value,
-                      R"error(
-The vector type passed in does not meet requirements of a Block!
-)error");
-        const auto it = std::find_if(collection.cbegin(), collection.cend(),
-                                     [this, new_dofs](T const& t) -> bool {
-                                       return criterion_(t, new_dofs);
-                                     });
-
         // cannot use emplace_back because before cpp17 emplace_back() returns
         // void https://en.cppreference.com/w/cpp/container/vector/emplace_back
         // *collection.emplace(it) needs move/copy asssignable
-        return (it == std::cend(collection))
-                   ? (collection.emplace_back(), collection.back())
-                   : const_cast<T&>(*it);
+        auto it = get_it(collection, new_dofs);
+        return *it;
+        // return (it == std::end(collection))
+        //            ? (collection.emplace_back(), collection.back())
+        //            : (*it);
       }
       //************************************************************************
 
