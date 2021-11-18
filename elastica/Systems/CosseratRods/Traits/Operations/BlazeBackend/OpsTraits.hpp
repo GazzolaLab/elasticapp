@@ -99,9 +99,10 @@ namespace elastica {
       template <typename MT1, typename MT2, typename VT>
       static inline void batch_division_matvec(MT1& out_matrix, const MT2& denominator, const VT& numerator){
         //const std::size_t n_elems = denominator.columns();
-        blaze::row(out_matrix, 0UL) = blaze::row(denominator, 0UL) / transpose(numerator);
-        blaze::row(out_matrix, 1UL) = blaze::row(denominator, 1UL) / transpose(numerator);
-        blaze::row(out_matrix, 2UL) = blaze::row(denominator, 2UL) / transpose(numerator);
+        auto tp_numerator = transpose(numerator);
+        blaze::row(out_matrix, 0UL) = blaze::row(denominator, 0UL) / tp_numerator;
+        blaze::row(out_matrix, 1UL) = blaze::row(denominator, 1UL) / tp_numerator;
+        blaze::row(out_matrix, 2UL) = blaze::row(denominator, 2UL) / tp_numerator;
       }
 //      template <typename MT, typename VT>
 //      static inline void batch_division_matvec(MT& out_matrix, const VT& numerator){
