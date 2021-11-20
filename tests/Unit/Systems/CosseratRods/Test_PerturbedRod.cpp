@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 //
 // Created by Seung Hyun Kim on 11/9/21.
 //
@@ -24,12 +23,9 @@ namespace {
   using Plugin = elastica::cosserat_rod::CosseratRodPlugin<
       Traits, blocks::Block,
       elastica::cosserat_rod::component::WithCircularCosseratRod,
-      elastica::cosserat_rod::component::
-          WithExplicitlyDampedDiagonalLinearHyperElasticModel,
+      elastica::cosserat_rod::component::WithExplicitlyDampedDiagonalLinearHyperElasticModel,
       elastica::cosserat_rod::component::WithRodKinematics>;
   using Model = blocks::Block<Plugin>;
-  static_assert(::tt::assert_conforms_to<Plugin, ::blocks::protocols::Plugin>,
-                "What!");
 
   using real_type = typename Traits::DataType::real_type;
 
