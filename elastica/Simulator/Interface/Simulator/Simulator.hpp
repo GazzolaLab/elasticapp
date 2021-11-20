@@ -27,6 +27,9 @@
 #include <utility>
 #include <vector>
 
+/// Parallelism detail
+#include "Parallel/detail.hpp"
+
 /// All connections types
 #include "Simulator/Domain/Domain.hpp"
 /// Interface methods
@@ -1026,6 +1029,8 @@ reorganizing your code logic.
       static auto initialize(SimTraits traits) {
         auto simulator = This::instance();
         simulator->initialize_from_traits(std::move(traits));
+        // any initialization of the parallelism engine for example goes here
+        ::elastica::parallel::detail::initialize_smp(traits.n_threads());
         return simulator;
       }
       //************************************************************************
