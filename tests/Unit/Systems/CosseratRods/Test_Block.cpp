@@ -69,6 +69,7 @@ namespace {
     using Parent::total_n_voronois;
 
     using Parent::fill_ghosts;
+    using Parent::fill_ghosts_for;
     using Parent::fill_ghosts_placed;
 
     // variable function
@@ -1323,6 +1324,11 @@ namespace {
         // in this case we explicitly request the node to be non-default, say
         //
         CHECK(node_variable[end_idx] == approx(3.14159));
+
+        // check fill_ghosts_for
+        node_variable[end_idx] = 2.0;
+        model.fill_ghosts_for<test_tags::VarOnNode>();
+        CHECK(node_variable[end_idx] == approx(3.14159));
       }
 
       {
@@ -1348,6 +1354,12 @@ namespace {
         CHECK(element_variable[end_idx] != approx(3.14159));
         CHECK(element_variable[end_idx + 1UL] != approx(3.14159));
         model.fill_ghosts_placed<typename Model::OnElement>();
+        CHECK(element_variable[end_idx] == approx(3.14159));
+        CHECK(element_variable[end_idx + 1UL] == approx(3.14159));
+
+        element_variable[end_idx] = 2.0;
+        element_variable[end_idx + 1UL] = 2.0;
+        model.fill_ghosts_for<test_tags::VarOnElement>();
         CHECK(element_variable[end_idx] == approx(3.14159));
         CHECK(element_variable[end_idx + 1UL] == approx(3.14159));
       }
@@ -1377,6 +1389,14 @@ namespace {
         CHECK(voronoi_variable[end_idx + 1UL] != approx(3.14159));
         CHECK(voronoi_variable[end_idx + 2UL] != approx(3.14159));
         model.fill_ghosts_placed<typename Model::OnVoronoi>();
+        CHECK(voronoi_variable[end_idx] == approx(3.14159));
+        CHECK(voronoi_variable[end_idx + 1UL] == approx(3.14159));
+        CHECK(voronoi_variable[end_idx + 2UL] == approx(3.14159));
+
+        voronoi_variable[end_idx] = 2.0;
+        voronoi_variable[end_idx + 1UL] = 2.0;
+        voronoi_variable[end_idx + 2UL] = 2.0;
+        model.fill_ghosts_for<test_tags::VarOnVoronoi>();
         CHECK(voronoi_variable[end_idx] == approx(3.14159));
         CHECK(voronoi_variable[end_idx + 1UL] == approx(3.14159));
         CHECK(voronoi_variable[end_idx + 2UL] == approx(3.14159));
