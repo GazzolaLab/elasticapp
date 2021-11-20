@@ -24,7 +24,6 @@
 // instead of mocking a block with an emplace() method here, I just chose to
 // use a Cosserat rod.
 #include "Simulator/Interface/Simulator/Profiling.hpp"
-#include "Systems/CosseratRods/Block.hpp" // for n_units()
 #include "Systems/CosseratRods/CosseratRods.hpp"
 #include "Systems/CosseratRods/Mocks/CosseratRodTraits.hpp"
 #include "Systems/CosseratRods/Serialize.hpp"  // because you decided to put cosserat rods in

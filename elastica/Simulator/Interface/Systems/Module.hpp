@@ -46,7 +46,6 @@
 #include "ErrorHandling/NestedExceptions.hpp"
 #include "Utilities/AsConst.hpp"
 #include "Utilities/CRTP.hpp"
-//#include "Utilities/IndexIterator.hpp"
 #include "Utilities/Logging.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/NonCopyable.hpp"
@@ -178,21 +177,6 @@ namespace elastica {
       //! Metafunction for converting Plugins to Blocks
       template <typename PluginsList>
       using as_blocks = tmpl::wrap<PluginsList, as_block_wrapper>;
-      //! Metafunction for converting a Plugin to a BlockSlice
-      // template <typename Plugin>
-      // using as_block_slice = blocks::BlockSlice<Plugin>;
-      // //! Generate block clices from plugins
-      // template <typename... Plugins>
-      // using as_block_slice_wrapper =
-      //     typename tmpl::list<as_block_slice<Plugins>...>;
-      // //! Metafunction for converting Plugins to Blockslices
-      // template <typename PluginsList>
-      // using as_block_slices = tmpl::wrap<PluginsList, as_block_wrapper>;
-      // using SystemSlices =
-      //     tmpl::transform<typename SimTraits::AdmissibleSystemPlugins,
-      //                     tmpl::bind<as_block_slices, tmpl::_1>>;
-      // using SystemSliceCollections = tmpl::as_tuple<tmpl::transform<
-      //     SystemSlices, tmpl::bind<AddSystemCollectionsType, tmpl::_1>>>;
       //@}
       //************************************************************************
 
@@ -207,7 +191,6 @@ namespace elastica {
           : n_total_systems_(
                 make_array<get_number_of_system_collections()>(0UL)),
             system_collection_containers_(),
-            //            system_slice_collection_containers_(),
             blocking_policy_(nullptr),
             iteration_policy_(nullptr) {
         using namespace ::elastica::logging;
@@ -227,8 +210,6 @@ namespace elastica {
           : n_total_systems_(other.n_total_systems_),
             system_collection_containers_(
                 std::move(other.system_collection_containers_)),
-            //            system_slice_collection_containers_(
-            //                std::move(other.system_slice_collection_containers_)),
             blocking_policy_(std::move(other.blocking_policy_)),
             iteration_policy_(std::move(other.iteration_policy_)){};
       //************************************************************************
@@ -237,28 +218,39 @@ namespace elastica {
       //************************************************************************
 
      protected:
+      //************************************************************************
+      /*! \cond ELASTICA_INTERNAL */
       template <typename Plugin>
       class LazyBlockSliceGenerator {
-       public:
-        using Block = ::blocks::Block<Plugin>;
-        using Source = std::vector<Block>;  // can be customized
-        LazyBlockSliceGenerator(Source& v, std::size_t index,
+       private:
+        friend This;
+        using B = ::blocks::Block<Plugin>;
+        using SourceCollection =
+            AddSystemCollectionsType<B>;  // can be customized
+
+       protected:
+        LazyBlockSliceGenerator(SourceCollection& v, std::size_t index,
                                 std::size_t slice_index)
             : src_(&v), index_(index), slice_index_(slice_index){};
 
+       public:
         // generates a slice
         auto operator*() const {
-          return *(::blocks::BlockIterator<Plugin>{&((*src_)[index_]), slice_index_});
+          return *(::blocks::BlockIterator<Plugin>{&((*src_)[index_]),
+                                                   slice_index_});
         }
         auto operator->() const {
-          return *(::blocks::BlockIterator<Plugin>{&((*src_)[index_]), slice_index_});
+          return *(::blocks::BlockIterator<Plugin>{&((*src_)[index_]),
+                                                   slice_index_});
         }
 
        private:
-        Source* src_;
+        SourceCollection* src_;
         std::size_t index_;
         std::size_t slice_index_;
       };
+      /*! \endcond */
+      //************************************************************************
 
      public:
       //**Destructor************************************************************
@@ -273,7 +265,7 @@ namespace elastica {
       //@}
       //************************************************************************
 
-     public:  // for now
+     protected:
       //**Get methods***********************************************************
       /*!\name Get methods */
       //@{
@@ -381,33 +373,6 @@ namespace elastica {
         return std::get<SystemCollectionIdx>(system_collection_containers_);
       }
       //************************************************************************
-      //
-      //      inline constexpr auto get_system_slice_collection_container() &
-      //      noexcept
-      //          -> SystemSliceCollections& {
-      //        return system_slice_collection_containers_;
-      //      }
-      //      inline constexpr auto get_system_slice_collection_container()
-      //          const& noexcept -> SystemSliceCollections const& {
-      //        return system_slice_collection_containers_;
-      //      }
-      //
-      //      template <typename SystemSliceCollection>
-      //      inline constexpr auto get_system_slice_collection_container() &
-      //      noexcept
-      //          -> AddSystemCollectionsType<SystemSliceCollection>& {
-      //        return
-      //        std::get<AddSystemCollectionsType<SystemSliceCollection>>(
-      //            system_slice_collection_containers_);
-      //      }
-      //      template <typename SystemSliceCollection>
-      //      inline constexpr auto get_system_slice_collection_container()
-      //          const& noexcept
-      //          -> AddSystemCollectionsType<SystemSliceCollection> const& {
-      //        return
-      //        std::get<AddSystemCollectionsType<SystemSliceCollection>>(
-      //            system_slice_collection_containers_);
-      //      }
 
       //@}
       //************************************************************************
@@ -729,38 +694,27 @@ the above type-list, using SystemsConfiguration.
         using Key = as_block<SystemPlugin>;
         check_if_admissible<Key>();
         auto& system_block_container = get_system_collection_container<Key>();
-        auto system_block_it = blocking_policy().get_it(
+        auto system_block_it = blocking_policy().get_iterator_to_block(
             system_block_container,
             ::elastica::size(std::forward<Initializer>(initializer)));
 
+        // TODO : redundant
         constexpr std::size_t n =
             tmpl::index_of<ListOfAdmissibleSystemCollections, Key>::value;
         ++n_total_systems_[n];
 
-        (void)((*system_block_it)
-                   .emplace_back(std::forward<Initializer>(initializer)));
+        (void)(system_block_it->emplace_back(
+            std::forward<Initializer>(initializer)));
 
         // block iterator
         const auto index_of_block_in_collection = static_cast<std::size_t>(
             ::std::distance(system_block_container.begin(), system_block_it));
         return LazyBlockSliceGenerator<SystemPlugin>(
             system_block_container, index_of_block_in_collection,
+            // TODO : This code has linker issues, although it is the SOLID code
             // ::blocks::n_units(*system_block_it) - 1UL
             (*system_block_it).n_units() - 1UL
             );
-        // add to the slice collection here and return a index iterator
-        //        using SliceKey = as_block_slice<SystemPlugin>;
-        //        auto& system_blockslice_container =
-        //            get_system_slice_collection_container<SliceKey>();
-        //        const std::size_t slice_index =
-        //        system_blockslice_container.size();
-        //        system_blockslice_container.push_back(
-        //            system_block.emplace_back(std::forward<Initializer>(initializer)));
-        //
-        //        return IndexIterator<SliceKey>{system_blockslice_container,
-        //                                       slice_index};
-
-        // return IndexIterator<>;
       }
       //************************************************************************
 
@@ -836,8 +790,6 @@ the above type-list, using SystemsConfiguration.
       NTotalSystems n_total_systems_;
       //! Heterogeneous storage of homogeneous collection of systems
       SystemCollections system_collection_containers_;
-      //! Heterogeneous storage of homogeneous collection of system slices
-      // SystemSliceCollections system_slice_collection_containers_;
       //// not marked const because we need serialization to work here and
       //// load up values
       //! Handle to blocking policy, initialized downstream!!

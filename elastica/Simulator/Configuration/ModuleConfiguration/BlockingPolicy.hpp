@@ -60,37 +60,51 @@ namespace elastica {
      * \elastica simulator are to be distributed in blocks. Its intended use is
      * as a template parameter in configuration::SystemsConfiguration.
      *
-     * \tparam Criterion The criterion used to select a new block
+     * \tparam Criterion_ The criterion used to select a new block
      *
      * \see make_blocking_policy() for idiomatic construction
      */
-    template <typename Criterion>
+    template <typename Criterion_>
     struct BlockingPolicy {
+      //**Type definitions******************************************************
+      //! Criterion type
+      using Criterion = Criterion_;
+      //************************************************************************
+
       //************************************************************************
       /*!\brief Policy constructor.
        */
       explicit BlockingPolicy(Criterion c) : criterion_(std::move(c)) {}
       //************************************************************************
 
-      //************************************************************************
-      /*!\brief Policy constructor.
-       */
-      template <typename... Args>
-      BlockingPolicy(Args&&... args)
-          : BlockingPolicy(Criterion{std::forward<Args>(args)...}) {}
-      //************************************************************************
+      //      //************************************************************************
+      //      /*!\brief Policy constructor.
+      //       */
+      //      template <typename... Args>
+      //      BlockingPolicy(Args&&... args)
+      //          : BlockingPolicy(Criterion{std::forward<Args>(args)...}) {}
+      //      //************************************************************************
 
+      //************************************************************************
+      /*!\brief Gets an iterator to a block, onto which we add new systems to
+       *
+       * \param collection The collection of blocks::Block
+       * \param new_dofs The degrees of freedom of the new block to be added
+       * \return Iterator to a block element in \param collection
+       */
       template <typename T>
-      auto get_it(std::vector<T>& collection, std::size_t new_dofs) const ->
+      auto get_iterator_to_block(std::vector<T>& collection,
+                                 std::size_t new_dofs) const ->
           typename std::vector<T>::iterator {
         static_assert(std::is_default_constructible<T>::value,
                       R"error(
 The vector type passed in does not meet requirements of a Block!
 )error");
-        const auto it = std::find_if(collection.cbegin(), collection.cend(),
-                                     [this, new_dofs](T const& t) -> bool {
-                                       return criterion_(t, new_dofs);
-                                     });
+        const auto it =
+            std::find_if(std::cbegin(collection), std::cend(collection),
+                         [this, new_dofs](T const& t) -> bool {
+                           return criterion_(t, new_dofs);
+                         });
 
         if (it == std::cend(collection)) {
           collection.emplace_back();
@@ -99,6 +113,7 @@ The vector type passed in does not meet requirements of a Block!
           return collection.begin() + std::distance(collection.cbegin(), it);
         }
       }
+      //************************************************************************
 
       //************************************************************************
       /*!\brief Determine which block to add new systems to
@@ -109,16 +124,12 @@ The vector type passed in does not meet requirements of a Block!
        * added
        */
       template <typename T>
-      auto operator()(std::vector<T>& collection, std::size_t new_dofs) const
-          -> T& {
-        // cannot use emplace_back because before cpp17 emplace_back() returns
-        // void https://en.cppreference.com/w/cpp/container/vector/emplace_back
-        // *collection.emplace(it) needs move/copy asssignable
-        auto it = get_it(collection, new_dofs);
-        return *it;
-        // return (it == std::end(collection))
-        //            ? (collection.emplace_back(), collection.back())
-        //            : (*it);
+      [[deprecated(
+          "This code is intended for testing purposes only and will be "
+          "changed/removed in a future version of Elastica")]]  //
+      auto
+      operator()(std::vector<T>& collection, std::size_t new_dofs) const -> T& {
+        return *get_iterator_to_block(collection, new_dofs);
       }
       //************************************************************************
 
@@ -141,9 +152,10 @@ The vector type passed in does not meet requirements of a Block!
      */
     template <class FirstCriteria, class... Criteria,
               typename C = CompositeCriteria<FirstCriteria, Criteria...>>
-    constexpr auto make_blocking_policy(FirstCriteria criteria, Criteria... fs)
-        -> BlockingPolicy<C> {
-      return C{std::move(criteria), std::move(fs)...};
+    constexpr decltype(auto) make_blocking_policy(FirstCriteria criteria,
+                                                  Criteria... crits) {
+      using RT = BlockingPolicy<C>;
+      return RT{C{std::move(criteria), std::move(crits)...}};
     }
     //**************************************************************************
 
@@ -155,9 +167,9 @@ The vector type passed in does not meet requirements of a Block!
      * \see make_overloader
      */
     template <class Criteria, typename C = Criteria>
-    constexpr auto make_blocking_policy(Criteria criteria)
-        -> BlockingPolicy<C> {
-      return C{std::move(criteria)};
+    constexpr decltype(auto) make_blocking_policy(Criteria criteria) {
+      using RT = BlockingPolicy<C>;
+      return RT{std::move(criteria)};
     }
     /*! \endcond */
     //**************************************************************************
