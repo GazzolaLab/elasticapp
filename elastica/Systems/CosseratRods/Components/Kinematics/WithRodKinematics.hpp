@@ -17,7 +17,6 @@
 //******************************************************************************
 // Includes
 //******************************************************************************
-#include <iostream>
 #include <cstdint>  // for size_t
 #include <utility>  // for move
 
@@ -557,7 +556,6 @@ namespace elastica {
          *
          * \see fill later?
          */
-
         // TODO: double check how external force and external torque comes into play
         inline void update_acceleration() noexcept {
           auto& mass(blocks::get<tags::Mass>(self()));

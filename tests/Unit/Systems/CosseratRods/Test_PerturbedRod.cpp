@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 //
 // Created by Seung Hyun Kim on 11/9/21.
 //
@@ -88,8 +89,7 @@ namespace {
         7.874, 0.24, 200, 200.0 / 1.24, 200, 1e-10, 1e-10, 0.1, 0.1);
     using Init = ::elastica::cosserat_rod::StraightCosseratRodInitializer;
     Model simple_rod{};
-    Init straight_initializer{
-        // Initialization Wrapper
+    Init straight_initializer{ // Initialization Wrapper
         Init::NElement{5UL},
         Init::Material{myMaterial},
         Init::Radius{0.007522},
@@ -240,12 +240,12 @@ namespace {
      *  }
      */
     elastica::MaterialID myMaterial = elastica::create_material(
-        7.874, 0.24, 200, 200.0 / 1.24, 200, 1e-10, 1e-10, 0.1, 0.1);
+        7.874, 0.24, 200, 200.0/1.24,
+        200, 1e-10, 1e-10, 0.1, 0.1);
 
     using Init = ::elastica::cosserat_rod::StraightCosseratRodInitializer;
     Model simple_rod{};
-    Init straight_initializer{
-        // Initialization Wrapper
+    Init straight_initializer{ // Initialization Wrapper
         Init::NElement{5UL},
         Init::Material{myMaterial},
         Init::Radius{0.007522},
