@@ -104,14 +104,6 @@ namespace elastica {
         blaze::row(out_matrix, 1UL) = blaze::row(denominator, 1UL) / tp_numerator;
         blaze::row(out_matrix, 2UL) = blaze::row(denominator, 2UL) / tp_numerator;
       }
-//      template <typename MT, typename VT>
-//      static inline void batch_division_matvec(MT& out_matrix, const VT& numerator){
-//        using ValueType = typename MT::ElementType;
-//        const std::size_t n_elems = out_matrix.columns();
-//        blaze::row(out_matrix, 0UL) = blaze::row(out_matrix, 0UL) / transpose(numerator);
-//        blaze::row(out_matrix, 1UL) = blaze::row(out_matrix, 1UL) / transpose(numerator);
-//        blaze::row(out_matrix, 2UL) = blaze::row(out_matrix, 2UL) / transpose(numerator);
-//      }
 
       // TODO: Documentation
       template <typename VT1, typename MT, typename VT2>
@@ -128,9 +120,8 @@ namespace elastica {
                         const MT2& vector_batch) {
         constexpr std::size_t dimension(3UL);
         for (std::size_t i(0UL); i < dimension; ++i) {
-          auto val1 = blaze::trans(blaze::rowslice(matrix_batch, i));
-          auto val2 = blaze::sum<blaze::columnwise>(val1 % vector_batch);
-          blaze::row(matvec_batch, i) = val2;
+          auto val = blaze::trans(blaze::rowslice(matrix_batch, i));
+          blaze::row(matvec_batch, i) = blaze::sum<blaze::columnwise>(val % vector_batch);
         }
       }
 
@@ -209,12 +200,12 @@ namespace elastica {
       //************************************************************************
       // Batch Rotation Operation
       // TODO: Documentation
-//      template <typename MT,  // blaze Matrix expression type
-//                typename TT>  // blaze Tensor expression type
-//      static inline void batch_inv_rotate(MT& rot_axis_vector_batch, const TT& rot_matrix_batch) {
-//        using ::elastica::batch_inv_rotate;
-//        batch_inv_rotate(rot_axis_vector_batch, rot_matrix_batch);
-//      }
+      template <typename MT,  // blaze Matrix expression type
+                typename TT>  // blaze Tensor expression type
+      static inline void batch_inv_rotate(MT& rot_axis_vector_batch, const TT& rot_matrix_batch) {
+        using ::elastica::batch_inv_rotate;
+        batch_inv_rotate(rot_axis_vector_batch, rot_matrix_batch);
+      }
 
       //************************************************************************
       // Batch Rotation (exponential) Operation
@@ -227,34 +218,32 @@ namespace elastica {
       }
 
       //************************************************************************
-      // Spanwise Inverse Rotation + Division Operation (specific for compute-curvature)
-      // Inverse rodrigues and division always comes together.
-      // TODO: Avoid repeating code. Try to reuse inv-rotate
+      // Spanwise Inverse Rotation + Division Operation
+      // specifically used for compute-curvature
       // TODO: Documentation
       template <typename MT,  // blaze Matrix expression type
                 typename TT, // blaze Tensor expression type
                 typename VT>  // blaze Matrix expression type
-      static inline void spanwise_inv_rotate_and_divide(MT& rot_axis_vector_batch,
-                                                     const TT& rot_matrix_batch,
-                                                     const VT& normalize_vector_batch) {
+      static inline void spanwise_inv_rotate_and_divide(MT& rot_axis_vector,
+                                                     const TT& rot_matrix,
+                                                     const VT& normalize_vector) {
         constexpr std::size_t dimension(3UL);
-        const std::size_t blocksize = rot_axis_vector_batch.columns();
+        const std::size_t blocksize = rot_axis_vector.columns();
         using ValueType = typename TT::ElementType;
-        assert(rot_matrix_batch.pages() == dimension);
-        assert(rot_matrix_batch.rows() == dimension);
-        assert(rot_axis_vector_batch.rows() == dimension);
+        assert(rot_matrix.pages() == dimension);
+        assert(rot_matrix.rows() == dimension);
+        assert(rot_axis_vector.rows() == dimension);
 
         /* hardcoded to avoid external memory passing */
         /* also now operates only on views */
-        // TODO: Revisit - try to optimize using reduced operations (if any)
         /*
          * R = Q_t Q_{t+1} (elementwise)
          * theta = acos((tr(R) - 1) / 2)
          */
-        auto q_next = blaze::subtensor(rot_matrix_batch, 0UL, 0UL, 1UL, dimension, dimension, blocksize);
-        auto q = blaze::subtensor(rot_matrix_batch, 0UL, 0UL, 0UL, dimension, dimension, blocksize);
+        auto q_next = blaze::subtensor(rot_matrix, 0UL, 0UL, 1UL, dimension, dimension, blocksize);
+        auto q = blaze::subtensor(rot_matrix, 0UL, 0UL, 0UL, dimension, dimension, blocksize);
         auto qqt = q % q_next;
-        auto rot_matrix_trace_batch =
+        auto rot_matrix_trace = // TODO: maybe use reduced_sum
             blaze::row(blaze::pageslice(qqt, 0UL), 0UL) +
             blaze::row(blaze::pageslice(qqt, 0UL), 1UL) +
             blaze::row(blaze::pageslice(qqt, 0UL), 2UL) +
@@ -264,18 +253,18 @@ namespace elastica {
             blaze::row(blaze::pageslice(qqt, 2UL), 0UL) +
             blaze::row(blaze::pageslice(qqt, 2UL), 1UL) +
             blaze::row(blaze::pageslice(qqt, 2UL), 2UL);
-        auto theta_batch = blaze::acos(ValueType(0.5) * rot_matrix_trace_batch - ValueType(0.5) -
-                                        ValueType(1e-10));
+        auto theta = blaze::acos(ValueType(0.5) * rot_matrix_trace
+                                 - ValueType(0.5) - ValueType(1e-10));
 
-        auto trans_normalize_vector_batch = blaze::trans(normalize_vector_batch);
+        auto trans_normalize_vector = blaze::trans(normalize_vector);
         /* theta (u) = -theta * inv_skew([R - RT]) / 2 sin(theta) */
         for (std::size_t i(0UL); i < dimension; ++i) {
           std::size_t idx1 = (i + 1UL) % dimension;
           std::size_t idx2 = (i + 2UL) % dimension;
-          blaze::row(rot_axis_vector_batch, i) =
-              ( ValueType(-0.5) * theta_batch / blaze::sin(theta_batch+ValueType(1e-14)) / trans_normalize_vector_batch) *
-              blaze::sum<blaze::columnwise>((blaze::pageslice(q_next, idx2) % blaze::pageslice(q, idx1)) -
-                                            (blaze::pageslice(q_next, idx1) % blaze::pageslice(q, idx2)));
+          blaze::row(rot_axis_vector, i) =
+            (ValueType(-0.5) * theta / blaze::sin(theta+ValueType(1e-14)) / trans_normalize_vector) *
+            blaze::sum<blaze::columnwise>((blaze::pageslice(q_next, idx2) % blaze::pageslice(q, idx1)) -
+                                          (blaze::pageslice(q_next, idx1) % blaze::pageslice(q, idx2)));
         }
       }
 
