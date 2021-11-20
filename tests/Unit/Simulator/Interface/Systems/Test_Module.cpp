@@ -610,9 +610,9 @@ namespace {
 
       CHECK(sim.template get_system_collection_container<Block>().empty());
 
-      auto sliced = sim.emplace_back<Plugin>(
+      auto sliced = *(sim.emplace_back<Plugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-              blocks::initialize<::elastica::tags::NElement>(n_elements)));
+              blocks::initialize<::elastica::tags::NElement>(n_elements))));
       CHECK(sim.check_if_registered(sliced));
 
       // todo generate a slice
@@ -639,9 +639,9 @@ namespace {
 
       CHECK(sim.template get_system_collection_container<Block>().empty());
 
-      auto sliced = sim.emplace_back<Plugin>(
+      auto sliced = *(sim.emplace_back<Plugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-              blocks::initialize<::elastica::tags::NElement>(n_elements)));
+              blocks::initialize<::elastica::tags::NElement>(n_elements))));
       CHECK(sim.check_if_registered(sliced));
       CHECK_NOTHROW(sim.confirm_as_registered(sliced));
 
@@ -747,15 +747,15 @@ namespace {
     //    const std::size_t expected_n_ec_named_blocks = n_units;
 
     const std::size_t n_elements = 24UL;
-    auto ec_sliced = sim.emplace_back<ECPlugin>(
+    auto ec_sliced = *(sim.emplace_back<ECPlugin>(
         ::elastica::cosserat_rod::initialize_cosserat_rod<ECPlugin>(
-            blocks::initialize<::elastica::tags::NElement>(n_elements)));
-    auto ec_named_sliced = sim.emplace_back<ECNamedPlugin>(
+            blocks::initialize<::elastica::tags::NElement>(n_elements))));
+    auto ec_named_sliced = *(sim.emplace_back<ECNamedPlugin>(
         ::elastica::cosserat_rod::initialize_cosserat_rod<ECNamedPlugin>(
-            blocks::initialize<::elastica::tags::NElement>(n_elements)));
-    auto another_ec_sliced = sim.emplace_back<AnotherECPlugin>(
+            blocks::initialize<::elastica::tags::NElement>(n_elements))));
+    auto another_ec_sliced = *(sim.emplace_back<AnotherECPlugin>(
         ::elastica::cosserat_rod::initialize_cosserat_rod<AnotherECPlugin>(
-            blocks::initialize<::elastica::tags::NElement>(n_elements)));
+            blocks::initialize<::elastica::tags::NElement>(n_elements))));
     {
       sim.emplace_back<ECNamedPlugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<ECNamedPlugin>(
