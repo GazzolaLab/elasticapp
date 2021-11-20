@@ -265,7 +265,7 @@ namespace elastica {
       //@}
       //************************************************************************
 
-     protected:
+     public: // TODO: Temporary change from protected
       //**Get methods***********************************************************
       /*!\name Get methods */
       //@{

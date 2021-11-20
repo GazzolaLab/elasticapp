@@ -81,7 +81,6 @@ namespace {
 
     using Algorithm = et::symplectic::PositionVerlet;
     using TimeStepper = et::symplectic::SymplecticStepper<Algorithm>;
-    const TimeStepper time_stepper{};
 
     ::elastica::Time time_v{0.0};
     ::elastica::TimeDelta time_delta{0.2};
