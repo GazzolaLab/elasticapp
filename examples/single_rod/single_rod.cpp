@@ -52,7 +52,7 @@ int main() {
   std::cout << "Velocity using block::get" << std::endl;
   std::cout << blocks::get<elastica::tags::Velocity>(rod) << std::endl;
 
-  std::cout << "Velocity using elastica::position" << std::endl;
+  std::cout << "Position using elastica::position" << std::endl;
   std::cout << ::elastica::position(rod) << std::endl;
   std::cout << "Velocity using elastica::velocity" << std::endl;
   std::cout << ::elastica::velocity(rod) << std::endl;
