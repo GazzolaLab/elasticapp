@@ -86,7 +86,7 @@ namespace elastica {
       explicit ComposeInitializers(Args&&... args)
           : ComposeInitializers(std::make_tuple(std::forward<Args>(args)...)) {}
 
-     public: // TODO : make it protected later on
+     public: // TODO : make it protected later on (issue #12)
       decltype(auto) get_required_parameters() const /*noexcept*/ {
         // pass directly as references
         // return detail::pass_as_wrapped<tmpl::list<NElement,
