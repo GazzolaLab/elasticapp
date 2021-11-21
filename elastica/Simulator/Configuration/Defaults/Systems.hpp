@@ -102,7 +102,8 @@ namespace elastica {
       DefaultSystemsConfiguration() noexcept
           : Parent(
                 ELASTICA_DEFAULT_BLOCKING_POLICY_FOR_SYSTEMS{
-                    default_blocking_policy_size()},
+                    typename ELASTICA_DEFAULT_BLOCKING_POLICY_FOR_SYSTEMS::
+                        Criterion{default_blocking_policy_size()}},
                 DefaultIterationPolicy{}){};
       ~DefaultSystemsConfiguration() = default;
       //************************************************************************
