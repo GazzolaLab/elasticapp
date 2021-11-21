@@ -82,7 +82,23 @@ namespace elastica {
               : public Traits::template CosseratRodInitializedVariable<
                   ::elastica::tags::Mass,         //
                   typename Traits::DataType::Scalar,  //
-                  typename Traits::Place::OnNode> {};
+                  typename Traits::Place::OnNode> {
+            //**Type definitions************************************************
+            //! The element type of a ghost
+            using ghost_type = typename Traits::DataType::Scalar::ghost_type;
+            //******************************************************************
+
+            //******************************************************************
+            /*!\brief Obtain the ghost value
+             *
+             * \details
+             * Overrides the default value for putting in ghost elements.
+             */
+            static inline constexpr auto ghost_value() noexcept -> ghost_type {
+              return ghost_type(1.0);
+            }
+            //******************************************************************
+          };
           //********************************************************************
 
           //********************************************************************
