@@ -7,15 +7,16 @@
 #include "Framework/TestingFramework.hpp"
 #include "Utilities/MakeArray.hpp"
 ///
-#include "Simulator/Materials.hpp"
-#include "Simulator/Materials/Materials.hpp"
 #include "Systems/Block.hpp"
 #include "Systems/Block/Protocols.hpp"
 #include "Systems/CosseratRods.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
-#include "Systems/CosseratRods/Initializers/StraightCosseratRod.hpp"  // TODO : replace later
-#include "blaze/Blaze.h"
-#include "blaze_tensor/Blaze.h"
+#include "Systems/CosseratRods/Initializers/StraightCosseratRod.hpp" // TODO : replace later
+#include "Simulator/Materials.hpp"
+#include "Simulator/Materials/Materials.hpp"
+
+#include "blaze/blaze.h"
+#include "blaze_tensor/blaze.h"
 
 namespace {
 
@@ -23,7 +24,8 @@ namespace {
   using Plugin = elastica::cosserat_rod::CosseratRodPlugin<
       Traits, blocks::Block,
       elastica::cosserat_rod::component::WithCircularCosseratRod,
-      elastica::cosserat_rod::component::WithExplicitlyDampedDiagonalLinearHyperElasticModel,
+      elastica::cosserat_rod::component::
+          WithExplicitlyDampedDiagonalLinearHyperElasticModel,
       elastica::cosserat_rod::component::WithRodKinematics>;
   using Model = blocks::Block<Plugin>;
 
@@ -85,7 +87,8 @@ namespace {
         7.874, 0.24, 200, 200.0 / 1.24, 200, 1e-10, 1e-10, 0.1, 0.1);
     using Init = ::elastica::cosserat_rod::StraightCosseratRodInitializer;
     Model simple_rod{};
-    Init straight_initializer{ // Initialization Wrapper
+    Init straight_initializer{
+        // Initialization Wrapper
         Init::NElement{5UL},
         Init::Material{myMaterial},
         Init::Radius{0.007522},
@@ -350,10 +353,8 @@ namespace {
       CHECK( (blaze::pageslice(BendingTwistRigidityMatrix, i) - blaze::pageslice(BendingTwistRigidityMatrix_PYEL, i)) == Approx(0.0).margin(1e-6));
     CHECK_ITERABLE_APPROX(ElementVolume , ElementVolume_PYEL);
     CHECK_ITERABLE_APPROX(Mass , Mass_PYEL);
-    for (std::size_t i(0UL); i < 3UL; ++i){
-      //CHECK( (blaze::row(InternalLoads, i) - blaze::row(InternalLoads_PYEL, i)) == Approx(0.0).margin(1e-6));
-      CHECK( blaze::row(InternalLoads, i) == blaze::row(InternalLoads_PYEL, i) );
-    }
+    for (std::size_t i(0UL); i < 3UL; ++i)
+      CHECK( (blaze::row(InternalLoads, i) - blaze::row(InternalLoads_PYEL, i)) == Approx(0.0).margin(1e-6));
     for (std::size_t i(0UL); i < 3UL; ++i)
       CHECK( (blaze::row(InternalTorques, i) - blaze::row(InternalTorques_PYEL, i)) == Approx(0.0).margin(1e-6));
     for (std::size_t i(0UL); i < 3UL; ++i)
