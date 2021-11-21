@@ -24,3 +24,5 @@ target_link_libraries(SingleRodExample
         Simulator
         Materials
         )
+
+add_subdirectory(parallelism_example)
