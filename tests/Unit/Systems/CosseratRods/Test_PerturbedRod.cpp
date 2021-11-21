@@ -7,13 +7,14 @@
 #include "Framework/TestingFramework.hpp"
 #include "Utilities/MakeArray.hpp"
 ///
-#include "Simulator/Materials.hpp"
-#include "Simulator/Materials/Materials.hpp"
 #include "Systems/Block.hpp"
 #include "Systems/Block/Protocols.hpp"
 #include "Systems/CosseratRods.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
-#include "Systems/CosseratRods/Initializers/StraightCosseratRod.hpp"  // TODO : replace later
+#include "Systems/CosseratRods/Initializers/StraightCosseratRod.hpp" // TODO : replace later
+#include "Simulator/Materials.hpp"
+#include "Simulator/Materials/Materials.hpp"
+
 #include "blaze/blaze.h"
 #include "blaze_tensor/blaze.h"
 
@@ -27,8 +28,6 @@ namespace {
           WithExplicitlyDampedDiagonalLinearHyperElasticModel,
       elastica::cosserat_rod::component::WithRodKinematics>;
   using Model = blocks::Block<Plugin>;
-  static_assert(::tt::assert_conforms_to<Plugin, ::blocks::protocols::Plugin>,
-                "What!");
 
   using real_type = typename Traits::DataType::real_type;
 

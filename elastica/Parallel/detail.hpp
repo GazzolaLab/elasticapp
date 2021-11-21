@@ -16,6 +16,7 @@
 //******************************************************************************
 // Includes
 //******************************************************************************
+#include <cstdint> // for size_t
 
 #include "ModuleSettings/Parallel.hpp"
 #include "Utilities/IgnoreUnused.hpp"

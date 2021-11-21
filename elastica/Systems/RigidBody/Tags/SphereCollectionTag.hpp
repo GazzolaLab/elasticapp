@@ -13,8 +13,12 @@
 
 namespace elastica {
 
+
+  // Note that one should not qualify the tags in this type list by a reference or
+  // cv qulifiers for the systemtype and primitivetype, else a hard error is
+  // thrown
   struct SphereCollectionTag {
-    using SystemCollectionType = SphereCollection;
+    using SystemType = SphereCollection;
     using PrimitiveType = collision::SpherePrimitive;
 
     // temporary
