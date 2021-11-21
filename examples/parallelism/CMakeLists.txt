@@ -1,12 +1,11 @@
-# Distributed under the MIT License. See LICENSE for details.
-add_executable(parallelism_example main.cpp)
+add_executable(example_parallelism main.cpp)
 
-target_include_directories(parallelism_example
+target_include_directories(example_parallelism
         PRIVATE
         ${Boost_INCLUDE_DIRS}
         )
 
-target_link_libraries(parallelism_example
+target_link_libraries(example_parallelism
         PUBLIC
         Utilities
         ErrorHandling
