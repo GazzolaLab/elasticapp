@@ -482,6 +482,36 @@ namespace blocks {
     //@{
 
     //**************************************************************************
+    /*!\brief Fills ghosts for a variable of tag `Tag` in the current Block
+     */
+    template <typename Tag,
+              typename Variable =
+                  typename Parent::VariableMap::template variable_from<Tag>>
+    void fill_ghosts_for(const size_type deficit = This::n_ghosts(
+                             typename Variable::Stagger{})) noexcept {
+      auto& var = blocks::get<Variable>(*this);
+      const auto ghost_value = Variable::ghost_value();
+
+      // TODO : cleanup, don't repeat code
+      for (size_type ghost_node_idx : ghost_node_indices_) {
+        const auto ghost_stop_idx = ghost_node_idx;
+        ELASTICA_ASSERT(ghost_stop_idx > deficit, "Ghost invariant violated!");
+        const auto ghost_start_idx = ghost_stop_idx - deficit;
+
+        for (size_type ghost_idx = ghost_stop_idx; ghost_idx > ghost_start_idx;
+             --ghost_idx) {
+          Variable::slice(var, ghost_idx) = ghost_value;
+        }
+        // rewrite the loop above using positive indices
+        // for (auto ghost_idx = ghost_start_idx + 1;
+        //      ghost_idx <= ghost_stop_idx; ++ghost_idx) {
+        //   Variable::slice(var, ghost_idx) = ghost_value;
+        // }
+      }
+    }
+    //**************************************************************************
+
+    //**************************************************************************
     /*!\brief Fills ghosts on variables placed `OnStaggerType`
      *
      * \param deficit The number of ghosts to be filled, from the ghost node

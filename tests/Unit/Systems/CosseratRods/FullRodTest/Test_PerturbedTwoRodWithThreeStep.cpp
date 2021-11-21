@@ -19,8 +19,8 @@
 #include "Time/SimulationTime.hpp"
 #include "Time/SymplecticSteppers/Algorithms.hpp"
 #include "Time/SymplecticSteppers/SymplecticStepper.hpp"
-#include "blaze/blaze.h"
-#include "blaze_tensor/blaze.h"
+#include "blaze/Blaze.h"
+#include "blaze_tensor/Blaze.h"
 
 namespace {
 
@@ -195,11 +195,6 @@ namespace {
     blaze::DynamicMatrix<elastica::real_t> ROD00001_Acceleration_PYEL( 3UL, 6UL );     ROD00001_Acceleration_PYEL = {{-6276.427176073694,1351.3391596237063,5590.095813348074,3447.542903147931,-1241.630214279443,-8922.154321217751},{-4613.297987250769,1869.593466872306,3006.4467258625837,4146.935776639144,-1583.6959544478839,-9569.196515362362},{-7449.602005843124,452.91104844717995,6378.5751399330875,3501.4647979523675,-694.8525116982728,-4951.966835595071}};
     blaze::DynamicMatrix<elastica::real_t> ROD00001_AngularAcceleration_PYEL( 3UL, 5UL );     ROD00001_AngularAcceleration_PYEL = {{-2.6515275049533457e+22,-8.218587391917183e+20,-1.301733402849835e+22,-6.370733640864342e+21,-6.993553007626967e+21},{1.4004278370222969e+21,2.0503009306093473e+21,1.5237740703222143e+22,9.872286221284825e+21,1.2817008722063445e+21},{6.26473695334847e+18,4.703054649405379e+18,2.020091346174668e+18,1.5540956212041613e+18,6.392407061730328e+18}};
 
-
-    auto var = blocks::get<elastica::tags::InternalLoads>(slicedrod_00000);
-    std::size_t a = var.rows();
-    std::size_t b = var.columns();
-
     blocks::get<elastica::tags::InternalLoads>(slicedrod_00001) = ROD00001_InternalLoads_REPLACED;
     blocks::get<elastica::tags::InternalTorques>(slicedrod_00001) = ROD00001_InternalTorques_REPLACED;
     blocks::get<elastica::tags::ExternalLoads>(slicedrod_00001) = ROD00001_ExternalLoads_REPLACED;
@@ -235,6 +230,8 @@ namespace {
     blocks::get<elastica::tags::AngularVelocity>(slicedrod_00001) = ROD00001_AngularVelocity_REPLACED;
     blocks::get<elastica::tags::AngularAcceleration>(slicedrod_00001) = ROD00001_AngularAcceleration_REPLACED;
 
+    std::cout << blocks::get<elastica::tags::Mass>(slicedrod_00000) << std::endl;
+    std::cout << blocks::get<elastica::tags::Mass>(slicedrod_00001) << std::endl;
 
     simulator->step(time_stepper, time_v, time_delta);
     simulator->step(time_stepper, time_v, time_delta);
