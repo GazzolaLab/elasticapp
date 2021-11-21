@@ -128,10 +128,11 @@ namespace elastica {
                 internal_stress
               );
             Traits::Operations::batch_division_matvec(
-                QT_into_internal_stress,
-                temp_vec,
-                element_dilatation
-              );
+                QT_into_internal_stress, temp_vec, element_dilatation);
+
+            // before doing difference, fill it to 0.0
+            self().template fill_ghosts_for<tags::_DummyElementVector>();
+
             Traits::Operations::two_point_difference_kernel(
                 internal_load,
                 QT_into_internal_stress
@@ -167,8 +168,9 @@ namespace elastica {
 
             /* Compute Curvature */
             self().compute_curvature();
-            Traits::Operations::batch_matvec(internal_couple,
-                                             bend_matrix,
+            self().template fill_ghosts_for<tags::Curvature>();
+
+            Traits::Operations::batch_matvec(internal_couple, bend_matrix,
                                              curvature - reference_curvature);
 
             /* Compute dilatation rate */
@@ -179,6 +181,7 @@ namespace elastica {
 
             /* Reset internal torque */
             // Caution: Make sure the dummy variable scope does not overlap
+            // internal couple should have 0.0
             Traits::Operations::two_point_difference_kernel(
                   internal_torques, // bend_twist_couple_2D_batch,
                   internal_couple %
@@ -243,7 +246,6 @@ namespace elastica {
             auto unsteady_dilatation_batch = J_omega_upon_e_batch %
                                              dilatation_ratio_expanded;
             internal_torques += unsteady_dilatation_batch;
-
           }
           //********************************************************************
 

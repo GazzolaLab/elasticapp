@@ -178,7 +178,7 @@ namespace elastica {
 
                     // parallel for each controls
                     // apply control forces to primitives
-                    self().apply_pre_dynamic_update_substeps(time_v);
+                    self().apply_pre_dynamic_updates(time_v);
 
                     // parallel invoke 4 available system collection
                     // parallel for each system in system collection
@@ -190,7 +190,7 @@ namespace elastica {
 
                     // parallel for each constraint
                     // apply constraint to derivatives
-                    self().apply_post_dynamic_update_substeps(time_v);
+                    self().apply_post_dynamic_updates(time_v);
                   },
                   [&, dt = dt](auto const& time_update_substep) noexcept {
                     time_v += time_update_substep(dt);

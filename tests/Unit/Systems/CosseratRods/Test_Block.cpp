@@ -69,6 +69,7 @@ namespace {
     using Parent::total_n_voronois;
 
     using Parent::fill_ghosts;
+    using Parent::fill_ghosts_for;
     using Parent::fill_ghosts_placed;
 
     // variable function
@@ -216,6 +217,7 @@ namespace {
       Model model{};
       // check if members work for an empty block
       CHECK(model.n_units() == 0UL);
+      CHECK(::blocks::n_units(model) == 0UL); // free function check
       CHECK(model.empty());
 
       // block check
@@ -250,6 +252,7 @@ namespace {
       CHECK(model.n_elements().empty());
       model.resize_members_on_rod(1UL);
       CHECK(model.n_units() == 1UL);
+      CHECK(::blocks::n_units(model) == 1UL); // free function check
 
       // 2. check start and size before checking slices
       CHECK(model.get_start_of_slice<typename CRPV::NElement::Stagger>(0UL) ==
@@ -283,6 +286,7 @@ namespace {
       CHECK(model.total_n_nodes() == new_n_elements + 1UL);
       CHECK(model.total_n_voronois() == new_n_elements - 1UL);
       CHECK(model.n_units() == 1UL);
+      CHECK(::blocks::n_units(model) == 1UL); // free function check
 
       CHECK(model.n_elements() == ElementsVector{new_n_elements});
       CHECK(model.size() == new_n_elements);
@@ -396,8 +400,10 @@ namespace {
 
       CHECK(not model.n_elements().empty());
       CHECK(model.n_units() == 1UL);
+      CHECK(::blocks::n_units(model) == 1UL); // free function check
       model.resize_members_on_rod(2UL);
       CHECK(model.n_units() == 2UL);
+      CHECK(::blocks::n_units(model) == 2UL); // free function check
 
       // 2. check start and size before checking slices
       // its okay to call it here before the second slice as we explciitly
@@ -438,6 +444,7 @@ namespace {
       CHECK(model.total_n_voronois() ==
             first_n_elements + second_n_elements + 1UL);
       CHECK(model.n_units() == 2UL);
+      CHECK(::blocks::n_units(model) == 2UL); // free function check
 
       CHECK(model.n_elements() ==
             (ElementsVector{first_n_elements, second_n_elements}));
@@ -553,8 +560,10 @@ namespace {
 
       CHECK(not model.n_elements().empty());
       CHECK(model.n_units() == 2UL);
+      CHECK(::blocks::n_units(model) == 2UL); // free function check
       model.resize_members_on_rod(3UL);
       CHECK(model.n_units() == 3UL);
+      CHECK(::blocks::n_units(model) == 3UL); // free function check
 
       // no asserts for the index passed in because check should automatically
       // take care of it
@@ -600,6 +609,7 @@ namespace {
                                             (second_n_elements - 1UL) + 3UL +
                                             (third_n_elements - 1UL));
       CHECK(model.n_units() == 3UL);
+      CHECK(::blocks::n_units(model) == 3UL); // free function check
 
       CHECK(model.n_elements() ==
             (ElementsVector{first_n_elements, second_n_elements,
@@ -887,6 +897,7 @@ namespace {
     auto test_empty = []() {
       Model model{};
       // check if members work for an empty block
+      CHECK(::blocks::n_units(model) == 0UL); // free function check
       CHECK(model.n_units() == 0UL);
       CHECK(model.empty());
 
@@ -914,6 +925,7 @@ namespace {
       CHECK(model.n_elements().empty());
       model.resize_members_on_rod(1UL);
       CHECK(model.n_units() == 1UL);
+      CHECK(::blocks::n_units(model) == 1UL); // free function check
 
       // 2. check start and size of slices
 
@@ -1018,6 +1030,7 @@ namespace {
       CHECK(model.total_n_nodes() == new_n_elements + 1UL);
       CHECK(model.total_n_voronois() == new_n_elements - 1UL);
       CHECK(model.n_units() == 1UL);
+      CHECK(::blocks::n_units(model) == 1UL); // free function check
 
       CHECK(model.n_elements() == ElementsVector{new_n_elements});
       CHECK(model.size() == new_n_elements);
@@ -1206,9 +1219,11 @@ namespace {
       CHECK(total_n_elements_after_resizing == (5UL + 2UL + 10UL));
       CHECK(model.get_ghost_node_buffer() == GhostNodeIndices{5UL + 1UL});
 
+      CHECK(::blocks::n_units(model) == 1UL); // free function check
       CHECK(model.n_units() == 1UL);
       model.resize_members_on_rod(2UL);
       CHECK(model.n_units() == 2UL);
+      CHECK(::blocks::n_units(model) == 2UL); // free function check
 
       // 2. check start and size of slices
 
@@ -1323,6 +1338,11 @@ namespace {
         // in this case we explicitly request the node to be non-default, say
         //
         CHECK(node_variable[end_idx] == approx(3.14159));
+
+        // check fill_ghosts_for
+        node_variable[end_idx] = 2.0;
+        model.fill_ghosts_for<test_tags::VarOnNode>();
+        CHECK(node_variable[end_idx] == approx(3.14159));
       }
 
       {
@@ -1348,6 +1368,12 @@ namespace {
         CHECK(element_variable[end_idx] != approx(3.14159));
         CHECK(element_variable[end_idx + 1UL] != approx(3.14159));
         model.fill_ghosts_placed<typename Model::OnElement>();
+        CHECK(element_variable[end_idx] == approx(3.14159));
+        CHECK(element_variable[end_idx + 1UL] == approx(3.14159));
+
+        element_variable[end_idx] = 2.0;
+        element_variable[end_idx + 1UL] = 2.0;
+        model.fill_ghosts_for<test_tags::VarOnElement>();
         CHECK(element_variable[end_idx] == approx(3.14159));
         CHECK(element_variable[end_idx + 1UL] == approx(3.14159));
       }
@@ -1377,6 +1403,14 @@ namespace {
         CHECK(voronoi_variable[end_idx + 1UL] != approx(3.14159));
         CHECK(voronoi_variable[end_idx + 2UL] != approx(3.14159));
         model.fill_ghosts_placed<typename Model::OnVoronoi>();
+        CHECK(voronoi_variable[end_idx] == approx(3.14159));
+        CHECK(voronoi_variable[end_idx + 1UL] == approx(3.14159));
+        CHECK(voronoi_variable[end_idx + 2UL] == approx(3.14159));
+
+        voronoi_variable[end_idx] = 2.0;
+        voronoi_variable[end_idx + 1UL] = 2.0;
+        voronoi_variable[end_idx + 2UL] = 2.0;
+        model.fill_ghosts_for<test_tags::VarOnVoronoi>();
         CHECK(voronoi_variable[end_idx] == approx(3.14159));
         CHECK(voronoi_variable[end_idx + 1UL] == approx(3.14159));
         CHECK(voronoi_variable[end_idx + 2UL] == approx(3.14159));
@@ -1411,6 +1445,7 @@ namespace {
       CHECK(model.total_n_voronois() ==
             ((first_n_elements - 1UL) + 3UL + (new_n_elements - 1UL)));
       CHECK(model.n_units() == 2UL);
+      CHECK(::blocks::n_units(model) == 2UL); // free function check
 
       CHECK(model.n_elements() ==
             ElementsVector{first_n_elements, new_n_elements});
@@ -1672,8 +1707,10 @@ namespace {
             });
 
       CHECK(model.n_units() == 2UL);
+      CHECK(::blocks::n_units(model) == 2UL); // free function check
       model.resize_members_on_rod(3UL);
       CHECK(model.n_units() == 3UL);
+      CHECK(::blocks::n_units(model) == 3UL); // free function check
 
       // 2. check start and size of slices
 
@@ -2044,6 +2081,7 @@ namespace {
       Model model{};
       // check if members work for an empty block
       CHECK(model.n_units() == 0UL);
+      CHECK(::blocks::n_units(model) == 0UL); // free function check
       CHECK(model.empty());
 
       // block check
@@ -2070,6 +2108,7 @@ namespace {
       CHECK(model.empty());
       model.resize_members_on_rod(1UL);
       CHECK(model.n_units() == 1UL);
+      CHECK(::blocks::n_units(model) == 1UL); // free function check
 
       // 2. check start and size of slices
 
@@ -2189,6 +2228,7 @@ namespace {
       CHECK(model.total_n_nodes() == new_n_elements + 1UL);
       CHECK(model.total_n_voronois() == new_n_elements - 1UL);
       CHECK(model.n_units() == 1UL);
+      CHECK(::blocks::n_units(model) == 1UL); // free function check
 
       CHECK(model.n_elements() == ElementsVector{new_n_elements});
       CHECK(model.size() == new_n_elements);
@@ -2418,9 +2458,11 @@ namespace {
       CHECK(total_n_elements_after_resizing == (5UL + 2UL + 10UL));
       CHECK(model.get_ghost_node_buffer() == GhostNodeIndices{5UL + 1UL});
 
+      CHECK(::blocks::n_units(model) == 1UL); // free function check
       CHECK(model.n_units() == 1UL);
       model.resize_members_on_rod(2UL);
       CHECK(model.n_units() == 2UL);
+      CHECK(::blocks::n_units(model) == 2UL); // free function check
 
       // 2. check start and size of slices
 

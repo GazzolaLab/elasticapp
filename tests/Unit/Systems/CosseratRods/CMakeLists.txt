@@ -2,6 +2,7 @@ add_subdirectory(Mocks)
 add_subdirectory(Components)
 add_subdirectory(Initializers)
 add_subdirectory(Traits)
+add_subdirectory(FullRodTest)
 
 set(LIBRARY "Test_CosseratRod")
 

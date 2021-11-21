@@ -201,6 +201,20 @@ namespace blocks {
 
     ///////////////////////////// end conformance //////////////////////////////
 
+    //**Ghosting functions******************************************************
+    /*!\name Ghosting functions */
+    //@{
+
+    //**************************************************************************
+    /*!\brief Fills ghosts for a variable of tag `Tag` in the current Block
+     * Needed because some of the kernels use it
+     */
+    template <typename Tag>
+    void fill_ghosts_for() const noexcept {};
+    //**************************************************************************
+    //@}
+    //**************************************************************************
+
    private:
     //**Member variables********************************************************
     /*!\name Member variables */
@@ -381,6 +395,20 @@ namespace blocks {
     //**************************************************************************
 
     ///////////////////////////// end conformance //////////////////////////////
+
+    //**Ghosting functions******************************************************
+    /*!\name Ghosting functions */
+    //@{
+
+    //**************************************************************************
+    /*!\brief Fills ghosts for a variable of tag `Tag` in the current Block
+     * Needed because some of the kernels use it
+     */
+    template <typename Tag>
+    void fill_ghosts_for() const noexcept {};
+    //**************************************************************************
+    //@}
+    //**************************************************************************
 
    private:
     //**Member variables********************************************************

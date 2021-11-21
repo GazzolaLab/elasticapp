@@ -28,6 +28,8 @@
 #include "Systems/CosseratRods/BlockInitializer.hpp"
 #include "Systems/CosseratRods/BlockSlice.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
+#include "Systems/common/SymplecticStepperAdapter.hpp"
+///
 #include "Utilities/NonCopyable.hpp"
 #include "Utilities/Requires.hpp"
 //#include "Utilities/StdHelpers.hpp"
@@ -69,9 +71,13 @@ namespace blocks {
     //**Type definitions********************************************************
     //! Traits type
     using Traits = CRT;
-    //! Parent type
-    using Parent = BlockFacade<
+    //! Facade type
+    using Facade = BlockFacade<
         elastica::cosserat_rod::CosseratRodPlugin<CRT, Block, Components...>>;
+    //! Parent type
+    // using Parent = ::elastica::SymplecticPolicy<Facade>;
+    using Parent = Facade;
+    //! Plugin type
     using Plugin = typename Parent::PluginType;
     //! This type
     using This = Block<Plugin>;
@@ -203,8 +209,8 @@ namespace blocks {
      * https://stackoverflow.com/questions/3052579/explicit-specialization-in-non-namespace-scope
      */
     template <typename OnStaggerType>
-    inline auto get_start_of_slice_helper(index_type const unit,
-                                   identity<OnStaggerType>) const noexcept
+    inline auto get_start_of_slice_helper(
+        index_type const unit, identity<OnStaggerType>) const noexcept
         -> size_type {
       // Zero-based indexing
       // this is implemented in check() now
@@ -215,7 +221,7 @@ namespace blocks {
       return unit ? (ghost_node_indices_[unit - 1UL] + 1UL) : 0UL;
     }
     inline auto get_start_of_slice_helper(index_type const unit,
-                                   identity<OnRod>) const noexcept
+                                          identity<OnRod>) const noexcept
         -> size_type {
       return unit;
     }
@@ -471,6 +477,36 @@ namespace blocks {
     //**Ghosting functions******************************************************
     /*!\name Ghosting functions */
     //@{
+
+    //**************************************************************************
+    /*!\brief Fills ghosts for a variable of tag `Tag` in the current Block
+     */
+    template <typename Tag,
+              typename Variable =
+                  typename Parent::VariableMap::template variable_from<Tag>>
+    void fill_ghosts_for(const size_type deficit = This::n_ghosts(
+                             typename Variable::Stagger{})) noexcept {
+      auto& var = blocks::get<Variable>(*this);
+      const auto ghost_value = Variable::ghost_value();
+
+      // TODO : cleanup, don't repeat code
+      for (size_type ghost_node_idx : ghost_node_indices_) {
+        const auto ghost_stop_idx = ghost_node_idx;
+        ELASTICA_ASSERT(ghost_stop_idx > deficit, "Ghost invariant violated!");
+        const auto ghost_start_idx = ghost_stop_idx - deficit;
+
+        for (size_type ghost_idx = ghost_stop_idx; ghost_idx > ghost_start_idx;
+             --ghost_idx) {
+          Variable::slice(var, ghost_idx) = ghost_value;
+        }
+        // rewrite the loop above using positive indices
+        // for (auto ghost_idx = ghost_start_idx + 1;
+        //      ghost_idx <= ghost_stop_idx; ++ghost_idx) {
+        //   Variable::slice(var, ghost_idx) = ghost_value;
+        // }
+      }
+    }
+    //**************************************************************************
 
     //**************************************************************************
     /*!\brief Fills ghosts on variables placed `OnStaggerType`
@@ -784,11 +820,13 @@ namespace blocks {
    * \param cosserat_rod The cosserat rod whose n_units is to be extracted
    */
   template <typename CRT,
-      template <typename /*CRT*/, typename /*InitializedBlock*/>
-      class... Components>
-  inline auto n_units(Block<::elastica::cosserat_rod::CosseratRodPlugin<
-      CRT, Block, Components...>> const& cosserat_rod) noexcept -> std::size_t{
-      return cosserat_rod.n_units();
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  inline auto n_units(
+      Block<::elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, Block, Components...>> const& cosserat_rod) noexcept
+      -> std::size_t {
+    return cosserat_rod.n_units();
   }
   //****************************************************************************
 

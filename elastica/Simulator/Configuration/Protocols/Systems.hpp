@@ -81,12 +81,12 @@ namespace elastica {
                           R"error(
 `SystemPlugin` above does not conform to the protocols expected by a Plugin!
 )error");
-            static_assert(
-                ::tt::assert_conforms_to<SystemPlugin,
-                                         ::elastica::protocols::PhysicalSystem>,
-                R"error(
-`SystemPlugin` above does not conform to the protocols expected by a PhysicalSystem!
-)error");
+//            static_assert(
+//                ::tt::assert_conforms_to<SystemPlugin,
+//                                         ::elastica::protocols::PhysicalSystem>,
+//                R"error(
+//`SystemPlugin` above does not conform to the protocols expected by a PhysicalSystem!
+//)error");
           };
 
           /// [expected_types]

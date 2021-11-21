@@ -50,6 +50,10 @@ namespace blocks {
 
    public:
     using Parent::initialize;
+
+    // we need a ghosts function here :(
+    template <typename Tag>
+    void fill_ghosts_for() const noexcept{};
   };
 
 }  // namespace blocks

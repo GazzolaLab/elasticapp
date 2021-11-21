@@ -27,6 +27,7 @@
 #include "Utilities/CRTP.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsDetected.hpp"
+#include "Time/SimulationTime.hpp"
 
 namespace elastica {
 
@@ -330,6 +331,20 @@ namespace elastica {
           inline auto compute_internal_torques() {
             ElasticityModel::compute_internal_modeled_torques_impl();
             return blocks::get<tags::InternalTorques>(self());
+          }
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Compute internal dynamic from the model
+           *
+           * \details
+           *
+           * \return void/None
+           *
+           */
+          inline void compute_internal_dynamics(::elastica::Time time_v){
+            compute_internal_forces();
+            compute_internal_torques();
           }
           //********************************************************************
 

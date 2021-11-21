@@ -217,6 +217,41 @@ namespace elastica {
       //@}
       //************************************************************************
 
+     protected:
+      //************************************************************************
+      /*! \cond ELASTICA_INTERNAL */
+      template <typename Plugin>
+      class LazyBlockSliceGenerator {
+       private:
+        friend This;
+        using B = ::blocks::Block<Plugin>;
+        using SourceCollection =
+            AddSystemCollectionsType<B>;  // can be customized
+
+       protected:
+        LazyBlockSliceGenerator(SourceCollection& v, std::size_t index,
+                                std::size_t slice_index)
+            : src_(&v), index_(index), slice_index_(slice_index){};
+
+       public:
+        // generates a slice
+        auto operator*() const {
+          return *(::blocks::BlockIterator<Plugin>{&((*src_)[index_]),
+                                                   slice_index_});
+        }
+        auto operator->() const {
+          return *(::blocks::BlockIterator<Plugin>{&((*src_)[index_]),
+                                                   slice_index_});
+        }
+
+       private:
+        SourceCollection* src_;
+        std::size_t index_;
+        std::size_t slice_index_;
+      };
+      /*! \endcond */
+      //************************************************************************
+
      public:
       //**Destructor************************************************************
       /*!\name Destructor */
@@ -230,7 +265,7 @@ namespace elastica {
       //@}
       //************************************************************************
 
-     protected:
+     public: // TODO: Temporary change from protected
       //**Get methods***********************************************************
       /*!\name Get methods */
       //@{
@@ -659,16 +694,27 @@ the above type-list, using SystemsConfiguration.
         using Key = as_block<SystemPlugin>;
         check_if_admissible<Key>();
         auto& system_block_container = get_system_collection_container<Key>();
-        auto& system_block = blocking_policy()(
+        auto system_block_it = blocking_policy().get_iterator_to_block(
             system_block_container,
             ::elastica::size(std::forward<Initializer>(initializer)));
 
+        // TODO : redundant
         constexpr std::size_t n =
             tmpl::index_of<ListOfAdmissibleSystemCollections, Key>::value;
         ++n_total_systems_[n];
 
-        return system_block.emplace_back(
-            std::forward<Initializer>(initializer));
+        (void)(system_block_it->emplace_back(
+            std::forward<Initializer>(initializer)));
+
+        // block iterator
+        const auto index_of_block_in_collection = static_cast<std::size_t>(
+            ::std::distance(system_block_container.begin(), system_block_it));
+        return LazyBlockSliceGenerator<SystemPlugin>(
+            system_block_container, index_of_block_in_collection,
+            // TODO : This code has linker issues, although it is the SOLID code
+            // ::blocks::n_units(*system_block_it) - 1UL
+            (*system_block_it).n_units() - 1UL
+            );
       }
       //************************************************************************
 
