@@ -146,12 +146,12 @@ namespace elastica {
                 Traits::Operations::average_kernel(velocity);
 
             // need this to match pyelastica's definitions
+            Parent::compute_internal_modeled_loads_impl();
             dummy_loads = elemental_velocity %
                           Traits::Operations::transpose(
                               Traits::Operations::expand_for_broadcast(length));
             self().template fill_ghosts_for<tags::_DummyElementVector>();
 
-            Parent::compute_internal_modeled_loads_impl();
             Traits::Operations::quadrature_kernel(damping_load, dummy_loads);
             // fill in ghosts for element velocity
 
