@@ -10,21 +10,21 @@ Some examples provide additional file or link to published paper for a complete 
 
 ### Rod Assembly
 
-* `single_rod`
+* [`single_rod`](./single_rod)
     * __Name__: Single Rod
     * __Purpose__:
     * __Features__:
 
 ### Function
 
-* `block_initialization`
+* [`block_initialization`](./block_initialization)
     * __Name__: Block Initialization
     * __Purpose__:
     * __Features__:
-* `parallelism`
+* [`parallelism`](./parallelism)
     * __Purpose__: Parallelism Example
     * __Features__:
-* `timestep_rod`
+* [`timestep_rod`](./timestep_rod)
     * __Name__: Timestep Rod
     * __Purpose__:
     * __Features__:
@@ -32,7 +32,7 @@ Some examples provide additional file or link to published paper for a complete 
 
 ### Miscellaneous
 
-* `display_variables`
+* [`display_variables`](./display_variables)
     * __Name__: Display Variable Names
     * __Purpose__:
     * __Features__:
