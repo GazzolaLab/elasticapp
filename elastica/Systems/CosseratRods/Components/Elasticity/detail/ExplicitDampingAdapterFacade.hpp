@@ -141,15 +141,23 @@ namespace elastica {
             auto& length(blocks::get<tags::ElementLength>(self()));
             auto& velocity(blocks::get<tags::Velocity>(self()));
             auto& damping_load(blocks::get<tags::_DummyNodeVector>(self()));
-            auto elemental_velocity = Traits::Operations::average_kernel(velocity);
+            auto& dummy_loads(blocks::get<tags::_DummyElementVector>(self()));
+            auto elemental_velocity =
+                Traits::Operations::average_kernel(velocity);
 
+            // need this to match pyelastica's definitions
             Parent::compute_internal_modeled_loads_impl();
-            Traits::Operations::quadrature_kernel(
-                damping_load,
-                elemental_velocity %
-                    Traits::Operations::transpose(Traits::Operations::expand_for_broadcast(length))
-            );
-            internal_force -= Traits::Operations::transpose(Traits::Operations::expand_for_broadcast(dissipation_constant)) %
+            dummy_loads = elemental_velocity %
+                          Traits::Operations::transpose(
+                              Traits::Operations::expand_for_broadcast(length));
+            self().template fill_ghosts_for<tags::_DummyElementVector>();
+
+            Traits::Operations::quadrature_kernel(damping_load, dummy_loads);
+            // fill in ghosts for element velocity
+
+            internal_force -= Traits::Operations::transpose(
+                                  Traits::Operations::expand_for_broadcast(
+                                      dissipation_constant)) %
                               damping_load;
           }
 
@@ -163,7 +171,6 @@ namespace elastica {
             internal_torque -= angular_velocity %
                      Traits::Operations::transpose(Traits::Operations::expand_for_broadcast(length * dissipation_constant));
           }
-
         };
 
       }  // namespace detail

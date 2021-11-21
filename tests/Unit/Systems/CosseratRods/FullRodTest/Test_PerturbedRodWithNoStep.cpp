@@ -19,8 +19,8 @@
 #include "Time/SimulationTime.hpp"
 #include "Time/SymplecticSteppers/Algorithms.hpp"
 #include "Time/SymplecticSteppers/SymplecticStepper.hpp"
-#include "blaze/blaze.h"
-#include "blaze_tensor/blaze.h"
+#include "blaze/Blaze.h"
+#include "blaze_tensor/Blaze.h"
 
 namespace {
 
@@ -81,7 +81,6 @@ namespace {
 
     using Algorithm = et::symplectic::PositionVerlet;
     using TimeStepper = et::symplectic::SymplecticStepper<Algorithm>;
-    const TimeStepper time_stepper{};
 
     ::elastica::Time time_v{0.0};
     ::elastica::TimeDelta time_delta{0.2};

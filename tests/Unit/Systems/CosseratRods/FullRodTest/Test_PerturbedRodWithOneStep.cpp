@@ -9,19 +9,18 @@
 ///
 #include "Simulator/Materials.hpp"
 #include "Simulator/Materials/Materials.hpp"
+#include "Simulator/Simulator.hpp"
 #include "Systems/Block.hpp"
 #include "Systems/Block/Protocols.hpp"
 #include "Systems/CosseratRods.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
 #include "Systems/CosseratRods/Initializers/StraightCosseratRod.hpp"  // TODO : replace later
-#include "blaze/blaze.h"
-#include "blaze_tensor/blaze.h"
-
-#include "Simulator/Simulator.hpp"
 #include "Systems/common/SymplecticStepperAdapter.hpp"
 #include "Time/SimulationTime.hpp"
 #include "Time/SymplecticSteppers/Algorithms.hpp"
 #include "Time/SymplecticSteppers/SymplecticStepper.hpp"
+#include "blaze/Blaze.h"
+#include "blaze_tensor/Blaze.h"
 
 namespace {
 

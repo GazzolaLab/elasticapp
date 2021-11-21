@@ -11,11 +11,11 @@ allowed_tags = [
     "Constraints",
     "Configuration",
     "Domain",
-    "EquationsOfState",
     "ErrorHandling",
     "Forcing",
     "IO",
     "Informer",
+    "Integrated",
     "Interface",
     "Options",
     "Parallel",
@@ -34,7 +34,7 @@ allowed_test_attributes = ["TimeOut",
 # All the timeout times for the different types of tests. The order here
 # matters. Whichever time is specified last is what will be used for the
 # test if it is of multiple types.
-default_tag_timeouts = [("unit", 5)]
+default_tag_timeouts = [("unit", 5), ("integrated",15)]
 
 allowed_tags = [x.lower() for x in allowed_tags]
 allowed_test_attributes = [x.lower() for x in allowed_test_attributes]

@@ -1,6 +1,6 @@
-add_executable(example_block_initialization main.cpp)
+add_executable(Example_block_initialization main.cpp)
 
-target_link_libraries(example_block_initialization
+target_link_libraries(Example_block_initialization
         PUBLIC
         Utilities
         ErrorHandling

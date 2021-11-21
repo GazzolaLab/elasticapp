@@ -77,14 +77,6 @@ namespace elastica {
       explicit BlockingPolicy(Criterion c) : criterion_(std::move(c)) {}
       //************************************************************************
 
-      //      //************************************************************************
-      //      /*!\brief Policy constructor.
-      //       */
-      //      template <typename... Args>
-      //      BlockingPolicy(Args&&... args)
-      //          : BlockingPolicy(Criterion{std::forward<Args>(args)...}) {}
-      //      //************************************************************************
-
       //************************************************************************
       /*!\brief Gets an iterator to a block, onto which we add new systems to
        *
