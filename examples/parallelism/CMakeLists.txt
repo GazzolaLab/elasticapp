@@ -1,11 +1,11 @@
-add_executable(example_parallelism main.cpp)
+add_executable(Example_parallelism main.cpp)
 
-target_include_directories(example_parallelism
+target_include_directories(Example_parallelism
         PRIVATE
         ${Boost_INCLUDE_DIRS}
         )
 
-target_link_libraries(example_parallelism
+target_link_libraries(Example_parallelism
         PUBLIC
         Utilities
         ErrorHandling
