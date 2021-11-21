@@ -14,8 +14,8 @@
 #include "Systems/CosseratRods.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
 #include "Systems/CosseratRods/Initializers/StraightCosseratRod.hpp"  // TODO : replace later
-#include "blaze/blaze.h"
-#include "blaze_tensor/blaze.h"
+#include "blaze/Blaze.h"
+#include "blaze_tensor/Blaze.h"
 
 namespace {
 

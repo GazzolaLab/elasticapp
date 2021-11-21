@@ -2,6 +2,7 @@ add_subdirectory(Mocks)
 add_subdirectory(Components)
 add_subdirectory(Initializers)
 add_subdirectory(Traits)
+add_subdirectory(FullRodTest)
 
 set(LIBRARY "Test_CosseratRod")
 
@@ -11,11 +12,6 @@ set(LIBRARY_SOURCES
         Test_BlockInitializer.cpp
         Test_CosseratRodPlugin.cpp
         Test_CosseratRodTraits.cpp
-        Test_PerturbedRod.cpp
-        Test_PerturbedRodWithNoStep.cpp
-        Test_PerturbedRodWithOneStep.cpp
-        Test_PerturbedRodWithThreeStep.cpp
-        Test_PerturbedTwoRodWithThreeStep.cpp
         Test_Serialize.cpp
         Test_Specialize.cpp
         Test_Tagged.cpp
