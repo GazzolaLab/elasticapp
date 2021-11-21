@@ -28,11 +28,12 @@ int main() {
   using Traits = eCR::DefaultCosseratRodTraits;
   using Plugin =
       eCR::CosseratRodPlugin<Traits, blocks::Block, ComponentsWithStepper>;
-  // using Model = blocks::Block<Plugin>;
 
+  // Material Definition
   elastica::MaterialID myMaterial = elastica::create_material(
       7.874, 0.24, 200, 200.0 / 1.24, 200, 1e-10, 1e-10, 0.1, 0.1);
 
+  // Set initializer interface
   using Init = ::elastica::cosserat_rod::StraightCosseratRodInitializer;
   Init straight_initializer{
       // Initialization Wrapper
@@ -47,6 +48,7 @@ int main() {
       Init::TorqueDampingCoefficient{0.2},
   };
 
+  // Simulator Configuration
   auto system_config =
       eConfig::make_systems_configuration<tmpl::list<Plugin>>(
           eConfig::make_blocking_policy(
@@ -54,13 +56,12 @@ int main() {
           eConfig::make_iteration_policy(
               eConfig::iterate_across_system_types_in(eConfig::seq),
               eConfig::iterate_over_systems_in(eConfig::seq)));
-
   auto simulator_config = eConfig::make_simulator_configuration(
       eConfig::DefaultDomainConfiguration{}, system_config,
       eConfig::DefaultParallelConfiguration{});
-
   auto simulator = elastica::make_simulator<>(simulator_config);
 
+  // Create Rod
   auto rod =
       *(simulator->emplace_back<Plugin>(straight_initializer.initialize<Plugin>(
           ::blocks::initialize<::elastica::tags::Velocity>(
@@ -71,21 +72,24 @@ int main() {
   std::cout << "Velocity before" << std::endl;
   std::cout << ::elastica::velocity(rod) << std::endl;
 
+  // Finalize simulator
   simulator->finalize();
 
+  // Configure Timestepper
   using Algorithm = ::elastica::timestepper::symplectic::PositionVerlet;
   using TimeStepper =
       ::elastica::timestepper::symplectic::SymplecticStepper<Algorithm>;
   const TimeStepper time_stepper{};
-
   ::elastica::Time time_v{0.0};
   ::elastica::TimeDelta time_delta{0.2};
+
+  // Timestepping
   simulator->step(time_stepper, time_v, time_delta);
   simulator->step(time_stepper, time_v, time_delta);
 
-  std::cout << "Position after" << std::endl;
+  std::cout << "Position after two step" << std::endl;
   std::cout << ::elastica::position(rod) << std::endl;
-  std::cout << "Velocity after" << std::endl;
+  std::cout << "Velocity after two step" << std::endl;
   std::cout << ::elastica::velocity(rod) << std::endl;
 
   return 0;

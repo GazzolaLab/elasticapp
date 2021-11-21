@@ -4,7 +4,6 @@
 
 #include <iostream>
 
-#include "Simulator/Simulator.hpp"
 #include "Systems/CosseratRods.hpp"
 
 int main() {

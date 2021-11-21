@@ -1,4 +1,4 @@
-add_executable(Example_single_rod single_rod.cpp)
+add_executable(Example_single_rod main.cpp)
 
 target_link_libraries(Example_single_rod
         PUBLIC
