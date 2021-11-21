@@ -10,7 +10,7 @@ set(LIBRARY_SOURCES
 
 add_test_library(
         ${LIBRARY}
-        "Systems/CosseratRods"
+        "Systems/CosseratRods/FullRodTest"
         "${LIBRARY_SOURCES}"
         "Utilities;Systems"
 )
