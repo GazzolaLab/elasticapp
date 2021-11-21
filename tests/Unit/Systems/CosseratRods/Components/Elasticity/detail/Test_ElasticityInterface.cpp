@@ -97,24 +97,6 @@ namespace {
     };
 }  // namespace
 
-//namespace { // TODO: Revisit
-//
-//  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.ElasticityInterface.no_data",
-//                     "[Systems][Unit]") {
-//    using Model =
-//        TestNoDataElasticityModel<BasicCosseratRodTraits, DummyBlock>;
-//    Model model{};
-//
-//    // static_assert(Model::parent_need_not_be_initialized(),
-//    //               "Initialization logic error!");
-//
-//    model.compute_internal_forces();
-//    CHECK(model.i == 1);
-//    model.compute_internal_torques();
-//    CHECK(model.i == 0);
-//  }
-//
-//}  // namespace
 
 namespace {
 
@@ -246,52 +228,3 @@ namespace {
   };
 
 } // namespace
-  // no data
-//  template <typename B>
-//  class TestInitializedElasticityModel
-//      : public Adapt<TestWithInitializerElasticityImplementation<
-//            Traits,
-//            B>>::template with<TestElasticityInterface> {};
-//
-//}  // namespace
-//
-//namespace {
-//
-//  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.ElasticityInterface.initialzed",
-//                     "[Systems][Unit]") {
-//    using Plugin = mock::MockPlugin<TestInitializedElasticityModel>;
-//    using Model = blocks::Block<Plugin>;
-//    // using ElasticityModel = typename Model::ElasticityModel;
-//    // using ElasticityModelWithInterface =
-//    // TestInitializedElasticityModel<Model>;
-//    Model model{};
-//    //    using IV = typename ElasticityModel::InitializedVariables;
-//
-//    // static_assert(ElasticityModelWithInterface::parent_to_be_initialized(),
-//    //               "Initialization logic error!");
-//
-//    CHECK_EBO(Model);
-//
-//    CHECK(model.compute_internal_forces() == 3.14);
-//    CHECK(model.compute_internal_torques() == 42.0);
-//
-//    constexpr auto n_initializers = 1UL;
-//    auto n_times_called = make_array<n_initializers>(0U);
-//    auto initializer = mock::initialize_block<Plugin>(
-//        blocks::initialize<Model::TestVariable>([&i = n_times_called[0]](std::size_t index) {
-//          ++i;
-//          return 2.0;
-//        })
-//      );
-//    Model::initialize(model, std::move(initializer));
-//
-//    // check if initialization is done as expected
-//    CHECK_ITERABLE_APPROX(n_times_called, make_array<n_initializers>(1U));
-//
-//    CHECK(blocks::get<Model::InternalLoads>(model) == 0.0);
-//    CHECK(blocks::get<Model::InternalTorques>(model) == 0.0);
-//    // a custom variable gets passed on
-//    CHECK(blocks::get<Model::TestVariable>(model) == 2.0);
-//  }
-//
-//}  // namespace
