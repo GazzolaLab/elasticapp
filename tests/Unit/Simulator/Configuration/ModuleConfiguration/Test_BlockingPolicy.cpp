@@ -330,7 +330,7 @@ namespace {
     using Blocker = RestrictSizeAcrossBlockTypesPolicy;
 
     // already has make_block embedded into it
-    auto blocker = Blocker{20UL};
+    auto blocker = Blocker{Blocker::Criterion{20UL}};
 
     // anything with a valid size() method
     using FirstBlock = std::vector<int>;
@@ -383,7 +383,7 @@ namespace {
     using Blocker = LooselyRestrictSizeAcrossBlockTypesPolicy;
 
     // already has make_block embedded into it
-    auto blocker = Blocker{20UL};
+    auto blocker = Blocker{Blocker::Criterion{20UL}};
 
     // anything with a valid size() method
     using FirstBlock = std::vector<int>;
@@ -436,7 +436,7 @@ namespace {
     using Blocker = AlwaysNewAcrossBlockTypesPolicy;
 
     // already has make_block embedded into it
-    auto blocker = Blocker{20UL};
+    auto blocker = Blocker{Blocker::Criterion{20UL}};
 
     // anything with a valid size() method
     using FirstBlock = std::vector<int>;
@@ -473,7 +473,7 @@ namespace {
     using Blocker = AlwaysSameAcrossBlockTypesPolicy;
 
     // already has make_block embedded into it
-    auto blocker = Blocker{20UL};
+    auto blocker = Blocker{Blocker::Criterion{20UL}};
 
     // anything with a valid size() method
     using FirstBlock = std::vector<int>;

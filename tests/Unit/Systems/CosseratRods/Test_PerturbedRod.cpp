@@ -8,6 +8,7 @@
 #include "Utilities/MakeArray.hpp"
 ///
 #include "Systems/Block.hpp"
+#include "Systems/Block/Protocols.hpp"
 #include "Systems/CosseratRods.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
 #include "Systems/CosseratRods/Initializers/StraightCosseratRod.hpp" // TODO : replace later
@@ -23,45 +24,61 @@ namespace {
   using Plugin = elastica::cosserat_rod::CosseratRodPlugin<
       Traits, blocks::Block,
       elastica::cosserat_rod::component::WithCircularCosseratRod,
-      elastica::cosserat_rod::component::WithExplicitlyDampedDiagonalLinearHyperElasticModel,
+      elastica::cosserat_rod::component::
+          WithExplicitlyDampedDiagonalLinearHyperElasticModel,
       elastica::cosserat_rod::component::WithRodKinematics>;
   using Model = blocks::Block<Plugin>;
 
   using real_type = typename Traits::DataType::real_type;
 
-  ELASTICA_TEST_CASE("Integrated.CosseratRods.SimpleInitialization",
-  "[Systems][Integrated]") {
+  ELASTICA_TEST_CASE("Unit.z.Integrated.CosseratRods.SimpleInitialization",
+                     "[Systems][Integrated]") {
     Model simple_rod{};
 
     auto initializer = elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
         // Variables
-        blocks::initialize<elastica::tags::NElement>([](...) { return 5; }),
+        blocks::initialize<elastica::tags::NElement>(
+            [](...) { return 5; }),
         // Geometry Variables
-        blocks::initialize<elastica::tags::Position>([](std::size_t index){ return 1.0 * index; }),
-        blocks::initialize<elastica::tags::Director>([](...) { return 0.5; }),
-        blocks::initialize<elastica::tags::ElementDimension>( [](...) { return 4.0; }),
-        blocks::initialize<elastica::tags::ReferenceCurvature>( [](...) { return 1.0; }),
-        blocks::initialize<elastica::tags::ReferenceShearStretchStrain>( [](...) { return 1.0; }),
-        blocks::initialize<elastica::tags::ShearStretchRigidityMatrix>( [](...) { return 4.0; }),
-        blocks::initialize<elastica::tags::BendingTwistRigidityMatrix>( [](...) { return 4.0; }),
-        blocks::initialize<elastica::tags::ElementDilatation>( [](...) { return 1.0; }),
-        blocks::initialize<elastica::tags::ForceDampingCoefficient>( [](...) { return 4.0; }),
-        blocks::initialize<elastica::tags::TorqueDampingCoefficient>( [](...) { return 1.0; }),
+        blocks::initialize<elastica::tags::Position>(
+            [](std::size_t index) { return 1.0 * index; }),
+        blocks::initialize<elastica::tags::Director>(
+            [](...) { return 0.5; }),
+        blocks::initialize<elastica::tags::ElementDimension>(
+            [](...) { return 4.0; }),
+        blocks::initialize<elastica::tags::ReferenceCurvature>(
+            [](...) { return 1.0; }),
+        blocks::initialize<elastica::tags::ReferenceShearStretchStrain>(
+            [](...) { return 1.0; }),
+        blocks::initialize<elastica::tags::ShearStretchRigidityMatrix>(
+            [](...) { return 4.0; }),
+        blocks::initialize<elastica::tags::BendingTwistRigidityMatrix>(
+            [](...) { return 4.0; }),
+        blocks::initialize<elastica::tags::ElementDilatation>(
+            [](...) { return 1.0; }),
+        blocks::initialize<elastica::tags::ForceDampingCoefficient>(
+            [](...) { return 4.0; }),
+        blocks::initialize<elastica::tags::TorqueDampingCoefficient>(
+            [](...) { return 1.0; }),
         // Kinematics Variables
-        blocks::initialize<elastica::tags::Mass>([](...) { return 1.0; }),
-        blocks::initialize<elastica::tags::Velocity>([](...) { return 0.0; }),
-        blocks::initialize<elastica::tags::AngularVelocity>( [](...) { return 0.0; }),
-        blocks::initialize<elastica::tags::Acceleration>( [](...) { return 0.0; }),
-        blocks::initialize<elastica::tags::AngularAcceleration>( [](...) { return 0.0; })
-      );
+        blocks::initialize<elastica::tags::Mass>(
+            [](...) { return 1.0; }),
+        blocks::initialize<elastica::tags::Velocity>(
+            [](...) { return 0.0; }),
+        blocks::initialize<elastica::tags::AngularVelocity>(
+            [](...) { return 0.0; }),
+        blocks::initialize<elastica::tags::Acceleration>(
+            [](...) { return 0.0; }),
+        blocks::initialize<elastica::tags::AngularAcceleration>(
+            [](...) { return 0.0; }));
 
     auto slicedrod = simple_rod.emplace_back(std::move(initializer));
 
     CHECK(slicedrod.get_element_dimension() == 4);
   }
 
-  ELASTICA_TEST_CASE("Integrated.CosseratRods.InitializeStraightRod",
-  "[Systems][Integrated]") {
+  ELASTICA_TEST_CASE("Unit.z.Integrated.CosseratRods.InitializeStraightRod",
+                     "[Systems][Integrated]") {
     /*
      * rng_seed = 100
      *  Test initialization step without any additional perturbation
@@ -70,7 +87,8 @@ namespace {
         7.874, 0.24, 200, 200.0 / 1.24, 200, 1e-10, 1e-10, 0.1, 0.1);
     using Init = ::elastica::cosserat_rod::StraightCosseratRodInitializer;
     Model simple_rod{};
-    Init straight_initializer{ // Initialization Wrapper
+    Init straight_initializer{
+        // Initialization Wrapper
         Init::NElement{5UL},
         Init::Material{myMaterial},
         Init::Radius{0.007522},
@@ -81,8 +99,10 @@ namespace {
         Init::ForceDampingCoefficient{0.2},
         Init::TorqueDampingCoefficient{0.2},
     };
-    auto slicedrod = simple_rod.emplace_back(straight_initializer.initialize<Plugin>());
+    auto slicedrod =
+        simple_rod.emplace_back(straight_initializer.initialize<Plugin>());
 
+    // clang-format off
     blaze::DynamicVector<elastica::real_t> ElementDimension_PYEL( 5UL ); ElementDimension_PYEL={0.007522,0.007522,0.007522,0.007522,0.007522};
     blaze::DynamicTensor<elastica::real_t> MassSecondMomentOfInertia_PYEL( 3UL, 3UL, 5UL);     MassSecondMomentOfInertia_PYEL = {{{7.127235497145191e-10,7.127235497145191e-10,7.12723549714519e-10,7.127235497145191e-10,7.127235497145191e-10},{0.0,0.0,0.0,0.0,0.0},{0.0,0.0,0.0,0.0,0.0}},{{0.0,0.0,0.0,0.0,0.0},{7.127235497145191e-10,7.127235497145191e-10,7.12723549714519e-10,7.127235497145191e-10,7.127235497145191e-10},{0.0,0.0,0.0,0.0,0.0}},{{0.0,0.0,0.0,0.0,0.0},{0.0,0.0,0.0,0.0,0.0},{1.4254470994290381e-09,1.4254470994290381e-09,1.425447099429038e-09,1.4254470994290381e-09,1.4254470994290381e-09}}};
     blaze::DynamicTensor<elastica::real_t> InvMassSecondMomentOfInertia_PYEL( 3UL, 3UL, 5UL);     InvMassSecondMomentOfInertia_PYEL = {{{1403068553.579504,1403068553.579504,1403068553.5795043,1403068553.579504,1403068553.579504},{0.0,0.0,0.0,0.0,0.0},{0.0,0.0,0.0,0.0,0.0}},{{0.0,0.0,0.0,0.0,0.0},{1403068553.579504,1403068553.579504,1403068553.5795043,1403068553.579504,1403068553.579504},{0.0,0.0,0.0,0.0,0.0}},{{0.0,0.0,0.0,0.0,0.0},{0.0,0.0,0.0,0.0,0.0},{701534276.789752,701534276.789752,701534276.7897521,701534276.789752,701534276.789752}}};
@@ -198,10 +218,10 @@ namespace {
       CHECK( (blaze::row(Acceleration, i) - blaze::row(Acceleration_PYEL, i)) == Approx(0.0).margin(1e-6));
     for (std::size_t i(0UL); i < 3UL; ++i)
       CHECK( (blaze::row(AngularAcceleration, i) - blaze::row(AngularAcceleration_PYEL, i)) == Approx(0.0).margin(1e-6));
-
+    // clang-format on
   }
 
-  ELASTICA_TEST_CASE("Integrated.CosseratRods.PerturbedInternalKinematics",
+  ELASTICA_TEST_CASE("Unit.z.Integrated.CosseratRods.PerturbedInternalKinematics",
                      "[Systems][Integrated]") {
     /*
      * rng_seed = 100
@@ -219,12 +239,12 @@ namespace {
      *  }
      */
     elastica::MaterialID myMaterial = elastica::create_material(
-        7.874, 0.24, 200, 200.0/1.24,
-        200, 1e-10, 1e-10, 0.1, 0.1);
+        7.874, 0.24, 200, 200.0 / 1.24, 200, 1e-10, 1e-10, 0.1, 0.1);
 
     using Init = ::elastica::cosserat_rod::StraightCosseratRodInitializer;
     Model simple_rod{};
-    Init straight_initializer{ // Initialization Wrapper
+    Init straight_initializer{
+        // Initialization Wrapper
         Init::NElement{5UL},
         Init::Material{myMaterial},
         Init::Radius{0.007522},
@@ -235,8 +255,10 @@ namespace {
         Init::ForceDampingCoefficient{0.2},
         Init::TorqueDampingCoefficient{0.2},
     };
-    auto slicedrod = simple_rod.emplace_back(straight_initializer.initialize<Plugin>());
+    auto slicedrod =
+        simple_rod.emplace_back(straight_initializer.initialize<Plugin>());
 
+    // clang-format off
     blaze::DynamicMatrix<elastica::real_t> InternalLoads_REPLACED( 3UL, 6UL );     InternalLoads_REPLACED = {{0.004822044056611019,0.9307870177032551,0.7845822109817221,0.3343249592744213,0.6862689176861808,0.7322625609228085},{0.8246472414522372,0.10745443906835128,0.3089916869203323,0.31294344042724076,0.5940727124966699,0.6105506387346894},{0.9165420505570774,0.738817174285074,0.37747080022423485,0.7949533183809576,0.48693548220111915,0.5788914075188061}};
     blaze::DynamicMatrix<elastica::real_t> InternalTorques_REPLACED( 3UL, 5UL );     InternalTorques_REPLACED = {{0.9744748566188305,0.688389675725899,0.5848087428374977,0.2739643248027279,0.8377858251400324},{0.30222935408131235,0.1728462163878618,0.801743366769752,0.3441099204558331,0.4375847094010139},{0.15268115598708532,0.2761357842472395,0.5638672039037047,0.86467466140162,0.08278860289302525}};
     blaze::DynamicMatrix<elastica::real_t> InternalStress_REPLACED( 3UL, 5UL );     InternalStress_REPLACED = {{0.9748236222955216,0.9228236343831954,0.4073736921398182,0.7807688857822744,0.6465955762463057},{0.22546091065284335,0.824480688125953,0.3453562771880586,0.5685671364094176,0.6863696968075128},{0.2470087962580596,0.8753744062638658,0.15593308505796288,0.6952022537494705,0.16522045602868496}};
@@ -370,10 +392,10 @@ namespace {
       CHECK( (blaze::row(Acceleration, i) - blaze::row(Acceleration_PYEL, i)) == Approx(0.0).margin(1e-6));
     for (std::size_t i(0UL); i < 3UL; ++i)
       CHECK( (blaze::row(AngularAcceleration, i) - blaze::row(AngularAcceleration_PYEL, i)) == Approx(0.0).margin(1e-6));
-
+    // clang-format on
   }
 
-  ELASTICA_TEST_CASE("Integrated.CosseratRods.WithDynamicAndExternal",
+  ELASTICA_TEST_CASE("Unit.z.Integrated.CosseratRods.WithDynamicAndExternal",
                      "[Systems][Integrated]") {
     /*
      * rng_seed = 150
@@ -418,6 +440,7 @@ namespace {
     auto slicedrod =
         simple_rod.emplace_back(straight_initializer.initialize<Plugin>());
 
+    // clang-format off
     blaze::DynamicMatrix<elastica::real_t> InternalLoads_REPLACED( 3UL, 6UL );     InternalLoads_REPLACED = {{0.004822044056611019,0.9307870177032551,0.7845822109817221,0.3343249592744213,0.6862689176861808,0.7322625609228085},{0.8246472414522372,0.10745443906835128,0.3089916869203323,0.31294344042724076,0.5940727124966699,0.6105506387346894},{0.9165420505570774,0.738817174285074,0.37747080022423485,0.7949533183809576,0.48693548220111915,0.5788914075188061}};
     blaze::DynamicMatrix<elastica::real_t> InternalTorques_REPLACED( 3UL, 5UL );     InternalTorques_REPLACED = {{0.9744748566188305,0.688389675725899,0.5848087428374977,0.2739643248027279,0.8377858251400324},{0.30222935408131235,0.1728462163878618,0.801743366769752,0.3441099204558331,0.4375847094010139},{0.15268115598708532,0.2761357842472395,0.5638672039037047,0.86467466140162,0.08278860289302525}};
     blaze::DynamicMatrix<elastica::real_t> ExternalLoads_REPLACED( 3UL, 6UL );     ExternalLoads_REPLACED = {{0.9748236222955216,0.9228236343831954,0.4073736921398182,0.7807688857822744,0.6465955762463057,0.22546091065284335},{0.824480688125953,0.3453562771880586,0.5685671364094176,0.6863696968075128,0.2470087962580596,0.8753744062638658},{0.15593308505796288,0.6952022537494705,0.16522045602868496,0.48096625789258196,0.5220324730992747,0.5747132880427898}};
@@ -566,10 +589,9 @@ namespace {
       CHECK( (blaze::row(Acceleration, i) - blaze::row(Acceleration_PYEL, i)) == Approx(0.0).margin(1e-6));
     for (std::size_t i(0UL); i < 3UL; ++i)
       CHECK( (blaze::row(AngularAcceleration, i) - blaze::row(AngularAcceleration_PYEL, i)) == Approx(0.0).margin(1e-6));
-
-
+    // clang-format on
   }
-  ELASTICA_TEST_CASE("Integrated.CosseratRods.FullWithDirector",
+  ELASTICA_TEST_CASE("Unit.z.Integrated.CosseratRods.FullWithDirector",
                      "[Systems][Integrated]") {
     /*
      * rng_seed = 250
@@ -616,6 +638,7 @@ namespace {
     auto slicedrod =
         simple_rod.emplace_back(straight_initializer.initialize<Plugin>());
 
+    // clang-format off
     blaze::DynamicMatrix<elastica::real_t> InternalLoads_REPLACED( 3UL, 6UL );     InternalLoads_REPLACED = {{0.203957429946802,0.6553728672957231,0.07586006916499055,0.2266804768321402,0.023150782148356863,0.8267331529503883},{0.15482201584295285,0.5341137261531649,0.8217521666658159,0.08207419303514252,0.2903135892954033,0.2571735009896835},{0.14465615688052758,0.6064242289540898,0.5539788198297757,0.5294675598323154,0.04860584329765816,0.4773015165169989}};
     blaze::DynamicMatrix<elastica::real_t> InternalTorques_REPLACED( 3UL, 5UL );     InternalTorques_REPLACED = {{0.7350951313834501,0.7091748026745681,0.15380848652812207,0.04987070974939489,0.4252467292498079},{0.7562052074199033,0.8984525966266456,0.2720759351923555,0.8572655759809178,0.5079311479102631},{0.05713725081795762,0.9519014792912509,0.35573031120251863,0.7560601197761251,0.6850910122901672}};
     blaze::DynamicMatrix<elastica::real_t> ExternalLoads_REPLACED( 3UL, 6UL );     ExternalLoads_REPLACED = {{0.1791075438221752,0.9899214316476954,0.7463701769482871,0.5090261497759466,0.9544198771087045,0.9468784978450715},{0.682594016831527,0.4165951128802907,0.3851920271071624,0.8590050248260485,0.8718064970595327,0.7653391073424969},{0.023139976989049904,0.5033417877320233,0.4084747987104368,0.2787462316282022,0.28563869362760064,0.9108284397359842}};
@@ -753,14 +776,10 @@ namespace {
     CHECK_MATRIX_APPROX(AngularVelocity , AngularVelocity_PYEL);
     CHECK_MATRIX_APPROX(Acceleration , Acceleration_PYEL);
     CHECK_MATRIX_APPROX(AngularAcceleration , AngularAcceleration_PYEL);
-
-    std::cout << Curvature_REPLACED << std::endl;
-    std::cout << Curvature << std::endl;
-    std::cout << Curvature_PYEL << std::endl;
-
+    // clang-format on
   }
 
-  ELASTICA_TEST_CASE("Integrated.CosseratRods.JustDirector",
+  ELASTICA_TEST_CASE("Unit.z.Integrated.CosseratRods.JustDirector",
                      "[Systems][Integrated]") {
     /*
      * rng_seed = 250
@@ -793,6 +812,7 @@ namespace {
     auto slicedrod =
         simple_rod.emplace_back(straight_initializer.initialize<Plugin>());
 
+    // clang-format off
     blaze::DynamicTensor<elastica::real_t> Director_REPLACED( 3UL, 3UL, 5UL);     Director_REPLACED = {{{0.04971398932038238,0.0017621047613692155,0.028349298452394353,0.038510774335923696,0.03821246174013585},{-0.015314684238161978,-0.013798409812089229,-0.0075552298434086035,-0.010184223579856029,-0.0084156112261818},{0.9986460732975112,0.999903244755945,0.9995695252353736,0.9992062859340523,0.9992341994024465}},{{0.9987490848254921,0.9987252912155221,0.9986629009873723,0.9986882768317997,0.9986707636882262},{0.006133445547642621,0.05046445653036852,0.04345899798566483,0.034159394781008254,0.03493633455617835},{-0.049625058246374414,-0.0010636322507983514,-0.02799510109943551,-0.03814264630208201,-0.037896679038589016}},{{-0.005365149214593786,-0.05044489739587496,-0.043228780560440355,-0.03374382875101853,-0.03459065657274675},{0.9998639113861443,0.9986305335376803,0.9990266432864016,0.9993645067432956,0.9993541064184749},{0.015600444913708315,0.013869744517022007,0.008777159857382425,0.011486369441699338,0.00973942823772274}}};
     blaze::DynamicVector<elastica::real_t> ElementDimension_PYEL( 5UL ); ElementDimension_PYEL={0.007522,0.007522,0.007522,0.007522,0.007522};
     blaze::DynamicTensor<elastica::real_t> MassSecondMomentOfInertia_PYEL( 3UL, 3UL, 5UL);     MassSecondMomentOfInertia_PYEL = {{{7.127235497145191e-10,7.127235497145191e-10,7.12723549714519e-10,7.127235497145191e-10,7.127235497145191e-10},{0.0,0.0,0.0,0.0,0.0},{0.0,0.0,0.0,0.0,0.0}},{{0.0,0.0,0.0,0.0,0.0},{7.127235497145191e-10,7.127235497145191e-10,7.12723549714519e-10,7.127235497145191e-10,7.127235497145191e-10},{0.0,0.0,0.0,0.0,0.0}},{{0.0,0.0,0.0,0.0,0.0},{0.0,0.0,0.0,0.0,0.0},{1.4254470994290381e-09,1.4254470994290381e-09,1.425447099429038e-09,1.4254470994290381e-09,1.4254470994290381e-09}}};
@@ -898,7 +918,7 @@ namespace {
     CHECK_MATRIX_APPROX(AngularVelocity , AngularVelocity_PYEL);
     CHECK_MATRIX_APPROX(Acceleration , Acceleration_PYEL);
     CHECK_MATRIX_APPROX(AngularAcceleration , AngularAcceleration_PYEL);
-
+    // clang-format on
   }
 
 }  // namespace

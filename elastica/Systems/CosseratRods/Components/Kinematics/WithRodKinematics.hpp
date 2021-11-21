@@ -396,10 +396,10 @@ namespace elastica {
         /*!\brief Gets velocity of the current rod
          */
         inline constexpr decltype(auto) get_velocity() & noexcept {
-          return blocks::get<Velocity>(self());
+          return blocks::get<tags::Velocity>(self());
         }
         inline constexpr decltype(auto) get_velocity() const& noexcept {
-          return blocks::get<Velocity>(self());
+          return blocks::get<tags::Velocity>(self());
         }
         //@}
         //**********************************************************************
@@ -410,10 +410,38 @@ namespace elastica {
         /*!\brief Gets angular velocity of the current rod
          */
         inline constexpr decltype(auto) get_angular_velocity() & noexcept {
-          return blocks::get<AngularVelocity>(self());
+          return blocks::get<tags::AngularVelocity>(self());
         }
         inline constexpr decltype(auto) get_angular_velocity() const& noexcept {
-          return blocks::get<AngularVelocity>(self());
+          return blocks::get<tags::AngularVelocity>(self());
+        }
+        //@}
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\name Aceeleration methods*/
+        //@{
+        /*!\brief Gets acceleration of the current rod
+         */
+        inline constexpr decltype(auto) get_acceleration() & noexcept {
+          return blocks::get<tags::Acceleration>(self());
+        }
+        inline constexpr decltype(auto) get_acceleration() const& noexcept {
+          return blocks::get<tags::Acceleration>(self());
+        }
+        //@}
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\name Angular acceleration methods*/
+        //@{
+        /*!\brief Gets angular acceleration of the current rod
+         */
+        inline constexpr decltype(auto) get_angular_acceleration() & noexcept {
+          return blocks::get<tags::AngularAcceleration>(self());
+        }
+        inline constexpr decltype(auto) get_angular_acceleration() const& noexcept {
+          return blocks::get<tags::AngularAcceleration>(self());
         }
         //@}
         //**********************************************************************
@@ -456,7 +484,7 @@ namespace elastica {
         /*!\brief Gets temporal rate of curvature based on the current state
          * of the current rod
          */
-        inline constexpr decltype(auto) get_curvature_rate() const& noexcept {
+        inline decltype(auto) get_curvature_rate() const noexcept {
           // TODO get curvature rate
           auto& curvature(blocks::get<tags::Curvature>(self()));
           auto& omega(blocks::get<tags::AngularAcceleration>(self()));
@@ -470,7 +498,7 @@ namespace elastica {
         /*!\brief Gets temporal rate of curvature based on the current state
          * of the current rod
          */
-        inline constexpr decltype(auto) get_shear_stretch_strain_rate() const& noexcept {
+        inline decltype(auto) get_shear_stretch_strain_rate() const noexcept {
           // TODO get shear stretch strain rate
           auto& director(blocks::get<tags::Director>(self()));
           auto& velocity(blocks::get<tags::Velocity>(self()));
@@ -512,6 +540,7 @@ namespace elastica {
          *
          * \see fill later?
          */
+
         // TODO: double check how external force and external torque comes into play
         inline void update_acceleration() noexcept {
           auto& mass(blocks::get<tags::Mass>(self()));
@@ -539,6 +568,7 @@ namespace elastica {
             );
 
           /* Reset forces and torques */
+          // TODO: what if someone wants to check external load/torques before reset
           external_loads = 0.0;
           external_torques = 0.0;
         }

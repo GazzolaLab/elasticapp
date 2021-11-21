@@ -164,8 +164,8 @@ namespace elastica {
       /*!\name Constructors */
       //@{
       inline States() : groups_(){};
-      template <typename... ValueInitializers>
-      explicit States(ValueInitializers&&... elements);
+      // template <typename... ValueInitializers>
+      explicit States(Groups&&... group_elements);
       //@}
       //************************************************************************
 
@@ -314,10 +314,11 @@ namespace elastica {
     // \param elements Initializers of groups
     */
     template <typename... Groups>             // Parameter-pack of groups
-    template <typename... ValueInitializers>  // Pack of group initializers
-    States<Groups...>::States(ValueInitializers&&... elements)
-        : groups_(std::forward_as_tuple(
-              std::forward<ValueInitializers>(elements)...)) {
+    // TODO : Revisit, this doesnt seem right that you need to pass in
+    // Groups by forwarding references.
+    // template <typename... ValueInitializers>  // Pack of group initializers
+    States<Groups...>::States(Groups&&... group_elements)
+        : groups_(std::forward<Groups>(group_elements)...) {
     }  // copy by value
     //**************************************************************************
 

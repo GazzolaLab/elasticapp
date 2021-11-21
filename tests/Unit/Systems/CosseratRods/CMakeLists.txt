@@ -12,6 +12,10 @@ set(LIBRARY_SOURCES
         Test_CosseratRodPlugin.cpp
         Test_CosseratRodTraits.cpp
         Test_PerturbedRod.cpp
+        Test_PerturbedRodWithNoStep.cpp
+        Test_PerturbedRodWithOneStep.cpp
+        Test_PerturbedRodWithThreeStep.cpp
+        Test_PerturbedTwoRodWithThreeStep.cpp
         Test_Serialize.cpp
         Test_Specialize.cpp
         Test_Tagged.cpp

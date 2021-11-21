@@ -15,80 +15,81 @@
 namespace {
   using namespace elastica;
 
-  // copy pasted the plugin from Test_BlockFacade.cpp
-  template <typename Tag>
-  struct DummyVariable {
-    using Parameter = Tag;
+  struct DummyRank {
     using type = float;
-    using SliceType = float&;
-    using ConstSliceType = const float&;
+    using slice_type = float&;
+    using const_slice_type = float const&;
   };
 
-  template <typename B>
+  // copy pasted the plugin from Test_BlockFacade.cpp
+  template <typename Tag>
+  struct DummyVariable : public ::blocks::Variable<Tag, DummyRank> {};
+
+  template <typename /*Traits*/, typename B>
   struct TestPlugin : public ::elastica::CRTPHelper<B, TestPlugin> {
     // Declare the variables
     // !! New !! Everything is a vector now!
-    struct ExamplePosition : DummyVariable<tags::Position> {};
-    struct ExampleVelocity : DummyVariable<tags::Velocity> {};
-    struct ExampleAcceleration : DummyVariable<tags::Acceleration> {};
+    struct Position : DummyVariable<tags::Position> {};
+    struct Velocity : DummyVariable<tags::Velocity> {};
+    struct Acceleration : DummyVariable<tags::Acceleration> {};
 
-    struct ExampleDirector : DummyVariable<tags::Director> {};
-    struct ExampleAngularVelocity : DummyVariable<tags::AngularVelocity> {};
-    struct ExampleAngularAcceleration
-        : DummyVariable<tags::AngularAcceleration> {};
+    struct Director : DummyVariable<tags::Director> {};
+    struct AngularVelocity : DummyVariable<tags::AngularVelocity> {};
+    struct AngularAcceleration : DummyVariable<tags::AngularAcceleration> {};
 
     using ::elastica::CRTPHelper<B, TestPlugin>::self;
 
     // All variables
-    using Variables =
-        tmpl::list<ExamplePosition, ExampleVelocity, ExampleAcceleration,
-                   ExampleDirector, ExampleAngularVelocity,
-                   ExampleAngularAcceleration>;
+    using Variables = tmpl::list<Position, Velocity, Acceleration, Director,
+                                 AngularVelocity, AngularAcceleration>;
+    using InitializedVariables = tmpl::list<>;
+    using ComputedVariables = tmpl::list<>;
 
-    float& get_position() {
-      return tuples::get<ExamplePosition>(self().data());
-    }
-    float& get_velocity() {
-      return tuples::get<ExampleVelocity>(self().data());
-    }
+    float& get_position() { return tuples::get<Position>(self().data()); }
+    float& get_velocity() { return tuples::get<Velocity>(self().data()); }
     float& get_acceleration() {
-      return tuples::get<ExampleAcceleration>(self().data());
+      return tuples::get<Acceleration>(self().data());
     }
-    float& get_director() {
-      return tuples::get<ExampleDirector>(self().data());
-    }
+    float& get_director() { return tuples::get<Director>(self().data()); }
     float& get_angular_velocity() {
-      return tuples::get<ExampleAngularVelocity>(self().data());
+      return tuples::get<AngularVelocity>(self().data());
     }
     float& get_angular_acceleration() {
-      return tuples::get<ExampleAngularAcceleration>(self().data());
+      return tuples::get<AngularAcceleration>(self().data());
     }
 
     float const& get_position() const {
-      return tuples::get<ExamplePosition>(self().data());
+      return tuples::get<Position>(self().data());
     }
     float const& get_velocity() const {
-      return tuples::get<ExampleVelocity>(self().data());
+      return tuples::get<Velocity>(self().data());
     }
     float const& get_acceleration() const {
-      return tuples::get<ExampleAcceleration>(self().data());
+      return tuples::get<Acceleration>(self().data());
     }
     float const& get_director() const {
-      return tuples::get<ExampleDirector>(self().data());
+      return tuples::get<Director>(self().data());
     }
     float const& get_angular_velocity() const {
-      return tuples::get<ExampleAngularVelocity>(self().data());
+      return tuples::get<AngularVelocity>(self().data());
     }
     float const& get_angular_acceleration() const {
-      return tuples::get<ExampleAngularAcceleration>(self().data());
+      return tuples::get<AngularAcceleration>(self().data());
     }
+
+    void update_acceleration() noexcept {};
   };
 
-  template <template <typename> class B, template <typename> class Plugin>
-  struct PluginHelper : public Plugin<B<PluginHelper<B, Plugin>>> {};
+  template <typename T, template <typename> class B,
+            template <typename, typename> class Plugin>
+  struct PluginHelper
+      : public ::elastica::SymplecticPolicy<T, B<PluginHelper<T, B, Plugin>>,
+                                            Plugin> {};
+
+  struct MockTraits {};
 
   template <template <typename> class B>
-  using BoundTestPlugin = PluginHelper<B, TestPlugin>;
+  using BoundTestPlugin = PluginHelper<MockTraits, B, TestPlugin>;
 
 }  // namespace
 
@@ -96,8 +97,7 @@ namespace blocks {
 
   template <>
   class Block<BoundTestPlugin<Block>>
-      : public ::elastica::SymplecticPolicy<
-            BlockFacade<BoundTestPlugin<Block>>> {
+      : public BlockFacade<BoundTestPlugin<Block>> {
    public:
     //////////////////////////// start conformance
     ////////////////////////////////
@@ -136,16 +136,17 @@ namespace elastica {
 
   namespace states {
 
-//    // assign version doesnt care about vectorization
-//    auto SO3_primitive_assign(float& lhs, float const& rhs_matrix,
-//                              float const& rhs_vector) noexcept -> void {
-//      lhs += rhs_matrix + rhs_vector;
-//    };
+    //    // assign version doesnt care about vectorization
+    //    auto SO3_primitive_assign(float& lhs, float const& rhs_matrix,
+    //                              float const& rhs_vector) noexcept -> void {
+    //      lhs += rhs_matrix + rhs_vector;
+    //    };
 
     // add assign version doesnt care about vectorization
     template <typename LHSMatrix, typename RHSVector>
     auto SO3_primitive_add_assign(LHSMatrix& lhs,
-                                  RHSVector const& rhs_vector) noexcept -> void{
+                                  RHSVector const& rhs_vector) noexcept
+        -> void {
       lhs += rhs_vector;
     };
     template <>
@@ -184,8 +185,10 @@ namespace {
       CHECK(block.dynamic_states().get<group>().get() == 2.0F);
       CHECK(cpp17::as_const(block).kinematic_rates(time_v).get<group>().get() ==
             2.0F);
-      CHECK(cpp17::as_const(block).dynamic_rates(time_v).get<group>().get() ==
-            5.0F);
+      CHECK(/*cpp17::as_const*/ (block)
+                .dynamic_rates(time_v)
+                .get<group>()
+                .get() == 5.0F);
     }
 
     {
@@ -194,8 +197,10 @@ namespace {
       CHECK(block.dynamic_states().get<group>().get() == 4.0F);
       CHECK(cpp17::as_const(block).kinematic_rates(time_v).get<group>().get() ==
             4.0F);
-      CHECK(cpp17::as_const(block).dynamic_rates(time_v).get<group>().get() ==
-            5.0F);
+      CHECK(/*cpp17::as_const*/ (block)
+                .dynamic_rates(time_v)
+                .get<group>()
+                .get() == 5.0F);
     }
 
     {

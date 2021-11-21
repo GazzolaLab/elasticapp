@@ -31,7 +31,7 @@ namespace {
       elastica::batch_matvec(test_matvec_batch, matrix_batch, vector_batch);
 
       /* element-wise matvec product */
-      for (std::size_t i(0UL); i < n_elems; ++i)
+      for (std::size_t i(0UL); i < n_elems; ++i) // TODO: In Teja's machine, there was some compilation issue here.
         blaze::column(correct_matvec_batch, i) =
             blaze::columnslice(matrix_batch, i) *
             blaze::column(vector_batch, i);
