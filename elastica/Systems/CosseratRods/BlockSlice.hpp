@@ -210,7 +210,7 @@ namespace blocks {
      * Needed because some of the kernels use it
      */
     template <typename Tag>
-    void fill_ghosts_for() const noexcept {};
+    void fill_ghosts_for() const noexcept {}
     //**************************************************************************
     //@}
     //**************************************************************************
@@ -405,7 +405,7 @@ namespace blocks {
      * Needed because some of the kernels use it
      */
     template <typename Tag>
-    void fill_ghosts_for() const noexcept {};
+    void fill_ghosts_for() const noexcept {}
     //**************************************************************************
     //@}
     //**************************************************************************

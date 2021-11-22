@@ -25,15 +25,13 @@ namespace {
 
   template <typename B>
   struct TestGeometry : public WithCircularCosseratRod<Traits, B>{
-    using Traits = Traits;
   };
 
   template <typename B>
   struct TestElasticity : public LinearHyperElasticityFacade<Traits, B>{
-    using Traits = Traits;
   };
 
-  using Plugin = mock::MockPlugin<TestGeometry, TestElasticity>;
+  using Plugin = mock::MockPlugin<Traits, TestGeometry, TestElasticity>;
   using Model = typename Plugin::Model;
 
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.LinearHyperElasticityBase:EBO",

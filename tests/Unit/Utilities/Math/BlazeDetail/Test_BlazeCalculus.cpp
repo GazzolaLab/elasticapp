@@ -17,7 +17,7 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeCalculus: Trapezoidal quadrature test for f(x) = 1",
                      "[Unit][Utilities]") {
-    for (std::size_t n_elems : {1, 32, 128}) {
+    for (std::size_t n_elems : {1UL, 32UL, 128UL}) {
       //! [quadrature_kernel_example]
       const std::size_t n_nodes = n_elems + 1UL;
       MT input_vector_batch(dimension, n_elems),
@@ -36,7 +36,7 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeCalculus: Two point difference test for f(x) = 1",
                      "[Unit][Utilities]") {
-    for (std::size_t n_elems : {1, 32, 128}) {
+    for (std::size_t n_elems : {1UL, 32UL, 128UL}) {
       //! [difference_kernel_example]
       const std::size_t n_nodes = n_elems + 1UL;
       MT input_vector_batch(dimension, n_elems),
@@ -55,7 +55,7 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeCalculus: Trapezoidal quadrature test for f(x) = sin(x)",
                      "[Unit][Utilities]") {
-    for (std::size_t n_elems : {64, 128, 256}) {
+    for (std::size_t n_elems : {64UL, 128UL, 256UL}) {
       const std::size_t n_voronoi = n_elems - 1;
       MT input_vector_batch(dimension, n_elems),
           test_vector_batch(dimension, n_voronoi),
@@ -91,7 +91,7 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeCalculus: Two point difference test for f(x) = sin(x)",
                      "[Unit][Utilities]") {
-    for (std::size_t n_elems : {128, 256, 512}) {
+    for (std::size_t n_elems : {128UL, 256UL, 512UL}) {
       const std::size_t n_voronoi = n_elems - 1;
       MT input_vector_batch(dimension, n_elems),
           test_vector_batch(dimension, n_voronoi),
