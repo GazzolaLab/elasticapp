@@ -21,22 +21,19 @@ namespace {
   template <typename B>
   struct TestGeometry:
       public component::WithCircularCosseratRod<Traits, B>{
-    using Traits = Traits;
   };
 
   template <typename B>
   struct TestKinematics:
       public component::WithRodKinematics<Traits, B>{
-    using Traits = Traits;
   };
 
   template <typename B>
   struct TestElasticity:
       public component::WithDiagonalLinearHyperElasticModel<Traits, B> {
-    using Traits = Traits;
   };
 
-  using Plugin = mock::MockPlugin<TestGeometry, TestElasticity, TestKinematics>;
+  using Plugin = mock::MockPlugin<Traits, TestGeometry, TestElasticity, TestKinematics>;
   using Model = typename Plugin::Model;
 
   //  static_assert(

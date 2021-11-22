@@ -45,7 +45,6 @@ namespace {
     //    DirectionType;
     // into public scope for testing
    public:
-    using Traits = Traits;
     using Parent = WithCircularCosseratRod<Traits, B>;
     using Parent::Parent;
     using typename Parent::ComputedVariables;
@@ -57,7 +56,7 @@ namespace {
     using typename Parent::Frame;
   };
 
-  using Plugin = mock::MockPlugin<TestGeometry>;
+  using Plugin = mock::MockPlugin<Traits, TestGeometry>;
   using Model = typename Plugin::Model;
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.WithCircularCosseratRod: EBO",
                      "[Systems][Unit]") {

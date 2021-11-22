@@ -50,7 +50,6 @@ namespace {
    public:
     using Parent = WithSquareCosseratRod<Traits, B>;
     using Parent::Parent;
-    using Traits = Traits;
     using typename Parent::ComputedVariables;
     using typename Parent::InitializedVariables;
     using typename Parent::Variables;
@@ -60,7 +59,7 @@ namespace {
     using typename Parent::Frame;
   };
 
-  using Plugin = mock::MockPlugin<TestGeometry>;
+  using Plugin = mock::MockPlugin<Traits, TestGeometry>;
   // using Model = blocks::Block<Plugin>;
   using Model = typename Plugin::Model;
   // TypeDisplayer<typename Model::MatrixVariables> td{};

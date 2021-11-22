@@ -21,7 +21,7 @@ namespace {
   // conform to protocol and assert
   template <typename B>
   struct TestRodSpanwiseGeometry : public RodSpanwiseGeometry<Traits, B> {
-    using Traits = Traits;
+    // using Traits = Traits;
   };
 
 }  // namespace
@@ -31,7 +31,7 @@ namespace {
   template <typename B>
   using TestGeometry = TestRodSpanwiseGeometry<B>;
 
-  using Plugin = mock::MockPlugin<TestGeometry>;
+  using Plugin = mock::MockPlugin<Traits, TestGeometry>;
   // using Model = blocks::Block<Plugin>;
   using Model = typename Plugin::Model;
 

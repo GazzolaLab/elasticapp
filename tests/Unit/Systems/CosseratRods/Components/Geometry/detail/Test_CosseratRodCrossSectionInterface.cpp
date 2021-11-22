@@ -55,7 +55,6 @@ namespace {
     //    DirectionType;
     // into public scope for testing
    public:
-    using Traits = Traits;
     using Parent =
         CosseratRodCrossSectionInterface<Traits, B,
                                          MockCrossSectionOperations>;
@@ -69,7 +68,7 @@ namespace {
     using typename Parent::Frame;
   };
 
-  using Plugin = mock::MockPlugin<TestGeometry>;
+  using Plugin = mock::MockPlugin<Traits, TestGeometry>;
   //  using Model = blocks::Block<Plugin>;
   using Model = typename Plugin::Model;
 

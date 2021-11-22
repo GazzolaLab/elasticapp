@@ -24,7 +24,7 @@ namespace {
 
   // Test Unit
   using Optimization = OptimizationLevel;
-  using Operations = Operations<Optimization::basic>;
+  using Operations = OpsTraits<Optimization::basic>;
 
   // TODO: Protocol for Traits operations
   // static_assert(tt::assert_conforms_to<Operations, protocols::Operations>,

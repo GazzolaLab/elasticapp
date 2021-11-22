@@ -155,7 +155,7 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.ElasticityInterface.data",
                      "[Systems][Unit]") {
-    using Plugin = mock::MockPlugin<TestDataElasticityModel>;
+    using Plugin = mock::MockPlugin<Traits, TestDataElasticityModel>;
     using Model = blocks::Block<Plugin>;
     Model model{};
     // using ElasiticityModel = TestDataElasticityModel<Model>;

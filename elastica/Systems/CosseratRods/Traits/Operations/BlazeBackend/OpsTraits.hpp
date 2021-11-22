@@ -4,12 +4,10 @@
 // Includes
 //******************************************************************************
 #include "Utilities/NonCreatable.hpp"
-
-#include "elastica/Utilities/Math/BlazeDetail/BlazeLinearAlgebra.hpp"
-#include "elastica/Utilities/Math/BlazeDetail/BlazeCalculus.hpp"
-#include "elastica/Utilities/Math/BlazeDetail/BlazeRotation.hpp"
-
-#include "elastica/Systems/CosseratRods/Traits/Operations/BlazeBackend/OptimizationLevel.hpp"
+#include "Systems/CosseratRods/Traits/Operations/BlazeBackend/OptimizationLevel.hpp"
+#include "Utilities/Math/BlazeDetail/BlazeCalculus.hpp"
+#include "Utilities/Math/BlazeDetail/BlazeLinearAlgebra.hpp"
+#include "Utilities/Math/BlazeDetail/BlazeRotation.hpp"
 
 #include "blaze/Blaze.h"
 #include "blaze_tensor/Blaze.h"
@@ -20,16 +18,13 @@ namespace elastica {
 
   namespace cosserat_rod {
 
-
-
     //**************************************************************************
     /*! \cond ELASTICA_INTERNAL */
     /*!\brief Rod Operations specialized for blaze data structures
      * \ingroup cosserat_rods
      */
     template <OptimizationLevel O>
-    struct Operations : private NonCreatable{
-    };
+    struct OpsTraits : private NonCreatable {};
     /*! \endcond */
     //**************************************************************************
 
@@ -39,30 +34,37 @@ namespace elastica {
      * \ingroup cosserat_rods
      */
     template <typename VT, bool TF>
-    static inline decltype(auto) toMatrix(const ::blaze::Vector<VT, TF>& vec){
+    static inline decltype(auto) to_matrix(const ::blaze::Vector<VT, TF>& vec) {
       return ::blaze::expand<1UL>(vec);
     }
     template <typename VT, bool TF>
-    static inline std::size_t get_batch_elems(::blaze::Vector<VT, TF> const& scalar_batch){
+    static inline std::size_t get_batch_elems(
+        ::blaze::Vector<VT, TF> const& scalar_batch) {
       // return ::blaze::rows(*scalar_batch);
       return (*scalar_batch).size();
     }
     template <typename MT, bool SO>
-    static inline std::size_t get_batch_elems(::blaze::Matrix<MT, SO> const& vector_batch){
+    static inline std::size_t get_batch_elems(
+        ::blaze::Matrix<MT, SO> const& vector_batch) {
       // return ::blaze::columns(*vector_batch);
       return (*vector_batch).columns();
     }
     template <typename TT>
-    static inline std::size_t get_batch_elems(::blaze::Tensor<TT> const& matrix_batch){
-      //return ::blaze::columns(*matrix_batch);
+    static inline std::size_t get_batch_elems(
+        ::blaze::Tensor<TT> const& matrix_batch) {
+      // return ::blaze::columns(*matrix_batch);
       return (*matrix_batch).columns();
     }
     template <typename VT, bool TF>
-    static inline auto batch_slice(::blaze::Vector<VT, TF> const& scalar_batch, const std::size_t start_index, const std::size_t size){
+    static inline auto batch_slice(::blaze::Vector<VT, TF> const& scalar_batch,
+                                   const std::size_t start_index,
+                                   const std::size_t size) {
       return ::blaze::subvector(*scalar_batch, start_index, size);
     }
     template <typename MT, bool SO>
-    static inline auto batch_slice(::blaze::Matrix<MT, SO> const& vector_batch, const std::size_t start_index, const std::size_t size){
+    static inline auto batch_slice(::blaze::Matrix<MT, SO> const& vector_batch,
+                                   const std::size_t start_index,
+                                   const std::size_t size) {
       return ::blaze::submatrix(*vector_batch, 0UL, start_index, 3UL, size);
     }
 
@@ -72,7 +74,7 @@ namespace elastica {
      * \ingroup cosserat_rods
      */
     template <>
-    struct Operations<OptimizationLevel::basic> : private NonCreatable {
+    struct OpsTraits<OptimizationLevel::basic> : private NonCreatable {
       static inline int add(int x, int y) { return x + y; }
 
       // add axis=0 with size 3
@@ -97,12 +99,17 @@ namespace elastica {
       // Batch Operations
       // TODO: Documentation
       template <typename MT1, typename MT2, typename VT>
-      static inline void batch_division_matvec(MT1& out_matrix, const MT2& denominator, const VT& numerator){
-        //const std::size_t n_elems = denominator.columns();
+      static inline void batch_division_matvec(MT1& out_matrix,
+                                               const MT2& denominator,
+                                               const VT& numerator) {
+        // const std::size_t n_elems = denominator.columns();
         auto tp_numerator = transpose(numerator);
-        blaze::row(out_matrix, 0UL) = blaze::row(denominator, 0UL) / tp_numerator;
-        blaze::row(out_matrix, 1UL) = blaze::row(denominator, 1UL) / tp_numerator;
-        blaze::row(out_matrix, 2UL) = blaze::row(denominator, 2UL) / tp_numerator;
+        blaze::row(out_matrix, 0UL) =
+            blaze::row(denominator, 0UL) / tp_numerator;
+        blaze::row(out_matrix, 1UL) =
+            blaze::row(denominator, 1UL) / tp_numerator;
+        blaze::row(out_matrix, 2UL) =
+            blaze::row(denominator, 2UL) / tp_numerator;
       }
 
       // TODO: Documentation
@@ -113,15 +120,16 @@ namespace elastica {
         batch_matvec(matvec_batch, matrix_batch, vector_batch);
       }
       template <typename MT1,  // blaze Matrix expression type 1
-          typename TT,   // blaze Tensor expression type
-          typename MT2>  // blaze Matrix expression type 2
+                typename TT,   // blaze Tensor expression type
+                typename MT2>  // blaze Matrix expression type 2
       static inline void batch_mattranspvec(MT1& matvec_batch,
-                        const TT& matrix_batch,
-                        const MT2& vector_batch) {
+                                            const TT& matrix_batch,
+                                            const MT2& vector_batch) {
         constexpr std::size_t dimension(3UL);
         for (std::size_t i(0UL); i < dimension; ++i) {
           auto val = blaze::trans(blaze::rowslice(matrix_batch, i));
-          blaze::row(matvec_batch, i) = blaze::sum<blaze::columnwise>(val % vector_batch);
+          blaze::row(matvec_batch, i) =
+              blaze::sum<blaze::columnwise>(val % vector_batch);
         }
       }
 
@@ -170,8 +178,7 @@ namespace elastica {
         two_point_difference_kernel(input_vector, output_vector);
       }
 
-
-      //**************************************************************************
+      //************************************************************************
       /*!\brief Average kernal computation
        *
        * Equivalent to 'node_to_element_pos_or_vel' in pyelastica
@@ -186,13 +193,14 @@ namespace elastica {
         const std::size_t n_elems = get_batch_elems(arr);
 
         // 0.5*(ref_length[1:] + ref_length[:-1])
-        return ValueType(0.5) * (batch_slice(arr, 0UL, n_elems-1) +
-                                 batch_slice(arr, 1UL, n_elems-1));
-      };
-      //**************************************************************************
+        return ValueType(0.5) * (batch_slice(arr, 0UL, n_elems - 1) +
+                                 batch_slice(arr, 1UL, n_elems - 1));
+      }
+      //************************************************************************
 
-      template<typename MT1, typename MT2>
-      static inline void quadrature_kernel(MT1& out_matrix, const MT2& in_matrix){
+      template <typename MT1, typename MT2>
+      static inline void quadrature_kernel(MT1& out_matrix,
+                                           const MT2& in_matrix) {
         using ::elastica::quadrature_kernel;
         quadrature_kernel(out_matrix, in_matrix);
       }
@@ -202,7 +210,8 @@ namespace elastica {
       // TODO: Documentation
       template <typename MT,  // blaze Matrix expression type
                 typename TT>  // blaze Tensor expression type
-      static inline void batch_inv_rotate(MT& rot_axis_vector_batch, const TT& rot_matrix_batch) {
+      static inline void batch_inv_rotate(MT& rot_axis_vector_batch,
+                                          const TT& rot_matrix_batch) {
         using ::elastica::batch_inv_rotate;
         batch_inv_rotate(rot_axis_vector_batch, rot_matrix_batch);
       }
@@ -212,7 +221,8 @@ namespace elastica {
       // TODO: Documentation
       template <typename MT,  // blaze Matrix expression type
                 typename TT>  // blaze Tensor expression type
-      static inline void batch_mat_exp(MT& rot_matrix_batch, const TT& rot_axis_vector_batch) {
+      static inline void batch_mat_exp(MT& rot_matrix_batch,
+                                       const TT& rot_axis_vector_batch) {
         using ::elastica::exp_batch;
         exp_batch(rot_matrix_batch, rot_axis_vector_batch);
       }
@@ -222,11 +232,11 @@ namespace elastica {
       // specifically used for compute-curvature
       // TODO: Documentation
       template <typename MT,  // blaze Matrix expression type
-                typename TT, // blaze Tensor expression type
+                typename TT,  // blaze Tensor expression type
                 typename VT>  // blaze Matrix expression type
-      static inline void spanwise_inv_rotate_and_divide(MT& rot_axis_vector,
-                                                     const TT& rot_matrix,
-                                                     const VT& normalize_vector) {
+      static inline void spanwise_inv_rotate_and_divide(
+          MT& rot_axis_vector, const TT& rot_matrix,
+          const VT& normalize_vector) {
         constexpr std::size_t dimension(3UL);
         const std::size_t blocksize = rot_axis_vector.columns();
         using ValueType = typename TT::ElementType;
@@ -240,10 +250,12 @@ namespace elastica {
          * R = Q_t Q_{t+1} (elementwise)
          * theta = acos((tr(R) - 1) / 2)
          */
-        auto q_next = blaze::subtensor(rot_matrix, 0UL, 0UL, 1UL, dimension, dimension, blocksize);
-        auto q = blaze::subtensor(rot_matrix, 0UL, 0UL, 0UL, dimension, dimension, blocksize);
+        auto q_next = blaze::subtensor(rot_matrix, 0UL, 0UL, 1UL, dimension,
+                                       dimension, blocksize);
+        auto q = blaze::subtensor(rot_matrix, 0UL, 0UL, 0UL, dimension,
+                                  dimension, blocksize);
         auto qqt = q % q_next;
-        auto rot_matrix_trace = // TODO: maybe use reduced_sum
+        auto rot_matrix_trace =  // TODO: maybe use reduced_sum
             blaze::row(blaze::pageslice(qqt, 0UL), 0UL) +
             blaze::row(blaze::pageslice(qqt, 0UL), 1UL) +
             blaze::row(blaze::pageslice(qqt, 0UL), 2UL) +
@@ -253,8 +265,8 @@ namespace elastica {
             blaze::row(blaze::pageslice(qqt, 2UL), 0UL) +
             blaze::row(blaze::pageslice(qqt, 2UL), 1UL) +
             blaze::row(blaze::pageslice(qqt, 2UL), 2UL);
-        auto theta = blaze::acos(ValueType(0.5) * rot_matrix_trace
-                                 - ValueType(0.5) - ValueType(1e-10));
+        auto theta = blaze::acos(ValueType(0.5) * rot_matrix_trace -
+                                 ValueType(0.5) - ValueType(1e-10));
 
         auto trans_normalize_vector = blaze::trans(normalize_vector);
         /* theta (u) = -theta * inv_skew([R - RT]) / 2 sin(theta) */
@@ -262,9 +274,11 @@ namespace elastica {
           std::size_t idx1 = (i + 1UL) % dimension;
           std::size_t idx2 = (i + 2UL) % dimension;
           blaze::row(rot_axis_vector, i) =
-            (ValueType(-0.5) * theta / blaze::sin(theta+ValueType(1e-14)) / trans_normalize_vector) *
-            blaze::sum<blaze::columnwise>((blaze::pageslice(q_next, idx2) % blaze::pageslice(q, idx1)) -
-                                          (blaze::pageslice(q_next, idx1) % blaze::pageslice(q, idx2)));
+              (ValueType(-0.5) * theta / blaze::sin(theta + ValueType(1e-14)) /
+               trans_normalize_vector) *
+              blaze::sum<blaze::columnwise>(
+                  (blaze::pageslice(q_next, idx2) % blaze::pageslice(q, idx1)) -
+                  (blaze::pageslice(q_next, idx1) % blaze::pageslice(q, idx2)));
         }
       }
 
@@ -281,20 +295,20 @@ namespace elastica {
         using ValueType = typename MT::ElementType;
         blaze::row(matrix, 2UL) += ValueType(1.0);
       }
-
     };
     /*! \endcond */
     //**************************************************************************
 
-//    //**************************************************************************
-//    /*! \cond ELASTICA_INTERNAL */
-//    /*!\brief Specialization for optimized routines
-//     * \ingroup cosserat_rods
-//     */
-//    template<>
-//    struct Operations<OptimizationLevel::optimized> : private NonCreatable {};
-//    /*! \endcond */
-//    //**************************************************************************
+    //    //********************************************************************
+    //    /*! \cond ELASTICA_INTERNAL */
+    //    /*!\brief Specialization for optimized routines
+    //     * \ingroup cosserat_rods
+    //     */
+    //    template<>
+    //    struct OpsTraits<OptimizationLevel::A> : private NonCreatable
+    //    {};
+    //    /*! \endcond */
+    //    //********************************************************************
 
   }  // namespace cosserat_rod
 

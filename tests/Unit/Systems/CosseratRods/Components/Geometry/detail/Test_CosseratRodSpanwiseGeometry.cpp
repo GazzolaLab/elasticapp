@@ -31,10 +31,9 @@ namespace {
 
   template <typename B>
   struct TestGeometry : public CosseratRodSpanwiseGeometry<Traits, B>{
-    using Traits = Traits;
   };
 
-  using Plugin = mock::MockPlugin<TestGeometry>;
+  using Plugin = mock::MockPlugin<Traits, TestGeometry>;
 //  using Model = blocks::Block<Plugin>;
   using Model = typename Plugin::Model;
 

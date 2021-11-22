@@ -32,10 +32,10 @@ namespace blocks {
     using Parent::initialize;
   };
 
-  template <template <typename> class ... T>
-  class Block<mock::MultiComponentPlugin<Block, T...>>
-      : public BlockFacade<mock::MultiComponentPlugin<Block, T...>> {
-    using Parent = BlockFacade<mock::MultiComponentPlugin<Block, T...>>;
+  template <typename Tr, template <typename> class ... T>
+  class Block<mock::MultiComponentPlugin<Tr, Block, T...>>
+      : public BlockFacade<mock::MultiComponentPlugin<Tr, Block, T...>> {
+    using Parent = BlockFacade<mock::MultiComponentPlugin<Tr, Block, T...>>;
     using Plugin = typename Parent::PluginType;
 
     static_assert(::tt::assert_conforms_to<Plugin, blocks::protocols::Plugin>,
@@ -53,7 +53,7 @@ namespace blocks {
 
     // we need a ghosts function here :(
     template <typename Tag>
-    void fill_ghosts_for() const noexcept{};
+    void fill_ghosts_for() const noexcept{}
   };
 
 }  // namespace blocks

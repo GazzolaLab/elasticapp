@@ -27,11 +27,11 @@ namespace mock {
   };
 
   // B can be block or block slice
-  template <template <typename> class B, template <typename> class... T>
+  template <typename Tr, template <typename> class B, template <typename> class... T>
   struct MultiComponentPlugin
-      : public T<B<MultiComponentPlugin<B, T...>> >...,
+      : public T<B<MultiComponentPlugin<Tr, B, T...>>>...,
         public ::tt::ConformsTo<blocks::protocols::Plugin> {
-    using This = MultiComponentPlugin<B, T...>;
+    using This = MultiComponentPlugin<Tr, B, T...>;
     using Model = B<This>;
     using Variables = tmpl::append<typename T<Model>::Variables...>;
     using InitializedVariables =
@@ -39,7 +39,8 @@ namespace mock {
     using ComputedVariables =
         tmpl::append<typename T<Model>::ComputedVariables...>;
 
-    using Traits = tmpl::front<tmpl::list<typename T<Model>::Traits...>>;
+    //using Traits = tmpl::front<tmpl::list<typename T<Model>::Traits...>>;
+    using Traits = Tr;
 
     using IndexType = typename Traits::DataType::Index;
     using ScalarType = typename Traits::DataType::Scalar;
@@ -88,17 +89,15 @@ namespace mock {
     static void initialize(DownstreamBlock& downstream_block,
                            CosseratInitializer&& initializers) {
       downstream_block.resize_members(initializers.n_elems());
-      EXPAND_PACK_LEFT_TO_RIGHT(
-          T<Model>::initialize(downstream_block,
-                               std::forward<CosseratInitializer>(initializers))
-        );
+      EXPAND_PACK_LEFT_TO_RIGHT(T<Model>::initialize(
+          downstream_block, std::forward<CosseratInitializer>(initializers)));
     }
   };
 
   //  template <template <typename> class T>
   //  using MockPlugin = SingleComponentPlugin<blocks::Block, T>;
 
-  template <template <typename> class... T>
-  using MockPlugin = MultiComponentPlugin<blocks::Block, T...>;
+  template <typename Tr, template <typename> class... T>
+  using MockPlugin = MultiComponentPlugin<Tr, blocks::Block, T...>;
 
 }  // namespace mock
