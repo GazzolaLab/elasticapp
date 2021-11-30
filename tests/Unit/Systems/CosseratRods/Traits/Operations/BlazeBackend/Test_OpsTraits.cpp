@@ -65,23 +65,49 @@ namespace {
                      "[Systems][Unit]") {
     CHECK(1); // TODO - non-priority: simple function from blaze
   }
-  //************************************************************************
+  //****************************************************************************
   // Batch Operations
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: batch_matvec",
                      "[Systems][Unit]") {
-    const std::size_t n_elems(64UL);
-    Matrix::data_type matrix_batch(dimension, dimension, n_elems);
-    Vector::data_type vector_batch(dimension, n_elems),
-        test_matvec_batch(dimension, n_elems),
-        correct_matvec_batch(dimension, n_elems);
+    static Approx approx = Approx::custom().epsilon(1e-5);
+    Matrix::data_type matrix_batch(3UL, 3UL, 9UL);
+    Vector::data_type vector_batch(3UL, 9UL), test_matvec_batch(3UL, 9UL),
+        correct_matvec_batch(3UL, 9UL);
+
+    matrix_batch = {{{0.032009, 0.295688, 0.0802679, 0.444135, 0.848266,
+                      0.947798, 0.0888524, 0.194528, 0.00564117},
+                     {0.811298, 0.126109, 0.855166, 0.710564, 0.138555,
+                      0.498771, 0.644454, 0.736467, 0.549105},
+                     {0.607603, 0.847337, 0.122528, 0.149964, 0.968347,
+                      0.376591, 0.124194, 0.439086, 0.0871375}},
+                    {{0.56359, 0.417666, 0.33443, 0.683885, 0.168398, 0.752092,
+                      0.353595, 0.832106, 0.781159},
+                     {0.263162, 0.681189, 0.0652723, 0.544884, 0.240297,
+                      0.616389, 0.649382, 0.39331, 0.648699},
+                     {0.128448, 0.377084, 0.0678307, 0.830412, 0.0674234,
+                      0.999041, 0.81527, 0.00714138, 0.0840087}},
+                    {{0.768763, 0.478399, 0.362175, 0.0880274, 0.0254617,
+                      0.356147, 0.0272758, 0.980988, 0.839524},
+                     {0.530908, 0.0771562, 0.148289, 0.784449, 0.892867,
+                      0.455831, 0.0608031, 0.894461, 0.305227},
+                     {0.720157, 0.915282, 0.388605, 0.438926, 0.599945,
+                      0.171136, 0.405663, 0.757049, 0.913819}}};
+    vector_batch = {{0.614823, 0.611165, 0.470191, 0.278854, 0.2169, 0.825105,
+                     0.304855, 0.746385, 0.989298},
+                    {0.308332, 0.504112, 0.160027, 0.566804, 0.00126051,
+                     0.407858, 0.733165, 0.614615, 0.915777},
+                    {0.715569, 0.52956, 0.111037, 0.41087, 0.677285, 0.475944,
+                     0.693132, 0.640913, 0.139238}};
+    correct_matvec_batch = {{0.704611, 0.693003, 0.188196, 0.588215, 0.84001,
+                             1.1647, 0.585661, 0.879252, 0.520571},
+                            {0.519563, 0.798347, 0.175223, 0.840738, 0.0824933,
+                             1.34744, 1.14899, 0.867383, 1.37856},
+                            {1.15167, 0.815973, 0.237171, 0.649517, 0.412982,
+                             0.561224, 0.334072, 1.76715, 1.2373}};
+
     Operations::batch_matvec(test_matvec_batch, matrix_batch, vector_batch);
 
-    /* element-wise matvec product */
-    for (std::size_t i(0UL); i < n_elems; ++i)
-      Vector::slice(correct_matvec_batch, i) =
-          Matrix::slice(matrix_batch, i) * Vector::slice(vector_batch, i);
-
-    CHECK(test_matvec_batch == correct_matvec_batch);
+    CHECK_MATRIX_CUSTOM_APPROX(test_matvec_batch, correct_matvec_batch, approx);
   }
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: batch_matmul",
                      "[Systems][Unit]") {

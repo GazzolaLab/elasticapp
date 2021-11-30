@@ -21,7 +21,7 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Utilities.Math.BlazeDetail.BlazeLinearAlgebra: Randomized batch matrix-vector product test",
                      "[Unit][Utilities]") {
-    for (std::size_t n_elems : {1UL, 32UL, 128UL}) {
+    for (std::size_t n_elems : {32UL, 64UL}) {
       TT matrix_batch(dimension, dimension, n_elems);
       MT vector_batch(dimension, n_elems),
           test_matvec_batch(dimension, n_elems),
@@ -31,7 +31,7 @@ namespace {
       elastica::batch_matvec(test_matvec_batch, matrix_batch, vector_batch);
 
       /* element-wise matvec product */
-      for (std::size_t i(0UL); i < n_elems; ++i) // TODO: In Teja's machine, there was some compilation issue here.
+      for (std::size_t i(0UL); i < n_elems; ++i)
         blaze::column(correct_matvec_batch, i) =
             blaze::columnslice(matrix_batch, i) *
             blaze::column(vector_batch, i);
