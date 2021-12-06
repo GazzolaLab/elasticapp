@@ -78,6 +78,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # include(SetupHdf5) include(SetupAllocator) include(SetupLIBXSMM)
 # include(SetupLapack) include(SetupNumPy) include(SetupOpenMP)
 # include(SetupPapi) include(SetupSciPy) include(SetupLibsharp)
+
+include(SetupSleef)
 include(SetupBlaze)
 include(SetupBlazeTensor)
 include(SetupBrigand)
