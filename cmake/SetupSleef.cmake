@@ -1,6 +1,6 @@
 log_info("Finding Sleef")
 
-find_package(Sleef REQUIRED QUIET)
+find_package(Sleef QUIET)
 
 file(APPEND "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
         "Sleef Version:  ${SLEEF_VERSION}\n")
