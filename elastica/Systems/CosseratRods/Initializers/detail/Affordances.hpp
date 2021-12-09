@@ -33,7 +33,8 @@ namespace elastica {
           // rest args should come from
           // make a copy, then replace the arguments.
           Initializer copy(self());
-          EXPAND_PACK_LEFT_TO_RIGHT((std::get<Args>(copy.data()) = args));
+          EXPAND_PACK_LEFT_TO_RIGHT(
+              (std::get<Args>(copy.data()) = std::forward<Args>(args)));
           return copy;
         }
       };
