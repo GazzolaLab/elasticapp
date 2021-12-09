@@ -19,6 +19,15 @@ Some examples provide additional file or link to published paper for a complete 
         * Material
         * Block
 
+* [`tutorial_rod_construction`](./tutorial_rod_construction)
+    * __Name__: Rod construction tutorial
+    * __Purpose__: Demonstrate creating a single rod in the context of an elastica simulation.
+    * __Features__:
+        * Cosserat Rod
+        * Initializer
+        * blocks::initialize
+        * Material
+
 ### Function
 
 * [`block_initialization`](./block_initialization)
