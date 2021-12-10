@@ -42,11 +42,15 @@ option(DOCS_ONLY "Skip all initialization not required for rendering documentati
 option(ELASTICA_SMP "Enable/Disable the shared-memory parallelization." ON)
 option(ELASTICA_PROFILING_MODE "Enable/Disable intrusive code profiling." ON)
 option(ELASTICA_BUILD_TESTS "Build test programs" ON)
+option(ELASTICA_BUILD_DOCUMENTATION "Builds the documentation in addition to code" ON)
 
 if (DOCS_ONLY)
     include(SetupDoxygen)
     return()
 endif (DOCS_ONLY)
+if (ELASTICA_BUILD_DOCUMENTATION)
+    include(SetupDoxygen)
+endif (ELASTICA_BUILD_DOCUMENTATION)
 
 include(ProhibitInSourceBuild)
 # include(AddSources) # Add function to add a set of source files.
@@ -98,7 +102,6 @@ endif ()
 include(SetupYamlCpp)
 # include(SetupVTK)
 
-include(SetupDoxygen)
 include(CodeCoverageDetection)
 
 # Configure files
