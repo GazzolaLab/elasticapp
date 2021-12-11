@@ -12,10 +12,12 @@
 
 TEST_CASE("BenchmarkSO3PrimitiveAddAssign") {
   using namespace elastica::states::detail;
+  const std::size_t n_values = 1024UL;
 
   BENCHMARK_ADVANCED("Add assign scalar")
   (Catch::Benchmark::Chronometer meter) {
-    SO3PrimitiveAddAssignBenchmarkSetup<SO3AddAssignKind::scalar> bench{256UL};
+    SO3PrimitiveAddAssignBenchmarkSetup<SO3AddAssignKind::scalar> bench{
+        n_values};
     meter.measure([&] {
       bench.run();
       return bench.w_input;
@@ -24,7 +26,7 @@ TEST_CASE("BenchmarkSO3PrimitiveAddAssign") {
 
   BENCHMARK_ADVANCED("Add assign SIMD")
   (Catch::Benchmark::Chronometer meter) {
-    SO3PrimitiveAddAssignBenchmarkSetup<SO3AddAssignKind::simd> bench{256UL};
+    SO3PrimitiveAddAssignBenchmarkSetup<SO3AddAssignKind::simd> bench{n_values};
     meter.measure([&] {
       bench.run();
       return bench.w_input;

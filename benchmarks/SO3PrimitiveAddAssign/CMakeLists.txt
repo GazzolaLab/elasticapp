@@ -13,6 +13,7 @@ foreach (EXEC ${BENCHMARK};${PROFILE})
             BlazeTensor
             Systems
             ElasticaFlags
+            # Sleef
             )
 
 endforeach ()
