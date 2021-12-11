@@ -10,15 +10,6 @@
 #include <blaze/config/Vectorization.h>
 #include <blaze/system/Optimizations.h>  // for padding
 //
-#define BLAZE_SLEEF_MODE_CACHED BLAZE_SLEEF_MODE
-#undef BLAZE_SLEEF_MODE
-#define BLAZE_USE_SLEEF_CACHED BLAZE_USE_SLEEF
-#undef BLAZE_USE_SLEEF
-#define BLAZE_USE_SLEEF 1
-//
-#include <blaze/math/simd/Cos.h>
-#include <blaze/math/simd/Sin.h>
-//
 #include <blaze/math/DynamicMatrix.h>
 #include <blaze_tensor/math/DynamicTensor.h>
 //
@@ -76,6 +67,11 @@ namespace elastica {
           SIMDType u[3UL];
           SIMDType alpha, beta;
 
+#if !(BLAZE_SVML_MODE || BLAZE_SLEEF_MODE)
+          // a temporary aligned register to pipe contents into
+          alignas(::blaze::AlignmentOf_v<T>) T temp[SIMDSIZE];
+#endif
+
           std::size_t i_dof = 0UL;
 
           for (; i_dof < i_dof_pos; i_dof += SIMDSIZE) {
@@ -106,13 +102,30 @@ namespace elastica {
 #pragma unroll 3UL
               for (std::size_t dim = 0UL; dim < 3UL; ++dim) { /* NOLINT */
                 // bad access pattern
-                u[dim] /= (beta + ::blaze::setall(T(
-                                      1e-14)));  // TODO : refactor magic number
+                // TODO : refactor magic number
+                auto arg = (beta + ::blaze::set(T(1e-14)));
+                u[dim] /= arg;
               }
 
-              // compute trigonometry
-              alpha = ::blaze::setall(T(1.0)) - ::blaze::cos(beta);
+              // compute trigonometric entities
+#if BLAZE_SVML_MODE || BLAZE_SLEEF_MODE
+              alpha = ::blaze::set(T(1.0)) - ::blaze::cos(beta);
               beta = ::blaze::sin(beta);
+#else
+              // no intrinsics, so we unpack the SIMD vector, compute sin and
+              // cos on each via regular math functions and then repack it
+#pragma unroll SIMDSIZE
+              for (std::size_t simd_idx = 0UL; simd_idx < SIMDSIZE; ++simd_idx)
+                temp[simd_idx] = T(1.0) - ::blaze::cos(beta[simd_idx]);
+
+              alpha = ::blaze::loada(temp);
+
+#pragma unroll SIMDSIZE
+              for (std::size_t simd_idx = 0UL; simd_idx < SIMDSIZE; ++simd_idx)
+                temp[simd_idx] = ::blaze::sin(beta[simd_idx]);
+
+              beta = ::blaze::loada(temp);
+#endif
             }
 
             {
@@ -121,7 +134,8 @@ namespace elastica {
 #pragma unroll 3UL
               for (std::size_t j_dim = 0UL; j_dim < 3UL; ++j_dim) { /* NOLINT */
                 q_it[0UL + j_dim].stream(
-                    alpha * (-(u[1UL] * u[1UL] + u[2UL] * u[2UL]) * q[j_dim] +
+                    alpha * ((u[1UL] * u[1UL] + u[2UL] * u[2UL]) *
+                                 (SIMDType() - q[j_dim]) +
                              u[0UL] * (q[3UL + j_dim] * u[1UL] +
                                        q[6UL + j_dim] * u[2UL])) +
                     beta * (q[3UL + j_dim] * u[2UL] - q[6UL + j_dim] * u[1UL]) +
@@ -132,10 +146,10 @@ namespace elastica {
 #pragma unroll 3UL
               for (std::size_t j_dim = 0UL; j_dim < 3UL; ++j_dim) { /* NOLINT */
                 q_it[3UL + j_dim].stream(
-                    alpha *
-                        (-(u[0UL] * u[0UL] + u[2UL] * u[2UL]) * q[3UL + j_dim] +
-                         u[1UL] *
-                             (q[j_dim] * u[0UL] + q[6UL + j_dim] * u[2UL])) +
+                    alpha * ((u[0UL] * u[0UL] + u[2UL] * u[2UL]) *
+                                 (SIMDType() - q[3UL + j_dim]) +
+                             u[1UL] * (q[j_dim] * u[0UL] +
+                                       q[6UL + j_dim] * u[2UL])) +
                     beta * (q[6UL + j_dim] * u[0UL] - q[j_dim] * u[2UL]) +
                     q[3UL + j_dim]);
               }
@@ -144,10 +158,10 @@ namespace elastica {
 #pragma unroll 3UL
               for (std::size_t j_dim = 0UL; j_dim < 3UL; ++j_dim) { /* NOLINT */
                 q_it[6UL + j_dim].stream(
-                    alpha *
-                        (-(u[0UL] * u[0UL] + u[1UL] * u[1UL]) * q[6UL + j_dim] +
-                         u[2UL] *
-                             (q[j_dim] * u[0UL] + q[3UL + j_dim] * u[1UL])) +
+                    alpha * ((u[0UL] * u[0UL] + u[1UL] * u[1UL]) *
+                                 (SIMDType() - q[6UL + j_dim]) +
+                             u[2UL] * (q[j_dim] * u[0UL] +
+                                       q[3UL + j_dim] * u[1UL])) +
                     beta * (q[j_dim] * u[1UL] - q[3UL + j_dim] * u[0UL]) +
                     q[6UL + j_dim]);
               }
@@ -168,7 +182,7 @@ namespace elastica {
           }  // i_dof
 
           // then do the last loops, peeling them off to serial scalar
-          // implementation
+          // implementation UNTESTED
           if (remainder)
             SO3AddAssign<SO3AddAssignKind::scalar>::internal_apply(
                 lhs_matrix_batch, rhs_vector_batch, i_dof, n_dofs);
@@ -180,11 +194,3 @@ namespace elastica {
   }  // namespace states
 
 }  // namespace elastica
-
-#undef BLAZE_SLEEF_MODE
-#define BLAZE_SLEEF_MODE BLAZE_SLEEF_MODE_CACHED
-#undef BLAZE_SLEEF_MODE_CACHED
-
-#undef BLAZE_USE_SLEEF
-#define BLAZE_USE_SLEEF BLAZE_USE_SLEEF_CACHED
-#undef BLAZE_USE_SLEEF_CACHED

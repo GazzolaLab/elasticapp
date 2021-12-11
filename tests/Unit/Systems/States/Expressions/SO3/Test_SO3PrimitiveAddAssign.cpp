@@ -9,7 +9,7 @@
 //
 // needs to be included first
 #include "Systems/States/Expressions/backends/blaze/SO3PrimitiveAddAssign/BaseTemplate.hpp"
-//#include "Systems/States/Expressions/backends/blaze/SO3PrimitiveAddAssign/SIMD.hpp"
+#include "Systems/States/Expressions/backends/blaze/SO3PrimitiveAddAssign/SIMD.hpp"
 #include "Systems/States/Expressions/backends/blaze/SO3PrimitiveAddAssign/Scalar.hpp"
 //
 #include "Systems/States/Expressions/SO3.hpp"
@@ -80,17 +80,17 @@ namespace {
       CHECK_ITERABLE_APPROX(to_vec(input), to_vec(expected_result2));
     }
 
-// TODO : Fix issue #7, #37
-//    SECTION("Add assign SIMD version") {
-//      auto input(temp_to_synch);
-//      detail::SO3AddAssign<detail::SO3AddAssignKind::simd>::apply(input,
-//                                                                  rhs_vector);
-//      CHECK_ITERABLE_APPROX(to_vec(input), to_vec(expected_result1));
-//
-//      detail::SO3AddAssign<detail::SO3AddAssignKind::simd>::apply(input,
-//                                                                  rhs_vector);
-//      CHECK_ITERABLE_APPROX(to_vec(input), to_vec(expected_result2));
-//    }
+    // TODO : Fix issue #7, #37
+    SECTION("Add assign SIMD version") {
+      auto input(temp_to_synch);
+      detail::SO3AddAssign<detail::SO3AddAssignKind::simd>::apply(input,
+                                                                  rhs_vector);
+      CHECK_ITERABLE_APPROX(to_vec(input), to_vec(expected_result1));
+
+      detail::SO3AddAssign<detail::SO3AddAssignKind::simd>::apply(input,
+                                                                  rhs_vector);
+      CHECK_ITERABLE_APPROX(to_vec(input), to_vec(expected_result2));
+    }
   }
 
 }  // namespace
