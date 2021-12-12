@@ -1,6 +1,6 @@
 #pragma once
 
-#include <blaze/math.h>
+#include <blaze/Math.h>
 
 namespace elastica {
 

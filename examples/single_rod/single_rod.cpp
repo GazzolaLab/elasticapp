@@ -57,9 +57,9 @@ int main() {
   auto simulator = elastica::make_simulator<>(simulator_config);
 
   auto rod =
-      simulator->emplace_back<Plugin>(straight_initializer.initialize<Plugin>(
+      *(simulator->emplace_back<Plugin>(straight_initializer.initialize<Plugin>(
           ::blocks::initialize<::elastica::tags::Velocity>(
-              [](std::size_t) { return 0.1; })));
+              [](std::size_t) { return 0.1; }))));
   // auto second_rod = simulator->emplace_back<Plugin>(
   //     straight_initializer.initialize<Plugin>());
 

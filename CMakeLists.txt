@@ -93,10 +93,10 @@ include(SetupFilesystem)
 
 if (ELASTICA_SMP)
     include(SetupTBB)
-    set(ELASTICA_SMP ON)
+    set(ELASTICA_SMP 1)
     # target_compile_definitions(elastica INTERFACE ELASTICA_USE_TBB)
 else ()
-    set(ELASTICA_SMP OFF)
+    set(ELASTICA_SMP 0)
 endif ()
 
 include(SetupYamlCpp)

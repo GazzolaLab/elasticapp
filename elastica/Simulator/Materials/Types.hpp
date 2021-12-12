@@ -17,6 +17,7 @@
 // Includes
 //******************************************************************************
 
+#include <cstdint>
 #include <vector> // This seems like an anti-pattern
 
 namespace elastica {

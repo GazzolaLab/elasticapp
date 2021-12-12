@@ -13,13 +13,19 @@
 
 #pragma once
 
+// Since this header only wraps tbb and modifications to it we mark
+// it as a system header file so that clang-tidy ignores it.
+#ifdef __GNUC__
+#pragma GCC system_header
+#endif
+
 //******************************************************************************
 // Includes
 //******************************************************************************
 #include "ModuleSettings/Parallel.hpp"
 
 #if ELASTICA_TBB_PARALLEL_MODE
-#include <tbb/parallel_for.hpp>
+#include <tbb/parallel_for.h>
 #endif
 
 #include "Parallel/blocked_range.hpp"
