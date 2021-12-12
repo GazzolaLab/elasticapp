@@ -91,6 +91,7 @@ target_link_libraries(
         Blaze
         Brigand
         ErrorHandling
+        # Sleef
 )
 
 #set(LIBRARY_SOURCES Utilities.cpp )
