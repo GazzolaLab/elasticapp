@@ -14,7 +14,7 @@ elastica_target_sources(
         ${LIBRARY}
         PRIVATE
         SimulationTime.cpp
-        TimeStepId.cpp
+        TimeStepID.cpp
 )
 
 elastica_target_headers(

@@ -43,11 +43,15 @@ option(ELASTICA_SMP "Enable/Disable the shared-memory parallelization." ON)
 option(ELASTICA_PROFILING_MODE "Enable/Disable intrusive code profiling." ON)
 option(ELASTICA_BUILD_TESTS "Build test programs" ON)
 option(ELASTICA_BUILD_BENCHMARKS "Build microbenchmarks" ON)
+option(ELASTICA_BUILD_DOCUMENTATION "Builds the documentation in addition to code" ON)
 
 if (DOCS_ONLY)
     include(SetupDoxygen)
     return()
 endif (DOCS_ONLY)
+if (ELASTICA_BUILD_DOCUMENTATION)
+    include(SetupDoxygen)
+endif (ELASTICA_BUILD_DOCUMENTATION)
 
 include(ProhibitInSourceBuild)
 # include(AddSources) # Add function to add a set of source files.
@@ -92,16 +96,15 @@ include(SetupFilesystem)
 
 if (ELASTICA_SMP)
     include(SetupTBB)
-    set(ELASTICA_SMP ON)
+    set(ELASTICA_SMP 1)
     # target_compile_definitions(elastica INTERFACE ELASTICA_USE_TBB)
 else ()
-    set(ELASTICA_SMP OFF)
+    set(ELASTICA_SMP 0)
 endif ()
 
 include(SetupYamlCpp)
 # include(SetupVTK)
 
-include(SetupDoxygen)
 include(CodeCoverageDetection)
 
 # Configure files
