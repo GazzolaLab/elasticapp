@@ -6,6 +6,7 @@ set(LIBRARY_SOURCES
         Test_PerturbedRodWithOneStep.cpp
         Test_PerturbedRodWithThreeStep.cpp
         Test_PerturbedTwoRodWithThreeStep.cpp
+        Test_RodAPI.cpp
         )
 
 add_test_library(
