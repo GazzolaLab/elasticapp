@@ -69,6 +69,7 @@ include(ElasticaAddInterfaceLibraryHeaders)
 include(ElasticaTargetHeaders)
 include(ElasticaTargetSources)
 include(ElasticaAddLibraries)
+include(ElasticaAddTutorials)
 include(CheckBrokenArray0)
 # include(SetupBuildInfo) include(SetupCCache)
 
