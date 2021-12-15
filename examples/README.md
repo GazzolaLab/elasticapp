@@ -10,14 +10,14 @@ Some examples provide additional file or link to published paper for a complete 
 
 ### Rod Assembly
 
-* [`single_rod`](./single_rod)
-    * __Name__: Single Rod
-    * __Purpose__: Simple demonstration of rod construction using material library and straight-rod initializer
+* [`tutorial_single_rod`](./tutorial_single_rod)
+    * __Name__: Single rod tutorial
+    * __Purpose__: Demonstrate API afforded by an __elastica__ Cosserat rod
     * __Features__:
-        * Cosserat Rod
-        * Initializer
-        * Material
-        * Block
+        * Cosserat Rod API
+        * elastica::get
+        * Tags
+        * Accessors
 
 * [`tutorial_rod_construction`](./tutorial_rod_construction)
     * __Name__: Rod construction tutorial

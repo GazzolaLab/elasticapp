@@ -6,7 +6,7 @@
 //==============================================================================
 
 //==============================================================================
-// You can compile and run it like so:
+// You can compile and run the tutorial using:
 // g++ tutorial_rod_construction.cpp -g -I <path/to/elastica.hpp> -L
 // <path/to/libElastica.so> -lElastica -o tutorial_rod_construction -std=c++14
 // LD_LIBRARY_PATH=<path/to/libElastica.so>  // for linux
@@ -86,7 +86,7 @@ int main() {
   using StraightInit = ::elastica::cosserat_rod::StraightCosseratRodInitializer;
   // We first create a material for passing into the initializer, see
   // documentation of elastica::create_material
-  elastica::MaterialID myMaterial = elastica::create_material(
+  elastica::MaterialID my_material = elastica::create_material(
       // material density
       7.874,
       // coefficient of restitution
@@ -111,7 +111,7 @@ int main() {
   // ::elastica::cosserat_rod::StraightCosseratRodInitializer.
   StraightInit straight_initializer{
       StraightInit::NElement{10UL},
-      StraightInit::Material{myMaterial},
+      StraightInit::Material{my_material},
       StraightInit::Radius{0.007522},
       StraightInit::Length{0.18},
       StraightInit::Origin{::elastica::Vec3{0.0, 0.0, 0.0}},
@@ -130,7 +130,7 @@ int main() {
       StraightInit::NElement{10UL},
       StraightInit::Normal{::elastica::Vec3{0.0, 0.0, 1.0}},
       StraightInit::ForceDampingCoefficient{0.2},
-      StraightInit::Material{myMaterial},
+      StraightInit::Material{my_material},
       StraightInit::Origin{::elastica::Vec3{0.0, 0.0, 0.0}},
       StraightInit::Direction{::elastica::Vec3{0.0, 1.0, 0.0}},
       StraightInit::TorqueDampingCoefficient{0.2},
@@ -169,7 +169,7 @@ int main() {
    * velocity v = 0.1 + 0.002 * i, where i is the index of the node. We can
    * program it as shown below.
    * If you are confused what ::elastica::tags::Velocity means, please consult
-   * XXXX (TODO) for an introduction to tags in elastica.
+   * `tutorial_single_rod` for an introduction to tags in elastica.
    */
   simulator->emplace_back<CosseratRod>(
       straight_initializer.initialize<CosseratRod>(

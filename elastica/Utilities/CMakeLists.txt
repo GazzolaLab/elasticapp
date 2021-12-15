@@ -40,6 +40,7 @@ elastica_target_headers(
         FakeVirtual.hpp
         ForceInline.hpp
         # Geometry.hpp
+        Get.hpp
         Generators.hpp
         IgnoreUnused.hpp
         Invoke.hpp
