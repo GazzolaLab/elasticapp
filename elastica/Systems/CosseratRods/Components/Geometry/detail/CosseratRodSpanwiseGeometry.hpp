@@ -293,6 +293,8 @@ namespace elastica {
               CRTPHelper<ComputationalBlock, CosseratRodSpanwiseGeometry>;
           //! CRTP methods
           using CRTP::self;
+          //! Index type
+          using index_type = typename Traits::index_type;
           //********************************************************************
 
          protected:
@@ -466,10 +468,10 @@ namespace elastica {
           /*!\brief Gets element lengths of the current rod
            */
           inline constexpr decltype(auto) get_element_length() & noexcept {
-            return blocks::get<ElementLength>(self());
+            return blocks::get<::elastica::tags::ElementLength>(self());
           }
           inline constexpr decltype(auto) get_element_length() const& noexcept {
-            return blocks::get<ElementLength>(self());
+            return blocks::get<::elastica::tags::ElementLength>(self());
           }
           //@}
           //********************************************************************
@@ -481,11 +483,11 @@ namespace elastica {
            */
           inline constexpr decltype(auto)
           get_reference_element_length() & noexcept {
-            return blocks::get<ReferenceElementLength>(self());
+            return blocks::get<::elastica::tags::ReferenceElementLength>(self());
           }
           inline constexpr decltype(auto) get_reference_element_length()
               const& noexcept {
-            return blocks::get<ReferenceElementLength>(self());
+            return blocks::get<::elastica::tags::ReferenceElementLength>(self());
           }
           //@}
           //********************************************************************
@@ -496,28 +498,28 @@ namespace elastica {
           /*!\brief Gets reference curvature of the current rod
            */
           inline constexpr decltype(auto) get_reference_curvature() & noexcept {
-            return blocks::get<ReferenceCurvature>(self());
+            return blocks::get<::elastica::tags::ReferenceCurvature>(self());
           }
 
           inline constexpr decltype(auto) get_reference_curvature()
               const& noexcept {
-            return blocks::get<ReferenceCurvature>(self());
+            return blocks::get<::elastica::tags::ReferenceCurvature>(self());
           }
           //@}
           //********************************************************************
 
           //********************************************************************
-          /*!\name reference curvature methods*/
+          /*!\name reference shear_stretch_strain methods*/
           //@{
-          /*!\brief Gets reference curvature of the current rod
+          /*!\brief Gets reference shear_strain of the current rod
            */
           inline constexpr decltype(auto) get_reference_shear_stretch_strain() & noexcept {
-            return blocks::get<ReferenceShearStretchStrain>(self());
+            return blocks::get<::elastica::tags::ReferenceShearStretchStrain>(self());
           }
 
           inline constexpr decltype(auto) get_reference_shear_stretch_strain()
           const& noexcept {
-            return blocks::get<ReferenceShearStretchStrain>(self());
+            return blocks::get<::elastica::tags::ReferenceShearStretchStrain>(self());
           }
           //@}
           //********************************************************************

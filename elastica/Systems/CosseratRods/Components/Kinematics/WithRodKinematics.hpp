@@ -268,6 +268,8 @@ namespace elastica {
         using CRTP::self;
         //! Real number type
         using real_type = typename Traits::real_type;
+        //! Index type
+        using index_type = typename Traits::index_type;
         //**********************************************************************
 
        protected:
@@ -417,6 +419,14 @@ namespace elastica {
         inline constexpr decltype(auto) get_velocity() const& noexcept {
           return blocks::get<tags::Velocity>(self());
         }
+        inline constexpr decltype(auto) get_velocity(
+            index_type idx) & noexcept {
+          return Velocity::slice(get_velocity(), idx);
+        }
+        inline constexpr decltype(auto) get_velocity(
+            index_type idx) const& noexcept {
+          return Velocity::slice(get_velocity(), idx);
+        }
         //@}
         //**********************************************************************
 
@@ -430,6 +440,14 @@ namespace elastica {
         }
         inline constexpr decltype(auto) get_angular_velocity() const& noexcept {
           return blocks::get<tags::AngularVelocity>(self());
+        }
+        inline constexpr decltype(auto) get_angular_velocity(
+            index_type idx) & noexcept {
+          return AngularVelocity::slice(get_angular_velocity(), idx);
+        }
+        inline constexpr decltype(auto) get_angular_velocity(
+            index_type idx) const& noexcept {
+          return AngularVelocity::slice(get_angular_velocity(), idx);
         }
         //@}
         //**********************************************************************
