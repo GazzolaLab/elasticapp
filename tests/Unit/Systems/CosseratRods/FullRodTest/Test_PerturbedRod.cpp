@@ -15,8 +15,8 @@
 #include "Simulator/Materials.hpp"
 #include "Simulator/Materials/Materials.hpp"
 
-#include "blaze/blaze.h"
-#include "blaze_tensor/blaze.h"
+#include "blaze/Blaze.h"
+#include "blaze_tensor/Blaze.h"
 
 namespace {
 
