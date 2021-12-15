@@ -6,7 +6,7 @@
 
 log_info("Finding Catch")
 
-find_package(Catch 2.1.0 REQUIRED)
+find_package(Catch 2.9.0 REQUIRED)
 
 elastica_include_directories("${CATCH_INCLUDE_DIR}")
 log_debug("CATCH_INCLUDE_DIR: ${CATCH_INCLUDE_DIR}")

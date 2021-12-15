@@ -143,6 +143,8 @@ namespace elastica {
           using CRTP = CRTPHelper<ComputationalBlock, RodSpanwiseGeometry>;
           //! CRTP methods
           using CRTP::self;
+          //! Index type
+          using index_type = typename Traits::index_type;
           //********************************************************************
 
          protected:
@@ -221,6 +223,14 @@ namespace elastica {
           inline constexpr decltype(auto) get_position() const& noexcept {
             return blocks::get<tags::Position>(self());
           }
+          inline constexpr decltype(auto) get_position(
+              index_type idx) & noexcept {
+            return Position::slice(get_position(), idx);
+          }
+          inline constexpr decltype(auto) get_position(
+              index_type idx) const& noexcept {
+            return Position::slice(get_position(), idx);
+          }
           //@}
           //********************************************************************
 
@@ -234,6 +244,14 @@ namespace elastica {
           }
           inline constexpr decltype(auto) get_director() const& noexcept {
             return blocks::get<tags::Director>(self());
+          }
+          inline constexpr decltype(auto) get_director(
+              index_type idx) & noexcept {
+            return Director::slice(get_director(), idx);
+          }
+          inline constexpr decltype(auto) get_director(
+              index_type idx) const& noexcept {
+            return Director::slice(get_director(), idx);
           }
           //@}
           //********************************************************************

@@ -3,18 +3,18 @@
 
 log_info("Finding YamlCpp")
 
-find_package(YAMLCPP REQUIRED)
+find_package(YamlCpp REQUIRED)
 
-log_debug("YAMLCPP_LIBRARIES: " ${YAMLCPP_LIBRARIES})
-log_debug("YAMLCPP_INCLUDE_DIRS: " ${YAMLCPP_INCLUDE_DIRS})
+log_debug("YamlCpp_LIBRARIES: " ${YamlCpp_LIBRARIES})
+log_debug("YamlCpp_INCLUDE_DIRS: " ${YamlCpp_INCLUDE_DIRS})
 
 add_library(YamlCpp INTERFACE IMPORTED)
 # Have to use `set_property` before CMake version 3.11. See:
 # https://gitlab.kitware.com/cmake/cmake/-/merge_requests/1264
 set_property(TARGET YamlCpp
-        APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${YAMLCPP_INCLUDE_DIRS})
+        APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${YamlCpp_INCLUDE_DIRS})
 set_property(TARGET YamlCpp
-        APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${YAMLCPP_LIBRARIES})
+        APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${YamlCpp_LIBRARIES})
 
 add_interface_lib_headers(
         TARGET YamlCpp

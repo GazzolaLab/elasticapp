@@ -12,7 +12,6 @@
 #include "Utilities/CRTP.hpp"
 #include "Utilities/NamedType.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TMPLDebugging.hpp"
 
 namespace elastica {
 
@@ -34,7 +33,8 @@ namespace elastica {
           // rest args should come from
           // make a copy, then replace the arguments.
           Initializer copy(self());
-          EXPAND_PACK_LEFT_TO_RIGHT((std::get<Args>(copy.data()) = args));
+          EXPAND_PACK_LEFT_TO_RIGHT(
+              (std::get<Args>(copy.data()) = std::forward<Args>(args)));
           return copy;
         }
       };
@@ -135,11 +135,17 @@ namespace elastica {
         }
       };
 
+      template <typename Initializer, template <typename> class... Interfaces>
+      struct DeriveAndEnableFriendshipWith : public Interfaces<Initializer>... {
+        using Friends = tmpl::list<Interfaces<Initializer>...>;
+      };
+
       template <typename Initializer>
       struct CosseratRodInitializerInterface
-          : public detail::EnableCopyInitialization<Initializer>,
-            public detail::EnableOptionalParameterInitialization<Initializer>,
-            public detail::InitializationInterface<Initializer> {};
+          : public DeriveAndEnableFriendshipWith<
+                Initializer, detail::EnableCopyInitialization,
+                detail::EnableOptionalParameterInitialization,
+                detail::InitializationInterface> {};
 
     }  // namespace detail
 

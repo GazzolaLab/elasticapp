@@ -46,7 +46,7 @@ namespace Options {
    * \ingroup OptionParsingGroup
    */
   template <typename T>  // The value type
-  struct Parameter : ::elastica::NonCopyable {
+  struct Parameter /*: ::elastica::NonCopyable*/ {
     //**Type definitions********************************************************
     //! Parameter type
     using type = T;
@@ -64,7 +64,7 @@ namespace Options {
     /*explicit*/ Parameter(type t) : t_(std::move(t)){}; /* NOLINT */
     // /*explicit*/ Parameter(type&& t) : t_(std::move(t)){}; /* NOLINT */
     ~Parameter() = default;
-    Parameter(Parameter&& other) noexcept : t_(std::move(other.t_)) {}
+    // Parameter(Parameter&& other) noexcept : t_(std::move(other.t_)) {}
     //**************************************************************************
 
     //==========================================================================

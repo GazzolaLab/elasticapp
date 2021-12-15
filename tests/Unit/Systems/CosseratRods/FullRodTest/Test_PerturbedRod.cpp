@@ -11,12 +11,18 @@
 #include "Systems/Block/Protocols.hpp"
 #include "Systems/CosseratRods.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
+<<<<<<< HEAD
 #include "Systems/CosseratRods/Initializers/StraightCosseratRod.hpp" // TODO : replace later
 #include "Simulator/Materials.hpp"
 #include "Simulator/Materials/Materials.hpp"
 
 #include "blaze/blaze.h"
 #include "blaze_tensor/blaze.h"
+=======
+#include "Systems/CosseratRods/Initializers/StraightCosseratRod.hpp"  // TODO : replace later
+#include "blaze/Blaze.h"
+#include "blaze_tensor/Blaze.h"
+>>>>>>> 8bdff1ab8b0079a552f9366f0e5ac8af00dfdb11
 
 namespace {
 
