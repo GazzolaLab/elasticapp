@@ -509,9 +509,9 @@ namespace elastica {
           //********************************************************************
 
           //********************************************************************
-          /*!\name reference curvature methods*/
+          /*!\name reference shear_stretch_strain methods*/
           //@{
-          /*!\brief Gets reference curvature of the current rod
+          /*!\brief Gets reference shear_strain of the current rod
            */
           inline constexpr decltype(auto) get_reference_shear_stretch_strain() & noexcept {
             return blocks::get<::elastica::tags::ReferenceShearStretchStrain>(self());
