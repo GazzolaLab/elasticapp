@@ -2,8 +2,6 @@
 // Created by Seung Hyun Kim on 11/9/21.
 //
 
-#include <iostream>
-
 #include "Framework/TestingFramework.hpp"
 #include "Utilities/MakeArray.hpp"
 ///
@@ -24,6 +22,7 @@
 
 namespace {
 
+  // TODO: Refactor >-
   template <typename T, typename B>
   using ComponentsWithStepper = ::elastica::SymplecticPolicy<
       T, B, elastica::cosserat_rod::component::WithCircularCosseratRod,
@@ -36,20 +35,25 @@ namespace {
       elastica::cosserat_rod::CosseratRodPlugin<Traits, blocks::Block,
                                                 ComponentsWithStepper>;
   using Model = blocks::Block<Plugin>;
+  // -<
 
   using real_type = typename Traits::DataType::real_type;
-
-  auto approx(Catch::Detail::Approx(0).epsilon(1e-8));
 
   ELASTICA_TEST_CASE(
       "Unit.z.Integrated.CosseratRods.Stepper:SingleRod,ThreeStep",
       "[Systems][Integrated]") {
     /*
-     *
+     * rng_seed=300
+     * NROD=1, N=5, n_step=3, time=0.0, time_step=2e-05
+     * tag=300
      */
 
     namespace ec = elastica::configuration;
     namespace et = elastica::timestepper;
+
+    Approx approx = Approx::custom()
+                        .epsilon(7e-10)
+                        .scale(0.0);
 
     elastica::MaterialID myMaterial = elastica::create_material(
         7.874, 0.24, 200, 200.0 / 1.24, 200, 1e-10, 1e-10, 0.1, 0.1);
@@ -89,10 +93,10 @@ namespace {
     const TimeStepper time_stepper{};
 
     ::elastica::Time time_v{0.0};
-    ::elastica::TimeDelta time_delta{0.002};
+    ::elastica::TimeDelta time_delta{2e-05};
 
     //**************************************************************************
-    // clang-format on
+    // clang-format off
     blaze::DynamicMatrix<elastica::real_t> ROD00000_InternalLoads_REPLACED(3UL,
                                                                            6UL);
     ROD00000_InternalLoads_REPLACED = {
@@ -253,36 +257,39 @@ namespace {
          0.05706921605595977, 0.0643979182090123}};
     blaze::DynamicVector<elastica::real_t> ROD00000_ElementDimension_PYEL(5UL);
     ROD00000_ElementDimension_PYEL = {
-        0.004386551784518646, 0.004079282258095602, 0.008046634296558884,
-        0.005428775833815691, 0.002906486880440894};
+        0.0044207077229210115, 0.00846496896077867, 0.007523342974842949,
+        0.004792526359576932, 0.004541893851439805};
     blaze::DynamicTensor<elastica::real_t>
         ROD00000_MassSecondMomentOfInertia_PYEL(3UL, 3UL, 5UL);
     ROD00000_MassSecondMomentOfInertia_PYEL = {
-        {{7.127235497145191e-10, 7.127235497145191e-10, 7.12723549714519e-10,
-          7.127235497145191e-10, 7.127235497145191e-10},
-         {0.0, 0.0, 0.0, 0.0, 0.0},
-         {0.0, 0.0, 0.0, 0.0, 0.0}},
-        {{0.0, 0.0, 0.0, 0.0, 0.0},
-         {7.127235497145191e-10, 7.127235497145191e-10, 7.12723549714519e-10,
-          7.127235497145191e-10, 7.127235497145191e-10},
-         {0.0, 0.0, 0.0, 0.0, 0.0}},
-        {{0.0, 0.0, 0.0, 0.0, 0.0},
-         {0.0, 0.0, 0.0, 0.0, 0.0},
-         {1.4254470994290381e-09, 1.4254470994290381e-09, 1.425447099429038e-09,
-          1.4254470994290381e-09, 1.4254470994290381e-09}}};
+        {{0.0000000007127235497145191, 0.0000000007127235497145191,
+          0.000000000712723549714519, 0.0000000007127235497145191,
+          0.0000000007127235497145191},
+         {0., 0., 0., 0., 0.},
+         {0., 0., 0., 0., 0.}},
+        {{0., 0., 0., 0., 0.},
+         {0.0000000007127235497145191, 0.0000000007127235497145191,
+          0.000000000712723549714519, 0.0000000007127235497145191,
+          0.0000000007127235497145191},
+         {0., 0., 0., 0., 0.}},
+        {{0., 0., 0., 0., 0.},
+         {0., 0., 0., 0., 0.},
+         {0.0000000014254470994290381, 0.0000000014254470994290381,
+          0.000000001425447099429038, 0.0000000014254470994290381,
+          0.0000000014254470994290381}}};
     blaze::DynamicTensor<elastica::real_t>
         ROD00000_InvMassSecondMomentOfInertia_PYEL(3UL, 3UL, 5UL);
     ROD00000_InvMassSecondMomentOfInertia_PYEL = {
         {{1403068553.579504, 1403068553.579504, 1403068553.5795043,
           1403068553.579504, 1403068553.579504},
-         {0.0, 0.0, 0.0, 0.0, 0.0},
-         {0.0, 0.0, 0.0, 0.0, 0.0}},
-        {{0.0, 0.0, 0.0, 0.0, 0.0},
+         {0., 0., 0., 0., 0.},
+         {0., 0., 0., 0., 0.}},
+        {{0., 0., 0., 0., 0.},
          {1403068553.579504, 1403068553.579504, 1403068553.5795043,
           1403068553.579504, 1403068553.579504},
-         {0.0, 0.0, 0.0, 0.0, 0.0}},
-        {{0.0, 0.0, 0.0, 0.0, 0.0},
-         {0.0, 0.0, 0.0, 0.0, 0.0},
+         {0., 0., 0., 0., 0.}},
+        {{0., 0., 0., 0., 0.},
+         {0., 0., 0., 0., 0.},
          {701534276.789752, 701534276.789752, 701534276.7897521,
           701534276.789752, 701534276.789752}}};
     blaze::DynamicTensor<elastica::real_t>
@@ -290,71 +297,71 @@ namespace {
     ROD00000_ShearStretchRigidityMatrix_PYEL = {
         {{0.03822641567117308, 0.03822641567117308, 0.03822641567117308,
           0.03822641567117308, 0.03822641567117308},
-         {0.0, 0.0, 0.0, 0.0, 0.0},
-         {0.0, 0.0, 0.0, 0.0, 0.0}},
-        {{0.0, 0.0, 0.0, 0.0, 0.0},
+         {0., 0., 0., 0., 0.},
+         {0., 0., 0., 0., 0.}},
+        {{0., 0., 0., 0., 0.},
          {0.03822641567117308, 0.03822641567117308, 0.03822641567117308,
           0.03822641567117308, 0.03822641567117308},
-         {0.0, 0.0, 0.0, 0.0, 0.0}},
-        {{0.0, 0.0, 0.0, 0.0, 0.0},
-         {0.0, 0.0, 0.0, 0.0, 0.0},
+         {0., 0., 0., 0., 0.}},
+        {{0., 0., 0., 0., 0.},
+         {0., 0., 0., 0., 0.},
          {0.035550566574190964, 0.035550566574190964, 0.035550566574190964,
           0.035550566574190964, 0.035550566574190964}}};
     blaze::DynamicTensor<elastica::real_t>
         ROD00000_BendingTwistRigidityMatrix_PYEL(3UL, 3UL, 4UL);
     ROD00000_BendingTwistRigidityMatrix_PYEL = {
-        {{5.028670658104868e-07, 5.028670658104868e-07, 5.028670658104868e-07,
-          5.028670658104868e-07},
-         {0.0, 0.0, 0.0, 0.0},
-         {0.0, 0.0, 0.0, 0.0}},
-        {{0.0, 0.0, 0.0, 0.0},
-         {5.028670658104868e-07, 5.028670658104868e-07, 5.028670658104868e-07,
-          5.028670658104868e-07},
-         {0.0, 0.0, 0.0, 0.0}},
-        {{0.0, 0.0, 0.0, 0.0},
-         {0.0, 0.0, 0.0, 0.0},
-         {8.110759125975593e-07, 8.110759125975594e-07, 8.110759125975593e-07,
-          8.110759125975593e-07}}};
+        {{0.0000005028670658104868, 0.0000005028670658104868,
+          0.0000005028670658104868, 0.0000005028670658104868},
+         {0., 0., 0., 0.},
+         {0., 0., 0., 0.}},
+        {{0., 0., 0., 0.},
+         {0.0000005028670658104868, 0.0000005028670658104868,
+          0.0000005028670658104868, 0.0000005028670658104868},
+         {0., 0., 0., 0.}},
+        {{0., 0., 0., 0.},
+         {0., 0., 0., 0.},
+         {0.0000008110759125975593, 0.0000008110759125975594,
+          0.0000008110759125975593, 0.0000008110759125975593}}};
     blaze::DynamicVector<elastica::real_t> ROD00000_ElementVolume_PYEL(5UL);
     ROD00000_ElementVolume_PYEL = {
-        6.3991019833543736e-06, 6.3991019833543736e-06, 6.399101983354373e-06,
-        6.399101983354375e-06, 6.399101983354375e-06};
+        0.0000063991019833543736, 0.0000063991019833543736,
+        0.000006399101983354373, 0.000006399101983354375,
+        0.000006399101983354375};
     blaze::DynamicVector<elastica::real_t> ROD00000_Mass_PYEL(6UL);
-    ROD00000_Mass_PYEL = {2.5193264508466167e-05, 5.038652901693233e-05,
-                          5.0386529016932326e-05, 5.038652901693234e-05,
-                          5.038652901693235e-05,  2.5193264508466173e-05};
+    ROD00000_Mass_PYEL = {0.000025193264508466167, 0.00005038652901693233,
+                          0.000050386529016932326, 0.00005038652901693234,
+                          0.00005038652901693235,  0.000025193264508466173};
     blaze::DynamicMatrix<elastica::real_t> ROD00000_InternalLoads_PYEL(3UL,
                                                                        6UL);
     ROD00000_InternalLoads_PYEL = {
-        {-0.06161903316875549, -0.20063385354172797, -0.22665616044348194,
-         0.235804977042834, 0.06898421327636473, 0.04049427993663182},
-        {0.036409894045387886, -0.024429019000531134, 0.06186691014222896,
-         -0.15149262609978353, 0.38698843545362366, 0.16787779388333926},
-        {0.0033783087889614274, 0.06349197641845523, -0.32709731487282145,
-         0.004251245835722173, 0.08590218341428303, 0.10407304320993682}};
+        {-0.05629280085772673, 0.02621330179266366, -0.22324652295009645,
+         0.19540272745085394, 0.04534738680066891, -0.002065286748248083},
+        {0.022896482167265156, -0.23462237973851124, 0.31196406817546957,
+         -0.18699375821443287, 0.12722778036283114, -0.058632274294443204},
+        {-0.0010796748930827383, 0.024300321980913028, -0.10320810488128508,
+         0.050416082062340856, 0.02230954165580001, -0.006829950015671479}};
     blaze::DynamicMatrix<elastica::real_t> ROD00000_InternalTorques_PYEL(3UL,
                                                                          5UL);
     ROD00000_InternalTorques_PYEL = {
-        {-116067553328.11507, -1352737452.489032, -3134894782.8556733,
-         -188907965816.40848, -270995250527.99176},
-        {420685252299.49774, 76240643.07827643, 952723934.2095389,
-         240461342280.57898, 2387078098036.549},
-        {119319992.63870806, 18064276.672694683, 3460872.2917836746,
-         96031613.56899911, 1297534397.3502798}};
+        {401368.704009042, 0.016659330415432105, 312.97351633496993,
+         45119.22957039335, 273134.61898449354},
+        {124323.7850008521, 221.12450783341407, 1382.0005170358716,
+         40338.87932760631, 39018.00197214552},
+        {15322.91194728353, 64.71722760769752, 354.1991640698091,
+         12328.380702175362, 15473.505178607566}};
     blaze::DynamicMatrix<elastica::real_t> ROD00000_ExternalLoads_PYEL(3UL,
                                                                        6UL);
-    ROD00000_ExternalLoads_PYEL = {{0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-                                   {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-                                   {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
+    ROD00000_ExternalLoads_PYEL = {{0., 0., 0., 0., 0., 0.},
+                                   {0., 0., 0., 0., 0., 0.},
+                                   {0., 0., 0., 0., 0., 0.}};
     blaze::DynamicMatrix<elastica::real_t> ROD00000_ExternalTorques_PYEL(3UL,
                                                                          5UL);
-    ROD00000_ExternalTorques_PYEL = {{0.0, 0.0, 0.0, 0.0, 0.0},
-                                     {0.0, 0.0, 0.0, 0.0, 0.0},
-                                     {0.0, 0.0, 0.0, 0.0, 0.0}};
+    ROD00000_ExternalTorques_PYEL = {
+        {0., 0., 0., 0., 0.}, {0., 0., 0., 0., 0.}, {0., 0., 0., 0., 0.}};
     blaze::DynamicVector<elastica::real_t> ROD00000_ElementLength_PYEL(5UL);
-    ROD00000_ElementLength_PYEL = {0.10585774480686051, 0.12240570114035554,
-                                   0.03145868979788393, 0.06911389054150337,
-                                   0.24111955033893015};
+    ROD00000_ElementLength_PYEL = {0.10422827601266507, 0.028426174582282082,
+                                   0.0359871485909009, 0.08868295146265474,
+                                   0.09874047195766138};
     blaze::DynamicVector<elastica::real_t> ROD00000_ReferenceElementLength_PYEL(
         5UL);
     ROD00000_ReferenceElementLength_PYEL = {
@@ -362,19 +369,19 @@ namespace {
         0.12557378285646317, 0.06303696469708653};
     blaze::DynamicMatrix<elastica::real_t> ROD00000_Tangent_PYEL(3UL, 5UL);
     ROD00000_Tangent_PYEL = {
-        {0.5798749389664061, -0.5845344530822651, -0.3531996704788584,
-         -0.1455443448765713, 0.3060648631061319},
-        {0.7532677925707526, -0.038896865553352165, 0.9145440579022404,
-         -0.12763338467385643, 0.9265415540807495},
-        {-0.3103750760520124, 0.8104359980960506, 0.1971272658191392,
-         -0.9810843810759322, -0.21873510951252068}};
+        {-0.3003639504662542, 0.7413196567654572, -0.9745599335660403,
+         0.5039547691119618, -0.4860848300150847},
+        {0.9532321116426931, 0.57508540602919, -0.22381973254048199,
+         0.12362319734921888, 0.7275280876773474},
+        {0.033616046666999515, 0.34600858698215353, 0.011732996772443093,
+         -0.8548373504746183, 0.4841739560010926}};
     blaze::DynamicVector<elastica::real_t> ROD00000_ElementDilatation_PYEL(5UL);
-    ROD00000_ElementDilatation_PYEL = {1.4205850783126381, 0.9505168181179129,
-                                       0.2594435729377164, 0.550384713826005,
-                                       3.8250501352276296};
+    ROD00000_ElementDilatation_PYEL = {1.398718005111395, 0.22073773332038915,
+                                       0.2967903135906145, 0.7062218676968869,
+                                       1.5663900131001234};
     blaze::DynamicVector<elastica::real_t> ROD00000_VoronoiDilatation_PYEL(4UL);
-    ROD00000_VoronoiDilatation_PYEL = {3.1703256381557785, 2.137005429697771,
-                                       1.3968413936026014, 4.308797790006021};
+    ROD00000_VoronoiDilatation_PYEL = {1.8424229249298216, 0.8946294885164306,
+                                       1.7315291674104951, 2.603103103059946};
     blaze::DynamicVector<elastica::real_t> ROD00000_ReferenceVoronoiLength_PYEL(
         4UL);
     ROD00000_ReferenceVoronoiLength_PYEL = {0.036, 0.03599999999999999, 0.036,
@@ -382,19 +389,19 @@ namespace {
     blaze::DynamicMatrix<elastica::real_t> ROD00000_ShearStretchStrain_PYEL(
         3UL, 5UL);
     ROD00000_ShearStretchStrain_PYEL = {
-        {0.25880645363303617, -0.6708407421203976, -0.24029983020297224,
-         -0.48460566895732854, -0.8568841780905355},
-        {-1.344849836949715, -0.6678335510156844, 0.03158938000067738,
-         0.04050217577487751, 3.610352858982458},
-        {-0.6225611303287131, -1.0863323136151102, -0.9074307274832317,
-         -1.2577600678640006, -1.9284989369838887}};
+        {0.233445579731708, 0.10683467549548874, -0.11694472813492245,
+         -0.5724631767187108, 0.6295560236255329},
+        {-1.1481509132918835, 0.18767143573333075, -0.27076564555816246,
+         0.33621490789745, 0.8212586595839833},
+        {-0.23602048493854244, -0.9542732984681036, -1.0330815052277809,
+         -0.7591789597607634, -2.175912879559931}};
     blaze::DynamicMatrix<elastica::real_t> ROD00000_Curvature_PYEL(3UL, 4UL);
-    ROD00000_Curvature_PYEL = {{-19.48962329677501, 9.255055811288049,
-                                2.724112493099152, 16.238840701964314},
-                               {-21.006050686974717, -35.76079964718166,
-                                -26.069030349250934, -11.26216891600838},
-                               {-79.98151432770128, -1.536005981327412,
-                                13.338482644309726, -3.0433752310765465}};
+    ROD00000_Curvature_PYEL = {{17.755942772416635, 15.099208226757929,
+                                -18.913499121562243, -77.41985859875909},
+                               {-12.84886255328309, 83.37863231821197,
+                                -64.1021592935299, -10.669849314476421},
+                               {-13.07425560450411, 14.173098170249588,
+                                -21.597934740452878, 1.1027590018280162}};
     blaze::DynamicMatrix<elastica::real_t>
         ROD00000_ReferenceShearStretchStrain_PYEL(3UL, 5UL);
     ROD00000_ReferenceShearStretchStrain_PYEL = {
@@ -416,85 +423,84 @@ namespace {
     blaze::DynamicMatrix<elastica::real_t> ROD00000_InternalStress_PYEL(3UL,
                                                                         5UL);
     ROD00000_InternalStress_PYEL = {
-        {-0.0014828404141372117, -0.05588383949303443, -0.046698593778606357,
-         -0.02300859347366271, -0.04061679450096843},
-        {-0.08717868203674141, -0.04235950236821679, -0.0337951228445648,
-         -0.03545221227917972, 0.09983085727969965},
-        {-0.03294210328564274, -0.0422336321695196, -0.05022918699226057,
-         -0.07716046260548823, -0.07265970751435359}};
+        {-0.002452295721673588, -0.026156095721996443, -0.0419831703717931,
+         -0.026367071085182624, 0.01620448652017236},
+        {-0.07965958721892479, -0.00965661313598751, -0.04535307173184517,
+         -0.024148174461804006, -0.006786216932564141},
+        {-0.019200364338068737, -0.037538859359813846, -0.05469614333156704,
+         -0.05943562172923019, -0.08145541335128624}};
     blaze::DynamicMatrix<elastica::real_t> ROD00000_InternalCouple_PYEL(3UL,
                                                                         4UL);
     ROD00000_InternalCouple_PYEL = {
-        {-9.826410817790282e-06, 4.420392014440364e-06, 9.021405369679154e-07,
-         7.76646035118533e-06},
-        {-1.086682075239668e-05, -1.807897031253604e-05,
-         -1.3399059965728965e-05, -5.9189477538017685e-06},
-        {-6.511690085937237e-05, -1.7431214238942576e-06,
-         1.0611257009406947e-05, -3.2739475130683136e-06}};
+        {0.000008903157705874748, 0.0000073592237917569715,
+         -0.00000997870172684377, -0.000039331414953796144},
+        {-0.000006764839490343051, 0.000041832326262229576,
+         -0.000032524667921530424, -0.000005621089733757356},
+        {-0.000010850034931054225, 0.000010998154561936169,
+         -0.000017724829603828622, 0.0000000888820936367359}};
     blaze::DynamicMatrix<elastica::real_t> ROD00000_Position_PYEL(3UL, 6UL);
     ROD00000_Position_PYEL = {
-        {0.08547453173798562, 0.1649515559974429, 0.0731419438216101,
-         0.09327463572752549, 0.05189084980693727, 0.1509458270656784},
-        {0.06551086467716936, 0.13728633846365956, 0.12943527613601236,
-         0.163257759164574, 0.14984589135615337, 0.3924012110483201},
-        {0.09237181143669786, 0.052596903443029266, 0.1551227050413235,
-         0.17442516900687943, 0.10916901427109243, 0.031243228342499735}};
+        {0.0889500105169077, 0.05764677224505835, 0.0787148462444855,
+         0.0436465309987664, 0.08833649861905635, 0.04034456869780046},
+        {0.029581119973906923, 0.1289328251982211, 0.14528242374504424,
+         0.1372262472418608, 0.14819270419383906, 0.22003359506040357},
+        {0.0748905248680998, 0.07839271189263927, 0.08823096012889206,
+         0.0886552095911954, 0.012845875324062705, 0.06065027512938321}};
     blaze::DynamicTensor<elastica::real_t> ROD00000_Director_PYEL(3UL, 3UL,
                                                                   5UL);
     ROD00000_Director_PYEL = {
-        {{0.14306323555480654, -0.05806536922546698, 0.16366246006707474,
-          0.4426920822624034, -0.9166801086069445},
-         {0.40766502604366206, -0.5458499463912395, -0.9796008842007012,
-          -0.8940288629125115, -0.05474847281523691},
-         {0.9018548315407586, -0.8358685595961801, -0.11660491772647455,
-          0.06881942009010728, -0.39585373966751997}},
-        {{-0.36303936167792616, -0.5432596709246253, -0.2129488840208127,
-          0.4811562689970726, -0.011670638599682634},
-         {-0.8260953143329837, -0.6851769048125304, 0.08033162562720536,
-          0.1720843318350348, 0.9938160710021051},
-         {0.43100922671048697, 0.48518196489398485, -0.9737554121638458,
-          -0.8595787500524343, -0.11042378916073539}},
-        {{0.9207254381763726, -0.8375543820215958, 0.9632587253480152,
-          0.7566454685696554, 0.3994513420668867},
-         {-0.38907037689588764, 0.4822659485555687, 0.184198093359555,
-          0.41364160213432466, -0.0966034251066607},
-         {0.029814582288164998, -0.25675321228802733, -0.19545764360500492,
-          0.5063479632394655, -0.9116503735416479}}};
+        {{0.2713698961902898, -0.043376484538473384, 0.04433983315536455,
+          0.6048433947091046, 0.2935449181827158},
+         {-0.29903478950813434, -0.11601641826644832, 0.1884117879612192,
+          -0.5926922151667917, 0.020446823958828908},
+         {0.9148423766450134, 0.9922996882402553, 0.9810886694651879,
+          0.5318650260709423, 0.9557265866340119}},
+        {{0.2954395928709026, 0.9953883423986808, 0.9766578585637498,
+          0.465364537866762, -0.8080627535589942},
+         {0.9305028996380283, 0.08004267228507717, 0.19843099731539243,
+          0.8050411404162924, 0.5394734578782977},
+         {0.2165174374721263, 0.05286982532853577, -0.0822469854164034,
+          0.3678921161608216, 0.23664947613609466}},
+        {{-0.9160097305192484, -0.08556008652338845, -0.21017470471353292,
+          -0.6462200204054481, -0.5107503962991692},
+         {0.21152434476685317, 0.9900168490011103, 0.961834776591924,
+          0.024994005639569966, -0.8417543083553705},
+         {0.3408571917460547, 0.1120094205324802, -0.17521545604455424,
+          0.7627417550582017, 0.174882008924339}}};
     blaze::DynamicMatrix<elastica::real_t> ROD00000_Velocity_PYEL(3UL, 6UL);
     ROD00000_Velocity_PYEL = {
-        {-9.903897460702126, 8.188873489755524, -12.070389115848357,
-         19.17350166037626, -12.151148339477796, 13.105606752566619},
-        {7.37740971636776, -0.5863462543239205, -3.676210481750899,
-         1.3759147227661703, -3.2147133078639545, 15.933323494018923},
-        {2.574635466948998, -4.344666931595735, -1.0208519096324213,
-         12.080246549814198, 14.630650339687765, -10.5538243399093}};
+        {0.09891653218289612, 0.4167626923688799, -0.06403581414735661,
+         0.2677536119020467, 0.044882787948795085, 0.47644337726656594},
+        {0.17710778511660705, -0.02633342648487101, 0.18570610499566043,
+         0.03145303765387855, 0.35014721758356804, 0.7925599024207015},
+        {0.08485440542960125, -0.07070218688802418, 0.18407138604679613,
+         0.38530778973425533, 0.40180713696109643, 0.08529515342567362}};
     blaze::DynamicMatrix<elastica::real_t> ROD00000_AngularVelocity_PYEL(3UL,
                                                                          5UL);
     ROD00000_AngularVelocity_PYEL = {
-        {-4.6268679435873395e+17, -3608130277547369.0, -2282311353749813.0,
-         -2.917598731238743e+17, -2.908759194408481e+18},
-        {1.6770013486942794e+18, 203352735492899.28, 693613566020601.0,
-         3.7138169382224026e+17, 2.5621977509956858e+19},
-        {237820378349286.06, 24090508691687.824, 1259266574193.0312,
-         74151303875241.7, 6963590507359128.0}};
+        {15734344321.669044, -151.84108311654313, 2559927.362377648,
+         891523076.8965601, 11991784129.32581},
+        {4874085480.96106, 1330797.7514383143, 11318526.987743283,
+         797247587.3271068, 1713312754.7289276},
+        {299976660.3095924, 189052.93325241195, 1425733.9974012063,
+         121464092.98404661, 339285813.4715869}};
     blaze::DynamicMatrix<elastica::real_t> ROD00000_Acceleration_PYEL(3UL, 6UL);
     ROD00000_Acceleration_PYEL = {
-        {-2445.8534600805106, -3981.894713849116, -4498.34836543939,
-         4679.921035314657, 1369.1003254695843, 1607.3454840687184},
-        {1445.2233466271266, -484.83234461976514, 1227.8462388516318,
-         -3006.609684284357, 7680.394800038252, 6663.598273535535},
-        {134.09571386932214, 1260.0982377079165, -6491.761215838083,
-         84.37266703355466, 1704.864079552209, 4130.986803038692}};
+        {-2234.4385277584647, 520.2442459145124, -4430.678741039589,
+         3878.0747803681625, 899.9902887819472, -81.97773446764094},
+        {908.8334764861783, -4656.450529856237, 6191.41810841216,
+         -3711.1855462715803, 2525.0356165648236, -2327.2995952842825},
+        {-42.8556963199396, 482.2781496369185, -2048.3273385750017,
+         1000.5865267162694, 442.7679796777212, -271.10222311111295}};
     blaze::DynamicMatrix<elastica::real_t> ROD00000_AngularAcceleration_PYEL(
         3UL, 5UL);
     ROD00000_AngularAcceleration_PYEL = {
-        {-2.313433229478958e+20, -1.8040651239934927e+18,
-         -1.141155366023279e+18, -1.4587992321421489e+20,
-         -1.4543793594211075e+21},
-        {8.385006954270416e+20, 1.016775908401705e+17, 3.468078213686186e+17,
-         1.856908574303805e+20, 1.281098878429218e+22},
-        {1.1891300712233886e+17, 1.2045623293497864e+16, 629908379778634.6,
-         3.707912568175546e+16, 3.4818087069209155e+18}};
+        {787684977170380., 5159564.091871045, 130327541577.40273,
+         44707638170523.445, 600282310835087.8},
+        {243985085962071.72, 68484509400.99493, 575488724902.8866,
+         39970895743451.15, 85751914111397.31},
+        {15035586266222.525, 10021791853.675188, 73747304280.82465,
+         6107958723025.185, 17003467886764.977}};
 
     blocks::get<elastica::tags::InternalLoads>(slicedrod_00000) =
         ROD00000_InternalLoads_REPLACED;
@@ -531,9 +537,9 @@ namespace {
     blocks::get<elastica::tags::AngularAcceleration>(slicedrod_00000) =
         ROD00000_AngularAcceleration_REPLACED;
 
-    simulator->step(time_stepper, time_v, time_delta);
-    simulator->step(time_stepper, time_v, time_delta);
-    simulator->step(time_stepper, time_v, time_delta);
+    std::size_t step = 3;
+    while (step--)
+      simulator->step(time_stepper, time_v, time_delta);
 
     auto ROD00000_ElementDimension(
         blocks::get<elastica::tags::ElementDimension>(slicedrod_00000));
@@ -600,71 +606,93 @@ namespace {
 
     CHECK_ITERABLE_CUSTOM_APPROX(ROD00000_ElementDimension,
                                  ROD00000_ElementDimension_PYEL, approx);
-    for (std::size_t i(0UL); i < 3UL; ++i)
-      CHECK((blaze::pageslice(ROD00000_MassSecondMomentOfInertia, i) -
-             blaze::pageslice(ROD00000_MassSecondMomentOfInertia_PYEL, i)) ==
-            Approx(0.0).margin(1e-6));
-    for (std::size_t i(0UL); i < 3UL; ++i)
-      CHECK((blaze::pageslice(ROD00000_InvMassSecondMomentOfInertia, i) -
-             blaze::pageslice(ROD00000_InvMassSecondMomentOfInertia_PYEL, i)) ==
-            Approx(0.0).margin(1e-6));
-    for (std::size_t i(0UL); i < 3UL; ++i)
-      CHECK((blaze::pageslice(ROD00000_ShearStretchRigidityMatrix, i) -
-             blaze::pageslice(ROD00000_ShearStretchRigidityMatrix_PYEL, i)) ==
-            Approx(0.0).margin(1e-6));
-    for (std::size_t i(0UL); i < 3UL; ++i)
-      CHECK((blaze::pageslice(ROD00000_BendingTwistRigidityMatrix, i) -
-             blaze::pageslice(ROD00000_BendingTwistRigidityMatrix_PYEL, i)) ==
-            Approx(0.0).margin(1e-6));
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        blaze::evaluate(blaze::ravel(ROD00000_MassSecondMomentOfInertia)),
+        blaze::evaluate(blaze::ravel(ROD00000_MassSecondMomentOfInertia_PYEL)),
+        approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        blaze::evaluate(blaze::ravel(ROD00000_InvMassSecondMomentOfInertia)),
+        blaze::evaluate(
+            blaze::ravel(ROD00000_InvMassSecondMomentOfInertia_PYEL)),
+        approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        blaze::evaluate(blaze::ravel(ROD00000_ShearStretchRigidityMatrix)),
+        blaze::evaluate(blaze::ravel(ROD00000_ShearStretchRigidityMatrix_PYEL)),
+        approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        blaze::evaluate(blaze::ravel(ROD00000_BendingTwistRigidityMatrix)),
+        blaze::evaluate(blaze::ravel(ROD00000_BendingTwistRigidityMatrix_PYEL)),
+        approx);
     CHECK_ITERABLE_CUSTOM_APPROX(ROD00000_ElementVolume,
                                  ROD00000_ElementVolume_PYEL, approx);
     CHECK_ITERABLE_CUSTOM_APPROX(ROD00000_Mass, ROD00000_Mass_PYEL, approx);
-    CHECK_MATRIX_CUSTOM_APPROX(ROD00000_InternalLoads,
-                               ROD00000_InternalLoads_PYEL, approx);
-    CHECK_MATRIX_CUSTOM_APPROX(ROD00000_InternalTorques,
-                               ROD00000_InternalTorques_PYEL, approx);
-    CHECK_MATRIX_CUSTOM_APPROX(ROD00000_ExternalLoads,
-                               ROD00000_ExternalLoads_PYEL, approx);
-    CHECK_MATRIX_CUSTOM_APPROX(ROD00000_ExternalTorques,
-                               ROD00000_ExternalTorques_PYEL, approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        blaze::evaluate(blaze::ravel(ROD00000_InternalLoads)),
+        blaze::evaluate(blaze::ravel(ROD00000_InternalLoads_PYEL)), approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        blaze::evaluate(blaze::ravel(ROD00000_InternalTorques)),
+        blaze::evaluate(blaze::ravel(ROD00000_InternalTorques_PYEL)), approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        blaze::evaluate(blaze::ravel(ROD00000_ExternalLoads)),
+        blaze::evaluate(blaze::ravel(ROD00000_ExternalLoads_PYEL)), approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        blaze::evaluate(blaze::ravel(ROD00000_ExternalTorques)),
+        blaze::evaluate(blaze::ravel(ROD00000_ExternalTorques_PYEL)), approx);
     CHECK_ITERABLE_CUSTOM_APPROX(ROD00000_ElementLength,
                                  ROD00000_ElementLength_PYEL, approx);
     CHECK_ITERABLE_CUSTOM_APPROX(ROD00000_ReferenceElementLength,
                                  ROD00000_ReferenceElementLength_PYEL, approx);
-    CHECK_MATRIX_CUSTOM_APPROX(ROD00000_Tangent, ROD00000_Tangent_PYEL, approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        blaze::evaluate(blaze::ravel(ROD00000_Tangent)),
+        blaze::evaluate(blaze::ravel(ROD00000_Tangent_PYEL)), approx);
     CHECK_ITERABLE_CUSTOM_APPROX(ROD00000_ElementDilatation,
                                  ROD00000_ElementDilatation_PYEL, approx);
     CHECK_ITERABLE_CUSTOM_APPROX(ROD00000_VoronoiDilatation,
                                  ROD00000_VoronoiDilatation_PYEL, approx);
     CHECK_ITERABLE_CUSTOM_APPROX(ROD00000_ReferenceVoronoiLength,
                                  ROD00000_ReferenceVoronoiLength_PYEL, approx);
-    CHECK_MATRIX_CUSTOM_APPROX(ROD00000_ShearStretchStrain,
-                               ROD00000_ShearStretchStrain_PYEL, approx);
-    CHECK_MATRIX_CUSTOM_APPROX(ROD00000_Curvature, ROD00000_Curvature_PYEL,
-                               approx);
-    CHECK_MATRIX_CUSTOM_APPROX(ROD00000_ReferenceShearStretchStrain,
-                               ROD00000_ReferenceShearStretchStrain_PYEL,
-                               approx);
-    CHECK_MATRIX_CUSTOM_APPROX(ROD00000_ReferenceCurvature,
-                               ROD00000_ReferenceCurvature_PYEL, approx);
-    CHECK_MATRIX_CUSTOM_APPROX(ROD00000_InternalStress,
-                               ROD00000_InternalStress_PYEL, approx);
-    CHECK_MATRIX_CUSTOM_APPROX(ROD00000_InternalCouple,
-                               ROD00000_InternalCouple_PYEL, approx);
-    CHECK_MATRIX_CUSTOM_APPROX(ROD00000_Position, ROD00000_Position_PYEL,
-                               approx);
-    for (std::size_t i(0UL); i < 3UL; ++i)
-      CHECK((blaze::pageslice(ROD00000_Director, i) -
-             blaze::pageslice(ROD00000_Director_PYEL, i)) ==
-            Approx(0.0).margin(1e-6));
-    CHECK_MATRIX_CUSTOM_APPROX(ROD00000_Velocity, ROD00000_Velocity_PYEL,
-                               approx);
-    CHECK_MATRIX_CUSTOM_APPROX(ROD00000_AngularVelocity,
-                               ROD00000_AngularVelocity_PYEL, approx);
-    CHECK_MATRIX_CUSTOM_APPROX(ROD00000_Acceleration,
-                               ROD00000_Acceleration_PYEL, approx);
-    CHECK_MATRIX_CUSTOM_APPROX(ROD00000_AngularAcceleration,
-                               ROD00000_AngularAcceleration_PYEL, approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        blaze::evaluate(blaze::ravel(ROD00000_ShearStretchStrain)),
+        blaze::evaluate(blaze::ravel(ROD00000_ShearStretchStrain_PYEL)),
+        approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        blaze::evaluate(blaze::ravel(ROD00000_Curvature)),
+        blaze::evaluate(blaze::ravel(ROD00000_Curvature_PYEL)), approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        blaze::evaluate(blaze::ravel(ROD00000_ReferenceShearStretchStrain)),
+        blaze::evaluate(
+            blaze::ravel(ROD00000_ReferenceShearStretchStrain_PYEL)),
+        approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        blaze::evaluate(blaze::ravel(ROD00000_ReferenceCurvature)),
+        blaze::evaluate(blaze::ravel(ROD00000_ReferenceCurvature_PYEL)),
+        approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        blaze::evaluate(blaze::ravel(ROD00000_InternalStress)),
+        blaze::evaluate(blaze::ravel(ROD00000_InternalStress_PYEL)), approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        blaze::evaluate(blaze::ravel(ROD00000_InternalCouple)),
+        blaze::evaluate(blaze::ravel(ROD00000_InternalCouple_PYEL)), approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        blaze::evaluate(blaze::ravel(ROD00000_Position)),
+        blaze::evaluate(blaze::ravel(ROD00000_Position_PYEL)), approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        blaze::evaluate(blaze::ravel(ROD00000_Director)),
+        blaze::evaluate(blaze::ravel(ROD00000_Director_PYEL)), approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        blaze::evaluate(blaze::ravel(ROD00000_Velocity)),
+        blaze::evaluate(blaze::ravel(ROD00000_Velocity_PYEL)), approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        blaze::evaluate(blaze::ravel(ROD00000_AngularVelocity)),
+        blaze::evaluate(blaze::ravel(ROD00000_AngularVelocity_PYEL)), approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        blaze::evaluate(blaze::ravel(ROD00000_Acceleration)),
+        blaze::evaluate(blaze::ravel(ROD00000_Acceleration_PYEL)), approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        blaze::evaluate(blaze::ravel(ROD00000_AngularAcceleration)),
+        blaze::evaluate(blaze::ravel(ROD00000_AngularAcceleration_PYEL)),
+        approx);
+
     // clang-format on
   }
 

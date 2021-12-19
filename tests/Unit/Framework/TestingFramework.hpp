@@ -166,11 +166,11 @@ struct check_iterable_approx<
   static void apply(const T& a, const T& b, Approx& appx = approx) {  // NOLINT
     CAPTURE(a);
     CAPTURE(b);
-    auto a_it = a.begin();
-    auto b_it = b.begin();
-    CHECK(a_it != a.end());
-    CHECK(b_it != b.end());
-    while (a_it != a.end() and b_it != b.end()) {
+    auto a_it = a.cbegin();
+    auto b_it = b.cbegin();
+    CHECK(a_it != a.cend());
+    CHECK(b_it != b.cend());
+    while (a_it != a.cend() and b_it != b.cend()) {
       check_iterable_approx<std::decay_t<decltype(*a_it)>>::apply(*a_it, *b_it,
                                                                   appx);
       ++a_it;
