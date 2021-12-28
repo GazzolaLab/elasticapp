@@ -1,3 +1,4 @@
+add_subdirectory(axial_stretching)
 add_subdirectory(parallelism)
 add_subdirectory(display_variables)
 add_subdirectory(tutorial_single_rod)
