@@ -242,10 +242,11 @@ namespace elastica {
     {
      private:
       //**Compile-time checks***************************************************
-      static_assert(
-          cpp17::conjunction_v<
-              std::is_default_constructible<Modules<SimTraits, int>>...>,
-          "Simulation modules must have a default/empty constructor!");
+      // These need the constructor of Modules<SimTraits, int> be accessible
+      // static_assert(
+      //     cpp17::conjunction_v<
+      //         std::is_default_constructible<Modules<SimTraits, int>>...>,
+      //     "Simulation modules must have a default/empty constructor!");
       //************************************************************************
 
       //**Type definitions******************************************************

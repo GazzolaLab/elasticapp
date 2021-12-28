@@ -271,8 +271,7 @@ namespace elastica {
               ConnectionsModule const& module_handle) noexcept {
             return std::string(MakeString{}
                                << "--Apply " << module_handle.n_connections()
-                               << "connections over "
-                               << module_handle.n_systems() << " systems\n");
+                               << " connections\n";
           }
           //********************************************************************
         };

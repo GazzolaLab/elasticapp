@@ -177,13 +177,11 @@ namespace {
     const std::size_t dimensions = 3UL;
     const std::size_t size = 1UL;
 
-    // real_t f = 5.0F;
     // H_mat data(dimensions, dimensions, size, f); // Q
     H_mat data{
         {{1.0}, {0.0}, {0.0}}, {{0.0}, {1.0}, {0.0}}, {{0.0}, {0.0}, {1.0}}};
     H_SO3 primitive(&data);
 
-    // real_t another_f = 25.0F;
     // DH_mat derivative_data(dimensions, size, another_f); // omega
     DH_mat derivative_data{{1.0}, {3.2}, {7.0}};
     derivative_data /= blaze::norm(derivative_data);
@@ -195,35 +193,39 @@ namespace {
     static_assert(::elastica::states::tt::is_vectorized_t<E>::value,
                   "SO3 blaze meta failure");
 
+
     {
       // no resize version
+      Approx approx =
+          Approx::custom().epsilon(std::numeric_limits<double>::epsilon() * 10);
       H_mat result_h(dimensions, dimensions, size);
       H_SO3 result(&result_h);
 
-      // clang-format off
-      H_mat expected_result1{{{0.254506},  {0.915374}, {-0.311957}},
-                            {{-0.834834}, {0.370785}, {0.406903}},
-                            {{0.488138},  {0.156873}, {0.858552}}};
-      H_mat expected_result2{{{    -0.85169 },{    0.523437 },{   0.0252415 }},
-                             {{    -0.32339 },{   -0.562872 },{    0.760654 }},
-                             {{    0.412363 },{    0.639679 },{    0.648667 }}};
-      H_mat expected_result3{{{ -0.641423 },{ -0.581572 },{  0.500351 } },
-                             {{  0.758904 },{ -0.385401 },{  0.524911 } },
-                             {{ -0.112438 },{  0.716408 },{  0.688562 } }};
-      // clang-format on
-
-      result = expr;
+      H_mat expected_result1{
+          {{0.25450619348149084}, {0.9153737692840798}, {-0.31195746502722094}},
+          {{-0.8348342628404866}, {0.3707851059094285}, {0.40690313199004513}},
+          {{0.488137635372581}, {0.15687341311510705}, {0.8585524918084395}}};
+      H_mat expected_result2{
+          {{-0.8516901626985716}, {0.5234374213384307}, {0.025241487773656174}},
+          {{-0.32338986831225147}, {-0.5628715080170252}, {0.7606540991381047}},
+          {{0.41236253447111093}, {0.6396787720451501}, {0.6486664849977726}}};
+      H_mat expected_result3{
+          {{-0.6414225949651109}, {-0.5815723164444999}, {0.5003505725125015}},
+          {{0.7589035893644309}, {-0.38540056968696046}, {0.5249111762334062}},
+          {{-0.11243841300015261}, {0.7164077342061106}, {0.6885619519343712}}};
 
       // 25.0 * 0.1 + 5.0F
-      CHECK_ITERABLE_APPROX(to_vec(result.get()), to_vec(expected_result1));
+      result = expr;
+      CHECK_ITERABLE_CUSTOM_APPROX(to_vec(result.get()),
+                                   to_vec(expected_result1), approx);
 
       result = expr + 1.0 * (td * derivative);
-      // 5.0F + 2.0 * 0.1 * 25.0 + 0.1 * 25.0 = 12.5F
-      CHECK_ITERABLE_APPROX(to_vec(result.get()), to_vec(expected_result2));
+      CHECK_ITERABLE_CUSTOM_APPROX(to_vec(result.get()),
+                                   to_vec(expected_result2), approx);
 
       result = expr + 2.0 * (td * derivative);
-      // 5.0F + 2.0 * 0.1 * 25.0 + 0.1 * 25.0 = 12.5F
-      CHECK_ITERABLE_APPROX(to_vec(result.get()), to_vec(expected_result3));
+      CHECK_ITERABLE_CUSTOM_APPROX(to_vec(result.get()),
+                                   to_vec(expected_result3), approx);
     }
 
     {
@@ -252,44 +254,53 @@ namespace {
     using DH_mat = blaze::DynamicMatrix<real_t>;
     using DH_SO3 = SO3<DH_mat, tags::DerivativeTag>;
 
-    // const std::size_t dimensions = 3UL;
-    // const std::size_t size = 1UL;
+    Approx approx =
+        Approx::custom().epsilon(std::numeric_limits<double>::epsilon() * 10);
 
-    // real_t another_f = 25.0F;
     // DH_mat derivative_data(dimensions, size, another_f); // omega
     DH_mat derivative_data{{1.0}, {3.2}, {7.0}};
     derivative_data /= blaze::norm(derivative_data);
     derivative_data *= 76.0 * M_PI / 180.0;
     DH_SO3 derivative(&derivative_data);
 
-    H_mat result_h{
+    H_mat result_h1{
         {{1.0}, {0.0}, {0.0}}, {{0.0}, {1.0}, {0.0}}, {{0.0}, {0.0}, {1.0}}};
-    H_SO3 result(&result_h);
+    H_mat result_h2{
+        {{1.0}, {0.0}, {0.0}}, {{0.0}, {1.0}, {0.0}}, {{0.0}, {0.0}, {1.0}}};
+    H_mat result_h3{
+        {{1.0}, {0.0}, {0.0}}, {{0.0}, {1.0}, {0.0}}, {{0.0}, {0.0}, {1.0}}};
+    H_SO3 result1(&result_h1);
+    H_SO3 result2(&result_h2);
+    H_SO3 result3(&result_h3);
 
-    // clang-format off
-    H_mat expected_result1{{{ 0.254506}, {0.915374}, {-0.311957}},
-                           {{-0.834834}, {0.370785}, { 0.406903}},
-                           {{ 0.488138}, {0.156873}, { 0.858552}}};
-    H_mat expected_result2{{{    -0.85169 },{    0.523437 },{   0.0252415 }},
-                           {{    -0.32339 },{   -0.562872 },{    0.760654 }},
-                           {{    0.412363 },{    0.639679 },{    0.648667 }}};
-    H_mat expected_result3{{{ -0.641423 },{ -0.581572 },{  0.500351 } },
-                           {{  0.758904 },{ -0.385401 },{  0.524911 } },
-                           {{ -0.112438 },{  0.716408 },{  0.688562 } }};
-    // clang-format on
+    H_mat expected_result1{
+        {{0.25450619348149084}, {0.9153737692840798}, {-0.31195746502722094}},
+        {{-0.8348342628404866}, {0.3707851059094285}, {0.40690313199004513}},
+        {{0.488137635372581}, {0.15687341311510705}, {0.8585524918084395}}};
+    H_mat expected_result2{
+        {{-0.8516901626985716}, {0.5234374213384307}, {0.025241487773656174}},
+        {{-0.32338986831225147}, {-0.5628715080170252}, {0.7606540991381047}},
+        {{0.41236253447111093}, {0.6396787720451501}, {0.6486664849977726}}};
+    H_mat expected_result3{
+        {{-0.6414225949651109}, {-0.5815723164444999}, {0.5003505725125015}},
+        {{0.7589035893644309}, {-0.38540056968696046}, {0.5249111762334062}},
+        {{-0.11243841300015261}, {0.7164077342061106}, {0.6885619519343712}}};
 
     // assignment
     auto expr = td * derivative;
-    result += expr;
-    CHECK_ITERABLE_APPROX(to_vec(result.get()), to_vec(expected_result1));
+    result1 += expr;
+    CHECK_ITERABLE_CUSTOM_APPROX(to_vec(result1.get()),
+                                 to_vec(expected_result1), approx);
 
-    auto another_expr = derivative * td;
-    result += another_expr;
-    CHECK_ITERABLE_APPROX(to_vec(result.get()), to_vec(expected_result2));
+    auto another_expr = 2.0 * (derivative * td);
+    result2 += another_expr;
+    CHECK_ITERABLE_CUSTOM_APPROX(to_vec(result2.get()),
+                                 to_vec(expected_result2), approx);
 
-    auto yet_another_expr = derivative * td;
-    result += yet_another_expr;
-    CHECK_ITERABLE_APPROX(to_vec(result.get()), to_vec(expected_result3));
+    auto yet_another_expr = 3.0 * (derivative * td);
+    result3 += yet_another_expr;
+    CHECK_ITERABLE_CUSTOM_APPROX(to_vec(result3.get()),
+                                 to_vec(expected_result3), approx);
   }
 
 }  // namespace
