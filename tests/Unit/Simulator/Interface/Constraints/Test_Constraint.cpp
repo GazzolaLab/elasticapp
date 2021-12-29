@@ -249,11 +249,13 @@ namespace elastica {
 
 // finally one with make_constraint
 
-auto internal_first IGNORE_UNUSED = [](auto...) -> void {};
+auto internal_constraint_first IGNORE_UNUSED = [](auto...) -> void {};
 using ConstraintFromMakeConstraint =
     decltype(::elastica::constraints::make_constraint(
-        ::elastica::constraints::make_value_constraint(internal_first),
-        ::elastica::constraints::make_rate_constraint(internal_first))());
+        ::elastica::constraints::make_value_constraint(
+            internal_constraint_first),
+        ::elastica::constraints::make_rate_constraint(
+            internal_constraint_first))());
 
 namespace {
 
