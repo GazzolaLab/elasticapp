@@ -315,11 +315,11 @@ namespace elastica {
 
 // finally one with make_connection
 
-auto internal_first IGNORE_UNUSED = [](auto...) -> void {};
+auto internal_connection_first IGNORE_UNUSED = [](auto...) -> void {};
 using ConnectionFromMakeConnection =
     decltype(::elastica::connections::make_connection(
-        ::elastica::connections::make_force(internal_first),
-        ::elastica::connections::make_torque(internal_first))());
+        ::elastica::connections::make_force(internal_connection_first),
+        ::elastica::connections::make_torque(internal_connection_first))());
 
 namespace {
 
