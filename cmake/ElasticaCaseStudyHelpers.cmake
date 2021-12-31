@@ -11,30 +11,44 @@ if (NOT TARGET elastica_standalone_executable)
     add_library(elastica::standalone_executable ALIAS elastica_standalone_executable)
 endif ()
 
-function(_elastica_setup_standalone_executable TARGET SRCLIB CASE_STUDY CASE_STUDY_APPLICATION_NAME INCLUDES)
+if (NOT TARGET elastica_python_object)
+    # some other file!
+    add_library(elastica_python_object INTERFACE)
+    # setup pybind, enables the pybind11_add_module function
+    include(SetupPybind11)
+    # target_link_libraries(elastica_python_object INTERFACE pybind11::headers pybind11::library)
+    target_link_libraries(elastica_python_object INTERFACE _elastica_python_support)
+    add_library(elastica::python_object ALIAS elastica_python_object)
+endif ()
+
+function(_elastica_setup_standalone_executable
+        TARGET
+        SRCLIB
+        CASE_STUDY
+        CASE_STUDY_APPLICATION_NAME
+        INCLUDES)
     string(CONFIGURE [[
-        /*
-        *
-        * Warning :
-        * This is an Elastica++ generated file!
-        * Edit at your own peril.
-        */
-        @INCLUDES@
-        #include <elastica/Utilities/AppSupport/CaseStudyParser.hpp>
+/*
+ * Warning :
+ * This is an Elastica++ generated file!
+ * Edit at your own peril.
+ */
+@INCLUDES@
+#include <elastica/Utilities/AppSupport/CaseStudyParser.hpp>
 
-        int main(int argc, char* argv[]) {
-            using CaseStudy = @CASE_STUDY@;
-            char const* case_study_name("@CASE_STUDY_APPLICATION_NAME@");
+int main(int argc, char* argv[]) {
+    using CaseStudy = @CASE_STUDY@;
+    char const* case_study_name("@CASE_STUDY_APPLICATION_NAME@");
 
-            auto input_parameters =
-            ::standalone_bindings::parse_case_study_parameters<CaseStudy>(case_study_name, argc, argv);
+    auto input_parameters =
+    ::standalone_bindings::parse_case_study_parameters<CaseStudy>(case_study_name, argc, argv);
 
-            CaseStudy case_study{};
-            case_study.setup(input_parameters);
-            case_study.run();
+    CaseStudy case_study{};
+    case_study.setup(input_parameters);
+    case_study.run();
 
-            return EXIT_SUCCESS;
-        }
+    return EXIT_SUCCESS;
+}
     ]] code @ONLY)
 
     set(GENERATED_SRC_FILE_NAME "standalone_${TARGET}")
@@ -46,14 +60,49 @@ function(_elastica_setup_standalone_executable TARGET SRCLIB CASE_STUDY CASE_STU
     target_link_libraries(${TARGET} PUBLIC elastica::standalone_executable)
 endfunction()
 
-# function(_elastica_setup_python_executable TARGET SRCLIB CASE_STUDY CASE_STUDY_APPLICATION_NAME INCLUDES)
-# endfunction()
+function(_elastica_setup_python_object
+        TARGET
+        SRCLIB
+        CASE_STUDY
+        CASE_STUDY_APPLICATION_NAME
+        INCLUDES)
+    string(CONFIGURE [[
+/*
+ * Warning :
+ * This is an Elastica++ generated file!
+ * Edit at your own peril.
+ */
+@INCLUDES@
+#include <elastica/Utilities/AppSupport/CaseStudyPybind.hpp>
+
+namespace py = pybind11;
+
+PYBIND11_MODULE(@CASE_STUDY_APPLICATION_NAME@, m) {  // NOLINT
+  m.doc() = R"pbdoc(
+    Elastica++ generated bindings for @CASE_STUDY@
+
+    Classes
+    -------
+    @CASE_STUDY@
+    )pbdoc";
+  py_bindings::bind_case_study<@CASE_STUDY@>(m);
+}
+    ]] code @ONLY)
+
+    set(GENERATED_SRC_FILE_NAME "pybind_${TARGET}")
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${GENERATED_SRC_FILE_NAME}.cpp" "${code}")
+
+    pybind11_add_module(${TARGET} "${CMAKE_CURRENT_BINARY_DIR}/${GENERATED_SRC_FILE_NAME}.cpp")
+    target_link_libraries(${TARGET} PRIVATE ${SRCLIB})
+    # Takes care of including everything thats not to do with the target
+    target_link_libraries(${TARGET} PUBLIC elastica::python_object)
+endfunction()
 
 function(_elastica_setup_case_study TYPE)
     if (${TYPE} STREQUAL "elastica::standalone_executable")
         _elastica_setup_standalone_executable(${ARGN})
-    # elseif (${TYPE} STREQUAL "elastica::python_object")
-    #     _elastica_setup_python_executable(${ARGN})
+    elseif (${TYPE} STREQUAL "elastica::python_object")
+        _elastica_setup_python_object(${ARGN})
     else ()
         message(FATAL_ERROR "unrecognized TYPE in a Elastica case study")
     endif ()
