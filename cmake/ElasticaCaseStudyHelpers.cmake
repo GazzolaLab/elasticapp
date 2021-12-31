@@ -20,7 +20,7 @@ function(_elastica_setup_standalone_executable TARGET SRCLIB CASE_STUDY CASE_STU
         * Edit at your own peril.
         */
         @INCLUDES@
-        #include "CaseStudyParser.hpp"
+        #include <elastica/Utilities/AppSupport/CaseStudyParser.hpp>
 
         int main(int argc, char* argv[]) {
             using CaseStudy = @CASE_STUDY@;
