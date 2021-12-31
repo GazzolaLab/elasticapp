@@ -101,3 +101,5 @@ target_link_libraries(
 #
 #target_link_libraries(${LIBRARY} INTERFACE ErrorHandling)
 #
+
+add_subdirectory(AppSupport)
