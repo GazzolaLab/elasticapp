@@ -315,10 +315,10 @@ namespace elastica {
                   downstream_block));
               auto& dimensions(blocks::get<::elastica::tags::ElementDimension>(
                   downstream_block));
-              auto& lengths(blocks::get<::elastica::tags::ElementLength>(
+              auto& ref_lengths(blocks::get<::elastica::tags::ReferenceElementLength>(
                   downstream_block));
 
-              volumes = compute_cross_section_area(dimensions) * lengths;
+              volumes = compute_cross_section_area(dimensions) * ref_lengths;
             }
           }
           //********************************************************************
@@ -529,7 +529,7 @@ namespace elastica {
             // 1. Compute new lengths
             auto position_diff(Traits::Operations::difference_kernel(position));
             auto& element_length_collection(blocks::get<tags::ElementLength>(self()));
-            element_length_collection = Traits::Operations::batch_norm(position_diff);
+            element_length_collection = Traits::Operations::batch_norm(position_diff) + 1e-14;
 
             // 2. Update tangents
             auto& tangent_collection(blocks::get<tags::Tangent>(self()));
