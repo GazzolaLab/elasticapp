@@ -106,12 +106,12 @@ namespace {
 
     using LocalFrame = typename Model::Frame;
     const double expected_second_moment = M_PI * 4. * 4. * 4.;
-    CHECK(model.get_second_moment_of_area<LocalFrame::D1>() ==
+    CHECK(model.get_second_moment_of_area<LocalFrame::D1>(0UL) ==
           expected_second_moment);
-    CHECK(model.get_second_moment_of_area<LocalFrame::D2>() ==
+    CHECK(model.get_second_moment_of_area<LocalFrame::D2>(0UL) ==
           expected_second_moment);
     // symmetric
-    CHECK(model.get_second_moment_of_area<LocalFrame::D3>() ==
+    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(0UL) ==
           2.0 * expected_second_moment);
 
     //model.compute_shear_strains();
