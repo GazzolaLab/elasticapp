@@ -1,4 +1,5 @@
 add_subdirectory(axial_stretching)
+add_subdirectory(timoshenko)
 add_subdirectory(zeros)
 add_subdirectory(parallelism)
 add_subdirectory(display_variables)
