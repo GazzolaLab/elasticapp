@@ -4,6 +4,7 @@
 
 // define to use TBB backend (for now)
 #define ELASTICA_USE_TBB 1
+#include <tbb/global_control.h>
 
 #include "Simulator/Materials.hpp"
 #include "Simulator/Materials/Materials.hpp"
@@ -45,6 +46,11 @@ int main(int argc, char* argv[]) {
   /*
    *
    */
+  const int n_threads_used_by_application = 4;
+  // controls the application level parallelism
+  tbb::global_control application_limit(
+      tbb::global_control::max_allowed_parallelism,
+      n_threads_used_by_application);
 
   namespace ec = elastica::configuration;
   namespace et = elastica::timestepper;
@@ -71,10 +77,11 @@ int main(int argc, char* argv[]) {
       ec::make_iteration_policy(ec::iterate_across_system_types_in(ec::seq),
                                 // use parallelism for a singlr type of system
                                 ec::iterate_over_systems_in(ec::par)));
+  auto parallel_config =
+      ec::make_parallel_configuration(n_threads_used_by_application);
 
   auto simulator_config = ec::make_simulator_configuration(
-      ec::DefaultDomainConfiguration{}, system_config,
-      ec::DefaultParallelConfiguration{});
+      ec::DefaultDomainConfiguration{}, system_config, parallel_config);
 
   auto simulator = elastica::make_simulator<>(simulator_config);
 

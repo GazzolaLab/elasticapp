@@ -190,8 +190,8 @@ namespace elastica {
     template <LoggingLevel L, typename F, typename... Funcs>
     inline auto tee(F&& f, Funcs&&... funcs) noexcept -> void {
       detail::LogInterface<L> logger;
-      expand_pack(logger(std::forward<F>(f), std::cout),
-                  logger(std::forward<Funcs>(funcs), std::cout)...);
+      EXPAND_PACK_LEFT_TO_RIGHT(logger(std::forward<F>(f), std::cout),
+                                logger(std::forward<Funcs>(funcs), std::cout));
     }
     //**************************************************************************
 
