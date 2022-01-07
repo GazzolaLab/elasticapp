@@ -121,7 +121,7 @@ int main() {
         using Tag = ::elastica::tags::ExternalLoads;
         // using V =
         // cpp17::remove_reference_t<decltype(rod_system)>::VariableMap
-        blaze::column(::elastica::get<Tag>(rod_system), index) = F;
+        blaze::column(::elastica::get<Tag>(rod_system), index + 1UL) = F;
       }),
       make_torque([](auto /*time*/, auto&, std::size_t) {}));
   simulator->force(*rod_it).at(::elastica::end - 1UL).with(force_generator());
@@ -152,7 +152,7 @@ int main() {
     // is it really right
     simulator->step(time_stepper, time_v, time_delta);
 
-    if (not(i_step % 100)) {
+    if (not(i_step % 200)) {
       // whatever
       tip_displacements.push_back(::elastica::position(*rod_it, n_elem)[0UL]);
       times.push_back(static_cast<::elastica::real_t>(time_v));
@@ -168,8 +168,11 @@ int main() {
 
   const auto n_samples = tip_displacements.size();
 
+  std::ofstream my_file;
+  my_file.open("samples.csv");
   for (std::size_t i_sample = {0UL}; i_sample < n_samples; ++i_sample) {
-    std::cout << std::setprecision(16) << times[i_sample] << ","
+    my_file << std::setprecision(16) << times[i_sample] << ","
               << tip_displacements[i_sample] << std::endl;
   }
+  my_file.close();
 }
