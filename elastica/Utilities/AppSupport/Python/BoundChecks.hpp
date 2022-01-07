@@ -1,3 +1,16 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Helpers to check bounds of \elastica data types
+//
+//  Copyright (C) 2020-2022 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
 
 //******************************************************************************
@@ -29,7 +42,7 @@ namespace py_bindings {
   //****************************************************************************
   /*!\brief Check if a matrix-like object access is in bounds. Throws
    * std::runtime_error if it is not.
-   * \ingroup PythonBindingsGroup
+   * \ingroup python_bindings
    */
   template <typename T>
   void matrix_bounds_check(const T& matrix, const std::size_t row,
@@ -47,7 +60,7 @@ namespace py_bindings {
   //****************************************************************************
   /*!\brief Check if a tensor-like object access is in bounds. Throws
    * std::runtime_error if it is not.
-   * \ingroup PythonBindingsGroup
+   * \ingroup python_bindings
    */
   template <typename T>
   void tensor_bounds_check(const T& tensor, const std::size_t page,

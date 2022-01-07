@@ -16,8 +16,8 @@
 //******************************************************************************
 // Includes
 //******************************************************************************
-#include <tuple>
 #include <string>
+#include <tuple>
 
 #include "Utilities/AsTaggedTuple.hpp"
 #include "Utilities/Invoke.hpp"
@@ -31,7 +31,7 @@ namespace py_bindings {
   /*! \cond ELASTICA_INTERNAL */
   /*!\brief Helps unpack arguments for an Initializer to the interface expected
    * by pybind
-   * \ingroup application_support
+   * \ingroup python_bindings
    */
   template <typename Init, typename Ts = typename Init::ValueTypes>
   struct Unpack;
@@ -53,7 +53,7 @@ namespace py_bindings {
 
   //****************************************************************************
   /*!\brief Helper to initialize a case-study in Python
-   * \ingroup application_support
+   * \ingroup python_bindings
    *
    * \tparam CaseStudy A user defined case-study whose parameters have to be
    * parsed

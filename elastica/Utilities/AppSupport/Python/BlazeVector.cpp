@@ -1,6 +1,19 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Defines python bindings for a \elastica vector type
 //
-// Created by Tejaswin Parthasarathy on 1/3/22.
+//  Copyright (C) 2020-2022 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
 //
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
+//******************************************************************************
+// Includes
+//******************************************************************************
 
 #include <algorithm>
 #include <memory>
@@ -22,6 +35,11 @@ namespace py = pybind11;
 
 namespace py_bindings {
 
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\brief Helps bind a vector type in \elastica
+   * \ingroup python_bindings
+   */
   void bind_blaze_vector(py::module& m) {  // NOLINT
 
     using Real = ::elastica::real_t;
@@ -212,5 +230,6 @@ namespace py_bindings {
         .def(
             "__neg__", +[](const type& t) { return type{-t}; });
   }
+  //****************************************************************************
 
 }  // namespace py_bindings

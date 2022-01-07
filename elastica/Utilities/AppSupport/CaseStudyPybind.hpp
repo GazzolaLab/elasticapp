@@ -27,7 +27,7 @@ namespace py_bindings {
 
   //****************************************************************************
   /*!\brief Binds a case-study into a python module
-   * \ingroup application_support
+   * \ingroup python_bindings
    *
    * \example
    * \code
@@ -76,5 +76,6 @@ namespace py_bindings {
         .def("__str__", []() { return pretty_type::short_name<CaseStudy>(); })
         .def("run", &CaseStudy::run);
   }
+  //****************************************************************************
 
 }  // namespace py_bindings

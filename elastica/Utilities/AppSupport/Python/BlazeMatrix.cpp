@@ -1,6 +1,19 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Defines python bindings for a \elastica matrix type
 //
-// Created by Tejaswin Parthasarathy on 1/3/22.
+//  Copyright (C) 2020-2022 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
 //
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
+//******************************************************************************
+// Includes
+//******************************************************************************
 
 #include <array>
 #include <cstddef>
@@ -22,6 +35,11 @@ namespace py = pybind11;
 
 namespace py_bindings {
 
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\brief Helps bind a matrix type in \elastica
+   * \ingroup python_bindings
+   */
   void bind_blaze_matrix(py::module& m) {  // NOLINT
     using Real = ::elastica::real_t;
     using type = blaze::DynamicMatrix<Real, blaze::rowMajor,
@@ -88,5 +106,6 @@ namespace py_bindings {
               self(std::get<0>(x), std::get<1>(x)) = val;
             });
   }
+  //****************************************************************************
 
 }  // namespace py_bindings

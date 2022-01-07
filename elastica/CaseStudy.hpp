@@ -17,19 +17,5 @@
 // Includes
 //******************************************************************************
 
+#include "Utilities/AppSupport/AppSupport.hpp"
 #include "Utilities/AppSupport/CaseStudy.hpp"
-
-//==============================================================================
-//
-//  DOXYGEN DOCUMENTATION
-//
-//==============================================================================
-
-//******************************************************************************
-/*!\defgroup application_support Application support
- * \brief Utilities for generating \elastica applications
- *
- * The Application support module contains functionality for quickly building
- * applications using \elastica
- */
-//******************************************************************************

@@ -1,7 +1,19 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Defines common python bindings for \elastica types
 //
-// Created by Tejaswin Parthasarathy on 1/3/22.
+//  Copyright (C) 2020-2022 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
 //
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
 
+//******************************************************************************
+// Includes
+//******************************************************************************
 #include <pybind11/pybind11.h>
 
 namespace py = pybind11;
