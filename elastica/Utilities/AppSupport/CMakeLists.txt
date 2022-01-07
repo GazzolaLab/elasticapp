@@ -26,3 +26,6 @@ elastica_target_headers(_elastica_python_support
         CaseStudyPybind.hpp
         PythonBindingHelpers.hpp)
 target_link_libraries(_elastica_python_support INTERFACE Utilities _elastica_case_study)
+
+# pybindings
+add_subdirectory(Python)
