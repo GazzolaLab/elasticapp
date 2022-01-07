@@ -366,7 +366,7 @@ if(NOT TBB_VERSION)
         set(TBB_VERSIONS_FILE ${TBB_STDDEF_FILE})
     else()
         # For later versions, the filename is version.h
-        set(TBB_VERSIONS_FILE "${TBB_INCLUDE_DIR}/tbb/version.h")
+        set(TBB_VERSIONS_FILE "${TBB_INCLUDE_DIR}/oneapi/tbb/version.h")
     endif()
 
     # only read the start of the file
