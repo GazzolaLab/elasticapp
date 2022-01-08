@@ -106,6 +106,12 @@ struct BeginnerCaseStudy {
    * called `run`.
    */
   void run();
+
+  /*
+   * Stub methods : Todo : refactor
+   */
+  inline void step(){};
+  inline int& output() { return first; }
 };
 
 /*

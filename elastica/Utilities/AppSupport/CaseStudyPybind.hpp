@@ -74,7 +74,10 @@ namespace py_bindings {
     // (see the stub classes) as part of ELASTICA_CASE_STUDY
     py_bound_case_study
         .def("__str__", []() { return pretty_type::short_name<CaseStudy>(); })
-        .def("run", &CaseStudy::run);
+        .def("run", &CaseStudy::run)
+        .def("step", &CaseStudy::step)
+        .def("output", &CaseStudy::output,
+             py::return_value_policy::reference_internal);
   }
   //****************************************************************************
 
