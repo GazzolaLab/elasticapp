@@ -1,6 +1,6 @@
-add_executable(timoshenko timoshenko.cpp)
+add_executable(example_timoshenko timoshenko.cpp)
 
-target_link_libraries(timoshenko
+target_link_libraries(example_timoshenko
         PUBLIC
         Utilities
         ErrorHandling

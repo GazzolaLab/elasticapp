@@ -109,13 +109,13 @@ int main() {
       make_value_constraint([origin, origin_frame = ::elastica::director(
                                          *rod_it, my_constraint_index)](
                                 auto /*time*/, auto& rod_system, auto index) {
-    ::elastica::position(rod_system, index) = origin;
-    ::elastica::director(rod_system, index) = origin_frame;
+        ::elastica::position(rod_system, index) = origin;
+        ::elastica::director(rod_system, index) = origin_frame;
       }),
       make_rate_constraint(
           [](auto /*time*/, auto& rod_system, std::size_t index) {
-    ::elastica::velocity(rod_system, index) = 0.0;
-    ::elastica::angular_velocity(rod_system, index) = 0.0;
+            ::elastica::velocity(rod_system, index) = 0.0;
+            ::elastica::angular_velocity(rod_system, index) = 0.0;
           }));
 
   simulator->constrain(*rod_it).at(0UL).with(constraint_generator());
@@ -125,10 +125,10 @@ int main() {
   const ::elastica::Vec3 F{-15.0, 0.0, 0.0};
   auto force_generator = make_forcing(
       make_force([F](auto /*time*/, auto& rod_system, std::size_t index) {
-    using Tag = ::elastica::tags::ExternalLoads;
-    // using V =
-    // cpp17::remove_reference_t<decltype(rod_system)>::VariableMap
-    blaze::column(::elastica::get<Tag>(rod_system), index) = F;
+        using Tag = ::elastica::tags::ExternalLoads;
+        // using V =
+        // cpp17::remove_reference_t<decltype(rod_system)>::VariableMap
+        blaze::column(::elastica::get<Tag>(rod_system), index + 1) = F;
       }),
       make_torque([](auto /*time*/, auto&, std::size_t) {}));
   simulator->force(*rod_it).at(::elastica::end - 1UL).with(force_generator());
@@ -150,18 +150,11 @@ int main() {
   ::elastica::Time time_v{0.0};
   ::elastica::TimeDelta time_delta{dt};
 
-  /* do some work */
-  auto start = std::chrono::steady_clock::now();
+  /* Pre processing */
 
   for (std::size_t i_step = {0UL}; i_step < total_steps; ++i_step) {
-    // is it really right
     simulator->step(time_stepper, time_v, time_delta);
   }
 
-  // do something
-  auto finish = std::chrono::steady_clock::now();
-  double elapsed_seconds = std::chrono::duration_cast<
-                               std::chrono::duration<double> >(finish - start).count();
-
-  std::cout << elapsed_seconds << std::endl;
+  /* Post processing */
 }
