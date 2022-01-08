@@ -16,7 +16,7 @@
 # are known.
 #
 # Usage:
-#  spectre_target_headers(
+#  elastica_target_headers(
 #    TARGET_NAME
 #    INCLUDE_DIRECTORY /path/to/include/relative/to
 #    HEADERS
@@ -43,7 +43,7 @@ function(elastica_target_headers TARGET_NAME)
         message(FATAL_ERROR
                 "Must specify the include directory relative to which the "
                 "header files for a library will be included when calling "
-                "spectre_target_headers. The named argument is INCLUDE_DIRECTORY.")
+                "elastica_target_headers. The named argument is INCLUDE_DIRECTORY.")
     endif (NOT ARG_INCLUDE_DIRECTORY)
 
     get_target_property(
