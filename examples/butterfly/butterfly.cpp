@@ -2,9 +2,9 @@
 // Created by Seung Hyun Kim on 1/2/2022
 //
 #include <chrono>
+#include <cmath>
 #include <iomanip>
 #include <limits>
-#include <cmath>
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Simulator/Constraints.hpp"
@@ -16,15 +16,16 @@
 #include "Time/SymplecticSteppers/Algorithms.hpp"
 #include "Time/SymplecticSteppers/SymplecticStepper.hpp"
 #include "Utilities/Get.hpp"
+#include "Utilities/Math/Identity.hpp"
+#include "Utilities/Math/Rot3.hpp"
+#include "Utilities/Math/Vec3.hpp"
 #include "Utilities/StdHelpers.hpp"
-#include "Utilities/Math.hpp"
 
 // TODO : refactor away into an elastica header
 template <typename T, typename B>
 using ComponentsWithStepper = ::elastica::SymplecticPolicy<
     T, B, elastica::cosserat_rod::component::WithCircularCosseratRod,
-    elastica::cosserat_rod::component::
-        WithExplicitlyDampedDiagonalLinearHyperElasticModel,
+    elastica::cosserat_rod::component::WithDiagonalLinearHyperElasticModel,
     elastica::cosserat_rod::component::WithRodKinematics>;
 
 using Traits = elastica::cosserat_rod::DefaultCosseratRodTraits;
@@ -70,9 +71,9 @@ int main() {
       1e4 / 1.5,
       // The below parameters doesn't change the result of this example
       // coefficient of static friction
-      0.0,
+      100.0,  // needs to be > 0.0
       // cofficient of dynamic friction
-      0.0,
+      20.0,  // needs to be > 0.0
       // Contact stiffness
       200,
       // normal contact damping
@@ -80,40 +81,54 @@ int main() {
       // tangent contact damping
       1e-10);
 
-  using StraightInit = ::elastica::cosserat_rod::StraightCosseratRodInitializer;
-
   const std::size_t n_elem{4UL};
   const ::elastica::Vec3 origin{0.0, 0.0, 0.0};
   const ::elastica::real_t base_length{3.0};
   const ::elastica::real_t dl = base_length / n_elem;
-  const std::size_t half_n_elem = n_elem / 2UL ;
-
-  StraightInit straight_initializer{
-      // StraightInitialization Wrapper
-      StraightInit::NElement{n_elem},
-      StraightInit::Material{my_material},
-      StraightInit::Radius{0.25},
-      StraightInit::Length{base_length},
-      StraightInit::Origin{origin},
-      StraightInit::Direction{::elastica::Vec3{0.0, 0.0, 1.0}},
-      StraightInit::Normal{::elastica::Vec3{0.0, 1.0, 0.0}},
-      StraightInit::ForceDampingCoefficient{0.0},
-      StraightInit::TorqueDampingCoefficient{0.0},
-  };
+  const std::size_t half_n_elem = n_elem / 2UL;
 
   const ::elastica::Vec3 horizontal_direction({0.0, 0.0, 1.0});
   const ::elastica::Vec3 vertical_direction({1.0, 0.0, 0.0});
-  const ::elastica::real_t angle_of_inclination = M_PI/4;
+  const ::elastica::real_t angle_of_inclination = M_PI / 4;
+
+  auto position_profile =
+      [origin, dl, angle_of_inclination, horizontal_direction,
+       vertical_direction](std::size_t index) -> ::elastica::Vec3 {
+    if (index < half_n_elem + 1)
+      return (origin +
+              dl * static_cast<::elastica::real_t>(index + 1) *
+                  (std::cos(angle_of_inclination) * horizontal_direction +
+                   std::sin(angle_of_inclination) * vertical_direction));
+    else
+      return (origin +
+              dl * static_cast<::elastica::real_t>(half_n_elem) *
+                  (std::cos(angle_of_inclination) * horizontal_direction +
+                   std::sin(angle_of_inclination) * vertical_direction) +
+              dl * static_cast<::elastica::real_t>(index - half_n_elem - 1) *
+                  (std::cos(angle_of_inclination) * horizontal_direction -
+                   std::sin(angle_of_inclination) * vertical_direction));
+  };
+
+  auto director_profile = [](std::size_t index) -> ::elastica::Rot3 {
+    // needs to be completed
+    return ::elastica::identity3();
+  };
+
+  using Init =
+      ::elastica::cosserat_rod::UserDefinedCosseratRodWithoutDampingInitializer<
+          decltype(position_profile), decltype(director_profile)>;
+
+  Init initializer{
+      // Initialization Wrapper
+      Init::NElement{n_elem},
+      Init::Material{my_material},
+      Init::Radius{0.25},
+      Init::Position(std::move(position_profile)),
+      Init::Director(std::move(director_profile)),
+  };
+
   auto rod_it = simulator->emplace_back<CosseratRod>(
-      straight_initializer.initialize<CosseratRod>(
-          ::blocks::initialize<::elastica::tags::Position>(
-              [origin, dl, angle_of_inclination, horizontal_direction, vertical_direction](std::size_t index) {
-                if(index < half_n_elem + 1)
-                  return origin + dl * static_cast<::elastica::real_t>(index+1) * (std::cos(angle_of_inclination) * horizontal_direction + std::sin(angle_of_inclination) * vertical_direction);
-                else
-                  return origin + dl * static_cast<::elastica::real_t>(half_n_elem) * (std::cos(angle_of_inclination) * horizontal_direction + std::sin(angle_of_inclination) * vertical_direction)
-                + dl * static_cast<::elastica::real_t>(index-half_n_elem-1) * (std::cos(angle_of_inclination) * horizontal_direction - std::sin(angle_of_inclination) * vertical_direction);
-              })));
+      initializer.initialize<CosseratRod>());
 
   simulator->finalize();
 
@@ -136,7 +151,6 @@ int main() {
   for (std::size_t i_step = {0UL}; i_step < total_steps; ++i_step) {
     simulator->step(time_stepper, time_v, time_delta);
     std::cout << ::elastica::position(*rod_it) << '\n';
-
   }
 
   /* Post processing */
