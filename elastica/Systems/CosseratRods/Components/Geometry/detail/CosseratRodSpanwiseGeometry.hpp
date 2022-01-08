@@ -398,9 +398,7 @@ namespace elastica {
               reference_voronoi_length_collection = Traits::Operations::average_kernel(reference_length_collection);
 
               // element_dilatation
-              auto& element_dilatation_collection(
-                  blocks::get<::elastica::tags::ElementDilatation>(downstream_block));
-              element_dilatation_collection = element_length_collection /
+              dilatation = element_length_collection /
                                               reference_length_collection;
 
               // voronoi_length_collection
