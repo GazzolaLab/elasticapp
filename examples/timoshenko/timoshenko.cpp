@@ -1,9 +1,9 @@
 //
 // Created by Seung Hyun Kim on 1/2/2022
 //
-#include <limits>
-#include <iomanip>
 #include <chrono>
+#include <iomanip>
+#include <limits>
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Simulator/Constraints.hpp"
@@ -59,14 +59,16 @@ int main() {
    * `tutorial_rod_construction`.
    */
   elastica::MaterialID my_material = elastica::create_material(
+      // PyElastica values
       // material density
-      5e3,  // pyelastica values
+      5e3,
       // coefficient of restitution
       0.24,
       // Young's modulus
       1e6,
       // Shear modulus
-      1e4,  // doesn't matter
+      1e4,
+      // The below parameters doesn't change the result of this example
       // Contact stiffness
       200,
       // normal contact damping
@@ -77,6 +79,7 @@ int main() {
       0.1,
       // cofficient of dynamic friction
       0.1);
+
   using StraightInit = ::elastica::cosserat_rod::StraightCosseratRodInitializer;
 
   const ::elastica::Vec3 origin{0.0, 0.0, 0.0};
@@ -106,13 +109,13 @@ int main() {
       make_value_constraint([origin, origin_frame = ::elastica::director(
                                          *rod_it, my_constraint_index)](
                                 auto /*time*/, auto& rod_system, auto index) {
-        ::elastica::position(rod_system, index) = origin;
-        ::elastica::director(rod_system, index) = origin_frame;
+    ::elastica::position(rod_system, index) = origin;
+    ::elastica::director(rod_system, index) = origin_frame;
       }),
       make_rate_constraint(
           [](auto /*time*/, auto& rod_system, std::size_t index) {
-            ::elastica::velocity(rod_system, index) = 0.0;
-            ::elastica::angular_velocity(rod_system, index) = 0.0;
+    ::elastica::velocity(rod_system, index) = 0.0;
+    ::elastica::angular_velocity(rod_system, index) = 0.0;
           }));
 
   simulator->constrain(*rod_it).at(0UL).with(constraint_generator());
@@ -122,10 +125,10 @@ int main() {
   const ::elastica::Vec3 F{-15.0, 0.0, 0.0};
   auto force_generator = make_forcing(
       make_force([F](auto /*time*/, auto& rod_system, std::size_t index) {
-        using Tag = ::elastica::tags::ExternalLoads;
-        // using V =
-        // cpp17::remove_reference_t<decltype(rod_system)>::VariableMap
-        blaze::column(::elastica::get<Tag>(rod_system), index) = F;
+    using Tag = ::elastica::tags::ExternalLoads;
+    // using V =
+    // cpp17::remove_reference_t<decltype(rod_system)>::VariableMap
+    blaze::column(::elastica::get<Tag>(rod_system), index) = F;
       }),
       make_torque([](auto /*time*/, auto&, std::size_t) {}));
   simulator->force(*rod_it).at(::elastica::end - 1UL).with(force_generator());
@@ -161,5 +164,4 @@ int main() {
                                std::chrono::duration<double> >(finish - start).count();
 
   std::cout << elapsed_seconds << std::endl;
-
 }
