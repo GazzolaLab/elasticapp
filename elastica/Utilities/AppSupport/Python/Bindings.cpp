@@ -1,7 +1,7 @@
 //==============================================================================
 /*!
 //  \file
-//  \brief Defines common python bindings for \elastica types
+//  \brief Defines python bindings for blaze types in \elastica
 //
 //  Copyright (C) 2020-2022 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
@@ -24,7 +24,7 @@ namespace py_bindings {
   void bind_blaze_tensor(py::module& m);  // NOLINT
 }  // namespace py_bindings
 
-PYBIND11_MODULE(PyBindings, m) {  // NOLINT
+PYBIND11_MODULE(_PyBlaze, m) {  // NOLINT
   py_bindings::bind_blaze_vector(m);
   py_bindings::bind_blaze_matrix(m);
   py_bindings::bind_blaze_tensor(m);
