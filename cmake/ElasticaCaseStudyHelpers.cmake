@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 
+
 # Add this file lazily to prevent unwanted dependencies
 if (NOT TARGET elastica_standalone_executable)
     # some other file!
@@ -14,10 +15,9 @@ endif ()
 if (NOT TARGET elastica_python_object)
     # some other file!
     add_library(elastica_python_object INTERFACE)
-    # setup pybind, enables the pybind11_add_module function
-    include(SetupPybind11)
-    # target_link_libraries(elastica_python_object INTERFACE pybind11::headers pybind11::library)
     target_link_libraries(elastica_python_object INTERFACE _elastica_python_support)
+    # For some reason pybind11::headers target doesn't work
+    # target_link_libraries(elastica_python_object INTERFACE pybind11::headers)
     add_library(elastica::python_object ALIAS elastica_python_object)
 endif ()
 
@@ -54,7 +54,19 @@ int main(int argc, char* argv[]) {
     set(GENERATED_SRC_FILE_NAME "standalone_${TARGET}")
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${GENERATED_SRC_FILE_NAME}.cpp" "${code}")
 
+    # also transfer the other files that are extra cpp files
     add_executable(${TARGET} "${CMAKE_CURRENT_BINARY_DIR}/${GENERATED_SRC_FILE_NAME}.cpp")
+
+    foreach (EXTRA_CPP_FILE ${ARGN})
+        get_filename_component(CPP_FILE_JUST_NAME
+                "${CMAKE_CURRENT_SOURCE_DIR}/${EXTRA_CPP_FILE}" NAME)
+        configure_file(
+                "${CMAKE_CURRENT_SOURCE_DIR}/${EXTRA_CPP_FILE}"
+                "${CMAKE_CURRENT_BINARY_DIR}/${CPP_FILE_JUST_NAME}"
+        )
+        target_sources(${TARGET} "${CMAKE_CURRENT_BINARY_DIR}/${CPP_FILE_JUST_NAME}")
+    endforeach ()
+
     target_link_libraries(${TARGET} PRIVATE ${SRCLIB})
     # Takes care of including everything thats not to do with the target
     target_link_libraries(${TARGET} PUBLIC elastica::standalone_executable)
@@ -66,6 +78,13 @@ function(_elastica_setup_python_object
         CASE_STUDY
         CASE_STUDY_APPLICATION_NAME
         INCLUDES)
+    # setup pybind, enables the pybind11_add_module function
+    include(SetupPybind11)
+
+    if (NOT TARGET all-pybindings)
+        include(ElasticaSetupPythonPackage)
+    endif ()
+
     string(CONFIGURE [[
 /*
  * Warning :
@@ -77,7 +96,8 @@ function(_elastica_setup_python_object
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(@CASE_STUDY_APPLICATION_NAME@, m) {  // NOLINT
+// We add a _ here so that elastica_python_add_module can work its magic
+PYBIND11_MODULE(_@CASE_STUDY_APPLICATION_NAME@, m) {  // NOLINT
   m.doc() = R"pbdoc(
     Elastica++ generated bindings for @CASE_STUDY@
 
@@ -92,17 +112,31 @@ PYBIND11_MODULE(@CASE_STUDY_APPLICATION_NAME@, m) {  // NOLINT
     set(GENERATED_SRC_FILE_NAME "pybind_${TARGET}")
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${GENERATED_SRC_FILE_NAME}.cpp" "${code}")
 
-    pybind11_add_module(${TARGET} "${CMAKE_CURRENT_BINARY_DIR}/${GENERATED_SRC_FILE_NAME}.cpp")
-    target_link_libraries(${TARGET} PRIVATE ${SRCLIB})
-    # Takes care of including everything thats not to do with the target
-    target_link_libraries(${TARGET} PUBLIC elastica::python_object)
+    elastica_python_add_module(
+            ${CASE_STUDY_APPLICATION_NAME}
+            MODULE_PATH "case_studies/"
+            LIBRARY_NAME ${TARGET}
+            SOURCES
+            "${CMAKE_CURRENT_BINARY_DIR}/${GENERATED_SRC_FILE_NAME}.cpp"
+            PYTHON_FILES
+            ${ARGN}
+    )
+    elastica_python_link_libraries(${TARGET}
+            PRIVATE
+            ${SRCLIB}
+            pybind11::module
+            PUBLIC
+            elastica::python_object
+            )
 endfunction()
 
 function(_elastica_setup_case_study TYPE)
     if (${TYPE} STREQUAL "elastica::standalone_executable")
         _elastica_setup_standalone_executable(${ARGN})
     elseif (${TYPE} STREQUAL "elastica::python_object")
-        _elastica_setup_python_object(${ARGN})
+        if (${ELASTICA_BUILD_PYTHON_BINDINGS})
+            _elastica_setup_python_object(${ARGN})
+        endif ()
     else ()
         message(FATAL_ERROR "unrecognized TYPE in a Elastica case study")
     endif ()
@@ -194,9 +228,9 @@ function(add_elastica_case_study TARGET)
     ##
     # Parse the arguments and set defaults for missing values.
     ##
-    set(options NAME)
-    set(oneValueArgs FROM AS)
-    set(multiValueArgs)
+    set(options)
+    set(oneValueArgs FROM AS NAME)
+    set(multiValueArgs EXTRAS)
     cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     if (NOT "${ARG_UNPARSED_ARGUMENTS}" STREQUAL "")
@@ -241,6 +275,10 @@ function(add_elastica_case_study TARGET)
         string(APPEND INTERFACE_INCLUDES_STR "${INTERFACE_INCLUDE}\n")
     endforeach ()
 
+    #    set(EXTRAS "")
+    foreach (EXTRA ${ARG_EXTRAS})
+        message(${EXTRA})
+    endforeach ()
 
-    _elastica_setup_case_study(${ARG_AS} ${TARGET} ${ARG_FROM} ${REGISTERED_CASE_NAME} ${ARG_NAME} ${INTERFACE_INCLUDES_STR})
+    _elastica_setup_case_study(${ARG_AS} ${TARGET} ${ARG_FROM} ${REGISTERED_CASE_NAME} ${ARG_NAME} ${INTERFACE_INCLUDES_STR} ${ARG_EXTRAS})
 endfunction()
