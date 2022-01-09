@@ -130,8 +130,8 @@ namespace {
 
     //    using LocalFrame = typename TestGeometry<Model>::Frame;
     using LocalFrame = typename Model::Frame;
-    CHECK(model.get_second_moment_of_area<LocalFrame::D1>() == approx(16.0));
-    CHECK(model.get_second_moment_of_area<LocalFrame::D2>() == approx(16.0));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D1>(0UL) == approx(16.0));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D2>(0UL) == approx(16.0));
     // CustomDouble has trouble with Catch for unknown reasons
     CHECK(model.get_second_moment_of_area<LocalFrame::D1>(0UL) ==
           approx(16.0));
@@ -142,7 +142,7 @@ namespace {
     CHECK(model.get_second_moment_of_area<LocalFrame::D2>(5UL) ==
           approx(16.0));
     // symmetric
-    CHECK(model.get_second_moment_of_area<LocalFrame::D3>() ==
+    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(0UL) ==
           approx(32.0));
     CHECK(model.get_second_moment_of_area<LocalFrame::D3>(0UL) ==
           approx(32.0));
