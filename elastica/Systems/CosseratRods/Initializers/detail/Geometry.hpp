@@ -190,11 +190,75 @@ namespace elastica {
         // todo get_required_parameters
       };
 
+      template <typename ProfileFunc>
+      class PositionProfile {
+       public:
+        // this is not an "option" per se, but okay
+        struct Position : Options::Parameter<ProfileFunc> {
+          using P = Options::Parameter<ProfileFunc>;
+          using P::P;
+
+          static constexpr Options::String help = {
+              "Position of the cosserat rod as a profile function"};
+          using TagType = ::elastica::tags::Position;
+        };
+      };
+
+      template <typename ProfileFunc>
+      class DirectorProfile {
+       public:
+        // this is not an "option" per se, but okay
+        struct Director : Options::Parameter<ProfileFunc> {
+          using P = Options::Parameter<ProfileFunc>;
+          using P::P;
+
+          static constexpr Options::String help = {
+              "Director of the cosserat rod as a profile function"};
+          using TagType = ::elastica::tags::Director;
+        };
+      };
+
+      template <typename PositionFunc, typename DirectorFunc>
+      class UserDefinedRod : public PositionProfile<PositionFunc>,
+                             public DirectorProfile<DirectorFunc> {
+       public:
+        using Radius = option_tags::Radius;
+        using typename PositionProfile<PositionFunc>::Position;
+        using typename DirectorProfile<DirectorFunc>::Director;
+
+        using RequiredParameters = tmpl::list<Position, Director, Radius>;
+        using DefaultParameters =
+            tmpl::list<ReferenceCurvatureDefaultParameter,
+                       ReferenceShearStretchStrainDefaultParameter,
+                       DilatationDefaultParameter>;
+
+       protected:
+        template <typename OptionsTuple>
+        decltype(auto) get_required_parameters(
+            OptionsTuple const& options_cache) const /*noexcept*/ {
+          return std::tuple_cat(
+              // for things that don't need to be processed, pass as wrapped
+              pass_as_wrapped(options_cache, tmpl::list<Radius>{}),
+              // can be abstracted
+              std::make_tuple(
+                  blocks::initialize<tags::Position>(
+                      [prof = std::get<Position>(options_cache).value()](
+                          std::size_t index) -> Vec3 { return prof(index); }),
+                  blocks::initialize<tags::Director>(
+                      [prof = std::get<Director>(options_cache).value()](
+                          std::size_t index) -> Rot3 { return prof(index); }))
+              //
+          );
+        }
+      };
+
     }  // namespace detail
 
     struct GeometryInitializers {
       using StraightRod = detail::StraightRod;
       using StraightRodWithTwist = detail::StraightRodWithTwist;
+      template <typename P, typename D>
+      using UserDefinedRod = detail::UserDefinedRod<P, D>;
     };
 
   }  // namespace cosserat_rod
