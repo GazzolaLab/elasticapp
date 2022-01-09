@@ -91,28 +91,41 @@ int main() {
   const ::elastica::Vec3 vertical_direction({1.0, 0.0, 0.0});
   const ::elastica::real_t angle_of_inclination = M_PI / 4;
 
+  // clang-format off
   auto position_profile =
-      [origin, dl, angle_of_inclination, horizontal_direction,
-       vertical_direction](std::size_t index) -> ::elastica::Vec3 {
+      [origin, dl, angle_of_inclination, horizontal_direction, vertical_direction](std::size_t index) -> ::elastica::Vec3 {
     if (index < half_n_elem + 1)
       return (origin +
-              dl * static_cast<::elastica::real_t>(index + 1) *
+              dl * static_cast<::elastica::real_t>(index) *
                   (std::cos(angle_of_inclination) * horizontal_direction +
                    std::sin(angle_of_inclination) * vertical_direction));
     else
       return (origin +
               dl * static_cast<::elastica::real_t>(half_n_elem) *
                   (std::cos(angle_of_inclination) * horizontal_direction +
-                   std::sin(angle_of_inclination) * vertical_direction) +
-              dl * static_cast<::elastica::real_t>(index - half_n_elem - 1) *
-                  (std::cos(angle_of_inclination) * horizontal_direction -
-                   std::sin(angle_of_inclination) * vertical_direction));
+                   std::sin(angle_of_inclination) * vertical_direction)) +
+             (dl * static_cast<::elastica::real_t>(index - half_n_elem) *
+              (std::cos(angle_of_inclination) * horizontal_direction -
+               std::sin(angle_of_inclination) * vertical_direction));
   };
 
-  auto director_profile = [](std::size_t index) -> ::elastica::Rot3 {
-    // needs to be completed
-    return ::elastica::identity3();
-  };
+  auto director_profile =
+      [angle_of_inclination, horizontal_direction, vertical_direction]
+      (std::size_t index) -> ::elastica::Rot3 {
+    if (index < half_n_elem) {
+      return ::elastica::Rot3(
+        {{ 0.0                           , 1.0, 0.0                           },
+         {-std::sin(angle_of_inclination), 0.0, std::cos(angle_of_inclination)},
+         { std::cos(angle_of_inclination), 0.0, std::sin(angle_of_inclination)}}
+      );
+    } else {
+      return ::elastica::Rot3(
+        {{ 0.0                           , 1.0, 0.0                           },
+         {-std::sin(angle_of_inclination), 0.0,-std::cos(angle_of_inclination)},
+         {-std::cos(angle_of_inclination), 0.0, std::sin(angle_of_inclination)}}
+      );
+    }};
+  // clang-format off
 
   using Init =
       ::elastica::cosserat_rod::UserDefinedCosseratRodWithoutDampingInitializer<
@@ -150,7 +163,9 @@ int main() {
 
   for (std::size_t i_step = {0UL}; i_step < total_steps; ++i_step) {
     simulator->step(time_stepper, time_v, time_delta);
-    std::cout << ::elastica::position(*rod_it) << '\n';
+    if( not (i_step % 100)){
+      // Intermediate processes (if needed)
+    }
   }
 
   /* Post processing */
