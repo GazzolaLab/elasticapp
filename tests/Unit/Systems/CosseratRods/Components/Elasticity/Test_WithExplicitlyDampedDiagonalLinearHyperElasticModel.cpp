@@ -108,16 +108,16 @@ namespace {
 
     /* Check the function compute_internal_forces() */
     // clang-format off
-    const Rot3 ssrm({
+    const Rot3 shear_stretch_rigidity_matrix({
                         {16 * 4 * M_PI * 4 / 3, 0.0                  , 0.0},
                         {0.0                  , 16 * 4 * M_PI * 4 / 3, 0.0},
                         {0.0                  , 0.0                  , 16 * 4 * M_PI}});
-    const Rot3 dir(0.5);
+    const Rot3 director(0.5);
     const Vec3 shear_solution(
         {3 * (0.5 / sqrt(3)),
          3 * (0.5 / sqrt(3)),
          3 * (0.5 / sqrt(3)) - 1.0});
-    const auto is = ssrm * (shear_solution-1.0);
+    const auto internal_stress = shear_stretch_rigidity_matrix * (shear_solution-1.0);
     // clang-format on
     auto compute_internal_forces_result = model.compute_internal_forces();
     const Vec3 edge_force =
@@ -126,28 +126,28 @@ namespace {
         Traits::DataType::Vector::slice(compute_internal_forces_result, 2UL);
     const Vec3 end_force =
         Traits::DataType::Vector::slice(compute_internal_forces_result, 10UL);
-    CHECK(edge_force == dir * is - sqrt(3));
+    CHECK(edge_force == director * internal_stress - sqrt(3));
     CHECK(mid_force == -sqrt(3) * 2);
-    CHECK(end_force == -(dir * is) - sqrt(3));
+    CHECK(end_force == -(director * internal_stress) - sqrt(3));
 
     /* Check the function compute_internal_torques() */
     // clang-format off
-    const Rot3 btrm({
+    const Rot3 BendTwistRigidityMatrix({
                         {4.0*(0.25*M_1_PI)*sq(4*4*M_PI), 0.0, 0.0},
                         {0.0, 4.0*(0.25*M_1_PI)*sq(4*4*M_PI), 0.0},
                         {0.0, 0.0, 2.0*4.0*(0.25*M_1_PI)*sq(4*4*M_PI)}});
-    const auto couple_solution = btrm * Vec3({-1.0,-1.0,-1.0});
+    const auto couple_solution = BendTwistRigidityMatrix * Vec3({-1.0,-1.0,-1.0});
     const Vec3 q_into_t(
         {3 * (0.5 / sqrt(3)),
          3 * (0.5 / sqrt(3)),
          3 * (0.5 / sqrt(3))});
-    const Vec3 ssc = sqrt(3) * (q_into_t % is) - (2*sqrt(3));
+    const Vec3 shear_stretch_couple = sqrt(3) * (q_into_t % internal_stress) - (2*sqrt(3));
     const Rot3 msmoi({
                         {sqrt(3)*(0.25*M_1_PI)*sq(4*4*M_PI), 0.0, 0.0},
                         {0.0, sqrt(3)*(0.25*M_1_PI)*sq(4*4*M_PI), 0.0},
                         {0.0, 0.0, 2.0*sqrt(3)*(0.25*M_1_PI)*sq(4*4*M_PI)}});
     const auto joueb(msmoi * Vec3({1.0, 1.0, 1.0}));
-    const auto ltb(joueb % Vec3({1.0, 1.0, 1.0}));
+    const auto lagrangian_transport(joueb % Vec3({1.0, 1.0, 1.0}));
     // clang-format on
 
     auto compute_internal_torques_result = model.compute_internal_torques();
@@ -157,9 +157,11 @@ namespace {
         Traits::DataType::Vector::slice(compute_internal_torques_result, 2UL);
     const Vec3 end_torque =
         Traits::DataType::Vector::slice(compute_internal_torques_result, 9UL);
-    CHECK(edge_torque == couple_solution + ssc + ltb);
-    CHECK(mid_torque == ssc + ltb);
-    CHECK(end_torque == -couple_solution + ssc + ltb);
+    CHECK(edge_torque ==
+          couple_solution + shear_stretch_couple + lagrangian_transport);
+    CHECK(mid_torque == shear_stretch_couple + lagrangian_transport);
+    CHECK(end_torque ==
+          -couple_solution + shear_stretch_couple + lagrangian_transport);
 
     // check if initialization is done as expected
     auto expected_call_count = make_array(11U, 10U, 10U, 9U, 10U, 10U, 9U);
