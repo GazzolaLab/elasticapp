@@ -36,10 +36,26 @@ namespace elastica {
     namespace symplectic {}
     //**************************************************************************
 
-    /// Promote namespaces
-    using symplectic::PositionVerlet;
+    //**************************************************************************
+    // promote from symplectic namespace for cleaner interface
     using symplectic::SymplecticStepper;
-    using symplectic::VelocityVerlet;
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Position Verlet algorithm
+     * \ingroup time
+     */
+    using PositionVerlet =
+        symplectic::SymplecticStepper<symplectic::PositionVerlet>;
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Velocity Verlet algorithm
+     * \ingroup time
+     */
+    using VelocityVerlet =
+        symplectic::SymplecticStepper<symplectic::VelocityVerlet>;
+    //**************************************************************************
 
   }  // namespace timestepper
 

@@ -21,30 +21,19 @@
 #include "Utilities/Math/Vec3.hpp"
 #include "Utilities/StdHelpers.hpp"
 
-// TODO : refactor away into an elastica header
-template <typename T, typename B>
-using ComponentsWithStepper = ::elastica::SymplecticPolicy<
-    T, B, elastica::cosserat_rod::component::WithCircularCosseratRod,
-    elastica::cosserat_rod::component::WithDiagonalLinearHyperElasticModel,
-    elastica::cosserat_rod::component::WithRodKinematics>;
-
-using Traits = elastica::cosserat_rod::DefaultCosseratRodTraits;
-using CosseratRod =
-    elastica::cosserat_rod::CosseratRodPlugin<Traits, blocks::Block,
-                                              ComponentsWithStepper>;
-using B = blocks::Block<CosseratRod>;
-
-using real_type = typename Traits::DataType::real_type;
-
 int main() {
   enable_floating_point_exceptions();
+
+  using ::elastica::cosserat_rod::CosseratRodWithoutDamping;
+
   // TODO : upon refactoring the above plugins in a elastica header, these
   // should be no longer needed and hence removed.
   namespace ec = elastica::configuration;
-  auto system_config = ec::make_systems_configuration<tmpl::list<CosseratRod>>(
-      ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{10UL}),
-      ec::make_iteration_policy(ec::iterate_across_system_types_in(ec::seq),
-                                ec::iterate_over_systems_in(ec::seq)));
+  auto system_config =
+      ec::make_systems_configuration<tmpl::list<CosseratRodWithoutDamping>>(
+          ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{10UL}),
+          ec::make_iteration_policy(ec::iterate_across_system_types_in(ec::seq),
+                                    ec::iterate_over_systems_in(ec::seq)));
 
   auto simulator_config = ec::make_simulator_configuration(
       ec::DefaultDomainConfiguration{}, system_config,
@@ -140,8 +129,8 @@ int main() {
       Init::Director(std::move(director_profile)),
   };
 
-  auto rod_it = simulator->emplace_back<CosseratRod>(
-      initializer.initialize<CosseratRod>());
+  auto rod_it = simulator->emplace_back<CosseratRodWithoutDamping>(
+      initializer.initialize<CosseratRodWithoutDamping>());
 
   simulator->finalize();
 
@@ -151,9 +140,7 @@ int main() {
   const ::elastica::real_t dt = 0.01 * dl;
   const auto total_steps = static_cast<std::size_t>(final_time / dt);
 
-  using Algorithm = ::elastica::timestepper::symplectic::PositionVerlet;
-  using TimeStepper =
-      ::elastica::timestepper::symplectic::SymplecticStepper<Algorithm>;
+  using TimeStepper = ::elastica::timestepper::PositionVerlet;
   const TimeStepper time_stepper{};
 
   ::elastica::Time time_v{0.0};

@@ -2,41 +2,23 @@
 // Created by Seung Hyun Kim on 1/2/2022
 //
 #include <chrono>
-#include <iomanip>
-#include <limits>
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Simulator/Constraints.hpp"
 #include "Simulator/Forcing.hpp"
+#include "Simulator/Materials.hpp"
 #include "Simulator/Simulator.hpp"
 #include "Systems/CosseratRods.hpp"
-#include "Systems/common/SymplecticStepperAdapter.hpp"
 #include "Time/SimulationTime.hpp"
-#include "Time/SymplecticSteppers/Algorithms.hpp"
-#include "Time/SymplecticSteppers/SymplecticStepper.hpp"
+#include "Time/SymplecticSteppers.hpp"
 #include "Utilities/Get.hpp"
-#include "Utilities/StdHelpers.hpp"
-
-// TODO : refactor away into an elastica header
-template <typename T, typename B>
-using ComponentsWithStepper = ::elastica::SymplecticPolicy<
-    T, B, elastica::cosserat_rod::component::WithCircularCosseratRod,
-    elastica::cosserat_rod::component::
-        WithExplicitlyDampedDiagonalLinearHyperElasticModel,
-    elastica::cosserat_rod::component::WithRodKinematics>;
-
-using Traits = elastica::cosserat_rod::DefaultCosseratRodTraits;
-using CosseratRod =
-    elastica::cosserat_rod::CosseratRodPlugin<Traits, blocks::Block,
-                                              ComponentsWithStepper>;
-using B = blocks::Block<CosseratRod>;
-
-using real_type = typename Traits::DataType::real_type;
 
 int main() {
   enable_floating_point_exceptions();
-  // TODO : upon refactoring the above plugins in a elastica header, these
-  // should be no longer needed and hence removed.
+
+  using ::elastica::cosserat_rod::CosseratRod;
+
+  // TODO : Add CosseratRod to ELASTICA_DEFAULT_ADMISSIBLE_PLUGINS_FOR_SYSTEMS
   namespace ec = elastica::configuration;
   auto system_config = ec::make_systems_configuration<tmpl::list<CosseratRod>>(
       ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{100UL}),
@@ -103,16 +85,17 @@ int main() {
   auto rod_it = simulator->emplace_back<CosseratRod>(
       straight_initializer.initialize<CosseratRod>());
 
-  using namespace ::elastica::constraints;
+  namespace eco = ::elastica::constraints;
   const std::size_t my_constraint_index = 0UL;
-  auto constraint_generator = make_constraint(
-      make_value_constraint([origin, origin_frame = ::elastica::director(
-                                         *rod_it, my_constraint_index)](
-                                auto /*time*/, auto& rod_system, auto index) {
-        ::elastica::position(rod_system, index) = origin;
-        ::elastica::director(rod_system, index) = origin_frame;
-      }),
-      make_rate_constraint(
+  auto constraint_generator = eco::make_constraint(
+      eco::make_value_constraint(
+          [origin,
+           origin_frame = ::elastica::director(*rod_it, my_constraint_index)](
+              auto /*time*/, auto& rod_system, auto index) {
+            ::elastica::position(rod_system, index) = origin;
+            ::elastica::director(rod_system, index) = origin_frame;
+          }),
+      eco::make_rate_constraint(
           [](auto /*time*/, auto& rod_system, std::size_t index) {
             ::elastica::velocity(rod_system, index) = 0.0;
             ::elastica::angular_velocity(rod_system, index) = 0.0;
@@ -120,17 +103,17 @@ int main() {
 
   simulator->constrain(*rod_it).at(0UL).with(constraint_generator());
 
-  using namespace ::elastica::forcing;
+  namespace efo = ::elastica::forcing;
 
   const ::elastica::Vec3 F{-15.0, 0.0, 0.0};
-  auto force_generator = make_forcing(
-      make_force([F](auto /*time*/, auto& rod_system, std::size_t index) {
+  auto force_generator = efo::make_forcing(
+      efo::make_force([F](auto /*time*/, auto& rod_system, std::size_t index) {
         using Tag = ::elastica::tags::ExternalLoads;
         // using V =
         // cpp17::remove_reference_t<decltype(rod_system)>::VariableMap
         blaze::column(::elastica::get<Tag>(rod_system), index + 1) = F;
       }),
-      make_torque([](auto /*time*/, auto&, std::size_t) {}));
+      efo::make_torque([](auto /*time*/, auto&, std::size_t) {}));
   simulator->force(*rod_it).at(::elastica::end - 1UL).with(force_generator());
 
   simulator->finalize();
@@ -142,9 +125,7 @@ int main() {
   const ::elastica::real_t dt = 0.01 * dl;
   const auto total_steps = static_cast<std::size_t>(final_time / dt);
 
-  using Algorithm = ::elastica::timestepper::symplectic::PositionVerlet;
-  using TimeStepper =
-      ::elastica::timestepper::symplectic::SymplecticStepper<Algorithm>;
+  using TimeStepper = ::elastica::timestepper::PositionVerlet;
   const TimeStepper time_stepper{};
 
   ::elastica::Time time_v{0.0};
