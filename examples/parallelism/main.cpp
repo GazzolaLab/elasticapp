@@ -8,46 +8,29 @@
 #include "Simulator/Materials.hpp"
 #include "Simulator/Materials/Materials.hpp"
 #include "Simulator/Simulator.hpp"
-#include "Systems/Block.hpp"
-#include "Systems/Block/Protocols.hpp"
 #include "Systems/CosseratRods.hpp"
-#include "Systems/CosseratRods/CosseratRodPlugin.hpp"
-#include "Systems/CosseratRods/Initializers/StraightCosseratRod.hpp"  // TODO : replace later
-#include "Systems/common/SymplecticStepperAdapter.hpp"
 #include "Time/SimulationTime.hpp"
-#include "Time/SymplecticSteppers/Algorithms.hpp"
-#include "Time/SymplecticSteppers/SymplecticStepper.hpp"
-#include "blaze/Blaze.h"
-#include "blaze_tensor/Blaze.h"
-
-namespace {
-
-  template <typename T, typename B>
-  using ComponentsWithStepper = ::elastica::SymplecticPolicy<
-      T, B, elastica::cosserat_rod::component::WithCircularCosseratRod,
-      elastica::cosserat_rod::component::
-          WithExplicitlyDampedDiagonalLinearHyperElasticModel,
-      elastica::cosserat_rod::component::WithRodKinematics>;
-
-  using Traits = elastica::cosserat_rod::DefaultCosseratRodTraits;
-  using Plugin =
-      elastica::cosserat_rod::CosseratRodPlugin<Traits, blocks::Block,
-                                                ComponentsWithStepper>;
-  using Model = blocks::Block<Plugin>;
-
-  using real_type = typename Traits::DataType::real_type;
-
-  // auto approx(Catch::Detail::Approx(0).epsilon(1e-8));
-
-}  // namespace
+#include "Time/SymplecticSteppers.hpp"
 
 int main(int argc, char* argv[]) {
   /*
    *
    */
+  using ::elastica::cosserat_rod::CosseratRod;
 
   namespace ec = elastica::configuration;
-  namespace et = elastica::timestepper;
+
+  auto system_config = ec::make_systems_configuration<tmpl::list<Plugin>>(
+      ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{10UL}),
+      ec::make_iteration_policy(ec::iterate_across_system_types_in(ec::seq),
+          // use parallelism for a singlr type of system
+                                ec::iterate_over_systems_in(ec::par)));
+
+  auto simulator_config = ec::make_simulator_configuration(
+      ec::DefaultDomainConfiguration{}, system_config,
+      ec::DefaultParallelConfiguration{});
+
+  auto simulator = elastica::make_simulator<>(simulator_config);
 
   elastica::MaterialID myMaterial = elastica::create_material(
       7.874, 0.24, 200, 200.0 / 1.24, 200, 1e-10, 1e-10, 0.1, 0.1);
@@ -66,18 +49,6 @@ int main(int argc, char* argv[]) {
       Init::TorqueDampingCoefficient{0.2},
   };
 
-  auto system_config = ec::make_systems_configuration<tmpl::list<Plugin>>(
-      ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{10UL}),
-      ec::make_iteration_policy(ec::iterate_across_system_types_in(ec::seq),
-                                // use parallelism for a singlr type of system
-                                ec::iterate_over_systems_in(ec::par)));
-
-  auto simulator_config = ec::make_simulator_configuration(
-      ec::DefaultDomainConfiguration{}, system_config,
-      ec::DefaultParallelConfiguration{});
-
-  auto simulator = elastica::make_simulator<>(simulator_config);
-
   // these will be iterated over in parallel.
   for (std::size_t i_rod = 0UL; i_rod < 20UL; ++i_rod) {
     simulator->emplace_back<Plugin>(straight_initializer.initialize<Plugin>());
@@ -85,8 +56,8 @@ int main(int argc, char* argv[]) {
 
   simulator->finalize();
 
-  using Algorithm = et::symplectic::PositionVerlet;
-  using TimeStepper = et::symplectic::SymplecticStepper<Algorithm>;
+  namespace et = elastica::timestepper;
+  using TimeStepper = ::elastica::timestepper::PositionVerlet;
   const TimeStepper time_stepper{};
 
   ::elastica::Time time_v{0.0};
