@@ -42,6 +42,7 @@ elastica_target_headers(
         # Geometry.hpp
         Get.hpp
         Generators.hpp
+        GSL.hpp
         IgnoreUnused.hpp
         Invoke.hpp
         KarmarkarKarpPartition.hpp
