@@ -2,10 +2,14 @@
 
 #include <type_traits>
 
+//
 #include "Systems/Block/Block/TypeTraits.hpp"
 #include "Systems/States/States.hpp"
 #include "Systems/common/Tags.hpp"
+#include "Systems/common/Types.hpp"
+//
 #include "Time/SimulationTime.hpp"
+//
 #include "Utilities/TMPL.hpp"
 
 namespace elastica {
@@ -16,25 +20,29 @@ namespace elastica {
   //
   //============================================================================
 
-  template <typename... X>
-  struct Der : public X... {
-    //**Block type definitions************************************************
-    //! List of computed variables
-    using ComputedVariables = tmpl::append<typename X::ComputedVariables...>;
-    //! List of initialized variables
-    using InitializedVariables =
-        tmpl::append<typename X::InitializedVariables...>;
-    //! List of all variables
-    using Variables = tmpl::append<typename X::Variables...>;
-    //************************************************************************
+  namespace {
 
-    template <class DownstreamBlock, class CosseratInitializer>
-    static void initialize(DownstreamBlock& downstream_block,
-                           CosseratInitializer&& initializers) {
-      EXPAND_PACK_LEFT_TO_RIGHT(X::initialize(
-          downstream_block, std::forward<CosseratInitializer>(initializers)));
-    }
-  };
+    template <typename... X>
+    struct Der : public X... {
+      //**Block type definitions************************************************
+      //! List of computed variables
+      using ComputedVariables = tmpl::append<typename X::ComputedVariables...>;
+      //! List of initialized variables
+      using InitializedVariables =
+          tmpl::append<typename X::InitializedVariables...>;
+      //! List of all variables
+      using Variables = tmpl::append<typename X::Variables...>;
+      //************************************************************************
+
+      template <class DownstreamBlock, class CosseratInitializer>
+      static void initialize(DownstreamBlock& downstream_block,
+                             CosseratInitializer&& initializers) {
+        EXPAND_PACK_LEFT_TO_RIGHT(X::initialize(
+            downstream_block, std::forward<CosseratInitializer>(initializers)));
+      }
+    };
+
+  }  // namespace
 
   namespace {
 
