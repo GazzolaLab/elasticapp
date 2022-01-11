@@ -1,7 +1,6 @@
 add_subdirectory(axial_stretching)
 add_subdirectory(butterfly)
 add_subdirectory(timoshenko)
-add_subdirectory(zeros)
 add_subdirectory(parallelism)
 add_subdirectory(display_variables)
 add_subdirectory(tutorial_single_rod)
