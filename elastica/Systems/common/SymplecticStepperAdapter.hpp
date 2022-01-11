@@ -2,10 +2,14 @@
 
 #include <type_traits>
 
+//
 #include "Systems/Block/Block/TypeTraits.hpp"
 #include "Systems/States/States.hpp"
 #include "Systems/common/Tags.hpp"
+#include "Systems/common/Types.hpp"
+//
 #include "Time/SimulationTime.hpp"
+//
 #include "Utilities/TMPL.hpp"
 
 namespace elastica {
@@ -16,27 +20,27 @@ namespace elastica {
   //
   //============================================================================
 
-  template <typename... X>
-  struct Der : public X... {
-    //**Block type definitions************************************************
-    //! List of computed variables
-    using ComputedVariables = tmpl::append<typename X::ComputedVariables...>;
-    //! List of initialized variables
-    using InitializedVariables =
-        tmpl::append<typename X::InitializedVariables...>;
-    //! List of all variables
-    using Variables = tmpl::append<typename X::Variables...>;
-    //************************************************************************
+  namespace detail {
 
-    template <class DownstreamBlock, class CosseratInitializer>
-    static void initialize(DownstreamBlock& downstream_block,
-                           CosseratInitializer&& initializers) {
-      EXPAND_PACK_LEFT_TO_RIGHT(X::initialize(
-          downstream_block, std::forward<CosseratInitializer>(initializers)));
-    }
-  };
+    template <typename... X>
+    struct Der : public X... {
+      //**Block type definitions************************************************
+      //! List of computed variables
+      using ComputedVariables = tmpl::append<typename X::ComputedVariables...>;
+      //! List of initialized variables
+      using InitializedVariables =
+          tmpl::append<typename X::InitializedVariables...>;
+      //! List of all variables
+      using Variables = tmpl::append<typename X::Variables...>;
+      //************************************************************************
 
-  namespace {
+      template <class DownstreamBlock, class CosseratInitializer>
+      static void initialize(DownstreamBlock& downstream_block,
+                             CosseratInitializer&& initializers) {
+        EXPAND_PACK_LEFT_TO_RIGHT(X::initialize(
+            downstream_block, std::forward<CosseratInitializer>(initializers)));
+      }
+    };
 
     // TODO : can be optimized and refactored
     template <typename B, typename Variable>
@@ -46,7 +50,7 @@ namespace elastica {
         std::conditional_t<::blocks::IsBlockSlice<B>::value,
                            typename Variable::SliceType::type,
                            typename Variable::ConstSliceType::type>>;
-  }  // namespace
+  }  // namespace detail
 
   //****************************************************************************
   /*!\brief Adapter for enabling symplectic temporal integration
@@ -64,11 +68,12 @@ namespace elastica {
    */
   template <typename Traits, typename Block,
             template <typename, typename> class... OtherComponents>
-  class SymplecticPolicy : public Der<OtherComponents<Traits, Block>...> {
+  class SymplecticPolicy
+      : public detail::Der<OtherComponents<Traits, Block>...> {
    private:
     //**Type definitions********************************************************
     //! Parent type
-    using P = Der<OtherComponents<Traits, Block>...>;
+    using P = detail::Der<OtherComponents<Traits, Block>...>;
     //! This type
     using This = SymplecticPolicy<Traits, Block, OtherComponents...>;
 
@@ -95,30 +100,31 @@ namespace elastica {
     //**************************************************************************
     /*!\name State types */
     //@{
-    using PositionData = SymplecticData<Block, Position>;
+    using PositionData = detail::SymplecticData<Block, Position>;
     // std::remove_reference_t<decltype(std::declval<P>().get_position())>;
     using PositionState =
         ::elastica::states::SE3<PositionData,
                                 ::elastica::states::tags::PrimitiveTag>;
-    using VelocityData = SymplecticData<Block, Velocity>;
+    using VelocityData = detail::SymplecticData<Block, Velocity>;
     using VelocityState =
         ::elastica::states::SE3<VelocityData,
                                 ::elastica::states::tags::DerivativeTag>;
-    using AccelerationData = SymplecticData<Block, Acceleration>;
+    using AccelerationData = detail::SymplecticData<Block, Acceleration>;
     using AccelerationState =
         ::elastica::states::SE3<AccelerationData,
                                 ::elastica::states::tags::DoubleDerivativeTag>;
 
-    using DirectorData = SymplecticData<Block, Director>;
+    using DirectorData = detail::SymplecticData<Block, Director>;
     using DirectorState =
         ::elastica::states::SO3<DirectorData,
                                 ::elastica::states::tags::PrimitiveTag>;
-    using AngularVelocityData = SymplecticData<Block, AngularVelocity>;
+    using AngularVelocityData = detail::SymplecticData<Block, AngularVelocity>;
     using AngularVelocityState =
         ::elastica::states::SO3<AngularVelocityData,
                                 ::elastica::states::tags::DerivativeTag>;
 
-    using AngularAccelerationData = SymplecticData<Block, AngularAcceleration>;
+    using AngularAccelerationData =
+        detail::SymplecticData<Block, AngularAcceleration>;
     using AngularAccelerationState =
         ::elastica::states::SO3<AngularAccelerationData,
                                 ::elastica::states::tags::DoubleDerivativeTag>;
@@ -192,5 +198,6 @@ namespace elastica {
     DynamicState dynamic_states_;
     DynamicRate dynamic_rates_;
   };
+  //****************************************************************************
 
 }  // namespace elastica

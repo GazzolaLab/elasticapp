@@ -21,25 +21,15 @@
 
 #include <iostream>
 
-// TODO : refactor to include a single header file
 #include "Simulator/Simulator.hpp"
 #include "Systems/CosseratRods.hpp"
 #include "Utilities/Get.hpp"
 #include "Utilities/TMPL.hpp"
 
-// TODO : refactor away into an elastica header
-// Alias
-namespace eCR = elastica::cosserat_rod;
-using Traits = eCR::DefaultCosseratRodTraits;
-using CosseratRod = eCR::CosseratRodPlugin<
-    Traits, blocks::Block, eCR::component::WithCircularCosseratRod,
-    eCR::component::WithExplicitlyDampedDiagonalLinearHyperElasticModel,
-    eCR::component::WithRodKinematics>;
-using B = blocks::Block<CosseratRod>;
-
 int main() {
-  // TODO : upon refactoring the above plugins in a elastica header, these
-  // should be no longer needed and hence removed.
+  using ::elastica::cosserat_rod::CosseratRod;
+
+  // TODO : Add CosseratRod to ELASTICA_DEFAULT_ADMISSIBLE_PLUGINS_FOR_SYSTEMS
   namespace ec = elastica::configuration;
   auto system_config = ec::make_systems_configuration<tmpl::list<CosseratRod>>(
       ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{50UL}),

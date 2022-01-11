@@ -22,35 +22,15 @@
 
 #include <iostream>
 
-// TODO : refactor to include a single header file
 #include "Simulator/Simulator.hpp"
 #include "Systems/CosseratRods.hpp"
-#include "Systems/common/SymplecticStepperAdapter.hpp"
-#include "Time/SimulationTime.hpp"
-#include "Time/SymplecticSteppers/Algorithms.hpp"
-#include "Time/SymplecticSteppers/SymplecticStepper.hpp"
-
-// TODO : refactor away into an elastica header
-template <typename T, typename B>
-using ComponentsWithStepper = ::elastica::SymplecticPolicy<
-    T, B, elastica::cosserat_rod::component::WithCircularCosseratRod,
-    elastica::cosserat_rod::component::
-        WithExplicitlyDampedDiagonalLinearHyperElasticModel,
-    elastica::cosserat_rod::component::WithRodKinematics>;
-
-using Traits = elastica::cosserat_rod::DefaultCosseratRodTraits;
-using SomePlugin =
-    elastica::cosserat_rod::CosseratRodPlugin<Traits, blocks::Block,
-                                              ComponentsWithStepper>;
-using Model = blocks::Block<SomePlugin>;
-
-using real_type = typename Traits::DataType::real_type;
 
 int main() {
-  // TODO : upon refactoring the above plugins in a elastica header, these
-  // should be no longer needed and hence removed.
+  using ::elastica::cosserat_rod::CosseratRod;
+
+  // TODO : Add CosseratRod to ELASTICA_DEFAULT_ADMISSIBLE_PLUGINS_FOR_SYSTEMS
   namespace ec = elastica::configuration;
-  auto system_config = ec::make_systems_configuration<tmpl::list<SomePlugin>>(
+  auto system_config = ec::make_systems_configuration<tmpl::list<CosseratRod>>(
       ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{50UL}),
       ec::make_iteration_policy(ec::iterate_across_system_types_in(ec::seq),
                                 ec::iterate_over_systems_in(ec::seq)));
@@ -146,7 +126,6 @@ int main() {
    * initializer can be used to initialize very different rods (e.g. rods with
    * square cross section)
    */
-  using CosseratRod = SomePlugin;
   simulator->emplace_back<CosseratRod>(
       straight_initializer.initialize<CosseratRod>());
 
@@ -254,18 +233,6 @@ int main() {
   simulator->emplace_back<CosseratRod>(std::move(advanced_initializer));
 
   simulator->finalize();
-
-  // using Algorithm = ::elastica::timestepper::symplectic::PositionVerlet;
-  // using TimeStepper =
-  //     ::elastica::timestepper::symplectic::SymplecticStepper<Algorithm>;
-  // const TimeStepper time_stepper{};
-
-  // ::elastica::Time time_v{0.0};
-  // ::elastica::TimeDelta time_delta{0.2};
-  // simulator->step(time_stepper, time_v, time_delta);
-  // simulator->step(time_stepper, time_v, time_delta);
-
-  // std::cout << ::elastica::position(rod) << std::endl;
 
   return 0;
 }
