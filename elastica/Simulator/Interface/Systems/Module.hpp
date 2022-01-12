@@ -261,6 +261,20 @@ namespace elastica {
       //************************************************************************
 
      public:
+      //************************************************************************
+      /*!\brief Get an invalid simulation iterator given a system type
+       *
+       * \details
+       * For convenience, one can get an
+       */
+      template <typename Plugin>
+      decltype(auto) get_invalid_iterator() const noexcept {
+        using RT = LazyBlockSliceGenerator<Plugin>;
+        return RT{};
+      }
+      //************************************************************************
+
+     public:
       //**Destructor************************************************************
       /*!\name Destructor */
       //@{
