@@ -220,9 +220,7 @@ namespace elastica {
         //**********************************************************************
         /*!\brief Gets a handle to the stored constraint its type erased
          */
-        void* get_constraint_unsafe() noexcept final {
-          return &constraint_;
-        }
+        void* get_constraint_unsafe() noexcept final { return &constraint_; }
         //**********************************************************************
 
         //@}
@@ -233,7 +231,7 @@ namespace elastica {
         //! Index set to apply constraint on
         IndexType indices_;
         //! Reference to system being constrained
-        SystemType& sys_;
+        mutable SystemType sys_;
         //! Constraint object
         ConstraintType constraint_;
         // //! Initial conditions
@@ -365,7 +363,7 @@ namespace elastica {
         //! Pointer to a set of runtime indices
         IndexType indices_;
         //! Reference to system being constrained
-        SystemType& sys_;
+        mutable SystemType sys_;
         //! Pointer to a runtime constraint
         ConstraintType constraint_;
         //**********************************************************************
