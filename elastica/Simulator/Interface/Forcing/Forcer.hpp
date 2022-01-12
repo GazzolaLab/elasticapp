@@ -164,9 +164,7 @@ namespace elastica {
         //**********************************************************************
         /*!\brief Gets a handle to the stored forcing with its type erased
          */
-        void* get_forcing_unsafe() noexcept final {
-          return &forcing_;
-        }
+        void* get_forcing_unsafe() noexcept final { return &forcing_; }
         //**********************************************************************
 
         //@}
@@ -175,7 +173,8 @@ namespace elastica {
        private:
         //**Member variables****************************************************
         //! Reference to system being forced
-        SystemType& sys_;
+        mutable SystemType sys_;
+        // Wow<sizeof(int&)> wow;
         //! Forcing object
         ForcingType forcing_;
         //! Index set to apply forcing on
@@ -286,9 +285,7 @@ namespace elastica {
         //**********************************************************************
         /*!\brief Gets a handle to the stored forcing with its type erased
          */
-        void* get_forcing_unsafe() noexcept final {
-          return forcing_.get();
-        }
+        void* get_forcing_unsafe() noexcept final { return forcing_.get(); }
         //**********************************************************************
 
         //@}
@@ -370,7 +367,7 @@ namespace elastica {
        private:
         //**Member variables****************************************************
         //! Reference to system being forced
-        SystemType& sys_;
+        mutable SystemType sys_;
         //! Pointer to a runtime forcing
         ForcingType forcing_;
         //! Pointer to a set of runtime indices
