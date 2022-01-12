@@ -68,7 +68,7 @@
 #define CERROR(m)                                                          \
   do {                                                                     \
     breakpoint();                                                          \
-    using namespace std::literals::string_literals;                        \
+    using std::string_literals::operator""s;                               \
     Parallel::abort("\n################ ERROR ################\nLine: "s + \
                     std::to_string(__LINE__) + " of file '"s + __FILE__ +  \
                     "'\n"s + m + /* NOLINT */                              \
