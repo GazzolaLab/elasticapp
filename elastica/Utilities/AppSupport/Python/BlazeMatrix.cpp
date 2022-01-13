@@ -42,8 +42,8 @@ namespace py_bindings {
    */
   void bind_blaze_matrix(py::module& m) {  // NOLINT
     using Real = ::elastica::real_t;
-    using type = blaze::DynamicMatrix<Real, blaze::rowMajor,
-                                      blaze::AlignedAllocator<Real>>;
+    using type = ::blaze::DynamicMatrix<Real, ::blaze::rowMajor,
+                                      ::blaze::AlignedAllocator<Real>>;
 
     // Wrapper for basic type operations
     py::class_<type>(m, "Matrix", py::buffer_protocol())
