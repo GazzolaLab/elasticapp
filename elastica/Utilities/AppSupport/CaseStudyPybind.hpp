@@ -76,8 +76,10 @@ namespace py_bindings {
         .def("__str__", []() { return pretty_type::short_name<CaseStudy>(); })
         .def("run", &CaseStudy::run)
         .def("step", &CaseStudy::step)
-        .def("output", &CaseStudy::output,
-             py::return_value_policy::reference_internal);
+        .def("output", &CaseStudy::output
+             /* Instead of using references, we create slices/reference_wrappers
+              * for value semantics and ease of programming*/
+             /*,py::return_value_policy::reference_internal*/);
   }
   //****************************************************************************
 
