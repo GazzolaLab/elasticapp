@@ -6,10 +6,10 @@
 from distutils.core import setup
 
 setup(
-    name='elastica++',
-    version='@ELASTICA_VERSION@',
+    name='elasticapp',
+    version='@elastica_VERSION@',
     description="Python bindings for Elastica++",
-    author="SXS collaboration",
+    author="Empty",
     url="cosseratrods.org",
     license="MIT",
     packages=['elasticapp'],

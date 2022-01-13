@@ -114,7 +114,7 @@ PYBIND11_MODULE(_@CASE_STUDY_APPLICATION_NAME@, m) {  // NOLINT
 
     elastica_python_add_module(
             ${CASE_STUDY_APPLICATION_NAME}
-            MODULE_PATH "case_studies/"
+            MODULE_PATH "CaseStudies/"
             LIBRARY_NAME ${TARGET}
             SOURCES
             "${CMAKE_CURRENT_BINARY_DIR}/${GENERATED_SRC_FILE_NAME}.cpp"
