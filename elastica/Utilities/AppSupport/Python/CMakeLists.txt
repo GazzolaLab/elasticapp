@@ -26,8 +26,11 @@ elastica_python_add_module(
         SOURCES
         Bindings.cpp
         BlazeVector.cpp
+        BlazeSubvector.cpp
         BlazeMatrix.cpp
+        BlazeSubmatrix.cpp
         BlazeTensor.cpp
+        BlazeSubtensor.cpp
 )
 
 elastica_python_link_libraries(
