@@ -120,7 +120,7 @@ struct BeginnerCaseStudy
  * macro to tell \elastica that we intend to setup `BeginnerCaseStudy` as a
  * \elastica case study.
  */
-ELASTICA_CASE_STUDY(BeginnerCaseStudy);
+ELASTICA_REGISTER_CASE_STUDY(BeginnerCaseStudy);
 
 /*
  * 7. Congratulations! We now have registered our first case study. Before

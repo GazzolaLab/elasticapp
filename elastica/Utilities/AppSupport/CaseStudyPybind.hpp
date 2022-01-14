@@ -71,7 +71,7 @@ namespace py_bindings {
         Initializer::generate_argument_names());
 
     // Register the methods here, we need to know the interface here apriori
-    // (see the stub classes) as part of ELASTICA_CASE_STUDY
+    // (see CaseStudyInterface)
     py_bound_case_study
         .def("__str__", []() { return pretty_type::short_name<CaseStudy>(); })
         .def("run", &CaseStudy::run,

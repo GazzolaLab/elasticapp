@@ -164,12 +164,12 @@ function(_elastica_register_case_names_from SOURCE_FILE CASE_NAMES)
 
     #    message(${CONTENTS})
 
-    # The regex searches for ELASTICA_CASE_STUDY to find  case studies that need to be added.
+    # The regex searches for ELASTICA_REGISTER_CASE_STUDY to find  case studies that need to be added.
     # TESTS will be a list of all case studies found in the SOURCE_FILE.
     string(
             REGEX
             MATCHALL
-            "ELASTICA_CASE_STUDY[ \t]*\\([^\)]+\\)[ \t]*"
+            "ELASTICA_REGISTER_CASE_STUDY[ \t]*\\([^\)]+\\)[ \t]*"
             CASES
             "${CONTENTS}")
 
@@ -259,11 +259,11 @@ function(add_elastica_case_study TARGET)
     list(LENGTH CASE_NAMES N_CASE_NAMES)
 
     if (${N_CASE_NAMES} LESS 1)
-        message(FATAL_ERROR "No case study found in the headers, as registered with the ELASTICA_CASE_STUDY() macro")
+        message(FATAL_ERROR "No case study found in the headers, as registered with the ELASTICA_REGISTER_CASE_STUDY() macro")
     endif ()
 
     if (${N_CASE_NAMES} GREATER 1)
-        message(FATAL_ERROR "A case study header can have only one class registered with the ELASTICA_CASE_STUDY() macro! Please refactor your code...")
+        message(FATAL_ERROR "A case study header can have only one class registered with the ELASTICA_REGISTER_CASE_STUDY() macro! Please refactor your code...")
     endif ()
 
     list(GET CASE_NAMES 0 REGISTERED_CASE_NAME)

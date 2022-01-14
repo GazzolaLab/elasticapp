@@ -92,4 +92,4 @@ struct IntermediateCaseStudy
 /*
  * Register as a case study
  */
-ELASTICA_CASE_STUDY(IntermediateCaseStudy);
+ELASTICA_REGISTER_CASE_STUDY(IntermediateCaseStudy);
