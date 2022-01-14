@@ -8,8 +8,8 @@ from elasticapp.CaseStudies.PyButterflyCaseStudy import ButterflyCaseStudy
 
 
 def run_example(
-        save_to_csv: bool = False,
-        save_figure: bool = False,
+    save_to_csv: bool = False,
+    save_figure: bool = False,
 ):
     sample_interval = 200
 
@@ -24,18 +24,23 @@ def run_example(
         n_elements=n_elem,
         length=base_length,
         dt=dt,
-        angle_of_inclination=np.deg2rad(45.0)
+        angle_of_inclination=np.deg2rad(45.0),
     )
 
-    stats = {'times': [], 'positions': [], 'elastic_energies': [], 'kinetic_energies': []}
+    stats = {
+        "times": [],
+        "positions": [],
+        "elastic_energies": [],
+        "kinetic_energies": [],
+    }
 
     def collect(t):
-        stats['times'].append(t)
+        stats["times"].append(t)
 
     def collect_more(p, e, k):
-        stats['positions'].append(np.copy(p))
-        stats['elastic_energies'].append(e)
-        stats['kinetic_energies'].append(k)
+        stats["positions"].append(np.copy(p))
+        stats["elastic_energies"].append(e)
+        stats["kinetic_energies"].append(k)
 
     def collect_stats_from(cas):
         collect(cas.current_time())
