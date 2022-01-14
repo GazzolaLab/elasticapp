@@ -9,7 +9,9 @@ from elasticapp.CaseStudies.PyAxialStretchingCaseStudy import AxialStretchingCas
 
 
 def run_example(
-        pyelastica_file: os.PathLike = "", save_to_csv: bool = False, save_figure: bool = False
+    pyelastica_file: os.PathLike = "",
+    save_to_csv: bool = False,
+    save_figure: bool = False,
 ):
     sample_interval = 200
 
@@ -52,7 +54,7 @@ def run_example(
     expected_tip_disp = end_force_x * base_length / base_area / youngs_modulus
     # First-order theory with modified-length, gives better estimates
     expected_tip_disp_improved = (
-            end_force_x * base_length / (base_area * youngs_modulus - end_force_x)
+        end_force_x * base_length / (base_area * youngs_modulus - end_force_x)
     )
 
     times = np.asarray(times)

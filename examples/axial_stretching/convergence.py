@@ -5,14 +5,12 @@ from elasticapp import Blaze  # noqa
 from elasticapp.CaseStudies.PyAxialStretchingCaseStudy import AxialStretchingCaseStudy
 from tqdm.auto import trange
 
-PositiveInt = NewType('PositiveInt', int)
+PositiveInt = NewType("PositiveInt", int)
 Elements = list[PositiveInt]
 ConvergenceResults = NewType("ConvergenceResults", List[float])
 
 
-def simulate_axial_stretching_with(
-        n_elem: PositiveInt
-) -> float:
+def simulate_axial_stretching_with(n_elem: PositiveInt) -> float:
     sample_interval = 200
 
     base_radius = 0.025
@@ -53,7 +51,7 @@ def simulate_axial_stretching_with(
     expected_tip_disp = end_force_x * base_length / base_area / youngs_modulus
     # First-order theory with modified-length, gives better estimates
     expected_tip_disp_improved = (
-            end_force_x * base_length / (base_area * youngs_modulus - end_force_x)
+        end_force_x * base_length / (base_area * youngs_modulus - end_force_x)
     )
 
     times = np.asarray(times)
