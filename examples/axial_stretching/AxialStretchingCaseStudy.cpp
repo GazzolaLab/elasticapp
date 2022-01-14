@@ -44,7 +44,8 @@ void AxialStretchingCaseStudy::setup(InputTypes<This> const& input_parameters) {
       0.1);
 
   const ::elastica::Vec3 origin{0.0, 0.0, 0.0};
-  const ::elastica::real_t base_length{1.0};
+  const ::elastica::real_t base_length{
+      ::elastica::get<length>(input_parameters)};
   const std::size_t n_elem = ::elastica::get<n_elements>(input_parameters);
 
   using StraightInit = ::elastica::cosserat_rod::StraightCosseratRodInitializer;

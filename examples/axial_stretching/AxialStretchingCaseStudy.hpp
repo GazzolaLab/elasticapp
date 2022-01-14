@@ -66,23 +66,24 @@ Axial stretching test-case
 Assume we have a rod lying aligned in the x-direction, with high internal
 damping.
 
-We fix one end (say, the left end) of the rod to a wall. On the right
-end we apply a force directed axially pulling the rods tip. Linear
-theory (assuming small displacements) predict that the net displacement
-experienced by the rod tip is Δx = FL/AE where the symbols carry their
-usual meaning (the rod is just a linear spring). We compare our results
-with the above result.
+We fix the left end of the rod to a wall. On the right end we apply a force
+directed axially pulling the rods tip. Linear theory (assuming small
+displacements) analytically predict that the net displacement experienced by the
+rod tip as Δx = FL/AE where the symbols carry their usual meaning (the rod is
+just a linear spring). We compare our numerical results with the above
+analytical result.
 
 We can "improve" the theory by having a better estimate for the rod's
 spring constant by assuming that it equilibriates under the new position,
 with
 Δx = F * (L + Δx)/ (A * E)
-which results in Δx = (F*l)/(A*E - F). Our rod reaches equilibrium wrt to
-this position.
+which results in Δx = (F*l)/(A*E - F). In practice, we have seen that our
+numerical algorithm matches this "improved" estimate in practice.
 
-Note that if the damping is not high, the rod oscillates about the eventual
-resting position (and this agrees with the theoretical predictions without
-any damping : we should see the rod oscillating simple-harmonically in time).
+Note that if the damping is not high, the rod oscillates about its eventual
+resting position (which agrees with the theoretical predictions without
+any damping), so the results may have mismatch with Δx. Filtering such
+oscillations enables comparison with theory.
 )help"};
 
   struct n_elements {
@@ -112,13 +113,18 @@ any damping : we should see the rod oscillating simple-harmonically in time).
     static constexpr String help = {"Radius of the rod"};
   };
 
+  struct length {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Length of the rod"};
+  };
+
   struct dt {
     using type = ::elastica::real_t;
     static constexpr String help = {"Time step of simulation"};
   };
 
   using Parameters = tmpl::list<n_elements, damping, youngs_modulus,
-                                applied_force, radius, dt>;
+                                applied_force, radius, length, dt>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);

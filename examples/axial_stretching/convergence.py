@@ -31,6 +31,7 @@ def simulate_axial_stretching_with(n_elem: PositiveInt) -> float:
         youngs_modulus=youngs_modulus,
         applied_force=end_force_x,
         radius=base_radius,
+        length=base_length,
         dt=dt,
     )
 
