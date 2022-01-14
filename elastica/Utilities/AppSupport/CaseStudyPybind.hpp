@@ -74,6 +74,10 @@ namespace py_bindings {
     // (see CaseStudyInterface)
     py_bound_case_study
         .def("__str__", []() { return pretty_type::short_name<CaseStudy>(); })
+        .def(
+            "help",
+            +[](CaseStudy const&) { return std::string(CaseStudy::help); },
+            "Prints a descriptive help message")
         .def("run", &CaseStudy::run,
              "Runs the simulator till the user-defined criterion")
         .def("step", &CaseStudy::step,
