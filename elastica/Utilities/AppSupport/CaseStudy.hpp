@@ -17,6 +17,7 @@
 // Includes
 //******************************************************************************
 
+#include "Utilities/AppSupport/CaseStudyInterface.hpp"
 #include "Utilities/AsTaggedTuple.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"

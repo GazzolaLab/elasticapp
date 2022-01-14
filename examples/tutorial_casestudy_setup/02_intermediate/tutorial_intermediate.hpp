@@ -22,7 +22,10 @@
 
 using String = const char* const;
 
-struct IntermediateCaseStudy {
+/// [case_study_interface_eg]
+struct IntermediateCaseStudy
+    : public ::elastica::CaseStudyInterface<IntermediateCaseStudy> {
+  /// [case_study_interface_eg]
   /* Help string */
   static constexpr String help = {"An intermediate case study"};
 
@@ -72,7 +75,7 @@ struct IntermediateCaseStudy {
    * 3. This routine then communicates the buffers to the outside world.
    * one each of an elastica vector, matrix and tensor type
    */
-  inline auto output() {
+  inline auto communicate() {
     const std::size_t first_size = 4UL;
     const std::size_t second_size = 8UL;
     // more than one array can be communicated using a tuple of instances
