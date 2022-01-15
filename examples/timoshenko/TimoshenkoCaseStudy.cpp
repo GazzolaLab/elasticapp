@@ -16,8 +16,8 @@
 #include <elastica/Simulator/Materials.hpp>
 #include <elastica/Utilities/Get.hpp>
 #include <elastica/Utilities/Size.hpp>
-#include <iomanip>
-#include <ostream>
+//#include <iomanip>
+//#include <ostream>
 #include <utility>
 
 void TimoshenkoCaseStudy::setup(InputTypes<This> const& input_parameters) {
@@ -46,7 +46,8 @@ void TimoshenkoCaseStudy::setup(InputTypes<This> const& input_parameters) {
   using StraightInit = ::elastica::cosserat_rod::StraightCosseratRodInitializer;
 
   const ::elastica::Vec3 origin{0.0, 0.0, 0.0};
-  const ::elastica::real_t base_length{3.0};
+  const ::elastica::real_t base_length{
+      ::elastica::get<length>(input_parameters)};
   const std::size_t n_elem(::elastica::get<n_elements>(input_parameters));
 
   StraightInit straight_initializer{
@@ -54,7 +55,7 @@ void TimoshenkoCaseStudy::setup(InputTypes<This> const& input_parameters) {
       StraightInit::NElement{n_elem},
       StraightInit::Material{my_material},
       StraightInit::Radius{::elastica::get<radius>(input_parameters)},
-      StraightInit::Length{::elastica::get<length>(input_parameters)},
+      StraightInit::Length{base_length},
       StraightInit::Origin{origin},
       StraightInit::Direction{::elastica::Vec3{0.0, 0.0, 1.0}},
       StraightInit::Normal{::elastica::Vec3{0.0, 1.0, 0.0}},
@@ -64,7 +65,7 @@ void TimoshenkoCaseStudy::setup(InputTypes<This> const& input_parameters) {
           ::elastica::get<damping>(input_parameters)},
   };
 
-  auto rod_it = simulator->emplace_back<CosseratRod>(
+  rod_it = simulator->emplace_back<CosseratRod>(
       straight_initializer.initialize<CosseratRod>());
 
   namespace eco = ::elastica::constraints;
@@ -87,7 +88,7 @@ void TimoshenkoCaseStudy::setup(InputTypes<This> const& input_parameters) {
 
   namespace efo = ::elastica::forcing;
 
-  const ::elastica::Vec3 F{-::elastica::get<applied_force>(input_parameters),
+  const ::elastica::Vec3 F{::elastica::get<applied_force>(input_parameters),
                            0.0, 0.0};
   auto force_generator = efo::make_forcing(
       efo::make_force([F](auto /*time*/, auto& rod_system, std::size_t index) {
@@ -111,34 +112,36 @@ void TimoshenkoCaseStudy::step() {
 
 void TimoshenkoCaseStudy::run() {
   // TODO : replace with event and triggers
-  using TimesAndDisplacements =
-      std::pair<::elastica::real_t, ::elastica::real_t>;
-  std::vector<TimesAndDisplacements> time_and_disps;
+  //  using TimesAndDisplacements =
+  //      std::pair<::elastica::real_t, ::elastica::real_t>;
+  //  std::vector<TimesAndDisplacements> time_and_disps;
 
-  const ::elastica::real_t final_time(20.0);
+  const ::elastica::real_t final_time(100.0);
   const auto n_elements = ::elastica::size(*rod_it);
   constexpr auto x_axis = 0UL;
 
   const std::size_t n_steps = (final_time / current_dt());
 
   const std::size_t write_interval = 200UL;
-  time_and_disps.reserve(n_steps / write_interval);
+  //  time_and_disps.reserve(n_steps / write_interval);
 
   for (std::size_t i_step = {0UL}; i_step < n_steps; ++i_step) {
     step();
 
-    if (not(i_step % write_interval)) {
-      time_and_disps.emplace_back(
-          current_time(), ::elastica::position(*rod_it, n_elements)[x_axis]);
-    }
+    //    if (not(i_step % write_interval)) {
+    //      time_and_disps.emplace_back(
+    //          current_time(), ::elastica::position(*rod_it,
+    //          n_elements)[x_axis]);
+    //    }
   }
 
   // TODO : replace with a csv writer
-  std::ofstream my_file;
-  my_file.open("tip_displacements.csv");
-  for (auto const& td : time_and_disps) {
-    my_file << std::setprecision(16) << td.first << "," << td.second << "\n";
-  }
-  my_file << std::endl;
-  my_file.close();
+  //  std::ofstream my_file;
+  //  my_file.open("tip_displacements.csv");
+  //  for (auto const& td : time_and_disps) {
+  //    my_file << std::setprecision(16) << td.first << "," << td.second <<
+  //    "\n";
+  //  }
+  //  my_file << std::endl;
+  //  my_file.close();
 }
