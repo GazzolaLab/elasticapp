@@ -1,6 +1,6 @@
-add_executable(Example_timestep_rod main.cpp)
+add_executable(tutorial_timestep tutorial_timestep.cpp)
 
-target_link_libraries(Example_timestep_rod
+target_link_libraries(tutorial_timestep
         PUBLIC
         Utilities
         ErrorHandling
