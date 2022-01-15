@@ -127,7 +127,10 @@ Section 3.4.3.
   void setup(InputTypes<This> const& input_parameters);
   void step();
   void run();
-  inline auto communicate() { return ::elastica::position(*rod_it); }
+  inline auto communicate() {
+    return std::make_tuple(::elastica::position(*rod_it),
+                           ::elastica::velocity(*rod_it));
+  }
 
   TimoshenkoCaseStudy() = default;
   TimoshenkoCaseStudy(TimoshenkoCaseStudy&&) noexcept = default;
