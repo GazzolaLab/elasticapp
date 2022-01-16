@@ -342,10 +342,8 @@ namespace elastica {
             using Tag = blocks::parameter_t<Variable>;
 
             auto& variable(blocks::get<Tag>(downstream_block));
-            auto density(blocks::get<tags::Mass>(
-                downstream_block));  // TODO: must be density. check the order
-                                     // of initialization
-            auto reference_lengths(
+            auto& density(blocks::get<tags::Mass>(downstream_block));
+            auto& reference_lengths(
                 blocks::get<tags::ReferenceElementLength>(downstream_block));
             const auto dofs = Variable::get_dofs(initializers.n_elems());
             for (std::size_t idx = 0U; idx < dofs; ++idx) {
@@ -365,10 +363,8 @@ namespace elastica {
             using Tag = blocks::parameter_t<Variable>;
 
             auto& variable(blocks::get<Tag>(downstream_block));
-            auto density(blocks::get<tags::Mass>(
-                downstream_block));  // TODO: must be density. check the order
-                                     // of initialization
-            auto reference_lengths(
+            auto& density(blocks::get<tags::Mass>(downstream_block));
+            auto& reference_lengths(
                 blocks::get<tags::ReferenceElementLength>(downstream_block));
             const auto dofs = Variable::get_dofs(initializers.n_elems());
             for (std::size_t idx = 0U; idx < dofs; ++idx) {
@@ -388,10 +384,8 @@ namespace elastica {
             using MassVariable = typename Traits::DataType::Scalar;
 
             auto& mass(blocks::get<::elastica::tags::Mass>(downstream_block));
-            auto volume = downstream_block.get_element_volume();
-            // auto n_elem = elastica::cosserat_rod::get_batch_elems(volume);
-            auto n_elem = (*volume).size();  // TODO: use other method to get
-                                             // number of elements
+            auto& volume = downstream_block.get_element_volume();
+            auto n_elem = volume.size();
             typename MassVariable::type mass_on_element(n_elem);
             mass_on_element =
                 0.5 * MassVariable::slice(mass, 0, n_elem) * volume;
