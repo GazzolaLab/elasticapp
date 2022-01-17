@@ -1,30 +1,24 @@
 //
 // Created by Seung Hyun Kim on 1/2/2022
 //
-#include <chrono>
 #include <cmath>
 #include <iomanip>
-#include <limits>
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "Simulator/Constraints.hpp"
 #include "Simulator/Forcing.hpp"
 #include "Simulator/Simulator.hpp"
 #include "Systems/CosseratRods.hpp"
-#include "Systems/common/SymplecticStepperAdapter.hpp"
 #include "Time/SimulationTime.hpp"
-#include "Time/SymplecticSteppers/Algorithms.hpp"
 #include "Time/SymplecticSteppers/SymplecticStepper.hpp"
 #include "Utilities/Get.hpp"
-#include "Utilities/Math/Identity.hpp"
 #include "Utilities/Math/Rot3.hpp"
 #include "Utilities/Math/Vec3.hpp"
-#include "Utilities/StdHelpers.hpp"
 
 int main() {
   enable_floating_point_exceptions();
 
   using ::elastica::cosserat_rod::CosseratRodWithoutDamping;
+  using ::elastica::cosserat_rod::RodEnergy;
 
   // TODO : upon refactoring the above plugins in a elastica header, these
   // should be no longer needed and hence removed.
@@ -114,7 +108,7 @@ int main() {
          {-std::cos(angle_of_inclination), 0.0, std::sin(angle_of_inclination)}}
       );
     }};
-  // clang-format off
+  // clang-format on
 
   using Init =
       ::elastica::cosserat_rod::UserDefinedCosseratRodWithoutDampingInitializer<
@@ -147,10 +141,20 @@ int main() {
   ::elastica::TimeDelta time_delta{dt};
 
   /* Pre processing */
-
   for (std::size_t i_step = {0UL}; i_step < total_steps; ++i_step) {
     simulator->step(time_stepper, time_v, time_delta);
-    if( not (i_step % 100)){
+    if (not(i_step % 100)) {
+      std::cout << "Trans.Energy = "
+                << RodEnergy<>::compute_translational_energy(
+                       ::elastica::get<elastica::tags::Mass>(*rod_it),
+                       ::elastica::get<elastica::tags::Velocity>(*rod_it))
+//                << "Rot.Energy = "
+//                << RodEnergy<>::compute_rotational_energy((*rod_it))
+                << "Shear.Energy = "
+                << RodEnergy<>::compute_shear_energy(*rod_it)
+//                << "Bend.Energy = "
+//                << RodEnergy<>::compute_bend_energy((*rod_it))
+                << '\n';
       // Intermediate processes (if needed)
     }
   }

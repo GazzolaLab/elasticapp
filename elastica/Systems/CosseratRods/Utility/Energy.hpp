@@ -4,27 +4,28 @@
 
 #pragma once
 
-#include <blaze/Blaze.h>
-#include <blaze_tensor/Blaze.h>
-
 #include "Systems/Block.hpp"
+#include "Systems/CosseratRods.hpp"
+#include "Systems/CosseratRods/Components/helpers.hpp"
+#include "Systems/CosseratRods/CosseratRodTraits.hpp"
+#include "Systems/CosseratRods/Tags.hpp"
 #include "Utilities/CRTP.hpp"
+#include "Utilities/Get.hpp"
 #include "Utilities/TMPL.hpp"
-
-#include "elastica/Systems/CosseratRods/Tags.hpp"
-#include "elastica/Systems/CosseratRods/CosseratRodTraits.hpp"
-#include "elastica/Systems/CosseratRods/Components/helpers.hpp"
+#include "blaze/Blaze.h"
+#include "blaze_tensor/Blaze.h"
 
 namespace elastica {
   namespace cosserat_rod {
 
-    template <typename CRT>
-    class RodEnergyComputation {
+    template <typename CRT = elastica::cosserat_rod::DefaultCosseratRodTraits>
+    class RodEnergy {
      private:
       using Traits = CRT;
       using real_type = typename Traits::real_type;
+
      public:
-      //**************************************************************************
+      //************************************************************************
       /*!\brief Computes translational kinetic energy of the body.
       //
       // \details
@@ -46,16 +47,15 @@ namespace elastica {
       // \see fill later?
       */
       template <typename MassType, typename VelocityType>
-      auto compute_translational_energy(const MassType& mass_batch,
-                                        const VelocityType& velocity_batch) {
+      static auto compute_translational_energy(
+          const MassType& mass_batch, const VelocityType& velocity_batch) {
         return real_type(0.5) *
-               blaze::sum(mass_batch *
-                          blaze::sum<blaze::columnwise>(
-                              velocity_batch % velocity_batch));
+               blaze::sum(mass_batch * blaze::sum<blaze::columnwise>(
+                                           velocity_batch % velocity_batch));
       }
-      //**************************************************************************
+      //************************************************************************
 
-      //**************************************************************************
+      //************************************************************************
       /*!\brief Computes rotational kinetic energy of the body.
       //
       // \details
@@ -78,26 +78,27 @@ namespace elastica {
       // \see fill later?
       */
       template <typename BodyType>
-      auto compute_rotational_energy(BodyType& body) {
+      static auto compute_rotational_energy(BodyType& body) {
         const std::size_t dimension = 3UL;  // to avoid linalg kernels fail
         // allocating temp container (3, body.n_elems) for temporary storage
-        // TODO refactor, assign variable name to dummy variable if it appears frequently
+        // TODO refactor, assign variable name to dummy variable if it appears
+        // frequently
         // TODO remove blaze operation
         auto J_omega_batch = blaze::submatrix(body.temp_vec_batch, 0UL, 0UL,
                                               dimension, body.n_elems);
-        Traits::Operations::batch_matvec(J_omega_batch,
-                             body.mass_second_moment_of_inertia_batch,
-                             body.omega_batch);
+        Traits::Operations::batch_matvec(
+            J_omega_batch, body.mass_second_moment_of_inertia_batch,
+            body.omega_batch);
         auto J_omega_upon_e_batch =
             J_omega_batch %
             blaze::expand(blaze::pow(body.dilatation_batch, -1), dimension);
-        auto rotational_energy_batch =
-            Traits::Operations::batch_dot(body.omega_batch, J_omega_upon_e_batch);
+        auto rotational_energy_batch = Traits::Operations::batch_dot(
+            body.omega_batch, J_omega_upon_e_batch);
         return real_type(0.5) * blaze::sum(rotational_energy_batch);
       }
-      //**************************************************************************
+      //************************************************************************
 
-      //**************************************************************************
+      //************************************************************************
       /*!\brief Computes shearing mode energy of the body.
       //
       // \details
@@ -120,26 +121,41 @@ namespace elastica {
       //
       // \see fill later?
       */
-      template <typename BodyType>
-      auto compute_shear_energy(BodyType& body) {
+      template <typename R>
+      static auto compute_shear_energy(R rod) {
+        return compute_shear_energy(
+            ::elastica::get<elastica::tags::ShearStretchStrain>(rod),
+            ::elastica::get<elastica::tags::ReferenceShearStretchStrain>(rod),
+            ::elastica::get<elastica::tags::ShearStretchRigidityMatrix>(rod),
+            ::elastica::get<elastica::tags::ReferenceElementLength>(rod));
+      }
+      template <typename StrainType, typename ShearMatrixType,
+                typename LengthType>
+      static auto compute_shear_energy(
+          const StrainType& strain, const StrainType& rest_strain,
+          const ShearMatrixType& shear_matrix_batch,
+          const LengthType& rest_length_batch) {
+        const std::size_t n_elems = ::elastica::cosserat_rod::get_batch_elems(
+            strain);  // TODO: Something is wrong here. why get_batch_elems is
+                      // global?
         const std::size_t dimension = 3UL;  // to avoid linalg kernels fail
-        auto strain_diff_batch = body.strain_batch - body.rest_strain_batch;
+        auto strain_diff_batch = strain - rest_strain;
         // allocating temp container (3, n_elems) for temporary storage
         // TODO refactor to avoid temp memory allocations
-        // TODO remove blaze operation
-        auto shear_internal_stress_batch = blaze::submatrix(
-            body.temp_vec_batch, 0UL, 0UL, dimension, body.n_elems);
+        auto shear_internal_stress_batch =
+            blaze::DynamicMatrix<real_type>(dimension, n_elems);
         Traits::Operations::batch_matvec(shear_internal_stress_batch,
-                             body.shear_matrix_batch, strain_diff_batch);
+                                         shear_matrix_batch, strain_diff_batch);
         auto shear_internal_stress_dot_strain_diff_batch =
-            Traits::Operations::batch_dot(strain_diff_batch, shear_internal_stress_batch);
+            Traits::Operations::batch_dot(strain_diff_batch,
+                                          shear_internal_stress_batch);
         return real_type(0.5) *
                blaze::sum(shear_internal_stress_dot_strain_diff_batch *
-                          body.rest_length_batch);
+                          rest_length_batch);
       }
-      //**************************************************************************
+      //************************************************************************
 
-      //**************************************************************************
+      //************************************************************************
       /*!\brief Computes bending mode energy of the system
       //
       // \details
@@ -164,7 +180,7 @@ namespace elastica {
       // \see fill later?
       */
       template <typename BodyType>
-      auto compute_bend_energy(BodyType& body) {
+      static auto compute_bend_energy(BodyType& body) {
         const std::size_t dimension = 3UL;  // to avoid linalg kernels fail
         auto curvature_diff_batch =
             body.curvature_batch - body.rest_curvature_batch;
@@ -172,16 +188,18 @@ namespace elastica {
         // TODO refactor to avoid temp memory allocations
         auto bend_internal_torque_batch = blaze::submatrix(
             body.temp_vec_batch, 0UL, 0UL, dimension, body.n_voronoi);
-        Traits::Operations::batch_matvec(bend_internal_torque_batch, body.bend_matrix_batch,
-                             curvature_diff_batch);
+        Traits::Operations::batch_matvec(bend_internal_torque_batch,
+                                         body.bend_matrix_batch,
+                                         curvature_diff_batch);
         auto bend_internal_torque_dot_curvature_diff_batch =
-            Traits::Operations::batch_dot(curvature_diff_batch, bend_internal_torque_batch);
+            Traits::Operations::batch_dot(curvature_diff_batch,
+                                          bend_internal_torque_batch);
         return real_type(0.5) *
                blaze::sum(bend_internal_torque_dot_curvature_diff_batch *
                           body.rest_voronoi_length_batch);
       }
-      //**************************************************************************
-    }
-  } // namespace cosserat_rod
+      //************************************************************************
+    };
+  }  // namespace cosserat_rod
 
 }  // namespace elastica

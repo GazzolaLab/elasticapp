@@ -4,16 +4,14 @@
 
 #pragma once
 
-#include <blaze/Blaze.h>
-#include <blaze_tensor/Blaze.h>
-
 #include "Systems/Block.hpp"
+#include "Systems/CosseratRods/Components/helpers.hpp"
+#include "Systems/CosseratRods/CosseratRodTraits.hpp"
+#include "Systems/CosseratRods/Tags.hpp"
 #include "Utilities/CRTP.hpp"
 #include "Utilities/TMPL.hpp"
-
-#include "elastica/Systems/CosseratRods/Tags.hpp"
-#include "elastica/Systems/CosseratRods/CosseratRodTraits.hpp"
-#include "elastica/Systems/CosseratRods/Components/helpers.hpp"
+#include "blaze/Blaze.h"
+#include "blaze_tensor/Blaze.h"
 
 namespace elastica {
 
@@ -24,6 +22,7 @@ namespace elastica {
      private:
       using Traits = CRT;
       using real_type = typename Traits::real_type;
+
      public:
       //**************************************************************************
       /*!\brief Computes center of mass position of the body.
@@ -46,17 +45,15 @@ namespace elastica {
       //
       // \see fill later?
       */
-      template <typename MassType,
-                typename DimensionType,
+      template <typename MassType, typename DimensionType,
                 typename PositionType>
       static inline decltype(auto) compute_position_center_of_mass(
-          const MassType& mass_batch,
-          const DimensionType& dimension_batch,
-          const PositionType& position_batch
-          ) {
+          const MassType& mass_batch, const DimensionType& dimension_batch,
+          const PositionType& position_batch) {
         // TODO: Check math, and move blaze operation into trait
         auto mass_times_position_batch =
-            Traits::Operations::expand_for_broadcast(mass_batch) % position_batch;
+            Traits::Operations::expand_for_broadcast(mass_batch) %
+            position_batch;
         return Traits::Operations::transpose(
             blaze::sum<blaze::rowwise>(mass_times_position_batch) /
             blaze::sum(mass_batch));
@@ -84,17 +81,16 @@ namespace elastica {
       //
       // \see fill later?
       */
-      template <typename MassType,
-                typename DimensionType,
+      template <typename MassType, typename DimensionType,
                 typename VelocityType>
-      auto compute_velocity_center_of_mass(
-          const MassType& mass_batch,
-          const DimensionType& dimension_batch,
-          const VelocityType& velocity_batch
-          ) {
+      auto compute_velocity_center_of_mass(const MassType& mass_batch,
+                                           const DimensionType& dimension_batch,
+                                           const VelocityType& velocity_batch) {
         // TODO: Check math, and move blaze operation into trait
         auto mass_times_velocity_batch =
-            Traits::Operations::expand_for_broadcast(mass_batch, dimension_batch) % velocity_batch;
+            Traits::Operations::expand_for_broadcast(mass_batch,
+                                                     dimension_batch) %
+            velocity_batch;
         return blaze::trans(
             blaze::sum<blaze::rowwise>(mass_times_velocity_batch) /
             blaze::sum(mass_batch));
@@ -102,6 +98,6 @@ namespace elastica {
       //**************************************************************************
     };
 
-  } // namespace cosserat_rod
+  }  // namespace cosserat_rod
 
 }  // namespace elastica
