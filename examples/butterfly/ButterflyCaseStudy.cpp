@@ -114,9 +114,12 @@ void ButterflyCaseStudy::step() {
 void ButterflyCaseStudy::run() {
   // TODO : replace with event and triggers
   using Temporal = ::elastica::real_t;
-  using ElasticEnergy = ::elastica::real_t;
-  using KineticEnergy = ::elastica::real_t;
-  using TimesAndEnergies = std::tuple<Temporal, ElasticEnergy, KineticEnergy>;
+  using BendEnergy = ::elastica::real_t;
+  using ShearEnergy = ::elastica::real_t;
+  using TranslationEnergy = ::elastica::real_t;
+  using RotationEnergy = ::elastica::real_t;
+  using TimesAndEnergies = std::tuple<Temporal, BendEnergy, ShearEnergy,
+                                      TranslationEnergy, RotationEnergy>;
   std::vector<TimesAndEnergies> stats;
 
   const ::elastica::real_t final_time(40.0);
@@ -130,8 +133,9 @@ void ButterflyCaseStudy::run() {
     step();
 
     if (not(i_step % write_interval)) {
-      stats.emplace_back(current_time(), compute_elastic_energy(),
-                         compute_kinetic_energy());
+      stats.push_back(std::tuple_cat(std::make_tuple(current_time()),
+                                     compute_elastic_energy(),
+                                     compute_kinetic_energy()));
     }
   }
 
@@ -139,12 +143,17 @@ void ButterflyCaseStudy::run() {
   std::ofstream my_file;
   my_file.open("energies.csv");
   constexpr auto temporal = 0UL;
-  constexpr auto elastic_energy = 1UL;
-  constexpr auto kinetic_energy = 2UL;
+  constexpr auto bend_elastic_energy = 1UL;
+  constexpr auto shear_elastic_energy = 2UL;
+  constexpr auto translation_energy = 3UL;
+  constexpr auto rotation_energy = 4UL;
   for (auto const& st : stats) {
     my_file << std::setprecision(16)  //
-            << std::get<temporal>(st) << "," << std::get<elastic_energy>(st)
-            << ", " << std::get<kinetic_energy>(st) << "\n";
+            << std::get<temporal>(st) << ","
+            << std::get<bend_elastic_energy>(st) << ","
+            << std::get<shear_elastic_energy>(st) << ", "
+            << std::get<translation_energy>(st) << ","
+            << std::get<rotation_energy>(st) << "\n";
   }
   my_file << std::endl;
   my_file.close();

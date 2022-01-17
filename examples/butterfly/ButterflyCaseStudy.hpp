@@ -107,17 +107,19 @@ implemented correctly.
   void step();
   void run();
 
-  auto compute_elastic_energy() const noexcept -> ::elastica::real_t {
-    return 1.0;
+  auto compute_elastic_energy() const noexcept {
+    return std::make_tuple(::elastica::compute_bend_energy(*rod_it),
+                           ::elastica::compute_shear_energy(*rod_it));
   }
 
-  auto compute_kinetic_energy() const noexcept -> ::elastica::real_t {
-    return 1.0;
+  auto compute_kinetic_energy() const noexcept {
+    return std::make_tuple(::elastica::compute_translational_energy(*rod_it),
+                           ::elastica::compute_rotational_energy(*rod_it));
   }
 
   inline auto communicate() {
-    return std::make_tuple(::elastica::position(*rod_it),
-                           compute_elastic_energy(), compute_kinetic_energy());
+    return std::tuple_cat(std::make_tuple(::elastica::position(*rod_it)),
+                          compute_elastic_energy(), compute_kinetic_energy());
   }
 
   ButterflyCaseStudy() = default;
