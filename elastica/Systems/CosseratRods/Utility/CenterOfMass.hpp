@@ -24,7 +24,7 @@ namespace elastica {
       using real_type = typename Traits::real_type;
 
      public:
-      //**************************************************************************
+      //************************************************************************
       /*!\brief Computes center of mass position of the body.
       //
       // \details
@@ -58,9 +58,9 @@ namespace elastica {
             blaze::sum<blaze::rowwise>(mass_times_position_batch) /
             blaze::sum(mass_batch));
       }
-      //**************************************************************************
+      //************************************************************************
 
-      //**************************************************************************
+      //************************************************************************
       /*!\brief Computes center of mass velocity of the body.
       //
       // \details
@@ -95,7 +95,7 @@ namespace elastica {
             blaze::sum<blaze::rowwise>(mass_times_velocity_batch) /
             blaze::sum(mass_batch));
       }
-      //**************************************************************************
+      //************************************************************************
     };
 
   }  // namespace cosserat_rod
