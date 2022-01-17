@@ -109,7 +109,8 @@ namespace elastica {
             J_omega_batch, mass_second_moment_of_inertia_batch, omega_batch);
         auto J_omega_upon_e_batch =
             J_omega_batch %
-            blaze::expand(blaze::pow(dilatation_batch, -1), dimension);
+            blaze::expand(blaze::trans(blaze::pow(dilatation_batch, -1)),
+                          dimension);
         auto rotational_energy_batch =
             Traits::Operations::batch_dot(omega_batch, J_omega_upon_e_batch);
         return real_type(0.5) * blaze::sum(rotational_energy_batch);
@@ -205,21 +206,21 @@ namespace elastica {
             ::elastica::get<elastica::tags::BendingTwistRigidityMatrix>(rod),
             ::elastica::get<elastica::tags::ReferenceVoronoiLength>(rod));
       }
-      template <typename CurvatureType, typename BendMatrixType, typename VoronoiLengthType>
-      static auto compute_bend_energy(CurvatureType& curvature_batch,
-                                      CurvatureType& rest_curvature_batch,
-                                      BendMatrixType& bend_matrix_batch,
-                                      VoronoiLengthType& rest_voronoi_length_batch
-                                      ) {
+      template <typename CurvatureType, typename BendMatrixType,
+                typename VoronoiLengthType>
+      static auto compute_bend_energy(
+          CurvatureType& curvature_batch, CurvatureType& rest_curvature_batch,
+          BendMatrixType& bend_matrix_batch,
+          VoronoiLengthType& rest_voronoi_length_batch) {
         const std::size_t n_voronoi = ::elastica::cosserat_rod::get_batch_elems(
             curvature_batch);  // TODO: Something is wrong here. why
-                                         // get_batch_elems is global?
+                               // get_batch_elems is global?
         const std::size_t dimension = 3UL;  // to avoid linalg kernels fail
-        auto curvature_diff_batch =
-            curvature_batch - rest_curvature_batch;
+        auto curvature_diff_batch = curvature_batch - rest_curvature_batch;
         // allocating temp container (3, n_elems) for temporary storage
         // TODO refactor to avoid temp memory allocations
-        auto bend_internal_torque_batch = blaze::DynamicMatrix<real_type>(dimension, n_voronoi);
+        auto bend_internal_torque_batch =
+            blaze::DynamicMatrix<real_type>(dimension, n_voronoi);
         Traits::Operations::batch_matvec(bend_internal_torque_batch,
                                          bend_matrix_batch,
                                          curvature_diff_batch);

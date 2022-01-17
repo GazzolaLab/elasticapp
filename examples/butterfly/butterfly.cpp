@@ -150,8 +150,8 @@ int main() {
                 << "Trans.Energy = "
                 << RodEnergy<>::compute_translational_energy(*rod_it)
                 << ' '
-//                << "Rot.Energy = "
-//                << RodEnergy<>::compute_rotational_energy((*rod_it))
+                << "Rot.Energy = "
+                << RodEnergy<>::compute_rotational_energy((*rod_it))
                 << ' '
                 << "Shear.Energy = "
                 << RodEnergy<>::compute_shear_energy(*rod_it)
