@@ -1,238 +1,283 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Energy calculation overloads for Cosserat rods
 //
-// Created by Seung Hyun Kim on 10/9/21.
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
 //
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
 
 #pragma once
 
+//******************************************************************************
+// Includes
+//******************************************************************************
+
 #include "Systems/Block.hpp"
-#include "Systems/CosseratRods.hpp"
+#include "Systems/CosseratRods/BlockSlice.hpp"
 #include "Systems/CosseratRods/Components/helpers.hpp"
-#include "Systems/CosseratRods/CosseratRodTraits.hpp"
 #include "Systems/CosseratRods/Tags.hpp"
-#include "Utilities/CRTP.hpp"
-#include "Utilities/Get.hpp"
-#include "Utilities/TMPL.hpp"
+#include "Utilities/DefineTypes.h"
 #include "blaze/Blaze.h"
 #include "blaze_tensor/Blaze.h"
 
+// TODO: Documentation need update
 namespace elastica {
+
   namespace cosserat_rod {
 
-    template <typename CRT = elastica::cosserat_rod::DefaultCosseratRodTraits>
-    class RodEnergy {
-     private:
-      using Traits = CRT;
-      using real_type = typename Traits::real_type;
-
-     public:
-      // TODO: Documentation need update
+    namespace detail {
 
       //************************************************************************
-      /*!\brief Computes translational kinetic energy of the body.
-      //
-      // \details
-      // Computes translational kinetic energy of the body given nodal
-      // masses and velocities. \n
-      // translational_KE = 0.5 * sum(body.mass_batch{i} *
-      // body.velocity_batch{i}^2)
-      //
-      // \example
-      // The following shows a typical use of the compute_translational_energy()
-      // function with the expected (correct) result also shown.
-      // \snippet test_gov_eqns.cpp compute_translational_energy_example
-      //
-      // \param[in] body object whose translational kinetic energy is to be
-      computed
-      //
-      // \return translational kinetic energy expression type
-      //
-      // \see fill later?
+      /*! \cond ELASTICA_INTERNAL */
+      /*!\brief Helper for computing rod energy
+      // \ingroup cosserat_rod
       */
-      template <typename R>
-      static auto compute_translational_energy(R rod) {
-        return compute_translational_energy(
-            ::elastica::get<elastica::tags::Mass>(rod),
-            ::elastica::get<elastica::tags::Velocity>(rod));
-      }
-      template <typename MassType, typename VelocityType>
-      static auto compute_translational_energy(
-          const MassType& mass_batch, const VelocityType& velocity_batch) {
-        return real_type(0.5) *
-               blaze::sum(mass_batch * blaze::sum<blaze::columnwise>(
-                                           velocity_batch % velocity_batch));
-      }
+      template <typename CRT>
+      struct EnergyComputation {
+       public:
+        using Traits = CRT;
+        using real_type = typename Traits::real_type;
+
+       public:
+        //**********************************************************************
+        template <typename MassType, typename VelocityType>
+        static auto compute_translational_energy(
+            const MassType& mass_batch, const VelocityType& velocity_batch)
+            -> real_type {
+          return real_type(0.5) *
+                 blaze::sum(mass_batch * blaze::sum<blaze::columnwise>(
+                                             velocity_batch % velocity_batch));
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        template <typename OmegaType, typename DilatationType,
+                  typename MSMoIType>
+        static auto compute_rotational_energy(
+            const OmegaType& omega_batch,
+            const DilatationType& dilatation_batch,
+            const MSMoIType& mass_second_moment_of_inertia_batch) -> real_type {
+          const std::size_t n_elems =
+              ::elastica::cosserat_rod::get_batch_elems(omega_batch);
+          // TODO: Something is wrong here. why get_batch_elems is global?
+          const std::size_t dimension = 3UL;  // to avoid linalg kernels fail
+          // allocating temp container (3, cosserat_rod.n_elems) for temporary
+          // storage
+          // TODO refactor, assign variable name to dummy variable if it appears
+          // frequently
+          auto J_omega_batch =
+              blaze::DynamicMatrix<real_type>(dimension, n_elems);
+          Traits::Operations::batch_matvec(
+              J_omega_batch, mass_second_moment_of_inertia_batch, omega_batch);
+          auto J_omega_upon_e_batch =
+              J_omega_batch %
+              blaze::expand(blaze::trans(blaze::pow(dilatation_batch, -1)),
+                            dimension);
+          auto rotational_energy_batch =
+              Traits::Operations::batch_dot(omega_batch, J_omega_upon_e_batch);
+          return real_type(0.5) * blaze::sum(rotational_energy_batch);
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        template <typename StrainType, typename ShearMatrixType,
+                  typename LengthType>
+        static auto compute_shear_energy(
+            const StrainType& strain, const StrainType& rest_strain,
+            const ShearMatrixType& shear_matrix_batch,
+            const LengthType& rest_length_batch) -> real_type {
+          const std::size_t n_elems = ::elastica::cosserat_rod::get_batch_elems(
+              strain);  // TODO: Something is wrong here. why get_batch_elems is
+                        // global?
+          const std::size_t dimension = 3UL;  // to avoid linalg kernels fail
+          auto strain_diff_batch = strain - rest_strain;
+          // allocating temp container (3, n_elems) for temporary storage
+          // TODO refactor to avoid temp memory allocations
+          auto shear_internal_stress_batch =
+              blaze::DynamicMatrix<real_type>(dimension, n_elems);
+          Traits::Operations::batch_matvec(shear_internal_stress_batch,
+                                           shear_matrix_batch,
+                                           strain_diff_batch);
+          auto shear_internal_stress_dot_strain_diff_batch =
+              Traits::Operations::batch_dot(strain_diff_batch,
+                                            shear_internal_stress_batch);
+          return real_type(0.5) *
+                 blaze::sum(shear_internal_stress_dot_strain_diff_batch *
+                            rest_length_batch);
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        template <typename CurvatureType, typename BendMatrixType,
+                  typename VoronoiLengthType>
+        static auto compute_bend_energy(
+            CurvatureType const& curvature_batch,
+            CurvatureType const& rest_curvature_batch,
+            BendMatrixType const& bend_matrix_batch,
+            VoronoiLengthType const& rest_voronoi_length_batch) -> real_type {
+          const std::size_t n_voronoi =
+              ::elastica::cosserat_rod::get_batch_elems(
+                  curvature_batch);  // TODO: Something is wrong here. why
+                                     // get_batch_elems is global?
+          const std::size_t dimension = 3UL;  // to avoid linalg kernels fail
+          auto curvature_diff_batch = curvature_batch - rest_curvature_batch;
+          // allocating temp container (3, n_elems) for temporary storage
+          // TODO refactor to avoid temp memory allocations
+          auto bend_internal_torque_batch =
+              blaze::DynamicMatrix<real_type>(dimension, n_voronoi);
+          Traits::Operations::batch_matvec(bend_internal_torque_batch,
+                                           bend_matrix_batch,
+                                           curvature_diff_batch);
+          auto bend_internal_torque_dot_curvature_diff_batch =
+              Traits::Operations::batch_dot(curvature_diff_batch,
+                                            bend_internal_torque_batch);
+          return real_type(0.5) *
+                 blaze::sum(bend_internal_torque_dot_curvature_diff_batch *
+                            rest_voronoi_length_batch);
+        }
+        //**********************************************************************
+      };
       //************************************************************************
 
-      //************************************************************************
-      /*!\brief Computes rotational kinetic energy of the body.
-      //
-      // \details
-      // Computes rotational kinetic energy of the body given elemental
-      // mass moment of inertia and angular velocities. \n
-      // rotational_KE = 0.5 * sum((body.mass_second_moment_of_inertia{i} *
-      // body.omega_batch{i}) dot
-      // body.omega_batch{i} / body.dilatation_batch{i})
-      //
-      // \example
-      // The following shows a typical use of the compute_rotational_energy()
-      // function with the expected (correct) result also shown.
-      // \snippet test_gov_eqns.cpp compute_rotational_energy_example
-      //
-      // \param[in] body object whose rotational kinetic energy is to be
-      computed
-      //
-      // \return rotational kinetic energy expression type
-      //
-      // \see fill later?
-      */
-      template <typename R>
-      static auto compute_rotational_energy(R rod) {
-        return compute_rotational_energy(
-            ::elastica::get<elastica::tags::AngularAcceleration>(rod),
-            ::elastica::get<elastica::tags::ElementDilatation>(rod),
-            ::elastica::get<elastica::tags::MassSecondMomentOfInertia>(rod));
-      }
-      template <typename OmegaType, typename DilatationType, typename MSMoIType>
-      static auto compute_rotational_energy(
-          const OmegaType& omega_batch, const DilatationType& dilatation_batch,
-          const MSMoIType& mass_second_moment_of_inertia_batch) {
-        const std::size_t n_elems =
-            ::elastica::cosserat_rod::get_batch_elems(omega_batch);
-        // TODO: Something is wrong here. why get_batch_elems is global?
-        const std::size_t dimension = 3UL;  // to avoid linalg kernels fail
-        // allocating temp container (3, body.n_elems) for temporary storage
-        // TODO refactor, assign variable name to dummy variable if it appears
-        // frequently
-        auto J_omega_batch =
-            blaze::DynamicMatrix<real_type>(dimension, n_elems);
-        Traits::Operations::batch_matvec(
-            J_omega_batch, mass_second_moment_of_inertia_batch, omega_batch);
-        auto J_omega_upon_e_batch =
-            J_omega_batch %
-            blaze::expand(blaze::trans(blaze::pow(dilatation_batch, -1)),
-                          dimension);
-        auto rotational_energy_batch =
-            Traits::Operations::batch_dot(omega_batch, J_omega_upon_e_batch);
-        return real_type(0.5) * blaze::sum(rotational_energy_batch);
-      }
-      //************************************************************************
+    }  // namespace detail
 
-      //************************************************************************
-      /*!\brief Computes shearing mode energy of the body.
-      //
-      // \details
-      // Computes shearing mode energy of the body given elemental
-      // shear matrix and shear strain. \n
-      // shear_energy = 0.5 * sum((body.shear_matrix_batch{i} *
-      // body.strain_diff_batch{i}) dot
-      // body.strain_diff_batch{i} / body.rest_length_batch{i}) \n
-      // where body.strain_diff_batch = body.strain_batch -
-      body.rest_strain_batch
-      //
-      // \example
-      // The following shows a typical use of the compute_shear_energy()
-      // function with the expected (correct) result also shown.
-      // \snippet test_gov_eqns.cpp compute_shear_energy_example
-      //
-      // \param[in] body object whose shear mode energy is to be computed
-      //
-      // \return shear mode energy expression type
-      //
-      // \see fill later?
-      */
-      template <typename R>
-      static auto compute_shear_energy(R rod) {
-        return compute_shear_energy(
-            ::elastica::get<elastica::tags::ShearStretchStrain>(rod),
-            ::elastica::get<elastica::tags::ReferenceShearStretchStrain>(rod),
-            ::elastica::get<elastica::tags::ShearStretchRigidityMatrix>(rod),
-            ::elastica::get<elastica::tags::ReferenceElementLength>(rod));
-      }
-      template <typename StrainType, typename ShearMatrixType,
-                typename LengthType>
-      static auto compute_shear_energy(
-          const StrainType& strain, const StrainType& rest_strain,
-          const ShearMatrixType& shear_matrix_batch,
-          const LengthType& rest_length_batch) {
-        const std::size_t n_elems = ::elastica::cosserat_rod::get_batch_elems(
-            strain);  // TODO: Something is wrong here. why get_batch_elems is
-                      // global?
-        const std::size_t dimension = 3UL;  // to avoid linalg kernels fail
-        auto strain_diff_batch = strain - rest_strain;
-        // allocating temp container (3, n_elems) for temporary storage
-        // TODO refactor to avoid temp memory allocations
-        auto shear_internal_stress_batch =
-            blaze::DynamicMatrix<real_type>(dimension, n_elems);
-        Traits::Operations::batch_matvec(shear_internal_stress_batch,
-                                         shear_matrix_batch, strain_diff_batch);
-        auto shear_internal_stress_dot_strain_diff_batch =
-            Traits::Operations::batch_dot(strain_diff_batch,
-                                          shear_internal_stress_batch);
-        return real_type(0.5) *
-               blaze::sum(shear_internal_stress_dot_strain_diff_batch *
-                          rest_length_batch);
-      }
-      //************************************************************************
-
-      //************************************************************************
-      /*!\brief Computes bending mode energy of the system
-      //
-      // \details
-      // Computes bending mode energy of the system given voronoidal
-      // bend matrix and curvature. \n
-      // bend_energy = 0.5 * sum((body.bend_matrix_batch{i} *
-      // body.curvature_diff_batch{i}) dot
-      // body.curvature_diff_batch{i} /
-      // body.rest_voronoi_length_batch{i}) \n
-      // where body.curvature_diff_batch = body.curvature_batch -
-      // body.rest_curvature_batch
-      //
-      // \example
-      // The following shows a typical use of the compute_bend_energy()
-      // function with the expected (correct) result also shown.
-      // \snippet test_gov_eqns.cpp compute_bend_energy_example
-      //
-      // \param[in] body object whose bend mode energy is to be computed
-      //
-      // \return bend mode energy expression type
-      //
-      // \see fill later?
-      */
-      template <typename R>
-      static auto compute_bend_energy(R rod) {
-        return compute_bend_energy(
-            ::elastica::get<elastica::tags::Curvature>(rod),
-            ::elastica::get<elastica::tags::ReferenceCurvature>(rod),
-            ::elastica::get<elastica::tags::BendingTwistRigidityMatrix>(rod),
-            ::elastica::get<elastica::tags::ReferenceVoronoiLength>(rod));
-      }
-      template <typename CurvatureType, typename BendMatrixType,
-                typename VoronoiLengthType>
-      static auto compute_bend_energy(
-          CurvatureType& curvature_batch, CurvatureType& rest_curvature_batch,
-          BendMatrixType& bend_matrix_batch,
-          VoronoiLengthType& rest_voronoi_length_batch) {
-        const std::size_t n_voronoi = ::elastica::cosserat_rod::get_batch_elems(
-            curvature_batch);  // TODO: Something is wrong here. why
-                               // get_batch_elems is global?
-        const std::size_t dimension = 3UL;  // to avoid linalg kernels fail
-        auto curvature_diff_batch = curvature_batch - rest_curvature_batch;
-        // allocating temp container (3, n_elems) for temporary storage
-        // TODO refactor to avoid temp memory allocations
-        auto bend_internal_torque_batch =
-            blaze::DynamicMatrix<real_type>(dimension, n_voronoi);
-        Traits::Operations::batch_matvec(bend_internal_torque_batch,
-                                         bend_matrix_batch,
-                                         curvature_diff_batch);
-        auto bend_internal_torque_dot_curvature_diff_batch =
-            Traits::Operations::batch_dot(curvature_diff_batch,
-                                          bend_internal_torque_batch);
-        return real_type(0.5) *
-               blaze::sum(bend_internal_torque_dot_curvature_diff_batch *
-                          rest_voronoi_length_batch);
-      }
-      //************************************************************************
-    };
   }  // namespace cosserat_rod
+
+  //****************************************************************************
+  /*!\brief Computes translational kinetic energy of the cosserat_rod.
+  //
+  // \details
+  // Computes translational kinetic energy of the cosserat_rod given nodal
+  // masses and velocities.
+  //
+  // \example
+  // The following shows a typical use of the compute_translational_energy()
+  // function with the expected (correct) result also shown.
+  // \snippet test_gov_eqns.cpp compute_translational_energy_example
+  //
+  // \param[in] cosserat_rod whose translational kinetic energy will be computed
+  //
+  // \return translational kinetic energy expression type
+  //
+  // \see fill later?
+  */
+  template <typename CRT,
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  auto compute_translational_energy(
+      ::blocks::BlockSlice<::elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, ::blocks::BlockSlice, Components...>> const& cosserat_rod)
+      -> ::elastica::real_t {
+    return cosserat_rod::detail::EnergyComputation<CRT>::
+        compute_translational_energy(
+            ::blocks::get<::elastica::tags::Mass>(cosserat_rod),
+            ::blocks::get<::elastica::tags::Velocity>(cosserat_rod));
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Computes rotational kinetic energy of the cosserat_rod.
+  //
+  // \details
+  // Computes rotational kinetic energy of the cosserat_rod given elemental
+  // mass moment of inertia and angular velocities.
+  //
+  // \example
+  // The following shows a typical use of the compute_rotational_energy()
+  // function with the expected (correct) result also shown.
+  // \snippet test_gov_eqns.cpp compute_rotational_energy_example
+  //
+  // \param[in] cosserat_rod object whose rotational KE will be computed
+  //
+  // \return rotational kinetic energy expression type
+  //
+  // \see fill later?
+  */
+  template <typename CRT,
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  auto compute_rotational_energy(
+      ::blocks::BlockSlice<::elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, ::blocks::BlockSlice, Components...>> const& cosserat_rod) {
+    return cosserat_rod::detail::EnergyComputation<CRT>::
+        compute_rotational_energy(
+            ::blocks::get<::elastica::tags::AngularAcceleration>(cosserat_rod),
+            ::blocks::get<::elastica::tags::ElementDilatation>(cosserat_rod),
+            ::blocks::get<::elastica::tags::MassSecondMomentOfInertia>(
+                cosserat_rod));
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Computes bending mode energy of the system
+  //
+  // \details
+  // Computes bending mode energy of the system given voronoidal
+  // bend matrix and curvature.
+  //
+  // \example
+  // The following shows a typical use of the compute_bend_energy()
+  // function with the expected (correct) result also shown.
+  // \snippet test_gov_eqns.cpp compute_bend_energy_example
+  //
+  // \param[in] cosserat_rod object whose bend mode energy will be computed
+  //
+  // \return bend mode energy expression type
+  //
+  // \see fill later?
+  */
+  template <typename CRT,
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  auto compute_bend_energy(
+      ::blocks::BlockSlice<::elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, ::blocks::BlockSlice, Components...>> const& cosserat_rod) {
+    return compute_bend_energy(
+        ::blocks::get<::elastica::tags::Curvature>(cosserat_rod),
+        ::blocks::get<::elastica::tags::ReferenceCurvature>(cosserat_rod),
+        ::blocks::get<::elastica::tags::BendingTwistRigidityMatrix>(
+            cosserat_rod),
+        ::blocks::get<::elastica::tags::ReferenceVoronoiLength>(cosserat_rod));
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Computes shearing mode energy of the cosserat_rod.
+  //
+  // \details
+  // Computes shearing mode energy of the cosserat_rod given elemental
+  // shear matrix and shear strain.
+  //
+  // \example
+  // The following shows a typical use of the compute_shear_energy()
+  // function with the expected (correct) result also shown.
+  // \snippet test_gov_eqns.cpp compute_shear_energy_example
+  //
+  // \param[in] cosserat_rod object whose shear mode energy will be computed
+  //
+  // \return shear mode energy expression type
+  //
+  // \see fill later?
+  */
+  template <typename CRT,
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  auto compute_shear_energy(
+      ::blocks::BlockSlice<::elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, ::blocks::BlockSlice, Components...>> const& cosserat_rod) {
+    return compute_shear_energy(
+        ::blocks::get<::elastica::tags::ShearStretchStrain>(cosserat_rod),
+        ::blocks::get<::elastica::tags::ReferenceShearStretchStrain>(
+            cosserat_rod),
+        ::blocks::get<::elastica::tags::ShearStretchRigidityMatrix>(
+            cosserat_rod),
+        ::blocks::get<::elastica::tags::ReferenceElementLength>(cosserat_rod));
+  }
+  //****************************************************************************
 
 }  // namespace elastica
