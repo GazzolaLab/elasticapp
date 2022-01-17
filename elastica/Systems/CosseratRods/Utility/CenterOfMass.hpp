@@ -68,8 +68,8 @@ namespace elastica {
         template <typename MassType, typename DimensionType,
                   typename PositionType>
         static inline decltype(auto) compute_position_center_of_mass(
-            const MassType& mass_batch, const DimensionType& dimension_batch,
-            const PositionType& position_batch) {
+            MassType const& mass_batch, DimensionType const& dimension_batch,
+            PositionType const& position_batch) {
           // TODO: Check math, and move blaze operation into trait
           auto mass_times_position_batch =
               Traits::Operations::expand_for_broadcast(mass_batch) %
@@ -108,8 +108,8 @@ namespace elastica {
         template <typename MassType, typename DimensionType,
                   typename VelocityType>
         auto compute_velocity_center_of_mass(
-            const MassType& mass_batch, const DimensionType& dimension_batch,
-            const VelocityType& velocity_batch) {
+            MassType const& mass_batch, DimensionType const& dimension_batch,
+            VelocityType const& velocity_batch) {
           // TODO: Check math, and move blaze operation into trait
           auto mass_times_velocity_batch =
               Traits::Operations::expand_for_broadcast(mass_batch,

@@ -47,7 +47,7 @@ namespace elastica {
         //**********************************************************************
         template <typename MassType, typename VelocityType>
         static auto compute_translational_energy(
-            const MassType& mass_batch, const VelocityType& velocity_batch)
+            MassType const& mass_batch, VelocityType const& velocity_batch)
             -> real_type {
           return real_type(0.5) *
                  blaze::sum(mass_batch * blaze::sum<blaze::columnwise>(
@@ -59,13 +59,13 @@ namespace elastica {
         template <typename OmegaType, typename DilatationType,
                   typename MSMoIType>
         static auto compute_rotational_energy(
-            const OmegaType& omega_batch,
-            const DilatationType& dilatation_batch,
-            const MSMoIType& mass_second_moment_of_inertia_batch) -> real_type {
-          const std::size_t n_elems =
+            OmegaType const& omega_batch,
+            DilatationType const& dilatation_batch,
+            MSMoIType const& mass_second_moment_of_inertia_batch) -> real_type {
+          std::size_t const n_elems =
               ::elastica::cosserat_rod::get_batch_elems(omega_batch);
           // TODO: Something is wrong here. why get_batch_elems is global?
-          const std::size_t dimension = 3UL;  // to avoid linalg kernels fail
+          std::size_t const dimension = 3UL;  // to avoid linalg kernels fail
           // allocating temp container (3, cosserat_rod.n_elems) for temporary
           // storage
           // TODO refactor, assign variable name to dummy variable if it appears
@@ -88,13 +88,14 @@ namespace elastica {
         template <typename StrainType, typename ShearMatrixType,
                   typename LengthType>
         static auto compute_shear_energy(
-            const StrainType& strain, const StrainType& rest_strain,
-            const ShearMatrixType& shear_matrix_batch,
-            const LengthType& rest_length_batch) -> real_type {
-          const std::size_t n_elems = ::elastica::cosserat_rod::get_batch_elems(
+            StrainType const& strain, StrainType const& rest_strain,
+            ShearMatrixType const& shear_matrix_batch,
+            LengthType const& rest_length_batch) -> real_type {
+          std::size_t const n_elems = ::elastica::cosserat_rod::get_batch_elems(
               strain);  // TODO: Something is wrong here. why get_batch_elems is
                         // global?
-          const std::size_t dimension = 3UL;  // to avoid linalg kernels fail
+          // TODO : can this be constexpr?
+          std::size_t const dimension = 3UL;  // to avoid linalg kernels fail
           auto strain_diff_batch = strain - rest_strain;
           // allocating temp container (3, n_elems) for temporary storage
           // TODO refactor to avoid temp memory allocations
@@ -120,11 +121,11 @@ namespace elastica {
             CurvatureType const& rest_curvature_batch,
             BendMatrixType const& bend_matrix_batch,
             VoronoiLengthType const& rest_voronoi_length_batch) -> real_type {
-          const std::size_t n_voronoi =
+          std::size_t const n_voronoi =
               ::elastica::cosserat_rod::get_batch_elems(
                   curvature_batch);  // TODO: Something is wrong here. why
                                      // get_batch_elems is global?
-          const std::size_t dimension = 3UL;  // to avoid linalg kernels fail
+          std::size_t const dimension = 3UL;  // to avoid linalg kernels fail
           auto curvature_diff_batch = curvature_batch - rest_curvature_batch;
           // allocating temp container (3, n_elems) for temporary storage
           // TODO refactor to avoid temp memory allocations
