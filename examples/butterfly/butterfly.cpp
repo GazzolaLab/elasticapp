@@ -10,7 +10,6 @@
 #include "Systems/CosseratRods.hpp"
 #include "Time/SimulationTime.hpp"
 #include "Time/SymplecticSteppers/SymplecticStepper.hpp"
-#include "Utilities/Get.hpp"
 #include "Utilities/Math/Rot3.hpp"
 #include "Utilities/Math/Vec3.hpp"
 
