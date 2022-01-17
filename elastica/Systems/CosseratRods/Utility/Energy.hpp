@@ -238,7 +238,7 @@ namespace elastica {
   auto compute_bend_energy(
       ::blocks::BlockSlice<::elastica::cosserat_rod::CosseratRodPlugin<
           CRT, ::blocks::BlockSlice, Components...>> const& cosserat_rod) {
-    return compute_bend_energy(
+    return cosserat_rod::detail::EnergyComputation<CRT>::compute_bend_energy(
         ::blocks::get<::elastica::tags::Curvature>(cosserat_rod),
         ::blocks::get<::elastica::tags::ReferenceCurvature>(cosserat_rod),
         ::blocks::get<::elastica::tags::BendingTwistRigidityMatrix>(
@@ -271,7 +271,7 @@ namespace elastica {
   auto compute_shear_energy(
       ::blocks::BlockSlice<::elastica::cosserat_rod::CosseratRodPlugin<
           CRT, ::blocks::BlockSlice, Components...>> const& cosserat_rod) {
-    return compute_shear_energy(
+    return cosserat_rod::detail::EnergyComputation<CRT>::compute_shear_energy(
         ::blocks::get<::elastica::tags::ShearStretchStrain>(cosserat_rod),
         ::blocks::get<::elastica::tags::ReferenceShearStretchStrain>(
             cosserat_rod),
