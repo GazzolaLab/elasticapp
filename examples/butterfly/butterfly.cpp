@@ -144,18 +144,23 @@ int main() {
   for (std::size_t i_step = {0UL}; i_step < total_steps; ++i_step) {
     simulator->step(time_stepper, time_v, time_delta);
     if (not(i_step % 100)) {
-      std::cout << "Trans.Energy = "
-                << RodEnergy<>::compute_translational_energy(
-                       ::elastica::get<elastica::tags::Mass>(*rod_it),
-                       ::elastica::get<elastica::tags::Velocity>(*rod_it))
+      // Intermediate processes (if needed)
+      // clang-format off
+      std::cout << std::setprecision(5)
+                << "Trans.Energy = "
+                << RodEnergy<>::compute_translational_energy(*rod_it)
+                << ' '
 //                << "Rot.Energy = "
 //                << RodEnergy<>::compute_rotational_energy((*rod_it))
+                << ' '
                 << "Shear.Energy = "
                 << RodEnergy<>::compute_shear_energy(*rod_it)
-//                << "Bend.Energy = "
-//                << RodEnergy<>::compute_bend_energy((*rod_it))
+                << ' '
+                << "Bend.Energy = "
+                << RodEnergy<>::compute_bend_energy(*rod_it)
+                << ' '
                 << '\n';
-      // Intermediate processes (if needed)
+      // clang-format on
     }
   }
 

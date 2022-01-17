@@ -25,6 +25,8 @@ namespace elastica {
       using real_type = typename Traits::real_type;
 
      public:
+      // TODO: Documentation need update
+
       //************************************************************************
       /*!\brief Computes translational kinetic energy of the body.
       //
@@ -46,6 +48,12 @@ namespace elastica {
       //
       // \see fill later?
       */
+      template <typename R>
+      static auto compute_translational_energy(R rod) {
+        return compute_translational_energy(
+            ::elastica::get<elastica::tags::Mass>(rod),
+            ::elastica::get<elastica::tags::Velocity>(rod));
+      }
       template <typename MassType, typename VelocityType>
       static auto compute_translational_energy(
           const MassType& mass_batch, const VelocityType& velocity_batch) {
@@ -77,23 +85,33 @@ namespace elastica {
       //
       // \see fill later?
       */
-      template <typename BodyType>
-      static auto compute_rotational_energy(BodyType& body) {
+      template <typename R>
+      static auto compute_rotational_energy(R rod) {
+        return compute_rotational_energy(
+            ::elastica::get<elastica::tags::AngularAcceleration>(rod),
+            ::elastica::get<elastica::tags::ElementDilatation>(rod),
+            ::elastica::get<elastica::tags::MassSecondMomentOfInertia>(rod));
+      }
+      template <typename OmegaType, typename DilatationType, typename MSMoIType>
+      static auto compute_rotational_energy(
+          const OmegaType& omega_batch, const DilatationType& dilatation_batch,
+          const MSMoIType& mass_second_moment_of_inertia_batch) {
+        const std::size_t n_elems =
+            ::elastica::cosserat_rod::get_batch_elems(omega_batch);
+        // TODO: Something is wrong here. why get_batch_elems is global?
         const std::size_t dimension = 3UL;  // to avoid linalg kernels fail
         // allocating temp container (3, body.n_elems) for temporary storage
         // TODO refactor, assign variable name to dummy variable if it appears
         // frequently
-        // TODO remove blaze operation
-        auto J_omega_batch = blaze::submatrix(body.temp_vec_batch, 0UL, 0UL,
-                                              dimension, body.n_elems);
+        auto J_omega_batch =
+            blaze::DynamicMatrix<real_type>(dimension, n_elems);
         Traits::Operations::batch_matvec(
-            J_omega_batch, body.mass_second_moment_of_inertia_batch,
-            body.omega_batch);
+            J_omega_batch, mass_second_moment_of_inertia_batch, omega_batch);
         auto J_omega_upon_e_batch =
             J_omega_batch %
-            blaze::expand(blaze::pow(body.dilatation_batch, -1), dimension);
-        auto rotational_energy_batch = Traits::Operations::batch_dot(
-            body.omega_batch, J_omega_upon_e_batch);
+            blaze::expand(blaze::pow(dilatation_batch, -1), dimension);
+        auto rotational_energy_batch =
+            Traits::Operations::batch_dot(omega_batch, J_omega_upon_e_batch);
         return real_type(0.5) * blaze::sum(rotational_energy_batch);
       }
       //************************************************************************
@@ -179,24 +197,38 @@ namespace elastica {
       //
       // \see fill later?
       */
-      template <typename BodyType>
-      static auto compute_bend_energy(BodyType& body) {
+      template <typename R>
+      static auto compute_bend_energy(R rod) {
+        return compute_bend_energy(
+            ::elastica::get<elastica::tags::Curvature>(rod),
+            ::elastica::get<elastica::tags::ReferenceCurvature>(rod),
+            ::elastica::get<elastica::tags::BendingTwistRigidityMatrix>(rod),
+            ::elastica::get<elastica::tags::ReferenceVoronoiLength>(rod));
+      }
+      template <typename CurvatureType, typename BendMatrixType, typename VoronoiLengthType>
+      static auto compute_bend_energy(CurvatureType& curvature_batch,
+                                      CurvatureType& rest_curvature_batch,
+                                      BendMatrixType& bend_matrix_batch,
+                                      VoronoiLengthType& rest_voronoi_length_batch
+                                      ) {
+        const std::size_t n_voronoi = ::elastica::cosserat_rod::get_batch_elems(
+            curvature_batch);  // TODO: Something is wrong here. why
+                                         // get_batch_elems is global?
         const std::size_t dimension = 3UL;  // to avoid linalg kernels fail
         auto curvature_diff_batch =
-            body.curvature_batch - body.rest_curvature_batch;
+            curvature_batch - rest_curvature_batch;
         // allocating temp container (3, n_elems) for temporary storage
         // TODO refactor to avoid temp memory allocations
-        auto bend_internal_torque_batch = blaze::submatrix(
-            body.temp_vec_batch, 0UL, 0UL, dimension, body.n_voronoi);
+        auto bend_internal_torque_batch = blaze::DynamicMatrix<real_type>(dimension, n_voronoi);
         Traits::Operations::batch_matvec(bend_internal_torque_batch,
-                                         body.bend_matrix_batch,
+                                         bend_matrix_batch,
                                          curvature_diff_batch);
         auto bend_internal_torque_dot_curvature_diff_batch =
             Traits::Operations::batch_dot(curvature_diff_batch,
                                           bend_internal_torque_batch);
         return real_type(0.5) *
                blaze::sum(bend_internal_torque_dot_curvature_diff_batch *
-                          body.rest_voronoi_length_batch);
+                          rest_voronoi_length_batch);
       }
       //************************************************************************
     };
