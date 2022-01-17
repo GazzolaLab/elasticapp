@@ -207,7 +207,7 @@ namespace elastica {
           CRT, ::blocks::BlockSlice, Components...>> const& cosserat_rod) {
     return cosserat_rod::detail::EnergyComputation<CRT>::
         compute_rotational_energy(
-            ::blocks::get<::elastica::tags::AngularAcceleration>(cosserat_rod),
+            ::blocks::get<::elastica::tags::AngularVelocity>(cosserat_rod),
             ::blocks::get<::elastica::tags::ElementDilatation>(cosserat_rod),
             ::blocks::get<::elastica::tags::MassSecondMomentOfInertia>(
                 cosserat_rod));
