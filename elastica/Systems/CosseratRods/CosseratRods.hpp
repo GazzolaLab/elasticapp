@@ -29,6 +29,7 @@
 #include "Systems/CosseratRods/Initializers.hpp"
 #include "Systems/CosseratRods/Components.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
+#include "Systems/CosseratRods/Utility.hpp"
 ///
 /// include aliased classes now
 /// Developer note:
