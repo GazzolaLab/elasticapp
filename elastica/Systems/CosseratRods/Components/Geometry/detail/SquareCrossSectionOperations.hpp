@@ -39,7 +39,7 @@ namespace elastica {
          * \ingroup cosserat_rod_component
          *
          * \details
-         * CircleCrossSectionOperations contains functions for characterizing a
+         * SquareCrossSectionOperations contains functions for characterizing a
          * square cross section. Its intended use is as the third template
          * parameter in CosseratRodCrossSectionInterface, which is then
          * eventually used within the Blocks framework for a Cosserat rod
@@ -61,7 +61,7 @@ namespace elastica {
 
          public:
           //**Geometry1D
-          // methods*****************************************************
+          // methods************************************************************
           /*!\name Geometry1D methods*/
           //@{
 

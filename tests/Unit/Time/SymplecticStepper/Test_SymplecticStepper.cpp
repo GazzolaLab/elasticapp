@@ -111,6 +111,14 @@ namespace {
           system.analytical(time_v);
       CHECK(system.kinematic_states() == approx(analytical_primitive));
       CHECK(system.dynamic_states() == approx(analytical_derivative));
+      /* TODO:
+       * Note
+       * Not so sure if this test fits to be in 'Unit test' category.
+       * If the purpose of this test is to check the operation, we should try
+       * using smaller steps. If the purpose is to test validity of the method,
+       * the precision loss each step must be carefully investigated.
+       * In any case, I don't think we need immediate fix on this issue.
+       * */
     });
   }
 
