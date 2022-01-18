@@ -50,7 +50,7 @@ namespace elastica {
             MassType const& mass_batch, VelocityType const& velocity_batch)
             -> real_type {
           return real_type(0.5) *
-                 blaze::sum(mass_batch * blaze::sum<blaze::columnwise>(
+                 blaze::dot(mass_batch, blaze::sum<blaze::columnwise>(
                                              velocity_batch % velocity_batch));
         }
         //**********************************************************************
