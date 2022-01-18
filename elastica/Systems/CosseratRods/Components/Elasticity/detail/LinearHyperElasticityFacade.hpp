@@ -253,7 +253,7 @@ namespace elastica {
             // provide E or B, the modulus of elasticity. We are responsible
             // for putting in the correct are etc. from the expression.
 
-            // shear and stretch only
+            // bending and twisting only
             {
               using Variable = BendingTwistRigidityMatrix;
               using Tag = blocks::parameter_t<Variable>;
@@ -280,7 +280,7 @@ namespace elastica {
               }
             }
 
-            // bending and twisting only
+            // shear and stretch only
             {
               using Variable = ShearStretchRigidityMatrix;
               using Tag = blocks::parameter_t<Variable>;

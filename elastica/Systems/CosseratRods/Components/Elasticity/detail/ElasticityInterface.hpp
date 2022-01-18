@@ -343,6 +343,7 @@ namespace elastica {
            *
            */
           inline void compute_internal_dynamics(::elastica::Time time_v){
+            (void)time_v;
             compute_internal_forces();
             compute_internal_torques();
           }

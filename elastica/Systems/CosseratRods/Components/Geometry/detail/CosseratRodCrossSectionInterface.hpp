@@ -315,10 +315,10 @@ namespace elastica {
                   downstream_block));
               auto& dimensions(blocks::get<::elastica::tags::ElementDimension>(
                   downstream_block));
-              auto& lengths(blocks::get<::elastica::tags::ElementLength>(
+              auto& ref_lengths(blocks::get<::elastica::tags::ReferenceElementLength>(
                   downstream_block));
 
-              volumes = compute_cross_section_area(dimensions) * lengths;
+              volumes = compute_cross_section_area(dimensions) * ref_lengths;
             }
           }
           //********************************************************************
@@ -403,29 +403,20 @@ namespace elastica {
           /*!\brief Gets second moment of area of the current rod
            */
           template <DirectionType Dim, Requires<(Dim < Frame::D3)> = nullptr>
-          inline constexpr decltype(auto) get_second_moment_of_area() const
+          inline constexpr decltype(auto) get_second_moment_of_area(index_type idx) const
           /*noexcept*/ {
             // Should give out a VecVecExpr rather than Dimensions object
             // for expression template mechanisms
-            return compute_second_moment_of_area(This::get_element_dimension());
+            return compute_second_moment_of_area(This::get_element_dimension(idx));
           }
           template <DirectionType Dim, Requires<(Dim == Frame::D3)> = nullptr>
-          inline constexpr decltype(auto) get_second_moment_of_area() const
+          inline constexpr decltype(auto) get_second_moment_of_area(index_type idx) const
           /*noexcept*/ {
             // Should give out a VecVecExpr rather than Dimensions object
             // for expression template mechanisms
             return real_t(2.0) *
-                   compute_second_moment_of_area(This::get_element_dimension());
+                   compute_second_moment_of_area(This::get_element_dimension(idx));
           }
-          template <DirectionType Dim>
-          inline constexpr decltype(auto) get_second_moment_of_area(
-              index_type idx) const /*noexcept*/ {
-            // Should give out a VecVecExpr rather than Dimensions object
-            // for expression template mechanisms
-            return ElementDimension::slice(
-                This::get_second_moment_of_area<Dim>(), idx);
-          }
-
           // do not have APIs return vec3, seems to reduce customizability and
           // promotes bad code
           inline constexpr auto get_second_moment_of_area(index_type idx) const
