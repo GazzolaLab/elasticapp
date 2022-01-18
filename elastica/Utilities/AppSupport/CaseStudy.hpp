@@ -17,6 +17,7 @@
 // Includes
 //******************************************************************************
 
+#include "Utilities/AppSupport/CaseStudyInterface.hpp"
 #include "Utilities/AsTaggedTuple.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -41,10 +42,10 @@
  *
  *
  * // declare MyCaseStudy
- * ELASTICA_CASE_STUDY(MyCaseStudy);
+ * ELASTICA_REGISTER_CASE_STUDY(MyCaseStudy);
  * \endcode
  */
-#define ELASTICA_CASE_STUDY(m)
+#define ELASTICA_REGISTER_CASE_STUDY(m)
 
 //******************************************************************************
 /*!\brief Metafunction that defines the interface input type for a case-study

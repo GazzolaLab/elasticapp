@@ -44,7 +44,8 @@ using String = const char* const;
  * that takes a number and a character as input, performs computation on them,
  * and prints out the result.
  */
-struct BeginnerCaseStudy {
+struct BeginnerCaseStudy
+    : public ::elastica::CaseStudyInterface<BeginnerCaseStudy> {
   /* 3. We first describe the purpose/details of the case-study using a static
    * compile- time constant string called `help` as shown below. The case-study
    * mechanism uses this string to print useful help messages
@@ -111,7 +112,7 @@ struct BeginnerCaseStudy {
    * Stub methods : Todo : refactor
    */
   inline void step(){};
-  inline int& output() { return first; }
+  inline int communicate() { return first; }
 };
 
 /*
@@ -119,7 +120,7 @@ struct BeginnerCaseStudy {
  * macro to tell \elastica that we intend to setup `BeginnerCaseStudy` as a
  * \elastica case study.
  */
-ELASTICA_CASE_STUDY(BeginnerCaseStudy);
+ELASTICA_REGISTER_CASE_STUDY(BeginnerCaseStudy);
 
 /*
  * 7. Congratulations! We now have registered our first case study. Before

@@ -180,10 +180,15 @@ namespace {
       "Unit.Simulator.Interface.Connections.EagerPolicyConnecter.interface",
       "[Unit][Simulator][Interface][Connections]") {
     // clang-format on
-    using FirstSystem = int;
-    using SecondSystem = float;
-    FirstSystem first = 5;
-    SecondSystem second = 5.0F;
+    using T = int;
+    using U = float;
+    using FirstSystem = std::reference_wrapper<T>;
+    using SecondSystem = std::reference_wrapper<U>;
+    T first_value = 5;
+    U second_value = 5.0F;
+    FirstSystem first{first_value};
+    SecondSystem second{second_value};
+
     using Policy = EagerPolicy;
     {
       using Connecter =
@@ -285,10 +290,15 @@ namespace {
       "Unit.Simulator.Interface.Connections.DeferPolicyConnecter.interface",
       "[Unit][Simulator][Interface][Connections]") {
     // clang-format on
-    using FirstSystem = int;
-    using SecondSystem = float;
-    FirstSystem first = 5;
-    SecondSystem second = 5.0F;
+    using T = int;
+    using U = float;
+    using FirstSystem = std::reference_wrapper<T>;
+    using SecondSystem = std::reference_wrapper<U>;
+    T first_value = 5;
+    U second_value = 5.0F;
+    FirstSystem first{first_value};
+    SecondSystem second{second_value};
+
     using Policy = DeferredToUserPolicy;
     {
       using Connecter =
@@ -345,10 +355,14 @@ namespace {
       "Unit.Simulator.Interface.Connections.Connecter.make_connecter",
       "[Unit][Simulator][Interface][Connections]") {
     // clang-format on
-    using FirstSystem = int;
-    using SecondSystem = float;
-    FirstSystem first = 5;
-    SecondSystem second = 5.0F;
+    using T = int;
+    using U = float;
+    using FirstSystem = std::reference_wrapper<T>;
+    using SecondSystem = std::reference_wrapper<U>;
+    T first_value = 5;
+    U second_value = 5.0F;
+    FirstSystem first{first_value};
+    SecondSystem second{second_value};
 
     {
       auto conn = make_connecter(ConnectionUUID(4, "test"), first, second,

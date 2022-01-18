@@ -8,6 +8,31 @@ advanced cases are stored in separate repository with its description.
 
 Some examples provide additional file or link to published paper for a complete description.
 
+### Case studies
+
+* [axial_stretching](./axial_stretching)
+    * __Name__ : AxialStretchingCaseStudy
+    * __Purpose__: Physical convergence test of simple stretching rod.
+    * __Features__:
+        * CosseratRod
+        * Forcing
+        * Constraints
+
+* [timoshenko](./timoshenko)
+    * __Name__ : TimoshenkoCaseStudy
+    * __Purpose__: Physical convergence test of simple Timoshenko beam.
+    * __Features__:
+        * CosseratRod
+        * Forcing
+        * Constraints
+
+* [butterfly](./butterfly)
+    * __Name__ : ButterflyCaseStudy
+    * __Purpose__: Demonstrate simple restoration with initial strain.
+    * __Features__:
+        * CosseratRodWithoutDamping
+        * Custom initializers
+
 ### Rod Assembly
 
 * [`tutorial_single_rod`](./tutorial_single_rod)

@@ -18,9 +18,25 @@ if (POLICY CMP0110)
 endif ()
 
 # ##############################################################################
+# Versioning
+# ##############################################################################
+file(READ ${CMAKE_CURRENT_LIST_DIR}/elastica/ModuleSettings/Version.hpp ELASTICA_VERSION_FILE)
+
+string(REGEX MATCH "#define ELASTICA_MAJOR_VERSION ([0-9]*)" _ELASTICA_MAJOR_VERSION ${ELASTICA_VERSION_FILE})
+set(ELASTICA_MAJOR_VERSION ${CMAKE_MATCH_1})
+
+string(REGEX MATCH "#define ELASTICA_MINOR_VERSION ([0-9]*)" _ELASTICA_MINOR_VERSION ${ELASTICA_VERSION_FILE})
+set(ELASTICA_MINOR_VERSION ${CMAKE_MATCH_1})
+
+string(REGEX MATCH "#define ELASTICA_PATCH_VERSION ([0-9]*)" _ELASTICA_PATCH_VERSION ${ELASTICA_VERSION_FILE})
+set(ELASTICA_PATCH_VERSION ${CMAKE_MATCH_1})
+
+# ##############################################################################
 # Project and host details
 # ##############################################################################
-project(Elastica LANGUAGES CXX)
+project(elastica
+        LANGUAGES CXX
+        VERSION "${ELASTICA_MAJOR_VERSION}.${ELASTICA_MINOR_VERSION}.${ELASTICA_PATCH_VERSION}")
 
 site_name(HOSTNAME)
 
@@ -93,8 +109,8 @@ include(SetupBrigand)
 include(SetupBoost)
 if (ELASTICA_BUILD_PYTHON_BINDINGS)
     include(SetupPybind11)
+    include(ElasticaSetupPythonPackage)
 endif ()
-include(ElasticaSetupPythonPackage)
 
 if (ELASTICA_BUILD_TESTS OR ELASTICA_BUILD_BENCHMARKS)
     include(SetupCatch)

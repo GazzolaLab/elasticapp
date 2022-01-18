@@ -79,7 +79,9 @@ function(_elastica_setup_python_object
         CASE_STUDY_APPLICATION_NAME
         INCLUDES)
     # setup pybind, enables the pybind11_add_module function
-    include(SetupPybind11)
+    if (NOT TARGET pybind11::module)
+        include(SetupPybind11)
+    endif (NOT TARGET pybind11::module)
 
     if (NOT TARGET all-pybindings)
         include(ElasticaSetupPythonPackage)
@@ -114,7 +116,7 @@ PYBIND11_MODULE(_@CASE_STUDY_APPLICATION_NAME@, m) {  // NOLINT
 
     elastica_python_add_module(
             ${CASE_STUDY_APPLICATION_NAME}
-            MODULE_PATH "case_studies/"
+            MODULE_PATH "CaseStudies/"
             LIBRARY_NAME ${TARGET}
             SOURCES
             "${CMAKE_CURRENT_BINARY_DIR}/${GENERATED_SRC_FILE_NAME}.cpp"
@@ -164,12 +166,12 @@ function(_elastica_register_case_names_from SOURCE_FILE CASE_NAMES)
 
     #    message(${CONTENTS})
 
-    # The regex searches for ELASTICA_CASE_STUDY to find  case studies that need to be added.
+    # The regex searches for ELASTICA_REGISTER_CASE_STUDY to find  case studies that need to be added.
     # TESTS will be a list of all case studies found in the SOURCE_FILE.
     string(
             REGEX
             MATCHALL
-            "ELASTICA_CASE_STUDY[ \t]*\\([^\)]+\\)[ \t]*"
+            "ELASTICA_REGISTER_CASE_STUDY[ \t]*\\([^\)]+\\)[ \t]*"
             CASES
             "${CONTENTS}")
 
@@ -259,11 +261,11 @@ function(add_elastica_case_study TARGET)
     list(LENGTH CASE_NAMES N_CASE_NAMES)
 
     if (${N_CASE_NAMES} LESS 1)
-        message(FATAL_ERROR "No case study found in the headers, as registered with the ELASTICA_CASE_STUDY() macro")
+        message(FATAL_ERROR "No case study found in the headers, as registered with the ELASTICA_REGISTER_CASE_STUDY() macro")
     endif ()
 
     if (${N_CASE_NAMES} GREATER 1)
-        message(FATAL_ERROR "A case study header can have only one class registered with the ELASTICA_CASE_STUDY() macro! Please refactor your code...")
+        message(FATAL_ERROR "A case study header can have only one class registered with the ELASTICA_REGISTER_CASE_STUDY() macro! Please refactor your code...")
     endif ()
 
     list(GET CASE_NAMES 0 REGISTERED_CASE_NAME)

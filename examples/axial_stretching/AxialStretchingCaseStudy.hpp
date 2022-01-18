@@ -1,0 +1,146 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Axial stretching case study
+//
+//  Copyright (C) 2020-2022 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
+#pragma once
+//
+#include <elastica/CaseStudy.hpp>
+//
+#include <elastica/Simulator/Constraints.hpp>
+#include <elastica/Simulator/Forcing.hpp>
+#include <elastica/Simulator/Simulator.hpp>
+#include <elastica/Systems/CosseratRods.hpp>
+#include <elastica/Utilities/DefineTypes.h>
+#include <elastica/Utilities/TMPL.hpp>
+
+// global is fine since its a cpp file
+using String = const char* const;
+namespace ec = elastica::configuration;
+using CosseratRod = ::elastica::cosserat_rod::CosseratRod;
+
+struct AxialStretchingConfiguration {
+  static inline auto make_simulator_configuration() {
+    auto system_config =
+        ec::make_systems_configuration<tmpl::list<CosseratRod>>(
+            ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{50UL}),
+            ec::make_iteration_policy(
+                ec::iterate_across_system_types_in(ec::seq),
+                ec::iterate_over_systems_in(ec::seq)));
+
+    return ec::make_simulator_configuration(
+        ec::DefaultDomainConfiguration{}, system_config,
+        ec::DefaultParallelConfiguration{}, ec::DefaultForcingConfiguration{},
+        ec::DefaultConstraintsConfiguration{});
+  }
+
+  static inline auto make_simulator() {
+    return elastica::make_simulator<::elastica::modules::Forcing,
+                                    ::elastica::modules::Constraints>(
+        make_simulator_configuration());
+  }
+
+  static inline auto make_time_stepper() {
+    using TimeStepper = ::elastica::timestepper::PositionVerlet;
+    return TimeStepper{};
+  }
+};
+
+struct AxialStretchingCaseStudy
+    : public ::elastica::CaseStudyInterface<AxialStretchingCaseStudy> {
+  using Configuration = AxialStretchingConfiguration;
+  using This = AxialStretchingCaseStudy;
+
+  static constexpr String help = {R"help(
+Axial stretching test-case
+--------------------------
+
+Assume we have a rod lying aligned in the x-direction, with high internal
+damping.
+
+We fix the left end of the rod to a wall. On the right end we apply a force
+directed axially pulling the rods tip. Linear theory (assuming small
+displacements) analytically predict that the net displacement experienced by the
+rod tip as Δx = FL/AE where the symbols carry their usual meaning (the rod is
+just a linear spring). We compare our numerical results with the above
+analytical result.
+
+We can "improve" the theory by having a better estimate for the rod's
+spring constant by assuming that it equilibriates under the new position,
+with
+Δx = F * (L + Δx)/ (A * E)
+which results in Δx = (F*l)/(A*E - F). In practice, we have seen that our
+numerical algorithm matches this "improved" estimate in practice.
+
+Note that if the damping is not high, the rod oscillates about its eventual
+resting position (which agrees with the theoretical predictions without
+any damping), so the results may have mismatch with Δx. Filtering such
+oscillations enables comparison with theory.
+)help"};
+
+  struct n_elements {
+    // unsigned integer parameter
+    using type = std::size_t;
+    // documentation
+    static constexpr String help = {"Number of elements in the rod"};
+  };
+
+  struct damping {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Internal damping in the rod"};
+  };
+
+  struct youngs_modulus {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Youngs modulus of the rod"};
+  };
+
+  struct applied_force {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Force applied at the rod tip"};
+  };
+
+  struct radius {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Radius of the rod"};
+  };
+
+  struct length {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Length of the rod"};
+  };
+
+  struct dt {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Time step of simulation"};
+  };
+
+  using Parameters = tmpl::list<n_elements, damping, youngs_modulus,
+                                applied_force, radius, length, dt>;
+
+  /* Required functions */
+  void setup(InputTypes<This> const& input_parameters);
+  void step();
+  void run();
+  inline auto communicate() { return ::elastica::position(*rod_it); }
+
+  AxialStretchingCaseStudy() = default;
+  AxialStretchingCaseStudy(AxialStretchingCaseStudy&&) noexcept = default;
+
+  decltype(Configuration::make_time_stepper()) time_stepper =
+      Configuration::make_time_stepper();
+  decltype(Configuration::make_simulator()) simulator =
+      Configuration::make_simulator();
+  using It = decltype(simulator->get_invalid_iterator<CosseratRod>());
+  It rod_it = simulator->get_invalid_iterator<CosseratRod>();
+};
+
+ELASTICA_REGISTER_CASE_STUDY(AxialStretchingCaseStudy);

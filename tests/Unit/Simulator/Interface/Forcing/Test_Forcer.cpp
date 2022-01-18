@@ -128,8 +128,10 @@ namespace {
       "[Unit][Simulator][Interface][Forcing]") {
     // clang-format on
 
-    using System = int;
-    System system = 5;
+    using T = int;
+    using System = std::reference_wrapper<T>;
+    T system_value = 5;
+    System system{system_value};
 
     {
       static constexpr std::uint8_t N = 2;
@@ -183,8 +185,10 @@ namespace {
       "[Unit][Simulator][Interface][Forcing]") {
     // clang-format on
 
-    using System = int;
-    System system = 5;
+    using T = int;
+    using System = std::reference_wrapper<T>;
+    T system_value = 5;
+    System system{system_value};
 
     {
       auto conn = make_forcer(ForcingUUID(4, "test"), system, MockForcing(),
