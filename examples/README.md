@@ -60,6 +60,13 @@ Some examples provide additional file or link to published paper for a complete 
         * blocks::initialize
         * Material
 
+* [`tutorial_casestudy_setup`](./tutorial_casestudy_setup)
+    * __Name__: Case study tutorial
+    * __Purpose__: Tutorial for setting up a **elastica** case study
+    * __Features__:
+        * Generating casestudies in `C++` and `python`
+        * CaseStudyInterface
+
 ### Function
 
 * [`parallelism`](./parallelism)
