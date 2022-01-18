@@ -79,7 +79,9 @@ function(_elastica_setup_python_object
         CASE_STUDY_APPLICATION_NAME
         INCLUDES)
     # setup pybind, enables the pybind11_add_module function
-    include(SetupPybind11)
+    if (NOT TARGET pybind11::module)
+        include(SetupPybind11)
+    endif (NOT TARGET pybind11::module)
 
     if (NOT TARGET all-pybindings)
         include(ElasticaSetupPythonPackage)
