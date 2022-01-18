@@ -6,23 +6,26 @@ from elasticapp.CaseStudies.PyHelicalBucklingCaseStudy import HelicalBucklingCas
 # from matplotlib.colors import to_rgb
 from tqdm import tqdm
 
+from postprocess import plot_helicalbuckling_results as plot_results
+
 
 def run_example(
         save_to_csv: bool = False,
         save_figure: bool = False,
 ):
-    sample_interval = 1000
-
     n_elem = 100
     base_length = 100.0
     dt = 0.001 * (base_length / n_elem)
     final_time = 40.0
     damping = 0.01
+
+    n_steps_if_not_sampled = int(final_time / dt)
+    sample_interval = n_steps_if_not_sampled // 2
     time_interval = sample_interval * dt
     n_steps = int(final_time / time_interval)
 
     # measure_index = (n_elem // 2) + 5
-    measure_index = 55
+    # measure_index = 55
 
     cs = HelicalBucklingCaseStudy(
         n_elements=n_elem,
@@ -30,20 +33,25 @@ def run_example(
         damping=damping,
     )
 
-    positions = []
+    position_histories = []
 
     def collect_stats_from(cas):
-        p, _, v, _ = cas.communicate()
-        positions.append(np.copy(np.asarray(p)[..., measure_index]))
-
-    collect_stats_from(cs)
+        p, _, _, _ = cas.communicate()
+        position_histories.append(np.copy(np.asarray(p)))
 
     for step in tqdm(range(n_steps)):
         cs.run_for(additional_time=time_interval)
-        collect_stats_from(cs)
 
-    positions = np.asarray(positions)
-    print(positions)
+    collect_stats_from(cs)
+
+    if save_to_csv:
+        np.savetxt(
+            "final_position_histories.csv",
+            np.asarray(position_histories),
+            delimiter=",",
+        )
+
+    plot_results(n_elem, base_length, position_histories.pop(), save_figure=save_figure)
 
 
 if __name__ == "__main__":
