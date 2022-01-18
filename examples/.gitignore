@@ -27,3 +27,8 @@ Temporary Items
 .apdisk
 
 local/*
+
+blaze_tensor
+factory
+interface_types
+state_expressions
