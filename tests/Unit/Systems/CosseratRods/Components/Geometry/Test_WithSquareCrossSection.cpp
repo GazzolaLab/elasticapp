@@ -31,7 +31,7 @@ namespace {
           approx(4.0 * 4.0 / 12.0));
     CHECK(Operations::update_dimension(4.0, 1.0) == approx(1.0));
     // this is a failure test, make it pass later on
-    CHECK(Operations::shape_factor() == approx(0.0));
+    CHECK(Operations::shape_factor() == approx(0.9));
   }
 
 }  // namespace
