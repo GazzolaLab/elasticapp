@@ -78,8 +78,8 @@ def _plot_energies(stats: Stats, save_figure: bool):
 
 
 def run_example(
-    save_to_csv: bool = False,
-    save_figure: bool = False,
+        save_to_csv: bool = False,
+        save_figure: bool = False,
 ):
     sample_interval = 200
 
@@ -123,7 +123,7 @@ def run_example(
         # if not (step % 200):
         collect_stats_from(cs)
 
-    # _plot_trajectory(stats, save_figure=save_figure)
+    _plot_trajectory(stats, save_figure=save_figure)
     _plot_energies(stats, save_figure=save_figure)
 
     if save_to_csv:
