@@ -10,7 +10,7 @@ Some examples provide additional file or link to published paper for a complete 
 
 ### Case studies
 
-* [axial_stretching](./axial_stretching)
+* [`axial_stretching`](./axial_stretching)
     * __Name__ : AxialStretchingCaseStudy
     * __Purpose__: Physical convergence test of simple stretching rod.
     * __Features__:
@@ -18,7 +18,7 @@ Some examples provide additional file or link to published paper for a complete 
         * Forcing
         * Constraints
 
-* [timoshenko](./timoshenko)
+* [`timoshenko`](./timoshenko)
     * __Name__ : TimoshenkoCaseStudy
     * __Purpose__: Physical convergence test of simple Timoshenko beam.
     * __Features__:
@@ -26,12 +26,19 @@ Some examples provide additional file or link to published paper for a complete 
         * Forcing
         * Constraints
 
-* [butterfly](./butterfly)
+* [`butterfly`](./butterfly)
     * __Name__ : ButterflyCaseStudy
     * __Purpose__: Demonstrate simple restoration with initial strain.
     * __Features__:
         * CosseratRodWithoutDamping
         * Custom initializers
+
+* [`helical_buckling`](./helical_buckling)
+    * __Name__ : HelicalBucklingCaseStudy
+    * __Purpose__: Demonstrate helical buckling with extreme twisting boundary condition.
+    * __Features__:
+        * CosseratRod
+        * Temporally varying constraints
 
 ### Rod Assembly
 
