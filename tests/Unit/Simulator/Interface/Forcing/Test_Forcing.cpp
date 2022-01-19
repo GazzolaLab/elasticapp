@@ -243,10 +243,10 @@ namespace elastica {
 
 // finally one with make_forcing
 
-auto internal_first IGNORE_UNUSED = [](auto...) -> void {};
+auto internal_forcing_first IGNORE_UNUSED = [](auto...) -> void {};
 using ForcingFromMakeForcing = decltype(::elastica::forcing::make_forcing(
-    ::elastica::forcing::make_force(internal_first),
-    ::elastica::forcing::make_torque(internal_first))());
+    ::elastica::forcing::make_force(internal_forcing_first),
+    ::elastica::forcing::make_torque(internal_forcing_first))());
 
 namespace {
 
@@ -564,10 +564,8 @@ namespace {
       // CHECK(cc.id().name == "boo!");
     }
     {
-      CHECK(ForcingInterface(8UL, d, "testing")
-                .set_name("boo!")
-                .id()
-                .name == "boo!");
+      CHECK(ForcingInterface(8UL, d, "testing").set_name("boo!").id().name ==
+            "boo!");
     }
     {
       CHECK(ForcingInterface(8UL, d, "testing")
