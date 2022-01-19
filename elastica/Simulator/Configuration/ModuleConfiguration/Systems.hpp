@@ -51,7 +51,11 @@ namespace elastica {
      * SystemsConfiguration denotes the compile-time customization point of the
      * systems modeled (such as types of cosserat rods, rigid bodies etc.)
      * within an ::elastica::interface::Simulator. It offers the ability to
-     * customize the simulation with custom systems via the template parameter.
+     *
+     * 1) customize the simulation with custom systems via the template parameter.
+     * 2) control (via policy classes) how new systems will be added to blocks
+     * 3) control (via policy classes) how systems will be iterated upon (in
+     * serial/parallel) when executing some kernel over them.
      *
      * \tparam SystemPlugins Tags for indicating which systems need to be
      * assembled in the current \elastica simulation.

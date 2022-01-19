@@ -71,13 +71,32 @@ namespace py_bindings {
         Initializer::generate_argument_names());
 
     // Register the methods here, we need to know the interface here apriori
-    // (see the stub classes) as part of ELASTICA_CASE_STUDY
+    // (see CaseStudyInterface)
     py_bound_case_study
         .def("__str__", []() { return pretty_type::short_name<CaseStudy>(); })
-        .def("run", &CaseStudy::run)
-        .def("step", &CaseStudy::step)
-        .def("output", &CaseStudy::output,
-             py::return_value_policy::reference_internal);
+        .def(
+            "help",
+            +[](CaseStudy const&) { return std::string(CaseStudy::help); },
+            "Prints a descriptive help message")
+        .def("run", &CaseStudy::run,
+             "Runs the simulator till the user-defined criterion")
+        .def("step", &CaseStudy::step,
+             "Steps forward the simulator one iteration")
+        .def("communicate", &CaseStudy::communicate
+             /* Instead of using references, we create slices/reference_wrappers
+              * for value semantics and ease of programming*/
+             /*,py::return_value_policy::reference_internal*/)
+        .def("run_for", &CaseStudy::run_for, py::kw_only(),
+             py::arg("additional_time"),
+             "Runs the simulator for additional seconds")
+        .def("run_till", &CaseStudy::run_till, py::arg("time"),
+             "Runs the simulator till given time")
+        .def("current_time", &CaseStudy::current_time,
+             "Gets the current time of the simulation")
+        .def("current_dt", &CaseStudy::current_dt,
+             "Gets the current timestep of the simulation")
+        .def("current_iteration", &CaseStudy::current_iteration,
+             "Gets the current iteration of the simulation");
   }
   //****************************************************************************
 

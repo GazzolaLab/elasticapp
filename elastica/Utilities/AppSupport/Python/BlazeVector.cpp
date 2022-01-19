@@ -30,6 +30,7 @@
 #include "Utilities/AppSupport/Python/BoundChecks.hpp"
 #include "Utilities/DefineTypes.h"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/PrettyType.hpp"
 
 namespace py = pybind11;
 
@@ -43,8 +44,8 @@ namespace py_bindings {
   void bind_blaze_vector(py::module& m) {  // NOLINT
 
     using Real = ::elastica::real_t;
-    using type = blaze::DynamicVector<Real, blaze::columnVector,
-                                      blaze::AlignedAllocator<Real>>;
+    using type = ::blaze::DynamicVector<Real, ::blaze::columnVector,
+                                        ::blaze::AlignedAllocator<Real>>;
     // Wrapper for basic DataVector operations
     py::class_<type>(m, "Vector", py::buffer_protocol())
         .def(py::init<std::size_t>(), py::arg("size"))
@@ -59,8 +60,9 @@ namespace py_bindings {
                py::buffer_info info = buffer.request();
                // Sanity-check the buffer
                if (info.format != py::format_descriptor<Real>::format()) {
-                 throw std::runtime_error(
-                     "Incompatible format: expected a double array.");
+                 throw std::runtime_error("Incompatible format: expected a " +
+                                          ::pretty_type::short_name<Real>() +
+                                          " array.");
                }
                if (info.ndim != 1) {
                  throw std::runtime_error("Incompatible dimension.");
@@ -84,8 +86,8 @@ namespace py_bindings {
         .def_buffer([](type& t) {
           return py::buffer_info(t.data(),
                                  // Size of one scalar
-                                 sizeof(double),
-                                 py::format_descriptor<double>::format(),
+                                 sizeof(Real),
+                                 py::format_descriptor<Real>::format(),
                                  // Number of dimensions
                                  1,
                                  // Size of the buffer
@@ -100,6 +102,9 @@ namespace py_bindings {
             py::keep_alive<0, 1>())
         // __len__ is for being able to write len(my_data_vector) in python
         .def("__len__", [](const type& t) { return t.size(); })
+        .def_property_readonly(
+            "shape",
+            +[](const type& t) { return std::tuple<std::size_t>(t.size()); })
         // __getitem__ and __setitem__ are the subscript operators (operator[]).
         // To define (and overload) operator() use __call__
         .def(
@@ -110,7 +115,7 @@ namespace py_bindings {
             })
         .def(
             "__setitem__",
-            +[](type& t, const size_t i, const double v) {
+            +[](type& t, const size_t i, const Real v) {
               bounds_check(t, i);
               t[i] = v;
             })
@@ -173,9 +178,9 @@ namespace py_bindings {
         .def(
             "log10", +[](const type& t) { return type{log10(t)}; })
         .def(
-            "max", +[](const type& t) { return double{max(t)}; })
+            "max", +[](const type& t) { return Real{max(t)}; })
         .def(
-            "min", +[](const type& t) { return double{min(t)}; })
+            "min", +[](const type& t) { return Real{min(t)}; })
         .def(
             "pow",
             +[](const type& base, double exp) { return type{pow(base, exp)}; })

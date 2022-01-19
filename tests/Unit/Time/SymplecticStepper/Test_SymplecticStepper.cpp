@@ -7,9 +7,9 @@
 #include <string>
 
 #include "Time/AnalyticalSystems.hpp"
+#include "Time/SimulationTime.hpp"
 #include "Time/SymplecticSteppers/Algorithms.hpp"
 #include "Time/SymplecticSteppers/SymplecticStepper.hpp"
-#include "Time/SimulationTime.hpp"
 #include "Utilities/AsConst.hpp"
 #include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/TMPL.hpp"
@@ -46,8 +46,8 @@ namespace {
     };
 
     // check default initialization
-    const SymplecticStepper<Algorithm> time_stepper(std::move(first),
-                                                    std::move(second));
+    const SymplecticStepper<Algorithm> time_stepper(
+        std::make_tuple(std::move(first), std::move(second)));
 
     apply_substeps_of(time_stepper,
                       [&base](auto const& update_step) { update_step(base); });

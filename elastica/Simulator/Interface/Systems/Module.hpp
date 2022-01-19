@@ -46,6 +46,7 @@
 #include "ErrorHandling/NestedExceptions.hpp"
 #include "Utilities/AsConst.hpp"
 #include "Utilities/CRTP.hpp"
+#include "Utilities/GSL.hpp"
 #include "Utilities/Logging.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/NonCopyable.hpp"
@@ -229,6 +230,11 @@ namespace elastica {
             AddSystemCollectionsType<B>;  // can be customized
 
        protected:
+        LazyBlockSliceGenerator()
+            : src_(nullptr),
+              index_(std::numeric_limits<std::size_t>::max()),
+              slice_index_(std::numeric_limits<std::size_t>::max()) {}
+
         LazyBlockSliceGenerator(SourceCollection& v, std::size_t index,
                                 std::size_t slice_index)
             : src_(&v), index_(index), slice_index_(slice_index){};
@@ -236,12 +242,14 @@ namespace elastica {
        public:
         // generates a slice
         auto operator*() const {
-          return *(::blocks::BlockIterator<Plugin>{&((*src_)[index_]),
-                                                   slice_index_});
+          gsl::not_null<SourceCollection*> ptr_to_collection(src_);
+          return *(::blocks::BlockIterator<Plugin>{
+              &((*ptr_to_collection)[index_]), slice_index_});
         }
         auto operator->() const {
-          return *(::blocks::BlockIterator<Plugin>{&((*src_)[index_]),
-                                                   slice_index_});
+          gsl::not_null<SourceCollection*> ptr_to_collection(src_);
+          return *(::blocks::BlockIterator<Plugin>{
+              &((*ptr_to_collection)[index_]), slice_index_});
         }
 
        private:
@@ -250,6 +258,20 @@ namespace elastica {
         std::size_t slice_index_;
       };
       /*! \endcond */
+      //************************************************************************
+
+     public:
+      //************************************************************************
+      /*!\brief Get an invalid simulation iterator given a system type
+       *
+       * \details
+       * For convenience, one can get an
+       */
+      template <typename Plugin>
+      decltype(auto) get_invalid_iterator() const noexcept {
+        using RT = LazyBlockSliceGenerator<Plugin>;
+        return RT{};
+      }
       //************************************************************************
 
      public:
@@ -265,7 +287,7 @@ namespace elastica {
       //@}
       //************************************************************************
 
-     public: // TODO: Temporary change from protected
+     public:  // TODO: Temporary change from protected
       //**Get methods***********************************************************
       /*!\name Get methods */
       //@{
@@ -713,8 +735,7 @@ the above type-list, using SystemsConfiguration.
             system_block_container, index_of_block_in_collection,
             // TODO : This code has linker issues, although it is the SOLID code
             // ::blocks::n_units(*system_block_it) - 1UL
-            (*system_block_it).n_units() - 1UL
-            );
+            (*system_block_it).n_units() - 1UL);
       }
       //************************************************************************
 

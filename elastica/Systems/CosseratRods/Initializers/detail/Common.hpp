@@ -33,7 +33,8 @@ namespace elastica {
           using P::P;
           static constexpr Options::String help = {
               "Number of elements in the cosserat rod"};
-          static type lower_bound() noexcept { return 2UL; }
+          // checks for <= for now, so 2 is still valid
+          static type lower_bound() noexcept { return 1UL; }
           using TagType = tags::NElement;
         };
 

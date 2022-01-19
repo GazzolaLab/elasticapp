@@ -242,9 +242,9 @@ namespace elastica {
        private:
         //**Member variables****************************************************
         //! Reference to first system being forced
-        FirstSystemType& first_sys_;
+        mutable FirstSystemType first_sys_;
         //! Reference to second system being forced
-        SecondSystemType& second_sys_;
+        mutable SecondSystemType second_sys_;
         //! Connection object
         ConnectionType connection_;
         //**********************************************************************
@@ -367,9 +367,9 @@ namespace elastica {
        private:
         //**Member variables****************************************************
         //! Reference to first system being forced
-        FirstSystemType& first_sys_;
+        mutable FirstSystemType first_sys_;
         //! Reference to second system being forced
-        SecondSystemType& second_sys_;
+        mutable SecondSystemType second_sys_;
         //! Connection object
         ConnectionType connection_;
         //**********************************************************************
@@ -506,9 +506,9 @@ namespace elastica {
        private:
         //**Member variables****************************************************
         //! Reference to first system being forced
-        FirstSystemType& first_sys_;
+        mutable FirstSystemType first_sys_;
         //! Reference to second system being forced
-        SecondSystemType& second_sys_;
+        mutable SecondSystemType second_sys_;
         //! Pointer to a runtime connections
         ConnectionType connection_;
         //**********************************************************************

@@ -38,7 +38,7 @@ namespace py_bindings {
    */
   void bind_blaze_tensor(py::module& m) {  // NOLINT
     using Real = ::elastica::real_t;
-    using type = blaze::DynamicTensor<Real>;
+    using type = ::blaze::DynamicTensor<Real>;
 
     // Wrapper for basic type operations
     py::class_<type>(m, "Tensor", py::buffer_protocol())
