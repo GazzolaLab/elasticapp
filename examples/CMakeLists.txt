@@ -7,7 +7,6 @@ add_subdirectory(helical_buckling)
 # examples
 add_subdirectory(parallelism)
 add_subdirectory(display_variables)
-add_subdirectory(timestep_rod)
 
 # tutorials
 add_subdirectory(tutorial_single_rod)
