@@ -22,6 +22,7 @@
 #include <string>
 
 #include "ErrorHandling/AbortWithErrorMessage.hpp"
+#include "ErrorHandling/Breakpoint.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 
 /*!
@@ -52,4 +53,24 @@
     abort_with_error_message(__FILE__, __LINE__,                            \
                              static_cast<const char*>(__PRETTY_FUNCTION__), \
                              avoid_name_collisions_ERROR.str());            \
+  } while (false)
+
+/*!
+ * \ingroup ErrorHandlingGroup
+ * \brief prints an error message to the standard error and aborts the
+ * program.
+ *
+ * CERROR is just like ERROR and so the same guidelines apply. However, because
+ * it does not use std::stringstream it can be used in some constexpr
+ * functions where ERROR cannot be.
+ * \param m error message as a string, may need to use string literals
+ */
+#define CERROR(m)                                                          \
+  do {                                                                     \
+    breakpoint();                                                          \
+    using std::string_literals::operator""s;                               \
+    Parallel::abort("\n################ ERROR ################\nLine: "s + \
+                    std::to_string(__LINE__) + " of file '"s + __FILE__ +  \
+                    "'\n"s + m + /* NOLINT */                              \
+                    "\n#######################################\n"s);       \
   } while (false)

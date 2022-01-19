@@ -1,6 +1,6 @@
-add_executable(example_single_rod single_rod.cpp)
+add_elastica_tutorial(tutorial_rod_construction tutorial_rod_construction.cpp)
 
-target_link_libraries(example_single_rod
+target_link_libraries(tutorial_rod_construction
         PUBLIC
         Utilities
         ErrorHandling

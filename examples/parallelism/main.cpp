@@ -9,43 +9,17 @@
 #include "Simulator/Materials.hpp"
 #include "Simulator/Materials/Materials.hpp"
 #include "Simulator/Simulator.hpp"
-#include "Systems/Block.hpp"
-#include "Systems/Block/Protocols.hpp"
 #include "Systems/CosseratRods.hpp"
-#include "Systems/CosseratRods/CosseratRodPlugin.hpp"
-#include "Systems/CosseratRods/Initializers/StraightCosseratRod.hpp"  // TODO : replace later
-#include "Systems/common/SymplecticStepperAdapter.hpp"
 #include "Time/SimulationTime.hpp"
-#include "Time/SymplecticSteppers/Algorithms.hpp"
-#include "Time/SymplecticSteppers/SymplecticStepper.hpp"
-#include "blaze/Blaze.h"
-#include "blaze_tensor/Blaze.h"
-
-namespace {
-
-  template <typename T, typename B>
-  using ComponentsWithStepper = ::elastica::SymplecticPolicy<
-      T, B, elastica::cosserat_rod::component::WithCircularCosseratRod,
-      elastica::cosserat_rod::component::
-          WithExplicitlyDampedDiagonalLinearHyperElasticModel,
-      elastica::cosserat_rod::component::WithRodKinematics>;
-
-  using Traits = elastica::cosserat_rod::DefaultCosseratRodTraits;
-  using Plugin =
-      elastica::cosserat_rod::CosseratRodPlugin<Traits, blocks::Block,
-                                                ComponentsWithStepper>;
-  using Model = blocks::Block<Plugin>;
-
-  using real_type = typename Traits::DataType::real_type;
-
-  // auto approx(Catch::Detail::Approx(0).epsilon(1e-8));
-
-}  // namespace
+#include "Time/SymplecticSteppers.hpp"
 
 int main(int argc, char* argv[]) {
   /*
    *
    */
+
+  using ::elastica::cosserat_rod::CosseratRod;
+
   const int n_threads_used_by_application = 4;
   // controls the application level parallelism
   tbb::global_control application_limit(
@@ -53,7 +27,6 @@ int main(int argc, char* argv[]) {
       n_threads_used_by_application);
 
   namespace ec = elastica::configuration;
-  namespace et = elastica::timestepper;
 
   elastica::MaterialID myMaterial = elastica::create_material(
       7.874, 0.24, 200, 200.0 / 1.24, 200, 1e-10, 1e-10, 0.1, 0.1);
@@ -92,8 +65,8 @@ int main(int argc, char* argv[]) {
 
   simulator->finalize();
 
-  using Algorithm = et::symplectic::PositionVerlet;
-  using TimeStepper = et::symplectic::SymplecticStepper<Algorithm>;
+  namespace et = elastica::timestepper;
+  using TimeStepper = ::elastica::timestepper::PositionVerlet;
   const TimeStepper time_stepper{};
 
   ::elastica::Time time_v{0.0};

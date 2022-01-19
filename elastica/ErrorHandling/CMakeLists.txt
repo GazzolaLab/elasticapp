@@ -8,6 +8,7 @@ elastica_target_sources(
         ${LIBRARY}
         PRIVATE
         AbortWithErrorMessage.cpp
+        Breakpoint.cpp
         FloatingPointExceptions.cpp
         NestedExceptions.cpp
 )
@@ -18,6 +19,7 @@ elastica_target_headers(
         AbortWithErrorMessage.hpp
         Abort.hpp
         Assert.hpp
+        Breakpoint.hpp
         Error.hpp
         ExpectsAndEnsures.hpp
         Exit.hpp

@@ -40,7 +40,9 @@ elastica_target_headers(
         FakeVirtual.hpp
         ForceInline.hpp
         # Geometry.hpp
+        Get.hpp
         Generators.hpp
+        GSL.hpp
         IgnoreUnused.hpp
         Invoke.hpp
         KarmarkarKarpPartition.hpp
@@ -100,3 +102,5 @@ target_link_libraries(
 #
 #target_link_libraries(${LIBRARY} INTERFACE ErrorHandling)
 #
+
+add_subdirectory(AppSupport)

@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
         Test_End.cpp
         Test_FakeVirtual.cpp
         Test_Generators.cpp
+        Test_Get.cpp
         Test_GetOutput.cpp
         Test_Invoke.cpp
         Test_KarmarkarKarpPartition.cpp

@@ -102,19 +102,24 @@ namespace elastica {
         //**********************************************************************
 
         //**********************************************************************
+        /*!\brief Move constructor
+         */
+        SymplecticStepper(SymplecticStepper&&) noexcept = default;
+        //**********************************************************************
+
+        //**********************************************************************
         /*!\brief Forwarding constructor
          *
          * \details
          * Useful for testing and if state is needed in the symplectic stepper
          */
         template <typename... Args>
-        SymplecticStepper(Args&&... args)
-            : substeps_(std::forward<Args>(args)...){}
+        SymplecticStepper(std::tuple<Args...> arg)
+            : substeps_(std::move(arg)) {}
         //**********************************************************************
 
         //@}
         //**********************************************************************
-
 
         //**Destructor**********************************************************
         /*!\name Destructor */

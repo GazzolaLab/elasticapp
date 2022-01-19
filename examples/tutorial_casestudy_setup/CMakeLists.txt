@@ -1,0 +1,2 @@
+add_subdirectory(01_beginner)
+add_subdirectory(02_intermediate)

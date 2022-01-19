@@ -120,7 +120,7 @@ namespace elastica {
                                              strain - reference_strain);
 
             // allocating temp container (3, n_elems) for temporary storage
-            auto& QT_into_internal_stress(blocks::get<tags::_DummyElementVector>(self()));
+            auto& cosserat_internal_stress(blocks::get<tags::_DummyElementVector>(self()));
             auto& temp_vec(blocks::get<tags::_DummyElementVector2>(self()));
             Traits::Operations::batch_mattranspvec(
                 temp_vec,
@@ -128,14 +128,14 @@ namespace elastica {
                 internal_stress
               );
             Traits::Operations::batch_division_matvec(
-                QT_into_internal_stress, temp_vec, element_dilatation);
+                cosserat_internal_stress, temp_vec, element_dilatation);
 
             // before doing difference, fill it to 0.0
             self().template fill_ghosts_for<tags::_DummyElementVector>();
 
             Traits::Operations::two_point_difference_kernel(
                 internal_load,
-                QT_into_internal_stress
+                cosserat_internal_stress
               );
 
             // return internal_load;

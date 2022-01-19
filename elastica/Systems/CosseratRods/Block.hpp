@@ -65,6 +65,9 @@ namespace blocks {
       elastica::cosserat_rod::CosseratRodPlugin<CRT, Block, Components...>>
       // final (not final because testing requires deriving)
       : private elastica::NonCopyable,
+        // public ::elastica::SymplecticPolicy<
+        //     BlockFacade<elastica::cosserat_rod::CosseratRodPlugin<
+        //        CRT, Block, Components...>>>
         public BlockFacade<elastica::cosserat_rod::CosseratRodPlugin<
             CRT, Block, Components...>> {
    private:
