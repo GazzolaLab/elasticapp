@@ -20,6 +20,7 @@
 #include <elastica/Simulator/Simulator.hpp>
 #include <elastica/Systems/CosseratRods.hpp>
 #include <elastica/Utilities/DefineTypes.h>
+#include <elastica/Utilities/Geometry/Angles.hpp>
 #include <elastica/Utilities/TMPL.hpp>
 #include <tuple>
 
@@ -82,22 +83,29 @@ implemented correctly.
   struct n_elements {
     using type = std::size_t;
     static constexpr String help = {"Number of elements in the rod"};
+    static type default_value() { return 2UL; }
   };
 
   struct angle_of_inclination {
     using type = ::elastica::real_t;
     static constexpr String help = {
         "Angle which the (half)-rod makes with the horizontal axis"};
+    static type default_value() { return ::elastica::geometry::deg2rad(45.0); }
   };
 
   struct length {
     using type = ::elastica::real_t;
     static constexpr String help = {"Length of the rod"};
+    static type default_value() { return 3.0; }
   };
 
   struct dt {
     using type = ::elastica::real_t;
     static constexpr String help = {"Time step of simulation"};
+    static type default_value() {
+      return type(0.01) *
+             (length::default_value() / n_elements::default_value());
+    }
   };
 
   using Parameters = tmpl::list<n_elements, angle_of_inclination, length, dt>;

@@ -28,10 +28,53 @@
 #include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits/IsDetected.hpp"
 //
 #include "Utilities/AppSupport/CaseStudy.hpp"
 
 namespace standalone_bindings {
+
+  namespace detail {
+
+    template <class T>
+    using default_t = decltype(T::default_value());
+
+    using default_detected = std::true_type;
+    using default_not_detected = std::false_type;
+
+    template <typename Parameter>
+    void add_options(cxxopts::Options& options, Parameter /*meta*/,
+                     default_detected /*meta*/) {
+      using Value = tmpl::type_from<Parameter>;
+      options.add_options()(pretty_type::short_name<Parameter>(),  //
+                            Parameter::help,                       //
+                            cxxopts::value<Value>()->default_value(
+                                std::to_string(Parameter::default_value())));
+    }
+
+    template <typename Parameter>
+    void add_options(cxxopts::Options& options, Parameter /*meta*/,
+                     default_not_detected /*meta*/
+    ) {
+      using Value = tmpl::type_from<Parameter>;
+      options.add_options()(pretty_type::short_name<Parameter>(),  //
+                            Parameter::help,                       //
+                            cxxopts::value<Value>());
+    }
+
+  }  // namespace detail
+
+  //****************************************************************************
+  /*!\brief Registers a parameter `p` with options `options`
+   * \ingroup application_support
+   */
+  template <typename Parameter>
+  void register_(Parameter p, cxxopts::Options& options) noexcept {
+    // copying is cheap, so no forward references
+    detail::add_options(options, p,
+                        tt::is_detected<detail::default_t, Parameter>{});
+  }
+  //****************************************************************************
 
   //****************************************************************************
   /*!\brief Parses commandline parameters for setting up a case-study
@@ -65,12 +108,9 @@ namespace standalone_bindings {
     // Parameters are all empty structs
     using Parameters = tmpl::as_tuple<typename CaseStudy::Parameters>;
 
-    auto register_each_ = [&options](auto input_parameter) {
-      using Parameter = decltype(input_parameter);
-      using Value = tmpl::type_from<Parameter>;
-
-      options.add_options()(pretty_type::short_name<Parameter>(),
-                            Parameter::help, cxxopts::value<Value>());
+    auto register_each_ = [&options](auto&& input_parameter) {
+      register_(std::forward<decltype(input_parameter)>(input_parameter),
+                options);
     };
 
     cpp17::apply(
@@ -81,9 +121,15 @@ namespace standalone_bindings {
 
     auto result = options.parse(argc, argv);
 
-    if ((not ::elastica::size(result.arguments())) || result.count("help")) {
+    if (not ::elastica::size(result.arguments())) {
       std::cout << options.help() << std::endl;
-      std::exit(EXIT_SUCCESS);
+
+      if (result.count("help")) {
+        std::exit(EXIT_SUCCESS);
+      }
+
+      std::cout << "Running " << case_study_name << " with default parameters"
+                << std::endl;
     }
 
     auto parse_each_ = [&result](auto input_parameter) {

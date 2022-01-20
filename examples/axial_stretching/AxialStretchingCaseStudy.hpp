@@ -91,36 +91,46 @@ oscillations enables comparison with theory.
     using type = std::size_t;
     // documentation
     static constexpr String help = {"Number of elements in the rod"};
+    static type default_value() { return 49UL; }
   };
 
   struct damping {
     using type = ::elastica::real_t;
     static constexpr String help = {"Internal damping in the rod"};
+    static type default_value() { return 20.0; }
   };
 
   struct youngs_modulus {
     using type = ::elastica::real_t;
     static constexpr String help = {"Youngs modulus of the rod"};
+    static type default_value() { return 1e4; }
   };
 
   struct applied_force {
     using type = ::elastica::real_t;
     static constexpr String help = {"Force applied at the rod tip"};
+    static type default_value() { return 1.0; }
   };
 
   struct radius {
     using type = ::elastica::real_t;
     static constexpr String help = {"Radius of the rod"};
+    static type default_value() { return 0.025; }
   };
 
   struct length {
     using type = ::elastica::real_t;
     static constexpr String help = {"Length of the rod"};
+    static type default_value() { return 1.0; }
   };
 
   struct dt {
     using type = ::elastica::real_t;
     static constexpr String help = {"Time step of simulation"};
+    static type default_value() {
+      return type(0.01) *
+             (length::default_value() / n_elements::default_value());
+    }
   };
 
   using Parameters = tmpl::list<n_elements, damping, youngs_modulus,
