@@ -70,22 +70,17 @@ Some examples provide additional file or link to published paper for a complete 
 ### Function
 
 * [`parallelism`](./parallelism)
-    * __Purpose__: Parallelism Example
-    * __Features__:
-* [`timestep_rod`](./timestep_rod)
-    * __Name__: Timestep Rod
-    * __Purpose__: Demonstration of time-stepper (symplectic stepper) configuration using single-rod case.
-    * __Features__:
-        * Symplectic Stepper
-        * Simulator
-        * System Configuration
-
-### Miscellaneous
+    * __Name__: Parallelism Example
+    * __Name__: Demonstrate shared-memory parallel **elastica** application
+        * __Features__:
+            * `make_parallel_configuration`
+            * `seq`, `par`
 
 * [`display_variables`](./display_variables)
     * __Name__: Display Variable Names
-    * __Purpose__:
+    * __Purpose__: Demonstrate introspection of variables within different Plugins
     * __Features__:
+        * `blocks::display_variable_summary`
 
 ## Advanced Examples
 

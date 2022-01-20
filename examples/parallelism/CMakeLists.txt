@@ -1,11 +1,6 @@
-add_elastica_example(Example_parallelism main.cpp)
+add_elastica_example(example_parallelism main.cpp)
 
-target_include_directories(Example_parallelism
-        PRIVATE
-        ${Boost_INCLUDE_DIRS}
-        )
-
-target_link_libraries(Example_parallelism
+target_link_libraries(example_parallelism
         PUBLIC
         Utilities
         ErrorHandling
