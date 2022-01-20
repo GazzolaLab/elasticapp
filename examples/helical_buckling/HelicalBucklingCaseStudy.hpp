@@ -70,6 +70,7 @@ Gazzola et. al. R. Soc. 2018  section 3.4.1
   struct n_elements {
     using type = std::size_t;
     static constexpr String help = {"Number of elements in the rod"};
+    static type default_value() { return 100UL; }
   };
 
   // struct length {
@@ -85,11 +86,13 @@ Gazzola et. al. R. Soc. 2018  section 3.4.1
   struct damping {
     using type = ::elastica::real_t;
     static constexpr String help = {"Internal damping in the rod"};
+    static type default_value() { return 0.01; }
   };
 
   struct dt {
     using type = ::elastica::real_t;
     static constexpr String help = {"Time step of simulation"};
+    static type default_value() { return 0.001; }
   };
 
   using Parameters = tmpl::list<n_elements, damping, dt>;
