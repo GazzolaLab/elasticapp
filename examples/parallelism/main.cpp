@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
       Init::TorqueDampingCoefficient{0.2},
   };
 
-  auto system_config = ec::make_systems_configuration<tmpl::list<Plugin>>(
+  auto system_config = ec::make_systems_configuration<tmpl::list<CosseratRod>>(
       ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{10UL}),
       ec::make_iteration_policy(ec::iterate_across_system_types_in(ec::seq),
                                 // use parallelism for a singlr type of system
@@ -60,7 +60,8 @@ int main(int argc, char* argv[]) {
 
   // these will be iterated over in parallel.
   for (std::size_t i_rod = 0UL; i_rod < 20UL; ++i_rod) {
-    simulator->emplace_back<Plugin>(straight_initializer.initialize<Plugin>());
+    simulator->emplace_back<CosseratRod>(
+        straight_initializer.initialize<CosseratRod>());
   }
 
   simulator->finalize();

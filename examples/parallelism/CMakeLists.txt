@@ -1,4 +1,4 @@
-add_executable(Example_parallelism main.cpp)
+add_elastica_example(Example_parallelism main.cpp)
 
 target_include_directories(Example_parallelism
         PRIVATE
