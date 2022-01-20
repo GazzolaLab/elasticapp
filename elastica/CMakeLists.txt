@@ -1,6 +1,6 @@
 # Distributed under the MIT License. See LICENSE for details.
 
-add_executable(elastica main.cpp)
+#add_executable(elastica main.cpp)
 
 #target_include_directories(elastica PRIVATE DataStructures)
 #target_include_directories(elastica PRIVATE Utilities)
@@ -29,16 +29,17 @@ add_subdirectory(Time)
 #check_and_add_cxx_link_flag(-libc++experimental)
 #check_and_add_cxx_link_flag(-stdlib=libstdc++)
 
-target_link_libraries(elastica
-        PUBLIC
-        Simulator
-        Environments
-        Utilities
-        ErrorHandling
-        IO
-        Systems
-        ElasticaFlags
-        )
+#target_link_libraries(elastica
+#        PUBLIC
+#        Simulator
+#        Environments
+#        Utilities
+#        ErrorHandling
+#        IO
+#        Systems
+#        ElasticaFlags
+#        )
+
 #message(${ElasticaFlags})
 #if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
 #    message("Bitch")
