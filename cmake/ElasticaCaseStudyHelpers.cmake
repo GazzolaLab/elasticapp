@@ -1,6 +1,22 @@
 cmake_minimum_required(VERSION 3.13)
 
 
+if (NOT TARGET all-casestudies)
+    add_custom_target(all-casestudies)
+endif ()
+
+#if (NOT TARGET all-PyCaseStudies)
+#    add_custom_target(all-PyCaseStudies)
+#endif ()
+
+function(_elastica_add_standalone_to_global CASE_STUDY_NAME)
+    add_dependencies(all-casestudies ${CASE_STUDY_NAME})
+endfunction()
+
+#function(_elastica_add_python_to_global CASE_STUDY_NAME)
+#    add_dependencies(all-PyCaseStudies ${CASE_STUDY_NAME})
+#endfunction()
+
 # Add this file lazily to prevent unwanted dependencies
 if (NOT TARGET elastica_standalone_executable)
     # some other file!
@@ -26,6 +42,7 @@ function(_elastica_setup_standalone_executable
         SRCLIB
         CASE_STUDY
         CASE_STUDY_APPLICATION_NAME
+        ADD_TO_GLOBAL_TARGET
         INCLUDES)
     string(CONFIGURE [[
 /*
@@ -70,6 +87,11 @@ int main(int argc, char* argv[]) {
     target_link_libraries(${TARGET} PRIVATE ${SRCLIB})
     # Takes care of including everything thats not to do with the target
     target_link_libraries(${TARGET} PUBLIC elastica::standalone_executable)
+
+    if (ADD_TO_GLOBAL_TARGET)
+        _elastica_add_standalone_to_global(${TARGET})
+    endif (ADD_TO_GLOBAL_TARGET)
+
 endfunction()
 
 function(_elastica_setup_python_object
@@ -77,6 +99,7 @@ function(_elastica_setup_python_object
         SRCLIB
         CASE_STUDY
         CASE_STUDY_APPLICATION_NAME
+        ADD_TO_GLOBAL_TARGET
         INCLUDES)
     # setup pybind, enables the pybind11_add_module function
     if (NOT TARGET pybind11::module)
@@ -130,6 +153,9 @@ PYBIND11_MODULE(_@CASE_STUDY_APPLICATION_NAME@, m) {  // NOLINT
             PUBLIC
             elastica::python_object
             )
+    #    if (ADD_TO_GLOBAL_TARGET)
+    #        _elastica_add_python_to_global(${TARGET})
+    #    endif (ADD_TO_GLOBAL_TARGET)
 endfunction()
 
 function(_elastica_setup_case_study TYPE)
@@ -231,7 +257,7 @@ function(add_elastica_case_study TARGET)
     # Parse the arguments and set defaults for missing values.
     ##
     set(options)
-    set(oneValueArgs FROM AS NAME)
+    set(oneValueArgs FROM AS NAME ADD_TO_ELASTICA)
     set(multiValueArgs EXTRAS)
     cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -249,6 +275,10 @@ function(add_elastica_case_study TARGET)
 
     if (NOT ARG_NAME)
         set(ARG_NAME "${TARGET}")
+    endif ()
+
+    if (NOT ARG_ADD_TO_ELASTICA)
+        set(ARG_ADD_TO_ELASTICA ON)
     endif ()
 
     get_target_property(INTERFACE_FILES ${ARG_FROM} INTERFACE_SOURCES)
@@ -282,5 +312,5 @@ function(add_elastica_case_study TARGET)
         message(${EXTRA})
     endforeach ()
 
-    _elastica_setup_case_study(${ARG_AS} ${TARGET} ${ARG_FROM} ${REGISTERED_CASE_NAME} ${ARG_NAME} ${INTERFACE_INCLUDES_STR} ${ARG_EXTRAS})
+    _elastica_setup_case_study(${ARG_AS} ${TARGET} ${ARG_FROM} ${REGISTERED_CASE_NAME} ${ARG_NAME} ${ARG_ADD_TO_ELASTICA} ${INTERFACE_INCLUDES_STR} ${ARG_EXTRAS})
 endfunction()
