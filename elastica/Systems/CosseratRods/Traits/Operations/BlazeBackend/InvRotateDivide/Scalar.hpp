@@ -54,7 +54,7 @@ namespace elastica {
                 // bad access pattern
                 // convention according to SO3PrimitiveAssign
                 Q_curr[3UL * k_dim + j_dim] = rot_matrix(k_dim, j_dim, 0UL);
-                Q_next[3UL * k_dim + j_dim] = rot_matrix(k_dim, j_dim, 1UL);
+                // Q_next[3UL * k_dim + j_dim] = rot_matrix(k_dim, j_dim, 1UL);
               }
             }
           }
@@ -62,6 +62,18 @@ namespace elastica {
           for (std::size_t i_dof = 0UL; i_dof < blocksize; ++i_dof) {
             // begin to loop
             // i_dof is the current index being processed
+
+            // load data for the next iteration
+            {
+#pragma unroll 3UL  // needs to be timed
+              for (std::size_t k_dim = 0UL; k_dim < 3UL; ++k_dim) {
+#pragma unroll 3UL
+                for (std::size_t j_dim = 0UL; j_dim < 3UL; ++j_dim) {
+                  Q_next[3UL * k_dim + j_dim] =
+                      rot_matrix(k_dim, j_dim, i_dof + 1UL);
+                }  // j
+              }    // k
+            }      // load
 
             /*
              * R = Q_i Q^T_{i+1} (elementwise)
@@ -97,17 +109,6 @@ namespace elastica {
 
             std::swap(Q_curr, Q_next);
 
-            // load data for the next iteration
-            {
-#pragma unroll 3UL  // needs to be timed
-              for (std::size_t k_dim = 0UL; k_dim < 3UL; ++k_dim) {
-#pragma unroll 3UL
-                for (std::size_t j_dim = 0UL; j_dim < 3UL; ++j_dim) {
-                  Q_next[3UL * k_dim + j_dim] =
-                      rot_matrix(k_dim, j_dim, i_dof + 1UL);
-                }  // j
-              }    // k
-            }      // load
           }        // i_dof
         }          // apply
       };
