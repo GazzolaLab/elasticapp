@@ -1,1 +1,2 @@
 add_subdirectory(SO3PrimitiveAddAssign)
+add_subdirectory(InvRotateDivide)
