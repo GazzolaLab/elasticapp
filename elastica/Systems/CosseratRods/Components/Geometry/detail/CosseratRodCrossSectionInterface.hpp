@@ -103,11 +103,10 @@ namespace elastica {
           /*!\brief Variable marking ElementVolume within the Cosserat rod
            * hierarchy
            */
-          struct ElementVolume
-              : public Traits::template CosseratRodVariable<
-                    ::elastica::tags::ElementVolume,    //
-                    typename Traits::DataType::Scalar,  //
-                    typename Traits::Place::OnElement> {
+          struct ElementVolume : public Traits::template CosseratRodVariable<
+                                     ::elastica::tags::ElementVolume,    //
+                                     typename Traits::DataType::Scalar,  //
+                                     typename Traits::Place::OnElement> {
             //**Type definitions************************************************
             //! The element type of a ghost
             using ghost_type = typename Traits::DataType::Scalar::ghost_type;
@@ -227,16 +226,16 @@ namespace elastica {
               tmpl::append<typename Parent::Variables,
                            typename VariableDefinitions::Variables>;
           //! Current Variable definitions
-          using typename Parent::ReferenceCurvature;
-          using typename Parent::ReferenceElementLength;
           using typename Parent::Curvature;
           using typename Parent::ElementDilatation;
+          using typename Parent::ElementLength;
+          using typename Parent::ReferenceCurvature;
+          using typename Parent::ReferenceElementLength;
           using typename Parent::ReferenceVoronoiLength;
           using typename Parent::ShearStretchStrain;
           using typename Parent::Tangent;
           using typename Parent::VoronoiDilatation;
           using typename Parent::VoronoiLength;
-          using typename Parent::ElementLength;
 
           using typename VariableDefinitions::ElementDimension;
           using typename VariableDefinitions::ElementVolume;
@@ -248,6 +247,8 @@ namespace elastica {
           using CrossSection::compute_cross_section_area;
           using CrossSection::compute_second_moment_of_area;
           using CrossSection::update_dimension;
+          using Parent::update_curvature;
+          using Parent::update_shear_stretch_strain;
 
          public:
           using CrossSection::shape_factor;
@@ -315,8 +316,9 @@ namespace elastica {
                   downstream_block));
               auto& dimensions(blocks::get<::elastica::tags::ElementDimension>(
                   downstream_block));
-              auto& ref_lengths(blocks::get<::elastica::tags::ReferenceElementLength>(
-                  downstream_block));
+              auto& ref_lengths(
+                  blocks::get<::elastica::tags::ReferenceElementLength>(
+                      downstream_block));
 
               volumes = compute_cross_section_area(dimensions) * ref_lengths;
             }
@@ -403,19 +405,22 @@ namespace elastica {
           /*!\brief Gets second moment of area of the current rod
            */
           template <DirectionType Dim, Requires<(Dim < Frame::D3)> = nullptr>
-          inline constexpr decltype(auto) get_second_moment_of_area(index_type idx) const
+          inline constexpr decltype(auto) get_second_moment_of_area(
+              index_type idx) const
           /*noexcept*/ {
             // Should give out a VecVecExpr rather than Dimensions object
             // for expression template mechanisms
-            return compute_second_moment_of_area(This::get_element_dimension(idx));
+            return compute_second_moment_of_area(
+                This::get_element_dimension(idx));
           }
           template <DirectionType Dim, Requires<(Dim == Frame::D3)> = nullptr>
-          inline constexpr decltype(auto) get_second_moment_of_area(index_type idx) const
+          inline constexpr decltype(auto) get_second_moment_of_area(
+              index_type idx) const
           /*noexcept*/ {
             // Should give out a VecVecExpr rather than Dimensions object
             // for expression template mechanisms
-            return real_t(2.0) *
-                   compute_second_moment_of_area(This::get_element_dimension(idx));
+            return real_t(2.0) * compute_second_moment_of_area(
+                                     This::get_element_dimension(idx));
           }
           // do not have APIs return vec3, seems to reduce customizability and
           // promotes bad code
@@ -505,49 +510,65 @@ namespace elastica {
           //  - volume_batch(n_elems)
           //
           // \example
-          // The following shows a typical use of the compute_geometry_from_state()
+          // The following shows a typical use of the
+          compute_geometry_from_state()
           // function with the expected (correct) result also shown.
           //
           // \return void/None
           //
           */
-          void compute_translation_diagnostics() noexcept { // TODO: maybe rewriting code is not a good idea. try to collapse with the code in spanwise geometry.
+          void
+          compute_translation_diagnostics() noexcept {  // TODO: maybe rewriting
+                                                        // code is not a good
+                                                        // idea. try to collapse
+                                                        // with the code in
+                                                        // spanwise geometry.
             // Compute eq (3.3) from 2018 RSOS paper
             // 0. Create reference variables
             auto& position(blocks::get<::elastica::tags::Position>(self()));
-            //auto& director(blocks::get<::elastica::tags::Director>(self()));
+            // auto& director(blocks::get<::elastica::tags::Director>(self()));
 
             // 1. Compute new lengths
             auto position_diff(Traits::Operations::difference_kernel(position));
-            auto& element_length_collection(blocks::get<tags::ElementLength>(self()));
-            element_length_collection = Traits::Operations::batch_norm(position_diff);
+            auto& element_length_collection(
+                blocks::get<tags::ElementLength>(self()));
+            element_length_collection =
+                Traits::Operations::batch_norm(position_diff);
 
             // 2. Update tangents
             auto& tangent_collection(blocks::get<tags::Tangent>(self()));
-            auto& reference_length_collection(blocks::get<tags::ReferenceElementLength>(self()));
-            Traits::Operations::batch_division_matvec(tangent_collection, position_diff, element_length_collection); // TODO should be length_collection
+            auto& reference_length_collection(
+                blocks::get<tags::ReferenceElementLength>(self()));
+            Traits::Operations::batch_division_matvec(
+                tangent_collection, position_diff,
+                element_length_collection);  // TODO should be length_collection
 
             // 3. Compute new radius based on above lengths
             // volume conservation
             auto& volume_collection(blocks::get<tags::ElementVolume>(self()));
-            auto& dimensions_collection(blocks::get<tags::ElementDimension>(self()));
-            dimensions_collection =
-                CrossSection::update_dimension(volume_collection, element_length_collection);
+            auto& dimensions_collection(
+                blocks::get<tags::ElementDimension>(self()));
+            dimensions_collection = CrossSection::update_dimension(
+                volume_collection, element_length_collection);
 
             // 4. Compute dilatation of elements
-            auto& element_dilatation_collection(blocks::get<tags::ElementDilatation>(self()));
-            element_dilatation_collection = element_length_collection /
-                                            reference_length_collection;
+            auto& element_dilatation_collection(
+                blocks::get<tags::ElementDilatation>(self()));
+            element_dilatation_collection =
+                element_length_collection / reference_length_collection;
 
             // 5. Compute voronoi length
             auto& voronoi_length_collection(
                 blocks::get<::elastica::tags::VoronoiLength>(self()));
-            voronoi_length_collection = Traits::Operations::average_kernel(element_length_collection);
+            voronoi_length_collection =
+                Traits::Operations::average_kernel(element_length_collection);
 
             // 6. Compute dilatation of voronoi regions
-            auto& voronoi_dilatation(blocks::get<tags::VoronoiDilatation>(self()));
-            voronoi_dilatation = blocks::get<tags::VoronoiLength>(self()) /
-                                 blocks::get<tags::ReferenceVoronoiLength>(self());
+            auto& voronoi_dilatation(
+                blocks::get<tags::VoronoiDilatation>(self()));
+            voronoi_dilatation =
+                blocks::get<tags::VoronoiLength>(self()) /
+                blocks::get<tags::ReferenceVoronoiLength>(self());
           }
 
          public:
@@ -556,8 +577,9 @@ namespace elastica {
           //
           // \details
           // Computes elemental shear and stretch modes strains given the rod
-          // positions and directors (state), calls compute_all_dilatations() inside.
-          // Ref: eq (2.9) from \cite gazzola2018forward. \n
+          // positions and directors (state), calls compute_all_dilatations()
+          // inside. Ref: eq (2.9) from \cite gazzola2018forward.
+          // \n
           // strain_batch{i} =
           // dilatation_batch{i} * director_collection_batch{i} *
           // tangent_batch{i} - {0.0, 0.0, 1.0}
@@ -571,7 +593,8 @@ namespace elastica {
           // given inputs of compute_all_dilatations() are set.
           //
           // \example
-          // The following shows a typical use of the compute_shear_stretch_strains()
+          // The following shows a typical use of the
+          // compute_shear_stretch_strains()
           // function with the expected (correct) result also shown.
           // \snippet test_gov_eqns.cpp compute_shear_stretch_strains_example
           //
@@ -582,15 +605,19 @@ namespace elastica {
           void compute_shear_strains() noexcept {
             // Q (et - d_3)
             // Q is always latest, only e and t need to be computed
-            compute_translation_diagnostics(); // Dilatation updated here!
-            self().update_shear_stretch_strain(self());
+            compute_translation_diagnostics();  // Dilatation updated here!
+            update_shear_stretch_strain(self());
           }
+          //********************************************************************
 
+          //********************************************************************
+          // TODO : document
           void compute_curvature() noexcept {
             // kappa is the only rotational diagnostic, so we direcelty compute
             // that here
-            self().update_curvature(self());
+            update_curvature(self());  // TODO : refactor
           }
+          //********************************************************************
 
           //@}
           //********************************************************************
