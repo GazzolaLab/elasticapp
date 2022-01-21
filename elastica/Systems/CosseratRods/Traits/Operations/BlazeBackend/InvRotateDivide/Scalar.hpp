@@ -4,22 +4,16 @@
 
 #pragma once
 
-#include <blaze/system/Restrict.h>
 #include <cmath>
 
 #include "Systems/CosseratRods/Traits/Operations/BlazeBackend/InvRotateDivide/BaseTemplate.hpp"
+#include "Utilities/Restrict.hpp"
 
 namespace elastica {
 
   namespace cosserat_rod {
 
     namespace detail {
-
-#if defined(__clang__)
-#define RESTRICT __restrict
-#else
-#define RESTRICT BLAZE_RESTRICT
-#endif
 
       template <>
       struct InvRotateDivideOp<InvRotateDivideKind::scalar> {
@@ -43,8 +37,8 @@ namespace elastica {
            * q1 q4 q7
            * q2 q5 q8
            */
-          T* RESTRICT Q_curr = q_first;
-          T* RESTRICT Q_next = q_second;
+          T* ELASTICA_RESTRICT Q_curr = q_first;
+          T* ELASTICA_RESTRICT Q_next = q_second;
 
           {
 #pragma unroll 3UL  // needs to be timed
@@ -109,11 +103,9 @@ namespace elastica {
 
             std::swap(Q_curr, Q_next);
 
-          }        // i_dof
-        }          // apply
+          }  // i_dof
+        }    // apply
       };
-
-#undef RESTRICT
 
     }  // namespace detail
 
