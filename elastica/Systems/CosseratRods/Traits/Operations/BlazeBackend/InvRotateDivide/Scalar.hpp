@@ -5,6 +5,7 @@
 #pragma once
 
 #include <cmath>
+#include <cstdint>
 
 #include "Systems/CosseratRods/Traits/Operations/BlazeBackend/InvRotateDivide/BaseTemplate.hpp"
 #include "Utilities/Restrict.hpp"
