@@ -3,14 +3,13 @@
 //
 
 #include "Framework/TestingFramework.hpp"
-
 #include "elastica/Systems/CosseratRods/Traits/DataType/BlazeBackend/DataTypeTraits.hpp"
 // #include "elastica/Systems/CosseratRods/Traits/Operations/Protocols.hpp"
-#include "elastica/Systems/CosseratRods/Traits/Operations/BlazeBackend/OpsTraits.hpp"
-#include "elastica/Systems/CosseratRods/Traits/Operations/BlazeBackend/OptimizationLevel.hpp"
-
 #include <blaze/Blaze.h>
 #include <blaze_tensor/Blaze.h>
+
+#include "elastica/Systems/CosseratRods/Traits/Operations/BlazeBackend/OpsTraits.hpp"
+#include "elastica/Systems/CosseratRods/Traits/Operations/BlazeBackend/OptimizationLevel.hpp"
 
 namespace {
 
@@ -26,6 +25,7 @@ namespace {
   using Optimization = OptimizationLevel;
   using Operations = OpsTraits<Optimization::basic>;
 
+  // clang-format off
   // TODO: Protocol for Traits operations
   // static_assert(tt::assert_conforms_to<Operations, protocols::Operations>,
   //     "Protocol Failure!");
@@ -37,6 +37,7 @@ namespace {
     int a = 5, b = 7;
     CHECK(Operations::add(a, b) == 12UL);
   }
+
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: expand_for_broadcast",
                      "[Systems][Unit]") {
     const std::size_t n_cols(10UL);
@@ -152,12 +153,14 @@ namespace {
   }
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Traits.Operation: spanwise_inv_rotate_and_divide",
                      "[Systems][Unit]") {
-    CHECK(1); // TODO Check math for spanwise inverse rotate
-//    for (std::size_t n_elems : {1, 32, 128}) {
+     CHECK(1); // TODO Check math for spanwise inverse rotate
+
+      // This test case is broken even after fixing because setup is incorrect.
+//    for (std::size_t n_elems : {4, 32, 128}) {
 //      Matrix::data_type rot_matrix_batch(dimension, dimension, n_elems);
-//      Vector::data_type test_rot_axis_vector_batch(dimension, n_elems),
-//                        correct_rot_axis_vector_batch(dimension, n_elems);
-//      Scalar::data_type normalize_vector_batch(dimension, n_elems);
+//      Vector::data_type test_rot_axis_vector_batch(dimension, n_elems - 1UL),
+//                        correct_rot_axis_vector_batch(dimension, n_elems - 1UL);
+//      Scalar::data_type normalize_vector_batch(n_elems - 1UL);
 //
 //      const real_type norm_factor(0.25);
 //      normalize_vector_batch = norm_factor;
@@ -212,4 +215,6 @@ namespace {
     CHECK(vec(2UL,1UL) == approx(2.0));
     CHECK(vec(2UL,3UL) == approx(4.0));
   }
-} // NAMESPACE
+
+  // clang-format on
+}  // NAMESPACE
