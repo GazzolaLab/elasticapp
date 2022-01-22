@@ -11,9 +11,10 @@
 #include "SO3PrimitiveAddAssignSetup.hpp"
 #include "Systems/States/Expressions/backends/blaze/SO3PrimitiveAssign.hpp"
 
+std::size_t n_values = 1UL;
+
 TEST_CASE("BenchmarkSO3PrimitiveAddAssign") {
   using namespace elastica::states::detail;
-  const std::size_t n_values = 1024UL;
 
   BENCHMARK_ADVANCED("SO3 Add assign via SO3 Assign ")
   (Catch::Benchmark::Chronometer meter) {
@@ -53,9 +54,23 @@ TEST_CASE("BenchmarkSO3PrimitiveAddAssign") {
 
 int main(int argc, char* argv[]) {
   // global setup...
-  enable_floating_point_exceptions();
+  disable_floating_point_exceptions();  // microbenchmark : so measure the best
+                                        // version
 
-  int result = Catch::Session().run(argc, argv);
+  Catch::Session session;
+
+  // Build a new parser on top of Catch2's
+  using namespace Catch::clara;
+  auto cli = session.cli()  // Get Catch2's command line parser
+             | Opt(n_values, "n")["--n_values"]("how many values?");
+  session.cli(cli);
+
+  // Let Catch (using Clara) parse the command line
+  int returnCode = session.applyCommandLine(argc, argv);
+  if (returnCode != 0)  // Indicates a command line error
+    return returnCode;
+
+  int result = session.run(argc, argv);
 
   // global clean-up...
 
