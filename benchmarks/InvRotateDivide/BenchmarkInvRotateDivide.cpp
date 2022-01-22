@@ -9,9 +9,10 @@
 //
 #include "InvRotateDivideSetup.hpp"
 
+std::size_t n_values = 1UL;
+
 TEST_CASE("BenchmarkInvRotateDivide") {
   using namespace elastica::cosserat_rod::detail;
-  const std::size_t n_values = 1024UL;
 
   BENCHMARK_ADVANCED("Inv rotate blaze")(Catch::Benchmark::Chronometer meter) {
     InvRotateDivideTimingSetup<InvRotateDivideKind::blaze> bench{n_values};
@@ -30,21 +31,34 @@ TEST_CASE("BenchmarkInvRotateDivide") {
     });
   };
 
-  //  BENCHMARK_ADVANCED("Inv rotate SIMD")
-  //  (Catch::Benchmark::Chronometer meter) {
-  //    InvRotateDivideTimingSetup<InvRotateDivideKind::simd>
-  //    bench{n_values}; meter.measure([&] {
-  //      bench.run();
-  //      return bench.w_input;
-  //    });
-  //  };
+  BENCHMARK_ADVANCED("Inv rotate SIMD")
+  (Catch::Benchmark::Chronometer meter) {
+    InvRotateDivideTimingSetup<InvRotateDivideKind::simd> bench{n_values};
+    meter.measure([&] {
+      bench.run();
+      return bench.kappa_output;
+    });
+  };
 }
 
 int main(int argc, char* argv[]) {
   // global setup...
-  enable_floating_point_exceptions();
+  disable_floating_point_exceptions();
 
-  int result = Catch::Session().run(argc, argv);
+  Catch::Session session;
+
+  // Build a new parser on top of Catch2's
+  using namespace Catch::clara;
+  auto cli = session.cli()  // Get Catch2's command line parser
+             | Opt(n_values, "n")["--n_values"]("how many values?");
+  session.cli(cli);
+
+  // Let Catch (using Clara) parse the command line
+  int returnCode = session.applyCommandLine(argc, argv);
+  if (returnCode != 0)  // Indicates a command line error
+    return returnCode;
+
+  int result = session.run(argc, argv);
 
   // global clean-up...
 
