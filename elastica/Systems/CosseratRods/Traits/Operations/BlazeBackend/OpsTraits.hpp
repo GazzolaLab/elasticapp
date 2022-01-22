@@ -11,7 +11,7 @@
 
 /// Add BlazeBackend code here
 #include "ErrorHandling/Assert.hpp"
-#include "Systems/CosseratRods/Traits/Operations/BlazeBackend/InvRotateDivide/Blaze.hpp"
+#include "Systems/CosseratRods/Traits/Operations/BlazeBackend/InvRotateDivide/SIMD.hpp"
 #include "Systems/CosseratRods/Traits/Operations/BlazeBackend/OptimizationLevel.hpp"
 #include "Utilities/Math/BlazeDetail/BlazeCalculus.hpp"
 #include "Utilities/Math/BlazeDetail/BlazeLinearAlgebra.hpp"
@@ -255,8 +255,7 @@ namespace elastica {
             rot_axis_vector.columns() == normalize_vector.size(),
             "Invariance in number of dofs in voronoi-regions violated");
 
-        using Op =
-            detail::InvRotateDivideOp<detail::InvRotateDivideKind::blaze>;
+        using Op = detail::InvRotateDivideOp<detail::InvRotateDivideKind::simd>;
         Op::apply(rot_axis_vector, rot_matrix, normalize_vector);
       }
 
