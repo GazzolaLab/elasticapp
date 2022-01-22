@@ -154,3 +154,25 @@ def plot_speedup(results):
         ax.set_ylabel("speedup")
 
     return fig
+
+
+def quick_benchmark(name: str, n_values: List[PositiveInt], save: bool):
+    bench_results = BenchmarkApp(name).run(n_values)
+
+    tabulated = export_as_table(bench_results)
+    print(tabulated)
+
+    times_fig = plot_times(bench_results)
+    times_fig.show()
+    if save:
+        times_fig.savefig("times.png", dpi=300)
+
+    speedup_fig = plot_speedup(bench_results)
+    speedup_fig.show()
+
+    if save:
+        speedup_fig.savefig("speedup.png", dpi=300)
+
+    from matplotlib import pyplot as plt
+
+    plt.show()
