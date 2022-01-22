@@ -8,6 +8,7 @@
 #include <cstdint>
 
 #include "Systems/CosseratRods/Traits/Operations/BlazeBackend/InvRotateDivide/BaseTemplate.hpp"
+#include "Utilities/ForceInline.hpp"
 #include "Utilities/Restrict.hpp"
 
 namespace elastica {
@@ -21,12 +22,12 @@ namespace elastica {
         template <typename MT,  // blaze Matrix expression type
                   typename TT,  // blaze Tensor expression type
                   typename VT>  // blaze Matrix expression type
-        static inline auto apply(MT& rot_axis_vector, const TT& rot_matrix,
-                                 const VT& span_vector) noexcept -> void {
-          // assert that rot_matrix.columns() == rot_axis_vector.columns() + 1
-          // in the public interface
-          const std::size_t blocksize = rot_axis_vector.columns();
-
+        static inline auto internal_apply(MT& rot_axis_vector,
+                                          const TT& rot_matrix,
+                                          const VT& span_vector,
+                                          const std::size_t index_start,
+                                          const std::size_t index_end) noexcept
+            -> void {
           using T = typename TT::ElementType;
 
           // allocate rolling memory
@@ -48,13 +49,13 @@ namespace elastica {
               for (std::size_t j_dim = 0UL; j_dim < 3UL; ++j_dim) {
                 // bad access pattern
                 // convention according to SO3PrimitiveAssign
-                Q_curr[3UL * k_dim + j_dim] = rot_matrix(k_dim, j_dim, 0UL);
-                // Q_next[3UL * k_dim + j_dim] = rot_matrix(k_dim, j_dim, 1UL);
+                Q_curr[3UL * k_dim + j_dim] =
+                    rot_matrix(k_dim, j_dim, index_start);
               }
             }
           }
 
-          for (std::size_t i_dof = 0UL; i_dof < blocksize; ++i_dof) {
+          for (std::size_t i_dof = index_start; i_dof < index_end; ++i_dof) {
             // begin to loop
             // i_dof is the current index being processed
 
@@ -106,6 +107,19 @@ namespace elastica {
 
           }  // i_dof
         }    // apply
+
+        template <typename MT,  // blaze Matrix expression type
+                  typename TT,  // blaze Tensor expression type
+                  typename VT>  // blaze Matrix expression type
+        static ELASTICA_ALWAYS_INLINE auto apply(MT& rot_axis_vector,
+                                                 const TT& rot_matrix,
+                                                 const VT& span_vector) noexcept
+            -> void {
+          // assert that rot_matrix.columns() == rot_axis_vector.columns() + 1
+          // in the public interface
+          internal_apply(rot_axis_vector, rot_matrix, span_vector, 0UL,
+                         rot_axis_vector.columns());
+        }
       };
 
     }  // namespace detail

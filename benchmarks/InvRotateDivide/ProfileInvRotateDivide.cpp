@@ -12,7 +12,7 @@ int main() {
   const std::size_t n_elems{256UL};
   InvRotateDivideTimingSetup<InvRotateDivideKind::blaze> blaze_bench{n_elems};
   InvRotateDivideTimingSetup<InvRotateDivideKind::scalar> scalar_bench{n_elems};
-  //  InvRotateDivideTimingSetup<InvRotateDivideKind::simd> simd_bench{256UL};
+  InvRotateDivideTimingSetup<InvRotateDivideKind::simd> simd_bench{256UL};
 
   const std::size_t n_samples(100000UL);
 

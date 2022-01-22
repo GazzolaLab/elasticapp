@@ -9,6 +9,7 @@
 // needs to be included first
 #include "Systems/CosseratRods/Traits/Operations/BlazeBackend/InvRotateDivide/BaseTemplate.hpp"
 #include "Systems/CosseratRods/Traits/Operations/BlazeBackend/InvRotateDivide/Blaze.hpp"
+#include "Systems/CosseratRods/Traits/Operations/BlazeBackend/InvRotateDivide/SIMD.hpp"
 #include "Systems/CosseratRods/Traits/Operations/BlazeBackend/InvRotateDivide/Scalar.hpp"
 //
 #include "Systems/CosseratRods/Traits/DataType/BlazeBackend/DataTypeTraits.hpp"
@@ -83,6 +84,18 @@ namespace {
     SECTION("Scalar version") {
       using TestOp =
           detail::InvRotateDivideOp<detail::InvRotateDivideKind::scalar>;
+
+      Vector::data_type test_rot_axis_vector_batch(dimension, n_elems - 1UL);
+
+      TestOp::apply(test_rot_axis_vector_batch, rot_matrix_batch,
+                    normalize_vector_batch);
+
+      CHECK((test_rot_axis_vector_batch) == reference_rot_axis_vector_batch);
+    }
+
+    SECTION("SIMD version") {
+      using TestOp =
+          detail::InvRotateDivideOp<detail::InvRotateDivideKind::simd>;
 
       Vector::data_type test_rot_axis_vector_batch(dimension, n_elems - 1UL);
 
