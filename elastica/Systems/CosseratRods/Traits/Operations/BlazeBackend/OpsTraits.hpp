@@ -10,6 +10,7 @@
 #include "Utilities/NonCreatable.hpp"
 
 /// Add BlazeBackend code here
+#include "ErrorHandling/Assert.hpp"
 #include "Systems/CosseratRods/Traits/Operations/BlazeBackend/InvRotateDivide/Blaze.hpp"
 #include "Systems/CosseratRods/Traits/Operations/BlazeBackend/OptimizationLevel.hpp"
 #include "Utilities/Math/BlazeDetail/BlazeCalculus.hpp"
@@ -240,12 +241,19 @@ namespace elastica {
           MT& rot_axis_vector, const TT& rot_matrix,
           const VT& normalize_vector) {
         constexpr std::size_t dimension(3UL);
-        assert(rot_matrix.pages() == dimension);
-        assert(rot_matrix.rows() == dimension);
-        assert(rot_axis_vector.rows() == dimension);
-        assert((rot_axis_vector.columns() + 1UL) == rot_matrix.columns());
-        // think this works?
-        assert(rot_axis_vector.columns() == normalize_vector.size());
+        ELASTICA_ASSERT(rot_matrix.pages() == dimension,
+                        "Incorrect dimension, matrix must be 3D");
+        ELASTICA_ASSERT(rot_matrix.rows() == dimension,
+                        "Incorrect dimension, matrix must be 3D");
+        ELASTICA_ASSERT(rot_axis_vector.rows() == dimension,
+                        "Incorrect dimension, vector must be 3D");
+        ELASTICA_ASSERT(
+            (rot_axis_vector.columns() + 1UL) == rot_matrix.columns(),
+            "Invariance in in number of elements and voronoi regions in "
+            "Cosserat Rod violated");
+        ELASTICA_ASSERT(
+            rot_axis_vector.columns() == normalize_vector.size(),
+            "Invariance in number of dofs in voronoi-regions violated");
 
         using Op =
             detail::InvRotateDivideOp<detail::InvRotateDivideKind::blaze>;
