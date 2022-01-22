@@ -29,7 +29,9 @@ class BenchmarkApp:
 
     def run_app(self, n_value: PositiveInt) -> bytes:
         result = subprocess.run(
-            [self.app_name, "-r", "xml", "--n_values", str(n_value)], capture_output=True, text=True
+            [self.app_name, "-r", "xml", "--n_values", str(n_value)],
+            capture_output=True,
+            text=True,
         )
         result.check_returncode()
         return result.stdout
@@ -38,15 +40,15 @@ class BenchmarkApp:
         # updates results in place
         root = ET.fromstring(self.run_app(n_value))
 
-        for item in root.findall('./Group/TestCase/BenchmarkResults'):
-            name = item.get('name')
+        for item in root.findall("./Group/TestCase/BenchmarkResults"):
+            name = item.get("name")
             results[name].n.append(n_value)
 
             for child in item:
-                if child.tag == 'mean':
-                    results[name].mean.append(float(child.get('value')))
-                if child.tag == 'standardDeviation':
-                    results[name].stddev.append(float(child.get('value')))
+                if child.tag == "mean":
+                    results[name].mean.append(float(child.get("value")))
+                if child.tag == "standardDeviation":
+                    results[name].stddev.append(float(child.get("value")))
 
     def __call__(self, n_values: Elements) -> BenchResults:
         results = defaultdict(RunResults)
@@ -72,7 +74,7 @@ def export_as_table(results: BenchResults, tablefmt: str = "github"):
         return x + [[y.name] + y.mean]
 
     def header(x):
-        return ["Kernel \ n"] + x.n
+        return ["Kernel \\ n"] + x.n
 
     return tabulate(
         reduce(fmt, results, []), headers=header(results[0]), tablefmt=tablefmt
@@ -83,11 +85,11 @@ def plot_times(results):
     from matplotlib import pyplot as plt
     import numpy as np
 
-    with plt.style.context('ggplot'):
+    with plt.style.context("ggplot"):
         fig = plt.figure(figsize=(5, 4), dpi=150)
         ax = fig.add_subplot(111)
-        ax.set_xscale("log", nonpositive='clip')
-        ax.set_yscale("log", nonpositive='clip')
+        ax.set_xscale("log", nonpositive="clip")
+        ax.set_yscale("log", nonpositive="clip")
 
         temp = 0.0
 
@@ -100,7 +102,7 @@ def plot_times(results):
                 label=result.name,
                 lw=2,
                 elinewidth=1,
-                capsize=1
+                capsize=1,
             )
             temp += np.asarray(result.mean) / np.asarray(result.n)
 
@@ -118,7 +120,7 @@ def plot_speedup(results):
     from matplotlib import pyplot as plt
     import numpy as np
 
-    with plt.style.context('ggplot'):
+    with plt.style.context("ggplot"):
         fig = plt.figure(figsize=(5, 4), dpi=150)
         ax = fig.add_subplot(111)
 
@@ -144,7 +146,7 @@ def plot_speedup(results):
                 1.0 / means[idx],
                 width,
                 label=result.name,
-                align='center'
+                align="center",
             )
         ax.set_xticks(ind + (n_kernels - 1) * width / 2, results[0].n)
         ax.legend(bbox_to_anchor=(0, 1, 1, 0), loc="lower left", mode="expand", ncol=2)
