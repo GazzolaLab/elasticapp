@@ -3,16 +3,19 @@
 //******************************************************************************
 // Includes
 //******************************************************************************
+#include <blaze/Blaze.h>
+#include <blaze_tensor/Blaze.h>
+
+// Utils
 #include "Utilities/NonCreatable.hpp"
+
+/// Add BlazeBackend code here
+#include "ErrorHandling/Assert.hpp"
+#include "Systems/CosseratRods/Traits/Operations/BlazeBackend/InvRotateDivide/Blaze.hpp"
 #include "Systems/CosseratRods/Traits/Operations/BlazeBackend/OptimizationLevel.hpp"
 #include "Utilities/Math/BlazeDetail/BlazeCalculus.hpp"
 #include "Utilities/Math/BlazeDetail/BlazeLinearAlgebra.hpp"
 #include "Utilities/Math/BlazeDetail/BlazeRotation.hpp"
-
-#include "blaze/Blaze.h"
-#include "blaze_tensor/Blaze.h"
-
-/// Add BlazeBackend code here
 
 namespace elastica {
 
@@ -238,48 +241,23 @@ namespace elastica {
           MT& rot_axis_vector, const TT& rot_matrix,
           const VT& normalize_vector) {
         constexpr std::size_t dimension(3UL);
-        const std::size_t blocksize = rot_axis_vector.columns();
-        using ValueType = typename TT::ElementType;
-        assert(rot_matrix.pages() == dimension);
-        assert(rot_matrix.rows() == dimension);
-        assert(rot_axis_vector.rows() == dimension);
+        ELASTICA_ASSERT(rot_matrix.pages() == dimension,
+                        "Incorrect dimension, matrix must be 3D");
+        ELASTICA_ASSERT(rot_matrix.rows() == dimension,
+                        "Incorrect dimension, matrix must be 3D");
+        ELASTICA_ASSERT(rot_axis_vector.rows() == dimension,
+                        "Incorrect dimension, vector must be 3D");
+        ELASTICA_ASSERT(
+            (rot_axis_vector.columns() + 1UL) == rot_matrix.columns(),
+            "Invariance in in number of elements and voronoi regions in "
+            "Cosserat Rod violated");
+        ELASTICA_ASSERT(
+            rot_axis_vector.columns() == normalize_vector.size(),
+            "Invariance in number of dofs in voronoi-regions violated");
 
-        /* hardcoded to avoid external memory passing */
-        /* also now operates only on views */
-        /*
-         * R = Q_t Q_{t+1} (elementwise)
-         * theta = acos((tr(R) - 1) / 2)
-         */
-        auto q_next = blaze::subtensor(rot_matrix, 0UL, 0UL, 1UL, dimension,
-                                       dimension, blocksize);
-        auto q = blaze::subtensor(rot_matrix, 0UL, 0UL, 0UL, dimension,
-                                  dimension, blocksize);
-        auto qqt = q % q_next;
-        auto rot_matrix_trace =  // TODO: maybe use reduced_sum
-            blaze::row(blaze::pageslice(qqt, 0UL), 0UL) +
-            blaze::row(blaze::pageslice(qqt, 0UL), 1UL) +
-            blaze::row(blaze::pageslice(qqt, 0UL), 2UL) +
-            blaze::row(blaze::pageslice(qqt, 1UL), 0UL) +
-            blaze::row(blaze::pageslice(qqt, 1UL), 1UL) +
-            blaze::row(blaze::pageslice(qqt, 1UL), 2UL) +
-            blaze::row(blaze::pageslice(qqt, 2UL), 0UL) +
-            blaze::row(blaze::pageslice(qqt, 2UL), 1UL) +
-            blaze::row(blaze::pageslice(qqt, 2UL), 2UL);
-        auto theta = blaze::acos(ValueType(0.5) * rot_matrix_trace -
-                                 ValueType(0.5) - ValueType(1e-10));
-
-        auto trans_normalize_vector = blaze::trans(normalize_vector);
-        /* theta (u) = -theta * inv_skew([R - RT]) / 2 sin(theta) */
-        for (std::size_t i(0UL); i < dimension; ++i) {
-          std::size_t idx1 = (i + 1UL) % dimension;
-          std::size_t idx2 = (i + 2UL) % dimension;
-          blaze::row(rot_axis_vector, i) =
-              (ValueType(-0.5) * theta / blaze::sin(theta + ValueType(1e-14)) /
-               trans_normalize_vector) *
-              blaze::sum<blaze::columnwise>(
-                  (blaze::pageslice(q_next, idx2) % blaze::pageslice(q, idx1)) -
-                  (blaze::pageslice(q_next, idx1) % blaze::pageslice(q, idx2)));
-        }
+        using Op =
+            detail::InvRotateDivideOp<detail::InvRotateDivideKind::blaze>;
+        Op::apply(rot_axis_vector, rot_matrix, normalize_vector);
       }
 
       //************************************************************************
