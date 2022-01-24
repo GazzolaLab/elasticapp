@@ -116,7 +116,7 @@ void TimoshenkoCaseStudy::run() {
   //      std::pair<::elastica::real_t, ::elastica::real_t>;
   //  std::vector<TimesAndDisplacements> time_and_disps;
 
-  const ::elastica::real_t final_time(100.0);
+  const ::elastica::real_t final_time(500.0);
   const auto n_elements = ::elastica::size(*rod_it);
   constexpr auto x_axis = 0UL;
 
