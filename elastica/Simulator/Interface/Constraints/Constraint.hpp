@@ -395,11 +395,7 @@ constraints::Constraint?
                   return make_constrainer(
                       typename Parent::UUIDType{unique_id,
                                                 std::move(unique_name)},
-                      // while const-correctness is maintained in Constraint,
-                      // we need to modify the systems later on, so cast it
-                      // away
-                      const_cast<System&>(system_),
-                      std::move(constraint_details.bc),
+                      system_, std::move(constraint_details.bc),
                       std::move(constraint_details.index_set));
                 });
           } catch (...) {

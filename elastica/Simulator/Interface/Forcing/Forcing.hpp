@@ -388,11 +388,7 @@ forcing::Forcing?
                   return make_forcer(
                       typename Parent::UUIDType{unique_id,
                                                 std::move(unique_name)},
-                      // while const-correctness is maintained in Connection,
-                      // we need to modify the systems later on, so cast it
-                      // away
-                      const_cast<System&>(system_),
-                      std::move(forcing_details.bc),
+                      system_, std::move(forcing_details.bc),
                       std::move(forcing_details.index_set));
                 });
           } catch (...) {

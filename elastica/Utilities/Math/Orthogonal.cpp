@@ -35,7 +35,9 @@ namespace elastica {
       // Any initial guess thats not in the normal direction
       Vec3 v2 = binormal_guess;
 
-      Vec3 v3(normalize(v1 % v2));
+      // if v1 % v2 is near 0.0, then this call is invalid.
+      // So don't normalize here, rather normalize at the end
+      Vec3 v3(v1 % v2);
 
       v2 = v3 % v1;
       // If its collinear, iterate till its not
@@ -46,7 +48,7 @@ namespace elastica {
         v3 = normalize(v1 % v2);
         v2 = v3 % v1;
       }
-      return {v1, v2, v3};
+      return {v1, normalize(v2), normalize(v3)};
     }
   }  // namespace detail
 

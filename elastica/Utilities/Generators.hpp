@@ -107,7 +107,7 @@ namespace elastica {
 
     // num >= 1UL here
     std::size_t step_factor = end_point ? num - 1UL : num;
-    dtype step = (stop - start) / static_cast<dtype>(step_factor);
+    dtype step = (stop - start) / step_factor;  // bug in min-size release clang
     return RT{std::move(start), std::move(step), num};
   }
   //****************************************************************************
