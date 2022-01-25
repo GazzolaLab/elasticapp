@@ -117,7 +117,7 @@ namespace {
         {3 * (0.5 / sqrt(3)),
          3 * (0.5 / sqrt(3)),
          3 * (0.5 / sqrt(3)) - 1.0});
-    const auto internal_stress = shear_stretch_rigidity_matrix * (shear_solution-1.0);
+    const Vec3 internal_stress = shear_stretch_rigidity_matrix * (shear_solution-1.0);
     // clang-format on
     auto compute_internal_forces_result = model.compute_internal_forces();
     const Vec3 edge_force =
@@ -136,21 +136,20 @@ namespace {
                         {4.0*(0.25*M_1_PI)*sq(4*4*M_PI), 0.0, 0.0},
                         {0.0, 4.0*(0.25*M_1_PI)*sq(4*4*M_PI), 0.0},
                         {0.0, 0.0, 2.0*4.0*(0.25*M_1_PI)*sq(4*4*M_PI)}});
-    const auto couple_solution = BendTwistRigidityMatrix * Vec3({-1.0,-1.0,-1.0});
+    const Vec3 couple_solution = BendTwistRigidityMatrix * Vec3({-1.0,-1.0,-1.0});
     const Vec3 q_into_t(
         {3 * (0.5 / sqrt(3)),
          3 * (0.5 / sqrt(3)),
          3 * (0.5 / sqrt(3))});
     const Vec3 shear_stretch_couple = sqrt(3) * (q_into_t % internal_stress) - (2*sqrt(3));
-    const Rot3 msmoi({
-                        {sqrt(3)*(0.25*M_1_PI)*sq(4*4*M_PI), 0.0, 0.0},
-                        {0.0, sqrt(3)*(0.25*M_1_PI)*sq(4*4*M_PI), 0.0},
-                        {0.0, 0.0, 2.0*sqrt(3)*(0.25*M_1_PI)*sq(4*4*M_PI)}});
-    const auto joueb(msmoi * Vec3({1.0, 1.0, 1.0}));
-    const auto lagrangian_transport(joueb % Vec3({1.0, 1.0, 1.0}));
+    const Rot3 msmoi({{sqrt(3)*(0.25*M_1_PI)*sq(4*4*M_PI), 0.0, 0.0},
+                      {0.0, sqrt(3)*(0.25*M_1_PI)*sq(4*4*M_PI), 0.0},
+                      {0.0, 0.0, 2.0*sqrt(3)*(0.25*M_1_PI)*sq(4*4*M_PI)}});
+    const Vec3 joueb(msmoi * Vec3({1.0, 1.0, 1.0}));
+    const Vec3 lagrangian_transport(joueb % Vec3({1.0, 1.0, 1.0}));
     // clang-format on
 
-    auto compute_internal_torques_result = model.compute_internal_torques();
+    const auto compute_internal_torques_result = model.compute_internal_torques();
     const Vec3 edge_torque =
         Traits::DataType::Vector::slice(compute_internal_torques_result, 0UL);
     const Vec3 mid_torque =
