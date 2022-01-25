@@ -3,8 +3,8 @@
 //
 
 #include "Framework/TestingFramework.hpp"
-#include "Systems/CosseratRods/CosseratRodTraits.hpp"
 #include "Systems/CosseratRods/Components/Geometry/detail/CosseratRodCrossSectionInterface.hpp"
+#include "Systems/CosseratRods/CosseratRodTraits.hpp"
 ///
 #include "Systems/CosseratRods/Mocks.hpp"
 ///
@@ -21,12 +21,12 @@ namespace {
     template <typename Radius>
     static inline decltype(auto) compute_cross_section_area(
         Radius const& r) noexcept {
-      return r ;
+      return r;
     }
     template <typename Radius>
     static inline decltype(auto) compute_second_moment_of_area(
         Radius const& r) noexcept {
-      return r*r;
+      return r * r;
     }
 
     template <typename Volume, typename Length>
@@ -56,8 +56,7 @@ namespace {
     // into public scope for testing
    public:
     using Parent =
-        CosseratRodCrossSectionInterface<Traits, B,
-                                         MockCrossSectionOperations>;
+        CosseratRodCrossSectionInterface<Traits, B, MockCrossSectionOperations>;
     using Parent::Parent;
     using typename Parent::ComputedVariables;
     using typename Parent::InitializedVariables;
@@ -101,29 +100,49 @@ namespace {
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
         // from before
-        blocks::initialize<tags::Position>([&i = n_times_called[0]](std::size_t index){ ++i; return index*1.0; }),
-        blocks::initialize<tags::Director>([&i = n_times_called[1]](...){ ++i; return 0.5; }),
+        blocks::initialize<tags::Position>(
+            [&i = n_times_called[0]](std::size_t index) {
+              ++i;
+              return index * 1.0;
+            }),
+        blocks::initialize<tags::Director>([&i = n_times_called[1]](...) {
+          ++i;
+          return 0.5;
+        }),
         // from before
-        blocks::initialize<tags::ElementDimension>([&i = n_times_called[2]](...) { ++i; return 4.0; }),
-        blocks::initialize<tags::ReferenceCurvature>([&i = n_times_called[3]](...) { ++i; return 1.0; }),
-        blocks::initialize<tags::ReferenceShearStretchStrain>([&i = n_times_called[4]](...) { ++i; return 1.0; }),
-        blocks::initialize<tags::ElementDilatation>([&i = n_times_called[5]](...) { ++i; return 2.0;})
-        //blocks::initialize<tags::MassSecondMomentOfInertia>([&i = n_times_called[5]](...) { ++i; return 1.0; })
-      );
+        blocks::initialize<tags::ElementDimension>(
+            [&i = n_times_called[2]](...) {
+              ++i;
+              return 4.0;
+            }),
+        blocks::initialize<tags::ReferenceCurvature>(
+            [&i = n_times_called[3]](...) {
+              ++i;
+              return 1.0;
+            }),
+        blocks::initialize<tags::ReferenceShearStretchStrain>(
+            [&i = n_times_called[4]](...) {
+              ++i;
+              return 1.0;
+            }),
+        blocks::initialize<tags::ElementDilatation>(
+            [&i = n_times_called[5]](...) {
+              ++i;
+              return 2.0;
+            })
+        // blocks::initialize<tags::MassSecondMomentOfInertia>([&i =
+        // n_times_called[5]](...) { ++i; return 1.0; })
+    );
 
     Model::initialize(model, std::move(initializer));
 
     CHECK(model.get_element_dimension() == approx(4.0));
-    CHECK(model.get_element_volume() == approx(4.0 * blaze::sqrt(3)));
+    CHECK(model.get_element_volume() ==
+          approx(4.0 * blaze::sqrt(3) / 2.0));  // area * length / dilatation
 
     // check if initialization is done as expected
     auto expected_call_count = make_array(11U, 10U, 10U, 9U, 10U, 10U);
     CHECK_ITERABLE_APPROX(n_times_called, expected_call_count);
-    // CHECK_ITERABLE_APPROX(n_times_called, make_array<n_initializers>(1U));
-
-    CHECK(model.get_element_dimension() == approx(4.0));
-    // volume = dimension * length
-    CHECK(model.get_element_volume() == approx(4.0*blaze::sqrt(3)));
 
     CHECK(model.get_area() == approx(4.0));
     CHECK(model.shape_factor() == approx(1.6));
@@ -133,21 +152,14 @@ namespace {
     CHECK(model.get_second_moment_of_area<LocalFrame::D1>(0UL) == approx(16.0));
     CHECK(model.get_second_moment_of_area<LocalFrame::D2>(0UL) == approx(16.0));
     // CustomDouble has trouble with Catch for unknown reasons
-    CHECK(model.get_second_moment_of_area<LocalFrame::D1>(0UL) ==
-          approx(16.0));
-    CHECK(model.get_second_moment_of_area<LocalFrame::D2>(0UL) ==
-          approx(16.0));
-    CHECK(model.get_second_moment_of_area<LocalFrame::D1>(5UL) ==
-          approx(16.0));
-    CHECK(model.get_second_moment_of_area<LocalFrame::D2>(5UL) ==
-          approx(16.0));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D1>(0UL) == approx(16.0));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D2>(0UL) == approx(16.0));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D1>(5UL) == approx(16.0));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D2>(5UL) == approx(16.0));
     // symmetric
-    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(0UL) ==
-          approx(32.0));
-    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(0UL) ==
-          approx(32.0));
-    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(5UL) ==
-          approx(32.0));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(0UL) == approx(32.0));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(0UL) == approx(32.0));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(5UL) == approx(32.0));
 
     // This is not a good test case to have, or even a good API. So we ignore
     // this for now.
