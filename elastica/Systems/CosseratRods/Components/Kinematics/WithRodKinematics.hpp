@@ -23,6 +23,7 @@
 #include "Systems/Block.hpp"
 #include "Utilities/CRTP.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/Math/Vec3.hpp"
 
 // module
 /// Types always first
@@ -349,7 +350,7 @@ namespace elastica {
             for (std::size_t idx = 0U; idx < dofs; ++idx) {
               // (I_1, I_2, I_3)
               Variable::slice(variable, idx) = real_type(0.0);
-              auto I_idx =
+              const Vec3 I_idx =
                   downstream_block.get_second_moment_of_area(idx) *
                   Traits::DataType::Scalar::slice(density, idx) *
                   Traits::DataType::Scalar::slice(reference_lengths, idx);
@@ -370,7 +371,7 @@ namespace elastica {
             for (std::size_t idx = 0U; idx < dofs; ++idx) {
               // inv(I_1, I_2, I_3)
               Variable::slice(variable, idx) = real_type(0.0);
-              auto I_idx =
+              const Vec3 I_idx =
                   real_type(1.0) /
                   (downstream_block.get_second_moment_of_area(idx) *
                    Traits::DataType::Scalar::slice(density, idx) *

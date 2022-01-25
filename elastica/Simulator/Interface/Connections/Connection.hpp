@@ -423,11 +423,7 @@ connections::Connection?
                   return make_connecter(
                       typename Parent::UUIDType{unique_id,
                                                 std::move(unique_name)},
-                      // while const-correctness is maintained in Connection,
-                      // we need to modify the systems later on, so cast it
-                      // away
-                      const_cast<FirstSystem&>(first_system_),
-                      const_cast<SecondSystem&>(second_system_),
+                      first_system_, second_system_,
                       std::move(connection_details.connection),
                       std::move(connection_details.index_pair));
                 });

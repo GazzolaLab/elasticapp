@@ -147,8 +147,8 @@ namespace elastica {
          * \param c Constraint
          * \param index_set indexset
          */
-        Constrainer(ConstraintUUID uuid, SystemType& sys, ConstraintType&& c,
-                    IndexType&& index_set)
+        Constrainer(ConstraintUUID uuid, SystemType const& sys,
+                    ConstraintType c, IndexType index_set)
             : ConstrainerBase(std::move(uuid)),
               indices_(std::move(index_set)),
               sys_(sys),
@@ -299,8 +299,8 @@ namespace elastica {
          * \param c Constraint
          * \param index_set indexset
          */
-        Constrainer(ConstraintUUID uuid, SystemType& sys, ConstraintType c,
-                    IndexType index_set)
+        Constrainer(ConstraintUUID uuid, SystemType const& sys,
+                    ConstraintType c, IndexType index_set)
             : ConstrainerBase(std::move(uuid)),
               indices_(std::move(index_set)),
               sys_(sys),
@@ -384,13 +384,14 @@ namespace elastica {
        */
       template <typename System, typename ConcreteConstraint, std::uint8_t N>
       inline auto make_constrainer(
-          const ConstraintUUID& id, System& sys, ConcreteConstraint&& bc,
-          ::elastica::detail::numeric_at_t<N>&& at) /* noexcept */
+          ConstraintUUID id, System const& sys, ConcreteConstraint&& bc,
+          ::elastica::detail::numeric_at_t<N> at) /* noexcept */
           -> std::unique_ptr<ConstrainerBase> {
         return std::unique_ptr<ConstrainerBase>(
             new Constrainer<System, std::decay_t<ConcreteConstraint>,
                             ::elastica::detail::numeric_at_t<N>>(
-                id, sys, std::forward<ConcreteConstraint>(bc), std::move(at)));
+                std::move(id), sys, std::forward<ConcreteConstraint>(bc),
+                std::move(at)));
       }
       /*! \endcond */
       //************************************************************************
@@ -408,7 +409,7 @@ namespace elastica {
        */
       template <typename System, typename ConstraintRegistrars>
       inline auto make_constrainer(
-          const ConstraintUUID& id, System& sys,
+          ConstraintUUID id, System const& sys,
           std::unique_ptr<::elastica::constraints::detail::ConstraintBase<
               ConstraintRegistrars>>
               bc_ptr,
@@ -420,7 +421,7 @@ namespace elastica {
                 std::unique_ptr<::elastica::constraints::detail::ConstraintBase<
                     ConstraintRegistrars>>,
                 std::unique_ptr<::elastica::detail::numeric_at_base_t>>(
-                id, sys, std::move(bc_ptr), std::move(at_ptr)));
+                std::move(id), sys, std::move(bc_ptr), std::move(at_ptr)));
       }
       /*! \endcond */
       //************************************************************************

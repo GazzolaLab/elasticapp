@@ -179,8 +179,8 @@ namespace elastica {
          * \param c Connection
          * \param index_pair index pair
          */
-        Connecter(ConnectionUUID uuid, FirstSystemType& first_sys,
-                  SecondSystemType& second_sys, ConnectionType&& c,
+        Connecter(ConnectionUUID uuid, FirstSystemType const& first_sys,
+                  SecondSystemType const& second_sys, ConnectionType&& c,
                   IndexPair index_pair)
             : ConnecterBase(std::move(uuid)),
               ConnectionPolicy(std::move(index_pair)),
@@ -231,9 +231,7 @@ namespace elastica {
         //**********************************************************************
         /*!\brief Gets a handle to the stored connection its type erased
          */
-        void* get_connection_unsafe() noexcept final {
-          return &connection_;
-        }
+        void* get_connection_unsafe() noexcept final { return &connection_; }
         //**********************************************************************
 
         //@}
@@ -306,8 +304,8 @@ namespace elastica {
          * \param c Connection
          * \param index_pair index pair
          */
-        Connecter(ConnectionUUID uuid, FirstSystemType& first_sys,
-                  SecondSystemType& second_sys, ConnectionType&& c,
+        Connecter(ConnectionUUID uuid, FirstSystemType const& first_sys,
+                  SecondSystemType const& second_sys, ConnectionType&& c,
                   IndexPair index_pair)
             : ConnecterBase(std::move(uuid)),
               DeferredToUserPolicy(std::move(index_pair)),
@@ -356,9 +354,7 @@ namespace elastica {
         //**********************************************************************
         /*!\brief Gets a handle to the stored connection its type erased
          */
-        void* get_connection_unsafe() noexcept final {
-          return &connection_;
-        }
+        void* get_connection_unsafe() noexcept final { return &connection_; }
         //**********************************************************************
 
         //@}
@@ -443,8 +439,8 @@ namespace elastica {
          * \param c Connection
          * \param index_set indexset
          */
-        Connecter(ConnectionUUID uuid, FirstSystemType& first_sys,
-                  SecondSystemType& second_sys, ConnectionType c,
+        Connecter(ConnectionUUID uuid, FirstSystemType const& first_sys,
+                  SecondSystemType const& second_sys, ConnectionType c,
                   IndexPair&& index_pair)
             : ConnecterBase(std::move(uuid)),
               ConnectionPolicy(std::move(index_pair)),
@@ -533,10 +529,11 @@ namespace elastica {
        */
       template <typename FirstSystem, typename SecondSystem,
                 typename ConcreteConnection>
-      inline auto make_connecter(
-          const ConnectionUUID& id, FirstSystem& first_sys,
-          SecondSystem& second_sys, ConcreteConnection&& connection,
-          std::pair<int, int>&& index_pair) /* noexcept */
+      inline auto make_connecter(ConnectionUUID const& id,
+                                 FirstSystem const& first_sys,
+                                 SecondSystem const& second_sys,
+                                 ConcreteConnection&& connection,
+                                 std::pair<int, int> index_pair) /* noexcept */
           -> std::unique_ptr<ConnecterBase> {
         return std::unique_ptr<ConnecterBase>(
             new Connecter<EagerPolicy, FirstSystem, SecondSystem,
@@ -565,16 +562,15 @@ namespace elastica {
       template <typename FirstSystem, typename SecondSystem,
                 typename ConcreteConnection>
       inline auto make_connecter(
-          const ConnectionUUID& id, FirstSystem& first_sys,
-          SecondSystem& second_sys, ConcreteConnection&& connection,
+          ConnectionUUID const& id, FirstSystem const& first_sys,
+          SecondSystem const& second_sys, ConcreteConnection&& connection,
           std::pair<decltype(defer), decltype(defer)> index_pair)
           -> std::unique_ptr<ConnecterBase> {
         return std::unique_ptr<ConnecterBase>(
             new Connecter<DeferredToUserPolicy, FirstSystem, SecondSystem,
                           std::decay_t<ConcreteConnection>>(
                 id, first_sys, second_sys,
-                std::forward<ConcreteConnection>(connection),
-                std::move(index_pair)));
+                std::forward<ConcreteConnection>(connection), index_pair));
       }
       /*! \endcond */
       //************************************************************************
@@ -593,12 +589,12 @@ namespace elastica {
       template <typename FirstSystem, typename SecondSystem,
                 typename ConnectionRegistrars>
       inline auto make_connecter(
-          const ConnectionUUID& id, FirstSystem& first_sys,
-          SecondSystem& second_sys,
+          ConnectionUUID const& id, FirstSystem const& first_sys,
+          SecondSystem const& second_sys,
           std::unique_ptr<::elastica::connections::detail::ConnectionBase<
               ConnectionRegistrars>>
               connection_ptr,
-          std::pair<std::size_t, std::size_t>&& index_pair)
+          std::pair<std::size_t, std::size_t> index_pair)
           -> std::unique_ptr<ConnecterBase> {
         return std::unique_ptr<ConnecterBase>(
             new Connecter<

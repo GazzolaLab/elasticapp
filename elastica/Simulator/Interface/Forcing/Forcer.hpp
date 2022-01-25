@@ -91,7 +91,7 @@ namespace elastica {
          * \param c Forcing
          * \param index_set indexset
          */
-        Forcer(ForcingUUID uuid, SystemType& sys, ForcingType c,
+        Forcer(ForcingUUID uuid, SystemType const& sys, ForcingType c,
                IndexType index_set)
             : ForcerBase(std::move(uuid)),
               sys_(sys),
@@ -238,7 +238,7 @@ namespace elastica {
          * \param c Forcing
          * \param index_set indexset
          */
-        Forcer(ForcingUUID uuid, SystemType& sys, ForcingType c,
+        Forcer(ForcingUUID uuid, SystemType const& sys, ForcingType c,
                IndexType index_set)
             : ForcerBase(std::move(uuid)),
               sys_(sys),
@@ -395,13 +395,13 @@ namespace elastica {
       template <typename System, typename ConcreteForcing,
                 typename IndexSetOrRange>
       inline auto make_forcer(
-          const ForcingUUID& id, System& sys, ConcreteForcing&& bc,
+          ForcingUUID id, System const& sys, ConcreteForcing&& bc,
           IndexSetOrRange&& index_set_or_range) /* noexcept */
           -> std::unique_ptr<ForcerBase> {
         return std::unique_ptr<ForcerBase>(
             new Forcer<System, std::decay_t<ConcreteForcing>,
                        std::decay_t<IndexSetOrRange>>(
-                id, sys, std::forward<ConcreteForcing>(bc),
+                std::move(id), sys, std::forward<ConcreteForcing>(bc),
                 std::forward<IndexSetOrRange>(index_set_or_range)));
       }
       /*! \endcond */
@@ -423,7 +423,7 @@ namespace elastica {
        */
       template <typename System, typename ForcingRegistrars>
       inline auto make_forcer(
-          const ForcingUUID& id, System& sys,
+          ForcingUUID id, System const& sys,
           std::unique_ptr<
               ::elastica::forcing::detail::ForcingBase<ForcingRegistrars>>
               bc_ptr,
@@ -434,7 +434,7 @@ namespace elastica {
                        std::unique_ptr<::elastica::forcing::detail::ForcingBase<
                            ForcingRegistrars>>,
                        std::unique_ptr<::elastica::detail::numeric_at_base_t>>(
-                id, sys, std::move(bc_ptr), std::move(at_ptr)));
+                std::move(id), sys, std::move(bc_ptr), std::move(at_ptr)));
       }
       /*! \endcond */
       //************************************************************************
@@ -452,7 +452,7 @@ namespace elastica {
        */
       template <typename System, typename ForcingRegistrars>
       inline auto make_forcer(
-          const ForcingUUID& id, System& sys,
+          ForcingUUID id, System const& sys,
           std::unique_ptr<
               ::elastica::forcing::detail::ForcingBase<ForcingRegistrars>>
               bc_ptr,
@@ -463,7 +463,7 @@ namespace elastica {
                        std::unique_ptr<::elastica::forcing::detail::ForcingBase<
                            ForcingRegistrars>>,
                        std::unique_ptr<::elastica::detail::NumericRange>>(
-                id, sys, std::move(bc_ptr), std::move(at_ptr)));
+                std::move(id), sys, std::move(bc_ptr), std::move(at_ptr)));
       }
       /*! \endcond */
       //************************************************************************
