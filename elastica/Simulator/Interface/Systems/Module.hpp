@@ -813,7 +813,7 @@ the above type-list, using SystemsConfiguration.
       //************************************************************************
       /*!\brief Resets the system module
        *
-       * \param time_v The time of reset, will be propagated to the modules
+       * \param time_v The time of reset
        * \exception std::runtime_error
        */
       void reset(TimeType /*time_v*/) {

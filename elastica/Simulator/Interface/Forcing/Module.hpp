@@ -617,9 +617,9 @@ namespace elastica {
       //@{
 
       //************************************************************************
-      /*!\brief Resets the system module
+      /*!\brief Resets the forcing module
        *
-       * \param time_v The time of reset, will be propagated to the modules
+       * \param time_v The time of reset
        * \exception std::runtime_error
        */
       void reset(TimeType /*time_v*/) {
