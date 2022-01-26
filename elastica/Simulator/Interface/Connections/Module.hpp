@@ -602,8 +602,9 @@ namespace elastica {
         }
 
         // convert a void ptr to a ConnectionType* and then dereference it
-        return *static_cast<ConnectionType*>((
-            This::retrieve_from_query(id(query_key))->get_connection_unsafe()));
+        void* unsafe_connection =
+            This::retrieve_from_query(id(query_key))->get_connection_unsafe();
+        return *static_cast<ConnectionType*>(unsafe_connection);
       }
       //************************************************************************
 

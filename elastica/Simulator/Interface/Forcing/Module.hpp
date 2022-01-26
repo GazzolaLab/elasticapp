@@ -314,14 +314,15 @@ namespace elastica {
       }
       //************************************************************************
 
-     protected:
-      //************************************************************************
-      /*! \cond ELASTICA_INTERNAL */
-      /*!\brief Retrieval of a forcer from a unique key
-       *
-       * \param forcing_uuid The key using which we retrieve the forcings
-       */
-      inline auto retrieve_from_query(UUID const& forcing_uuid) noexcept ->
+      protected :
+          //************************************************************************
+          /*! \cond ELASTICA_INTERNAL */
+          /*!\brief Retrieval of a forcer from a unique key
+           *
+           * \param forcing_uuid The key using which we retrieve the forcings
+           */
+          inline auto
+          retrieve_from_query(UUID const& forcing_uuid) noexcept ->
           typename ForcerID::pointer {
         /*
          * dev note:
@@ -383,8 +384,9 @@ namespace elastica {
         }
 
         // convert a void ptr to a ForcingType* and then dereference it
-        return *static_cast<ForcingType*>(
-            (This::retrieve_from_query(id(query_key))->get_forcing_unsafe()));
+        void* unsafe_forcing =
+            This::retrieve_from_query(id(query_key))->get_forcing_unsafe();
+        return *static_cast<ForcingType*>(unsafe_forcing);
       }
       //************************************************************************
 

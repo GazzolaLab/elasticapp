@@ -193,7 +193,8 @@ namespace elastica {
     ELASTICA_DEFINE_CONSTRAINT(ConstraintDefaulted) {
      public:
       ConstraintDefaulted() = default;
-      ConstraintDefaulted(ConstraintDefaulted &&) noexcept {};
+      ConstraintDefaulted(ConstraintDefaulted && other) noexcept
+          : some_member(other.some_member){};
       ~ConstraintDefaulted() = default;
       // move constructor is deleted if a destructor is defined
       //      ~ConstraintDefaulted(){
@@ -222,6 +223,37 @@ namespace elastica {
       }
 
       std::size_t some_member{23UL};  // not 0
+    };
+
+    ELASTICA_DEFINE_CONSTRAINT(ConstraintWithOneMember) {
+     public:
+      ConstraintWithOneMember(int a) : some_member(a){};
+      ConstraintWithOneMember(ConstraintWithOneMember && other) noexcept
+          : some_member(std::move(other.some_member)){};
+      ~ConstraintWithOneMember() = default;
+      template <typename FirstSystem>
+      inline void change_with_noop(FirstSystem & first_system) const {
+        // see if first and second system can be changed
+        first_system.n_indices += 1UL;
+        first_system.n_indices -= 1UL;
+      }
+
+      template <typename TimeType, typename System>
+      void constrain_primitives(TimeType /* time */, System & first_system,
+                                std::size_t /* first_index */
+      ) const {
+        change_with_noop(first_system);
+        ++primitive_counter;
+      }
+      template <typename TimeType, typename System>
+      void constrain_rates(TimeType /* time */, System & first_system,
+                           std::size_t /* first_index */
+      ) const {
+        change_with_noop(first_system);
+        ++rate_counter;
+      }
+
+      int some_member;
     };
 
     ELASTICA_DEFINE_CONSTRAINT(ConstraintWithMember) {
@@ -363,11 +395,14 @@ namespace {
 
       CHECK(primitive_counter.count == expected_count);
       CHECK(rate_counter.count == expected_count);
-      std::size_t sum = std::accumulate(
-          std::cbegin(sim.constrainer_batches()), std::cend(sim.constrainer_batches()),
-          0UL, [](std::size_t sum, auto const& batch) { return sum + batch.size(); });
+      std::size_t sum =
+          std::accumulate(std::cbegin(sim.constrainer_batches()),
+                          std::cend(sim.constrainer_batches()), 0UL,
+                          [](std::size_t sum, auto const& batch) {
+                            return sum + batch.size();
+                          });
       CHECK(sum == 7UL);
-//      CHECK(sim.constrainers().size() == 7UL);
+      //      CHECK(sim.constrainers().size() == 7UL);
     }
   }
 
@@ -426,10 +461,11 @@ namespace {
 
     using ::elastica::end;
     using ::elastica::constraints::ConstraintDefaulted;
+    using ::elastica::constraints::ConstraintWithOneMember;
     using ::elastica::interface::at;
     using ::elastica::interface::pair;
     using ::mock::MockSystem;
-    using ExampleConstraint = ConstraintDefaulted<>;
+    using ExampleConstraint = ConstraintWithOneMember<>;
     {
       using System = MockSystem;
 
@@ -439,10 +475,10 @@ namespace {
       std::string optional_constraint_name = "MyConstraint";
 
       /// [query_eg]
-      auto my_constraint_key =
-          sim.constrain(sys, optional_constraint_name)
-              .with<ExampleConstraint>(/* ExampleConstraint arguments*/)
-              .at(end - 2UL, end - 1UL);
+      int argument = -2;
+      auto my_constraint_key = sim.constrain(sys, optional_constraint_name)
+                                   .with<ExampleConstraint>(argument)
+                                   .at(end - 2UL, end - 1UL);
 
       sim.finalize();
 
@@ -450,7 +486,7 @@ namespace {
       // you can now access member data of `my_constraint`
       /// [query_eg]
 
-      CHECK(my_constraint.some_member == 23UL);
+      CHECK(my_constraint.some_member == -2);
     }
   }
 
@@ -469,14 +505,14 @@ namespace {
     CHECK(sim.n_constraints() == 0UL);
 
     using ::elastica::end;
-    using ::elastica::constraints::ConstraintDefaulted;
     using ::elastica::constraints::ConstraintWithMember;
+    using ::elastica::constraints::ConstraintWithOneMember;
     using ::elastica::interface::at;
     using ::elastica::interface::pair;
     using ::mock::MockSystem;
     {
       using System = MockSystem;
-      using ExampleConstraint = ConstraintDefaulted<>;
+      using ExampleConstraint = ConstraintWithOneMember<>;
 
       // same setup as earlier
       // is a physical system, e.g. CosseratRod, with 100 degrees of freedom
@@ -484,14 +520,14 @@ namespace {
       std::string optional_constraint_name = "MyConstraint";
       auto first_constraint_key =
           sim.constrain(sys, optional_constraint_name)
-              .with<ExampleConstraint>(/* ExampleConstraint arguments*/)
+              .with<ExampleConstraint>(56) /* ExampleConstraint arguments*/
               .at(end - 2UL, end - 1UL);
       auto second_constraint_key = sim.constrain(sys, optional_constraint_name)
                                        .with<ConstraintWithMember<>>(32, 'a')
                                        .at(1UL);
       auto third_constraint_key =
           sim.constrain(sys, optional_constraint_name)
-              .with<ExampleConstraint>(/* ExampleConstraint arguments*/)
+              .with<ExampleConstraint>(-45) /* ExampleConstraint arguments*/
               .at(end - 2UL, end - 1UL);
       auto fourth_constraint_key = sim.constrain(sys, optional_constraint_name)
                                        .with<ConstraintWithMember<>>(42, 'd')
@@ -501,8 +537,8 @@ namespace {
       auto& first_constraint = sim.query(first_constraint_key);
       auto& third_constraint = sim.query(third_constraint_key);
 
-      CHECK(first_constraint.some_member == 23UL);
-      CHECK(third_constraint.some_member == 23UL);
+      CHECK(first_constraint.some_member == 56);
+      CHECK(third_constraint.some_member == -45);
 
       auto& second_constraint = sim.query(second_constraint_key);
       auto& fourth_constraint = sim.query(fourth_constraint_key);

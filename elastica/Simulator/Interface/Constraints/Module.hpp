@@ -324,14 +324,16 @@ namespace elastica {
       }
       //************************************************************************
 
-     protected:
-      //************************************************************************
-      /*! \cond ELASTICA_INTERNAL */
-      /*!\brief Retrieval of a constrainer from a unique key
-       *
-       * \param constraint_uuid The key using which we retrieve the constraints
-       */
-      inline auto retrieve_from_query(UUID const& constraint_uuid) noexcept ->
+      protected :
+          //************************************************************************
+          /*! \cond ELASTICA_INTERNAL */
+          /*!\brief Retrieval of a constrainer from a unique key
+           *
+           * \param constraint_uuid The key using which we retrieve the
+           * constraints
+           */
+          inline auto
+          retrieve_from_query(UUID const& constraint_uuid) noexcept ->
           typename ConstrainerID::pointer {
         /*
          * dev note:
@@ -395,8 +397,9 @@ namespace elastica {
         }
 
         // convert a void ptr to a ConstraintType* and then dereference it
-        return *static_cast<ConstraintType*>((
-            This::retrieve_from_query(id(query_key))->get_constraint_unsafe()));
+        void* unsafe_constraint =
+            This::retrieve_from_query(id(query_key))->get_constraint_unsafe();
+        return *static_cast<ConstraintType*>(unsafe_constraint);
       }
       //************************************************************************
 
