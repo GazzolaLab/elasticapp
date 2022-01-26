@@ -1074,7 +1074,7 @@ reorganizing your code logic.
       //************************************************************************
       /*!\brief Resets the individual modules
        *
-       * \param time_v The time of reset, will be propogated to the modules
+       * \param time_v The time of reset, will be propagated to the modules
        * \exception std::runtime_error If the reset of any module throws an
        * error, it is propagated here, rather than a hard exit.
        */

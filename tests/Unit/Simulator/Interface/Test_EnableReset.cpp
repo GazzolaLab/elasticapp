@@ -84,7 +84,7 @@ namespace {
 
   // clang-format off
   ELASTICA_TEST_CASE(
-      "Unit.Simulator.Interface.EnableReset.propogates_error",
+      "Unit.Simulator.Interface.EnableReset.propagates_error",
       "[Unit][Simulator][Interface]") {
     // clang-format on
     TestResetErrorPropogation a;
