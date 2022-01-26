@@ -62,7 +62,7 @@ namespace {
     using S::S;                            // tested
     using S::stream_profiling_summary_to;
 
-    using S::reset_modules;
+    using S::reset_modules;  // tested
   };
 
   template <template <typename /*Simulator*/,  // base simulator
@@ -362,6 +362,8 @@ namespace {
       // does not raise any execptions at all
     }
 
+    void finalize(::elastica::Time) noexcept {}
+
    public:
     int i = {0};
   };
@@ -378,16 +380,28 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Simulator.reset",
                      "[Unit][Simulator][Interface]") {
     // clang-format on
-    auto& simulator = make_test_simulator<TestModuleResetNoExcept>();
+    SECTION("Reset calls into modules") {
+      auto& simulator = make_test_simulator<TestModuleResetNoExcept>();
 
-    CHECK(simulator.i == 0);
-    CHECK_NOTHROW(simulator.reset_modules(Time{0.0}));
-    CHECK(simulator.i == 2);
+      CHECK(simulator.i == 0);
+      CHECK_NOTHROW(simulator.reset_modules(Time{0.0}));
+      CHECK(simulator.i == 2);
+    }
 
-    auto& another_simulator =
-        make_test_simulator<TestModuleResetWithException>();
-    CHECK_THROWS_NESTED_WITH(another_simulator.reset_modules(Time{0.0}),
-                             "Resetting the simulator",
-                             "Module throws exception");
+    SECTION("Reset works after finalization") {
+      auto& simulator = make_test_simulator<TestModuleResetNoExcept>();
+      simulator.finalize();
+      CHECK(simulator.ready());
+
+      CHECK_NOTHROW(simulator.reset_modules(Time{0.0}));
+      CHECK_FALSE(simulator.ready());
+    }
+
+    SECTION("Reset propagates errors") {
+      auto& simulator = make_test_simulator<TestModuleResetWithException>();
+      CHECK_THROWS_NESTED_WITH(simulator.reset_modules(Time{0.0}),
+                               "Resetting the simulator",
+                               "Module throws exception");
+    }
   }
 }  // namespace
