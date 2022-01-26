@@ -324,14 +324,16 @@ namespace elastica {
       }
       //************************************************************************
 
-     protected:
-      //************************************************************************
-      /*! \cond ELASTICA_INTERNAL */
-      /*!\brief Retrieval of a constrainer from a unique key
-       *
-       * \param constraint_uuid The key using which we retrieve the constraints
-       */
-      inline auto retrieve_from_query(UUID const& constraint_uuid) noexcept ->
+      protected :
+          //************************************************************************
+          /*! \cond ELASTICA_INTERNAL */
+          /*!\brief Retrieval of a constrainer from a unique key
+           *
+           * \param constraint_uuid The key using which we retrieve the
+           * constraints
+           */
+          inline auto
+          retrieve_from_query(UUID const& constraint_uuid) noexcept ->
           typename ConstrainerID::pointer {
         /*
          * dev note:
@@ -643,7 +645,7 @@ namespace elastica {
       //@{
 
       //************************************************************************
-      /*!\brief Resets the forcing module
+      /*!\brief Resets the module
        *
        * \param time_v The time of reset
        * \exception std::runtime_error
