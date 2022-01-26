@@ -33,7 +33,6 @@
 #include "Utilities/Overloader.hpp"
 #include "Utilities/RepeatAsTuple.hpp"
 #include "Utilities/Size.hpp"
-#include "Utilities/TMPL.hpp"
 
 namespace {
   using namespace ::elastica::configuration;
@@ -304,6 +303,10 @@ reorganizing your code logic.
     // after after
     using P::for_each_block;
     using P::for_each_system;
+
+    // rest
+    using P::n_total_systems;  // for testing reset
+    using P::reset;
   };
 
 }  // namespace mock
@@ -846,6 +849,45 @@ namespace {
         });
       }
     }  // nothrow case
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Systems.Module.reset",
+                     "[Unit][Simulator][Interface][Systems]") {
+    // clang-format on
+    auto sim = setup_sim_with_state(20UL);
+    // pre check
+    {
+      auto check_size = [&](auto Is) {
+        CHECK(std::get<Is>(sim.n_total_systems()) > 0UL);
+      };
+      auto check_container = [&](auto Is) {
+        CHECK_FALSE(
+            std::get<Is>(sim.get_system_collection_container()).empty());
+      };
+      index_apply<3UL>([&](auto... Is) {
+        EXPAND_PACK_LEFT_TO_RIGHT(check_size(Is));
+        EXPAND_PACK_LEFT_TO_RIGHT(check_container(Is));
+      });
+    }
+
+    // argument doesnt matter
+    CHECK_NOTHROW(sim.reset(elastica::Time{0.0}));
+
+    // post
+    {
+      auto check_size = [&](auto Is) {
+        CHECK(std::get<Is>(sim.n_total_systems()) == 0UL);
+      };
+      auto check_container = [&](auto Is) {
+        CHECK(std::get<Is>(sim.get_system_collection_container()).empty());
+      };
+
+      index_apply<3UL>([&](auto... Is) {
+        EXPAND_PACK_LEFT_TO_RIGHT(check_size(Is));
+        EXPAND_PACK_LEFT_TO_RIGHT(check_container(Is));
+      });
+    }
   }
 
 }  // namespace
