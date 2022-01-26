@@ -122,9 +122,11 @@ namespace mock {
 
     // n_con
     std::size_t n_forcings() const {
-      return std::accumulate(
-          std::cbegin(forcer_batches()), std::cend(forcer_batches()), 0UL,
-          [](std::size_t sum, auto const& batch) { return sum + batch.size(); });
+      return std::accumulate(std::cbegin(forcer_batches()),
+                             std::cend(forcer_batches()), 0UL,
+                             [](std::size_t sum, auto const& batch) {
+                               return sum + batch.size();
+                             });
     }
     using Container = std::vector<Pointer>;
     using CC = std::vector<Container>;
@@ -155,6 +157,7 @@ namespace mock {
     using P::finalize;
     using P::force;
     using P::forcer_batches;
+    using P::reset;
   };
 
   //////////////////////////////////////////////////////////////////////////////

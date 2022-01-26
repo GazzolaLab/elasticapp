@@ -184,6 +184,11 @@ struct Counter {
 // define some forcings
 // not as intense as Test_Forcing in Simulator/Forcing or
 // Simulator/Interface/Forcing
+
+struct PVec3 {
+  int x, y, z;
+};
+
 namespace elastica {
 
   namespace forcing {
@@ -191,7 +196,8 @@ namespace elastica {
     ELASTICA_DEFINE_FORCING(ForcingDefaulted) {
      public:
       ForcingDefaulted() = default;
-      ForcingDefaulted(ForcingDefaulted &&) noexcept {};
+      ForcingDefaulted(ForcingDefaulted && other) noexcept
+          : some_member(other.some_member){};
       ~ForcingDefaulted() = default;
       // move constructor is deleted if a destructor is defined
       //      ~ForcingDefaulted(){
@@ -219,6 +225,40 @@ namespace elastica {
         ++torque_counter_in_forcing;
       }
       std::size_t some_member{23UL};
+    };
+
+    ELASTICA_DEFINE_FORCING(ForcingWithOneMember) {
+     public:
+      ForcingWithOneMember(PVec3 c) : some_member(c) {}
+      ForcingWithOneMember(ForcingWithOneMember && other) noexcept
+          : some_member(std::move(other.some_member)){};
+      ~ForcingWithOneMember() = default;
+      // move constructor is deleted if a destructor is defined
+      //      ~ForcingDefaulted(){
+      //        std::cout << "Destructor caleld!" << std::endl;
+      //      }
+      template <typename FirstSystem>
+      inline void change_with_noop(FirstSystem & first_system) const {
+        // see if first and second system can be changed
+        first_system.n_indices += 1UL;
+        first_system.n_indices -= 1UL;
+      }
+
+      template <typename TimeType, typename System>
+      void apply_forces(TimeType /* time */, System & first_system,
+                        std::size_t /* first_index */
+      ) const {
+        change_with_noop(first_system);
+        ++force_counter_in_forcing;
+      }
+      template <typename TimeType, typename System>
+      void apply_torques(TimeType /* time */, System & first_system,
+                         std::size_t /* first_index */
+      ) const {
+        change_with_noop(first_system);
+        ++torque_counter_in_forcing;
+      }
+      PVec3 some_member;
     };
 
     ELASTICA_DEFINE_FORCING(ForcingWithMember) {
@@ -424,11 +464,11 @@ namespace {
     CHECK(sim.n_forcings() == 0UL);
 
     using ::elastica::end;
-    using ::elastica::forcing::ForcingDefaulted;
+    using ::elastica::forcing::ForcingWithOneMember;
     using ::elastica::interface::at;
     using ::elastica::interface::pair;
     using ::mock::MockSystem;
-    using ExampleForcing = ForcingDefaulted<>;
+    using ExampleForcing = ForcingWithOneMember<>;
     {
       using System = MockSystem;
 
@@ -438,9 +478,10 @@ namespace {
       std::string optional_forcing_name = "MyForcing";
 
       /// [query_eg]
+      PVec3 argument{-1, 2, -3};
       auto my_forcing_key =
           sim.force(sys, optional_forcing_name)
-              .with<ExampleForcing>(/* ExampleForcing arguments*/)
+              .with<ExampleForcing>(argument) /* ExampleForcing arguments*/
               .at(end - 2UL, end - 1UL);
 
       sim.finalize();
@@ -449,7 +490,9 @@ namespace {
       // you can now access member data of `my_forcing`
       /// [query_eg]
 
-      CHECK(my_forcing.some_member == 23UL);
+      CHECK(my_forcing.some_member.x == -1);
+      CHECK(my_forcing.some_member.y == 2);
+      CHECK(my_forcing.some_member.z == -3);
     }
   }
 
@@ -468,14 +511,14 @@ namespace {
     CHECK(sim.n_forcings() == 0UL);
 
     using ::elastica::end;
-    using ::elastica::forcing::ForcingDefaulted;
     using ::elastica::forcing::ForcingWithMember;
+    using ::elastica::forcing::ForcingWithOneMember;
     using ::elastica::interface::at;
     using ::elastica::interface::pair;
     using ::mock::MockSystem;
     {
       using System = MockSystem;
-      using ExampleForcing = ForcingDefaulted<>;
+      using ExampleForcing = ForcingWithOneMember<>;
       using MemberForcing = ForcingWithMember<>;
 
       // same setup as earlier
@@ -483,16 +526,17 @@ namespace {
       System sys{100UL};
       std::string optional_forcing_name = "MyForcing";
 
-      auto first_forcing_key =
-          sim.force(sys, optional_forcing_name)
-              .with<ExampleForcing>(/* ExampleForcing arguments*/)
-              .at(end - 2UL, end - 1UL);
+      auto first_forcing_key = sim.force(sys, optional_forcing_name)
+                                   .with<ExampleForcing>(PVec3{
+                                       10, 9, 8}) /* ExampleForcing arguments*/
+                                   .at(end - 2UL, end - 1UL);
       auto second_forcing_key = sim.force(sys, optional_forcing_name)
                                     .with<MemberForcing>(32, 'a')
                                     .at(1UL);
       auto third_forcing_key =
           sim.force(sys, optional_forcing_name)
-              .with<ExampleForcing>(/* ExampleForcing arguments*/)
+              .with<ExampleForcing>(
+                  PVec3{-3, -2, -1}) /* ExampleForcing arguments*/
               .at(2UL);
       auto fourth_forcing_key = sim.force(sys, optional_forcing_name)
                                     .with<MemberForcing>(42, 'd')
@@ -503,8 +547,13 @@ namespace {
       auto& first_forcing = sim.query(first_forcing_key);
       auto& third_forcing = sim.query(third_forcing_key);
 
-      CHECK(first_forcing.some_member == 23UL);
-      CHECK(third_forcing.some_member == 23UL);
+      CHECK(first_forcing.some_member.x == 10);
+      CHECK(first_forcing.some_member.y == 9);
+      CHECK(first_forcing.some_member.z == 8);
+
+      CHECK(third_forcing.some_member.x == -3);
+      CHECK(third_forcing.some_member.y == -2);
+      CHECK(third_forcing.some_member.z == -1);
 
       auto& second_forcing = sim.query(second_forcing_key);
       auto& fourth_forcing = sim.query(fourth_forcing_key);
@@ -700,6 +749,47 @@ namespace {
                                  "Restored UUID", "does not match");
       }
     }
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Forcing.Module.reset",
+                     "[Unit][Simulator][Interface][Forcing]") {
+    // clang-format on
+    auto sim_config =
+        mock::make_simulator_configuration(DefaultForcingConfiguration{});
+    // check cases without an error first.
+    bool arg_all_registered = true;
+    bool is_final = false;
+    auto sim = mock::make_simulator<::mock::ForcingModule>(
+        sim_config, arg_all_registered, is_final);
+    CHECK(sim.n_forcings() == 0UL);
+
+    using ::elastica::forcing::ForcingWithMember;
+    using ::mock::MockSystem;
+
+    using System = MockSystem;
+    using MemberForcing = ForcingWithMember<>;
+    {
+      System sys{100UL};
+      std::string optional_forcing_name = "MyForcing";
+
+      for (std::size_t i = 0UL; i < 5UL; ++i)
+        sim.force(sys, optional_forcing_name)
+            .with<MemberForcing>(32, 'a')
+            .at(i);
+    }
+
+    sim.finalize();
+
+    CHECK(sim.n_forcings() == 5UL);
+    // CHECK(sim.ready()); we are not testing the mock simulator
+    CHECK_FALSE(sim.forcer_batches().empty());
+
+    sim.reset(::elastica::Time{0.0});
+
+    CHECK(sim.n_forcings() == 0UL);
+    // CHECK_FALSE(sim.ready());  we are not testing the mock simulator
+    CHECK(sim.forcer_batches().empty());
   }
 
 }  // namespace

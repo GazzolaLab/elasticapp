@@ -314,14 +314,15 @@ namespace elastica {
       }
       //************************************************************************
 
-     protected:
-      //************************************************************************
-      /*! \cond ELASTICA_INTERNAL */
-      /*!\brief Retrieval of a forcer from a unique key
-       *
-       * \param forcing_uuid The key using which we retrieve the forcings
-       */
-      inline auto retrieve_from_query(UUID const& forcing_uuid) noexcept ->
+      protected :
+          //************************************************************************
+          /*! \cond ELASTICA_INTERNAL */
+          /*!\brief Retrieval of a forcer from a unique key
+           *
+           * \param forcing_uuid The key using which we retrieve the forcings
+           */
+          inline auto
+          retrieve_from_query(UUID const& forcing_uuid) noexcept ->
           typename ForcerID::pointer {
         /*
          * dev note:
@@ -608,6 +609,29 @@ namespace elastica {
         // to be safe, force initially
         apply_dynamics(time_v);
       }
+      //************************************************************************
+
+     protected:
+      //**Reset methods*********************************************************
+      /*!\name Reset methods*/
+      //@{
+
+      //************************************************************************
+      /*!\brief Resets the system module
+       *
+       * \param time_v The time of reset, will be propagated to the modules
+       * \exception std::runtime_error
+       */
+      void reset(TimeType /*time_v*/) {
+        n_total_forcing = 0UL;
+        forcing_.clear();  // no need, but okay for symmetry
+        forcer_batches().clear();
+        uuid_map_.clear();
+        batch_from.clear();
+      }
+      //************************************************************************
+
+      //@}
       //************************************************************************
 
      private:
