@@ -777,6 +777,27 @@ Did you give the right indices using the at() method?
       }
       //************************************************************************
 
+     protected:
+      //**Reset methods*********************************************************
+      /*!\name Reset methods*/
+      //@{
+
+      //************************************************************************
+      /*!\brief Resets the module
+       *
+       * \param time_v The time of reset
+       * \exception std::runtime_error
+       */
+      void reset(TimeType /*time_v*/) {
+        n_total_connections = 0UL;
+        connections_.clear();  // no need, but okay for symmetry
+        connecters_.clear();
+      }
+      //************************************************************************
+
+      //@}
+      //************************************************************************
+
      private:
       //**Member variables******************************************************
       //! The total number of registered connections

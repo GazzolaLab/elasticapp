@@ -188,8 +188,8 @@ ELASTICA_TEST_CASE(
 // to test whether the finalize() method calls all algorithms that are
 // registered in the simulator, we can increment a common counter in all
 // the defaulted connnections
-struct Counter {
-  Counter& operator++() noexcept {
+struct ConnectionsCounter {
+  ConnectionsCounter& operator++() noexcept {
     ++count;
     return *this;
   }
@@ -205,13 +205,17 @@ namespace elastica {
 
     ELASTICA_DEFINE_CONNECTION(ConnectionDefaulted) {
      public:
-      ConnectionDefaulted() = default;
-      ConnectionDefaulted(ConnectionDefaulted &&) noexcept {};
+      ConnectionDefaulted(std::size_t some_arg = 23UL)
+          : some_member{some_arg} {}
+      // Needs to be properly defined for query to work
+      ConnectionDefaulted(ConnectionDefaulted &&) {}
+      // If I do this, the counter doesn't work :/
+      /*
+      ConnectionDefaulted(ConnectionDefaulted && other)
+          : some_member{std::move(other.some_member)} {};
+          */
+
       ~ConnectionDefaulted() = default;
-      // move constructor is deleted if a destructor is defined
-      //      ~ConnectionDefaulted(){
-      //        std::cout << "Destructor caleld!" << std::endl;
-      //      }
       template <typename FirstSystem, typename SecondSystem>
       inline void change_with_noop(FirstSystem & first_system,
                                    SecondSystem & second_system) const {
@@ -253,7 +257,7 @@ namespace elastica {
       }
 
      public:
-      std::size_t some_member{23UL};  // not zero!
+      std::size_t some_member;  // {23UL};  // not zero!
     };
 
     ELASTICA_DEFINE_CONNECTION(ConnectionWithMember) {
@@ -287,7 +291,47 @@ namespace elastica {
 
      public:
       int int_member;  // not 0
-      float char_member;
+      char char_member;
+    };
+
+    ELASTICA_DEFINE_CONNECTION(AnotherConnectionWithMember) {
+     public:
+      AnotherConnectionWithMember(char c, float f, double d)
+          : char_member(c), float_member(f), double_member(d){};
+      AnotherConnectionWithMember(AnotherConnectionWithMember && other) noexcept
+          : char_member(other.char_member),
+            float_member(other.float_member),
+            double_member(other.double_member) {
+        std::cout << "Move constructor called" << std::endl;
+      };
+      ~AnotherConnectionWithMember() = default;
+
+      template <typename TimeType, typename FirstSystem, typename SecondSystem>
+      void apply_forces(TimeType /* time */, FirstSystem& /*first_system*/,
+                        std::size_t /* first_index */,
+                        SecondSystem& /*second_system*/,
+                        std::size_t /* second_index */) const {}
+      template <typename TimeType, typename FirstSystem, typename SecondSystem>
+      void apply_forces(
+          TimeType /* time */, FirstSystem& /*first_system*/, SecondSystem &
+          /*second_system*/) const {}
+
+      template <typename TimeType, typename FirstSystem, typename SecondSystem>
+      void apply_torques(TimeType /* time */, FirstSystem& /*first_system*/,
+                         std::size_t /* first_index */,
+                         SecondSystem& /*second_system*/,
+                         std::size_t /* second_index */) const {}
+      template <typename TimeType, typename FirstSystem, typename SecondSystem>
+      void apply_torques(
+          TimeType /* time */, FirstSystem& /*first_system*/, SecondSystem &
+          /*second_system*/) const {}
+      //      explicit operator int() const noexcept { return int_member; }
+      //      explicit operator char() const noexcept { return char_member; }
+
+     public:
+      char char_member;
+      float float_member;
+      double double_member;
     };
 
   }  // namespace connections
@@ -696,10 +740,14 @@ namespace {
 
     using ::elastica::end;
     using ::elastica::connections::ConnectionDefaulted;
+    using ::elastica::connections::ConnectionWithMember;
     using ::elastica::interface::at;
     using ::elastica::interface::pair;
     using ::mock::MockSystem;
-    using ExampleConnection = ConnectionDefaulted<>;
+    using Reg =
+        tmpl::list<::elastica::connections::Registrars::ConnectionDefaulted,
+                   ::elastica::connections::Registrars::ConnectionWithMember>;
+    using ExampleConnection = ConnectionWithMember<Reg>;
     {
       using first_system = MockSystem;
       using second_system = MockSystem;
@@ -714,11 +762,13 @@ namespace {
       // connection protocols
 
       /// [query_eg]
+      int first_argument = 21;
+      char second_argument = 'y';
       auto my_connection_key =
           sim.connect(fs)
               .to(ss)
               .with_name(optional_connection_name)  // can be skipped
-              .with<ExampleConnection>(/* ExampleConnection arguments*/)
+              .with<ExampleConnection>(first_argument, second_argument)
               .at(pair(1UL, 2UL));
 
       sim.finalize();
@@ -727,7 +777,9 @@ namespace {
       // you can now access member data of `my_connection`
       /// [query_eg]
 
-      CHECK(my_connection.some_member == 23UL);
+      // CHECK(my_connection.some_member == 23UL);
+      CHECK(int(my_connection) == 21);
+      CHECK(char(my_connection) == 'y');
     }
   }
 
@@ -746,12 +798,13 @@ namespace {
     CHECK(sim.n_connections() == 0UL);
 
     using ::elastica::end;
+    using ::elastica::connections::AnotherConnectionWithMember;
     using ::elastica::connections::ConnectionDefaulted;
     using ::elastica::connections::ConnectionWithMember;
     using ::elastica::interface::at;
     using ::elastica::interface::pair;
     using ::mock::MockSystem;
-    using ExampleConnection = ConnectionDefaulted<>;
+    // using ExampleConnection = ConnectionDefaulted<>;
     {
       using first_system = MockSystem;
       using second_system = MockSystem;
@@ -765,45 +818,69 @@ namespace {
       // ExampleConnection is some elastica::connection satisfying the
       // connection protocols
 
-      auto first_connection_key =
-          sim.connect(fs)
-              .to(ss)
-              .with_name(optional_connection_name)  // can be skipped
-              .with<ExampleConnection>(/* ExampleConnection arguments*/)
-              .at(pair(1UL, 2UL));
+      //      auto first_connection_key =
+      //          sim.connect(fs)
+      //              .to(ss)
+      //              .with_name(optional_connection_name)  // can be skipped
+      //              .with<ConnectionDefaulted<>>(43UL)
+      //              .at(pair(1UL, 2UL));
       auto second_connection_key =
           sim.connect(fs)
               .to(ss)
               .with_name(optional_connection_name)  // can be skipped
               .with<ConnectionWithMember<>>(42, 'p')
               .at(pair(10UL, 21UL));
-      auto third_connection_key =
-          sim.connect(fs)
-              .to(ss)
-              .with_name(optional_connection_name)  // can be skipped
-              .with<ExampleConnection>(/* ExampleConnection arguments*/)
-              .at(pair(5UL, 12UL));
+      //      auto third_connection_key =
+      //          sim.connect(fs)
+      //              .to(ss)
+      //              .with_name(optional_connection_name)  // can be skipped
+      //              .with<ConnectionDefaulted<>>(
+      //                  /* ExampleConnection arguments*/)
+      //              .at(pair(5UL, 12UL));
       auto fourth_connection_key =
           sim.connect(fs)
               .to(ss)
               .with_name(optional_connection_name)  // can be skipped
-              .with<ConnectionWithMember<>>(25, 'q')
+              .with<ConnectionWithMember<>>(35, 'q')
               .at(pair(10UL, 21UL));
+      auto fifth_connection_key =
+          sim.connect(fs)
+              .to(ss)
+              .with_name(optional_connection_name)  // can be skipped
+              .with<AnotherConnectionWithMember<>>('a', 5.12F, 3.14159)
+              .at(pair(12UL, 22UL));
+      auto sixth_connection_key =
+          sim.connect(fs)
+              .to(ss)
+              .with_name(optional_connection_name)  // can be skipped
+              .with<AnotherConnectionWithMember<>>('c', 3.14F, 6.28318)
+              .at(pair(18UL, 72UL));
 
       sim.finalize();
 
-      auto& first_connection = sim.query(first_connection_key);
-      auto& third_connection = sim.query(third_connection_key);
-
-      CHECK(first_connection.some_member == 23UL);
-      CHECK(third_connection.some_member == 23UL);
+      //      auto& first_connection = sim.query(first_connection_key);
+      //      auto& third_connection = sim.query(third_connection_key);
+      //
+      //      CHECK(first_connection.some_member == 43UL);
+      //      CHECK(third_connection.some_member == 23UL);
 
       auto& second_connection = sim.query(second_connection_key);
       auto& fourth_connection = sim.query(fourth_connection_key);
       CHECK(int(second_connection) == 42);
       CHECK(char(second_connection) == 'p');
-      CHECK(int(fourth_connection) == 25);
+      CHECK(int(fourth_connection) == 35);
       CHECK(char(fourth_connection) == 'q');
+
+      auto& fifth_connection = sim.query(fifth_connection_key);
+      auto& sixth_connection = sim.query(sixth_connection_key);
+
+      CHECK(fifth_connection.char_member == 'a');
+      CHECK(fifth_connection.float_member == approx(5.12F));
+      CHECK(fifth_connection.double_member == approx(3.14159));
+
+      CHECK(sixth_connection.char_member == 'c');
+      CHECK(sixth_connection.float_member == approx(3.14F));
+      CHECK(sixth_connection.double_member == approx(6.28318));
     }
   }
 
@@ -999,6 +1076,51 @@ namespace {
       }
     }
   }
+
+  // clang-format off
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Connections.Module.reset",
+                     "[Unit][Simulator][Interface][Connections]") {
+    // clang-format on
+    auto sim_config =
+        mock::make_simulator_configuration(DefaultConnectionsConfiguration{});
+    // check cases without an error first.
+    bool arg_all_registered = true;
+    bool is_final = false;
+    auto sim = mock::make_simulator<::mock::ConnectionsModule>(
+        sim_config, arg_all_registered, is_final);
+    CHECK(sim.n_connections() == 0UL);
+
+    using ::elastica::connections::ConnectionWithMember;
+    using ::elastica::interface::at;
+    using ::mock::MockSystem;
+
+    using MemberConnection = ConnectionWithMember<>;
+    {
+      using first_system = MockSystem;
+      using second_system = MockSystem;
+      first_system first{100UL};
+      second_system second{100UL};
+      std::string optional_connection_name = "MyConnections";
+
+      for (std::size_t i = 0UL; i < 5UL; ++i)
+        sim.connect(first, at(5UL))
+            .to(second, at(6UL))
+            .with<MemberConnection>(32, 'a');
+    }
+
+    sim.finalize();
+
+    CHECK(sim.n_connections() == 5UL);
+    // CHECK(sim.ready()); we are not testing the mock simulator
+    CHECK_FALSE(sim.connecters().empty());
+
+    sim.reset(::elastica::Time{0.0});
+
+    CHECK(sim.n_connections() == 0UL);
+    // CHECK_FALSE(sim.ready());  we are not testing the mock simulator
+    CHECK(sim.connecters().empty());
+  }
+
 }  // namespace
 
 // [&, this, second_index =
