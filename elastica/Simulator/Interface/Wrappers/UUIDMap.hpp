@@ -77,6 +77,11 @@ namespace elastica {
           return batches;
         }
 
+        void clear() noexcept { system_mapping_.clear(); }
+        inline auto size() const noexcept -> std::size_t {
+          return system_mapping_.size();
+        }
+
        private:
         //**Member variables****************************************************
         Map system_mapping_;  //!< Mapping data
@@ -175,6 +180,8 @@ namespace elastica {
           // const needed!
           return batch_mapping_.at(key);
         };
+
+        void clear() noexcept { batch_mapping_.clear(); }
 
         Map batch_mapping_;
       };
