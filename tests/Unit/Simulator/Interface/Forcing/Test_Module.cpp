@@ -280,7 +280,7 @@ namespace elastica {
       explicit operator char() const noexcept { return char_member; }
 
       int int_member;  // not 0
-      float char_member;
+      char char_member;
     };
 
   }  // namespace forcing
