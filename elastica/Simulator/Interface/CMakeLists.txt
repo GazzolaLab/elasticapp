@@ -21,6 +21,7 @@ elastica_target_headers(
         HEADERS
         Connections.hpp
         Constraints.hpp
+        EnableReset.hpp
         # Environments.hpp
         Forcing.hpp
         Indexers.hpp
