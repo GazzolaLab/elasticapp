@@ -61,6 +61,8 @@ namespace {
     using S::ready;                        // tested
     using S::S;                            // tested
     using S::stream_profiling_summary_to;
+
+    using S::reset_modules;
   };
 
   template <template <typename /*Simulator*/,  // base simulator
@@ -350,4 +352,42 @@ namespace {
 #endif
   }
 
+  template <class SimTraits, class Sim>
+  class TestModuleResetNoExcept : public TestAlgorithms<SimTraits, Sim> {
+   protected:
+    void reset(::elastica::Time) noexcept {
+      // do some nontrivial operation here to test reset
+      ++i;
+      i *= 2;
+      // does not raise any execptions at all
+    }
+
+   public:
+    int i = {0};
+  };
+
+  template <class SimTraits, class Sim>
+  class TestModuleResetWithException : public TestAlgorithms<SimTraits, Sim> {
+   protected:
+    void reset(::elastica::Time) {
+      throw std::runtime_error("Module throws exception!");
+    }
+  };
+
+  // clang-format off
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Simulator.reset",
+                     "[Unit][Simulator][Interface]") {
+    // clang-format on
+    auto& simulator = make_test_simulator<TestModuleResetNoExcept>();
+
+    CHECK(simulator.i == 0);
+    CHECK_NOTHROW(simulator.reset_modules(Time{0.0}));
+    CHECK(simulator.i == 2);
+
+    auto& another_simulator =
+        make_test_simulator<TestModuleResetWithException>();
+    CHECK_THROWS_NESTED_WITH(another_simulator.reset_modules(Time{0.0}),
+                             "Resetting the simulator",
+                             "Module throws exception");
+  }
 }  // namespace
