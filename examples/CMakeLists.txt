@@ -3,6 +3,7 @@ add_subdirectory(axial_stretching)
 add_subdirectory(butterfly)
 add_subdirectory(timoshenko)
 add_subdirectory(helical_buckling)
+add_subdirectory(hinge_joint)
 
 # examples
 include(ElasticaAddExamples)

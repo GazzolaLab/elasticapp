@@ -16,6 +16,9 @@
 #include <cmath>
 #include <elastica/Simulator/Materials.hpp>
 #include <elastica/Utilities/Get.hpp>
+#include <elastica/Utilities/Math/Dot.hpp>
+#include <elastica/Utilities/Math/Normalize.hpp>
+#include <ostream>
 
 void HingeJointCaseStudy::setup(InputTypes<This> const& input_parameters) {
   //  void HingeJointCaseStudy::setup(
@@ -94,6 +97,7 @@ void HingeJointCaseStudy::setup(InputTypes<This> const& input_parameters) {
 
   const ::elastica::real_t end_force_magnitude(5.0);
   const ::elastica::real_t rampup_time(0.2);
+  const ::elastica::Vec3 roll_direction(link_normal % link_direction);
 
   auto force_generator = efo::make_forcing(
       efo::make_force(
@@ -123,6 +127,70 @@ void HingeJointCaseStudy::setup(InputTypes<This> const& input_parameters) {
       .at(::elastica::end - 1UL)
       .with(force_generator());
 
+  namespace econ = ::elastica::connections;
+
+  const ::elastica::real_t joint_trans_stiffness(1e5);
+  const ::elastica::real_t joint_trans_damping(0.0);
+  const ::elastica::real_t joint_rot_stiffness(5e3);
+  auto connection_generator = econ::make_connection(
+      econ::make_force([=](auto /*time*/, auto& first_rod,
+                           std::size_t arg_first_index, auto& second_rod,
+                           auto arg_second_index) {
+        // TODO : fix
+        const auto first_index = arg_first_index + 1UL;
+        const auto second_index = arg_second_index;
+
+        const ::elastica::Vec3 normalized_distance_vector =
+            ::elastica::normalize(
+                ::elastica::position(first_rod, first_index) -
+                ::elastica::position(second_rod, second_index));
+        auto elastic_force = joint_trans_stiffness * normalized_distance_vector;
+
+        // TODO there should be an utility to project
+        auto velocity_vector =
+            ::elastica::dot(::elastica::velocity(first_rod, first_index) -
+                                ::elastica::velocity(second_rod, second_index),
+                            normalized_distance_vector) *
+            normalized_distance_vector;
+        auto damping_force = joint_trans_damping * velocity_vector;
+        const ::elastica::Vec3 contact_force = elastic_force + damping_force;
+
+        using Tag = ::elastica::tags::ExternalLoads;
+        blaze::column(::elastica::get<Tag>(first_rod), first_index) +=
+            contact_force;
+        blaze::column(::elastica::get<Tag>(second_rod), second_index) -=
+            contact_force;
+      }),
+      econ::make_torque([=](auto /*time*/, auto& first_rod,
+                            std::size_t arg_first_index, auto& second_rod,
+                            auto arg_second_index) {
+        // TODO : fix
+        const auto first_index = arg_first_index + 1UL;
+        const auto second_index = arg_second_index;
+
+        auto link =
+            // TODO : refactor this 1UL as a constexpr index
+            ::elastica::position(second_rod, second_index + 1UL) -
+            ::elastica::position(second_rod, second_index);
+        auto force = -joint_rot_stiffness *
+                     // projection of link onto the plane direction
+                     ::elastica::dot(link, roll_direction) * roll_direction;
+        // TODO : provide a cross product operation, don't rely on %
+        const ::elastica::Vec3 torque = link % force;
+
+        using Tag = ::elastica::tags::ExternalTorques;
+        // this is not a nodal quantitiy
+        blaze::column(::elastica::get<Tag>(first_rod), arg_first_index) -=
+            (::elastica::director(first_rod, arg_first_index) * torque);
+        blaze::column(::elastica::get<Tag>(second_rod), arg_second_index) +=
+            (::elastica::director(second_rod, arg_second_index) * torque);
+      }));
+
+  using ::elastica::interface::at;
+  simulator->connect(*first_rod_it, at(::elastica::end - 1UL))
+      .to(*second_rod_it, at(0UL))
+      .with(connection_generator());
+
   simulator->finalize();
 
   // Set the dt value
@@ -134,10 +202,22 @@ void HingeJointCaseStudy::step() {
 }
 
 void HingeJointCaseStudy::run() {
-  const ::elastica::real_t final_time(10.0);
+  const ::elastica::real_t final_time(1.0);
   const std::size_t n_steps = (final_time / current_dt());
 
   for (std::size_t i_step = {0UL}; i_step < n_steps; ++i_step) {
     step();
   }
+
+  // write out the final positions of the body
+  std::ofstream my_file;
+  my_file.open("final_first_positions.txt");
+  my_file << ::elastica::position(*first_rod_it);
+  my_file << std::endl;
+  my_file.close();
+
+  my_file.open("final_second_positions.txt");
+  my_file << ::elastica::position(*second_rod_it);
+  my_file << std::endl;
+  my_file.close();
 }
