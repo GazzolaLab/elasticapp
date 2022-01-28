@@ -14,8 +14,7 @@
 #pragma once
 
 ///
-#include "Simulator/Interface/Affordances/EmptyBatchingAlgorithm.hpp"
-#include "Simulator/Interface/Affordances/EmptyUpdateSteps.hpp"
+#include "Simulator/Interface/Affordances/EmptyInterface.hpp"
 #include "Utilities/CRTP.hpp"
 #include "Utilities/Logging.hpp"
 #include "Utilities/Logging/Logger.hpp"
@@ -85,8 +84,7 @@ namespace elastica {
      */
     template <class SimTraits, class Sim>
     class EnableReset : public CRTPHelper<Sim, EnableReset>,
-                        public detail::EmptyUpdateSteps,
-                        public detail::EmptyBatchingAlgorithm,
+                        public EmptyInterface<SimTraits>,
                         public NonCopyable {
      private:
       //**Compile-time checks***************************************************
@@ -157,7 +155,7 @@ namespace elastica {
 
       //@}
       //************************************************************************
-
+     protected:
      public:
       //**Interface methods*****************************************************
       /*!\name Interface methods*/

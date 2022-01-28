@@ -26,6 +26,7 @@ namespace elastica {
 
       //************************************************************************
       /*! \cond ELASTICA_INTERNAL */
+      template <typename>
       struct EmptyUpdateSteps {
        public:
         //**Algorithmic order***************************************************
