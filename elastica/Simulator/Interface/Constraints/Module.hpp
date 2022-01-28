@@ -650,7 +650,7 @@ namespace elastica {
        * \param time_v The time of reset
        * \exception std::runtime_error
        */
-      void reset(TimeType /*time_v*/) {
+      void reset_module(TimeType /*time_v*/) {
         n_total_constraints = 0UL;
         constraints_.clear();  // no need, but okay for symmetry
         constrainer_batches().clear();

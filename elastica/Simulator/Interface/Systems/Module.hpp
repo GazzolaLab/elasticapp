@@ -816,7 +816,7 @@ the above type-list, using SystemsConfiguration.
        * \param time_v The time of reset
        * \exception std::runtime_error
        */
-      void reset(TimeType /*time_v*/) {
+      void reset_module(TimeType /*time_v*/) {
         std::fill(std::begin(n_total_systems()), std::end(n_total_systems()),
                   0UL);
         cpp17::apply(

@@ -169,7 +169,7 @@ namespace mock {
     using P::constrain;
     using P::constrainer_batches;
     using P::finalize;
-    using P::reset;
+    using P::reset_module;
   };
 
   //////////////////////////////////////////////////////////////////////////////

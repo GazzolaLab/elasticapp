@@ -306,7 +306,7 @@ reorganizing your code logic.
 
     // rest
     using P::n_total_systems;  // for testing reset
-    using P::reset;
+    using P::reset_module;
   };
 
 }  // namespace mock
@@ -872,7 +872,7 @@ namespace {
     }
 
     // argument doesnt matter
-    CHECK_NOTHROW(sim.reset(elastica::Time{0.0}));
+    CHECK_NOTHROW(sim.reset_module(elastica::Time{0.0}));
 
     // post
     {

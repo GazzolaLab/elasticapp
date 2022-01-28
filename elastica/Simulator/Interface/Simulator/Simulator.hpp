@@ -1082,8 +1082,9 @@ reorganizing your code logic.
         try {
           // Travel up the hierarchy and call reset on all
           // modules, including the Systems module
-          // SystemsModule::reset(time_v);
-          EXPAND_PACK_LEFT_TO_RIGHT(Modules<SimTraits, This>::reset(time_v));
+          SystemsModule::reset_module(time_v);
+          EXPAND_PACK_LEFT_TO_RIGHT(
+              Modules<SimTraits, This>::reset_module(time_v));
           ready_for_integration_ = false;
         } catch (...) {
           const char* error_message =

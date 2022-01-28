@@ -161,7 +161,7 @@ namespace mock {
     using P::connecters;
     using P::finalize;
     using P::get_symbolic_index;
-    using P::reset;
+    using P::reset_module;
   };
 
   //////////////////////////////////////////////////////////////////////////////

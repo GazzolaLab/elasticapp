@@ -355,7 +355,7 @@ namespace {
   template <class SimTraits, class Sim>
   class TestModuleResetNoExcept : public TestAlgorithms<SimTraits, Sim> {
    protected:
-    void reset(::elastica::Time) noexcept {
+    void reset_module(::elastica::Time) noexcept {
       // do some nontrivial operation here to test reset
       ++i;
       i *= 2;
@@ -371,7 +371,7 @@ namespace {
   template <class SimTraits, class Sim>
   class TestModuleResetWithException : public TestAlgorithms<SimTraits, Sim> {
    protected:
-    void reset(::elastica::Time) {
+    void reset_module(::elastica::Time) {
       throw std::runtime_error("Module throws exception!");
     }
   };

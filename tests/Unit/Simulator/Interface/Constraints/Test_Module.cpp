@@ -770,7 +770,7 @@ namespace {
     // CHECK(sim.ready()); we are not testing the mock simulator
     CHECK_FALSE(sim.constrainer_batches().empty());
 
-    sim.reset(::elastica::Time{0.0});
+    sim.reset_module(::elastica::Time{0.0});
 
     CHECK(sim.n_constraints() == 0UL);
     // CHECK_FALSE(sim.ready());  we are not testing the mock simulator
