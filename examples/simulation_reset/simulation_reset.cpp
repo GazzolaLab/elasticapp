@@ -18,7 +18,7 @@
 #include <elastica/Simulator/Simulator.hpp>
 #include <elastica/Systems/CosseratRods.hpp>
 
-int main(int argc, char* argv[]) {
+int main() {
   using ::elastica::cosserat_rod::CosseratRod;
 
   namespace ec = elastica::configuration;
@@ -126,4 +126,12 @@ int main(int argc, char* argv[]) {
    * simulator processes (such as convergence studies, inverse-design, RL)
    */
   simulator->reset();
+
+  // now add more rods and see no errors!
+  auto another_rod_it = simulator->emplace_back<CosseratRod>(
+      straight_initializer.initialize<CosseratRod>());
+  auto yet_another_rod_it = simulator->emplace_back<CosseratRod>(
+      straight_initializer
+          .but_with(Init::Origin{::elastica::Vec3{0.0, 1.0, 0.0}})
+          .initialize<CosseratRod>());
 }
