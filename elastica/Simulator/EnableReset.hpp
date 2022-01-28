@@ -18,4 +18,4 @@
 //******************************************************************************
 
 ///
-#include "Simulator/Interface/EnableReset.hpp"
+#include "Simulator/Interface/Affordances/EnableReset.hpp"

@@ -2,6 +2,7 @@
 
 set(LIBRARY Simulator)
 
+add_subdirectory(Affordances)
 add_subdirectory(Batching)
 add_subdirectory(Connections)
 add_subdirectory(Constraints)
@@ -21,7 +22,6 @@ elastica_target_headers(
         HEADERS
         Connections.hpp
         Constraints.hpp
-        EnableReset.hpp
         # Environments.hpp
         Forcing.hpp
         Indexers.hpp

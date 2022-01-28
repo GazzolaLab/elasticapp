@@ -5,7 +5,7 @@
 
 #include "Framework/TestNestedExceptions.hpp"
 #include "Framework/TestingFramework.hpp"
-#include "Simulator/Interface/EnableReset.hpp"
+#include "Simulator/Interface/Affordances/EnableReset.hpp"
 
 namespace {
 

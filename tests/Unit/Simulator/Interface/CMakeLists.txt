@@ -1,3 +1,4 @@
+add_subdirectory(Affordances)
 add_subdirectory(Batching)
 add_subdirectory(Connections)
 add_subdirectory(Constraints)
@@ -12,7 +13,6 @@ set(LIBRARY "Test_Interface")
 
 set(LIBRARY_SOURCES
         Test_MockSimulator.cpp
-        Test_EnableReset.cpp
         )
 
 add_test_library(
