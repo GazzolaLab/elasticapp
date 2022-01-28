@@ -72,15 +72,22 @@ Some examples provide additional file or link to published paper for a complete 
 * [`parallelism`](./parallelism)
     * __Name__: Parallelism Example
     * __Name__: Demonstrate shared-memory parallel **elastica** application
-        * __Features__:
-            * `make_parallel_configuration`
-            * `seq`, `par`
+    * __Features__:
+        * `make_parallel_configuration`
+        * `seq`, `par`
 
 * [`display_variables`](./display_variables)
     * __Name__: Display Variable Names
     * __Purpose__: Demonstrate introspection of variables within different Plugins
     * __Features__:
         * `blocks::display_variable_summary`
+
+* [`simulation_reset`](./simulation_reset)
+    * __Name__: Reset simulation
+    * __Purpose__: Demonstrate a method to reset a simulation, intended for independent, distributed **elastica++**
+      applications
+    * __Features__:
+        * `elastica::modules::EnableReset`
 
 ## Advanced Examples
 
