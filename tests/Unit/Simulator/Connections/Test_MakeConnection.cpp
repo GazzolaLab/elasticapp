@@ -1193,7 +1193,8 @@ namespace {
     }
   }
 
-  ELASTICA_TEST_CASE("Unit.Simulator.Connections.MakeConnection.single_force",
+  // clang-format off
+  ELASTICA_TEST_CASE("Unit.Simulator.Connections.MakeConnection.unified_interface",
                      "[Unit][Simulator][Connections]") {
     // clang-format on
     // These always create a copy of the functors in question
