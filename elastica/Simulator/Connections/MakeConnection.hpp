@@ -645,12 +645,19 @@ namespace elastica {
      * the type of the system
      *
      * \snippet Test_MakeConnection.cpp make_unified_overloading_eg
+     *
+     * \param forces_and_torques A functor that applies forces and torques
+     * \param other_forces_and_torques Other force & torque functors
+     * \return GenericConnection initialized with make_force() and
+     * make_torque()
      */
     template <typename F, typename... Funcs>
-    auto make_connection(F first, Funcs... others) {
+    auto make_connection(F forces_and_torques,
+                         Funcs... other_forces_and_torques) {
       // don't worry about noexcept, it will be refactored later anyway
       return make_connection_detail::make_connection(
-          make_overloader(std::move(first), std::move(others)...),
+          make_overloader(std::move(forces_and_torques),
+                          std::move(other_forces_and_torques)...),
           // use an auto ref to not create a copy
           [](auto&...) noexcept {});
     }
