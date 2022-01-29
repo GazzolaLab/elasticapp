@@ -170,7 +170,7 @@ function(_elastica_setup_case_study TYPE)
     endif ()
 endfunction()
 
-function(_elastica_register_case_names_from SOURCE_FILE CASE_NAMES)
+function(_elastica_register_case_names_from SOURCE_FILE)
     if (NOT EXISTS ${SOURCE_FILE})
         message(WARNING "Could not find source file:\n\"${SOURCE_FILE}\"\nfor \
         case studies\n.")
@@ -217,7 +217,7 @@ function(_elastica_register_case_names_from SOURCE_FILE CASE_NAMES)
         list(APPEND STRIPPED_CASE_NAMES ${CASE_NAME_STRIPPED})
     endforeach ()
 
-    set(CASE_NAMES ${STRIPPED_CASE_NAMES} PARENT_SCOPE)
+    set(CASE_NAMES ${CASE_NAMES} ${STRIPPED_CASE_NAMES} PARENT_SCOPE)
 
 endfunction()
 
@@ -283,10 +283,15 @@ function(add_elastica_case_study TARGET)
 
     get_target_property(INTERFACE_FILES ${ARG_FROM} INTERFACE_SOURCES)
 
+    set(CASE_NAMES "")
     # Register the name of the case study class
     foreach (INTERFACE_FILE IN LISTS INTERFACE_FILES)
         _elastica_register_case_names_from(${INTERFACE_FILE} CASE_NAMES)
     endforeach ()
+
+    log_heavy_debug("Case study target : ${TARGET}")
+    log_heavy_debug("Case study headers : ${INTERFACE_FILES}")
+    log_heavy_debug("Case study names : ${CASE_NAMES}")
 
     list(LENGTH CASE_NAMES N_CASE_NAMES)
 
