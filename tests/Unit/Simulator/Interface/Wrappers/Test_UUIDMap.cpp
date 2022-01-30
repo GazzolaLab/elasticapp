@@ -61,6 +61,10 @@ namespace {
       //      CHECK(vec[1UL] == std::vector<ID>{ids[0UL]});
       //      CHECK(vec[0UL] == std::vector<ID>{});
     }
+
+    // nothing to check
+    CHECK(mapping.size() > 0UL);
+    CHECK((mapping.clear(), mapping.size()) == 0UL);
   }
 
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.UUIDToBatch",
@@ -105,6 +109,9 @@ namespace {
       CHECK(id2batch[ids[8UL]] == 2UL);
       CHECK(id2batch[ids[9UL]] == 0UL);
     }
+
+    CHECK(id2batch.size() > 0UL);
+    CHECK((id2batch.clear(), id2batch.size()) == 0UL);
   }
 
   /*  template <typename T>
@@ -205,7 +212,6 @@ namespace {
 
     auto batch_from = make_uuid_to_batch_map(std::move(flattened_subsets));
 
-
     // The indices for first and second batch seem to switch around, so in
     // order to get the correct batch we take it from the batch directly
 
@@ -214,7 +220,7 @@ namespace {
     // std::size_t third_batch = 2UL;
     std::size_t first_batch = batch_from[ID(1UL, "")];
     std::size_t second_batch = batch_from[ID(33UL, "")];
-    std::size_t third_batch =  batch_from[ID(0UL, "")];
+    std::size_t third_batch = batch_from[ID(0UL, "")];
 
     // ensure that objects constraining one system belong to the same
     // batch/bucket

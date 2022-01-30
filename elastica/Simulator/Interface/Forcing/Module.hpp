@@ -612,6 +612,29 @@ namespace elastica {
       }
       //************************************************************************
 
+     protected:
+      //**Reset methods*********************************************************
+      /*!\name Reset methods*/
+      //@{
+
+      //************************************************************************
+      /*!\brief Resets the forcing module
+       *
+       * \param time_v The time of reset
+       * \exception std::runtime_error
+       */
+      void reset_module(TimeType /*time_v*/) {
+        n_total_forcing = 0UL;
+        forcing_.clear();  // no need, but okay for symmetry
+        forcer_batches().clear();
+        uuid_map_.clear();
+        batch_from.clear();
+      }
+      //************************************************************************
+
+      //@}
+      //************************************************************************
+
      private:
       //**Member variables******************************************************
       //! The total number of registered forcing

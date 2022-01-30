@@ -1066,6 +1066,38 @@ reorganizing your code logic.
       //@}
       //************************************************************************
 
+     protected:
+      //**Reset methods*********************************************************
+      /*!\name Reset methods*/
+      //@{
+
+      //************************************************************************
+      /*!\brief Resets the individual modules
+       *
+       * \param time_v The time of reset, will be propagated to the modules
+       * \exception std::runtime_error If the reset of any module throws an
+       * error, it is propagated here, rather than a hard exit.
+       */
+      void reset_modules(TimeType time_v) {
+        try {
+          // Travel up the hierarchy and call reset on all
+          // modules, including the Systems module
+          SystemsModule::reset_module(time_v);
+          EXPAND_PACK_LEFT_TO_RIGHT(
+              Modules<SimTraits, This>::reset_module(time_v));
+          ready_for_integration_ = false;
+        } catch (...) {
+          const char* error_message =
+              "Resetting the simulator for temporal integration failed "
+              "because ";
+          std::throw_with_nested(std::runtime_error(error_message));
+        };
+      }
+      //************************************************************************
+
+      //@}
+      //************************************************************************
+
      private:
       //**Member variables******************************************************
       // NOTE : This is the biggest letdown of a singleton pattern. What can

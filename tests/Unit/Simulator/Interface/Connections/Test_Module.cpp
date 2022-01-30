@@ -1076,6 +1076,51 @@ namespace {
       }
     }
   }
+
+  // clang-format off
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Connections.Module.reset",
+                     "[Unit][Simulator][Interface][Connections]") {
+    // clang-format on
+    auto sim_config =
+        mock::make_simulator_configuration(DefaultConnectionsConfiguration{});
+    // check cases without an error first.
+    bool arg_all_registered = true;
+    bool is_final = false;
+    auto sim = mock::make_simulator<::mock::ConnectionsModule>(
+        sim_config, arg_all_registered, is_final);
+    CHECK(sim.n_connections() == 0UL);
+
+    using ::elastica::connections::ConnectionWithMember;
+    using ::elastica::interface::at;
+    using ::mock::MockSystem;
+
+    using MemberConnection = ConnectionWithMember<>;
+    {
+      using first_system = MockSystem;
+      using second_system = MockSystem;
+      first_system first{100UL};
+      second_system second{100UL};
+      std::string optional_connection_name = "MyConnections";
+
+      for (std::size_t i = 0UL; i < 5UL; ++i)
+        sim.connect(first, at(5UL))
+            .to(second, at(6UL))
+            .with<MemberConnection>(32, 'a');
+    }
+
+    sim.finalize();
+
+    CHECK(sim.n_connections() == 5UL);
+    // CHECK(sim.ready()); we are not testing the mock simulator
+    CHECK_FALSE(sim.connecters().empty());
+
+    sim.reset_module(::elastica::Time{0.0});
+
+    CHECK(sim.n_connections() == 0UL);
+    // CHECK_FALSE(sim.ready());  we are not testing the mock simulator
+    CHECK(sim.connecters().empty());
+  }
+
 }  // namespace
 
 // [&, this, second_index =
