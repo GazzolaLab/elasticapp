@@ -21,8 +21,8 @@ class Stats:
 
 
 def run_example(
-        save_to_csv: bool = False,
-        save_figure: bool = False,
+    save_to_csv: bool = False,
+    save_figure: bool = False,
 ):
     sample_interval = 1000
 

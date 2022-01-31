@@ -4,10 +4,10 @@ from matplotlib.colors import to_rgb
 
 
 def plot_position(
-        rod1_stats,
-        rod2_stats,
-        save_figure,
-        filename="spherical_joint_test.png",
+    rod1_stats,
+    rod2_stats,
+    save_figure,
+    filename="spherical_joint_test.png",
 ):
     position_of_rod1 = np.asarray(rod1_stats.position)
     position_of_rod2 = np.asarray(rod2_stats.position)
@@ -35,10 +35,10 @@ def plot_position(
 
 
 def plot_video(
-        rod1_stats,
-        rod2_stats,
-        video_name="hinge_joint.mp4",
-        fps=15,
+    rod1_stats,
+    rod2_stats,
+    video_name="hinge_joint.mp4",
+    fps=15,
 ):  # (time step, x/y/z, node)
     from matplotlib.animation import FuncAnimation  # noqa
     from tqdm import tqdm  # noqa
