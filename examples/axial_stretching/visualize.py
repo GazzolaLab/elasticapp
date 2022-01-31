@@ -64,6 +64,7 @@ def run_example(
     )
 
     times = []
+    steps = []
     tip_displacements = []
 
     # 5. Run the case study. Different ways to run the case study are
@@ -83,11 +84,13 @@ def run_example(
         # 5.7 `cs.current_iteration()` : Gets the current iteration of the
         # simulation.
         curr_time = cs.current_time()
+        curr_step = cs.current_step()
 
         # 5.8 `cs.communicate()` : Gets the system properties marked in the
         # function of the same name, defined in AxialStretchingCaseStudy.hpp
         curr_positions = cs.communicate()
         times.append(curr_time)
+        steps.append(curr_step)
 
         # 6. To use your numpy-skills, just use np.asarray()! Memory is not
         # allocated, rather it uses the memory in the C++ buffer. So changes
@@ -104,6 +107,7 @@ def run_example(
 
     times = np.asarray(times)
     tip_displacements = np.asarray(tip_displacements)
+    steps = np.asarray(steps)
 
     avg_tip_displacement = np.mean(tip_displacements[-200:])
 
