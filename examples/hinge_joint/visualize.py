@@ -7,14 +7,15 @@ from elasticapp import Blaze  # noqa
 from elasticapp.CaseStudies.PyHingeJointCaseStudy import HingeJointCaseStudy
 from matplotlib import pyplot as plt
 from tqdm import tqdm
+from postprocess import plot_position, plot_video
 
 PositiveInt = NewType("PositiveInt", int)
 
 
 @dataclass
 class Stats:
-    times: list[float] = field(default_factory=list)
-    steps: list[PositiveInt] = field(default_factory=list)
+    time: list[float] = field(default_factory=list)
+    step: list[PositiveInt] = field(default_factory=list)
     position: list[np.ndarray] = field(default_factory=list)
     velocity: list[np.ndarray] = field(default_factory=list)
 
@@ -29,7 +30,7 @@ def run_example(
     base_length = 0.2
     base_radius = 0.007
     dt = 1e-5
-    final_time = 10.0
+    final_time = 1.0
     time_interval = sample_interval * dt
     n_steps = int(final_time / time_interval)
 
@@ -46,12 +47,12 @@ def run_example(
 
     def collect(cas):
         for stats in rod_stats:
-            stats.times.append(cas.current_time())
-            stats.steps.append(cas.current_iteration())
+            stats.time.append(cas.current_time())
+            stats.step.append(cas.current_iteration())
 
     def add_to(s, p, v):
         s.position.append(np.copy(p))
-        s.position.append(np.copy(v))
+        s.velocity.append(np.copy(v))
 
     def collect_more(first_pv, second_pv):
         add_to(first_rod_stats, *first_pv)
@@ -59,23 +60,17 @@ def run_example(
 
     def collect_stats_from(cas):
         collect(cas)
-        f, s = cas.communicate()
-        print(np.copy(f[0]), np.copy(f[1]))
-        print(np.copy(s[0]), np.copy(s[1]))
-        # collect_more(*cas.communicate())
+        collect_more(*cas.communicate())
 
     # initial
     collect_stats_from(cs)
 
-    for step in tqdm(range(n_steps)):
+    for _ in tqdm(range(n_steps)):
         cs.run_for(additional_time=time_interval)
-        # cs.step()
-
-        # if not (step % 200):
         collect_stats_from(cs)
-        breakpoint()
 
-    print(first_rod_stats.position[:10])
+    plot_position(first_rod_stats, second_rod_stats, save_figure=save_figure)
+    plot_video(first_rod_stats, second_rod_stats)
 
     if save_to_csv:
         pd.DataFrame(first_rod_stats).to_csv("hinge_joint_first.csv")
