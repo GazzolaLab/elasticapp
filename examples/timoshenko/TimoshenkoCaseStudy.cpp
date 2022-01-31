@@ -125,7 +125,7 @@ void TimoshenkoCaseStudy::run() {
   const std::size_t write_interval = 200UL;
   //  time_and_disps.reserve(n_steps / write_interval);
 
-  for (std::size_t i_step = {0UL}; i_step < n_steps; ++i_step) {
+  for (; current_iteration() < n_steps; ++get_current_iteration()) {
     step();
 
     //    if (not(i_step % write_interval)) {

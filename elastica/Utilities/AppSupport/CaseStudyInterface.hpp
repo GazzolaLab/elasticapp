@@ -60,7 +60,7 @@ namespace elastica {
       /* todo : replace with integrate */
       const std::size_t n_steps =
           current_iter_ + (seconds / static_cast<::elastica::real_t>(dt_));
-      for (std::size_t i_step = current_iter_; i_step < n_steps; ++i_step) {
+      for (; current_iter_ < n_steps; ++current_iter_) {
         self().step();
       }
     }
@@ -79,7 +79,7 @@ namespace elastica {
         const std::size_t n_steps =
             current_iter_ +
             (time_to_run / static_cast<::elastica::real_t>(dt_));
-        for (std::size_t i_step = current_iter_; i_step < n_steps; ++i_step) {
+        for (; current_iter_ < n_steps; ++current_iter_) {
           self().step();
         }
       }
@@ -140,6 +140,14 @@ namespace elastica {
     //**************************************************************************
 
     //**************************************************************************
+    /*!\brief Sets the case-study simulation iterate to a given value
+     */
+    void set_current_iteration(std::size_t iter) noexcept {
+      current_iter_ = iter;
+    }
+    //**************************************************************************
+
+    //**************************************************************************
     /*!\brief Gets the case-study simulation time-step
      */
     inline auto get_dt() -> TimeDelta& { return dt_; }
@@ -149,6 +157,14 @@ namespace elastica {
     /*!\brief Gets the case-study simulation time
      */
     inline auto get_current_time() -> Time& { return time_; };
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Gets the case-study iteration
+     */
+    inline auto get_current_iteration() -> std::size_t& {
+      return current_iter_;
+    };
     //**************************************************************************
 
     //@}

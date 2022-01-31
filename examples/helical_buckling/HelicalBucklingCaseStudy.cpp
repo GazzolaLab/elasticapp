@@ -222,7 +222,7 @@ void HelicalBucklingCaseStudy::run() {
   //  constexpr std::size_t write_interval = 10000UL;
   //  stats.reserve(n_steps / write_interval);
 
-  for (std::size_t i_step = {0UL}; i_step < n_steps; ++i_step) {
+  for (; current_iteration() < n_steps; ++get_current_iteration()) {
     step();
 
     //    if (not(i_step % write_interval)) {

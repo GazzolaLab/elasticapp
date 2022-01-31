@@ -70,7 +70,11 @@ void IntermediateCaseStudy::setup(
  * Definition of run()
  */
 void IntermediateCaseStudy::run() {
-  for (std::size_t i_step = 0UL; i_step < 500UL; ++i_step)
+  // we have a current_iteration() method that exposes (as a value) the current
+  // iteration --- this is useful to access the current iteration from Python
+  // get_current_iteration() can be used to change the underlying iterate, for
+  // example in incrementing the counter
+  for (; current_iteration() < 500UL; ++get_current_iteration())
     step();
 }
 

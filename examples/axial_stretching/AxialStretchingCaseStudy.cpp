@@ -105,6 +105,8 @@ void AxialStretchingCaseStudy::setup(InputTypes<This> const& input_parameters) {
 }
 
 void AxialStretchingCaseStudy::step() {
+  // TODO : is it a good idea to not increment a counter here, but rather do it
+  // outside?
   simulator->step(time_stepper, get_current_time(), get_dt());
 }
 
@@ -123,10 +125,12 @@ void AxialStretchingCaseStudy::run() {
   const std::size_t write_interval = 200UL;
   time_and_disps.reserve(n_steps / write_interval);
 
-  for (std::size_t i_step = {0UL}; i_step < n_steps; ++i_step) {
+  // you can use get_current_iteration() instead of current_iteration()
+  // current_iteration() ensures const-correctness
+  for (; current_iteration() < n_steps; ++get_current_iteration()) {
     step();
 
-    if (not(i_step % write_interval)) {
+    if (not(current_iteration() % write_interval)) {
       time_and_disps.emplace_back(
           current_time(), ::elastica::position(*rod_it, n_elements)[x_axis]);
     }
