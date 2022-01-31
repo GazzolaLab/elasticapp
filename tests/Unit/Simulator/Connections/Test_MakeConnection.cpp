@@ -1141,4 +1141,63 @@ namespace {
     test_make_connection_overloaded_forces_interface();
     test_make_connection_overloaded_torques_interface();
   }
+
+  void test_make_connection_unified_interface() {
+    SECTION("Unified interface") {
+      /// [make_unified_example]
+      // ANC() is a function that applies forces and torques together
+      auto connection_factory = make_connection(ANC());
+      /// [make_unified_example]
+
+      // now make a connection
+      auto my_connection = connection_factory();
+      // connection interface
+      int mock_time = 3;
+      int mock_first_system = 2;
+      std::size_t mock_first_index = 1;
+      int mock_second_system = 3;
+      std::size_t mock_second_index = 1;
+
+      my_connection.apply_forces(mock_time, mock_first_system, mock_first_index,
+                                 mock_second_system, mock_second_index);
+      CHECK(mock_first_system == 3);
+    }
+    SECTION("Unified interface with overloading") {
+      /// [make_unified_overloading_eg]
+      const auto fover = [](auto /*time*/, float& system, auto /*first_index*/,
+                            auto& /*second_system*/,
+                            auto /*second_index*/) { system -= 0.5F; };
+      auto iover = [](auto /*time*/, int& system, auto /*first_index*/,
+                      auto& /*second_system*/,
+                      auto /*second_index*/) { system += 1; };
+      auto connection_factory = make_connection(fover, iover);
+      /// [make_unified_overloading_eg]
+
+      auto my_connection = connection_factory();
+      // connection interface
+      int mock_time = 3;
+      int mock_int_system = 2;
+      int mock_index = 1;
+
+      int mock_second_system = 3;
+      std::size_t mock_second_index = 1;
+
+      my_connection.apply_forces(mock_time, mock_int_system, mock_index,
+                                 mock_second_system, mock_second_index);
+      CHECK(mock_int_system == 3);
+
+      float mock_float_system(1.5F);
+      my_connection.apply_forces(mock_time, mock_float_system, mock_index,
+                                 mock_second_system, mock_second_index);
+      CHECK(mock_float_system == approx(1.0F));
+    }
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE("Unit.Simulator.Connections.MakeConnection.unified_interface",
+                     "[Unit][Simulator][Connections]") {
+    // clang-format on
+    // These always create a copy of the functors in question
+    test_make_connection_unified_interface();
+  }
 }  // namespace
