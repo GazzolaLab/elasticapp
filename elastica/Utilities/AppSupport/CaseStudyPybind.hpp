@@ -27,49 +27,6 @@
 
 namespace py_bindings {
 
-  namespace detail {
-
-    // reset should be called in a non-const context
-    template <class T>
-    using reset_t = decltype(std::declval<T&>().reset());
-
-    using reset_function_detected = std::true_type;
-    using reset_function_not_detected = std::false_type;
-
-    template <typename CaseStudy>
-    void add_reset(pybind11::class_<CaseStudy>& py_case_study,
-                   reset_function_detected /*meta*/) {
-      py_case_study.def("reset", &CaseStudy::reset,
-                        "Resets the current case study");
-    }
-
-    template <typename CaseStudy>
-    void add_reset(pybind11::class_<CaseStudy>& py_case_study,
-                   reset_function_not_detected /*meta*/) noexcept {
-      // can add an empty reset function in case it is not defined
-      py_case_study.def(
-          "reset",
-          +[](CaseStudy const&) { return std::string("Reset not defined!"); },
-          "Resets the current case study");
-    }
-
-  }  // namespace detail
-
-  //****************************************************************************
-  /*!\brief Binds a case-study into a python module
-   * \ingroup python_bindings
-   *
-   * \details
-   * Adds a `reset` function to the python binding, provided it exists in the
-   * C++ side
-   */
-  template <typename CaseStudy>
-  void add_reset_function_to(pybind11::class_<CaseStudy>& py_case_study) {
-    detail::add_reset(py_case_study,
-                      tt::is_detected<detail::reset_t, CaseStudy>{});
-  }
-  //****************************************************************************
-
   //****************************************************************************
   /*!\brief Binds a case-study into a python module
    * \ingroup python_bindings
@@ -141,10 +98,9 @@ namespace py_bindings {
         .def("current_dt", &CaseStudy::current_dt,
              "Gets the current timestep of the simulation")
         .def("current_iteration", &CaseStudy::current_iteration,
-             "Gets the current iteration of the simulation");
-
-    // Addendum
-    add_reset_function_to(py_bound_case_study);
+             "Gets the current iteration of the simulation")
+        .def("reset", &CaseStudy::reset_case_study,
+             "Resets the current case study");
   }
   //****************************************************************************
 

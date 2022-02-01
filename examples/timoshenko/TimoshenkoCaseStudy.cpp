@@ -108,6 +108,7 @@ void TimoshenkoCaseStudy::setup(InputTypes<This> const& input_parameters) {
 
 void TimoshenkoCaseStudy::step() {
   simulator->step(time_stepper, get_current_time(), get_dt());
+  ++get_current_iteration();
 }
 
 void TimoshenkoCaseStudy::run() {
@@ -125,7 +126,7 @@ void TimoshenkoCaseStudy::run() {
   const std::size_t write_interval = 200UL;
   //  time_and_disps.reserve(n_steps / write_interval);
 
-  for (; current_iteration() < n_steps; ++get_current_iteration()) {
+  for (std::size_t i = 0UL; i < n_steps; ++i) {
     step();
 
     //    if (not(i_step % write_interval)) {

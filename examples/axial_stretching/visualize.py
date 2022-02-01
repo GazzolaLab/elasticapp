@@ -5,7 +5,7 @@ Brief tutorial for setting up python script to run Py-binded case studies.
 
 The purpose of this tutorial is to demonstrate setting up a python script
 to run a Py-binded case study. Before running this script, in order to
-generate and install the py-binded case studies, follow the steps in
+generate and install the py-binded case studies, follow the iterations in
 given in /docs/README_python.md
 """
 
@@ -27,9 +27,9 @@ from elasticapp.CaseStudies.PyAxialStretchingCaseStudy import AxialStretchingCas
 
 
 def run_example(
-    pyelastica_file: os.PathLike = "",
-    save_to_csv: bool = False,
-    save_figure: bool = False,
+        pyelastica_file: os.PathLike = "",
+        save_to_csv: bool = False,
+        save_figure: bool = False,
 ):
     # 3. Define the input parameters to the case study.
     sample_interval = 200
@@ -45,7 +45,7 @@ def run_example(
     dt = 0.01 * (base_length / n_elem)
     final_time = 50.0
     time_interval = sample_interval * dt
-    n_steps = int(final_time / time_interval)
+    n_iterations = int(final_time / time_interval)
 
     # 4. Generate the Py-binded case study object. For a pythonic way
     # of looking at the help for the case study, one can do
@@ -64,33 +64,33 @@ def run_example(
     )
 
     times = []
-    steps = []
+    iterations = []
     tip_displacements = []
 
     # 5. Run the case study. Different ways to run the case study are
     # 5.1 `cs.run()` : Runs the simulator till the user-defined criterion.
-    # 5.2 `cs.step()` : Steps forward the simulator one iteration.
+    # 5.2 `cs.iteration()` : Steps forward the simulator one iteration.
     # 5.3 `cs.run_for(additional_time=time_interval)` : Runs the simulator
     # for additional "time_interval" seconds.
     # 5.4 `cs.run_till(final_time)` : Runs the simulator till given
     # "final_time" seconds.
-    for step in tqdm(range(n_steps)):
+    for iteration in tqdm(range(n_iterations)):
         cs.run_for(additional_time=time_interval)
-        # cs.step()
+        # cs.iteration()
 
         # Certain useful methods while running a simulation are:
         # 5.5 `cs.current_time()` : Gets the current time of the simulation.
-        # 5.6 `cs.current_dt()` : Gets the current timestep of the simulation.
+        # 5.6 `cs.current_dt()` : Gets the current timeiteration of the simulation.
         # 5.7 `cs.current_iteration()` : Gets the current iteration of the
         # simulation.
         curr_time = cs.current_time()
-        curr_step = cs.current_step()
+        curr_iteration = cs.current_iteration()
 
         # 5.8 `cs.communicate()` : Gets the system properties marked in the
         # function of the same name, defined in AxialStretchingCaseStudy.hpp
         curr_positions = cs.communicate()
         times.append(curr_time)
-        steps.append(curr_step)
+        iterations.append(curr_iteration)
 
         # 6. To use your numpy-skills, just use np.asarray()! Memory is not
         # allocated, rather it uses the memory in the C++ buffer. So changes
@@ -102,12 +102,12 @@ def run_example(
     expected_tip_disp = end_force_x * base_length / base_area / youngs_modulus
     # First-order theory with modified-length, gives better estimates
     expected_tip_disp_improved = (
-        end_force_x * base_length / (base_area * youngs_modulus - end_force_x)
+            end_force_x * base_length / (base_area * youngs_modulus - end_force_x)
     )
 
     times = np.asarray(times)
     tip_displacements = np.asarray(tip_displacements)
-    steps = np.asarray(steps)
+    iterations = np.asarray(iterations)
 
     avg_tip_displacement = np.mean(tip_displacements[-200:])
 

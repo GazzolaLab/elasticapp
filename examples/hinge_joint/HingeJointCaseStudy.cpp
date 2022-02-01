@@ -207,6 +207,7 @@ void HingeJointCaseStudy::setup(InputTypes<This> const& input_parameters) {
 
 void HingeJointCaseStudy::step() {
   simulator->step(time_stepper, get_current_time(), get_dt());
+  ++get_current_iteration();
 }
 
 void HingeJointCaseStudy::run() {

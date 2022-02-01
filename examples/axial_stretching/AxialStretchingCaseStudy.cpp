@@ -105,9 +105,8 @@ void AxialStretchingCaseStudy::setup(InputTypes<This> const& input_parameters) {
 }
 
 void AxialStretchingCaseStudy::step() {
-  // TODO : is it a good idea to not increment a counter here, but rather do it
-  // outside?
   simulator->step(time_stepper, get_current_time(), get_dt());
+  ++get_current_iteration();
 }
 
 void AxialStretchingCaseStudy::run() {
@@ -128,7 +127,7 @@ void AxialStretchingCaseStudy::run() {
 
   // you can use get_current_iteration() instead of current_iteration()
   // current_iteration() ensures const-correctness
-  for (; current_iteration() < n_steps; ++get_current_iteration()) {
+  for (std::size_t i = 0UL; i < n_steps; ++i) {
     step();
 
     if (not(current_iteration() % write_interval)) {
