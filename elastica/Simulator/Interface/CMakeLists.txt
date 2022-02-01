@@ -2,6 +2,7 @@
 
 set(LIBRARY Simulator)
 
+add_subdirectory(Affordances)
 add_subdirectory(Batching)
 add_subdirectory(Connections)
 add_subdirectory(Constraints)

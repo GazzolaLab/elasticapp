@@ -282,7 +282,7 @@ namespace elastica {
       explicit operator char() const noexcept { return char_member; }
 
       int int_member;  // not 0
-      float char_member;
+      char char_member;
     };
 
   }  // namespace forcing
@@ -764,6 +764,47 @@ namespace {
                                  "Restored UUID", "does not match");
       }
     }
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Forcing.Module.reset",
+                     "[Unit][Simulator][Interface][Forcing]") {
+    // clang-format on
+    auto sim_config =
+        mock::make_simulator_configuration(DefaultForcingConfiguration{});
+    // check cases without an error first.
+    bool arg_all_registered = true;
+    bool is_final = false;
+    auto sim = mock::make_simulator<::mock::ForcingModule>(
+        sim_config, arg_all_registered, is_final);
+    CHECK(sim.n_forcings() == 0UL);
+
+    using ::elastica::forcing::ForcingWithMember;
+    using ::mock::MockSystem;
+
+    using System = MockSystem;
+    using MemberForcing = ForcingWithMember<>;
+    {
+      System sys{100UL};
+      std::string optional_forcing_name = "MyForcing";
+
+      for (std::size_t i = 0UL; i < 5UL; ++i)
+        sim.force(sys, optional_forcing_name)
+            .with<MemberForcing>(32, 'a')
+            .at(i);
+    }
+
+    sim.finalize();
+
+    CHECK(sim.n_forcings() == 5UL);
+    // CHECK(sim.ready()); we are not testing the mock simulator
+    CHECK_FALSE(sim.forcer_batches().empty());
+
+    sim.reset_module(::elastica::Time{0.0});
+
+    CHECK(sim.n_forcings() == 0UL);
+    // CHECK_FALSE(sim.ready());  we are not testing the mock simulator
+    CHECK(sim.forcer_batches().empty());
   }
 
 }  // namespace

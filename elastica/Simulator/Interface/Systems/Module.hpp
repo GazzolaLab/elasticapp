@@ -819,6 +819,31 @@ the above type-list, using SystemsConfiguration.
       //@}
       //************************************************************************
 
+     protected:
+      //**Reset methods*********************************************************
+      /*!\name Reset methods*/
+      //@{
+
+      //************************************************************************
+      /*!\brief Resets the system module
+       *
+       * \param time_v The time of reset
+       * \exception std::runtime_error
+       */
+      void reset_module(TimeType /*time_v*/) {
+        std::fill(std::begin(n_total_systems()), std::end(n_total_systems()),
+                  0UL);
+        cpp17::apply(
+            [](auto&... system_container) {
+              EXPAND_PACK_LEFT_TO_RIGHT(system_container.clear());
+            },
+            get_system_collection_container());
+      }
+      //************************************************************************
+
+      //@}
+      //************************************************************************
+
      private:
       //**Member variables******************************************************
       //! The total number of registered systems

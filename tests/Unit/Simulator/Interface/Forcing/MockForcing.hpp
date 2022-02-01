@@ -161,6 +161,7 @@ namespace mock {
     using P::finalize;
     using P::force;
     using P::forcer_batches;
+    using P::reset_module;
   };
 
   //////////////////////////////////////////////////////////////////////////////

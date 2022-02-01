@@ -277,7 +277,7 @@ namespace elastica {
       explicit operator char() const noexcept { return char_member; }
 
       int int_member;  // not 0
-      float char_member;
+      char char_member;
     };
 
   }  // namespace constraints
@@ -749,6 +749,47 @@ namespace {
                                  "Restored UUID", "does not match");
       }
     }
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Constraints.Module.reset",
+                     "[Unit][Simulator][Interface][Constraints]") {
+    // clang-format on
+    auto sim_config =
+        mock::make_simulator_configuration(DefaultConstraintsConfiguration{});
+    // check cases without an error first.
+    bool arg_all_registered = true;
+    bool is_final = false;
+    auto sim = mock::make_simulator<::mock::ConstraintsModule>(
+        sim_config, arg_all_registered, is_final);
+    CHECK(sim.n_constraints() == 0UL);
+
+    using ::elastica::constraints::ConstraintWithMember;
+    using ::mock::MockSystem;
+
+    using System = MockSystem;
+    using MemberConstraint = ConstraintWithMember<>;
+    {
+      System sys{100UL};
+      std::string optional_constraint_name = "MyConstraints";
+
+      for (std::size_t i = 0UL; i < 5UL; ++i)
+        sim.constrain(sys, optional_constraint_name)
+            .with<MemberConstraint>(32, 'a')
+            .at(i);
+    }
+
+    sim.finalize();
+
+    CHECK(sim.n_constraints() == 5UL);
+    // CHECK(sim.ready()); we are not testing the mock simulator
+    CHECK_FALSE(sim.constrainer_batches().empty());
+
+    sim.reset_module(::elastica::Time{0.0});
+
+    CHECK(sim.n_constraints() == 0UL);
+    // CHECK_FALSE(sim.ready());  we are not testing the mock simulator
+    CHECK(sim.constrainer_batches().empty());
   }
 
 }  // namespace

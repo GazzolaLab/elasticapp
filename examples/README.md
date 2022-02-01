@@ -10,7 +10,7 @@ Some examples provide additional file or link to published paper for a complete 
 
 ### Case studies
 
-* [`axial_stretching`](./axial_stretching)
+* [`axial_stretching`](./axial_stretching)<img src="https://img.shields.io/badge/python-Case%20Study-brightgreen"/>
     * __Name__ : AxialStretchingCaseStudy
     * __Purpose__: Physical convergence test of simple stretching rod.
     * __Features__:
@@ -18,7 +18,7 @@ Some examples provide additional file or link to published paper for a complete 
         * Forcing
         * Constraints
 
-* [`timoshenko`](./timoshenko)
+* [`timoshenko`](./timoshenko)<img src="https://img.shields.io/badge/python-Case%20Study-brightgreen"/>
     * __Name__ : TimoshenkoCaseStudy
     * __Purpose__: Physical convergence test of simple Timoshenko beam.
     * __Features__:
@@ -26,14 +26,14 @@ Some examples provide additional file or link to published paper for a complete 
         * Forcing
         * Constraints
 
-* [`butterfly`](./butterfly)
+* [`butterfly`](./butterfly)<img src="https://img.shields.io/badge/python-Case%20Study-brightgreen"/>
     * __Name__ : ButterflyCaseStudy
     * __Purpose__: Demonstrate simple restoration with initial strain.
     * __Features__:
         * CosseratRodWithoutDamping
         * Custom initializers
 
-* [`helical_buckling`](./helical_buckling)
+* [`helical_buckling`](./helical_buckling)<img src="https://img.shields.io/badge/python-Case%20Study-brightgreen"/>
     * __Name__ : HelicalBucklingCaseStudy
     * __Purpose__: Demonstrate helical buckling with extreme twisting boundary condition.
     * __Features__:
@@ -60,7 +60,7 @@ Some examples provide additional file or link to published paper for a complete 
         * blocks::initialize
         * Material
 
-* [`tutorial_casestudy_setup`](./tutorial_casestudy_setup)
+* [`tutorial_casestudy_setup`](./tutorial_casestudy_setup)<img src="https://img.shields.io/badge/python-Case%20Study-brightgreen"/>
     * __Name__: Case study tutorial
     * __Purpose__: Tutorial for setting up a **elastica** case study
     * __Features__:
@@ -72,15 +72,22 @@ Some examples provide additional file or link to published paper for a complete 
 * [`parallelism`](./parallelism)
     * __Name__: Parallelism Example
     * __Name__: Demonstrate shared-memory parallel **elastica** application
-        * __Features__:
-            * `make_parallel_configuration`
-            * `seq`, `par`
+    * __Features__:
+        * `make_parallel_configuration`
+        * `seq`, `par`
 
 * [`display_variables`](./display_variables)
     * __Name__: Display Variable Names
     * __Purpose__: Demonstrate introspection of variables within different Plugins
     * __Features__:
         * `blocks::display_variable_summary`
+
+* [`simulation_reset`](./simulation_reset)
+    * __Name__: Reset simulation
+    * __Purpose__: Demonstrate a method to reset a simulation, intended for independent, distributed **elastica++**
+      applications
+    * __Features__:
+        * `elastica::modules::EnableReset`
 
 ## Advanced Examples
 

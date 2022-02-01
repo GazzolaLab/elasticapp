@@ -9,6 +9,7 @@ add_subdirectory(hinge_joint)
 include(ElasticaAddExamples)
 add_subdirectory(parallelism)
 add_subdirectory(display_variables)
+add_subdirectory(simulation_reset)
 
 # tutorials
 include(ElasticaAddTutorials)
