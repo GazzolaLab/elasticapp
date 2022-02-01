@@ -2,6 +2,7 @@
 // Created by Tejaswin Parthasarathy on 1/28/21.
 //
 
+#include <functional>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
@@ -53,7 +54,9 @@ namespace {
       "[Unit][Simulator][Interface][Connections]") {
     {
       using RegistrarList = tmpl::list<>;
-      using ConcreteConnection = TestConnectionImpl<int, float, RegistrarList>;
+      using ConcreteConnection =
+          TestConnectionImpl<std::reference_wrapper<int>,
+                             std::reference_wrapper<float>, RegistrarList>;
       int i(2);
       float f(2.0F);
       std::size_t second_index(6UL);
@@ -65,7 +68,9 @@ namespace {
 
     {
       using RegistrarList = tmpl::list<int, float, char>;
-      using ConcreteConnection = TestConnectionImpl<float, char, RegistrarList>;
+      using ConcreteConnection =
+          TestConnectionImpl<std::reference_wrapper<float>,
+                             std::reference_wrapper<char>, RegistrarList>;
       float f(4.0F);
       char c('a');
       ConcreteConnection cc(6UL, f, c, "test");
@@ -77,7 +82,8 @@ namespace {
     {
       using RegistrarList = tmpl::list<char>;
       using ConcreteConnection =
-          TestConnectionImpl<double, bool, RegistrarList>;
+          TestConnectionImpl<std::reference_wrapper<double>,
+                             std::reference_wrapper<bool>, RegistrarList>;
       double d{5.12312};
       bool b{true};
       ConcreteConnection cc(8UL, d, b, "testing");
@@ -324,7 +330,8 @@ using ConnectionFromMakeConnection =
 namespace {
 
   struct Checks {
-    using CC = TestConnection<MockSystem, MockSystem>;
+    using CC = TestConnection<std::reference_wrapper<MockSystem>,
+                              std::reference_wrapper<MockSystem>>;
 
     template <typename T>
     struct CheckConformantConnection : std::true_type {
@@ -430,7 +437,9 @@ namespace {
 namespace {
 
   void test_connection_with_default() {
-    using ConcreteConnection = TestConnection<MockSystem, MockSystem>;
+    using ConcreteConnection =
+        TestConnection<std::reference_wrapper<MockSystem>,
+                       std::reference_wrapper<MockSystem>>;
 
     MockSystem f{100};
     MockSystem g{50};
@@ -468,7 +477,9 @@ namespace {
   }
 
   void test_connection_with_object_counts() {
-    using ConcreteConnection = TestConnection<MockSystem, MockSystem>;
+    using ConcreteConnection =
+        TestConnection<std::reference_wrapper<MockSystem>,
+                       std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     MockSystem g{50};
     {  // prvalue
@@ -525,7 +536,9 @@ namespace {
   }
 
   void test_connection_with_fundamental_types() {
-    using ConcreteConnection = TestConnection<MockSystem, MockSystem>;
+    using ConcreteConnection =
+        TestConnection<std::reference_wrapper<MockSystem>,
+                       std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     MockSystem g{50};
     {  // rvalue
@@ -557,7 +570,9 @@ namespace {
   }
 
   void test_connection_with_aggregate_types() {
-    using ConcreteConnection = TestConnection<MockSystem, MockSystem>;
+    using ConcreteConnection =
+        TestConnection<std::reference_wrapper<MockSystem>,
+                       std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     MockSystem g{50};
     {  // rvalue
@@ -585,7 +600,9 @@ namespace {
   }
 
   void test_deferred_connection_with_aggregate_types() {
-    using ConcreteConnection = TestConnection<MockSystem, MockSystem>;
+    using ConcreteConnection =
+        TestConnection<std::reference_wrapper<MockSystem>,
+                       std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     MockSystem g{50};
     {  // rvalue
@@ -614,7 +631,9 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Connections.Connection.record",
                      "[Unit][Simulator][Interface][Connections]") {
     using RegistrarList = tmpl::list<char>;
-    using ConnectionInterface = TestConnectionImpl<double, bool, RegistrarList>;
+    using ConnectionInterface =
+        TestConnectionImpl<std::reference_wrapper<double>,
+                           std::reference_wrapper<bool>, RegistrarList>;
     double d{5.12312};
     bool b{true};
     {
@@ -644,7 +663,9 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Connections.Connection.set_name",
                      "[Unit][Simulator][Interface][Connections]") {
     using RegistrarList = tmpl::list<char>;
-    using ConnectionInterface = TestConnectionImpl<double, bool, RegistrarList>;
+    using ConnectionInterface =
+        TestConnectionImpl<std::reference_wrapper<double>,
+                           std::reference_wrapper<bool>, RegistrarList>;
     double d{5.12312};
     bool b{true};
     {
@@ -683,7 +704,9 @@ namespace {
   }
 
   void test_connection_with_fundamental_types_via_forwarding_with() {
-    using ConcreteConnection = TestConnection<MockSystem, MockSystem>;
+    using ConcreteConnection =
+        TestConnection<std::reference_wrapper<MockSystem>,
+                       std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     MockSystem g{50};
 
@@ -736,7 +759,9 @@ namespace {
   }
 
   void test_connection_with_aggregate_types_via_forwarding_with() {
-    using ConcreteConnection = TestConnection<MockSystem, MockSystem>;
+    using ConcreteConnection =
+        TestConnection<std::reference_wrapper<MockSystem>,
+                       std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     MockSystem g{50};
     {  // rvalue
@@ -765,7 +790,9 @@ namespace {
   }
 
   void test_deferred_connection_with_aggregate_types_via_forwarding_with() {
-    using ConcreteConnection = TestConnection<MockSystem, MockSystem>;
+    using ConcreteConnection =
+        TestConnection<std::reference_wrapper<MockSystem>,
+                       std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     MockSystem g{50};
     {  // rvalue
@@ -809,7 +836,9 @@ namespace {
   }
 
   void test_connection_with_fundamental_types_via_forwarded_arguments() {
-    using ConcreteConnection = TestConnection<MockSystem, MockSystem>;
+    using ConcreteConnection =
+        TestConnection<std::reference_wrapper<MockSystem>,
+                       std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     MockSystem g{50};
 
@@ -850,7 +879,9 @@ namespace {
   }
 
   void test_connection_with_aggregate_types_via_forwarded_arguments() {
-    using ConcreteConnection = TestConnection<MockSystem, MockSystem>;
+    using ConcreteConnection =
+        TestConnection<std::reference_wrapper<MockSystem>,
+                       std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     MockSystem g{50};
     {  // rvalue
@@ -879,7 +910,9 @@ namespace {
   }
 
   void test_connection_with_noncopyable_types_via_forwarded_arguments() {
-    using ConcreteConnection = TestConnection<MockSystem, MockSystem>;
+    using ConcreteConnection =
+        TestConnection<std::reference_wrapper<MockSystem>,
+                       std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     MockSystem g{50};
     {  // rvalue
@@ -898,7 +931,9 @@ namespace {
   }
 
   void test_deferred_connection_with_aggregate_types_via_forwarded_arguments() {
-    using ConcreteConnection = TestConnection<MockSystem, MockSystem>;
+    using ConcreteConnection =
+        TestConnection<std::reference_wrapper<MockSystem>,
+                       std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     MockSystem g{50};
     {  // rvalue
@@ -945,7 +980,9 @@ namespace {
       "Unit.Simulator.Interface.Connections.Connection.exception_for_incorrect_indices",
       "[Unit][Simulator][Interface][Connections]") {
     // clang-format on
-    using ConcreteConnection = TestConnection<MockSystem, MockSystem>;
+    using ConcreteConnection =
+        TestConnection<std::reference_wrapper<MockSystem>,
+                       std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     MockSystem g{50};
     {  // rvalue
@@ -1013,7 +1050,9 @@ namespace {
       "Unit.Simulator.Interface.Connections.Connection.with_unique_ptr",
       "[Unit][Simulator][Interface][Connections]") {
     // clang-format on
-    using ConcreteConnection = TestConnection<MockSystem, MockSystem>;
+    using ConcreteConnection =
+        TestConnection<std::reference_wrapper<MockSystem>,
+                       std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     MockSystem g{50};
     {  // rvalue

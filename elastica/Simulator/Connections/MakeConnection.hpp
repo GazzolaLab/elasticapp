@@ -24,6 +24,7 @@
 #include "Simulator/Connections/Connection.hpp"
 #include "Utilities/MakeNamedFunctor.hpp"
 #include "Utilities/NamedType.hpp"
+#include "Utilities/Overloader.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -103,7 +104,7 @@ namespace elastica {
                                           std::is_copy_constructible<G>>> =
                 nullptr>
         GenericConnection(ForceFunc const& v, TorqueFunc const& r)
-            : force_(v), torque_(r){}
+            : force_(v), torque_(r) {}
         //**********************************************************************
 
         //**********************************************************************
@@ -624,6 +625,42 @@ namespace elastica {
                                                      std::move(torques.get()));
     }
     /*! \endcond */
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Makes an arbitrary \elastica connection in an idiomatic way
+     * \ingroup connections
+     *
+     * \details
+     * This overload make_connection() takes in any number of callables directly
+     * These callables need to apply BOTH forces and torques on the system---the
+     * user is responsible to ensure that both forces and torques are applied.
+     * Except for this, all other features are retained, so see the
+     * documentation of the other make_connection() overload.
+     *
+     * \example
+     * \snippet Test_MakeConnection.cpp make_unified_example
+     *
+     * You can also overload it so that the right function is called based on
+     * the type of the system
+     *
+     * \snippet Test_MakeConnection.cpp make_unified_overloading_eg
+     *
+     * \param forces_and_torques A functor that applies forces and torques
+     * \param other_forces_and_torques Other force & torque functors
+     * \return GenericConnection initialized with make_force() and
+     * make_torque()
+     */
+    template <typename F, typename... Funcs>
+    auto make_connection(F forces_and_torques,
+                         Funcs... other_forces_and_torques) {
+      // don't worry about noexcept, it will be refactored later anyway
+      return make_connection_detail::make_connection(
+          make_overloader(std::move(forces_and_torques),
+                          std::move(other_forces_and_torques)...),
+          // use an auto ref to not create a copy
+          [](auto&...) noexcept {});
+    }
     //**************************************************************************
 
   }  // namespace connections

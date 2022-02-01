@@ -871,11 +871,59 @@ namespace {
 
   // clang-format off
   ELASTICA_TEST_CASE(
-      "Unit.Simulator.Forcings.MakeForcing.overloaded_interface",
+      "Unit.Simulator.Forcing.MakeForcing.overloaded_interface",
       "[Unit][Simulator][Forcing]") {
     // clang-format on
     // These always create a copy of the functors in question
     test_make_forcing_overloaded_forces_interface();
     test_make_forcing_overloaded_torques_interface();
+  }
+
+  void test_make_forcing_unified_interface() {
+    SECTION("Unified interface") {
+      /// [make_unified_example]
+      auto forcing_factory = make_forcing(ANC());
+      /// [make_unified_example]
+
+      // now make a forcing
+      auto my_forcing = forcing_factory();
+      // forcing interface
+      int mock_time = 3;
+      int mock_system = 2;
+      int mock_index = 1;
+      my_forcing.apply_forces(mock_time, mock_system, mock_index);
+      CHECK(mock_system == 3);
+    }
+    SECTION("Unified interface with overloading") {
+      /// [make_unified_overloading_eg]
+      const auto fover = [](auto /*time*/, float& system, auto /*first_index*/
+                         ) { system -= 0.5F; };
+      auto iover = [](auto /*time*/, int& system, auto /*first_index*/) {
+        system += 1;
+      };
+      auto forcing_factory = make_forcing(fover, iover);
+      /// [make_unified_overloading_eg]
+
+      // now make a forcing
+      auto my_forcing = forcing_factory();
+      // forcing interface
+      int mock_time = 3;
+      int mock_int_system = 2;
+      int mock_index = 1;
+      my_forcing.apply_forces(mock_time, mock_int_system, mock_index);
+      CHECK(mock_int_system == 3);
+
+      float mock_float_system = 0.8F;
+      my_forcing.apply_forces(mock_time, mock_float_system, mock_index);
+      CHECK(mock_float_system == approx(0.3F));
+    }
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE("Unit.Simulator.Forcing.MakeForcing.unified_interface",
+                     "[Unit][Simulator][Forcing]") {
+    // clang-format on
+    // These always create a copy of the functors in question
+    test_make_forcing_unified_interface();
   }
 }  // namespace

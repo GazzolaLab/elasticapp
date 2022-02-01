@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 
 #include "Simulator/Configuration/ModuleConfiguration/Connections.hpp"
@@ -81,9 +82,10 @@ namespace mock {
     // respects access modifiers
     /// using Parent::Parent;  // todo protected
 
-    explicit TestConnectionImpl(IndexType id, FirstSystem const& s1,
-                                SecondSystem const& s2, std::string&& name)
-        : Parent(id, s1, s2, std::move(name)){};
+    explicit TestConnectionImpl(IndexType id, typename FirstSystem::type& s1,
+                                typename SecondSystem::type& s2,
+                                std::string&& name)
+        : Parent(id, std::ref(s1), std::ref(s2), std::move(name)){};
 
     // meta, all protected
     using Parent::conformant_connection;

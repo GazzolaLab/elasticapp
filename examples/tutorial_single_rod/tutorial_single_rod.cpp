@@ -75,11 +75,12 @@ int main() {
    * Now that we have an initializer, let us use it to emplace a rod into our
    * simulator. More details can be found in `tutorial_rod_construction`.
    *
-   * Here, observe that the `emplace_back` method returns an iterator to the
-   * emplaced rod (as opposed to a reference!). These iterators are NEVER
-   * invalidated to ensure a memory-safe programming experience in __elastica__.
+   * Here, observe that the `emplace_back` method returns a wrapped reference
+   * to the emplaced rod (as opposed to a direct reference!). These reference
+   * wrappers (similar to std::ref) are NEVER invalidated to ensure a
+   * memory-safe programming experience in __elastica__.
    */
-  auto rod_it = simulator->emplace_back<CosseratRod>(
+  auto rod_ref = simulator->emplace_back<CosseratRod>(
       straight_initializer.initialize<CosseratRod>());
 
   /*
@@ -95,8 +96,8 @@ int main() {
    * In case of position, the member function is get_position()
    */
   std::cout << "Position using member function" << std::endl;
-  // we dereference the iterator to get the rod!
-  std::cout << (*rod_it).get_position() << std::endl;
+  // we get the wrapped reference to get the rod, and then get its position!
+  std::cout << rod_ref.get().get_position() << std::endl;
 
   /*
    * 4.2
@@ -106,7 +107,9 @@ int main() {
    */
   std::cout << "Position using free function" << std::endl;
   // we dereference the iterator to get the rod!
-  std::cout << ::elastica::position(*rod_it) << std::endl;
+  std::cout << ::elastica::position(rod_ref.get()) << std::endl;
+  // The call below also works, use it if you are comfortable with it
+  std::cout << ::elastica::position(rod_ref) << std::endl;
 
   /*
    * 4.3
@@ -129,14 +132,15 @@ int main() {
    *
    * Note that by convention, all tags are Capitalized.
    */
-  std::cout << ::elastica::get<elastica::tags::Position>(*rod_it) << std::endl;
+  auto rod = rod_ref.get();
+  std::cout << ::elastica::get<elastica::tags::Position>(rod) << std::endl;
 
   /*
    * 5. Now that we have access to the position, let's analyze its contents.
    * Firstly, the positions are a (3, n + 1) array, where n corresponds to the
    * number of elements. You can programatically obtain the shape as shown below
    */
-  auto rod_position = ::elastica::get<elastica::tags::Position>(*rod_it);
+  auto rod_position = ::elastica::get<elastica::tags::Position>(rod);
   std::cout << "Shape of position : (" << rod_position.rows() << ", "
             << rod_position.columns() << ")" << std::endl;
 
@@ -154,7 +158,7 @@ int main() {
    */
   rod_position(1UL, 4UL) = 0.08;
   std::cout << "Updated rod position at (1, 4) : "
-            << ::elastica::position(*rod_it)(1UL, 4UL) << std::endl
+            << ::elastica::position(rod)(1UL, 4UL) << std::endl
             << std::endl;
 
   /*
@@ -183,9 +187,9 @@ int main() {
    */
   // Velocity is of shape (3, n + 1)
   std::cout << "Velocity using member function" << std::endl;
-  std::cout << "Shape of velocity : ("                  //
-            << (*rod_it).get_velocity().rows() << ", "  //
-            << (*rod_it).get_velocity().columns()       //
+  std::cout << "Shape of velocity : ("            //
+            << rod.get_velocity().rows() << ", "  //
+            << rod.get_velocity().columns()       //
             << ")" << std::endl
             << std::endl;
 
@@ -193,17 +197,17 @@ int main() {
   std::cout << "Director using member function" << std::endl;
   std::cout << "Shape of director : ("
             // follows the blaze_tensor API
-            << (*rod_it).get_director().pages() << ", "  //
-            << (*rod_it).get_director().rows() << ", "   //
-            << (*rod_it).get_director().columns()        //
+            << rod.get_director().pages() << ", "  //
+            << rod.get_director().rows() << ", "   //
+            << rod.get_director().columns()        //
             << ")" << std::endl
             << std::endl;
 
   // Angular velocity is of shape (3, n)
   std::cout << "Angular velocity using member function" << std::endl;
-  std::cout << "Shape of angular velocity : ("                  //
-            << (*rod_it).get_angular_velocity().rows() << ", "  //
-            << (*rod_it).get_angular_velocity().columns()       //
+  std::cout << "Shape of angular velocity : ("            //
+            << rod.get_angular_velocity().rows() << ", "  //
+            << rod.get_angular_velocity().columns()       //
             << ")" << std::endl
             << std::endl;
 
@@ -223,17 +227,17 @@ int main() {
    */
   std::cout << "Velocity using free function" << std::endl;
   // we dereference the iterator to get the rod!
-  std::cout << "Shape of velocity : ("                       //
-            << ::elastica::velocity(*rod_it).rows() << ", "  //
-            << ::elastica::velocity(*rod_it).columns()       //
+  std::cout << "Shape of velocity : ("                             //
+            << ::elastica::velocity(rod_ref.get()).rows() << ", "  //
+            << ::elastica::velocity(rod_ref.get()).columns()       //
             << ")" << std::endl
             << std::endl;
 
   std::cout << "Angular Velocity using free function" << std::endl;
   // we dereference the iterator to get the rod!
-  std::cout << "Shape of angular_velocity : ("                       //
-            << ::elastica::angular_velocity(*rod_it).rows() << ", "  //
-            << ::elastica::angular_velocity(*rod_it).columns()       //
+  std::cout << "Shape of angular_velocity : ("                             //
+            << ::elastica::angular_velocity(rod_ref.get()).rows() << ", "  //
+            << ::elastica::angular_velocity(rod_ref.get()).columns()       //
             << ")" << std::endl
             << std::endl;
 
@@ -241,9 +245,9 @@ int main() {
   // we dereference the iterator to get the rod!
   std::cout << "Shape of director : ("
             // follows the blaze_tensor API
-            << ::elastica::director(*rod_it).pages() << ", "  //
-            << ::elastica::director(*rod_it).rows() << ", "   //
-            << ::elastica::director(*rod_it).columns()        //
+            << ::elastica::director(rod_ref.get()).pages() << ", "  //
+            << ::elastica::director(rod_ref.get()).rows() << ", "   //
+            << ::elastica::director(rod_ref.get()).columns()        //
             << ")" << std::endl
             << std::endl;
 
@@ -253,12 +257,13 @@ int main() {
    * we simply need to use the tag and elastica::get
    */
   std::cout << "Tangent using elastica::get " << std::endl;
-  std::cout << "Shape of tangent : ("  //
-            << ::elastica::get<elastica::tags::Tangent>(*rod_it).rows()
-            << ", "                                                         //
-            << ::elastica::get<elastica::tags::Tangent>(*rod_it).columns()  //
-            << ")" << std::endl
-            << std::endl;
+  std::cout
+      << "Shape of tangent : ("  //
+      << ::elastica::get<elastica::tags::Tangent>(rod_ref.get()).rows()
+      << ", "                                                               //
+      << ::elastica::get<elastica::tags::Tangent>(rod_ref.get()).columns()  //
+      << ")" << std::endl
+      << std::endl;
   /*
    * To see a list of all tags supported by the CosseratRod, please consult
    * its API documentation.

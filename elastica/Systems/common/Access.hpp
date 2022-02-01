@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include <cstddef> // size_t
+#include <cstddef>  // size_t
 
 namespace elastica {
 
@@ -23,20 +23,19 @@ namespace elastica {
   //
   //============================================================================
 
+  struct AnyPhysicalSystem {};
+
   //**Position functions********************************************************
   /*!\name Position functions */
   //@{
   /*!\brief Retrieves position from the systems
    * \ingroup systems
    */
-  template <typename T>
-  inline constexpr decltype(auto) position(T& t) noexcept;
-  template <typename T>
-  inline constexpr decltype(auto) position(T const& t) noexcept;
-  template <typename T>
-  inline constexpr decltype(auto) position(T& t, std::size_t index) noexcept;
-  template <typename T>
-  inline constexpr decltype(auto) position(T const& t,
+  inline constexpr decltype(auto) position(AnyPhysicalSystem& t) noexcept;
+  inline constexpr decltype(auto) position(AnyPhysicalSystem const& t) noexcept;
+  inline constexpr decltype(auto) position(AnyPhysicalSystem& t,
+                                           std::size_t index) noexcept;
+  inline constexpr decltype(auto) position(AnyPhysicalSystem const& t,
                                            std::size_t index) noexcept;
   //@}
   //****************************************************************************
@@ -47,14 +46,11 @@ namespace elastica {
   /*!\brief Retrieves directors from the systems
    * \ingroup systems
    */
-  template <typename T>
-  inline constexpr decltype(auto) director(T& t) noexcept;
-  template <typename T>
-  inline constexpr decltype(auto) director(T const& t) noexcept;
-  template <typename T>
-  inline constexpr decltype(auto) director(T& t, std::size_t index) noexcept;
-  template <typename T>
-  inline constexpr decltype(auto) director(T const& t,
+  inline constexpr decltype(auto) director(AnyPhysicalSystem& t) noexcept;
+  inline constexpr decltype(auto) director(AnyPhysicalSystem const& t) noexcept;
+  inline constexpr decltype(auto) director(AnyPhysicalSystem& t,
+                                           std::size_t index) noexcept;
+  inline constexpr decltype(auto) director(AnyPhysicalSystem const& t,
                                            std::size_t index) noexcept;
   //@}
   //****************************************************************************
@@ -65,14 +61,11 @@ namespace elastica {
   /*!\brief Retrieves velocities from the systems
    * \ingroup systems
    */
-  template <typename T>
-  inline constexpr decltype(auto) velocity(T& t) noexcept;
-  template <typename T>
-  inline constexpr decltype(auto) velocity(T const& t) noexcept;
-  template <typename T>
-  inline constexpr decltype(auto) velocity(T& t, std::size_t index) noexcept;
-  template <typename T>
-  inline constexpr decltype(auto) velocity(T const& t,
+  inline constexpr decltype(auto) velocity(AnyPhysicalSystem& t) noexcept;
+  inline constexpr decltype(auto) velocity(AnyPhysicalSystem const& t) noexcept;
+  inline constexpr decltype(auto) velocity(AnyPhysicalSystem& t,
+                                           std::size_t index) noexcept;
+  inline constexpr decltype(auto) velocity(AnyPhysicalSystem const& t,
                                            std::size_t index) noexcept;
   //@}
   //****************************************************************************
@@ -83,15 +76,13 @@ namespace elastica {
   /*!\brief Retrieves angular velocities from the systems
    * \ingroup systems
    */
-  template <typename T>
-  inline constexpr decltype(auto) angular_velocity(T& t) noexcept;
-  template <typename T>
-  inline constexpr decltype(auto) angular_velocity(T const& t) noexcept;
-  template <typename T>
-  inline constexpr decltype(auto) angular_velocity(T& t,
+  inline constexpr decltype(auto) angular_velocity(
+      AnyPhysicalSystem& t) noexcept;
+  inline constexpr decltype(auto) angular_velocity(
+      AnyPhysicalSystem const& t) noexcept;
+  inline constexpr decltype(auto) angular_velocity(AnyPhysicalSystem& t,
                                                    std::size_t index) noexcept;
-  template <typename T>
-  inline constexpr decltype(auto) angular_velocity(T const& t,
+  inline constexpr decltype(auto) angular_velocity(AnyPhysicalSystem const& t,
                                                    std::size_t index) noexcept;
   //@}
   //****************************************************************************

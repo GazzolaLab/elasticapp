@@ -103,14 +103,14 @@ namespace elastica {
        *
        * \see forcing
        */
-      template <typename System, typename ForcingRegistrars>
+      template <typename SystemRef, typename ForcingRegistrars>
       class Forcing : public ForcingBase<ForcingRegistrars> {
        public:
         //**Type definitions****************************************************
         //! Parent type
         using Parent = ForcingBase<ForcingRegistrars>;
         //! This type
-        using This = Forcing<System, ForcingRegistrars>;
+        using This = Forcing<SystemRef, ForcingRegistrars>;
         //! Internal size type
         using SizeType = std::size_t;
         //! Internal type of index
@@ -139,12 +139,14 @@ namespace elastica {
         /*!\brief Sole constructor.
          *
          * \param id A unique integral ID to identify the forcing
-         * \param s System to be forced
+         * \param s SystemRef to be forced
          * \param name Name of the forcing
          */
-        explicit Forcing(IndexType id, System const& s, std::string&& name)
-            : Parent(id, std::move(name)), system_(s) {
-          this->set_concrete_system_type() = pretty_type::short_name<System>();
+        explicit Forcing(IndexType id, SystemRef const& s, std::string&& name)
+            : Parent(id, std::move(name)), system_ref_(s) {
+          using SystemRefType = typename SystemRef::type;
+          this->set_concrete_system_type() =
+              pretty_type::short_name<SystemRefType>();
         };
         //**********************************************************************
         //@}
@@ -359,7 +361,7 @@ forcing::Forcing?
                          IndexSet&& indices) /*noexcept*/
         {
           using NumericIndexSet = decltype(to_numeric(
-              std::forward<IndexSet>(indices), this->system_));
+              std::forward<IndexSet>(indices), this->system_ref_.get()));
 
           record_name_of<ConcreteForcing>();
 
@@ -367,9 +369,9 @@ forcing::Forcing?
             struct {
               ConcreteForcing bc;
               NumericIndexSet index_set;
-            } capture{
-                std::forward<ConcreteForcing>(forcing),
-                to_numeric(std::forward<IndexSet>(indices), this->system_)};
+            } capture{std::forward<ConcreteForcing>(forcing),
+                      to_numeric(std::forward<IndexSet>(indices),
+                                 this->system_ref_.get())};
             Parent::forcer_generator_ = make_copyable_function(
                 [this, forcing_details = std::move(capture)]() mutable {
                   /* Developer note:
@@ -388,7 +390,7 @@ forcing::Forcing?
                   return make_forcer(
                       typename Parent::UUIDType{unique_id,
                                                 std::move(unique_name)},
-                      system_, std::move(forcing_details.bc),
+                      system_ref_.get(), std::move(forcing_details.bc),
                       std::move(forcing_details.index_set));
                 });
           } catch (...) {
@@ -643,7 +645,7 @@ forcing::Forcing?
        private:
         //**Member variables****************************************************
         //! The type of system being forced
-        System const& system_;
+        SystemRef system_ref_;
         //**********************************************************************
       };
       /*! \endcond */

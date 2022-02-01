@@ -24,6 +24,7 @@
 #include "Simulator/Forcing/Forcing.hpp"
 #include "Utilities/MakeNamedFunctor.hpp"
 #include "Utilities/NamedType.hpp"
+#include "Utilities/Overloader.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -102,14 +103,14 @@ namespace elastica {
                                           std::is_copy_constructible<G>>> =
                 nullptr>
         GenericForcing(ForceFunc const& v, TorqueFunc const& r)
-            : force_(v), torque_(r){}
+            : force_(v), torque_(r) {}
         //**********************************************************************
 
         //**********************************************************************
         /*!\brief Constructor for move-able functors
          */
         GenericForcing(ForceFunc&& v, TorqueFunc&& r) noexcept
-            : force_(std::move(v)), torque_(std::move(r)){}
+            : force_(std::move(v)), torque_(std::move(r)) {}
         //**********************************************************************
 
         //**********************************************************************
@@ -479,6 +480,41 @@ namespace elastica {
                                                std::move(torques.get()));
     }
     /*! \endcond */
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Makes an arbitrary \elastica forcing in an idiomatic way
+     * \ingroup forcing
+     *
+     * \details
+     * This overload make_forcing() takes in any number of callables directly
+     * These callables need to apply BOTH forces and torques on the system---the
+     * user is responsible to ensure that both forces and torques are applied.
+     * Except for this, all other features are retained, so see the
+     * documentation of the other make_forcing() overload.
+     *
+     * \example
+     * \snippet Test_MakeForcing.cpp make_unified_example
+     *
+     * You can also overload it so that the right function is called based on
+     * the type of the system
+     *
+     * \snippet Test_MakeForcing.cpp make_unified_overloading_eg
+     *
+     * \param forces_and_torques A functor that applies forces and torques
+     * \param other_forces_and_torques Other force & torque functors
+     * \return GenericForcing initialized with make_force() and
+     * make_torque()
+     */
+    template <typename F, typename... Funcs>
+    auto make_forcing(F forces_and_torques, Funcs... other_forces_and_torques) {
+      // don't worry about noexcept, it will be refactored later anyway
+      return make_forcing_detail::make_forcing(
+          make_overloader(std::move(forces_and_torques),
+                          std::move(other_forces_and_torques)...),
+          // use an auto ref to not create a copy
+          [](auto&...) noexcept {});
+    }
     //**************************************************************************
 
   }  // namespace forcing

@@ -51,9 +51,7 @@ namespace {
     namespace ec = elastica::configuration;
     namespace et = elastica::timestepper;
 
-    Approx approx = Approx::custom()
-                        .epsilon(7e-10)
-                        .scale(0.0);
+    Approx approx = Approx::custom().epsilon(7e-10).scale(0.0);
 
     elastica::MaterialID myMaterial = elastica::create_material(
         7.874, 0.24, 200, 200.0 / 1.24, 200, 1e-10, 1e-10, 0.1, 0.1);
@@ -83,8 +81,9 @@ namespace {
 
     auto simulator = elastica::make_simulator<>(simulator_config);
 
-    auto slicedrod_00000 = *(simulator->emplace_back<Plugin>(
-        straight_initializer.initialize<Plugin>()));
+    auto slicedrod_00000 = (simulator->emplace_back<Plugin>(
+                                straight_initializer.initialize<Plugin>()))
+                               .get();
 
     simulator->finalize();
 

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 
 #include "Simulator/Configuration/ModuleConfiguration/Constraints.hpp"
@@ -80,8 +81,11 @@ namespace mock {
     // respects access modifiers
     /// using Parent::Parent;  // todo protected
 
-    explicit TestConstraintImpl(IndexType id, System& s, std::string&& name)
-        : Parent(id, s, std::move(name)){};
+    // FIX : we realized we need pointers later on, so to fix, we use ref
+    // wrappers
+    explicit TestConstraintImpl(IndexType id, typename System::type& s,
+                                std::string&& name)
+        : Parent(id, std::ref(s), std::move(name)){};
 
     // meta, all protected
     using Parent::conformant_constraint;

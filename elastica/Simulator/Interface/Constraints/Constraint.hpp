@@ -103,14 +103,14 @@ namespace elastica {
        *
        * \see ConstraintImpl
        */
-      template <typename System, typename ConstraintRegistrars>
+      template <typename SystemRef, typename ConstraintRegistrars>
       class Constraint : public ConstraintBase<ConstraintRegistrars> {
        public:
         //**Type definitions****************************************************
         //! Parent type
         using Parent = ConstraintBase<ConstraintRegistrars>;
         //! This type
-        using This = Constraint<System, ConstraintRegistrars>;
+        using This = Constraint<SystemRef, ConstraintRegistrars>;
         //! Internal size type
         using SizeType = std::size_t;
         //! Internal type of index
@@ -139,12 +139,15 @@ namespace elastica {
         /*!\brief Sole constructor.
          *
          * \param id A unique integral ID to identify the constraint
-         * \param s System to be constrained
+         * \param s SystemRef to be constrained
          * \param name Name of the constraint
          */
-        explicit Constraint(IndexType id, System const& s, std::string&& name)
-            : Parent(id, std::move(name)), system_(s) {
-          this->set_concrete_system_type() = pretty_type::short_name<System>();
+        explicit Constraint(IndexType id, SystemRef const& s,
+                            std::string&& name)
+            : Parent(id, std::move(name)), system_ref_(s) {
+          using SystemRefType = typename SystemRef::type;
+          this->set_concrete_system_type() =
+              pretty_type::short_name<SystemRefType>();
         };
         //**********************************************************************
         //@}
@@ -358,7 +361,7 @@ constraints::Constraint?
         void unsafe_with(ConcreteConstraint&& constraint,
                          IndexSet&& indices) /*noexcept*/ {
           using NumericIndexSet = decltype(to_numeric(
-              std::forward<IndexSet>(indices), this->system_));
+              std::forward<IndexSet>(indices), this->system_ref_.get()));
 
           record_name_of<ConcreteConstraint>();
 
@@ -368,9 +371,10 @@ constraints::Constraint?
             struct {
               ConcreteConstraint bc;
               NumericIndexSet index_set;
-            } capture{std::forward<ConcreteConstraint>(constraint),
-                      sort_and_check_duplicates(to_numeric(
-                          std::forward<IndexSet>(indices), this->system_))};
+            } capture{
+                std::forward<ConcreteConstraint>(constraint),
+                sort_and_check_duplicates(to_numeric(
+                    std::forward<IndexSet>(indices), this->system_ref_.get()))};
             // we cannot directly assign the lambda to a std::function because
             // it us not copyable and the requirements of std::function need a
             // copyable callable so we work around it
@@ -395,7 +399,7 @@ constraints::Constraint?
                   return make_constrainer(
                       typename Parent::UUIDType{unique_id,
                                                 std::move(unique_name)},
-                      system_, std::move(constraint_details.bc),
+                      system_ref_.get(), std::move(constraint_details.bc),
                       std::move(constraint_details.index_set));
                 });
           } catch (...) {
@@ -653,7 +657,7 @@ constraints::Constraint?
        private:
         //**Member variables****************************************************
         //! The type of system being constrained
-        System const& system_;
+        SystemRef system_ref_;
         //**********************************************************************
       };
       /*! \endcond */
