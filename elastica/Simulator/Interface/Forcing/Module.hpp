@@ -559,48 +559,62 @@ namespace elastica {
        * missing/faulty
        */
       void finalize(TimeType time_v) {
-        try {
-          check_and_report_errors();
+        if (n_total_forcing) {
+          try {
+            check_and_report_errors();
 
-          // logic for batching
-          batch_from = [](auto uuids_batched_per_system,
-                          std::size_t partition_size) {
-            auto partition_result = elastica::karmarkar_karp_partition(
-                uuids_batched_per_system, partition_size,
-                [](auto const& v) { return ::elastica::size(v); });
-            using UUIDSubsets = decltype(::flatten(partition_result.subsets()));
-            UUIDSubsets flattened_uuid_subsets;
-            flattened_uuid_subsets.reserve(partition_size);
-            // flatten the inner-most subset dimension
-            for (auto& sub : partition_result.subsets()) {
-              flattened_uuid_subsets.emplace_back(::flatten(std::move(sub)));
+            // logic for batching
+            batch_from = [](auto uuids_batched_per_system,
+                            std::size_t partition_size) {
+              auto partition_result = elastica::karmarkar_karp_partition(
+                  uuids_batched_per_system, partition_size,
+                  [](auto const& v) { return ::elastica::size(v); });
+              using UUIDSubsets =
+                  decltype(::flatten(partition_result.subsets()));
+              UUIDSubsets flattened_uuid_subsets;
+              flattened_uuid_subsets.reserve(partition_size);
+              // flatten the inner-most subset dimension
+              for (auto& sub : partition_result.subsets()) {
+                flattened_uuid_subsets.emplace_back(::flatten(std::move(sub)));
+              }
+              return ::elastica::interface::detail::make_uuid_to_batch_map(
+                  std::move(flattened_uuid_subsets));
+            }(std::move(uuid_map_).as_vector(), n_batches());
+
+            forcer_batches_.reserve(n_batches());
+            forcer_batches_.resize(n_batches());
+
+            for (ForcingID const& forcing : forcing_) {
+              // guaranteed to be [0, partition_size() - 1]
+              const std::size_t batch_number = batch_from[forcing->id()];
+
+              // careful in pushing back unique ptr
+              forcer_batches_[batch_number].push_back(forcing->finalize());
             }
-            return ::elastica::interface::detail::make_uuid_to_batch_map(
-                std::move(flattened_uuid_subsets));
-          }(std::move(uuid_map_).as_vector(), n_batches());
 
-          forcer_batches_.reserve(n_batches());
-          forcer_batches_.resize(n_batches());
+            //          forcers_.reserve(n_total_forcing);
+            //          std::transform(
+            //              forcing_.cbegin(), forcing_.cend(),
+            //              std::back_inserter(forcers_),
+            //              [](const ForcingID& forcing) { return
+            //              forcing->finalize(); });
 
-          for (ForcingID const& forcing : forcing_) {
-            // guaranteed to be [0, partition_size() - 1]
-            const std::size_t batch_number = batch_from[forcing->id()];
-
-            // careful in pushing back unique ptr
-            forcer_batches_[batch_number].push_back(forcing->finalize());
+          } catch (...) {
+            const char* error_message =
+                "Preparing the forcing module failed because";
+            std::throw_with_nested(std::runtime_error(error_message));
           }
+        } else {
+          const char* warning_message =
+              "No forcing added even though the module was "
+              "included! Consider removing ::elastica::modules::Forcing "
+              "from ::elastica::make_simulator for potentially improved "
+              "performance";
+          using namespace ::elastica::logging;
+          log<warning>([&](auto const& log) { log << warning_message; });
 
-          //          forcers_.reserve(n_total_forcing);
-          //          std::transform(
-          //              forcing_.cbegin(), forcing_.cend(),
-          //              std::back_inserter(forcers_),
-          //              [](const ForcingID& forcing) { return
-          //              forcing->finalize(); });
-
-        } catch (...) {
-          const char* error_message =
-              "Preparing the forcing module failed because";
-          std::throw_with_nested(std::runtime_error(error_message));
+          std::cerr << "Warning : " << warning_message
+                    << std::endl;  // flush it
         }
 
         // forcing are no longer needed, remove them

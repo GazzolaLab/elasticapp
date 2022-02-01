@@ -575,6 +575,23 @@ namespace {
 
   // clang-format off
   ELASTICA_TEST_CASE(
+      "Unit.Simulator.Interface.Forcing.Module.on_forcing_added",
+      "[Unit][Simulator][Interface][Forcing]") {
+    // clang-format on
+    auto sim_config =
+        mock::make_simulator_configuration(DefaultForcingConfiguration{});
+    // check cases without an error first.
+    bool arg_all_registered = true;
+    bool is_final = false;
+    auto sim = mock::make_simulator<::mock::ForcingModule>(
+        sim_config, arg_all_registered, is_final);
+    CHECK(sim.n_forcings() == 0UL);
+
+    CHECK_NOTHROW(sim.finalize());
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE(
       "Unit.Simulator.Interface.Forcing.Module.serialize",
       "[Unit][Simulator][Interface][Forcing]") {
     // clang-format on
