@@ -116,18 +116,19 @@ implemented correctly.
   void run();
 
   auto compute_elastic_energy() const noexcept {
-    return std::make_tuple(::elastica::compute_bend_energy(rod_ref.get()),
-                           ::elastica::compute_shear_energy(rod_ref.get()));
+    auto slice = rod_ref.get();
+    return std::make_tuple(::elastica::compute_bend_energy(slice),
+                           ::elastica::compute_shear_energy(slice));
   }
 
   auto compute_kinetic_energy() const noexcept {
-    return std::make_tuple(
-        ::elastica::compute_translational_energy(rod_ref.get()),
-        ::elastica::compute_rotational_energy(rod_ref.get()));
+    auto slice = rod_ref.get();
+    return std::make_tuple(::elastica::compute_translational_energy(slice),
+                           ::elastica::compute_rotational_energy(slice));
   }
 
   inline auto communicate() {
-    return std::tuple_cat(std::make_tuple(::elastica::position(rod_ref)),
+    return std::tuple_cat(std::make_tuple(::elastica::position(rod_ref.get())),
                           compute_elastic_energy(), compute_kinetic_energy());
   }
 

@@ -134,7 +134,7 @@ void HelicalBucklingCaseStudy::setup(InputTypes<This> const& input_parameters) {
       origin + 0.5 * slack * rod_direction;
   const ::elastica::Rot3 final_start_director =
       ::elastica::geometry::rotate_via_axis_angle(rod_direction, theta) *
-      ::elastica::director(rod_ref, left_tip_index);
+      ::elastica::director(rod_ref.get(), left_tip_index);
 
   auto left_constraint_generator = eco::make_constraint(
       eco::make_value_constraint(
@@ -163,7 +163,7 @@ void HelicalBucklingCaseStudy::setup(InputTypes<This> const& input_parameters) {
   const ::elastica::Rot3 final_end_director =
       ::elastica::geometry::rotate_via_axis_angle(rod_direction, -theta) *
       // need end support here my dude
-      ::elastica::director(rod_ref, n_elem - 1UL);
+      ::elastica::director(rod_ref.get(), n_elem - 1UL);
 
   auto right_constraint_generator = eco::make_constraint(
       eco::make_value_constraint([=](auto time_v, auto& rod_system,

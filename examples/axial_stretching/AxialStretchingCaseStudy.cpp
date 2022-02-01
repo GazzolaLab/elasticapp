@@ -72,7 +72,7 @@ void AxialStretchingCaseStudy::setup(InputTypes<This> const& input_parameters) {
   auto constraint_generator = eco::make_constraint(
       eco::make_value_constraint(
           [origin, origin_frame = ::elastica::Rot3{::elastica::director(
-                       rod_ref, my_constraint_index)}](
+                       rod_ref.get(), my_constraint_index)}](
               auto /*time*/, auto& rod_system, auto index) {
             ::elastica::position(rod_system, index) = origin;
             ::elastica::director(rod_system, index) = origin_frame;
@@ -129,7 +129,8 @@ void AxialStretchingCaseStudy::run() {
 
     if (not(i_step % write_interval)) {
       time_and_disps.emplace_back(
-          current_time(), ::elastica::position(rod_ref, n_elements)[x_axis]);
+          current_time(),
+          ::elastica::position(rod_ref.get(), n_elements)[x_axis]);
     }
   }
 

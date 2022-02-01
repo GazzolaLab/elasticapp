@@ -73,7 +73,7 @@ void TimoshenkoCaseStudy::setup(InputTypes<This> const& input_parameters) {
   auto constraint_generator = eco::make_constraint(
       eco::make_value_constraint(
           [origin, origin_frame = ::elastica::Rot3{::elastica::director(
-                       rod_ref, my_constraint_index)}](
+                       rod_ref.get(), my_constraint_index)}](
               auto /*time*/, auto& rod_system, auto index) {
             ::elastica::position(rod_system, index) = origin;
             ::elastica::director(rod_system, index) = origin_frame;

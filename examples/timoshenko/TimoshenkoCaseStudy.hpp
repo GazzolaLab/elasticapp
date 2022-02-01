@@ -141,8 +141,9 @@ Section 3.4.3.
   inline auto communicate() {
     // TODO : inefficiency : slices at runtime, slice can be stored instead
     // slices at runtime, slice can be eliminated
-    return std::make_tuple(::elastica::position(rod_ref),
-                           ::elastica::velocity(rod_ref));
+    auto slice = rod_ref.get();
+    return std::make_tuple(::elastica::position(slice),
+                           ::elastica::velocity(slice));
   }
 
   TimoshenkoCaseStudy() = default;

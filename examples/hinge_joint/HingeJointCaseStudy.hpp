@@ -168,8 +168,8 @@ axis).
     RT return_list;
     return_list.reserve(rod_refs.size());
     std::transform(std::begin(rod_refs), std::end(rod_refs),
-                   std::back_inserter(return_list), [this](RodRef& rod_it) {
-                     return this->communicate_from(rod_it);
+                   std::back_inserter(return_list), [this](RodRef& rod_ref) {
+                     return this->communicate_from(rod_ref);
                    });
     return return_list;
   }

@@ -142,7 +142,7 @@ oscillations enables comparison with theory.
   void run();
   inline auto communicate() {
     // TODO : inefficiency : slices at runtime, slice can be stored instead
-    return ::elastica::position(rod_ref);
+    return ::elastica::position(rod_ref.get());
   }
 
   AxialStretchingCaseStudy() = default;
