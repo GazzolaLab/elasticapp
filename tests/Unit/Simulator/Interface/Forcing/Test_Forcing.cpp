@@ -2,6 +2,7 @@
 // Created by Tejaswin Parthasarathy on 1/26/21.
 //
 
+#include <functional>
 #include <iostream>
 #include <stdexcept>
 #include <type_traits>
@@ -51,7 +52,8 @@ namespace {
                      "[Unit][Simulator][Interface][Forcing]") {
     {
       using RegistrarList = tmpl::list<>;
-      using ConcreteForcing = TestForcingImpl<int, RegistrarList>;
+      using ConcreteForcing =
+          TestForcingImpl<std::reference_wrapper<int>, RegistrarList>;
       int i(2);
       std::size_t index(6UL);
       ConcreteForcing cf(index, i, "test");
@@ -59,14 +61,16 @@ namespace {
 
     {
       using RegistrarList = tmpl::list<int, float, char>;
-      using ConcreteForcing = TestForcingImpl<float, RegistrarList>;
+      using ConcreteForcing =
+          TestForcingImpl<std::reference_wrapper<float>, RegistrarList>;
       float f(4.0F);
       ConcreteForcing cf(6UL, f, "test");
     }
 
     {
       using RegistrarList = tmpl::list<char>;
-      using ConcreteForcing = TestForcingImpl<double, RegistrarList>;
+      using ConcreteForcing =
+          TestForcingImpl<std::reference_wrapper<double>, RegistrarList>;
       double d{5.12312};
       ConcreteForcing cf(8UL, d, "testing");
       CHECK(cf.concrete_system_type() == "double");
@@ -251,7 +255,7 @@ using ForcingFromMakeForcing = decltype(::elastica::forcing::make_forcing(
 namespace {
 
   struct Checks {
-    using CC = TestForcing<MockSystem>;
+    using CC = TestForcing<std::reference_wrapper<MockSystem>>;
 
     template <typename T>
     struct CheckConformantForcing : std::true_type {
@@ -352,7 +356,7 @@ namespace {
 namespace {
 
   void test_forcing_with_default() {
-    using ConcreteForcing = TestForcing<MockSystem>;
+    using ConcreteForcing = TestForcing<std::reference_wrapper<MockSystem>>;
 
     MockSystem f{100};
 
@@ -385,7 +389,7 @@ namespace {
   }
 
   void test_forcing_with_object_counts() {
-    using ConcreteForcing = TestForcing<MockSystem>;
+    using ConcreteForcing = TestForcing<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     {  // prvalue
       {
@@ -438,7 +442,7 @@ namespace {
   }
 
   void test_forcing_with_fundamental_types() {
-    using ConcreteForcing = TestForcing<MockSystem>;
+    using ConcreteForcing = TestForcing<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     {  // rvalue
       int i(2);
@@ -465,7 +469,7 @@ namespace {
   }
 
   void test_forcing_with_aggregate_types() {
-    using ConcreteForcing = TestForcing<MockSystem>;
+    using ConcreteForcing = TestForcing<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     {  // rvalue
       ConcreteForcing cf(6UL, f, "test");
@@ -488,7 +492,7 @@ namespace {
   }
 
   void test_forcing_with_ranged() {
-    using ConcreteForcing = TestForcing<MockSystem>;
+    using ConcreteForcing = TestForcing<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     {  // rvalue
       int i(2);
@@ -520,7 +524,8 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Forcing.Forcing.record",
                      "[Unit][Simulator][Interface][Forcing]") {
     using RegistrarList = tmpl::list<char>;
-    using ForcingInterface = TestForcingImpl<double, RegistrarList>;
+    using ForcingInterface =
+        TestForcingImpl<std::reference_wrapper<double>, RegistrarList>;
     double d{5.12312};
     {
       ForcingInterface cc(8UL, d, "testing");
@@ -549,7 +554,8 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Forcing.Forcing.set_name",
                      "[Unit][Simulator][Interface][Forcing]") {
     using RegistrarList = tmpl::list<char>;
-    using ForcingInterface = TestForcingImpl<double, RegistrarList>;
+    using ForcingInterface =
+        TestForcingImpl<std::reference_wrapper<double>, RegistrarList>;
     double d{5.12312};
     {
       ForcingInterface cc(8UL, d, "testing");
@@ -585,7 +591,7 @@ namespace {
   }
 
   void test_forcing_with_fundamental_types_via_forwarding_with() {
-    using ConcreteForcing = TestForcing<MockSystem>;
+    using ConcreteForcing = TestForcing<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
 
     {  // rvalue
@@ -633,7 +639,7 @@ namespace {
   }
 
   void test_forcing_with_aggregate_types_via_forwarding_with() {
-    using ConcreteForcing = TestForcing<MockSystem>;
+    using ConcreteForcing = TestForcing<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     {  // rvalue
       ConcreteForcing cf(6UL, f, "test");
@@ -658,7 +664,7 @@ namespace {
   }
 
   void test_forcing_with_fundamental_types_via_forwarding_with_ranged() {
-    using ConcreteForcing = TestForcing<MockSystem>;
+    using ConcreteForcing = TestForcing<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
 
     {  // rvalue
@@ -714,7 +720,7 @@ namespace {
   }
 
   void test_forcing_with_fundamental_types_via_forwarded_arguments() {
-    using ConcreteForcing = TestForcing<MockSystem>;
+    using ConcreteForcing = TestForcing<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
 
     {  // rvalue
@@ -750,7 +756,7 @@ namespace {
   }
 
   void test_forcing_with_aggregate_types_via_forwarded_arguments() {
-    using ConcreteForcing = TestForcing<MockSystem>;
+    using ConcreteForcing = TestForcing<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     {  // rvalue
       ConcreteForcing cf(6UL, f, "test");
@@ -776,7 +782,7 @@ namespace {
   }
 
   void test_forcing_with_noncopyable_types_via_forwarded_arguments() {
-    using ConcreteForcing = TestForcing<MockSystem>;
+    using ConcreteForcing = TestForcing<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     {  // rvalue
       ConcreteForcing cf(6UL, f, "test");
@@ -793,7 +799,7 @@ namespace {
   }
 
   void test_forcing_with_fundamental_types_via_forwarded_arguments_ranged() {
-    using ConcreteForcing = TestForcing<MockSystem>;
+    using ConcreteForcing = TestForcing<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
 
     {  // rvalue
@@ -844,7 +850,7 @@ namespace {
       "Unit.Simulator.Interface.Forcing.Forcing.exception_for_incorrect_indices",
       "[Unit][Simulator][Interface][Forcing]") {
     // clang-format on
-    using ConcreteForcing = TestForcing<MockSystem>;
+    using ConcreteForcing = TestForcing<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     {  // rvalue
       ConcreteForcing cf(6UL, f, "test");
@@ -943,7 +949,7 @@ namespace {
       "Unit.Simulator.Interface.Forcing.Forcing.with_unique_ptr",
       "[Unit][Simulator][Interface][Forcing]") {
     // clang-format on
-    using ConcreteForcing = TestForcing<MockSystem>;
+    using ConcreteForcing = TestForcing<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     {  // rvalue
       int i(2);

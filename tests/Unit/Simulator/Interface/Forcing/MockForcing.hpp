@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 
 #include "Simulator/Configuration/ModuleConfiguration/Forcing.hpp"
@@ -74,8 +75,11 @@ namespace mock {
     // respects access modifiers
     /// using Parent::Parent;  // todo protected
 
-    explicit TestForcingImpl(IndexType id, System& s, std::string&& name)
-        : Parent(id, s, std::move(name)){};
+    // FIX : we realized we need pointers later on, so to fix, we use ref
+    // wrappers
+    explicit TestForcingImpl(IndexType id, typename System::type& s,
+                             std::string&& name)
+        : Parent(id, std::ref(s), std::move(name)){};
 
     // meta, all protected
     using Parent::conformant_forcing;
@@ -122,9 +126,11 @@ namespace mock {
 
     // n_con
     std::size_t n_forcings() const {
-      return std::accumulate(
-          std::cbegin(forcer_batches()), std::cend(forcer_batches()), 0UL,
-          [](std::size_t sum, auto const& batch) { return sum + batch.size(); });
+      return std::accumulate(std::cbegin(forcer_batches()),
+                             std::cend(forcer_batches()), 0UL,
+                             [](std::size_t sum, auto const& batch) {
+                               return sum + batch.size();
+                             });
     }
     using Container = std::vector<Pointer>;
     using CC = std::vector<Container>;
