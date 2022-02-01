@@ -148,19 +148,30 @@ axis).
       Configuration::make_time_stepper();
   decltype(Configuration::make_simulator()) simulator =
       Configuration::make_simulator();
-  using It = decltype(simulator->get_invalid_iterator<CosseratRod>());
-  It first_rod_it = simulator->get_invalid_iterator<CosseratRod>();
-  It second_rod_it = simulator->get_invalid_iterator<CosseratRod>();
+  using RodRef = decltype(simulator->get_invalid_ref<CosseratRod>());
+  using RodRefs = std::vector<RodRef>;
 
-  inline auto communicate_from(It rod_it) {
-    return std::make_tuple(::elastica::position(*rod_it),
-                           ::elastica::velocity(*rod_it));
+  static constexpr std::size_t n_rod_pairs() { return 1UL; };
+
+  RodRefs rod_refs{2 * n_rod_pairs(),
+                   simulator->get_invalid_ref<CosseratRod>()};
+
+  inline auto communicate_from(RodRef& ref) {
+    auto rod = ref.get();
+    return std::make_tuple(::elastica::position(rod),
+                           ::elastica::velocity(rod));
   }
   inline auto communicate() {
     // we dont have CTAD :(
-    using RT = decltype(communicate_from(first_rod_it));
-    return std::vector<RT>{communicate_from(first_rod_it),
-                           communicate_from(second_rod_it)};
+    using CT = decltype(communicate_from(rod_refs[0UL]));
+    using RT = std::vector<CT>;
+    RT return_list;
+    return_list.reserve(rod_refs.size());
+    std::transform(std::begin(rod_refs), std::end(rod_refs),
+                   std::back_inserter(return_list), [this](RodRef& rod_it) {
+                     return this->communicate_from(rod_it);
+                   });
+    return return_list;
   }
 };
 

@@ -70,19 +70,22 @@ void HingeJointCaseStudy::setup(InputTypes<This> const& input_parameters) {
       StraightInit::TorqueDampingCoefficient{0.001},
   };
 
-  first_rod_it = simulator->emplace_back<CosseratRod>(
+  const std::size_t link_one_index(0UL);
+  const std::size_t link_two_index(1UL);
+
+  rod_refs[link_one_index] = simulator->emplace_back<CosseratRod>(
       straight_initializer.initialize<CosseratRod>());
-  second_rod_it = simulator->emplace_back<CosseratRod>(
+  rod_refs[link_two_index] = simulator->emplace_back<CosseratRod>(
       straight_initializer.but_with(StraightInit::Origin{link_two_origin})
           .initialize<CosseratRod>());
 
   namespace eco = ::elastica::constraints;
-  const std::size_t my_constraint_index = 0UL;
+  const std::size_t constraint_index(0UL);
   auto constraint_generator = eco::make_constraint(
       eco::make_value_constraint(
           [origin = link_one_origin,
            origin_frame = ::elastica::Rot3{::elastica::director(
-               *first_rod_it, my_constraint_index)}](
+               rod_refs[link_one_index].get(), constraint_index)}](
               auto /*time*/, auto& rod_system, auto index) {
             ::elastica::position(rod_system, index) = origin;
             ::elastica::director(rod_system, index) = origin_frame;
@@ -93,8 +96,9 @@ void HingeJointCaseStudy::setup(InputTypes<This> const& input_parameters) {
             ::elastica::angular_velocity(rod_system, index) = 0.0;
           }));
 
-  const auto first_system = *first_rod_it;
-  simulator->constrain(first_system).at(0UL).with(constraint_generator());
+  simulator->constrain(rod_refs[link_one_index])
+      .at(constraint_index)
+      .with(constraint_generator());
 
   namespace efo = ::elastica::forcing;
 
@@ -125,8 +129,7 @@ void HingeJointCaseStudy::setup(InputTypes<This> const& input_parameters) {
       }),
       efo::make_torque([](auto /*time*/, auto&, std::size_t) {}));
 
-  const auto second_system = *second_rod_it;
-  simulator->force(second_system)
+  simulator->force(rod_refs[link_two_index])
       .at(::elastica::end - 1UL)
       .with(force_generator());
 
@@ -192,8 +195,8 @@ void HingeJointCaseStudy::setup(InputTypes<This> const& input_parameters) {
       }));
 
   using ::elastica::interface::at;
-  simulator->connect(first_system, at(::elastica::end - 1UL))
-      .to(second_system, at(0UL))
+  simulator->connect(rod_refs[link_one_index], at(::elastica::end - 1UL))
+      .to(rod_refs[link_two_index], at(0UL))
       .with(connection_generator());
 
   simulator->finalize();
@@ -207,17 +210,21 @@ void HingeJointCaseStudy::step() {
 }
 
 void HingeJointCaseStudy::run() {
-  const ::elastica::real_t final_time(2.0);
+  const ::elastica::real_t final_time(0.2);
   const auto n_steps = static_cast<std::size_t>(final_time / current_dt());
 
   std::ofstream my_file;
   my_file.open("initial_first_positions.txt");
-  my_file << ::elastica::position(*first_rod_it);
+  // get() is not necessary
+  my_file << std::setprecision(16UL)
+          << ::elastica::position(rod_refs[0UL].get());
   my_file << std::endl;
   my_file.close();
 
   my_file.open("initial_second_positions.txt");
-  my_file << ::elastica::position(*second_rod_it);
+  // get() is not necessary
+  my_file << std::setprecision(16UL)
+          << ::elastica::position(rod_refs[1UL].get());
   my_file << std::endl;
   my_file.close();
 
@@ -230,12 +237,14 @@ void HingeJointCaseStudy::run() {
 
   // write out the final positions of the body
   my_file.open("final_first_positions.txt");
-  my_file << ::elastica::position(*first_rod_it);
+  my_file << std::setprecision(16UL)
+          << ::elastica::position(rod_refs[0UL].get());
   my_file << std::endl;
   my_file.close();
 
   my_file.open("final_second_positions.txt");
-  my_file << ::elastica::position(*second_rod_it);
+  my_file << std::setprecision(16UL)
+          << ::elastica::position(rod_refs[1UL].get());
   my_file << std::endl;
   my_file.close();
 }
