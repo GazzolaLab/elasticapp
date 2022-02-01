@@ -19,8 +19,8 @@
 /// Forward declarations
 #include "Systems/CosseratRods/Types.hpp"
 ///
-#include "Systems/CosseratRods/Block.hpp"
-#include "Systems/CosseratRods/BlockSlice.hpp"
+#include "Systems/CosseratRods/Access/CosseratRod.hpp"
+#include "Systems/CosseratRods/Access/CosseratRodWithoutDamping.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
 
 namespace elastica {

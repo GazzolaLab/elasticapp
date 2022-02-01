@@ -21,7 +21,7 @@
 // blocks
 #include "Systems/Block/Types.hpp"
 // cosserat rod components
-#include "Systems/CosseratRods/Components/Types.hpp"
+#include "Systems/CosseratRods/Types.hpp"
 
 namespace elastica {
 
@@ -36,12 +36,24 @@ namespace elastica {
               WithDiagonalLinearHyperElasticModel,
           ::elastica::cosserat_rod::component::WithRodKinematics>;
 
+      using CosseratRodWithoutDamping =
+          ::elastica::cosserat_rod::CosseratRodPlugin<
+              ::elastica::cosserat_rod::DefaultCosseratRodTraits,
+              ::blocks::Block, detail::CosseratRodWithoutDampingComponents>;
+      using CosseratRodWithoutDampingSlice =
+          ::elastica::cosserat_rod::CosseratRodPlugin<
+              ::elastica::cosserat_rod::DefaultCosseratRodTraits,
+              ::blocks::BlockSlice,
+              detail::CosseratRodWithoutDampingComponents>;
+
+      using CosseratRodWithoutDampingBlock =
+          ::blocks::Block<CosseratRodWithoutDamping>;
+      using CosseratRodWithoutDampingBlockSlice =
+          ::blocks::BlockSlice<CosseratRodWithoutDampingSlice>;
+
     }  // namespace detail
 
-    using CosseratRodWithoutDamping =
-        ::elastica::cosserat_rod::CosseratRodPlugin<
-            ::elastica::cosserat_rod::DefaultCosseratRodTraits, ::blocks::Block,
-            detail::CosseratRodWithoutDampingComponents>;
+    using detail::CosseratRodWithoutDamping;
 
   }  // namespace cosserat_rod
 

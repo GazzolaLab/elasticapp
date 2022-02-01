@@ -32,6 +32,8 @@ namespace elastica {
               typename /*AllocatorTraits*/>
     struct CosseratRodTraits;
 
+    struct DefaultCosseratRodTraits;
+
     template <typename /*CRT*/,
               template <typename /*Plugin*/> class /*ComputationalBlock*/,
               template <typename /*CRT*/, typename /*Instantiated Block*/>

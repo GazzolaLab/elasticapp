@@ -4,6 +4,7 @@
 
 #include "Framework/TestingFramework.hpp"
 #include "Systems/CosseratRods/Access.hpp"
+#include "Systems/CosseratRods/Block.hpp"
 #include "Systems/CosseratRods/BlockInitializer.hpp"
 #include "Systems/CosseratRods/Components.hpp"
 #include "Systems/CosseratRods/CosseratRodTraits.hpp"
