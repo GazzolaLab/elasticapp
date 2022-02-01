@@ -54,9 +54,9 @@ def run_example(
         s.position.append(np.copy(p))
         s.velocity.append(np.copy(v))
 
-    def collect_more(first_pv, second_pv):
-        add_to(first_rod_stats, *first_pv)
-        add_to(second_rod_stats, *second_pv)
+    def collect_more(*pvs):
+        for stat, pv in zip(rod_stats, pvs):
+            add_to(stat, *pv)
 
     def collect_stats_from(cas):
         collect(cas)
