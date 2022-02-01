@@ -223,6 +223,7 @@ namespace elastica {
       /*! \cond ELASTICA_INTERNAL */
       template <typename Plugin>
       class LazyBlockSliceGenerator {
+        // TODO : Refactor, getting hairy without testing
        private:
         friend This;
         using B = ::blocks::Block<Plugin>;
@@ -261,6 +262,23 @@ namespace elastica {
           gsl::not_null<SourceCollection*> ptr_to_collection(src_);
           return *(::blocks::BlockIterator<Plugin>{
               &((*ptr_to_collection)[index_]), slice_index_});
+        }
+
+       protected:
+        std::size_t cantor_pair(std::size_t a, std::size_t b) const noexcept {
+          return (a + b) * (a + b + 1) / 2 + a;
+        }
+
+       public:
+        // note : I could use std::hash() here and avoid this uuid() function
+        // definition. But I am pretty sure this is an imperfect hash.
+        // https://en.wikipedia.org/wiki/Pairing_function#Inverting_the_Cantor_pairing_function
+        // for now its okay as it does what we want.
+        inline std::size_t uuid() const {
+          gsl::not_null<SourceCollection*> ptr_to_collection(src_);
+          return cantor_pair(
+              reinterpret_cast<uintptr_t>(std::addressof(*ptr_to_collection)),
+              index_);
         }
 
        private:
