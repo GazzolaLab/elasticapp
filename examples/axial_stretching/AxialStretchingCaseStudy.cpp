@@ -64,15 +64,15 @@ void AxialStretchingCaseStudy::setup(InputTypes<This> const& input_parameters) {
           ::elastica::get<damping>(input_parameters)},
   };
 
-  rod_it = simulator->emplace_back<CosseratRod>(
+  rod_ref = simulator->emplace_back<CosseratRod>(
       straight_initializer.initialize<CosseratRod>());
 
   namespace eco = ::elastica::constraints;
   const std::size_t my_constraint_index = 0UL;
   auto constraint_generator = eco::make_constraint(
       eco::make_value_constraint(
-          [origin,
-           origin_frame = ::elastica::director(*rod_it, my_constraint_index)](
+          [origin, origin_frame = ::elastica::Rot3{::elastica::director(
+                       rod_ref.get(), my_constraint_index)}](
               auto /*time*/, auto& rod_system, auto index) {
             ::elastica::position(rod_system, index) = origin;
             ::elastica::director(rod_system, index) = origin_frame;
@@ -83,7 +83,7 @@ void AxialStretchingCaseStudy::setup(InputTypes<This> const& input_parameters) {
             ::elastica::angular_velocity(rod_system, index) = 0.0;
           }));
 
-  simulator->constrain(*rod_it).at(0UL).with(constraint_generator());
+  simulator->constrain(rod_ref).at(0UL).with(constraint_generator());
 
   namespace efo = ::elastica::forcing;
 
@@ -96,7 +96,7 @@ void AxialStretchingCaseStudy::setup(InputTypes<This> const& input_parameters) {
       }),
       efo::make_torque([](auto /*time*/, auto&, std::size_t) {}));
 
-  simulator->force(*rod_it).at(::elastica::end - 1UL).with(force_generator());
+  simulator->force(rod_ref).at(::elastica::end - 1UL).with(force_generator());
 
   simulator->finalize();
 
@@ -115,7 +115,8 @@ void AxialStretchingCaseStudy::run() {
   std::vector<TimesAndDisplacements> time_and_disps;
 
   const ::elastica::real_t final_time(20.0);
-  const auto n_elements = ::elastica::size(*rod_it);
+  // explicitly get the system
+  const auto n_elements = ::elastica::size(rod_ref.get());
   constexpr auto x_axis = 0UL;
 
   const std::size_t n_steps = (final_time / current_dt());
@@ -128,7 +129,8 @@ void AxialStretchingCaseStudy::run() {
 
     if (not(i_step % write_interval)) {
       time_and_disps.emplace_back(
-          current_time(), ::elastica::position(*rod_it, n_elements)[x_axis]);
+          current_time(),
+          ::elastica::position(rod_ref.get(), n_elements)[x_axis]);
     }
   }
 

@@ -239,14 +239,25 @@ namespace elastica {
                                 std::size_t slice_index)
             : src_(&v), index_(index), slice_index_(slice_index){};
 
+        using iterator = ::blocks::BlockIterator<Plugin>;
+
        public:
+        LazyBlockSliceGenerator(LazyBlockSliceGenerator const& other) = default;
+        //
+        LazyBlockSliceGenerator& operator=(
+            LazyBlockSliceGenerator const& other) = default;
+
+        // We move away from iterator semantics here and give a reference
+        // wrapper semantics instead. To form an iterator, we use the function
+        using type = typename iterator::value_type;
+        using reference = typename iterator::reference;
+        using ParentBlock = B;
+        using const_reference = reference const&;
+
         // generates a slice
-        auto operator*() const {
-          gsl::not_null<SourceCollection*> ptr_to_collection(src_);
-          return *(::blocks::BlockIterator<Plugin>{
-              &((*ptr_to_collection)[index_]), slice_index_});
-        }
-        auto operator->() const {
+        /* implicit conversion to a blockslice */
+        inline operator type() const /* noexcept*/ { return this->get(); }
+        inline auto get() const /* noexcept*/ -> type {
           gsl::not_null<SourceCollection*> ptr_to_collection(src_);
           return *(::blocks::BlockIterator<Plugin>{
               &((*ptr_to_collection)[index_]), slice_index_});
@@ -262,13 +273,13 @@ namespace elastica {
 
      public:
       //************************************************************************
-      /*!\brief Get an invalid simulation iterator given a system type
+      /*!\brief Get an invalid reference type for given a system type
        *
        * \details
        * For convenience, one can get an
        */
       template <typename Plugin>
-      decltype(auto) get_invalid_iterator() const noexcept {
+      decltype(auto) get_invalid_ref() const noexcept {
         using RT = LazyBlockSliceGenerator<Plugin>;
         return RT{};
       }
@@ -414,24 +425,27 @@ namespace elastica {
       //************************************************************************
       /*!\brief Checks if the system is registered in the simulator
        *
-       * \param system_slice A system to be checked for registration
+       * \param system_slice_ref A ref to system to be checked for registration
        * \return True if system registered, else false
        */
-      template <typename SystemSlice>
+      template <typename SystemPlugin>
       inline auto check_if_registered(
-          SystemSlice const& system_slice) const noexcept -> bool {
-        // todo alias it
-        using Parent = typename SystemSlice::ParentBlock;
+          LazyBlockSliceGenerator<SystemPlugin> const& system_slice_ref)
+          const noexcept -> bool {
+        // two indirections here, to make check pass
+        using InterfaceType = LazyBlockSliceGenerator<SystemPlugin>;
+        using Parent = typename InterfaceType::ParentBlock;
 
         const auto begin_ = get_system_collection_container<Parent>().cbegin();
         const auto end_ = get_system_collection_container<Parent>().cend();
 
-        return std::find_if(begin_, end_,
-                            [&parent = cpp17::as_const(system_slice.parent())](
-                                Parent const& parent_in_collection) {
-                              // compare references themselves
-                              return &parent == &parent_in_collection;
-                            }) != end_;
+        return std::find_if(
+                   begin_, end_,
+                   [&parent = cpp17::as_const(system_slice_ref.get().parent())](
+                       Parent const& parent_in_collection) {
+                     // compare references themselves
+                     return &parent == &parent_in_collection;
+                   }) != end_;
       }
       //************************************************************************
 
@@ -443,9 +457,9 @@ namespace elastica {
        * \exception std::runtime_error if the system is not registered in the
        * simulator
        */
-      template <typename SystemCollection>
-      inline auto confirm_as_registered(SystemCollection const& system) const
-          -> void {
+      template <typename SystemPlugin>
+      inline auto confirm_as_registered(
+          LazyBlockSliceGenerator<SystemPlugin> const& system) const -> void {
         if (not check_if_registered(system))
           throw std::runtime_error(
               "Input system was not found to be registered in the simulator");

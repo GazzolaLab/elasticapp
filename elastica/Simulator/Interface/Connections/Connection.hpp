@@ -104,7 +104,7 @@ namespace elastica {
        *
        * \see ConnectionImpl
        */
-      template <typename FirstSystem, typename SecondSystem,
+      template <typename FirstSystemRef, typename SecondSystemRef,
                 typename ConnectionRegistrars>
       class Connection : public ConnectionBase<ConnectionRegistrars> {
        public:
@@ -113,7 +113,7 @@ namespace elastica {
         using Parent = ConnectionBase<ConnectionRegistrars>;
         //! This type
         using This =
-            Connection<FirstSystem, SecondSystem, ConnectionRegistrars>;
+            Connection<FirstSystemRef, SecondSystemRef, ConnectionRegistrars>;
         //! Internal size type
         using SizeType = std::size_t;
         //! Internal type of index
@@ -143,19 +143,19 @@ namespace elastica {
         /*!\brief Sole constructor.
          *
          * \param id A unique integral ID to identify the connection
-         * \param s1 FirstSystem to be connected
-         * \param s2 SecondSystem to be connected
+         * \param s1 FirstSystemRef to be connected
+         * \param s2 SecondSystemRef to be connected
          * \param name Name of the connection
          */
-        explicit Connection(IndexType id, FirstSystem const& s1,
-                            SecondSystem const& s2, std::string&& name)
+        explicit Connection(IndexType id, FirstSystemRef const& s1,
+                            SecondSystemRef const& s2, std::string&& name)
             : Parent(id, std::move(name)),
-              first_system_(s1),
-              second_system_(s2) {
+              first_system_ref_(s1),
+              second_system_ref_(s2) {
           this->set_first_concrete_system_type() =
-              pretty_type::short_name<FirstSystem>();
+              pretty_type::short_name<typename FirstSystemRef::type>();
           this->set_second_concrete_system_type() =
-              pretty_type::short_name<SecondSystem>();
+              pretty_type::short_name<typename SecondSystemRef::type>();
         };
         //**********************************************************************
 
@@ -372,9 +372,9 @@ connections::Connection?
                          IndexPair&& index_pair) /*noexcept*/ {
           // https://stackoverflow.com/questions/26831382/capturing-perfectly-forwarded-variable-in-lambda
           // https://vittorioromeo.info/index/blog/capturing_perfectly_forwarded_objects_in_lambdas.html
-          using NumericIndexPair =
-              decltype(to_numeric(std::forward<IndexPair>(index_pair),
-                                  this->first_system_, this->second_system_));
+          using NumericIndexPair = decltype(to_numeric(
+              std::forward<IndexPair>(index_pair),
+              this->first_system_ref_.get(), this->second_system_ref_.get()));
 
           record_name_of<ConcreteConnection>();
 
@@ -384,7 +384,8 @@ connections::Connection?
               NumericIndexPair index_pair;
             } capture{std::forward<ConcreteConnection>(connection),
                       to_numeric(std::forward<IndexPair>(index_pair),
-                                 this->first_system_, this->second_system_)};
+                                 this->first_system_ref_.get(),
+                                 this->second_system_ref_.get())};
             // we cannot directly assign the lambda to a std::function because
             // it us not copyable and the requirements of std::function need a
             // copyable callable so we work around it
@@ -405,9 +406,9 @@ connections::Connection?
                   auto unique_id = this->id().uuid;
                   /*
                    * hash_combine(unique_id,
-                   *              std::type_index(typeid(FirstSystem)));
+                   *              std::type_index(typeid(FirstSystemRef)));
                    * hash_combine(unique_id,
-                   *              std::type_index(typeid(SecondSystem)));
+                   *              std::type_index(typeid(SecondSystemRef)));
                    * hash_combine(unique_id,
                    *              std::type_index(typeid(ConcreteConnection)));
                    */
@@ -423,7 +424,7 @@ connections::Connection?
                   return make_connecter(
                       typename Parent::UUIDType{unique_id,
                                                 std::move(unique_name)},
-                      first_system_, second_system_,
+                      first_system_ref_.get(), second_system_ref_.get(),
                       std::move(connection_details.connection),
                       std::move(connection_details.index_pair));
                 });
@@ -671,9 +672,9 @@ connections::Connection?
        private:
         //**Member variables****************************************************
         //! The first system being connected
-        FirstSystem const& first_system_;
+        FirstSystemRef first_system_ref_;
         //! The second system being connected
-        SecondSystem const& second_system_;
+        SecondSystemRef second_system_ref_;
         //**********************************************************************
       };
       /*! \endcond */

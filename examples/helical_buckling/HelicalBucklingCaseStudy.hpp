@@ -103,9 +103,11 @@ Gazzola et. al. R. Soc. 2018  section 3.4.1
   void run();
 
   inline auto communicate() {
-    return std::make_tuple(
-        ::elastica::position(*rod_it), ::elastica::director(*rod_it),
-        ::elastica::velocity(*rod_it), ::elastica::angular_velocity(*rod_it));
+    auto rod_slice = rod_ref.get();
+    return std::make_tuple(::elastica::position(rod_slice),
+                           ::elastica::director(rod_slice),
+                           ::elastica::velocity(rod_slice),
+                           ::elastica::angular_velocity(rod_slice));
   }
 
   HelicalBucklingCaseStudy() = default;
@@ -115,8 +117,8 @@ Gazzola et. al. R. Soc. 2018  section 3.4.1
       Configuration::make_time_stepper();
   decltype(Configuration::make_simulator()) simulator =
       Configuration::make_simulator();
-  using It = decltype(simulator->get_invalid_iterator<CosseratRod>());
-  It rod_it = simulator->get_invalid_iterator<CosseratRod>();
+  using RodRef = decltype(simulator->get_invalid_ref<CosseratRod>());
+  RodRef rod_ref = simulator->get_invalid_ref<CosseratRod>();
 };
 
 ELASTICA_REGISTER_CASE_STUDY(HelicalBucklingCaseStudy);

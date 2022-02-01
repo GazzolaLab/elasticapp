@@ -140,7 +140,10 @@ oscillations enables comparison with theory.
   void setup(InputTypes<This> const& input_parameters);
   void step();
   void run();
-  inline auto communicate() { return ::elastica::position(*rod_it); }
+  inline auto communicate() {
+    // TODO : inefficiency : slices at runtime, slice can be stored instead
+    return ::elastica::position(rod_ref.get());
+  }
 
   AxialStretchingCaseStudy() = default;
   AxialStretchingCaseStudy(AxialStretchingCaseStudy&&) noexcept = default;
@@ -149,8 +152,8 @@ oscillations enables comparison with theory.
       Configuration::make_time_stepper();
   decltype(Configuration::make_simulator()) simulator =
       Configuration::make_simulator();
-  using It = decltype(simulator->get_invalid_iterator<CosseratRod>());
-  It rod_it = simulator->get_invalid_iterator<CosseratRod>();
+  using RodRef = decltype(simulator->get_invalid_ref<CosseratRod>());
+  RodRef rod_ref = simulator->get_invalid_ref<CosseratRod>();
 };
 
 ELASTICA_REGISTER_CASE_STUDY(AxialStretchingCaseStudy);

@@ -2,6 +2,7 @@
 // Created by Tejaswin Parthasarathy on 12/29/20.
 //
 
+#include <functional>
 #include <iostream>
 #include <stdexcept>
 #include <type_traits>
@@ -52,7 +53,8 @@ namespace {
       "[Unit][Simulator][Interface][Constraints]") {
     {
       using RegistrarList = tmpl::list<>;
-      using ConcreteConstraint = TestConstraintImpl<int, RegistrarList>;
+      using ConcreteConstraint =
+          TestConstraintImpl<std::reference_wrapper<int>, RegistrarList>;
       int i(2);
       std::size_t index(6UL);
       ConcreteConstraint cc(index, i, "test");
@@ -61,7 +63,8 @@ namespace {
 
     {
       using RegistrarList = tmpl::list<int, float, char>;
-      using ConcreteConstraint = TestConstraintImpl<float, RegistrarList>;
+      using ConcreteConstraint =
+          TestConstraintImpl<std::reference_wrapper<float>, RegistrarList>;
       float f(4.0F);
       ConcreteConstraint cc(6UL, f, "test");
       CHECK(cc.concrete_system_type() == "float");
@@ -69,7 +72,8 @@ namespace {
 
     {
       using RegistrarList = tmpl::list<char>;
-      using ConcreteConstraint = TestConstraintImpl<double, RegistrarList>;
+      using ConcreteConstraint =
+          TestConstraintImpl<std::reference_wrapper<double>, RegistrarList>;
       double d{5.12312};
       ConcreteConstraint cc(8UL, d, "testing");
       CHECK(cc.concrete_system_type() == "double");
@@ -260,7 +264,7 @@ using ConstraintFromMakeConstraint =
 namespace {
 
   struct Checks {
-    using CC = TestConstraint<MockSystem>;
+    using CC = TestConstraint<std::reference_wrapper<MockSystem>>;
 
     template <typename T>
     struct CheckConformantConstraint : std::true_type {
@@ -362,7 +366,8 @@ namespace {
 namespace {
 
   void test_constraint_with_default() {
-    using ConcreteConstraint = TestConstraint<MockSystem>;
+    using ConcreteConstraint =
+        TestConstraint<std::reference_wrapper<MockSystem>>;
 
     MockSystem f{100};
 
@@ -395,7 +400,8 @@ namespace {
   }
 
   void test_constraint_with_object_counts() {
-    using ConcreteConstraint = TestConstraint<MockSystem>;
+    using ConcreteConstraint =
+        TestConstraint<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     {  // prvalue
       {
@@ -445,7 +451,8 @@ namespace {
   }
 
   void test_constraint_with_fundamental_types() {
-    using ConcreteConstraint = TestConstraint<MockSystem>;
+    using ConcreteConstraint =
+        TestConstraint<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     {  // rvalue
       int i(2);
@@ -473,7 +480,8 @@ namespace {
   }
 
   void test_constraint_with_aggregate_types() {
-    using ConcreteConstraint = TestConstraint<MockSystem>;
+    using ConcreteConstraint =
+        TestConstraint<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     {  // rvalue
       ConcreteConstraint cc(6UL, f, "test");
@@ -500,7 +508,8 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Constraints.Constraint.record",
                      "[Unit][Simulator][Interface][Constraints]") {
     using RegistrarList = tmpl::list<char>;
-    using ConstraintInterface = TestConstraintImpl<double, RegistrarList>;
+    using ConstraintInterface =
+        TestConstraintImpl<std::reference_wrapper<double>, RegistrarList>;
     double d{5.12312};
     {
       ConstraintInterface cc(8UL, d, "testing");
@@ -529,7 +538,8 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Constraints.Constraint.set_name",
                      "[Unit][Simulator][Interface][Constraints]") {
     using RegistrarList = tmpl::list<char>;
-    using ConstraintInterface = TestConstraintImpl<double, RegistrarList>;
+    using ConstraintInterface =
+        TestConstraintImpl<std::reference_wrapper<double>, RegistrarList>;
     double d{5.12312};
     {
       ConstraintInterface cc(8UL, d, "testing");
@@ -566,7 +576,8 @@ namespace {
   }
 
   void test_constraint_with_fundamental_types_via_forwarding_with() {
-    using ConcreteConstraint = TestConstraint<MockSystem>;
+    using ConcreteConstraint =
+        TestConstraint<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
 
     {  // rvalue
@@ -614,7 +625,8 @@ namespace {
   }
 
   void test_constraint_with_aggregate_types_via_forwarding_with() {
-    using ConcreteConstraint = TestConstraint<MockSystem>;
+    using ConcreteConstraint =
+        TestConstraint<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     {  // rvalue
       ConcreteConstraint cc(6UL, f, "test");
@@ -646,7 +658,8 @@ namespace {
   }
 
   void test_constraint_with_fundamental_types_via_forwarded_arguments() {
-    using ConcreteConstraint = TestConstraint<MockSystem>;
+    using ConcreteConstraint =
+        TestConstraint<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
 
     {  // rvalue
@@ -683,7 +696,8 @@ namespace {
   }
 
   void test_constraint_with_aggregate_types_via_forwarded_arguments() {
-    using ConcreteConstraint = TestConstraint<MockSystem>;
+    using ConcreteConstraint =
+        TestConstraint<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     {  // rvalue
       ConcreteConstraint cc(6UL, f, "test");
@@ -709,7 +723,8 @@ namespace {
   }
 
   void test_constraint_with_noncopyable_types_via_forwarded_arguments() {
-    using ConcreteConstraint = TestConstraint<MockSystem>;
+    using ConcreteConstraint =
+        TestConstraint<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     {  // rvalue
       ConcreteConstraint cc(6UL, f, "test");
@@ -742,7 +757,8 @@ namespace {
       "[Unit][Simulator][Interface][Constraints]") {
     ERROR_TEST();
     // clang-format on
-    using ConcreteConstraint = TestConstraint<MockSystem>;
+    using ConcreteConstraint =
+        TestConstraint<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     {  // rvalue
       ConcreteConstraint cc(6UL, f, "test");
@@ -814,7 +830,8 @@ namespace {
       "Unit.Simulator.Interface.Constraints.Constraint.with_unique_ptr",
       "[Unit][Simulator][Interface][Constraints]") {
     // clang-format on
-    using ConcreteConstraint = TestConstraint<MockSystem>;
+    using ConcreteConstraint =
+        TestConstraint<std::reference_wrapper<MockSystem>>;
     MockSystem f{100};
     {  // rvalue
       int i(2);

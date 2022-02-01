@@ -139,8 +139,11 @@ Section 3.4.3.
   void step();
   void run();
   inline auto communicate() {
-    return std::make_tuple(::elastica::position(*rod_it),
-                           ::elastica::velocity(*rod_it));
+    // TODO : inefficiency : slices at runtime, slice can be stored instead
+    // slices at runtime, slice can be eliminated
+    auto slice = rod_ref.get();
+    return std::make_tuple(::elastica::position(slice),
+                           ::elastica::velocity(slice));
   }
 
   TimoshenkoCaseStudy() = default;
@@ -150,8 +153,8 @@ Section 3.4.3.
       Configuration::make_time_stepper();
   decltype(Configuration::make_simulator()) simulator =
       Configuration::make_simulator();
-  using It = decltype(simulator->get_invalid_iterator<CosseratRod>());
-  It rod_it = simulator->get_invalid_iterator<CosseratRod>();
+  using RodRef = decltype(simulator->get_invalid_ref<CosseratRod>());
+  RodRef rod_ref = simulator->get_invalid_ref<CosseratRod>();
 };
 
 ELASTICA_REGISTER_CASE_STUDY(TimoshenkoCaseStudy);

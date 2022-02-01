@@ -82,8 +82,9 @@ namespace {
 
     auto simulator = elastica::make_simulator<>(simulator_config);
 
-    auto slicedrod_00000 = *(simulator->emplace_back<Plugin>(
-        straight_initializer.initialize<Plugin>()));
+    auto slicedrod_00000 = (simulator->emplace_back<Plugin>(
+                                straight_initializer.initialize<Plugin>()))
+                               .get();
 
     simulator->finalize();
 
