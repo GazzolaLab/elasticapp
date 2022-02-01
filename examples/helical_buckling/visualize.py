@@ -10,8 +10,8 @@ from postprocess import plot_helicalbuckling_results as plot_results
 
 
 def run_example(
-        save_to_csv: bool = False,
-        save_figure: bool = False,
+    save_to_csv: bool = False,
+    save_figure: bool = False,
 ):
     n_elem = 100
     base_length = 100.0
