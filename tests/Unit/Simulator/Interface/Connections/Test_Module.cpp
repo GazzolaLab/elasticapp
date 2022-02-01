@@ -2,6 +2,8 @@
 // Created by Tejaswin Parthasarathy on 6/20/21.
 //
 
+#include <functional>
+
 #include "Framework/TestNestedExceptions.hpp"
 #include "Framework/TestingFramework.hpp"
 ///
@@ -143,14 +145,14 @@ ELASTICA_TEST_CASE(
       auto sim = mock::make_simulator<::mock::ConnectionsModule>(
           sim_config, arg_all_registered, is_final);
       // check if a connection object is returned
-      using first_type = int;
-      using second_type = float;
+      using first_type = tmpl::type_<int>;
+      using second_type = tmpl::type_<float>;
       first_type f{};
       second_type s{};
       auto&& connection = sim.connect(f, s);
       static_assert(
           cpp17::is_same_v<cpp20::remove_cvref_t<decltype(connection)>,
-                           Connection<int, float, tmpl::list<>>>,
+                           Connection<first_type, second_type, tmpl::list<>>>,
           "Connection meta failure!");
     }
 
@@ -395,9 +397,11 @@ namespace {
 
       /// [connect_setup]
       // is a physical system, e.g. CosseratRod, with 100 degrees of freedom
-      first_system fs{100UL};
+      first_system fsys{100UL};
+      auto fs(std::ref(fsys));
       // is a physical system, e.g. CosseratRod, with 100 degrees of freedom
-      second_system ss{100UL};
+      second_system ssys{100UL};
+      auto ss(std::ref(ssys));
       std::string optional_connection_name = "ExampleConnection";
       // ExampleConnection is some elastica::connection satisfying the
       // connection protocols
@@ -425,8 +429,10 @@ namespace {
       using first_system = MockSystem;
       using second_system = MockSystem;
 
-      first_system fs{100UL};
-      second_system ss{100UL};
+      first_system fsys{100UL};
+      auto fs(std::ref(fsys));
+      second_system ssys{100UL};
+      auto ss(std::ref(ssys));
       std::string optional_connection_name = "ExampleConnection";
 
       /// [connect_eg_no_curry]
@@ -452,8 +458,10 @@ namespace {
       using first_system = MockSystem;
       using second_system = MockSystem;
 
-      first_system fs{100UL};
-      second_system ss{100UL};
+      first_system fsys{100UL};
+      auto fs(std::ref(fsys));
+      second_system ssys{100UL};
+      auto ss(std::ref(ssys));
       std::string optional_connection_name = "ExampleConnection";
 
       /// [connect_eg_curry]
@@ -481,8 +489,10 @@ namespace {
     {
       using first_system = MockSystem;
       using second_system = MockSystem;
-      first_system fs{100UL};
-      second_system ss{100UL};
+      first_system fsys{100UL};
+      auto fs(std::ref(fsys));
+      second_system ssys{100UL};
+      auto ss(std::ref(ssys));
       std::string optional_connection_name = "ExampleConnection";
 
       /// [connect_to_eg]
@@ -575,8 +585,10 @@ namespace {
     {
       using first_system = MockSystem;
       using second_system = MockSystem;
-      first_system fs{100UL};
-      second_system ss{100UL};
+      first_system fsys{100UL};
+      auto fs(std::ref(fsys));
+      second_system ssys{100UL};
+      auto ss(std::ref(ssys));
       std::string optional_connection_name = "ExampleConnection";
 
       /// [connect_idx_eg]
@@ -600,8 +612,10 @@ namespace {
     {
       using first_system = MockSystem;
       using second_system = MockSystem;
-      first_system fs{100UL};
-      second_system ss{100UL};
+      first_system fsys{100UL};
+      auto fs(std::ref(fsys));
+      second_system ssys{100UL};
+      auto ss(std::ref(ssys));
       std::string optional_connection_name = "ExampleConnection";
 
       /// [connect_end_idx_eg]
@@ -623,8 +637,10 @@ namespace {
     {
       using first_system = MockSystem;
       using second_system = MockSystem;
-      first_system fs{100UL};
-      second_system ss{100UL};
+      first_system fsys{100UL};
+      auto fs(std::ref(fsys));
+      second_system ssys{100UL};
+      auto ss(std::ref(ssys));
       std::string optional_connection_name = "ExampleConnection";
 
       /// [connect_at_idx_eg]
@@ -648,8 +664,10 @@ namespace {
     {
       using first_system = MockSystem;
       using second_system = MockSystem;
-      first_system fs{100UL};
-      second_system ss{100UL};
+      first_system fsys{100UL};
+      auto fs(std::ref(fsys));
+      second_system ssys{100UL};
+      auto ss(std::ref(ssys));
       std::string optional_connection_name = "ExampleConnection";
 
       /// [connect_at_end_idx_eg]
@@ -705,8 +723,10 @@ namespace {
     {
       using first_system = MockSystem;
       using second_system = MockSystem;
-      first_system fs{100UL};
-      second_system ss{100UL};
+      first_system fsys{100UL};
+      auto fs(std::ref(fsys));
+      second_system ssys{100UL};
+      auto ss(std::ref(ssys));
       // oops i forgot indices
       sim.connect(fs, ss).with<ExampleConnection>();
       // oops i forgot indices
@@ -754,9 +774,11 @@ namespace {
 
       // same setup as earlier
       // is a physical system, e.g. CosseratRod, with 100 degrees of freedom
-      first_system fs{100UL};
+      first_system fsys{100UL};
+      auto fs(std::ref(fsys));
       // is a physical system, e.g. CosseratRod, with 100 degrees of freedom
-      second_system ss{100UL};
+      second_system ssys{100UL};
+      auto ss(std::ref(ssys));
       std::string optional_connection_name = "MyConnection";
       // ExampleConnection is some elastica::connection satisfying the
       // connection protocols
@@ -811,9 +833,11 @@ namespace {
 
       // same setup as earlier
       // is a physical system, e.g. CosseratRod, with 100 degrees of freedom
-      first_system fs{100UL};
+      first_system fsys{100UL};
+      auto fs(std::ref(fsys));
       // is a physical system, e.g. CosseratRod, with 100 degrees of freedom
-      second_system ss{100UL};
+      second_system ssys{100UL};
+      auto ss(std::ref(ssys));
       std::string optional_connection_name = "MyConnection";
       // ExampleConnection is some elastica::connection satisfying the
       // connection protocols
@@ -912,11 +936,14 @@ namespace {
         {  // add a bunch of connections
           using first_system = MockSystem;
           using second_system = MockSystem;
-          first_system first{100UL};
-          second_system second{100UL};
+          first_system fsys{100UL};
+          auto fs(std::ref(fsys));
+          second_system ssys{100UL};
+          auto ss(std::ref(ssys));
+
           for (std::size_t i = 0UL; i < 10UL; ++i)
-            sim.connect(first, end - 10UL - i)  //
-                .to(second, 10UL + i)           //
+            sim.connect(fs, end - 10UL - i)  //
+                .to(ss, 10UL + i)            //
                 .with(ExampleConnection{});
         }
 
@@ -938,11 +965,14 @@ namespace {
         {  // add a bunch of connections
           using first_system = MockSystem;
           using second_system = MockSystem;
-          first_system first{100UL};
-          second_system second{100UL};
+          first_system fsys{100UL};
+          auto fs(std::ref(fsys));
+          second_system ssys{100UL};
+          auto ss(std::ref(ssys));
+
           for (std::size_t i = 0UL; i < 10UL; ++i)
-            sim.connect(first, end - 10UL - i)  //
-                .to(second, 10UL + i)           //
+            sim.connect(fs, end - 10UL - i)  //
+                .to(ss, 10UL + i)            //
                 .with(ExampleConnection{});
         }
 
@@ -968,11 +998,14 @@ namespace {
         {  // add a bunch of connections
           using first_system = MockSystem;
           using second_system = MockSystem;
-          first_system first{100UL};
-          second_system second{100UL};
+          first_system fsys{100UL};
+          auto fs(std::ref(fsys));
+          second_system ssys{100UL};
+          auto ss(std::ref(ssys));
+
           for (std::size_t i = 0UL; i < 10UL; ++i)
-            sim.connect(first, end - 10UL - i)  //
-                .to(second, 10UL + i)           //
+            sim.connect(fs, end - 10UL - i)  //
+                .to(ss, 10UL + i)            //
                 .with(ExampleConnection{});
         }
 
@@ -995,11 +1028,14 @@ namespace {
           // added 5 less connections!
           using first_system = MockSystem;
           using second_system = MockSystem;
-          first_system first{100UL};
-          second_system second{100UL};
+          first_system fsys{100UL};
+          auto fs(std::ref(fsys));
+          second_system ssys{100UL};
+          auto ss(std::ref(ssys));
+
           for (std::size_t i = 0UL; i < 5UL; ++i)
-            sim.connect(first, end - 10UL - i)  //
-                .to(second, 10UL + i)           //
+            sim.connect(fs, end - 10UL - i)  //
+                .to(ss, 10UL + i)            //
                 .with(ExampleConnection{});
         }
 
@@ -1027,11 +1063,14 @@ namespace {
         {  // add a bunch of connections
           using first_system = MockSystem;
           using second_system = MockSystem;
-          first_system first{100UL};
-          second_system second{100UL};
+          first_system fsys{100UL};
+          auto fs(std::ref(fsys));
+          second_system ssys{100UL};
+          auto ss(std::ref(ssys));
+
           for (std::size_t i = 0UL; i < 10UL; ++i)
-            sim.connect(first, end - 10UL - i)  //
-                .to(second, 10UL + i)           //
+            sim.connect(fs, end - 10UL - i)  //
+                .to(ss, 10UL + i)            //
                 .with(ExampleConnection{});
         }
 
@@ -1054,19 +1093,22 @@ namespace {
           // added 5 less connections!
           using first_system = MockSystem;
           using second_system = MockSystem;
-          first_system first{100UL};
-          second_system second{100UL};
+          first_system fsys{100UL};
+          auto fs(std::ref(fsys));
+          second_system ssys{100UL};
+          auto ss(std::ref(ssys));
+
           for (std::size_t i = 0UL; i < 5UL; ++i)
-            sim.connect(first, end - 10UL - i)  //
-                .to(second, 10UL + i)           //
+            sim.connect(fs, end - 10UL - i)  //
+                .to(ss, 10UL + i)            //
                 .with(ExampleConnection{});
 
           struct AnotherConnectionTag {};
           using AnotherConnection =
               tmpl::inherit<ExampleConnection, AnotherConnectionTag>::type;
           for (std::size_t i = 0UL; i < 5UL; ++i)
-            sim.connect(first, end - 10UL - i)  //
-                .to(second, 10UL + i)           //
+            sim.connect(fs, end - 10UL - i)  //
+                .to(ss, 10UL + i)            //
                 .with(AnotherConnection{});
         }
 
