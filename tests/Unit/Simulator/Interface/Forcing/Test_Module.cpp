@@ -785,7 +785,9 @@ namespace {
     using System = MockSystem;
     using MemberForcing = ForcingWithMember<>;
     {
-      System sys{100UL};
+      System system{100UL};
+      auto sys(std::ref(system));
+
       std::string optional_forcing_name = "MyForcing";
 
       for (std::size_t i = 0UL; i < 5UL; ++i)

@@ -1141,12 +1141,14 @@ namespace {
       using first_system = MockSystem;
       using second_system = MockSystem;
       first_system first{100UL};
+      auto fs(std::ref(first));
       second_system second{100UL};
+      auto ss(std::ref(second));
       std::string optional_connection_name = "MyConnections";
 
       for (std::size_t i = 0UL; i < 5UL; ++i)
-        sim.connect(first, at(5UL))
-            .to(second, at(6UL))
+        sim.connect(fs, at(5UL))
+            .to(ss, at(6UL))
             .with<MemberConnection>(32, 'a');
     }
 

@@ -770,7 +770,9 @@ namespace {
     using System = MockSystem;
     using MemberConstraint = ConstraintWithMember<>;
     {
-      System sys{100UL};
+      System system{100UL};
+      auto sys(std::ref(system));
+
       std::string optional_constraint_name = "MyConstraints";
 
       for (std::size_t i = 0UL; i < 5UL; ++i)
