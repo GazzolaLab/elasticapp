@@ -98,7 +98,7 @@ void ButterflyCaseStudy::setup(InputTypes<This> const& input_parameters) {
       Init::Director(std::move(director_profile)),
   };
 
-  rod_it = simulator->emplace_back<CosseratRodWithoutDamping>(
+  rod_ref = simulator->emplace_back<CosseratRodWithoutDamping>(
       initializer.initialize<CosseratRodWithoutDamping>());
 
   simulator->finalize();

@@ -65,15 +65,15 @@ void TimoshenkoCaseStudy::setup(InputTypes<This> const& input_parameters) {
           ::elastica::get<damping>(input_parameters)},
   };
 
-  rod_it = simulator->emplace_back<CosseratRod>(
+  rod_ref = simulator->emplace_back<CosseratRod>(
       straight_initializer.initialize<CosseratRod>());
 
   namespace eco = ::elastica::constraints;
   const std::size_t my_constraint_index = 0UL;
   auto constraint_generator = eco::make_constraint(
       eco::make_value_constraint(
-          [origin,
-           origin_frame = ::elastica::director(*rod_it, my_constraint_index)](
+          [origin, origin_frame = ::elastica::Rot3{::elastica::director(
+                       rod_ref, my_constraint_index)}](
               auto /*time*/, auto& rod_system, auto index) {
             ::elastica::position(rod_system, index) = origin;
             ::elastica::director(rod_system, index) = origin_frame;
@@ -84,7 +84,7 @@ void TimoshenkoCaseStudy::setup(InputTypes<This> const& input_parameters) {
             ::elastica::angular_velocity(rod_system, index) = 0.0;
           }));
 
-  simulator->constrain(*rod_it).at(0UL).with(constraint_generator());
+  simulator->constrain(rod_ref).at(0UL).with(constraint_generator());
 
   namespace efo = ::elastica::forcing;
 
@@ -98,7 +98,7 @@ void TimoshenkoCaseStudy::setup(InputTypes<This> const& input_parameters) {
         blaze::column(::elastica::get<Tag>(rod_system), index + 1) = F;
       }),
       efo::make_torque([](auto /*time*/, auto&, std::size_t) {}));
-  simulator->force(*rod_it).at(::elastica::end - 1UL).with(force_generator());
+  simulator->force(rod_ref).at(::elastica::end - 1UL).with(force_generator());
 
   simulator->finalize();
 
@@ -117,7 +117,7 @@ void TimoshenkoCaseStudy::run() {
   //  std::vector<TimesAndDisplacements> time_and_disps;
 
   const ::elastica::real_t final_time(500.0);
-  const auto n_elements = ::elastica::size(*rod_it);
+  const auto n_elements = ::elastica::size(rod_ref.get());
   constexpr auto x_axis = 0UL;
 
   const std::size_t n_steps = (final_time / current_dt());

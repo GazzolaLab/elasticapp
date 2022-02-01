@@ -74,7 +74,7 @@ void HelicalBucklingCaseStudy::setup(InputTypes<This> const& input_parameters) {
           ::elastica::get<damping>(input_parameters)},
   };
 
-  rod_it =
+  rod_ref =
       simulator->emplace_back<CosseratRod>(initializer.initialize<CosseratRod>(
           // velocity
           ::blocks::initialize<::elastica::tags::Velocity>(
@@ -91,7 +91,8 @@ void HelicalBucklingCaseStudy::setup(InputTypes<This> const& input_parameters) {
     // TODO : Highlight good design. Only use auto. Using auto& raises compiler
     // error. Promote value semantics.
     auto shear_matrix =
-        ::elastica::get<::elastica::tags::ShearStretchRigidityMatrix>(*rod_it);
+        ::elastica::get<::elastica::tags::ShearStretchRigidityMatrix>(
+            rod_ref.get());
     const auto sm = ::elastica::Material::get_shear_modulus(my_material);
     for (std::size_t i_elem = 0UL; i_elem < n_elem; ++i_elem) {
       // can be refactored but whatever
@@ -103,7 +104,8 @@ void HelicalBucklingCaseStudy::setup(InputTypes<This> const& input_parameters) {
 
   {
     auto bend_matrix =
-        ::elastica::get<::elastica::tags::BendingTwistRigidityMatrix>(*rod_it);
+        ::elastica::get<::elastica::tags::BendingTwistRigidityMatrix>(
+            rod_ref.get());
     for (std::size_t i_elem = 0UL; i_elem < (n_elem - 1); ++i_elem) {
       // can be refactored but whatever
       bend_matrix(0UL, 0UL, i_elem) = 1.345;
@@ -132,7 +134,7 @@ void HelicalBucklingCaseStudy::setup(InputTypes<This> const& input_parameters) {
       origin + 0.5 * slack * rod_direction;
   const ::elastica::Rot3 final_start_director =
       ::elastica::geometry::rotate_via_axis_angle(rod_direction, theta) *
-      ::elastica::director(*rod_it, left_tip_index);
+      ::elastica::director(rod_ref, left_tip_index);
 
   auto left_constraint_generator = eco::make_constraint(
       eco::make_value_constraint(
@@ -152,7 +154,7 @@ void HelicalBucklingCaseStudy::setup(InputTypes<This> const& input_parameters) {
               ::elastica::angular_velocity(rod_system, index) = ang_vel;
             }
           }));
-  simulator->constrain(*rod_it)
+  simulator->constrain(rod_ref)
       .at(left_tip_index)
       .with(left_constraint_generator());
 
@@ -161,7 +163,7 @@ void HelicalBucklingCaseStudy::setup(InputTypes<This> const& input_parameters) {
   const ::elastica::Rot3 final_end_director =
       ::elastica::geometry::rotate_via_axis_angle(rod_direction, -theta) *
       // need end support here my dude
-      ::elastica::director(*rod_it, n_elem - 1UL);
+      ::elastica::director(rod_ref, n_elem - 1UL);
 
   auto right_constraint_generator = eco::make_constraint(
       eco::make_value_constraint([=](auto time_v, auto& rod_system,
@@ -181,7 +183,7 @@ void HelicalBucklingCaseStudy::setup(InputTypes<This> const& input_parameters) {
               ::elastica::angular_velocity(rod_system, index) = -ang_vel;
             }
           }));
-  simulator->constrain(*rod_it)
+  simulator->constrain(rod_ref)
       .at(::elastica::end - 1UL)
       .with(right_constraint_generator());
 

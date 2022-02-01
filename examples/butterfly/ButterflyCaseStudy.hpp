@@ -116,17 +116,18 @@ implemented correctly.
   void run();
 
   auto compute_elastic_energy() const noexcept {
-    return std::make_tuple(::elastica::compute_bend_energy(*rod_it),
-                           ::elastica::compute_shear_energy(*rod_it));
+    return std::make_tuple(::elastica::compute_bend_energy(rod_ref.get()),
+                           ::elastica::compute_shear_energy(rod_ref.get()));
   }
 
   auto compute_kinetic_energy() const noexcept {
-    return std::make_tuple(::elastica::compute_translational_energy(*rod_it),
-                           ::elastica::compute_rotational_energy(*rod_it));
+    return std::make_tuple(
+        ::elastica::compute_translational_energy(rod_ref.get()),
+        ::elastica::compute_rotational_energy(rod_ref.get()));
   }
 
   inline auto communicate() {
-    return std::tuple_cat(std::make_tuple(::elastica::position(*rod_it)),
+    return std::tuple_cat(std::make_tuple(::elastica::position(rod_ref)),
                           compute_elastic_energy(), compute_kinetic_energy());
   }
 
@@ -137,9 +138,9 @@ implemented correctly.
       Configuration::make_time_stepper();
   decltype(Configuration::make_simulator()) simulator =
       Configuration::make_simulator();
-  using It =
-      decltype(simulator->get_invalid_iterator<CosseratRodWithoutDamping>());
-  It rod_it = simulator->get_invalid_iterator<CosseratRodWithoutDamping>();
+  using RodRef =
+      decltype(simulator->get_invalid_ref<CosseratRodWithoutDamping>());
+  RodRef rod_ref = simulator->get_invalid_ref<CosseratRodWithoutDamping>();
 };
 
 ELASTICA_REGISTER_CASE_STUDY(ButterflyCaseStudy);
