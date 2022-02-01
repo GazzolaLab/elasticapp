@@ -317,7 +317,7 @@ namespace elastica {
         ++n_total_constraints;
 
         // 4. map it within
-        uuid_map_.map(system).with(constraints_.back()->id());
+        uuid_map_.map(system.uuid()).to(constraints_.back()->id());
 
         return static_cast<::elastica::interface::constraints::Constraint<
             System, ConstraintsRegistrars>&>(*(constraints_.back()));
