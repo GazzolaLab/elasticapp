@@ -204,6 +204,7 @@ void HelicalBucklingCaseStudy::setup(InputTypes<This> const& input_parameters) {
 
 void HelicalBucklingCaseStudy::step() {
   simulator->step(time_stepper, get_current_time(), get_dt());
+  ++get_current_iteration();
 }
 
 void HelicalBucklingCaseStudy::run() {
@@ -224,7 +225,7 @@ void HelicalBucklingCaseStudy::run() {
   //  constexpr std::size_t write_interval = 10000UL;
   //  stats.reserve(n_steps / write_interval);
 
-  for (std::size_t i_step = {0UL}; i_step < n_steps; ++i_step) {
+  for (std::size_t i = 0UL; i < n_steps; ++i) {
     step();
 
     //    if (not(i_step % write_interval)) {

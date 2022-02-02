@@ -19,8 +19,16 @@
 #include <elastica/Time/Time.hpp>
 #include <elastica/Utilities/CRTP.hpp>
 #include <elastica/Utilities/DefineTypes.h>
+#include <elastica/Utilities/Requires.hpp>
+#include <elastica/Utilities/TypeTraits/IsDetected.hpp>
 
 namespace elastica {
+
+  namespace detail {
+    // reset should be called in a non-const context
+    template <class T>
+    using reset_t = decltype(std::declval<T&>().reset());
+  }  // namespace detail
 
   //****************************************************************************
   /*!\brief Interface for \elastica case studies
@@ -58,9 +66,10 @@ namespace elastica {
      */
     void run_for(::elastica::real_t seconds) /* noexcept */ {
       /* todo : replace with integrate */
-      const std::size_t n_steps =
-          current_iter_ + (seconds / static_cast<::elastica::real_t>(dt_));
-      for (std::size_t i_step = current_iter_; i_step < n_steps; ++i_step) {
+      const std::size_t n_additional_steps =
+          (seconds / static_cast<::elastica::real_t>(dt_));
+      for (std::size_t i = 0UL; i < n_additional_steps; ++i) {
+        // step() updates the current iteration
         self().step();
       }
     }
@@ -76,10 +85,9 @@ namespace elastica {
       else {
         const ::elastica::real_t time_to_run =
             seconds - static_cast<::elastica::real_t>(time_);
-        const std::size_t n_steps =
-            current_iter_ +
+        const std::size_t n_additional_steps =
             (time_to_run / static_cast<::elastica::real_t>(dt_));
-        for (std::size_t i_step = current_iter_; i_step < n_steps; ++i_step) {
+        for (std::size_t i = 0UL; i < n_additional_steps; ++i) {
           self().step();
         }
       }
@@ -118,6 +126,55 @@ namespace elastica {
     //@}
     //**************************************************************************
 
+   private:
+    //**************************************************************************
+    /*!\name Reset methods */
+    //@{
+
+    //**************************************************************************
+    /*!\brief Resets the objects in the current scope
+     */
+    void reset_this() noexcept {
+      // by default, a simulation which resets calls this function. The user
+      // can override it in the derived class
+      time_ = ::elastica::Time{0.0};
+      //! The current iteration of the simulation
+      current_iter_ = 0UL;
+    }
+    //**************************************************************************
+
+   protected:
+    //**************************************************************************
+    /*!\brief Dispatch for CaseStudy having a reset method
+     */
+    template <typename U = CaseStudy,
+              Requires<::tt::is_detected<detail::reset_t, U>{}> = nullptr>
+    void reset_dispatch() {
+      self().reset();
+    };
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Dispatch for CaseStudy not having a reset method
+     */
+    template <typename U = CaseStudy,
+              Requires<not ::tt::is_detected<detail::reset_t, U>{}> = nullptr>
+    void reset_dispatch() const noexcept {};
+    //**************************************************************************
+
+   public:
+    //**************************************************************************
+    /*!\brief Resets the case study
+     */
+    void reset_case_study() {
+      reset_this();
+      reset_dispatch();
+    }
+    //**************************************************************************
+
+    //@}
+    //**************************************************************************
+
    protected:
     //**************************************************************************
     /*!\name Internal inteface methods */
@@ -140,6 +197,14 @@ namespace elastica {
     //**************************************************************************
 
     //**************************************************************************
+    /*!\brief Sets the case-study simulation iterate to a given value
+     */
+    void set_current_iteration(std::size_t iter) noexcept {
+      current_iter_ = iter;
+    }
+    //**************************************************************************
+
+    //**************************************************************************
     /*!\brief Gets the case-study simulation time-step
      */
     inline auto get_dt() -> TimeDelta& { return dt_; }
@@ -151,13 +216,21 @@ namespace elastica {
     inline auto get_current_time() -> Time& { return time_; };
     //**************************************************************************
 
+    //**************************************************************************
+    /*!\brief Gets the case-study iteration
+     */
+    inline auto get_current_iteration() -> std::size_t& {
+      return current_iter_;
+    };
+    //**************************************************************************
+
     //@}
     //**************************************************************************
 
     //**************************************************************************
     /*!\brief Default constructor of the CaseStudyInterface class.
      */
-    CaseStudyInterface() = default;
+    CaseStudyInterface() noexcept { reset_this(); };
     //**************************************************************************
 
    private:

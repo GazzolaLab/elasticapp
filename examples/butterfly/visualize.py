@@ -78,8 +78,8 @@ def _plot_energies(stats: Stats, save_figure: bool):
 
 
 def run_example(
-        save_to_csv: bool = False,
-        save_figure: bool = False,
+    save_to_csv: bool = False,
+    save_figure: bool = False,
 ):
     sample_interval = 200
 
