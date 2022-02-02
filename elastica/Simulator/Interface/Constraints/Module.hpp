@@ -592,42 +592,56 @@ namespace elastica {
        * missing/faulty
        */
       void finalize(TimeType time_v) {
-        try {
-          check_and_report_errors();
+        if (n_total_constraints) {
+          try {
+            check_and_report_errors();
 
-          // logic for batching
-          batch_from = [](auto uuids_batched_per_system,
-                          std::size_t partition_size) {
-            auto partition_result = elastica::karmarkar_karp_partition(
-                uuids_batched_per_system, partition_size,
-                [](auto const& v) { return ::elastica::size(v); });
-            using UUIDSubsets = decltype(::flatten(partition_result.subsets()));
-            UUIDSubsets flattened_uuid_subsets;
-            flattened_uuid_subsets.reserve(partition_size);
-            // flatten the inner-most subset dimension
-            for (auto& sub : partition_result.subsets()) {
-              flattened_uuid_subsets.emplace_back(::flatten(std::move(sub)));
+            // logic for batching
+            batch_from = [](auto uuids_batched_per_system,
+                            std::size_t partition_size) {
+              auto partition_result = elastica::karmarkar_karp_partition(
+                  uuids_batched_per_system, partition_size,
+                  [](auto const& v) { return ::elastica::size(v); });
+              using UUIDSubsets =
+                  decltype(::flatten(partition_result.subsets()));
+              UUIDSubsets flattened_uuid_subsets;
+              flattened_uuid_subsets.reserve(partition_size);
+              // flatten the inner-most subset dimension
+              for (auto& sub : partition_result.subsets()) {
+                flattened_uuid_subsets.emplace_back(::flatten(std::move(sub)));
+              }
+              return ::elastica::interface::detail::make_uuid_to_batch_map(
+                  std::move(flattened_uuid_subsets));
+            }(std::move(uuid_map_).as_vector(), n_batches());
+
+            constrainer_batches_.reserve(n_batches());
+            constrainer_batches_.resize(n_batches());
+
+            for (ConstraintID const& constraint : constraints_) {
+              // guaranteed to be [0, partition_size() - 1]
+              const std::size_t batch_number = batch_from[constraint->id()];
+
+              // careful in pushing back unique ptr
+              constrainer_batches_[batch_number].push_back(
+                  constraint->finalize());
             }
-            return ::elastica::interface::detail::make_uuid_to_batch_map(
-                std::move(flattened_uuid_subsets));
-          }(std::move(uuid_map_).as_vector(), n_batches());
 
-          constrainer_batches_.reserve(n_batches());
-          constrainer_batches_.resize(n_batches());
-
-          for (ConstraintID const& constraint : constraints_) {
-            // guaranteed to be [0, partition_size() - 1]
-            const std::size_t batch_number = batch_from[constraint->id()];
-
-            // careful in pushing back unique ptr
-            constrainer_batches_[batch_number].push_back(
-                constraint->finalize());
+          } catch (...) {
+            const char* error_message =
+                "Preparing the constraints module failed because";
+            std::throw_with_nested(std::runtime_error(error_message));
           }
+        } else {
+          const char* warning_message =
+              "No constraints added even though the module was "
+              "included! Consider removing ::elastica::modules::Constraints "
+              "from ::elastica::make_simulator for potentially improved "
+              "performance";
+          using namespace ::elastica::logging;
+          log<warning>([&](auto const& log) { log << warning_message; });
 
-        } catch (...) {
-          const char* error_message =
-              "Preparing the constraints module failed because";
-          std::throw_with_nested(std::runtime_error(error_message));
+          std::cerr << "Warning : " << warning_message
+                    << std::endl;  // flush it
         }
 
         // constraints are no longer needed, remove them

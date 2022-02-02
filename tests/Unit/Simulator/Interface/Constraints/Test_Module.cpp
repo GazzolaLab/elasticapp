@@ -560,6 +560,23 @@ namespace {
 
   // clang-format off
   ELASTICA_TEST_CASE(
+      "Unit.Simulator.Interface.Constraints.Module.no_constraints_added",
+      "[Unit][Simulator][Interface][Constraints]") {
+    // clang-format on
+    auto sim_config =
+        mock::make_simulator_configuration(DefaultConstraintsConfiguration{});
+    // check cases without an error first.
+    bool arg_all_registered = true;
+    bool is_final = false;
+    auto sim = mock::make_simulator<::mock::ConstraintsModule>(
+        sim_config, arg_all_registered, is_final);
+    CHECK(sim.n_constraints() == 0UL);
+
+    CHECK_NOTHROW(sim.finalize());
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE(
       "Unit.Simulator.Interface.Constraints.Module.serialize",
       "[Unit][Simulator][Interface][Constraints]") {
     // clang-format on

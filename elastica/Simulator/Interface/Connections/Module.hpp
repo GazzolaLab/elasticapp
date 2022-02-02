@@ -754,19 +754,32 @@ Did you give the right indices using the at() method?
        * missing/faulty
        */
       void finalize(TimeType time_v) {
-        try {
-          check_and_report_errors();
+        if (n_total_connections) {
+          try {
+            check_and_report_errors();
 
-          connecters_.reserve(n_total_connections);
-          std::transform(connections_.cbegin(), connections_.cend(),
-                         std::back_inserter(connecters_),
-                         [](const ConnectionID& connection) {
-                           return connection->finalize();
-                         });
-        } catch (...) {
-          const char* error_message =
-              "Preparing the connections module failed because";
-          std::throw_with_nested(std::runtime_error(error_message));
+            connecters_.reserve(n_total_connections);
+            std::transform(connections_.cbegin(), connections_.cend(),
+                           std::back_inserter(connecters_),
+                           [](const ConnectionID& connection) {
+                             return connection->finalize();
+                           });
+          } catch (...) {
+            const char* error_message =
+                "Preparing the connections module failed because";
+            std::throw_with_nested(std::runtime_error(error_message));
+          }
+        } else {
+          const char* warning_message =
+              "No connections added even though the module was "
+              "included! Consider removing ::elastica::modules::Connections "
+              "from ::elastica::make_simulator for potentially improved "
+              "performance";
+          using namespace ::elastica::logging;
+          log<warning>([&](auto const& log) { log << warning_message; });
+
+          std::cerr << "Warning : " << warning_message
+                    << std::endl;  // flush it
         }
 
         // connections are no longer needed, remove them
