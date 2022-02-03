@@ -17,6 +17,7 @@
 // Includes
 //******************************************************************************
 #include <elastica/Time/Time.hpp>
+#include <elastica/Utilities/AppSupport/Helpers/MultipleJustGreaterThan.hpp>
 #include <elastica/Utilities/CRTP.hpp>
 #include <elastica/Utilities/DefineTypes.h>
 #include <elastica/Utilities/Requires.hpp>
@@ -66,8 +67,8 @@ namespace elastica {
      */
     void run_for(::elastica::real_t seconds) /* noexcept */ {
       /* todo : replace with integrate */
-      const std::size_t n_additional_steps =
-          (seconds / static_cast<::elastica::real_t>(dt_));
+      const std::size_t n_additional_steps = multiple_just_greater_than(
+          seconds, static_cast<::elastica::real_t>(dt_));
       for (std::size_t i = 0UL; i < n_additional_steps; ++i) {
         // step() updates the current iteration
         self().step();
@@ -85,8 +86,8 @@ namespace elastica {
       else {
         const ::elastica::real_t time_to_run =
             seconds - static_cast<::elastica::real_t>(time_);
-        const std::size_t n_additional_steps =
-            (time_to_run / static_cast<::elastica::real_t>(dt_));
+        const std::size_t n_additional_steps = multiple_just_greater_than(
+            time_to_run, static_cast<::elastica::real_t>(dt_));
         for (std::size_t i = 0UL; i < n_additional_steps; ++i) {
           self().step();
         }
