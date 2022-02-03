@@ -107,8 +107,8 @@ void TimoshenkoCaseStudy::setup(InputTypes<This> const& input_parameters) {
 }
 
 void TimoshenkoCaseStudy::step() {
-  simulator->step(time_stepper, get_current_time(), get_dt());
-  ++get_current_iteration();
+  simulator->step(time_stepper, get_current_time(), get_dt(),
+                  get_current_iteration());
 }
 
 void TimoshenkoCaseStudy::run() {

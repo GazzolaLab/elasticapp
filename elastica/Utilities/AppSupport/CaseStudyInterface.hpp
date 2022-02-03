@@ -17,6 +17,7 @@
 // Includes
 //******************************************************************************
 #include <elastica/Time/Time.hpp>
+#include <elastica/Time/TimeStepID.hpp>
 #include <elastica/Utilities/CRTP.hpp>
 #include <elastica/Utilities/DefineTypes.h>
 #include <elastica/Utilities/Requires.hpp>
@@ -53,6 +54,8 @@ namespace elastica {
     using CRTP = ::elastica::CRTPHelper<CaseStudy, CaseStudyInterface>;
     //! CRTP methods
     using CRTP::self;
+    //! Number of substep update // TODO : assumes position verlet
+    static constexpr std::size_t n_time_updates_per_step = 2UL;
     //**************************************************************************
 
    public:
@@ -120,7 +123,9 @@ namespace elastica {
     //**************************************************************************
     /*!\brief Gets the current iteration of the case-study simulation
      */
-    std::size_t current_iteration() const noexcept { return current_iter_; }
+    std::size_t current_iteration() const noexcept {
+      return current_iter_.step();
+    }
     //**************************************************************************
 
     //@}
@@ -139,7 +144,7 @@ namespace elastica {
       // can override it in the derived class
       time_ = ::elastica::Time{0.0};
       //! The current iteration of the simulation
-      current_iter_ = 0UL;
+      current_iter_ = ::elastica::TimeStepID{n_time_updates_per_step};
     }
     //**************************************************************************
 
@@ -200,7 +205,12 @@ namespace elastica {
     /*!\brief Sets the case-study simulation iterate to a given value
      */
     void set_current_iteration(std::size_t iter) noexcept {
-      current_iter_ = iter;
+      current_iter_ = TimeStepID{n_time_updates_per_step};
+
+      // Forward it to the value needed
+      for (std::size_t i = 0UL; i < iter; ++i) {
+        ++current_iter_;
+      }
     }
     //**************************************************************************
 
@@ -219,7 +229,7 @@ namespace elastica {
     //**************************************************************************
     /*!\brief Gets the case-study iteration
      */
-    inline auto get_current_iteration() -> std::size_t& {
+    inline auto get_current_iteration() -> TimeStepID& {
       return current_iter_;
     };
     //**************************************************************************
@@ -240,7 +250,7 @@ namespace elastica {
     //! The current time-step of the simulation
     elastica::TimeDelta dt_{};
     //! The current iteration of the simulation
-    std::size_t current_iter_{0UL};
+    elastica::TimeStepID current_iter_{n_time_updates_per_step};
     //**************************************************************************
   };
   //****************************************************************************

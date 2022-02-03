@@ -108,8 +108,8 @@ void ButterflyCaseStudy::setup(InputTypes<This> const& input_parameters) {
 }
 
 void ButterflyCaseStudy::step() {
-  simulator->step(time_stepper, get_current_time(), get_dt());
-  ++get_current_iteration();
+  simulator->step(time_stepper, get_current_time(), get_dt(),
+                  get_current_iteration());
 }
 
 void ButterflyCaseStudy::run() {
