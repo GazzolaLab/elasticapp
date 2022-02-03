@@ -79,47 +79,60 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Time.SymplecticSteppers.Algorithms.PositionVerlet",
                      "[Time][Unit]") {
-    // check default initialization
-    tmpl::for_each<TestSystems>([](auto sys) {
-      using System = tmpl::type_from<decltype(sys)>;
+    SECTION("Constexpr are correctly resolved") {
       using Algorithm = PositionVerlet;
-      const SymplecticStepper<Algorithm> time_stepper{};
-      Time time_v(0.0);
-      Time final_time_v(1.0);
-      System system;
-      TimeDelta dt(system.timestep_guess());
+      using TimeStepper = SymplecticStepper<Algorithm>;
+      static_assert(TimeStepper::n_fevals_per_step() == 1UL,
+                    "PositionVerlet failure");
+      static_assert(TimeStepper::n_time_updates_per_step() == 2UL,
+                    "PositionVerlet failure");
+      static_assert(TimeStepper::n_sub_steps() == 3UL,
+                    "PositionVerlet failure");
+    }
 
-      while (time_v <= final_time_v) {
-        apply_substeps_of(time_stepper, [&, dt = dt](auto const& update) {
-          dispatch_based_on(
-              update,
-              [&, &time_v = cpp17::as_const(time_v),
-               dt = dt](auto const& system_update) {
-                system_update(system, time_v, dt);
-              },
-              [&, dt = dt](auto const& time_update) {
-                time_v += time_update(dt);
-              });
-        });
-      }
+    SECTION("Compare against analytical solution") {
+      // check default initialization
+      tmpl::for_each<TestSystems>([](auto sys) {
+        using System = tmpl::type_from<decltype(sys)>;
+        using Algorithm = PositionVerlet;
+        const SymplecticStepper<Algorithm> time_stepper{};
+        Time time_v(0.0);
+        Time final_time_v(1.0);
+        System system;
+        TimeDelta dt(system.timestep_guess());
 
-      CHECK(cpp17::as_const(time_v) >= approx(cpp17::as_const(final_time_v)));
+        while (time_v <= final_time_v) {
+          apply_substeps_of(time_stepper, [&, dt = dt](auto const& update) {
+            dispatch_based_on(
+                update,
+                [&, &time_v = cpp17::as_const(time_v),
+                 dt = dt](auto const& system_update) {
+                  system_update(system, time_v, dt);
+                },
+                [&, dt = dt](auto const& time_update) {
+                  time_v += time_update(dt);
+                });
+          });
+        }
 
-      typename System::Type::ValueType analytical_primitive,
-          analytical_derivative;
-      std::tie(analytical_primitive, analytical_derivative) =
-          system.analytical(time_v);
-      CHECK(system.kinematic_states() == approx(analytical_primitive));
-      CHECK(system.dynamic_states() == approx(analytical_derivative));
-      /* TODO:
-       * Note
-       * Not so sure if this test fits to be in 'Unit test' category.
-       * If the purpose of this test is to check the operation, we should try
-       * using smaller steps. If the purpose is to test validity of the method,
-       * the precision loss each step must be carefully investigated.
-       * In any case, I don't think we need immediate fix on this issue.
-       * */
-    });
+        CHECK(cpp17::as_const(time_v) >= approx(cpp17::as_const(final_time_v)));
+
+        typename System::Type::ValueType analytical_primitive,
+            analytical_derivative;
+        std::tie(analytical_primitive, analytical_derivative) =
+            system.analytical(time_v);
+        CHECK(system.kinematic_states() == approx(analytical_primitive));
+        CHECK(system.dynamic_states() == approx(analytical_derivative));
+        /* TODO:
+         * Note
+         * Not so sure if this test fits to be in 'Unit test' category.
+         * If the purpose of this test is to check the operation, we should try
+         * using smaller steps. If the purpose is to test validity of the
+         * method, the precision loss each step must be carefully investigated.
+         * In any case, I don't think we need immediate fix on this issue.
+         * */
+      });
+    }
   }
 
 }  // namespace

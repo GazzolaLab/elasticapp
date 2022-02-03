@@ -273,7 +273,11 @@ namespace {
 
     ::elastica::Time time_v{0.0};
     ::elastica::TimeDelta time_delta{0.2};  // dont do nan bro
-    sim.step(time_stepper, time_v, time_delta);
+    ::elastica::TimeStepID time_iteration{
+        time_stepper.n_time_updates_per_step()};
+    sim.step(time_stepper, time_v, time_delta, time_iteration);
+    CHECK(time_iteration.step() == 1UL);
+    CHECK(time_iteration.substep() == 0UL);
 
     // position verlet has
     // one kinematic step , followed by dynamic, followed by kinematic

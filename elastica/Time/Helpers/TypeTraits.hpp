@@ -51,10 +51,12 @@ namespace elastica {
 
         static constexpr std::size_t total_n_steps =
             tmpl::size<ListOfSubSteps>::value;
-        static constexpr std::size_t n_feval_per_step =
+        static constexpr std::size_t n_fevals_per_step =
             impl_<IsDynamicUpdate>::value;
+        static constexpr std::size_t n_time_updates_per_step =
+            impl_<IsTimeUpdate>::value;
         static constexpr std::size_t n_substeps =
-            total_n_steps - impl_<IsTimeUpdate>::value;
+            total_n_steps - n_time_updates_per_step;
       };
       /*! \endcond */
       //**************************************************************************
@@ -80,8 +82,21 @@ namespace elastica {
      * time-stepping algorithm
      */
     template <typename ListOfSubSteps>
-    inline static constexpr auto n_feval_per_step() -> std::size_t {
-      return detail::Counter<ListOfSubSteps>::n_feval_per_step;
+    inline static constexpr auto n_fevals_per_step() -> std::size_t {
+      return detail::Counter<ListOfSubSteps>::n_fevals_per_step;
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Obtains the total number of time updates while performing a
+     * single step of the time-stepping algorithm
+     *
+     * \tparam ListOfSubSteps List of algorithmic update substeps within the
+     * time-stepping algorithm
+     */
+    template <typename ListOfSubSteps>
+    inline static constexpr auto n_time_updates_per_step() -> std::size_t {
+      return detail::Counter<ListOfSubSteps>::n_time_updates_per_step;
     }
     //**************************************************************************
 

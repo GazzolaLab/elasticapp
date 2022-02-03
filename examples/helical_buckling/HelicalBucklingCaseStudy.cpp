@@ -203,8 +203,8 @@ void HelicalBucklingCaseStudy::setup(InputTypes<This> const& input_parameters) {
 }
 
 void HelicalBucklingCaseStudy::step() {
-  simulator->step(time_stepper, get_current_time(), get_dt());
-  ++get_current_iteration();
+  simulator->step(time_stepper, get_current_time(), get_dt(),
+                  get_current_iteration());
 }
 
 void HelicalBucklingCaseStudy::run() {

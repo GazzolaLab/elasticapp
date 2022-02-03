@@ -26,6 +26,7 @@
 #include "Time/Protocols.hpp"
 #include "Time/SimulationTime.hpp"
 #include "Time/SymplecticSteppers.hpp"
+#include "Time/TimeStepID.hpp"
 /// Utils
 #include "Utilities/AsConst.hpp"
 #include "Utilities/CRTP.hpp"
@@ -81,6 +82,8 @@ namespace elastica {
       using TimeType = typename SimTraits::TimeType;
       //! Type of simulation time delta
       using TimeDeltaType = typename SimTraits::TimeDeltaType;
+      //! Type of current iteration
+      using TimeIDType = TimeStepID;
       //************************************************************************
 
      protected:
@@ -126,11 +129,21 @@ namespace elastica {
        * \param time_v Current simulation time, to be updated to the latest time
        * at the end of the function
        * \param dt Time-step of the simulation
+       * \param iteration The current iteration of the simulation
        */
       template <typename SymplecticAlgorithm>
       auto step(::elastica::timestepper::SymplecticStepper<
                     SymplecticAlgorithm> const& time_stepper,
-                TimeType& time_v, TimeDeltaType const dt) noexcept -> void {
+                TimeType& time_v, TimeDeltaType const dt,
+                TimeIDType& iteration) noexcept -> void {
+        ELASTICA_ASSERT(iteration.step_threshold() ==
+                            time_stepper.n_time_updates_per_step(),
+                        R"error(
+Time ID does not have expected number of substeps. The problem is because the
+time-stepper you are using has more/less number of substeps. To rectify this
+mistake, consider using the following idiom when constructing the time-step :
+::elastica::TimeStepId time_step{time_stepper.n_time_updates_per_step()};)error");
+
         // always marked noexcept
         // TODO : can we have one more indirection layer to put a computation
         // graph here, instead of manually declaring the steps?
@@ -194,8 +207,26 @@ namespace elastica {
                   },
                   [&, dt = dt](auto const& time_update_substep) noexcept {
                     time_v += time_update_substep(dt);
+                    ++iteration;
                   });
             });
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Update simulator over one time-step
+       *
+       * \param time_stepper Symplectic time-stepper to use for updates
+       * \param time_v Current simulation time, to be updated to the latest time
+       * at the end of the function
+       * \param dt Time-step of the simulation
+       */
+      template <typename SymplecticAlgorithm>
+      auto step(::elastica::timestepper::SymplecticStepper<
+                    SymplecticAlgorithm> const& time_stepper,
+                TimeType& time_v, TimeDeltaType const dt) noexcept -> void {
+        TimeIDType time_step{time_stepper.n_time_updates_per_step()};
+        step(time_stepper, time_v, dt, time_step);
       }
       //************************************************************************
 
@@ -205,8 +236,8 @@ namespace elastica {
        * \param outstream Stream for printing out
        * \return outstream
        */
-      auto stream_symplectic_algorithm_to(
-          std::ostream& outstream) const /*noexcept*/ -> std::ostream& {
+      auto stream_symplectic_algorithm_to(std::ostream& outstream) const
+          /*noexcept*/ -> std::ostream& {
         const std::size_t line_length = 80UL;
         using Stream = ::elastica::widthstream;
         Stream os(line_length, outstream);
