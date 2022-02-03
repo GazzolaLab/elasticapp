@@ -125,7 +125,8 @@ void ButterflyCaseStudy::run() {
 
   const ::elastica::real_t final_time(40.0);
 
-  const std::size_t n_steps = (final_time / current_dt());
+  const auto n_steps = static_cast<std::size_t>(
+      ::elastica::multiple_just_greater_than(final_time, current_dt()));
 
   constexpr std::size_t write_interval = 200UL;
   stats.reserve(n_steps / write_interval);

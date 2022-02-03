@@ -212,7 +212,9 @@ void HingeJointCaseStudy::step() {
 
 void HingeJointCaseStudy::run() {
   const ::elastica::real_t final_time(0.2);
-  const auto n_steps = static_cast<std::size_t>(final_time / current_dt());
+
+  const auto n_steps = static_cast<std::size_t>(
+      ::elastica::multiple_just_greater_than(final_time, current_dt()));
 
   std::ofstream my_file;
   my_file.open("initial_first_positions.txt");
