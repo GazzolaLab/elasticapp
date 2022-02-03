@@ -4,8 +4,8 @@ from elasticapp.CaseStudies.PyTimoshenkoCaseStudy import TimoshenkoCaseStudy
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 
-from postprocess import plot_beam, plot_velocity
-from analytical import analytical_shearable, analytical_unshearable
+from helpers.postprocess import plot_beam, plot_velocity
+from helpers.analytical import analytical_shearable, analytical_unshearable
 
 
 def run_example(
