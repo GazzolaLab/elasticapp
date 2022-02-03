@@ -78,8 +78,16 @@ namespace elastica {
         //**********************************************************************
         /*!\brief Returns number of function evaluations per time-step
          */
-        static inline constexpr auto n_feval_per_step() -> std::size_t {
-          return ::elastica::tt::n_feval_per_step<SubSteps>();
+        static inline constexpr auto n_fevals_per_step() -> std::size_t {
+          return ::elastica::tt::n_fevals_per_step<SubSteps>();
+        };
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Returns number of time update substeps per time-step
+         */
+        static inline constexpr auto n_time_updates_per_step() -> std::size_t {
+          return ::elastica::tt::n_time_updates_per_step<SubSteps>();
         };
         //**********************************************************************
 
