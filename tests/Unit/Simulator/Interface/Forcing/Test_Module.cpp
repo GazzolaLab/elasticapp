@@ -21,6 +21,7 @@
 /// mocks
 #include "Simulator/Interface/Forcing/MockForcing.hpp"
 #include "Simulator/Interface/MockSimulator.hpp"
+#include "Simulator/Interface/MockSystemRef.hpp"
 #include "Simulator/Interface/MockSystems.hpp"
 /// serializatoin
 #include "Simulator/IO/Serialization.hpp"
@@ -111,7 +112,8 @@ namespace {
     tmpl::for_each<TestSystems>([&, n_cons = 0UL](auto v) mutable {
       using system_type = tmpl::type_from<decltype(v)>;
 
-      system_type sys{};
+      system_type system{};
+      auto sys(mock::ref(system));
       (void)sim.force(sys);
       CHECK(sim.n_forcings() == ++n_cons);
     });
@@ -133,11 +135,14 @@ namespace {
           sim_config, arg_all_registered, is_final);
       // check if a forceion object is returned
       using system_type = tmpl::type_<int>;
-      system_type sys{};
+      system_type system{};
+      auto sys(mock::ref(system));
       auto&& forcing = sim.force(sys);
-      static_assert(cpp17::is_same_v<cpp20::remove_cvref_t<decltype(forcing)>,
-                                     Forcing<system_type, tmpl::list<>>>,
-                    "Forcing meta failure!");
+      static_assert(
+          cpp17::is_same_v<
+              cpp20::remove_cvref_t<decltype(forcing)>,
+              Forcing<mock::reference_wrapper<system_type>, tmpl::list<>>>,
+          "Forcing meta failure!");
     }
 
     {
@@ -319,7 +324,7 @@ namespace {
       /// [force_setup]
       // is a physical system, e.g. CosseratRod, with 100 degrees of freedom
       System system{100UL};
-      auto sys(std::ref(system));
+      auto sys(mock::ref(system));
       std::string optional_forcing_name = "ExampleForcing";
       // ExampleForcing is some elastica::forcing satisfying the
       // forcing protocols
@@ -342,7 +347,7 @@ namespace {
       using System = MockSystem;
 
       System system{100UL};
-      auto sys(std::ref(system));
+      auto sys(mock::ref(system));
       std::string optional_forcing_name = "ExampleForcing";
 
       /// [force_eg_no_curry]
@@ -357,7 +362,7 @@ namespace {
       using System = MockSystem;
 
       System system{100UL};
-      auto sys(std::ref(system));
+      auto sys(mock::ref(system));
       std::string optional_forcing_name = "ExampleForcing";
 
       /// [force_eg_curry]
@@ -377,7 +382,7 @@ namespace {
       using System = MockSystem;
 
       System system{100UL};
-      auto sys(std::ref(system));
+      auto sys(mock::ref(system));
       std::string optional_forcing_name = "ExampleForcing";
       /// [force_eg_with_name]
       // order of with() and at() don't matter
@@ -438,7 +443,7 @@ namespace {
     {
       using System = MockSystem;
       System system{100UL};
-      auto sys(std::ref(system));
+      auto sys(mock::ref(system));
       // oops i forgot indices
       sim.force(sys).with<ExampleForcing>();
       // oops i forgot indices
@@ -482,7 +487,7 @@ namespace {
       // same setup as earlier
       // is a physical system, e.g. CosseratRod, with 100 degrees of freedom
       System system{100UL};
-      auto sys(std::ref(system));
+      auto sys(mock::ref(system));
       std::string optional_forcing_name = "MyForcing";
 
       /// [query_eg]
@@ -532,7 +537,7 @@ namespace {
       // same setup as earlier
       // is a physical system, e.g. CosseratRod, with 100 degrees of freedom
       System system{100UL};
-      auto sys(std::ref(system));
+      auto sys(mock::ref(system));
       std::string optional_forcing_name = "MyForcing";
 
       auto first_forcing_key = sim.force(sys, optional_forcing_name)
@@ -618,7 +623,7 @@ namespace {
         {  // add a bunch of forcings
           using System = MockSystem;
           System system{100UL};
-          auto sys(std::ref(system));
+          auto sys(mock::ref(system));
 
           for (std::size_t i = 0UL; i < 10UL; ++i)
             sim.force(sys)                     //
@@ -644,7 +649,7 @@ namespace {
         {  // add a bunch of forcings
           using System = MockSystem;
           System system{100UL};
-          auto sys(std::ref(system));
+          auto sys(mock::ref(system));
 
           for (std::size_t i = 0UL; i < 10UL; ++i)
             sim.force(sys)                     //
@@ -674,7 +679,7 @@ namespace {
         {  // add a bunch of forcings
           using System = MockSystem;
           System system{100UL};
-          auto sys(std::ref(system));
+          auto sys(mock::ref(system));
 
           for (std::size_t i = 0UL; i < 10UL; ++i)
             sim.force(sys)                     //
@@ -701,7 +706,7 @@ namespace {
           // added 5 less forcings!
           using System = MockSystem;
           System system{100UL};
-          auto sys(std::ref(system));
+          auto sys(mock::ref(system));
 
           for (std::size_t i = 0UL; i < 5UL; ++i)
             sim.force(sys)                     //
@@ -733,7 +738,7 @@ namespace {
         {  // add a bunch of forcings
           using System = MockSystem;
           System system{100UL};
-          auto sys(std::ref(system));
+          auto sys(mock::ref(system));
 
           for (std::size_t i = 0UL; i < 10UL; ++i)
             sim.force(sys)                     //
@@ -760,7 +765,7 @@ namespace {
           // added 5 less forcings!
           using System = MockSystem;
           System system{100UL};
-          auto sys(std::ref(system));
+          auto sys(mock::ref(system));
 
           for (std::size_t i = 0UL; i < 5UL; ++i)
             sim.force(sys)                     //
@@ -803,7 +808,7 @@ namespace {
     using MemberForcing = ForcingWithMember<>;
     {
       System system{100UL};
-      auto sys(std::ref(system));
+      auto sys(mock::ref(system));
 
       std::string optional_forcing_name = "MyForcing";
 

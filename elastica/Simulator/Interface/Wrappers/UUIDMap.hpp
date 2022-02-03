@@ -16,11 +16,12 @@
 //******************************************************************************
 // Includes
 //******************************************************************************
+#include <cstdint>
 #include <unordered_map>
 #include <vector>
 
+#include "Simulator/Interface/Wrappers/ToWrapper.hpp"
 #include "Simulator/Interface/Wrappers/UUID.hpp"
-#include "Simulator/Interface/Wrappers/WithWrapper.hpp"
 #include "Utilities/NonCopyable.hpp"
 #include "Utilities/Size.hpp"
 
@@ -38,7 +39,7 @@ namespace elastica {
        public:
         //**Type definitions****************************************************
         // Key type
-        using Key = void const*;
+        using Key = std::size_t;
         // ID type
         using ID = UID;
         // IDs type
@@ -51,18 +52,13 @@ namespace elastica {
         ~UUIDMap() = default;
 
        protected:
-        template <typename SomeSystem>
-        void map_with(SomeSystem const& some_system, ID const& id) {
-          system_mapping_[std::addressof(some_system)].push_back(id);
-        }
+        void map_to(Key k, ID const& id) { system_mapping_[k].push_back(id); }
 
        public:
-        template <typename SomeSystem>
-        auto map(SomeSystem const& some_system) noexcept {
-          return make_wrapped_with(
-              [this, &some_system](ID const& id) mutable -> void {
-                return this->map_with(some_system, id);
-              });
+        auto map(Key k) noexcept {
+          return make_wrapped_to([this, k](ID const& id) mutable -> void {
+            return this->map_to(k, id);
+          });
         }
 
        public:
@@ -110,7 +106,7 @@ namespace elastica {
           for (std::size_t partition_id = 0UL; partition_id < n_partitions;
                ++partition_id) {
             const std::size_t value = partition_id;
-            for (auto& key : partitioned_ids[value]) {
+            for (auto&& key : partitioned_ids[value]) {
               batch_mapping_[std::move(key)] = value;
             }
           }
