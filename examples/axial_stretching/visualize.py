@@ -13,8 +13,6 @@ given in /docs/README_python.md
 import os
 
 import numpy as np
-from matplotlib import pyplot as plt
-from tqdm import tqdm
 
 # 2. Import the Python-binded case study bindings as modules. Please note
 # the following:
@@ -24,6 +22,9 @@ from tqdm import tqdm
 # elasticapp.CaseStudies.
 from elasticapp import Blaze  # noqa
 from elasticapp.CaseStudies.PyAxialStretchingCaseStudy import AxialStretchingCaseStudy
+from matplotlib import pyplot as plt
+from matplotlib.colors import to_rgb
+from tqdm import tqdm
 
 
 def run_example(
@@ -111,14 +112,24 @@ def run_example(
 
     avg_tip_displacement = np.mean(tip_displacements[-200:])
 
-    fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
-    ax = fig.add_subplot(111)
-    ax.plot(times, tip_displacements, lw=2.0)
-    ax.hlines(base_length + expected_tip_disp, 0.0, final_time, "k", "dashdot", lw=1.0)
-    ax.hlines(
-        base_length + expected_tip_disp_improved, 0.0, final_time, "k", "dashed", lw=2.0
-    )
-    ax.hlines(avg_tip_displacement, 0.0, final_time, "r", lw=0.5)
+    with plt.style.context("ggplot"):
+        fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
+        ax = fig.add_subplot(111)
+        ax.plot(times, tip_displacements, lw=2.0, c=to_rgb("xkcd:bluish"))
+        ax.hlines(
+            base_length + expected_tip_disp, 0.0, final_time, "k", "dashdot", lw=1.0
+        )
+        ax.hlines(
+            base_length + expected_tip_disp_improved,
+            0.0,
+            final_time,
+            "k",
+            "dashed",
+            lw=2.0,
+        )
+        ax.hlines(avg_tip_displacement, 0.0, final_time, "r", lw=0.5)
+        ax.set_xlabel("Time")
+        ax.set_ylabel("Tip displacement")
 
     if os.path.exists(pyelastica_file):
         pyelastica_results = np.loadtxt(pyelastica_file, delimiter=",")

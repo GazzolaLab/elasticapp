@@ -104,25 +104,36 @@ def analytical_solution(L, n_elem=10000):
 def plot_helicalbuckling_results(n_elem, base_length, numerical_positions, save_figure):
     phi_analytical_envelope = analytical_solution(base_length)
     phi_computed_envelope = envelope(numerical_positions)
-    fig = plt.figure(figsize=(5, 4), dpi=150)
-    ax = fig.add_subplot(111)
+    with plt.style.context("ggplot"):
+        fig = plt.figure(figsize=(5, 4), dpi=150)
+        ax = fig.add_subplot(111)
 
-    ax.plot(phi_analytical_envelope[0], phi_analytical_envelope[1], label="analytical")
-    ax.plot(phi_computed_envelope[0], phi_computed_envelope[1], label=f"n={n_elem}")
-    ax.legend()
-    if save_figure:
-        fig.savefig(f"HelicalBuckling_Envelope_{n_elem}.png")
-    fig.show()  # don't block yo
+        ax.plot(
+            phi_analytical_envelope[0], phi_analytical_envelope[1], label="analytical"
+        )
+        ax.plot(phi_computed_envelope[0], phi_computed_envelope[1], label=f"n={n_elem}")
+        ax.set_xlabel("s")
+        ax.set_ylabel("phi")
+        ax.legend()
+        if save_figure:
+            fig.savefig(f"HelicalBuckling_Envelope_{n_elem}.png")
+        fig.show()  # don't block yo
 
-    plt.figure()
-    plt.axes(projection="3d")
-    plt.plot(
-        numerical_positions[0, ...],
-        numerical_positions[1, ...],
-        numerical_positions[2, ...],
-    )
-    plt.xlim([-10, 10])
-    plt.ylim([-10, 10])
-    if save_figure:
-        plt.savefig(f"HelicalBuckling_3D_{n_elem}.png")
+        new_fig = plt.figure(figsize=(5, 4), dpi=150)
+        new_ax = new_fig.gca(projection="3d")
+        new_ax.plot(
+            numerical_positions[0, ...],
+            numerical_positions[1, ...],
+            numerical_positions[2, ...],
+        )
+        new_ax.set_xlim([-10, 10])
+        new_ax.set_ylim([-10, 10])
+
+        new_ax.set_xlabel("x")
+        new_ax.set_ylabel("y")
+        new_ax.set_zlabel("z")
+
+        if save_figure:
+            new_fig.savenew_fig(f"HelicalBuckling_3D_{n_elem}.png")
+
     plt.show()

@@ -25,6 +25,8 @@ def plot_position(
             c=to_rgb("xkcd:bluish"),
             label="rod2",
         )
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
 
         fig.show()
 
@@ -91,6 +93,7 @@ def plot_video(
             verticalalignment="center",
             transform=ax.transAxes,
         )
+        fig.tight_layout()
 
     ax.legend()
 
