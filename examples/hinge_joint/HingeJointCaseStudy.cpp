@@ -107,26 +107,26 @@ void HingeJointCaseStudy::setup(InputTypes<This> const& input_parameters) {
   const ::elastica::Vec3 roll_direction(link_normal % link_direction);
 
   auto force_generator = efo::make_forcing(
-      efo::make_force([=, normal_direction = link_normal](
-                          auto time_v, auto& rod_system, auto index) {
-        const auto time_d = static_cast<::elastica::real_t>(time_v);
-        ::elastica::Vec3 end_force;
-        if (time_d < rampup_time) {
-          end_force = -2.0 * end_force_magnitude * normal_direction;
-        } else {
-          const ::elastica::Vec3 end_roll_forces =
-              end_force_magnitude * std::cos(M_PI_2 * (time_d - rampup_time)) *
-              roll_direction;
-          const ::elastica::Vec3 end_normal_forces =
-              end_force_magnitude * std::sin(M_PI_2 * (time_d - rampup_time)) *
-              normal_direction;
-          end_force = end_roll_forces + end_normal_forces;
-        }
+      efo::make_force(
+          [=, normal_direction = link_normal](::elastica::real_t time_v,
+                                              auto& rod_system, auto index) {
+            ::elastica::Vec3 end_force;
+            if (time_v < rampup_time) {
+              end_force = -2.0 * end_force_magnitude * normal_direction;
+            } else {
+              const ::elastica::Vec3 end_roll_forces =
+                  end_force_magnitude *
+                  std::cos(M_PI_2 * (time_v - rampup_time)) * roll_direction;
+              const ::elastica::Vec3 end_normal_forces =
+                  end_force_magnitude *
+                  std::sin(M_PI_2 * (time_v - rampup_time)) * normal_direction;
+              end_force = end_roll_forces + end_normal_forces;
+            }
 
-        using Tag = ::elastica::tags::ExternalLoads;
-        blaze::column(::elastica::get<Tag>(rod_system), index + 1UL) +=
-            end_force;
-      }),
+            using Tag = ::elastica::tags::ExternalLoads;
+            blaze::column(::elastica::get<Tag>(rod_system), index + 1UL) +=
+                end_force;
+          }),
       efo::make_torque([](auto /*time*/, auto&, std::size_t) {}));
 
   simulator->force(rod_refs[link_two_index])
