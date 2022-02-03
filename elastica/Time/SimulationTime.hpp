@@ -108,7 +108,7 @@ namespace elastica {
       //************************************************************************
       /*!\brief Explicit conversion operator to the underlying time
        */
-      explicit inline constexpr operator Real() const noexcept {
+      /*explicit*/ inline constexpr operator Real() const noexcept {
         return value();
       }
       //************************************************************************
