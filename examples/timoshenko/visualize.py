@@ -2,49 +2,10 @@ import numpy as np
 from elasticapp import Blaze  # noqa
 from elasticapp.CaseStudies.PyTimoshenkoCaseStudy import TimoshenkoCaseStudy
 from matplotlib import pyplot as plt
-from matplotlib.colors import to_rgb
 from tqdm import tqdm
 
+from postprocess import plot_beam, plot_velocity
 from analytical import analytical_shearable, analytical_unshearable
-
-
-def _plot_timoshenko(n_elem, numerical_positions, analytical, save_figure):
-    # import seaborn as sns
-    # sns.set_style("whitegrid")
-
-    fig = plt.figure(figsize=(5, 4), dpi=150)
-    ax = fig.add_subplot(111)
-    ax.plot(
-        analytical[0],
-        analytical[1],
-        "k--",
-    )
-    ax.plot(
-        numerical_positions[2, ...],
-        numerical_positions[0, ...],
-        c=to_rgb("xkcd:bluish"),
-        label=f"n={n_elem}",
-    )
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
-    fig.show()
-    if save_figure:
-        fig.savefig(f"Timoshenko_beam_test_{n_elem}.png")
-
-    return
-
-
-def _plot_velocity(times, velocity_norms):
-    fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
-    ax = fig.add_subplot(111)
-    ax.semilogy(times, velocity_norms, c=to_rgb("xkcd:reddish"), lw=2.0)
-
-    ax.set_xlabel("t")
-    ax.set_ylabel("|v|")
-
-    fig.show()
-
-    return
 
 
 def run_example(
@@ -99,7 +60,7 @@ def run_example(
 
     final_positions, _ = cs.communicate()
     final_positions = np.copy(final_positions)
-    _plot_timoshenko(
+    plot_beam(
         n_elem,
         final_positions,
         analytical_solution(
@@ -111,7 +72,7 @@ def run_example(
         ),
         save_figure=save_figure,
     )
-    _plot_velocity(np.asarray(times), np.asarray(velocity_norms))
+    plot_velocity(np.asarray(times), np.asarray(velocity_norms))
 
     # print(tip_displacements)
     if save_to_csv:
