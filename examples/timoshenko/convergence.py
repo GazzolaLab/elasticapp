@@ -82,7 +82,7 @@ if __name__ == "__main__":
     results = p_map(
         simulate_shearable_timoshenko_beam_with,
         convergence_elements,
-        num_cpus=len(convergence_elements),
+        # num_cpus is all by default
     )
 
     if True:

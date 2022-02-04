@@ -25,6 +25,7 @@ Some examples provide additional file or link to published paper for a complete 
         * CosseratRod
         * Forcing
         * Constraints
+        * EnableReset
 
 * [`butterfly`](./butterfly)<img src="https://img.shields.io/badge/python-Case%20Study-brightgreen"/>
     * __Name__ : ButterflyCaseStudy
