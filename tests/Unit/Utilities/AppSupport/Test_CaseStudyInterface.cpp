@@ -61,18 +61,16 @@ namespace {
                      "[Unit][Utilities]") {
     SECTION("Test reset metaprogramming") { test_reset_metaprogramming(); }
     SECTION("Test run functions") {
-      SECTION("run_till") {
+      SECTION("run_for_n_iterations") {
         int i = 0UL;
         auto step_function = [&]() { ++i; };
         auto step_study = make_study(step_function);
         step_study.set_dt(0.1);
-        step_study.run_till(2.0);
+        step_study.run_for_n_iterations(20UL);
         CHECK(i == 20UL);
-        step_study.set_current_time(
-            4.0);  // time is not updated inside step() :/
 
-        step_study.run_till(1.0);
-        CHECK(i == 20UL);
+        step_study.run_for_n_iterations(10UL);
+        CHECK(i == 30UL);
       }
       SECTION("run_for") {
         int i = 0UL;
