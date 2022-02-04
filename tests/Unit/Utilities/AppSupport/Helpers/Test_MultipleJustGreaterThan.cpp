@@ -14,12 +14,22 @@ namespace {
     using ::elastica::multiple_just_greater_than;
 
     // the most problematic boys first
+    /// [multiple_greater_eg]
     CHECK(static_cast<std::size_t>(multiple_just_greater_than(0.99, 1e-5)) ==
           99000UL);
     CHECK(static_cast<std::size_t>(multiple_just_greater_than(1.0, 1e-5)) ==
           100000UL);
     CHECK(static_cast<std::size_t>(multiple_just_greater_than(1.01, 1e-5)) ==
           101000UL);
+    /// [multiple_greater_eg]
+
+    // check correctness when dt is large
+    CHECK(static_cast<std::size_t>(multiple_just_greater_than(2.0, 1.5)) ==
+          2UL);
+    CHECK(static_cast<std::size_t>(multiple_just_greater_than(3.0, 1.5)) ==
+          2UL);
+    CHECK(static_cast<std::size_t>(multiple_just_greater_than(3.1, 1.5)) ==
+          3UL);
 
     std::random_device random_dev;
     std::mt19937 generator(random_dev());
