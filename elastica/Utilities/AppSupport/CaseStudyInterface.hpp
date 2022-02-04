@@ -63,13 +63,11 @@ namespace elastica {
 
     //**************************************************************************
     /*!\brief Runs the case-study simulation for given number of
-     * simulation seconds
+     * simulation iterations
      */
-    void run_for(::elastica::real_t seconds) /* noexcept */ {
-      /* todo : replace with integrate */
-      const std::size_t n_additional_steps = multiple_just_greater_than(
-          seconds, static_cast<::elastica::real_t>(dt_));
-      for (std::size_t i = 0UL; i < n_additional_steps; ++i) {
+    void run_for_n_iterations(std::size_t n_iterations) /* noexcept */ {
+      /* todo : only makes sense for a constant time stepper */
+      for (std::size_t i = 0UL; i < n_iterations; ++i) {
         // step() updates the current iteration
         self().step();
       }
@@ -77,21 +75,14 @@ namespace elastica {
     //**************************************************************************
 
     //**************************************************************************
-    /*!\brief Runs the case-study simulation till the given time is reached
+    /*!\brief Runs the case-study simulation for given number of
+     * simulation seconds
      */
-    void run_till(::elastica::real_t seconds) /* noexcept */ {
+    void run_for(::elastica::real_t seconds) /* noexcept */ {
       /* todo : replace with integrate */
-      if (static_cast<::elastica::real_t>(time_) > seconds)
-        return;
-      else {
-        const ::elastica::real_t time_to_run =
-            seconds - static_cast<::elastica::real_t>(time_);
-        const std::size_t n_additional_steps = multiple_just_greater_than(
-            time_to_run, static_cast<::elastica::real_t>(dt_));
-        for (std::size_t i = 0UL; i < n_additional_steps; ++i) {
-          self().step();
-        }
-      }
+      const std::size_t n_additional_iterations = multiple_just_greater_than(
+          seconds, static_cast<::elastica::real_t>(dt_));
+      run_for_n_iterations(n_additional_iterations);
     }
     //**************************************************************************
 
