@@ -72,8 +72,9 @@ def run_example(
     # 5.2 `cs.iteration()` : Steps forward the simulator one iteration.
     # 5.3 `cs.run_for(additional_time=time_interval)` : Runs the simulator
     # for additional "time_interval" seconds.
-    # 5.4 `cs.run_till(final_time)` : Runs the simulator till given
-    # "final_time" seconds.
+    # 5.4 `cs.run_for(n_iterations=20)` : Runs the simulator for additional
+    # 20 iterations.
+    # 5.5 `cs.run_for_n_iterations(20)` : Same as above
     for iteration in tqdm(range(n_iterations)):
         cs.run_for(additional_time=time_interval)
         # cs.iteration()

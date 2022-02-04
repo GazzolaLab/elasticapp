@@ -220,21 +220,12 @@ void HelicalBucklingCaseStudy::run() {
 
   const ::elastica::real_t final_time(10500.0);
 
-  const auto n_steps = static_cast<std::size_t>(
+  const auto n_iterations = static_cast<std::size_t>(
       ::elastica::multiple_just_greater_than(final_time, current_dt()));
 
   //  constexpr std::size_t write_interval = 10000UL;
-  //  stats.reserve(n_steps / write_interval);
-
-  for (std::size_t i = 0UL; i < n_steps; ++i) {
-    step();
-
-    //    if (not(i_step % write_interval)) {
-    //      stats.push_back(std::tuple_cat(std::make_tuple(current_time()),
-    //                                     compute_elastic_energy(),
-    //                                     compute_kinetic_energy()));
-    //    }
-  }
+  //  stats.reserve(n_iterations / write_interval);
+  run_for_n_iterations(n_iterations);
 
   //  // TODO : replace with a csv writer
   //  std::ofstream my_file;
