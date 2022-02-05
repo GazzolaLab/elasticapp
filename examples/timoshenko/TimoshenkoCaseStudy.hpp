@@ -18,6 +18,7 @@
 #include <elastica/CaseStudy.hpp>
 //
 #include <elastica/Simulator/Constraints.hpp>
+#include <elastica/Simulator/EnableReset.hpp>
 #include <elastica/Simulator/Forcing.hpp>
 #include <elastica/Simulator/Simulator.hpp>
 #include <elastica/Systems/CosseratRods.hpp>
@@ -48,7 +49,8 @@ struct TimoshenkoConfiguration {
 
   static inline auto make_simulator() {
     return elastica::make_simulator<::elastica::modules::Forcing,
-                                    ::elastica::modules::Constraints>(
+                                    ::elastica::modules::Constraints,
+                                    ::elastica::modules::EnableReset>(
         make_simulator_configuration());
   }
 
