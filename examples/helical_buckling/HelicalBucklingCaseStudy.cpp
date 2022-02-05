@@ -220,8 +220,7 @@ void HelicalBucklingCaseStudy::run() {
 
   const ::elastica::real_t final_time(10500.0);
 
-  const auto n_iterations = static_cast<std::size_t>(
-      ::elastica::multiple_just_greater_than(final_time, current_dt()));
+  const auto n_iterations = static_cast<std::size_t>(final_time / current_dt());
 
   //  constexpr std::size_t write_interval = 10000UL;
   //  stats.reserve(n_iterations / write_interval);

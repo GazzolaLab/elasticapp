@@ -121,8 +121,7 @@ void TimoshenkoCaseStudy::run() {
   const auto n_elements = ::elastica::size(rod_ref.get());
   constexpr auto x_axis = 0UL;
 
-  const auto n_iterations = static_cast<std::size_t>(
-      ::elastica::multiple_just_greater_than(final_time, current_dt()));
+  const auto n_iterations = static_cast<std::size_t>(final_time / current_dt());
 
   const std::size_t write_interval = 200UL;
   //  time_and_disps.reserve(n_steps / write_interval);
