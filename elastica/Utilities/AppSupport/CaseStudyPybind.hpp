@@ -91,8 +91,12 @@ namespace py_bindings {
         .def("run_for", &CaseStudy::run_for, py::kw_only(),
              py::arg("additional_time"),
              "Runs the simulator for additional seconds")
-        .def("run_till", &CaseStudy::run_till, py::arg("time"),
-             "Runs the simulator till given time")
+        .def("run_for", &CaseStudy::run_for_n_iterations, py::kw_only(),
+             py::arg("n_iterations"),
+             "Runs the simulator for n additional iterations")
+        .def("run_for_n_iterations", &CaseStudy::run_for_n_iterations,
+             py::arg("n_iterations"), py::pos_only(),
+             "Runs the simulator for n additional iterations")
         .def("current_time", &CaseStudy::current_time,
              "Gets the current time of the simulation")
         .def("current_dt", &CaseStudy::current_dt,

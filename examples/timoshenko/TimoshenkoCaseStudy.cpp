@@ -125,20 +125,12 @@ void TimoshenkoCaseStudy::run() {
   const auto n_elements = ::elastica::size(rod_ref.get());
   constexpr auto x_axis = 0UL;
 
-  const std::size_t n_steps = (final_time / current_dt());
+  const auto n_iterations = static_cast<std::size_t>(final_time / current_dt());
 
   const std::size_t write_interval = 200UL;
   //  time_and_disps.reserve(n_steps / write_interval);
 
-  for (std::size_t i = 0UL; i < n_steps; ++i) {
-    step();
-
-    //    if (not(i_step % write_interval)) {
-    //      time_and_disps.emplace_back(
-    //          current_time(), ::elastica::position(*rod_it,
-    //          n_elements)[x_axis]);
-    //    }
-  }
+  run_for_n_iterations(n_iterations);
 
   // TODO : replace with a csv writer
   //  std::ofstream my_file;
