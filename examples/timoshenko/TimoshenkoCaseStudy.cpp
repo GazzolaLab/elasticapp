@@ -21,6 +21,10 @@
 #include <utility>
 
 void TimoshenkoCaseStudy::setup(InputTypes<This> const& input_parameters) {
+  if (simulator->ready()) {
+    simulator->reset();
+  }
+
   elastica::MaterialID my_material = elastica::create_material(
       // PyElastica values
       // material density
@@ -107,8 +111,8 @@ void TimoshenkoCaseStudy::setup(InputTypes<This> const& input_parameters) {
 }
 
 void TimoshenkoCaseStudy::step() {
-  simulator->step(time_stepper, get_current_time(), get_dt());
-  ++get_current_iteration();
+  simulator->step(time_stepper, get_current_time(), get_dt(),
+                  get_current_iteration());
 }
 
 void TimoshenkoCaseStudy::run() {

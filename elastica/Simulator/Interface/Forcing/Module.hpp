@@ -307,7 +307,7 @@ namespace elastica {
         ++n_total_forcing;
 
         // 4. map it within
-        uuid_map_.map(system).with(forcing_.back()->id());
+        uuid_map_.map(system.uuid()).to(forcing_.back()->id());
 
         return static_cast<::elastica::interface::forcing::Forcing<
             System, ForcingRegistrars>&>(*(forcing_.back()));

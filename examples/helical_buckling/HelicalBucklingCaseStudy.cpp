@@ -138,15 +138,15 @@ void HelicalBucklingCaseStudy::setup(InputTypes<This> const& input_parameters) {
 
   auto left_constraint_generator = eco::make_constraint(
       eco::make_value_constraint(
-          [=](auto time_v, auto& rod_system, auto index) {
-            if (::elastica::real_t(time_v) > twisting_time) {
+          [=](::elastica::real_t time_v, auto& rod_system, auto index) {
+            if (time_v > twisting_time) {
               ::elastica::position(rod_system, index) = final_start_position;
               ::elastica::director(rod_system, index) = final_start_director;
             }
           }),
       eco::make_rate_constraint(
-          [=](auto time_v, auto& rod_system, std::size_t index) {
-            if (::elastica::real_t(time_v) > twisting_time) {
+          [=](::elastica::real_t time_v, auto& rod_system, std::size_t index) {
+            if (time_v > twisting_time) {
               ::elastica::velocity(rod_system, index) = 0.0;
               ::elastica::angular_velocity(rod_system, index) = 0.0;
             } else {
@@ -166,16 +166,16 @@ void HelicalBucklingCaseStudy::setup(InputTypes<This> const& input_parameters) {
       ::elastica::director(rod_ref.get(), n_elem - 1UL);
 
   auto right_constraint_generator = eco::make_constraint(
-      eco::make_value_constraint([=](auto time_v, auto& rod_system,
-                                     auto index) {
-        if (::elastica::real_t(time_v) > twisting_time) {
+      eco::make_value_constraint([=](::elastica::real_t time_v,
+                                     auto& rod_system, auto index) {
+        if (time_v > twisting_time) {
           ::elastica::position(rod_system, index + 1UL) = final_end_position;
           ::elastica::director(rod_system, index) = final_end_director;
         }
       }),
       eco::make_rate_constraint(
-          [=](auto time_v, auto& rod_system, std::size_t index) {
-            if (::elastica::real_t(time_v) > twisting_time) {
+          [=](::elastica::real_t time_v, auto& rod_system, std::size_t index) {
+            if (time_v > twisting_time) {
               ::elastica::velocity(rod_system, index + 1UL) = 0.0;
               ::elastica::angular_velocity(rod_system, index) = 0.0;
             } else {
@@ -203,8 +203,8 @@ void HelicalBucklingCaseStudy::setup(InputTypes<This> const& input_parameters) {
 }
 
 void HelicalBucklingCaseStudy::step() {
-  simulator->step(time_stepper, get_current_time(), get_dt());
-  ++get_current_iteration();
+  simulator->step(time_stepper, get_current_time(), get_dt(),
+                  get_current_iteration());
 }
 
 void HelicalBucklingCaseStudy::run() {

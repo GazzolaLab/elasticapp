@@ -57,9 +57,12 @@ namespace elastica {
     /*!\brief Constructor for the TimeStepID class.
      *
      * \param n_substeps Number of substeps of the current time-stepping alg.
+     *
+     * \note
+     * Takes in a Step for preventing constexpr errors (downcast bad).
      */
-    explicit constexpr TimeStepID(SubStep n_substeps)
-        : to_step_threshold(n_substeps){};
+    explicit constexpr TimeStepID(Step n_substeps)
+        : to_step_threshold(static_cast<SubStep>(n_substeps)){};
     //**************************************************************************
 
     //**************************************************************************

@@ -34,16 +34,16 @@ namespace {
                         ID(3UL, std::string("")), ID(4UL, std::string(""))};
 
     for (auto const& id : ids) {
-      mapping.map(i).with(id);
+      mapping.map(i).to(id);
     }
-    mapping.map(c).with(ids[1UL]);
-    mapping.map(c).with(ids[3UL]);
+    mapping.map(c).to(ids[1UL]);
+    mapping.map(c).to(ids[3UL]);
 
-    mapping.map(f).with(ids[0UL]);
+    mapping.map(f).to(ids[0UL]);
 
-    mapping.map(d).with(ids[0UL]);
-    mapping.map(d).with(ids[1UL]);
-    mapping.map(d).with(ids[2UL]);
+    mapping.map(d).to(ids[0UL]);
+    mapping.map(d).to(ids[1UL]);
+    mapping.map(d).to(ids[2UL]);
 
     auto vec = std::move(mapping).as_vector();
 
@@ -152,42 +152,42 @@ namespace {
     std::size_t id_counter = 0UL;
     // 1
     for (auto index = 0UL; index < entries[entry_counter]; ++index) {
-      mapping.map(i).with(ID(id_counter++, ""));
+      mapping.map(i).to(ID(id_counter++, ""));
     }
     REQUIRE(id_counter == prefix_sum[entry_counter]);
     ++entry_counter;
 
     // 7
     for (auto index = 0UL; index < entries[entry_counter]; ++index) {
-      mapping.map(c).with(ID(id_counter++, ""));
+      mapping.map(c).to(ID(id_counter++, ""));
     }
     REQUIRE(id_counter == prefix_sum[entry_counter]);
     ++entry_counter;
 
     // 5
     for (auto index = 0UL; index < entries[entry_counter]; ++index) {
-      mapping.map(f).with(ID(id_counter++, ""));
+      mapping.map(f).to(ID(id_counter++, ""));
     }
     REQUIRE(id_counter == prefix_sum[entry_counter]);
     ++entry_counter;
 
     // 10
     for (auto index = 0UL; index < entries[entry_counter]; ++index) {
-      mapping.map(d).with(ID(id_counter++, ""));
+      mapping.map(d).to(ID(id_counter++, ""));
     }
     REQUIRE(id_counter == prefix_sum[entry_counter]);
     ++entry_counter;
 
     // 9
     for (auto index = 0UL; index < entries[entry_counter]; ++index) {
-      mapping.map(s).with(ID(id_counter++, ""));
+      mapping.map(s).to(ID(id_counter++, ""));
     }
     REQUIRE(id_counter == prefix_sum[entry_counter]);
     ++entry_counter;
 
     // 3
     for (auto index = 0UL; index < entries[entry_counter]; ++index) {
-      mapping.map(si).with(ID(id_counter++, ""));
+      mapping.map(si).to(ID(id_counter++, ""));
     }
     REQUIRE(id_counter == prefix_sum[entry_counter]);
 

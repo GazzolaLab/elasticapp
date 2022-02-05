@@ -4,8 +4,8 @@ import numpy as np
 from elasticapp import Blaze  # noqa
 from elasticapp.CaseStudies.PyTimoshenkoCaseStudy import TimoshenkoCaseStudy
 
-from analytical import analytical_shearable, analytical_unshearable
-from convergence_helpers import plot_convergence, calculate_error_norm
+from helpers.analytical import analytical_shearable, analytical_unshearable
+from helpers.convergence_helpers import plot_convergence, calculate_error_norm
 
 PositiveInt = NewType("PositiveInt", int)
 Elements = list[PositiveInt]
@@ -64,7 +64,6 @@ def simulate_timoshenko_beam_with(n_elem: PositiveInt, is_rod_shearable: bool = 
 
 
 if __name__ == "__main__":
-    import multiprocessing as mp
     from p_tqdm import p_map
     from functools import partial
 
@@ -83,7 +82,7 @@ if __name__ == "__main__":
     results = p_map(
         simulate_shearable_timoshenko_beam_with,
         convergence_elements,
-        num_cpus=len(convergence_elements),
+        # num_cpus is all by default
     )
 
     if True:
