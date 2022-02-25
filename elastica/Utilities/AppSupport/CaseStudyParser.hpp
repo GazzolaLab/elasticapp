@@ -121,13 +121,13 @@ namespace standalone_bindings {
 
     auto result = options.parse(argc, argv);
 
+    if (result.count("help")) {
+      std::cout << options.help() << std::endl;
+      std::exit(EXIT_SUCCESS);
+    }
+
     if (not ::elastica::size(result.arguments())) {
       std::cout << options.help() << std::endl;
-
-      if (result.count("help")) {
-        std::exit(EXIT_SUCCESS);
-      }
-
       std::cout << "Running " << case_study_name << " with default parameters"
                 << std::endl;
     }
