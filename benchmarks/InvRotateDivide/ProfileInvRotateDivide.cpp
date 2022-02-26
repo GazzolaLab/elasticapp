@@ -7,7 +7,7 @@
 #include "InvRotateDivideSetup.hpp"
 
 int main() {
-  using namespace elastica::states::detail;
+  using namespace elastica::cosserat_rod::detail;
 
   const std::size_t n_elems{256UL};
   InvRotateDivideTimingSetup<InvRotateDivideKind::blaze> blaze_bench{n_elems};
