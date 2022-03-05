@@ -19,9 +19,12 @@
 #include <cmath>
 #include <type_traits>
 
+#include "ErrorHandling/Assert.hpp"
 #include "Utilities/DefineTypes.h"
 #include "Utilities/Geometry/Angles.hpp"
+#include "Utilities/Math/Equal.hpp"
 #include "Utilities/Math/Rot3.hpp"
+#include "Utilities/Math/SqrLength.hpp"
 #include "Utilities/Math/Vec3.hpp"
 
 namespace elastica {
@@ -47,6 +50,10 @@ namespace elastica {
     */
     inline auto rotate_via_axis_angle(Vec3 const& axis, real_t angle,
                                       bool radians = true) -> Rot3 {
+      using ::elastica::equal;
+      ELASTICA_ASSERT((sqrLength(axis) > real_t(0) or equal(angle, real_t(0))),
+                      "Invalid rotation parameters");
+
       return detail::axis_angle_rotation_impl(axis,
                                               radians ? angle : deg2rad(angle));
     }
