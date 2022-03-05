@@ -55,7 +55,7 @@ CMake generation/compilation step!
               << " threads, but the number of threads set by the "
                  "user in the application level scope is "
               << n_active_threads
-              << "threads. This behavior is fine if you have other "
+              << " threads. This behavior is fine if you have other "
                  "libraries running alongside elastica++. In case this is "
                  "not the behavior that you wanted, before initializing the "
                  "simulator please insert the following code to set the "
