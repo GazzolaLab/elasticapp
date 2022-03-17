@@ -14,6 +14,12 @@ set_property(
         GLOBAL APPEND PROPERTY ELASTICA_THIRD_PARTY_LIBS
         cxxopts
 )
+add_interface_lib_headers(
+        TARGET cxxopts
+        HEADERS
+        cxxopts.h
+)
+mark_as_advanced(cxxopts_DIR) # ugly, so hide from user
 
 log_debug("cxxopts_INCLUDE_DIRS: ${cxxopts_INCLUDE_DIRS}")
 log_debug("cxxopts_VERSION: ${cxxopts_VERSION}")

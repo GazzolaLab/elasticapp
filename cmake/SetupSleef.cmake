@@ -10,6 +10,12 @@ set_property(TARGET Sleef PROPERTY
         INTERFACE_INCLUDE_DIRECTORIES ${SLEEF_INCLUDE_DIRS})
 set_property(TARGET Sleef
         APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${SLEEF_LIBRARIES})
+add_interface_lib_headers(
+        TARGET Sleef
+        HEADERS
+        sleef.h
+)
+
 
 set_property(
         GLOBAL APPEND PROPERTY ELASTICA_THIRD_PARTY_LIBS
