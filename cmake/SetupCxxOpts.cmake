@@ -15,7 +15,7 @@ set_property(
         cxxopts
 )
 add_interface_lib_headers(
-        TARGET cxxopts
+        TARGET cxxopts::cxxopts
         HEADERS
         cxxopts.h
 )
