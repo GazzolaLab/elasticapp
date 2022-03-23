@@ -181,15 +181,13 @@ namespace elastica {
             // ptr)
             // DONE : parallelism across batches
             using ::elastica::size;
-            ::elastica::parallel::for_each(
-                0UL, size(module_handle.forcer_batches()),
-                [&, time_v](std::size_t const idx) {
-                  auto const& batch = module_handle.forcer_batches()[idx];
-                  for (auto const& forcer : batch) {
-                    forcer->apply_forces(time_v);
-                    forcer->apply_torques(time_v);
-                  }
-                });
+            ::elastica::parallel::for_each(module_handle.forcer_batches(),
+                                           [time_v](auto const& batch) {
+                                             for (auto const& forcer : batch) {
+                                               forcer->apply_forces(time_v);
+                                               forcer->apply_torques(time_v);
+                                             }
+                                           });
           }
           //********************************************************************
 

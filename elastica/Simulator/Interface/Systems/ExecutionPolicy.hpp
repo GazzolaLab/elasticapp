@@ -205,10 +205,11 @@ namespace elastica {
               // since its not mutable, calls the copy-constructor always
               // func is copied here, so its state may not be preserved
               ::elastica::parallel::for_each(
-                  0UL, size(system_collection),
+                  system_collection,
                   // same logic as sequential for moving it
-                  [&system_collection, f = detail::access(func)](
-                      std::size_t const idx) { f(system_collection[idx]); });
+                  [f = detail::access(func)](auto& curr_system) {
+                    f(curr_system);
+                  });
               // detail::access returns a & to a non-existing value, which is
               // dangerous
               // return static_cast<std::decay_t<F>>(detail::access(func));

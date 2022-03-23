@@ -192,9 +192,8 @@ namespace elastica {
             // DONE : parallelization occurs across independent batches
             using ::elastica::size;
             ::elastica::parallel::for_each(
-                0UL, size(module_handle.constrainer_batches()),
-                [&, time_v](std::size_t const idx) {
-                  auto const& batch = module_handle.constrainer_batches()[idx];
+                module_handle.constrainer_batches(),
+                [time_v](auto const& batch) {
                   for (auto const& constrainer : batch)
                     constrainer->constrain_primitives(time_v);
                 });
@@ -366,9 +365,8 @@ namespace elastica {
             // DONE : parallelism in batches
             using ::elastica::size;
             ::elastica::parallel::for_each(
-                0UL, size(module_handle.constrainer_batches()),
-                [&, time_v](std::size_t const idx) {
-                  auto const& batch = module_handle.constrainer_batches()[idx];
+                module_handle.constrainer_batches(),
+                [time_v](auto const& batch) {
                   for (auto const& constrainer : batch)
                     constrainer->constrain_rates(time_v);
                 });

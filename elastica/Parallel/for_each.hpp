@@ -22,10 +22,12 @@
 //******************************************************************************
 // Includes
 //******************************************************************************
+#include <algorithm>
+
 #include "ModuleSettings/Parallel.hpp"
 
 #if ELASTICA_TBB_PARALLEL_MODE
-#include <tbb/parallel_for.h>
+#include <tbb/parallel_for_each.h>
 #endif
 
 #include "Parallel/blocked_range.hpp"
@@ -41,21 +43,16 @@ namespace elastica {
       //************************************************************************
       /*! \cond ELASTICA_INTERNAL */
       // have overloads for tbb as possible
-      template <typename Index, typename F>
-      inline void for_each(Index first, Index second, F f) {
-        // f(i) => result
-        using DummySchedule = std::true_type;
-        for_each(blocked_range<Index>(first, second), f, DummySchedule{});
+      template <typename Iterator, typename F>
+      inline void for_each(Iterator first, Iterator second, F f) {
+        std::for_each(first, second, f);
       }
 
-      template <typename Range, typename F, typename Schedule>
-      inline void for_each(Range range, F f, Schedule) {
-        // std::for_each(range.begin(), range.end(), f);
-        const auto start = range.begin();
-        const auto end = range.end();
-        // quick and dirty
-        for (auto idx = start; idx < end; ++idx)
-          f(idx);
+      template <typename Container, typename F>
+      inline void for_each(Container& container, F&& f) {
+        // needs to be qualified, else ADL kicks in and all stl is dragged in
+        ::elastica::parallel::detail::for_each(
+            std::begin(container), std::end(container), std::forward<F>(f));
       }
       /*! \endcond */
       //************************************************************************
@@ -71,7 +68,7 @@ namespace elastica {
     template <typename... Args>
     inline void for_each(Args&&... args) {
 #if ELASTICA_TBB_PARALLEL_MODE
-      tbb::parallel_for(std::forward<Args>(args)...);
+      tbb::parallel_for_each(std::forward<Args>(args)...);
 #else
       ignore_unused<detail::warn_on_disabled_parallelism<> >();
       // we expect a index1, index2, f()
