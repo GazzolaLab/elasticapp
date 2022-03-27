@@ -256,12 +256,15 @@ namespace elastica {
             // bending and twisting only
             {
               using Variable = BendingTwistRigidityMatrix;
+              using ScalarVariable = typename Traits::DataType::Scalar;
               using Tag = blocks::parameter_t<Variable>;
               using real_type = typename Traits::real_type;
 
               auto& variable(blocks::get<Tag>(downstream_block));
               auto&& stiffness_along_principal_directions_initializer =
                   blocks::get<Tag>(std::move(initializers));
+
+              auto& rest_length(blocks::get<elastica::tags::ReferenceElementLength>(downstream_block));
 
               const auto dofs = Variable::get_dofs(initializers.n_elems());
               for (std::size_t idx = 0U; idx < dofs; ++idx) {
@@ -270,8 +273,13 @@ namespace elastica {
                 Variable::diagonal_assign(
                     variable,
                     idx,
-                    stiffness_along_principal_directions_initializer(idx) *
-                        downstream_block.get_second_moment_of_area(idx)
+                    (ScalarVariable::slice(rest_length, idx) *
+                    (stiffness_along_principal_directions_initializer(idx) *
+                        downstream_block.get_second_moment_of_area(idx)) +
+                     ScalarVariable::slice(rest_length, idx+1) *
+                    (stiffness_along_principal_directions_initializer(idx+1) *
+                        downstream_block.get_second_moment_of_area(idx+1))) /
+                        (ScalarVariable::slice(rest_length, idx) + ScalarVariable::slice(rest_length, idx+1))
                   );
                 /*
                     This::get_moment_of_inertia_along_principal_directions(
