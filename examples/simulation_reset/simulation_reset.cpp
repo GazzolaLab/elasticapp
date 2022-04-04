@@ -17,6 +17,7 @@
 #include <elastica/Simulator/Forcing.hpp>
 #include <elastica/Simulator/Simulator.hpp>
 #include <elastica/Systems/CosseratRods.hpp>
+#include <elastica/Utilities/IgnoreUnused.hpp>
 
 int main() {
   using ::elastica::cosserat_rod::CosseratRod;
@@ -65,9 +66,9 @@ int main() {
   };
 
   // Add two systems
-  auto first_rod_it = simulator->emplace_back<CosseratRod>(
+  auto first_rod_ref = simulator->emplace_back<CosseratRod>(
       straight_initializer.initialize<CosseratRod>());
-  auto second_rod_it = simulator->emplace_back<CosseratRod>(
+  auto second_rod_ref = simulator->emplace_back<CosseratRod>(
       straight_initializer
           .but_with(Init::Origin{::elastica::Vec3{1.0, 0.0, 0.0}})
           .initialize<CosseratRod>());
@@ -80,7 +81,7 @@ int main() {
       eco::make_constraint(eco::make_value_constraint(empty_constraint),
                            eco::make_rate_constraint(empty_constraint));
   // Add one constraint
-  simulator->constrain(*first_rod_it).at(0UL).with(constraint_generator());
+  simulator->constrain(first_rod_ref).at(0UL).with(constraint_generator());
 
   namespace efo = ::elastica::forcing;
 
@@ -88,7 +89,7 @@ int main() {
   auto force_generator = efo::make_forcing(efo::make_force(empty_force),
                                            efo::make_torque(empty_force));
   // Add one force
-  simulator->force(*first_rod_it)
+  simulator->force(first_rod_ref)
       .at(::elastica::end - 1UL)
       .with(force_generator());
 
@@ -102,8 +103,8 @@ int main() {
 
   using ::elastica::interface::at;
   // Add one connectoin
-  simulator->connect(*first_rod_it, at(::elastica::end - 1UL))
-      .to(*second_rod_it, at(0UL))
+  simulator->connect(first_rod_ref, at(::elastica::end - 1UL))
+      .to(second_rod_ref, at(0UL))
       .with(connection_generator());
 
   // Now finalize the simulation
@@ -128,10 +129,11 @@ int main() {
   simulator->reset();
 
   // now add more rods and see no errors!
-  auto another_rod_it = simulator->emplace_back<CosseratRod>(
+  auto another_rod_ref = simulator->emplace_back<CosseratRod>(
       straight_initializer.initialize<CosseratRod>());
-  auto yet_another_rod_it = simulator->emplace_back<CosseratRod>(
+  auto yet_another_rod_ref = simulator->emplace_back<CosseratRod>(
       straight_initializer
           .but_with(Init::Origin{::elastica::Vec3{0.0, 1.0, 0.0}})
           .initialize<CosseratRod>());
+  elastica::ignore_unused(another_rod_ref, yet_another_rod_ref);
 }
