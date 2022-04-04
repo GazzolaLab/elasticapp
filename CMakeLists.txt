@@ -109,6 +109,8 @@ include(SetupBrigand)
 #include(SetupBoost)
 if (ELASTICA_BUILD_PYTHON_BINDINGS)
     include(SetupPybind11)
+    # Set system-wide for now, correct it later on
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif ()
 include(ElasticaSetupPythonPackage)
 
