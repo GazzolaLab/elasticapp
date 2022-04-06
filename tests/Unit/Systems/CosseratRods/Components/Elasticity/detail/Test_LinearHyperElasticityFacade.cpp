@@ -68,7 +68,7 @@ namespace {
     CHECK(model.get_element_volume() == 4.0*4.0*M_PI*blaze::sqrt(3));
 
     // check if initialization is done as expected
-    auto expected_call_count = make_array(11U, 10U, 10U, 10U, 9U, 9U, 10U, 10U, 0U, 0U);
+    auto expected_call_count = make_array(11U, 10U, 10U, 10U, 10U, 9U, 10U, 10U, 0U, 0U);
     CHECK_ITERABLE_APPROX(n_times_called, expected_call_count);
 
     // [0] element : stiff  * I_0
