@@ -270,18 +270,20 @@ namespace elastica {
                       downstream_block));
 
               const auto dofs = Variable::get_dofs(initializers.n_elems());
+              auto stiffness =
+                  stiffness_along_principal_directions_initializer(0);
               for (std::size_t idx = 0U; idx < dofs; ++idx) {
                 // (E, E, G) * (I_1, I_2, I_3)
+                auto prev_stiffness = stiffness;
+                stiffness = stiffness_along_principal_directions_initializer(idx + 1);
                 Variable::slice(variable, idx) = real_type(0.0);
                 Variable::diagonal_assign(
                     variable, idx,
                     (ScalarVariable::slice(rest_length, idx) *
-                         (stiffness_along_principal_directions_initializer(
-                              idx) *
+                         (prev_stiffness *
                           downstream_block.get_second_moment_of_area(idx)) +
                      ScalarVariable::slice(rest_length, idx + 1) *
-                         (stiffness_along_principal_directions_initializer(idx +
-                                                                           1) *
+                         (stiffness *
                           downstream_block.get_second_moment_of_area(idx +
                                                                      1))) /
                         (ScalarVariable::slice(rest_length, idx) +

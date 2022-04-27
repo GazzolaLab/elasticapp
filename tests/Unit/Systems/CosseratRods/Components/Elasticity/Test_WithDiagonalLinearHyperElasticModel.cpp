@@ -156,7 +156,7 @@ namespace {
     CHECK(end_torque == -couple_solution + shear_stretch_couple);
 
     // check if initialization is done as expected
-    auto expected_call_count = make_array(11U, 10U, 10U, 9U, 10U, 10U, 9U);
+    auto expected_call_count = make_array(11U, 10U, 10U, 9U, 10U, 10U, 10U);
     CHECK_ITERABLE_APPROX(n_times_called, expected_call_count);
 
     // Check RigidityMatrix
@@ -194,9 +194,9 @@ namespace {
     auto btr_Id3 = Traits::DataType::Matrix::slice(btr_matrix, 4UL)(1UL, 0UL);
     auto btr_Id4 = Traits::DataType::Matrix::slice(btr_matrix, 4UL)(2UL, 0UL);
     auto btr_Id5 = Traits::DataType::Matrix::slice(btr_matrix, 4UL)(2UL, 1UL);
-    CHECK(btr_I0 == 4.0 * I_0);
-    CHECK(btr_I1 == 4.0 * I_0);
-    CHECK(btr_I2 == 2.0 * 4.0 * I_0);
+    CHECK(btr_I0 == approx(4.0 * I_0));
+    CHECK(btr_I1 == approx(4.0 * I_0));
+    CHECK(btr_I2 == approx(2.0 * 4.0 * I_0));
     CHECK(btr_Id0 == 0.0);
     CHECK(btr_Id1 == 0.0);
     CHECK(btr_Id2 == 0.0);
