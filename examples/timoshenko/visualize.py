@@ -17,7 +17,7 @@ def run_example(
 
     n_elem = 100
     base_radius = 0.25
-    base_area = np.pi * base_radius ** 2
+    base_area = np.pi * base_radius**2
 
     base_length = 3.0
     nu = 500.0

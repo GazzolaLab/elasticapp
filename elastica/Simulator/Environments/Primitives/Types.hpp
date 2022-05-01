@@ -1,34 +1,62 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Types of primitives
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
 
-//#include "elastica/Simulator/Environments/Primitives/Protocols.hpp"
-//#include "elastica/Simulator/Environments/Primitives/TypeTraits.hpp"
-//#include "elastica/Utilities/ProtocolHelpers.hpp"
-//#include "elastica/Utilities/Requires.hpp"
-//#include "elastica/Utilities/TypeTraits.hpp"
+//******************************************************************************
+// Includes
+//******************************************************************************
+
+#include "Simulator/Environments/Primitives/detail/Types.hpp"
 
 namespace elastica {
 
   namespace collision {
 
-    // Forward declarations of primitive types
+    ////////////////////////////////////////////////////////////////////////////
+    //
+    // Forward declarations of elastica::collision::primitive types
+    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    // Forward declarations of types
     class RigidBodyPrimitive;
     class GeomPrimitive;
     class SpherePrimitive;
     class PlanePrimitive;
-    class ApproximateCylinderPrimitive;
+    // class ApproximateCylinderPrimitive;
     class CylinderPrimitive;
     class CapsulePrimitive;
+    class CapsuleFromRodPrimitive;
+    template <typename T>
+    class ImposedPrimitiveAdapter;
 
-    // Skip forward declaration of templated
-    // class for better
-    /*
-    template <typename PT,
-              Requires<cpp17::conjunction_v<
-                  tt::is_rigid_primitive_v<PT>,
-                  ::tt::assert_conforms_to<PT, protocols::ConvexPrimitive>>> =
-                  nullptr>
-    class ContiguousPrimitive;
+    /* Do not expose to clients
+    using ImposedSphere = ImposedPrimitiveAdapter<SpherePrimitive>;
+    using ImposedCapsule = ImposedPrimitiveAdapter<CapsulePrimitive>;
+    using ImposedPlane = ImposedPrimitiveAdapter<PlanePrimitive>;
+    using ImposedCylinder = ImposedPrimitiveAdapter<CylinderPrimitive>;
     */
+
+    using GeomID = GeomPrimitive*;
+    using ConstGeomID = const GeomPrimitive*;
+
+    using BodyID = RigidBodyPrimitive*;
+    using ConstBodyID = const RigidBodyPrimitive*;
+    /*! \endcond */
+    //**************************************************************************
 
   }  // namespace collision
 

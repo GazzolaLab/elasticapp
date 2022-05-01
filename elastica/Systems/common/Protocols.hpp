@@ -13,6 +13,9 @@
 
 #pragma once
 
+//******************************************************************************
+// Includes
+//******************************************************************************
 #include <cstddef>  // std::size_t
 ///
 #include "Systems/common/Access.hpp"
@@ -28,6 +31,8 @@ namespace elastica {
     namespace detail {
       using elastica::angular_velocity;
       using elastica::director;
+      using elastica::external_loads;
+      using elastica::external_torques;
       using elastica::position;
       using elastica::velocity;
 
@@ -57,6 +62,18 @@ namespace elastica {
         template <typename ConformingType>
         using const_angular_velocity_result =
             decltype(angular_velocity(std::declval<ConformingType const&>()));
+        template <typename ConformingType>
+        using external_loads_result =
+            decltype(external_loads(std::declval<ConformingType&>()));
+        template <typename ConformingType>
+        using const_external_loads_result =
+            decltype(external_loads(std::declval<ConformingType const&>()));
+        template <typename ConformingType>
+        using external_torques_result =
+            decltype(external_torques(std::declval<ConformingType&>()));
+        template <typename ConformingType>
+        using const_external_torques_result =
+            decltype(external_torques(std::declval<ConformingType const&>()));
         // [signatures]
       };
 
@@ -178,6 +195,34 @@ Not a conforming PhysicalSystem, doesn't have a free-function
                       R"error(
 Not a conforming PhysicalSystem, doesn't have a free-function
 `decltype(auto) ::elastica::angular_velocity(ConformingType const&) noexcept`
+)error");
+        static_assert(
+            ::tt::is_detected_v<detail::Signatures::external_loads_result,
+                                ConformingType>,
+            R"error(
+Not a conforming PhysicalSystem, doesn't have a free-function
+`decltype(auto) ::elastica::external_loads(ConformingType&) noexcept`
+)error");
+        static_assert(
+            ::tt::is_detected_v<detail::Signatures::const_external_loads_result,
+                                ConformingType>,
+            R"error(
+Not a conforming PhysicalSystem, doesn't have a free-function
+`decltype(auto) ::elastica::external_loads(ConformingType const&) noexcept`
+)error");
+        static_assert(
+            ::tt::is_detected_v<detail::Signatures::external_torques_result,
+                                ConformingType>,
+            R"error(
+Not a conforming PhysicalSystem, doesn't have a free-function
+`decltype(auto) ::elastica::external_torques(ConformingType&) noexcept`
+)error");
+        static_assert(::tt::is_detected_v<
+                          detail::Signatures::const_external_torques_result,
+                          ConformingType>,
+                      R"error(
+Not a conforming PhysicalSystem, doesn't have a free-function
+`decltype(auto) ::elastica::external_torques(ConformingType const&) noexcept`
 )error");
         /// [expected_free_functions]
       };

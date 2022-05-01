@@ -21,6 +21,7 @@
 #include <sstream>
 #include <string>
 
+#include "ErrorHandling/Abort.hpp"
 #include "ErrorHandling/AbortWithErrorMessage.hpp"
 #include "ErrorHandling/Breakpoint.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"

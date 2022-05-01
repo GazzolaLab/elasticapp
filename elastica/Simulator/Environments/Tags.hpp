@@ -1,16 +1,34 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief All tags of the environments module
+//
+//  Copyright (C) 2020-2022 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
 
-#include "elastica/Simulator/Environments/CollisionSystem/Tags.hpp"
+//******************************************************************************
+// Includes
+//******************************************************************************
+#include "Simulator/Environments/CollisionSystem/Tags.hpp"
+#include "Simulator/Environments/GravityField/Tags.hpp"
 
 namespace elastica {
 
   namespace environments {
 
-    namespace tags {
-
-      using collision::tags::CollisionDetectionTag;
-
-    }  // namespace tags
+    //**************************************************************************
+    /*!\brief Namespace for all tags that mark environments
+    // \ingroup environments
+    */
+    namespace tags {}  // namespace tags
+    //**************************************************************************
 
   }  // namespace environments
 

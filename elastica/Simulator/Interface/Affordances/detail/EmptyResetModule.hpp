@@ -25,7 +25,7 @@ namespace elastica {
 
       //************************************************************************
       /*! \cond ELASTICA_INTERNAL */
-      template <typename Traits>
+      template <typename Traits, typename>
       class EmptyResetModule {
        protected:
         //**Reset methods*******************************************************

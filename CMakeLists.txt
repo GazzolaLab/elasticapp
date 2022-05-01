@@ -34,9 +34,11 @@ set(ELASTICA_PATCH_VERSION ${CMAKE_MATCH_1})
 # ##############################################################################
 # Project and host details
 # ##############################################################################
+set(ELASTICA_VERSION "${ELASTICA_MAJOR_VERSION}.${ELASTICA_MINOR_VERSION}.${ELASTICA_PATCH_VERSION}")
+
 project(elastica
         LANGUAGES CXX
-        VERSION "${ELASTICA_MAJOR_VERSION}.${ELASTICA_MINOR_VERSION}.${ELASTICA_PATCH_VERSION}")
+        VERSION ${ELASTICA_VERSION})
 
 site_name(HOSTNAME)
 
@@ -54,8 +56,8 @@ include(Logging)
 set_logs_on()
 set_log_level("DEBUG") # INFO  DEBUG  HEAVYDEBUG
 
-option(DOCS_ONLY "Skip all initialization not required for rendering documentation")
-option(ELASTICA_SMP "Enable/Disable the shared-memory parallelization." ON)
+option(DOCS_ONLY "Skip all initialization not required for rendering documentation" OFF)
+option(ELASTICA_SMP "Enable/Disable the shared-memory parallelization." OFF)
 option(ELASTICA_PROFILING_MODE "Enable/Disable intrusive code profiling." ON)
 option(ELASTICA_BUILD_TESTS "Build test programs" ON)
 option(ELASTICA_BUILD_BENCHMARKS "Build microbenchmarks" ON)
@@ -63,13 +65,10 @@ option(ELASTICA_BUILD_EXAMPLES "Build examples" OFF)
 option(ELASTICA_BUILD_DOCUMENTATION "Builds the documentation in addition to code" ON)
 option(ELASTICA_BUILD_PYTHON_BINDINGS "Build the python bindings for elastica" ON)
 
-if (DOCS_ONLY)
+if (ELASTICA_BUILD_DOCUMENTATION AND DOCS_ONLY)
     include(SetupDoxygen)
     return()
-endif (DOCS_ONLY)
-if (ELASTICA_BUILD_DOCUMENTATION)
-    include(SetupDoxygen)
-endif (ELASTICA_BUILD_DOCUMENTATION)
+endif (ELASTICA_BUILD_DOCUMENTATION AND DOCS_ONLY)
 
 include(ProhibitInSourceBuild)
 # include(AddSources) # Add function to add a set of source files.
@@ -120,21 +119,30 @@ endif ()
 include(SetupFilesystem)
 
 if (ELASTICA_SMP)
-    include(SetupTBB)
     set(ELASTICA_SMP 1)
+    set(ELASTICA_SMP_THREADS "TBB" CACHE STRING "Specify which thread library is used for shared-memory parallelization.")
+    set_property(CACHE ELASTICA_SMP_THREADS PROPERTY STRINGS "TBB;C++11")
     # target_compile_definitions(elastica INTERFACE ELASTICA_USE_TBB)
 else ()
     set(ELASTICA_SMP 0)
+    unset(ELASTICA_SMP_THREADS CACHE)
+endif ()
+
+if (ELASTICA_SMP_THREADS STREQUAL "TBB")
+    include(SetupTBB)
 endif ()
 
 include(SetupYamlCpp)
 # include(SetupVTK)
 
+if (ELASTICA_BUILD_DOCUMENTATION)
+    include(SetupDoxygen)
+endif (ELASTICA_BUILD_DOCUMENTATION)
 include(CodeCoverageDetection)
 
 # Configure files
 configure_file("${CMAKE_CURRENT_LIST_DIR}/elastica/Configuration/Parallel.hpp.in"
-        "${CMAKE_CURRENT_LIST_DIR}/elastica/Configuration/Parallel.hpp")
+        "${CMAKE_CURRENT_BINARY_DIR}/elastica/Configuration/Parallel.hpp")
 
 if (ELASTICA_PROFILING_MODE)
     set(ELASTICA_PROFILING_MODE 1)
@@ -143,7 +151,7 @@ else ()
     set(ELASTICA_PROFILING_MODE 0)
 endif ()
 configure_file("${CMAKE_CURRENT_LIST_DIR}/elastica/Configuration/Profiling.hpp.in"
-        "${CMAKE_CURRENT_LIST_DIR}/elastica/Configuration/Profiling.hpp")
+        "${CMAKE_CURRENT_BINARY_DIR}/elastica/Configuration/Profiling.hpp")
 
 if (ELASTICA_BUILD_TESTS)
     enable_testing(true)
@@ -151,7 +159,9 @@ if (ELASTICA_BUILD_TESTS)
     include(ElasticaAddCatchTests)
 endif ()
 
+# TODO : use targets and refactor later on
 # directly call Simulator/ABC instead of elastica/Simulator/ABC
+include_directories(${PROJECT_BINARY_DIR}/elastica)
 include_directories(${CMAKE_SOURCE_DIR}/elastica)
 if (ELASTICA_BUILD_TESTS)
     include_directories(${CMAKE_SOURCE_DIR}/tests/Unit)

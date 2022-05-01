@@ -45,21 +45,25 @@
 //==============================================================================
 
 //******************************************************************************
-/*!\defgroup type_traits Type Traits
+/*!\defgroup type_traits_group Type Traits
+ * \ingroup utils
+ * \brief A collection of type traits for metaprogramming
  *
- * A collection of useful type traits for metaprogramming including C++14, C++17
- * and C++20 additions to the standard library.
+ * \details
+ * Also includes C++17 and C++20 additions to the standard library.
  */
 //******************************************************************************
 
+//******************************************************************************
 /*!\brief Contains all typetraits functionality
-// \ingroup type_traits
+// \ingroup type_traits_group
 */
 namespace tt {}
+//******************************************************************************
 
 namespace tt {
 
-  /// \ingroup TypeTraitsGroup
+  /// \ingroup type_traits_group
   /// \brief Given a set of templated types, returns `void`
   ///
   /// \details

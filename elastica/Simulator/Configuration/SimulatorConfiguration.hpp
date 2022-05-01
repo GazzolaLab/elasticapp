@@ -17,7 +17,6 @@
 // Includes
 //******************************************************************************
 
-// NOT POSSIBLE : fwd declare instead of include
 #include <memory>
 #include <utility>  // move
 #include <vector>
@@ -35,10 +34,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TMPLDebugging.hpp"
 #include "Utilities/TypeTraits.hpp"
-
-// DONE : Configuration classes are always empty : Trait checking
-//  using static assers in the SimulatorConfiguration
-// DONE : Config class for simulator and all its Interface classes
 
 namespace elastica {
 
@@ -320,14 +315,6 @@ namespace elastica {
       using Configurations = tmpl::list<ModuleConfigs...>;
       //************************************************************************
 
-      //      // TODO : Private?
-      //      template <typename T>
-      //      struct StorageTag : public T {
-      //        using T::BodyType;
-      //        using T::PrimitiveType;
-      //        using type = typename AddSystemStorageType<BodyType>;
-      //      };
-
      public:
       //////////////////////////////////////////////////////////////////////////
       // Time Configuration
@@ -407,32 +394,6 @@ provided a Systems configuration and ensure it derives publicly from
       using ListOfAdmissibleSystemCollections = tmpl::transform<
           typename SystemsConfiguration::AdmissibleSystemPlugins,
           tmpl::bind<AddBlockType, tmpl::_1>>;
-      //! Alias template to obtain the shape primitive from a system tag
-      template <typename Tag>
-      using GetPrimitiveType = tt::primitive_type_t<Tag>;
-
-      /* \note
-       * Get admissible primitive list downstream
-       * Its better to store as a tuple rather than a tagged tuple
-       * because it might not be a one-to-one mapping (some systems
-       * can have the same primitives)
-       * Instead, one can ise the GetPrimitiveType metafunction above
-       */
-// #define ELASTICA_WITH_ENVIRONMENTS
-#if defined(ELASTICA_WITH_ENVIRONMENTS)
-      //! Typelist of admissible primitives in the simulator
-      using AdmissiblePrimitives = tmpl::remove_duplicates<
-          tmpl::transform<ListOfAdmissibleSystemCollections,
-                          tmpl::bind<GetPrimitiveType, tmpl::_1>>>;
-      // TODO : Private!?
-      //! Typelist of collections of admissible primitives in the simulator
-      using PrimitiveCollection =
-          tmpl::transform<AdmissiblePrimitives,
-                          tmpl::bind<AddPrimitiveStorageType, tmpl::_1>>;
-      //! Type of heterogeneous storage of admissible primitives collections
-      using PrimitiveStorage = tmpl::as_tuple<PrimitiveCollection>;
-#endif
-      //************************************************************************
 
       //@}
       //************************************************************************
@@ -497,144 +458,3 @@ provided a Systems configuration and ensure it derives publicly from
   }  // namespace configuration
 
 }  // namespace elastica
-
-// private:
-////////////////////////////////////////////////////////////////////////////
-//// Domain Configuration
-////////////////////////////////////////////////////////////////////////////
-///*!\name Domain Configuration*/
-////@{
-//
-////**Type definitions******************************************************
-//// 1. Simulation always needs a computational domain
-////! Type of Domain configuration find result
-// using domain_configuration_find_result =
-// tmpl::find<Configurations, tt::IsDomainConfiguration<tmpl::_1>>;
-// static_assert(tmpl::size<domain_configuration_find_result>::value != 0,
-//               R"error(
-// A conforming Domain configuration has not been found in the list of
-// configurations passed in! Aborting compilation... Please check if you have
-// provided a Domain configuration and ensure it derives publicly from
-//::elastica::configuration::protocols::DomainConfiguration
-//)error");
-//// 2. Check for strict conformance
-// static_assert(tt::IsValidDomainConfiguration<
-//                   tmpl::front<domain_configuration_find_result>>::value,
-//               R"error(
-// Domain configuration in the in the list of configurations passed in is not
-// valid. Please ensure it derives publicly from
-// ::elastica::protocols::ComputationalDomain and meets the corresponding
-// requirements. )error");
-////************************************************************************
-//
-////@}
-////************************************************************************
-
-//
-// private:
-////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
-//// Environment Configuration
-////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
-//
-///*! \cond ELASTICA_INTERNAL */
-////**Type definitions******************************************************
-//// 1. Can be optional, in which case we cannot do a front, but rather
-//// check if result is found and act accordingly
-// using environments_configuration_find_result =
-// tmpl::filter<Configurations,
-//     tt::IsEnvironmentsConfiguration<tmpl::_1>>;
-// TypeDisplayer<environments_configuration_find_result> td{};
-// using environments_configuration_found = tmpl::bool_<
-//     tmpl::size<environments_configuration_find_result>::value>;
-///*! \endcond */
-////************************************************************************
-//
-////========================================================================
-////
-////  CLASS DEFINITION
-////
-////========================================================================
-//
-////************************************************************************
-///*! \cond ELASTICA_INTERNAL */
-///*!\brief Helper struct to cache conditional check
-//// \ingroup config
-////
-//// To abstract the logic based on the tmpl::if check for the Environment
-//// config types and to avoid repeated tmpl::if checks for different types
-//// we cache all of it in one helper struct.
-//*/
-// template <bool B, typename L>
-// struct ConditionalEnvironmentCache;
-///*! \endcond */
-////************************************************************************
-//
-////************************************************************************
-///*! \cond ELASTICA_INTERNAL */
-///*!\brief Specialization for a found environment configuration
-// */
-// template <typename FindResult>
-// struct ConditionalEnvironmentCache<true, FindResult> {
-//  // 2. Optional check
-//  using EnvironmentConfiguration = tmpl::front<FindResult>;
-//
-//  // 3. If exists check if valid, with feedback to user
-//  using EnvironmentConfigurationValidityChecker =
-//  tt::AssertValidEnvironmentsConfiguration<EnvironmentConfiguration>;
-//
-//  using AdmissibleImposedPrimitives = tmpl::remove_duplicates<
-//      // no dupes
-//      tmpl::transform<
-//          // get value types
-//          ::elastica::tt::admissible_imposed_primitives_t<
-//              EnvironmentConfiguration>,
-//          cpp20::remove_cvref<tmpl::_1>
-//          // get value types
-//      >
-//      // no dupes
-//  >;
-//};
-///*! \endcond */
-////************************************************************************
-//
-////************************************************************************
-///*! \cond ELASTICA_INTERNAL */
-///*!\brief Specialization for no environment configuration
-// */
-// template <typename EmptyResult>
-// struct ConditionalEnvironmentCache<false, EmptyResult> {
-//  // all empty
-//  using EnvironmentConfiguration = tmpl::empty_sequence;
-//  using EnvironmentConfigurationValidityChecker = std::false_type;
-//  using AdmissibleImposedPrimitives = tmpl::empty_sequence;
-//};
-///*! \endcond */
-////************************************************************************
-//
-///*! \cond ELASTICA_INTERNAL */
-////**Type definitions******************************************************
-////! Cache Type of running a search for environment configuration
-// using EnvironmentFindCache =
-// ConditionalEnvironmentCache<environments_configuration_found::value,
-//     environments_configuration_find_result>;
-///*! \endcond */
-////************************************************************************
-//
-// public:
-////! Typelist of admissible imposed primitives in the simulator
-// using AdmissibleImposedPrimitives =
-// typename EnvironmentFindCache::AdmissibleImposedPrimitives;
-//
-////! Typelist of admissible imposed primitive collections in the simulator
-// using ImposedPrimitiveCollection =
-// tmpl::transform<AdmissibleImposedPrimitives,
-//     tmpl::bind<AddImposedPrimitiveStorageType, tmpl::_1>>;
-//
-////! Type of imposed primitive storage
-// using ImposedPrimitives = tmpl::as_tuple<ImposedPrimitiveCollection>;
-//
-//// TODO
-////! Tags of admissible environments
-// using AdmissibleEnvironmentTags = int /* */;

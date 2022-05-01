@@ -1,6 +1,7 @@
 # Distributed under the MIT License. See LICENSE.txt for details.
 
-set(LIBRARY Simulator)
+set(LIBRARY Frames)
+add_elastica_library(${LIBRARY} INTERFACE)
 
 elastica_target_headers(
         ${LIBRARY}
@@ -8,3 +9,5 @@ elastica_target_headers(
         EulerianFrame.hpp
         LagrangianFrame.hpp
 )
+
+target_link_libraries(${LIBRARY} INTERFACE Utilities)

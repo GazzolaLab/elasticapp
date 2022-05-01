@@ -35,10 +35,8 @@
 
 //******************************************************************************
 /*!\defgroup forcing Forcing
- *
- * The forcing module contains implementations of different external forcings
- * dynamically affecting various degrees of freedom of an \elastica entity
- * (rods, rigid bodies etc.).
+ * \brief Implementation of different external forces that dynamically influence
+ * degrees of freedom of an \elastica entity  (rods, rigid bodies etc.).
  */
 //******************************************************************************
 

@@ -72,8 +72,15 @@ namespace {
     const std::size_t dummy_index = 1UL;
     // a tuple of functions depending on idnex
     auto required_params = initializer.get_required_parameters();
-    CHECK(std::get<0UL>(required_params).get()(dummy_index) == 20UL);
-    CHECK(std::get<1UL>(required_params).get()(dummy_index) == approx(0.5));
+
+    constexpr std::size_t nelems = 0UL;
+    constexpr std::size_t material = 1UL;
+    constexpr std::size_t other = 2UL;
+
+    CHECK(std::get<nelems>(required_params).get()(dummy_index) == 20UL);
+    CHECK(std::get<material>(required_params).get()(dummy_index) ==
+          ::elastica::iron);
+    CHECK(std::get<other>(required_params).get()(dummy_index) == approx(0.5));
 
     // velocity is nil
     CHECK(
@@ -135,15 +142,20 @@ namespace {
         "!");
 
     const std::size_t dummy_index = 1UL;
+
+    constexpr std::size_t nelems = 0UL;
+    constexpr std::size_t material = 1UL;
+    constexpr std::size_t other = 2UL;
+
     // a tuple of functions depending on idnex
-    CHECK(std::get<0UL>(initializer.get_required_parameters())
+    CHECK(std::get<nelems>(initializer.get_required_parameters())
               .get()(dummy_index) == 20UL);
 
-    CHECK(std::get<1UL>(initializer.get_required_parameters()).get()(0UL) ==
+    CHECK(std::get<other>(initializer.get_required_parameters()).get()(0UL) ==
           approx(0.5));
-    CHECK(std::get<1UL>(initializer.get_required_parameters())
+    CHECK(std::get<other>(initializer.get_required_parameters())
               .get()(dummy_index) == approx(1.5));
-    CHECK(std::get<1UL>(initializer.get_required_parameters()).get()(10UL) ==
+    CHECK(std::get<other>(initializer.get_required_parameters()).get()(10UL) ==
           approx(10.5));
   }
 

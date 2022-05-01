@@ -1,4 +1,9 @@
-set(LIBRARY Systems)
+# Distributed under the MIT License. See LICENSE.txt for details.
+
+set(LIBRARY CosseratRodInitializers)
+add_elastica_library(${LIBRARY} INTERFACE)
+
+add_subdirectory(detail)
 
 elastica_target_headers(
         ${LIBRARY}
@@ -7,4 +12,23 @@ elastica_target_headers(
         ComposeInitializers.hpp
         Initializers.hpp
         StraightCosseratRod.hpp
+        UserDefinedCosseratRod.hpp
+)
+
+elastica_target_sources(
+        ${LIBRARY}
+        INTERFACE
+        ComposeInitializers.hpp
+        Initializers.hpp
+        StraightCosseratRod.hpp
+        UserDefinedCosseratRod.hpp
+)
+
+target_link_libraries(
+        ${LIBRARY}
+        INTERFACE
+        Options
+        Materials
+        CosseratRods
+        Utilities
 )

@@ -3,7 +3,8 @@
 //  \file
 //  \brief Flexible swinging pendulum case study
 //
-//  Copyright (C) 2020-2022 Tejaswin Parthasarathy, Yashraj Bhosale - All Rights Reserved
+//  Copyright (C) 2020-2022 Tejaswin Parthasarathy, Yashraj Bhosale - All Rights
+//  Reserved
 //  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
 //
 //  Distributed under the MIT License.
@@ -13,15 +14,16 @@
 
 #include "FlexibleSwingingPendulumCaseStudy.hpp"
 
+#include <elastica/ErrorHandling/FloatingPointExceptions.hpp>
 #include <elastica/Simulator/Materials.hpp>
 #include <elastica/Utilities/Get.hpp>
 #include <elastica/Utilities/Size.hpp>
 #include <iomanip>
 #include <ostream>
 #include <utility>  // pair
-#include <elastica/ErrorHandling/FloatingPointExceptions.hpp>
 
-void FlexibleSwingingPendulumCaseStudy::setup(InputTypes<This> const& input_parameters) {
+void FlexibleSwingingPendulumCaseStudy::setup(
+    InputTypes<This> const& input_parameters) {
   elastica::MaterialID my_material = elastica::create_material(
       // material density
       1100,  // pyelastica values
@@ -71,8 +73,7 @@ void FlexibleSwingingPendulumCaseStudy::setup(InputTypes<This> const& input_para
   const std::size_t my_constraint_index = 0UL;
   auto constraint_generator = eco::make_constraint(
       eco::make_value_constraint(
-          [origin](
-              auto /*time*/, auto& rod_system, auto index) {
+          [origin](auto /*time*/, auto& rod_system, auto index) {
             ::elastica::position(rod_system, index) = origin;
           }),
       eco::make_rate_constraint(
@@ -80,32 +81,15 @@ void FlexibleSwingingPendulumCaseStudy::setup(InputTypes<This> const& input_para
             ::elastica::velocity(rod_system, index) = 0.0;
           }));
 
-  simulator->constrain(rod_ref).at(my_constraint_index).with(constraint_generator());
+  simulator->constrain(rod_ref)
+      .at(my_constraint_index)
+      .with(constraint_generator());
 
   namespace efo = ::elastica::forcing;
 
-  const ::elastica::Vec3 gravity_acc_vector{::elastica::get<gravitational_acc>(input_parameters),
-                                            0.0, 0.0};
-  auto force_generator = efo::make_forcing(
-      efo::make_force([gravity_acc_vector](auto /*time*/,
-                                           auto& rod_system, std::size_t index) {
-        using LoadTag = ::elastica::tags::ExternalLoads;
-         using MassTag = ::elastica::tags::Mass;
-        ::elastica::get<LoadTag>(rod_system) =
-            /*
-             * The reason I compute gravity forces fresh everytime (even though the
-             * mass and gravitational acceleration is constant) is to cover generic
-             * treatment of body forces, since in certain cases involving a growing
-             * root, the mass actively changes and gravity forces need to be computed
-             * the way shown below, to accurately capture the physics present.
-             */
-            // TODO Replace with ::elastica::outer to make blaze free
-            blaze::outer(gravity_acc_vector, ::elastica::get<MassTag>(rod_system));
-
-      }),
-      efo::make_torque([](auto /*time*/, auto&, std::size_t) {}));
-
-  simulator->force(rod_ref).at(::elastica::end - 1UL).with(force_generator());
+  const ::elastica::Vec3 gravity_acc_vector{
+      ::elastica::get<gravitational_acc>(input_parameters), 0.0, 0.0};
+  simulator->set_gravity(gravity_acc_vector);
 
   simulator->finalize();
 
@@ -147,8 +131,7 @@ void FlexibleSwingingPendulumCaseStudy::run() {
       time_and_disps.emplace_back(
           current_time(),
           ::elastica::position(rod_ref.get(), n_elements)[x_axis],
-          ::elastica::position(rod_ref.get(), n_elements)[z_axis]
-          );
+          ::elastica::position(rod_ref.get(), n_elements)[z_axis]);
     }
   }
 
@@ -160,8 +143,8 @@ void FlexibleSwingingPendulumCaseStudy::run() {
   constexpr auto PendulumTipZCoordinate = 2UL;
   for (auto const& td : time_and_disps) {
     my_file << std::setprecision(16) << std::get<Time>(td) << ","
-        << std::get<PendulumTipXCoordinate>(td) << ","
-        << std::get<PendulumTipZCoordinate>(td) << "\n";
+            << std::get<PendulumTipXCoordinate>(td) << ","
+            << std::get<PendulumTipZCoordinate>(td) << "\n";
   }
   my_file << std::endl;
   my_file.close();

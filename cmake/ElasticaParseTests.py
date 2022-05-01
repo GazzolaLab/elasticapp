@@ -12,6 +12,7 @@ allowed_tags = [
     "Configuration",
     "Domain",
     "ErrorHandling",
+    "Environments",
     "Forcing",
     "IO",
     "Informer",

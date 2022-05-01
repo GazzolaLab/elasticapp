@@ -11,12 +11,13 @@
 
 #add_subdirectory(DataStructures)
 add_subdirectory(ErrorHandling)
-add_subdirectory(Parallel)
-add_subdirectory(Utilities)
-add_subdirectory(Simulator)
+add_subdirectory(ModuleSettings)
 add_subdirectory(Options)
+add_subdirectory(Parallel)
+add_subdirectory(Simulator)
 add_subdirectory(Systems)
 add_subdirectory(Time)
+add_subdirectory(Utilities)
 
 #target_link_libraries(elastica PUBLIC ${ELASTICA_LIBRARIES})
 

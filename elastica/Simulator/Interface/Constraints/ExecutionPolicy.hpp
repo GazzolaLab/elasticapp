@@ -20,6 +20,7 @@
 
 ///
 #include "Simulator/Configuration/ModuleConfiguration/ExecutionPolicy.hpp"
+#include "Simulator/Interface/Affordances/detail/EmptyUpdateSteps.hpp"
 #include "Simulator/Interface/Connections/Types.hpp"
 ///
 #include "Parallel/for_each.hpp"  // uses elastica's, not GLIBCXX
@@ -59,7 +60,10 @@ namespace elastica {
        */
       template <class ConstraintsTraits, class ConstraintsModule>
       class ExecutionPolicy
-          : public CRTPHelper<ConstraintsModule, ExecutionPolicy> {
+          : public CRTPHelper<ConstraintsModule, ExecutionPolicy>,
+            public ::elastica::modules::detail::EmptyUpdateSteps<
+                ConstraintsTraits,
+                ExecutionPolicy<ConstraintsTraits, ConstraintsModule>> {
        private:
         //**Type definitions****************************************************
         //! CRTP Type
@@ -493,8 +497,6 @@ namespace elastica {
         //@{
         //! Algorithms to be carried out after the kinematic update step
         using PostKinematicUpdateSteps = tmpl::list<ConstrainPrimitives>;
-        //! Algorithms to be carried out before the dynamic update step
-        using PreDynamicUpdateSteps = tmpl::list<>;
         //! Algorithms to be carried out after the dynamic update step
         using PostDynamicUpdateSteps = tmpl::list<ConstrainRates>;
         //@}

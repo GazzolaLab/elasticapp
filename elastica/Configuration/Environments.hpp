@@ -21,6 +21,7 @@
  * \a typelist is to add tags indicating the environments in the simulation. The
  * following module tags are available:
  *
+ *   - elastica::environments::tags::GravityTag
  *   - elastica::environments::tags::CollisionDetectionTag
  *
  * Each module has its own customization entry points in the appropriate
@@ -28,7 +29,7 @@
  * by default. This can be customized as needed in the client file.
  */
 #define ELASTICA_DEFAULT_ADMISSIBLE_ENVIRONMENT_TAGS \
-  tmpl::list<elastica::environments::tags::CollisionDetectionTag>
+  tmpl::list<elastica::environments::tags::GravityTag>
 //******************************************************************************
 
 //******************************************************************************
@@ -47,8 +48,7 @@
  * Only the plane primitive is added to the list by default.
  * This list can be customized as needed in the client file.
  */
-#define ELASTICA_DEFAULT_ADMISSIBLE_IMPOSED_PRIMITIVES \
-  tmpl::list<elastica::collision::PlanePrimitive>
+#define ELASTICA_DEFAULT_ADMISSIBLE_IMPOSED_PRIMITIVES tmpl::list<>
 //******************************************************************************
 
 //******************************************************************************

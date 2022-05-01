@@ -1,4 +1,6 @@
 add_subdirectory(Block)
 add_subdirectory(common)
+add_subdirectory(Customization)
 add_subdirectory(CosseratRods)
+add_subdirectory(RigidBody)
 add_subdirectory(States)

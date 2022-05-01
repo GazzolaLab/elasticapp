@@ -1,34 +1,50 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief All types belonging to the collision system
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
+
+//******************************************************************************
+// Includes
+//******************************************************************************
+#include "Simulator/Environments/CollisionSystem/Batches/Types.hpp"
+#include "Simulator/Environments/CollisionSystem/Configuration/Types.hpp"
+#include "Simulator/Environments/CollisionSystem/Contact/Types.hpp"
+#include "Simulator/Environments/CollisionSystem/Detection/Types.hpp"
+#include "Simulator/Environments/CollisionSystem/Response/Types.hpp"
 
 namespace elastica {
 
   namespace collision {
 
-    // Forward declarations
-    class GeomPrimitive;
-    class RigidBodyPrimitive;
-    class Contact;
-
-    using GeomID = GeomPrimitive*;
-    using ConstGeomID = const GeomPrimitive*;
-
-    using BodyID = RigidBodyPrimitive*;
-    using ConstBodyID = const RigidBodyPrimitive*;
-
-    //*************************************************************************************************
-    /*!\brief Handle for a contact between two rigid bodies.
-     * \ingroup core
-     */
-    using ContactID = Contact*;
-    //*************************************************************************************************
-
-    //*************************************************************************************************
-    /*!\brief Handle for a constant contact between two rigid bodies.
-     * \ingroup core
-     */
-    using ConstContactID = const Contact*;
-    //*************************************************************************************************
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <class SimulatorConfig, class CollisionConfig>
+    class CollisionSystem;
+    /*! \endcond */
+    //**************************************************************************
 
   }  // namespace collision
+
+  namespace environments {
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    namespace tags {
+      struct CollisionSystemTag;
+    }
+    /*! \endcond */
+    //**************************************************************************
+
+  }  // namespace environments
 
 }  // namespace elastica

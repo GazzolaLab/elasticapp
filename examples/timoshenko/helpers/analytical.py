@@ -16,11 +16,11 @@ def analytical_shearable(
         acting_force = applied_force
     acting_force = np.abs(acting_force)
 
-    cs_area = np.pi * radius ** 2
+    cs_area = np.pi * radius**2
     shear = (4.0 / 3.0) * shear_modulus * cs_area
     linear_prefactor = -acting_force / shear
     # ?
-    I = cs_area ** 2 / (4.0 * np.pi)
+    I = cs_area**2 / (4.0 * np.pi)
     bend = youngs_modulus * I
     quadratic_prefactor = -acting_force * length / 2.0 / bend
     cubic_prefactor = acting_force / 6.0 / bend
@@ -44,9 +44,9 @@ def analytical_unshearable(
         acting_force = applied_force
     acting_force = np.abs(acting_force)
 
-    cs_area = np.pi * radius ** 2
-    I = cs_area ** 2 / (4.0 * np.pi)
+    cs_area = np.pi * radius**2
+    I = cs_area**2 / (4.0 * np.pi)
     bend = youngs_modulus * I
     quadratic_prefactor = -acting_force * length / 2.0 / bend
     cubic_prefactor = acting_force / 6.0 / bend
-    return arg_s, arg_s ** 2 * (quadratic_prefactor + arg_s * cubic_prefactor)
+    return arg_s, arg_s**2 * (quadratic_prefactor + arg_s * cubic_prefactor)

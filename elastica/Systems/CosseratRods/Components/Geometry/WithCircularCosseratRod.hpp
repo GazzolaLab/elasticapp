@@ -22,8 +22,8 @@
 #include "Systems/CosseratRods/Components/Geometry/Protocols.hpp"
 #include "Systems/CosseratRods/Components/Geometry/Types.hpp"
 ///
-#include "Systems/CosseratRods/Components/Geometry/detail/CosseratRodCrossSectionInterface.hpp"
 #include "Systems/CosseratRods/Components/Geometry/detail/CircleCrossSectionOperations.hpp"
+#include "Systems/CosseratRods/Components/Geometry/detail/CosseratRodCrossSectionInterface.hpp"
 #include "Systems/CosseratRods/Components/helpers.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 
@@ -52,10 +52,9 @@ namespace elastica {
        * transverse dimension.
        *
        * \usage
-       * Since WithCircularCosseratRod is a valid and complete Geometry component
-       * adhering to protocols::Geometry1D, one can use it to declare a
-       * CosseratRodPlugin within the @ref blocks framework
-       * \code
+       * Since WithCircularCosseratRod is a valid and complete Geometry
+       * component adhering to protocols::Geometry1D, one can use it to declare
+       * a CosseratRodPlugin within the @ref blocks framework \code
        * // pre-declare RodTraits, Blocks
        * using CircularCosseratRod = CosseratRodPlugin<RodTraits, Block,
        * components::WithCircularCosseratRod>
@@ -73,7 +72,8 @@ namespace elastica {
                 CRT, ComputationalBlock,
                 detail::CircleCrossSectionOperations<CRT>>,
             public ::tt::ConformsTo<protocols::Geometry1D>,
-            public Component<WithCircularCosseratRod<CRT, ComputationalBlock>> {
+            public GeometryComponent<
+                WithCircularCosseratRod<CRT, ComputationalBlock>> {
        private:
         //**Type definitions****************************************************
         //! Traits type

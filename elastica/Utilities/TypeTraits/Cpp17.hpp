@@ -36,7 +36,7 @@ namespace cpp17 {
 
   //****************************************************************************
   /*!\brief A compile-time boolean
-  // \ingroup type_traits
+  // \ingroup type_traits_group
   //
   // \usage
   // For any bool `B`
@@ -53,7 +53,7 @@ namespace cpp17 {
 
   //****************************************************************************
   /*!\brief A logical AND on the template parameters
-  // \ingroup type_traits
+  // \ingroup type_traits_group
   //
   // \details
   // Given a list of cpp17::bool_constant template parameters computes their
@@ -105,7 +105,7 @@ namespace cpp17 {
 
   //****************************************************************************
   /*!\brief Auxiliary variable template for eager check of `cpp17::conjunction`
-  // \ingroup type_traits
+  // \ingroup type_traits_group
   //
   // \details
   // The conjunction_v variable template provides a convenient shortcut to
@@ -129,7 +129,7 @@ namespace cpp17 {
 
   //****************************************************************************
   /*!\brief A logical OR on the template parameters
-  // \ingroup type_traits
+  // \ingroup type_traits_group
   //
   // \details
   // Given a list of cpp17::bool_constant template parameters computes their
@@ -181,7 +181,7 @@ namespace cpp17 {
 
   //****************************************************************************
   /*!\brief Auxiliary variable template for eager check of `cpp17::disjunction`
-  // \ingroup type_traits
+  // \ingroup type_traits_group
   //
   // \details
   // The disjunction_v variable template provides a convenient shortcut to
@@ -205,7 +205,7 @@ namespace cpp17 {
 
   //****************************************************************************
   /*!\brief Negate a cpp17::bool_constant
-  // \ingroup type_traits
+  // \ingroup type_traits_group
   //
   // \details
   // Given a ::bool_constant returns the logical NOT of it.
@@ -238,7 +238,7 @@ namespace cpp17 {
 
   //****************************************************************************
   /*!\brief Auxiliary variable template for eager check of `std::is_same`
-  // \ingroup type_traits
+  // \ingroup type_traits_group
   //
   // \details
   // The cpp17::is_same_v variable template provides a convenient shortcut to

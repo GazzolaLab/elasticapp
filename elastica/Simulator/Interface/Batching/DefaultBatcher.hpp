@@ -1,9 +1,21 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief An empty batcher for quick assembly of \elastica Simulator
 //
-// Created by Tejaswin Parthasarathy on 10/15/21.
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
 //
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
 
 #pragma once
 
+//******************************************************************************
+// Includes
+//******************************************************************************
 #include <cstddef>
 
 #include "Simulator/Configuration/ModuleConfiguration/ExecutionPolicy.hpp"
@@ -21,7 +33,7 @@ namespace elastica {
         DefaultBatchingOperation(Traits const&) {}
       };
 
-      struct DefaultBatcher{
+      struct DefaultBatcher {
         using type = DefaultBatchingOperation;
       };
       /*! \endcond */

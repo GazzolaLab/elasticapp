@@ -68,6 +68,28 @@ namespace elastica {
     //**************************************************************************
 
     //**************************************************************************
+    /*!\brief Default configuration for blocking systems in the simulation
+     * \ingroup default_config
+     *
+     * It is default-constructible and the default settings can be changed using
+     * ELASTICA_DEFAULT_BLOCKING_POLICY_FOR_SYSTEMS()
+     */
+    struct DefaultBlockingPolicy
+        : public ELASTICA_DEFAULT_BLOCKING_POLICY_FOR_SYSTEMS {
+     private:
+      using Parent = ELASTICA_DEFAULT_BLOCKING_POLICY_FOR_SYSTEMS;
+
+     public:
+      //! Inherit constructors
+      DefaultBlockingPolicy() noexcept
+          : Parent(ELASTICA_DEFAULT_BLOCKING_POLICY_FOR_SYSTEMS{
+                typename ELASTICA_DEFAULT_BLOCKING_POLICY_FOR_SYSTEMS::
+                    Criterion{default_blocking_policy_size()}}){};
+      ~DefaultBlockingPolicy() = default;
+    };
+    //**************************************************************************
+
+    //**************************************************************************
     /*!\brief Default configuration of systems in the simulation
      * \ingroup default_config
      *
@@ -87,24 +109,18 @@ namespace elastica {
     class DefaultSystemsConfiguration
         : public SystemsConfiguration<
               ELASTICA_DEFAULT_ADMISSIBLE_PLUGINS_FOR_SYSTEMS,
-              ELASTICA_DEFAULT_BLOCKING_POLICY_FOR_SYSTEMS,
-              DefaultIterationPolicy> {
+              DefaultBlockingPolicy, DefaultIterationPolicy> {
      private:
       //**Type definitions******************************************************
       //! Parent type
       using Parent =
           SystemsConfiguration<ELASTICA_DEFAULT_ADMISSIBLE_PLUGINS_FOR_SYSTEMS,
-                               ELASTICA_DEFAULT_BLOCKING_POLICY_FOR_SYSTEMS,
-                               DefaultIterationPolicy>;
+                               DefaultBlockingPolicy, DefaultIterationPolicy>;
 
      public:
       //! Inherit constructors
       DefaultSystemsConfiguration() noexcept
-          : Parent(
-                ELASTICA_DEFAULT_BLOCKING_POLICY_FOR_SYSTEMS{
-                    typename ELASTICA_DEFAULT_BLOCKING_POLICY_FOR_SYSTEMS::
-                        Criterion{default_blocking_policy_size()}},
-                DefaultIterationPolicy{}){};
+          : Parent(DefaultBlockingPolicy{}, DefaultIterationPolicy{}){};
       ~DefaultSystemsConfiguration() = default;
       //************************************************************************
     };

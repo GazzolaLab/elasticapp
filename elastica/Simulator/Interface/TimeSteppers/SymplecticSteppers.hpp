@@ -22,6 +22,8 @@
 
 ///
 #include "Simulator/Interface/TimeSteppers/Types.hpp"
+//
+#include "Systems/common/Access.hpp"  // to qualify elastica::torques
 /// Temporal interfaces
 #include "Time/Protocols.hpp"
 #include "Time/SimulationTime.hpp"
@@ -179,6 +181,10 @@ mistake, consider using the following idiom when constructing the time-step :
                     self().for_each_block([=](auto& system) noexcept {
                       // this should be determined based on the interface met
                       // by systems such as Cosserat rods
+                      using ::elastica::external_loads;
+                      using ::elastica::external_torques;
+                      external_loads(system) = 0.0;
+                      external_torques(system) = 0.0;
                       system.compute_internal_dynamics(time_v);
                       // dynamic_update_substep(system, time_v, dt);
                     });

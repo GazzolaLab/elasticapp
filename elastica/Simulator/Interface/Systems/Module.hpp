@@ -26,6 +26,13 @@
 #include <utility>  // forward
 #include <vector>
 
+#define PRIMITIVE_POLICY_WORKAROUND                                 \
+  "Workaround for WithPrimitivesExecutionPolicy needing to access " \
+  "to_be_iterated_sequentially"
+
+#ifdef PRIMITIVE_POLICY_WORKAROUND
+#include "Simulator/Interface/Environments/Types.hpp"
+#endif
 /// All systems types
 #include "Simulator/Interface/Systems/Types.hpp"
 #include "Systems/Types.hpp"
@@ -132,6 +139,14 @@ namespace elastica {
       //**Type definitions******************************************************
       //! Type of simulation time
       using TimeType = typename SimTraits::TimeType;  // public for protocols
+      //! Typelist of admissible systems
+      //! \example <Sphere, Box, Cylinder, CosseratRod>
+      using ListOfAdmissibleSystemCollections =
+          typename SimTraits::ListOfAdmissibleSystemCollections;
+      //! Policy type used for determining blocks
+      using BlockingPolicy = typename SimTraits::BlockingPolicy;
+      //! Policy type used for determining iteration over and across systems
+      using IterationPolicy = typename SimTraits::IterationPolicy;
       //************************************************************************
 
      protected:
@@ -142,25 +157,22 @@ namespace elastica {
       template <typename SystemCollection>
       using AddSystemCollectionsType =
           typename SimTraits::template AddSystemStorageType<SystemCollection>;
-      //! Typelist of admissible systems
-      //! \example <Sphere, Box, Cylinder, CosseratRod>
-      using ListOfAdmissibleSystemCollections =
-          typename SimTraits::ListOfAdmissibleSystemCollections;
       //! Tuple type of collection of admissible systems
       //! \example std::tuple<std::vector<Sphere>, std::vector<Box>, ... >
       using SystemCollections = tmpl::as_tuple<
           tmpl::transform<ListOfAdmissibleSystemCollections,
                           tmpl::bind<AddSystemCollectionsType, tmpl::_1>>>;
-      //! Policy type used for determining blocks
-      using BlockingPolicy = typename SimTraits::BlockingPolicy;
-      //! Policy type used for determining iteration over and across systems
-      using IterationPolicy = typename SimTraits::IterationPolicy;
       //@}
       //************************************************************************
 
       //**Friendships***********************************************************
       //! Friend the Algorithm
       friend Algorithm;
+#ifdef PRIMITIVE_POLICY_WORKAROUND
+      friend ::elastica::interface::environments::WithPrimitivesExecutionPolicy<
+          SimTraits, Sim>;
+#endif
+#undef PRIMITIVE_POLICY_WORKAROUND
       //! Friendship with Serialize
       friend struct ::elastica::io::Serialize<This>;
       //************************************************************************
@@ -484,7 +496,7 @@ namespace elastica {
       }
       //************************************************************************
 
-     protected:
+     public:
       //************************************************************************
       /*!\brief Apply a callable over all system blocks
        *
@@ -496,13 +508,13 @@ namespace elastica {
        * 1. We need strong exception safety guarantee from `func`. In C++14 this
        * cannot be strongly checked, so the user needs to satisfy this guarantee
        * 2. This is meant for internal use mostly (as it applies `func` over
-       * blocks instead of block slices), but can be exposed to consumers if
-       * needed.
+       * blocks instead of block slices), but is exposed to client code as it
+       * can potentially improve speed.
        *
        * \param func Callable to be applied over system blocks
        */
       template <typename F>
-      inline decltype(auto) for_each_block(F func) const noexcept {
+      inline decltype(auto) for_each_block(F func) /*const*/ noexcept {
         using Alg = typename Algorithm::ApplyOverSystems;
 
         ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().start(); }
@@ -526,15 +538,15 @@ namespace elastica {
        * 1. We need strong exception safety guarantee from `func`. In C++14 this
        * cannot be strongly checked, so the user needs to satisfy this guarantee
        * 2. This is meant for internal use mostly (as it applies `func` over
-       * blocks instead of block slices), but can be exposed to consumers if
-       * needed.
+       * blocks instead of block slices), but is exposed to client code as it
+       * can potentially improve speed.
        *
        * \tparam BlocksTypeList A `tmpl::list` of Block types associated with
        * the simulator
        * \param func Callable to be applied over system blocks
        */
       template <typename BlocksTypeList, typename F>
-      inline decltype(auto) for_each_block(F func) const noexcept {
+      inline decltype(auto) for_each_block(F func) /*const*/ noexcept {
         using Alg = typename Algorithm::ApplyOverSystems;
 
         ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().start(); }
@@ -562,7 +574,7 @@ namespace elastica {
        * \param func Callable to be applied over systems
        */
       template <typename F>
-      inline decltype(auto) for_each_system(F func) const noexcept {
+      inline decltype(auto) for_each_system(F func) /*const*/ noexcept {
         (void)for_each_block(::blocks::for_each_slice_adapter(std::ref(func)));
         return func;
       }
@@ -585,7 +597,7 @@ namespace elastica {
        * `SystemsBlock`
        */
       template <typename PluginsTypeList, typename F>
-      inline decltype(auto) for_each_system(F func) const noexcept {
+      inline decltype(auto) for_each_system(F func) /*const*/ noexcept {
         (void)for_each_block<as_blocks<PluginsTypeList>>(
             ::blocks::for_each_slice_adapter(std::ref(func)));
         return func;

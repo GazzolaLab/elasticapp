@@ -34,7 +34,7 @@ namespace elastica {
   //**Position functions********************************************************
   /*!\name Position functions */
   //@{
-  /*!\brief Specialization of elastica::position() for CosseratRodBlockSlice
+  /*!\brief Specialization of elastica::position() for const Rod slices
    * \ingroup cosserat_rod
    */
   inline decltype(auto) position(
@@ -53,7 +53,7 @@ namespace elastica {
   //**Director functions********************************************************
   /*!\name Director functions */
   //@{
-  /*!\brief Specialization of elastica::director() for Cosserat rods
+  /*!\brief Specialization of elastica::director() for const Rod slices
    * \ingroup cosserat_rod
    */
   inline decltype(auto) director(
@@ -72,7 +72,7 @@ namespace elastica {
   //**Velocity functions********************************************************
   /*!\name Velocity functions */
   //@{
-  /*!\brief Specialization of elastica::velocity() for Cosserat rods
+  /*!\brief Specialization of elastica::velocity() for const Rod slices
    * \ingroup cosserat_rod
    */
   inline decltype(auto) velocity(
@@ -91,7 +91,7 @@ namespace elastica {
   //**Angular Velocity functions************************************************
   /*!\name Angular Velocity functions */
   //@{
-  /*!\brief Specialization of elastica::angular_velocity() for Cosserat rods
+  /*!\brief Specialization of elastica::angular_velocity() for const Rod slices
    * \ingroup cosserat_rod
    */
   inline decltype(auto) angular_velocity(
@@ -103,6 +103,44 @@ namespace elastica {
       cosserat_rod::detail::CosseratRodBlockSlice const& cosserat_rod,
       std::size_t index) noexcept {
     return cosserat_rod.get_angular_velocity(index);
+  }
+  //@}
+  //****************************************************************************
+
+  //**External loads functions**************************************************
+  /*!\name External loads functions */
+  //@{
+  /*!\brief Specialization of elastica::external_loads() for Cosserat rods
+   * \ingroup cosserat_rod
+   */
+  inline decltype(auto) external_loads(
+      cosserat_rod::detail::CosseratRodBlockSlice const&
+          cosserat_rod) noexcept {
+    return cosserat_rod.get_external_loads();
+  }
+  inline decltype(auto) external_loads(
+      cosserat_rod::detail::CosseratRodBlockSlice const& cosserat_rod,
+      std::size_t index) noexcept {
+    return cosserat_rod.get_external_loads(index);
+  }
+  //@}
+  //****************************************************************************
+
+  //**External torques functions************************************************
+  /*!\name External torques functions */
+  //@{
+  /*!\brief Specialization of elastica::external_torques() for Cosserat rods
+   * \ingroup cosserat_rod
+   */
+  inline decltype(auto) external_torques(
+      cosserat_rod::detail::CosseratRodBlockSlice const&
+          cosserat_rod) noexcept {
+    return cosserat_rod.get_external_torques();
+  }
+  inline decltype(auto) external_torques(
+      cosserat_rod::detail::CosseratRodBlockSlice const& cosserat_rod,
+      std::size_t index) noexcept {
+    return cosserat_rod.get_external_torques(index);
   }
   //@}
   //****************************************************************************

@@ -1,7 +1,7 @@
 //==============================================================================
 /*!
 //  \file
-//  \brief parallel for_each
+//  \brief Invoke a function in parallel over a sequence of elements
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
@@ -60,10 +60,34 @@ namespace elastica {
     }  // namespace detail
 
     //**************************************************************************
-    /* \brief Calls function f for all items from [first, last) interval
+    /*!\brief Calls function f for all items from [first, last) interval.
      * \ingroup parallel
      *
-     * \param funcs functions to execute in parallel
+     * \details
+     * If \elastica is compiled with parallelism enabled, then this executes f
+     * in parallel over the requested range. Else, it defaults to serial
+     * execution.
+     *
+     * \example
+     * \code
+     * // 1. Use with a range
+     * std::vector <int> v;
+     * elastica::parallel::for_each(v.begin(), v.end(), [](int& val) {
+     *   // do some processing
+     *   val += 2;
+     * });
+
+     * // 2. If parallelism is enabled, the interface switches is the same as
+     * // Intel TBB
+     * elastica::parallel::for_each(v.begin(), v.end(), [](int& val) {
+     *   // do some processing
+     *   val += 2;
+     * }, tbb::auto_partitioner);
+     * \endcode
+     *
+     * \param first The first value in the range
+     * \param last The last value in the range
+     * \param func function to be execute in parallel over the range
      */
     template <typename... Args>
     inline void for_each(Args&&... args) {

@@ -17,7 +17,7 @@ namespace cpp17 {
 
   //****************************************************************************
   /*!\brief Given a set of types, returns `void`
-  // \ingroup type_traits
+  // \ingroup type_traits_group
   //
   // \details
   // Given a list of types, returns `void`. This is very useful for

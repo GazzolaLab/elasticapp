@@ -1,4 +1,22 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Inclusion of all coarse detectors
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
 
-#include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/ExhaustiveSearch.hpp"
-#include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/HashGrids.hpp"
+//******************************************************************************
+// Includes
+//******************************************************************************
+
+#include "Simulator/Environments/CollisionSystem/Detection/Coarse/ExhaustiveSearch.hpp"
+// #include
+// "Simulator/Environments/CollisionSystem/Detection/Coarse/HashGrids.hpp"

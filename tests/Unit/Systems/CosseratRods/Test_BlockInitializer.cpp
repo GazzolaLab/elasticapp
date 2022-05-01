@@ -98,8 +98,8 @@ namespace {
     using Variables = tmpl::list<>;
 
     template <class DownstreamBlock, class CosseratInitializer>
-    static void initialize(DownstreamBlock& downstream_block,
-                           CosseratInitializer&& initializers) {
+    static void initialize(DownstreamBlock& /*downstream_block*/,
+                           CosseratInitializer&& /*initializers*/) {
       //      {
       //        using Variable = SomeVectorVariable;
       //        using Tag = SomeVectorVariableTag;

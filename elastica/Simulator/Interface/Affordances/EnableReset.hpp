@@ -84,7 +84,7 @@ namespace elastica {
      */
     template <class SimTraits, class Sim>
     class EnableReset : public CRTPHelper<Sim, EnableReset>,
-                        public EmptyInterface<SimTraits>,
+                        public EmptyInterface<SimTraits, Sim>,
                         public NonCopyable {
      private:
       //**Compile-time checks***************************************************

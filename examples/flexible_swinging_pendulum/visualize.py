@@ -100,12 +100,14 @@ def run_example(
                 assert np.allclose(
                     times.shape, pyelastica_results[:, 0].shape
                 ), "C++ and Python data not of equal size"
-                cpp_py_tip_deviation_x = np.fabs(
-                    tip_displacements_x - pyelastica_results[:, 1]
-                ) / base_length
-                cpp_py_tip_deviation_z = np.fabs(
-                    tip_displacements_z - pyelastica_results[:, 2]
-                ) / base_length
+                cpp_py_tip_deviation_x = (
+                    np.fabs(tip_displacements_x - pyelastica_results[:, 1])
+                    / base_length
+                )
+                cpp_py_tip_deviation_z = (
+                    np.fabs(tip_displacements_z - pyelastica_results[:, 2])
+                    / base_length
+                )
                 fig2 = plt.figure(figsize=(8, 4), frameon=True, dpi=150)
                 ax2 = fig2.add_subplot(111)
                 ax2.semilogy(

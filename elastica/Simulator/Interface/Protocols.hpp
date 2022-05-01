@@ -31,8 +31,8 @@
 //******************************************************************************
 /*!\defgroup interface_protocols Interface Protocols
  * \ingroup interface
+ * \brief Contains protocols expected from a Module's interface to the \elastica
+ * Simulator
  *
- * This module contains all protocols expected from a Module's interface to the
- * \elastica Simulator
  */
 //******************************************************************************

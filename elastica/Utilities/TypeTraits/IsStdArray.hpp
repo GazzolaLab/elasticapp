@@ -22,7 +22,7 @@
 
 namespace tt {
   // @{
-  /// \ingroup TypeTraitsGroup
+  /// \ingroup type_traits_group
   /// \brief Check if type T is a std::array
   ///
   /// \details

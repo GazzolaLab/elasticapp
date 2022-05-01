@@ -17,12 +17,16 @@
 // Includes
 //******************************************************************************
 
+#include "Simulator/Configuration/ModuleConfiguration/Types.hpp"
 #include "Simulator/Configuration/Protocols/Environments.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 ///
 #include "Simulator/Environments/Primitives/Types.hpp"  // needed for template instantiation
 #include "Simulator/Environments/Tags.hpp"  // needed for template instantiation
 #include "Utilities/TMPL.hpp"               // tags are type lists
+
+// internal module configurations
+#include "Simulator/Environments/ModuleConfiguration/ModuleConfiguration.hpp"
 
 //==============================================================================
 //
@@ -65,9 +69,10 @@ namespace elastica {
      * \see make_environments_configuration() for idiomatic construction
      */
     template <typename EnvironmentTags, typename ImposedPrimitives,
-              typename ExecutionPolicy>
+              typename ExecutionPolicy, typename... IndividualConfigurations>
     class EnvironmentsConfiguration
-        : public ::tt::ConformsTo<protocols::EnvironmentsConfiguration> {
+        : public ::tt::ConformsTo<protocols::EnvironmentsConfiguration>,
+          public IndividualConfigurations... {
      public:
       //**Type definitions******************************************************
       // TODO : Ensure ordering with collision last
@@ -86,6 +91,26 @@ namespace elastica {
       //! Type of execution policy
       using EnvironmentsExecutionPolicy = ExecutionPolicy;
       //************************************************************************
+
+      //**Constructor***********************************************************
+      /*!\name Constructor*/
+      //@{
+
+      //************************************************************************
+      /*!\brief The composite constructor.
+       */
+      constexpr explicit EnvironmentsConfiguration(
+          IndividualConfigurations... configs) noexcept
+          : IndividualConfigurations(std::move(configs))... {}
+      //************************************************************************
+
+     private:
+      //************************************************************************
+      static_assert(sizeof...(IndividualConfigurations) <=
+                        tmpl::size<EnvironmentTags>::value,
+                    "Number of configurations passed in must be less than or "
+                    "equal to the number of Tags");
+      //************************************************************************
     };
     //**************************************************************************
 
@@ -97,6 +122,7 @@ namespace elastica {
      * \snippet ModuleConfiguration/Test_Environments.cpp seq_eg
      *
      * \param p execution policy for the configuration
+     * \param individual_configurations individual environment configurations
      *
      * For details on Template parameters that need to be provided, see
      * EnvironmentsConfiguration
@@ -104,11 +130,15 @@ namespace elastica {
     template <
         typename EnvironmentTags = ELASTICA_DEFAULT_ADMISSIBLE_ENVIRONMENT_TAGS,
         typename ListOfImposedPrimitives =
-            ELASTICA_DEFAULT_ADMISSIBLE_IMPOSED_PRIMITIVES>
+            ELASTICA_DEFAULT_ADMISSIBLE_IMPOSED_PRIMITIVES,
+        typename... IndividualConfigurations>
     inline constexpr decltype(auto) make_environments_configuration(
-        decltype(seq) /* meta */) noexcept {
+        decltype(seq) /* meta */,
+        IndividualConfigurations... individual_configurations) noexcept {
       return EnvironmentsConfiguration<EnvironmentTags, ListOfImposedPrimitives,
-                                       sequential_policy>{};
+                                       sequential_policy,
+                                       IndividualConfigurations...>(
+          std::move(individual_configurations)...);
     }
     //**************************************************************************
 
@@ -120,6 +150,7 @@ namespace elastica {
      * \snippet ModuleConfiguration/Test_Environments.cpp par_eg
      *
      * \param p execution policy for the configuration
+     * \param individual_configurations individual environment configurations
      *
      * For details on Template parameters that need to be provided, see
      * EnvironmentsConfiguration
@@ -127,11 +158,15 @@ namespace elastica {
     template <
         typename EnvironmentTags = ELASTICA_DEFAULT_ADMISSIBLE_ENVIRONMENT_TAGS,
         typename ListOfImposedPrimitives =
-            ELASTICA_DEFAULT_ADMISSIBLE_IMPOSED_PRIMITIVES>
+            ELASTICA_DEFAULT_ADMISSIBLE_IMPOSED_PRIMITIVES,
+        typename... IndividualConfigurations>
     inline constexpr decltype(auto) make_environments_configuration(
-        decltype(par) /* meta */) noexcept {
+        decltype(par) /* meta */,
+        IndividualConfigurations... individual_configurations) noexcept {
       return EnvironmentsConfiguration<EnvironmentTags, ListOfImposedPrimitives,
-                                       parallel_policy>{};
+                                       parallel_policy,
+                                       IndividualConfigurations...>{
+          std::move(individual_configurations)...};
     }
     //**************************************************************************
 

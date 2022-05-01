@@ -20,10 +20,13 @@
 #include <cstdint>  // for size_t
 #include <utility>  // for move
 
+#include "Simulator/Materials.hpp"
+//
 #include "Systems/Block.hpp"
+//
 #include "Utilities/CRTP.hpp"
-#include "Utilities/TMPL.hpp"
 #include "Utilities/Math/Vec3.hpp"
+#include "Utilities/TMPL.hpp"
 
 // module
 /// Types always first
@@ -98,6 +101,18 @@ namespace elastica {
               return ghost_type(1.0);
             }
             //******************************************************************
+          };
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Variable marking material
+           */
+          struct Material
+              : public Traits::template CosseratRodInitializedVariable<
+                    ::elastica::tags::Material,  //
+                    typename Traits::DataType::Index,
+                    typename Traits::Place::OnElement> {
+            // Doesnt need ghosting logic, 0 == iron is fine
           };
           //********************************************************************
 
@@ -191,12 +206,13 @@ namespace elastica {
 
           //**Type definitions**************************************************
           //! List of computed variables
-          using ComputedVariables = tmpl::list<ExternalLoads, ExternalTorques,
-                                               MassSecondMomentOfInertia,
-                                               InvMassSecondMomentOfInertia>;
+          using ComputedVariables =
+              tmpl::list<Mass, ExternalLoads, ExternalTorques,
+                         MassSecondMomentOfInertia,
+                         InvMassSecondMomentOfInertia>;
           //! List of initialized variables
           using InitializedVariables =
-              tmpl::list<Mass, Velocity, AngularVelocity, Acceleration,
+              tmpl::list<Material, Velocity, AngularVelocity, Acceleration,
                          AngularAcceleration>;
           //! List of all variables
           using Variables =
@@ -253,7 +269,8 @@ namespace elastica {
           : public CRTPHelper<ComputationalBlock, WithRodKinematics>,
             public detail::RodKinematicsVariables<CRT>,
             public ::tt::ConformsTo<protocols::Kinematics1D>,
-            public Component<WithRodKinematics<CRT, ComputationalBlock>> {
+            public KinematicsComponent<
+                WithRodKinematics<CRT, ComputationalBlock>> {
        private:
         //**Type definitions****************************************************
         //! Traits type
@@ -290,6 +307,7 @@ namespace elastica {
         using typename VariableDefinitions::InvMassSecondMomentOfInertia;
         using typename VariableDefinitions::Mass;
         using typename VariableDefinitions::MassSecondMomentOfInertia;
+        using typename VariableDefinitions::Material;
         using typename VariableDefinitions::Velocity;
         //**********************************************************************
 
@@ -343,7 +361,9 @@ namespace elastica {
             using Tag = blocks::parameter_t<Variable>;
 
             auto& variable(blocks::get<Tag>(downstream_block));
-            auto& density(blocks::get<tags::Mass>(downstream_block));
+
+            // already initialized
+            auto& material(blocks::get<tags::Material>(downstream_block));
             auto& reference_lengths(
                 blocks::get<tags::ReferenceElementLength>(downstream_block));
             const auto dofs = Variable::get_dofs(initializers.n_elems());
@@ -352,7 +372,8 @@ namespace elastica {
               Variable::slice(variable, idx) = real_type(0.0);
               const Vec3 I_idx =
                   downstream_block.get_second_moment_of_area(idx) *
-                  Traits::DataType::Scalar::slice(density, idx) *
+                  ::elastica::Material::get_density(
+                      Traits::DataType::Index::slice(material, idx)) *
                   Traits::DataType::Scalar::slice(reference_lengths, idx);
               Variable::diagonal_assign(variable, idx, I_idx);
             }
@@ -364,9 +385,10 @@ namespace elastica {
             using Tag = blocks::parameter_t<Variable>;
 
             auto& variable(blocks::get<Tag>(downstream_block));
-            auto& density(blocks::get<tags::Mass>(downstream_block));
+            auto& material(blocks::get<tags::Material>(downstream_block));
             auto& reference_lengths(
                 blocks::get<tags::ReferenceElementLength>(downstream_block));
+
             const auto dofs = Variable::get_dofs(initializers.n_elems());
             for (std::size_t idx = 0U; idx < dofs; ++idx) {
               // inv(I_1, I_2, I_3)
@@ -374,7 +396,8 @@ namespace elastica {
               const Vec3 I_idx =
                   real_type(1.0) /
                   (downstream_block.get_second_moment_of_area(idx) *
-                   Traits::DataType::Scalar::slice(density, idx) *
+                   ::elastica::Material::get_density(
+                       Traits::DataType::Index::slice(material, idx)) *
                    Traits::DataType::Scalar::slice(reference_lengths, idx));
               Variable::diagonal_assign(variable, idx, I_idx);
             }
@@ -382,19 +405,21 @@ namespace elastica {
 
           // Variables Initialization
           {
-            using MassVariable = typename Traits::DataType::Scalar;
+            // using MassVariable = typename Traits::DataType::Scalar;
 
             auto& mass(blocks::get<::elastica::tags::Mass>(downstream_block));
-            auto& volume = downstream_block.get_element_volume();
-            auto n_elem = volume.size();
-            typename MassVariable::type mass_on_element(n_elem);
-            mass_on_element =
-                0.5 * MassVariable::slice(mass, 0, n_elem) * volume;
-            // Traits::Operations::quadrature_kernel(mass, mass_on_element);
-            MassVariable::slice(mass, 0UL, n_elem) = mass_on_element;
-            MassVariable::slice(mass, n_elem) = 0.0;
-            MassVariable::slice(mass, 1UL, n_elem) += mass_on_element;
-            MassVariable::slice(mass, 0UL) += 0.0;
+            // why?
+            const std::size_t n_elem = initializers.n_elems();
+
+            mass = 0.0;  // clear
+            for (std::size_t idx = 0UL; idx < n_elem; ++idx) {
+              typename Traits::real_type mass_on_element =
+                  ::elastica::Material::get_density(
+                      downstream_block.get_material(idx)) *
+                  downstream_block.get_element_volume(idx);
+              Mass::slice(mass, idx) += 0.5 * mass_on_element;
+              Mass::slice(mass, idx + 1UL) += 0.5 * mass_on_element;
+            }
           }
 
           /* Reset forces and torques */
@@ -484,6 +509,72 @@ namespace elastica {
         inline constexpr decltype(auto) get_angular_acceleration()
             const& noexcept {
           return blocks::get<tags::AngularAcceleration>(self());
+        }
+        //@}
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\name Material methods*/
+        //@{
+        /*!\brief Gets material of the current rod
+         */
+        inline constexpr decltype(auto) get_material() & noexcept {
+          return blocks::get<tags::Material>(self());
+        }
+        inline constexpr decltype(auto) get_material() const& noexcept {
+          return blocks::get<tags::Material>(self());
+        }
+        inline constexpr decltype(auto) get_material(
+            std::size_t idx) & noexcept {
+          return Material::slice(get_material(), idx);
+        }
+        inline constexpr decltype(auto) get_material(
+            std::size_t idx) const& noexcept {
+          return Material::slice(get_material(), idx);
+        }
+        //@}
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\name External Loads methods*/
+        //@{
+        /*!\brief Gets external loads of the current rod
+         */
+        inline constexpr decltype(auto) get_external_loads() & noexcept {
+          return blocks::get<tags::ExternalLoads>(self());
+        }
+        inline constexpr decltype(auto) get_external_loads() const& noexcept {
+          return blocks::get<tags::ExternalLoads>(self());
+        }
+        inline constexpr decltype(auto) get_external_loads(
+            index_type idx) & noexcept {
+          return ExternalLoads::slice(get_external_loads(), idx);
+        }
+        inline constexpr decltype(auto) get_external_loads(
+            index_type idx) const& noexcept {
+          return ExternalLoads::slice(get_external_loads(), idx);
+        }
+        //@}
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\name External Torques methods*/
+        //@{
+        /*!\brief Gets external torques of the current rod
+         */
+        inline constexpr decltype(auto) get_external_torques() & noexcept {
+          return blocks::get<tags::ExternalTorques>(self());
+        }
+        inline constexpr decltype(auto) get_external_torques() const& noexcept {
+          return blocks::get<tags::ExternalTorques>(self());
+        }
+        inline constexpr decltype(auto) get_external_torques(
+            index_type idx) & noexcept {
+          return ExternalTorques::slice(get_external_torques(), idx);
+        }
+        inline constexpr decltype(auto) get_external_torques(
+            index_type idx) const& noexcept {
+          return ExternalTorques::slice(get_external_torques(), idx);
         }
         //@}
         //**********************************************************************
@@ -614,12 +705,6 @@ namespace elastica {
               angular_acceleration, inv_mass_SMOI,
               total_torque % Traits::Operations::expand_for_broadcast(
                                  Traits::Operations::transpose(dilatation)));
-
-          /* Reset forces and torques */
-          // TODO: what if someone wants to check external load/torques before
-          // reset
-          external_loads = 0.0;
-          external_torques = 0.0;
         }
         //*********************************************************************
 

@@ -8,6 +8,8 @@
 #include <tuple>
 
 #include "Simulator/Configuration.hpp"
+#include "Simulator/Interface/Batching/DefaultBatcher.hpp"
+#include "Simulator/Utilities/Timers.hpp"
 #include "Time/SimulationTime.hpp"
 #include "Utilities/AsTaggedTuple.hpp"
 #include "Utilities/Invoke.hpp"
@@ -24,6 +26,7 @@ namespace mock {
     using IndexType = std::size_t;
     using Parent = ModuleTraits;
 
+    // using Parent::Parent;
     explicit MockSingleComponentSimulationTraits(Parent m)
         : Parent(std::move(m)){};
     ~MockSingleComponentSimulationTraits() = default;
@@ -32,14 +35,18 @@ namespace mock {
   template <typename ModuleTraits>
   using MockTraits = MockSingleComponentSimulationTraits<ModuleTraits>;
 
-  template <typename Config>
+  template <typename Config, typename... Configs>
   inline constexpr decltype(auto) make_simulator_configuration(
-      Config config) noexcept {
+      Config config, Configs... configs) noexcept {
     struct T : public Config,
+               public Configs...,
                public ::elastica::configuration::DefaultParallelConfiguration {
-      T(Config c) : Config(std::move(c)) {}
+      T(Config c, Configs... cs)
+          : Config(std::move(c)), Configs(std::move(cs))... {}
+      T(T const&) = default;
+      T(T&&) = default;
     };
-    return MockTraits<T>(std::move(config));
+    return MockTraits<T>(T(std::move(config), std::move(configs)...));
   }
 
   //  template <typename... Configs>
@@ -67,19 +74,28 @@ namespace mock {
 
     ////////////  This piece of code is copy-pasted yo
     //! Get all algorithm steps
-    using AlgorithmSteps = tmpl::append<typename M::PostKinematicUpdateSteps,
-                                        typename M::PreDynamicUpdateSteps,
-                                        typename M::PostDynamicUpdateSteps>;
+    using AlgorithmSteps = tmpl::append<
+        typename M::UpdateSteps, typename M::PostKinematicUpdateSteps,
+        typename M::PreDynamicUpdateSteps, typename M::PostDynamicUpdateSteps>;
     //! Algorithm cache type
     using Algorithms = tmpl::as_tagged_tuple<AlgorithmSteps>;
+    using DefaultBatcher = ::elastica::interface::detail::DefaultBatcher;
     //! Get all batchers algorithm steps
-    using Batchers = tmpl::append<typename M::BatchingAlgorithm>;
+    using Batchers =
+        tmpl::append<tmpl::list<DefaultBatcher>, typename M::BatchingAlgorithm>;
     //! Batching algorithm cache type
     using BatchingAlgorithms = tmpl::as_tagged_tuple<Batchers>;
     static constexpr std::size_t n_algorithms =
         tmpl::size<AlgorithmSteps>::value;
     static constexpr std::size_t n_batching_algorithms =
         tmpl::size<Batchers>::value;
+    //************************************************************************
+    /*!\name Profiler type definitions */
+    //@{
+    //! Cache for timers for profiling the code
+    using Timers = ::elastica::Timers<AlgorithmSteps>;
+    //@}
+    //************************************************************************
     ////////////  This piece of code is copy-pasted yo
 
     MockSingleComponentSimulator(SimTraits& traits, bool arg_all_registered,
@@ -146,6 +162,30 @@ namespace mock {
     }
     //************************************************************************
 
+   public:  // For access to modules such as with primitives
+    //**Profiling methods*****************************************************
+    /*!\name Profiling methods*/
+    //@{
+
+    //************************************************************************
+    /*!\brief Get a timer corresponding to an algorithm
+     *
+     * \tparam AlgorithmTag Tag for obtaining the algorithm
+     * \return Algorithm callable
+     */
+    template <typename AlgorithmTag>
+    inline constexpr decltype(auto) get_timer() & noexcept {
+      using ::elastica::get_meter;
+      return get_meter<AlgorithmTag>(timers);
+    }
+
+    template <typename AlgorithmTag>
+    inline constexpr decltype(auto) get_timer() const& noexcept {
+      using ::elastica::get_meter;
+      return get_meter<AlgorithmTag>(timers);
+    }
+    //************************************************************************
+
     // ditto copy
     auto check_if_not_final() const -> void {
       const char* error_message = R"error(
@@ -187,12 +227,23 @@ reorganizing your code logic.
     }
 
     inline auto ready() const noexcept -> bool { return is_final; }
+    // don't check this here, it is checked elsewhere. We just provide the
+    // interface
+    template <typename F>
+    void for_each_system(F) const& noexcept {}
+    template <typename F>
+    void for_each_system(F) & noexcept {}
+    template <typename F>
+    void for_each_block(F) const& noexcept {}
+    template <typename F>
+    void for_each_block(F) & noexcept {}
 
    public:
     bool is_final = false;
     bool all_registered = false;
     Algorithms algorithms;
     BatchingAlgorithms batching_algorithms;
+    Timers timers;
   };
 
   template <typename SimTraits,  // Configuration parameter

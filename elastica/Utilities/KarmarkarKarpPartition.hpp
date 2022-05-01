@@ -13,6 +13,9 @@
 
 #pragma once
 
+//******************************************************************************
+// Includes
+//******************************************************************************
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
@@ -325,7 +328,8 @@ namespace elastica {
 
     // only needs iterable
     // inspired from https://stackoverflow.com/a/68425000
-    // see alos https://stackoverflow.com/questions/32354215/better-results-in-set-partition-than-by-differencing
+    // see alos
+    // https://stackoverflow.com/questions/32354215/better-results-in-set-partition-than-by-differencing
     template <typename T, typename Op>
     auto KarmarkarKarp(std::vector<T> const& inputs, const std::size_t k, Op op)
         -> KarmarkarKarpResult<T> {
@@ -358,17 +362,67 @@ namespace elastica {
 
   }  // namespace detail
 
+  //****************************************************************************
+  /*!\brief Performs set differencing via the Karmarkar-Karp partitioning
+   * algorithm for subset sums, using a custom access operator
+   * \ingroup utils
+   *
+   * \details
+   * Given a collection of items, perform set differencing upon them using the
+   * result of evaluating `op` on each item as a key and return a collection of
+   * item collections, each containing a partitioned set that all have
+   * approximately the same sum of `op(item)`.
+   *
+   * \semantics
+   * The key of each item, accessed by `op(item)`, should be logically
+   * comparable (i.e. the type `Op(T)` should have a well defined semantics for
+   * logical comparison operators <, >, ==, !=).
+   *
+   * \example
+   * With the setup shown below for the input items
+   * \snippet Test_KarmarkarKarpPartition.cpp kk_lambda_setup
+   * the following results in a partioned set
+   * \snippet Test_KarmarkarKarpPartition.cpp kk_lambda_eg
+   *
+   * \param inputs The input collection to be partitioned
+   * \param n_partitions The number of requested partitions
+   * \return Collection of input collections that are partitioned
+   */
+  template <typename T, typename Op>
+  inline decltype(auto) karmarkar_karp_partition(std::vector<T> const& inputs,
+                                                 std::size_t const n_partitions,
+                                                 Op op) {
+    return detail::KarmarkarKarp(inputs, n_partitions, std::move(op));
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Performs set differencing via the Karmarkar-Karp partitioning
+   * algorithm for subset sums
+   * \ingroup utils
+   *
+   * \details
+   * Given a collection of items of type `T`, perform set differencing upon them
+   * using the item as a key and return a collection of item collections, each
+   * containing a partitioned set that all have approximately the same sum.
+   *
+   * \semantics
+   * Each item should be logically comparable (i.e. the type `T` should have a
+   * well defined semantics for logical comparison operators <, >, ==, !=).
+   *
+   * \example
+   * \snippet Test_KarmarkarKarpPartition.cpp kk_example
+   *
+   * \param items The input item collection to be partitioned
+   * \param n_partitions The number of requested partitions
+   * \return Collection of input collections that are partitioned
+   */
   template <typename T>
   inline decltype(auto) karmarkar_karp_partition(
-      std::vector<T> const& inputs, std::size_t const partition_size) {
-    return detail::KarmarkarKarp(inputs, partition_size,
-                                 [](T const& t) { return t; });
+      std::vector<T> const& items, std::size_t const n_partitions) {
+    return karmarkar_karp_partition(items, n_partitions,
+                                    [](T const& t) { return t; });
   }
-
-  template <typename T, typename Op>
-  inline decltype(auto) karmarkar_karp_partition(
-      std::vector<T> const& inputs, std::size_t const partition_size, Op&& op) {
-    return detail::KarmarkarKarp(inputs, partition_size, std::forward<Op>(op));
-  }
+  //****************************************************************************
 
 }  // namespace elastica

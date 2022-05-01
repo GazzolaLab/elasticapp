@@ -94,7 +94,9 @@ namespace {
               return 4.0;
             }),
         blocks::initialize<tags::ElementDilatation>([](...) { return 1.0; }),
-        blocks::initialize<tags::Mass>([](...) { return 1.0; }),
+        // blocks::initialize<tags::Mass>([](...) { return 1.0; }),
+        blocks::initialize<tags::Material>(
+            [](...) { return ::elastica::iron; }),
         blocks::initialize<tags::Velocity>([](...) { return 1.0; }),
         blocks::initialize<tags::AngularVelocity>([](...) { return 1.0; }),
         blocks::initialize<tags::Acceleration>([](...) { return 3.0; }),
@@ -149,7 +151,8 @@ namespace {
     const Vec3 lagrangian_transport(joueb % Vec3({1.0, 1.0, 1.0}));
     // clang-format on
 
-    const auto compute_internal_torques_result = model.compute_internal_torques();
+    const auto compute_internal_torques_result =
+        model.compute_internal_torques();
     const Vec3 edge_torque =
         Traits::DataType::Vector::slice(compute_internal_torques_result, 0UL);
     const Vec3 mid_torque =

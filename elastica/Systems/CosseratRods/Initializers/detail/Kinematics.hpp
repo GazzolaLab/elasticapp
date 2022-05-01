@@ -67,12 +67,8 @@ namespace elastica {
        protected:
         template <typename OptionsTuple>
         decltype(auto) get_required_parameters(
-            OptionsTuple const& options_cache) const /*noexcept*/ {
-          const auto material_id =
-              std::get<option_tags::Material>(options_cache).value();
-          return std::make_tuple(blocks::initialize<tags::Mass>(
-              [density = Material::get_density(material_id)](
-                  std::size_t /*meta_index*/) { return density; }));
+            OptionsTuple const& /*meta*/) const /*noexcept*/ {
+          return std::make_tuple();
         }
       };
 

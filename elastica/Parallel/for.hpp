@@ -63,7 +63,7 @@ namespace elastica {
     }  // namespace detail
 
     //**************************************************************************
-    /* \brief Calls function f for all items from [first, last) interval
+    /*!\brief Calls function f for all items from [first, last) interval
      * \ingroup parallel
      *
      * \param funcs functions to execute in parallel

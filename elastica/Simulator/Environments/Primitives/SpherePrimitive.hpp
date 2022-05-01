@@ -1,82 +1,130 @@
-//=================================================================================================
+//==============================================================================
 /*!
- *  \file pe/core/rigidbody/SphereBase.h
- *  \brief Base class for the sphere geometry
- *
- *  Copyright (C) 2009 Klaus Iglberger
- *                2013-2014 Tobias Scharpff
- *
- *  This file is part of pe.
- *
- *  pe is free software: you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- *
- *  pe is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with
- * pe. If not, see <http://www.gnu.org/licenses/>.
- */
-//=================================================================================================
+//  \file
+//  \brief A sphere primitive
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+//
+//  This file contains implementation from the pe library with the following
+//  copyrights
+**
+**  Project home: https://www.cs10.tf.fau.de/research/software/pe/
+**
+**  Copyright (C) 2009 Klaus Iglberger
+**                2013-2014 Tobias Scharpff
+**
+**  This file is part of pe.
+**
+**  pe is free software: you can redistribute it and/or modify it under the
+** terms of the GNU General Public License as published by the Free Software
+** Foundation, either version 3 of the License, or (at your option) any later
+** version.
+**
+**  pe is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+** A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License along with
+** pe. If not, see <http://www.gnu.org/licenses/>.
+*/
+//==============================================================================
 
 #pragma once
 
-#include "elastica/ErrorHandling/Assert.hpp"
-#include "elastica/Simulator/Environments/CollisionSystem/Types.hpp"
-#include "elastica/Simulator/Environments/Primitives/GeomPrimitive.hpp"
-#include "elastica/Simulator/Environments/Primitives/Protocols.hpp"
-#include "elastica/Simulator/Thresholds.hpp"
-#include "elastica/Utilities/DefineTypes.h"
-#include "elastica/Utilities/Math/Equal.hpp"
-#include "elastica/Utilities/Math/SqrLength.hpp"
-#include "elastica/Utilities/Math/Vec3.hpp"
-#include "elastica/Utilities/ProtocolHelpers.hpp"
+#include "ErrorHandling/Assert.hpp"
+///
+#include "Simulator/Environments/Primitives/Types.hpp"
+//
+#include "Simulator/Environments/Primitives/GeomPrimitive.hpp"
+#include "Simulator/Environments/Primitives/Protocols.hpp"
+///
+#include "Utilities/DefineTypes.h"
+#include "Utilities/Math/Equal.hpp"
+#include "Utilities/Math/Normalize.hpp"
+#include "Utilities/Math/Vec3.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Thresholds.hpp"
 
 namespace elastica {
 
-  //  class Sphere;
-
   namespace collision {
 
-    class SpherePrimitive final : public GeomPrimitive,
-                                  ::tt::ConformsTo<protocols::ConvexPrimitive> {
+    //**************************************************************************
+    /*!\brief Sphere geometrical primitive.
+     * \ingroup primitives
+     *
+     * \details
+     * The SpherePrimitive represents the geometric primitive sphere.
+     *
+     * The sphere primitive is the simplest geometric primitive, represented
+     * only by its geometric global position and its radius. A special property
+     * of the sphere geometry is that in every point of its surface a unique
+     * surface normal is defined.
+     */
+    class SpherePrimitive /*final*/
+        : public GeomPrimitive,
+          public ::tt::ConformsTo<protocols::ConvexPrimitive> {
      public:
+      //**Constructor***********************************************************
+      /*!\name Constructor */
+      //@{
       // TODO Make the non-default constructors private
       explicit SpherePrimitive(id_t sid, id_t uid, bool finite,
                                MaterialID material);
       SpherePrimitive(id_t sid, id_t uid, bool finite, const Vec3& gpos,
                       real_t radius, MaterialID material);
-      ~SpherePrimitive() noexcept final;
       SpherePrimitive(SpherePrimitive&&) noexcept;
+      //@}
+      //************************************************************************
+
+      //**Destructor************************************************************
+      /*!\name Destructor */
+      //@{
+      ~SpherePrimitive() noexcept /*final*/;
+      //@}
+      //************************************************************************
 
      public:
+      //**Get functions*********************************************************
+      /*!\name Get functions */
+      //@{
       inline real_t get_radius() const noexcept;
+      //@}
+      //************************************************************************
 
-      // For fine detection
+      //**Utility functions*****************************************************
+      /*!\name Utility functions */
+      //@{
+      //!< support functions for protocol conformance
       inline Vec3 support(const Vec3& d) const;
       inline Vec3 support_contact_threshold(const Vec3& d) const;
-      inline void
-      calculate_bounding_box();  // Calculation of the axis-aligned bounding box
+      //!< Calculation of the axis-aligned bounding box
+      void calculate_bounding_box();
       template <typename Vec3Convertible>
-      inline void transfer(real_t radius, Vec3Convertible const& gpos,
+      inline void transfer(/*real_t radius,*/ Vec3Convertible const& gpos,
                            Vec3Convertible const& velocity,
                            Vec3Convertible const& omega) noexcept;
+      template <typename Vec3Convertible, typename Rot3Convertible>
+      inline void transfer(real_t radius, Vec3Convertible&& gpos,
+                           Rot3Convertible const& rot_mat,
+                           Vec3Convertible&& velocity,
+                           Vec3Convertible&& omega) noexcept;
+      //@}
+      //************************************************************************
 
-     private:
+     protected:
+      //**Member variables******************************************************
+      /*!\name Member variables */
+      //@{
       real_t radius_;
-
-      //      template <typename SphereIterator>
-      //      friend void transfer(Sphere const&, SphereIterator,
-      //      SphereIterator,
-      //                           std::true_type);
-      //      template <typename ConstSphereIterator>
-      //      friend void transfer(ConstSphereIterator, ConstSphereIterator,
-      //      Sphere&,
-      //                           std::true_type);
+      //@}
+      //************************************************************************
     };
+    //**************************************************************************
 
     //==========================================================================
     //
@@ -101,33 +149,6 @@ namespace elastica {
     //==========================================================================
 
     //**************************************************************************
-    /*!\brief Calculation of the bounding box of the sphere.
-     *
-     * \return void
-     *
-     * This function updates the axis-aligned bounding box of the sphere
-     * primitive according to the current position and orientation of the
-     * sphere. Note that the bounding box is increased in all dimensions by
-     * elastica::contact_threshold to guarantee that rigid bodies in close
-     * proximity of the sphere are also considered during the collision
-     * detection process.
-     */
-    inline void SpherePrimitive::calculate_bounding_box() {
-      const real_t length(radius_ + contact_threshold);
-
-      aabb_[0] = gpos_[0] - length;
-      aabb_[1] = gpos_[1] - length;
-      aabb_[2] = gpos_[2] - length;
-      aabb_[3] = gpos_[0] + length;
-      aabb_[4] = gpos_[1] + length;
-      aabb_[5] = gpos_[2] + length;
-
-      ELASTICA_ASSERT(aabb_.isValid(), "Invalid bounding box detected");
-      ELASTICA_ASSERT(aabb_.contains(gpos_), "Invalid bounding box detected");
-    }
-    //**************************************************************************
-
-    //**************************************************************************
     /*!\brief Estimates the point which is farthest in direction \a d.
      *
      * \param d The normalized search direction in world-frame coordinates.
@@ -136,9 +157,8 @@ namespace elastica {
     inline Vec3 SpherePrimitive::support(const Vec3& d) const {
       ELASTICA_ASSERT(!elastica::equal(elastica::sqrLength(d), 0.0),
                       "Zero length search direction");
-      ELASTICA_ASSERT(
-          !elastica::equal(std::abs(1.0 - elastica::sqrLength(d)), 0.0),
-          "Search direction is not normalised");
+      ELASTICA_ASSERT(elastica::is_normalized(d),
+                      "Search direction is not normalised");
       return gpos_ + radius_ * d;
     }
     //**************************************************************************
@@ -155,9 +175,8 @@ namespace elastica {
         const Vec3& d) const {
       ELASTICA_ASSERT(!elastica::equal(elastica::sqrLength(d), 0.0),
                       "Zero length search direction");
-      ELASTICA_ASSERT(
-          !elastica::equal(std::abs(1.0 - elastica::sqrLength(d)), 0.0),
-          "Search direction is not normalised");
+      ELASTICA_ASSERT(elastica::is_normalized(d),
+                      "Search direction is not normalised");
       return gpos_ + d * (radius_ + contact_threshold);
     }
     //**************************************************************************
@@ -169,22 +188,22 @@ namespace elastica {
     // DONE : should we template Vec3Like for blaze's overload mechanism to kick
     // in?
     //**************************************************************************
-    /*!\brief Transfers information from the super-ordinate entitry to the
+    /*!\brief Transfers information from the super-ordinate entity to the
      * primitive
      *
      * TODO Fill in
      */
     template <typename Vec3Like>
-    inline void SpherePrimitive::transfer(real_t radius, Vec3Like const& gpos,
-                                          Vec3Like const& velocity,
-                                          Vec3Like const& omega) noexcept {
-      radius_ = radius;
+    inline void SpherePrimitive::transfer(
+        /*real_t radius, */ Vec3Like const& gpos, Vec3Like const& velocity,
+        Vec3Like const& omega) noexcept {
+      // radius_ = radius;
 
       // Checking the radius
       // Since the sphere transfer is never directly called but only used in
       // a small number of internal functions,
       // only asserts are used here to double check the arguments.
-      ELASTICA_ASSERT(radius > real_t(0), "Invalid sphere radius");
+      // ELASTICA_ASSERT(radius > real_t(0), "Invalid sphere radius");
 
       gpos_ = gpos;
       v_ = velocity;
@@ -192,9 +211,24 @@ namespace elastica {
 
       // Setting the axis-aligned bounding box
       SpherePrimitive::calculate_bounding_box();
+    }
+    //**************************************************************************
 
-        // We can reset the forces and torques to be zero here, but its not SRP
-        // so shifted the functionality in the TransferHelper class
+    //**************************************************************************
+    /*!\brief Transfers information from the super-ordinate entity to the
+     * primitive
+     *
+     * TODO Fill in
+     */
+    template <typename Vec3Like, typename Rot3Like>
+    inline void SpherePrimitive::transfer(real_t radius, Vec3Like&& gpos,
+                                          Rot3Like const& rot_mat,
+                                          Vec3Like&& velocity,
+                                          Vec3Like&& omega) noexcept {
+      radius_ = radius;
+      Q_ = rot_mat;
+      transfer(std::forward<Vec3Like>(gpos), std::forward<Vec3Like>(velocity),
+               std::forward<Vec3Like>(omega));
     }
     //**************************************************************************
 

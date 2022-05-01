@@ -13,6 +13,11 @@
 
 #pragma once
 
+//******************************************************************************
+// Includes
+//******************************************************************************
+#include "Systems/common/Components/Types.hpp"
+
 namespace elastica {
 
   namespace cosserat_rod {
@@ -22,7 +27,7 @@ namespace elastica {
       //************************************************************************
       /*! \cond ELASTICA_INTERNAL */
       template <typename /* DerivedComponent*/>
-      struct Component;
+      struct ElasticityComponent;
       /*! \endcond */
       //************************************************************************
 

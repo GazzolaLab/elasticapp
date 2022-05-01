@@ -26,7 +26,7 @@ namespace elastica {
 
       //************************************************************************
       /*! \cond ELASTICA_INTERNAL */
-      template <typename>
+      template <typename Traits, typename>
       struct EmptyUpdateSteps {
        public:
         //**Algorithmic order***************************************************
@@ -38,6 +38,8 @@ namespace elastica {
         using PreDynamicUpdateSteps = tmpl::list<>;
         //! Algorithms to be carried out after the dynamic update step
         using PostDynamicUpdateSteps = tmpl::list<>;
+        //! Algorithms to be carried out as an update step
+        using UpdateSteps = tmpl::list<>;
         //@}
         //**********************************************************************
       };

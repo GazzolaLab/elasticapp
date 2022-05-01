@@ -77,7 +77,8 @@ namespace elastica {
                 CRT, ComputationalBlock,
                 detail::SquareCrossSectionOperations<CRT>>,
             public ::tt::ConformsTo<protocols::Geometry1D>,
-            public Component<WithSquareCosseratRod<CRT, ComputationalBlock>> {
+            public GeometryComponent<
+                WithSquareCosseratRod<CRT, ComputationalBlock>> {
        private:
         //**Type definitions****************************************************
         //! Traits type

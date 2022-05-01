@@ -19,6 +19,7 @@
 
 #include <cstdint>
 
+#include "Utilities/Math/RotationConvention.hpp"
 #include "Utilities/NonCreatable.hpp"
 
 namespace elastica {
@@ -54,6 +55,15 @@ namespace elastica {
       static constexpr DirectionType D2 = DirectionType::d2;
       //! unique ID for D3 direction
       static constexpr DirectionType D3 = DirectionType::d3;
+      //! unique ID for the normal direction
+      static constexpr DirectionType Normal =
+          DirectionType(RotationConvention::Normal);
+      //! unique ID for the binormal direction
+      static constexpr DirectionType Binormal =
+          DirectionType(RotationConvention::Binormal);
+      //! unique ID for the tangent direction
+      static constexpr DirectionType Tangent =
+          DirectionType(RotationConvention::Tangent);
       //! Dimension of simulation
       static constexpr auto Dimension =
           static_cast<std::uint8_t>(DirectionType::Count);
@@ -67,17 +77,36 @@ namespace elastica {
      * \ingroup simulator
      *
      * \details
-     * Converts a LagrangianFrame::DirectionType into an index value in
-     * associative arrays.
+     * Converts a LagrangianFrame::DirectionType into an index value for use in
+     * generic code or associative arrays.
      *
      * \example
      * \snippet Test_LagrangianFrame.cpp cast_along_eg
      *
-     * \param Dir A Direction to cast as index to
+     * \param dir A Direction to cast as index to
      */
-    inline constexpr auto cast_along(LagrangianFrame::DirectionType Dir)
-    -> std::size_t {
-      return static_cast<std::size_t>(Dir);
+    inline constexpr auto cast_along(LagrangianFrame::DirectionType dir)
+        -> std::size_t {
+      return static_cast<std::size_t>(dir);
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Casts a Lagrangian frame direction into an index value
+     * \ingroup simulator
+     *
+     * \details
+     * Converts a LagrangianFrame::DirectionType into an index value for use in
+     * generic code or associative arrays.
+     *
+     * \example
+     * \snippet Test_LagrangianFrame.cpp cast_along_template_eg
+     *
+     * \tparam Dir A Direction to cast as index to
+     */
+    template <typename LagrangianFrame::DirectionType Dir>
+    inline constexpr auto cast_along() -> std::size_t {
+      return cast_along(Dir);
     }
     //**************************************************************************
 

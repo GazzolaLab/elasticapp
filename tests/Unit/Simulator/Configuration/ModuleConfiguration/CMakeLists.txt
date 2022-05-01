@@ -7,7 +7,7 @@ set(LIBRARY_SOURCES
         Test_IterationPolicy.cpp
         Test_Connections.cpp
         Test_Constraints.cpp
-        Environments.cpp
+        Test_Environments.cpp
         Test_Forcing.cpp
         Test_Parallel.cpp
         Test_Serialize.cpp

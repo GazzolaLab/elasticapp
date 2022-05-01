@@ -32,6 +32,7 @@ elastica_target_headers(
         AsConst.hpp
         Byte.hpp
         Clamp.hpp
+        CountingIterator.hpp
         CRTP.hpp
         DefineTypes.h
         Demangle.hpp

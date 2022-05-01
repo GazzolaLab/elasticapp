@@ -23,7 +23,7 @@
 ///
 // instead of mocking a block with an emplace() method here, I just chose to
 // use a Cosserat rod.
-#include "Simulator/Interface/Simulator/Profiling.hpp"
+#include "Simulator/Utilities/Timers.hpp"
 #include "Systems/CosseratRods/CosseratRods.hpp"
 #include "Systems/CosseratRods/Mocks/CosseratRodTraits.hpp"
 #include "Systems/CosseratRods/Serialize.hpp"  // because you decided to put cosserat rods in
@@ -198,14 +198,8 @@ namespace mock {
     static constexpr std::size_t n_algorithms =
         tmpl::size<AlgorithmSteps>::value;
 
-    template <typename T>
-    struct Transform {
-      using type = ::elastica::interface::tags::WcProfilerTag<T>;
-    };
-    //! Tags for timers profiling the code
-    using TimerTags = tmpl::transform<AlgorithmSteps, Transform<tmpl::_1>>;
     //! Cache for timers for profiling the code
-    using Timers = tmpl::as_tagged_tuple<TimerTags>;
+    using Timers = ::elastica::Timers<AlgorithmSteps>;
     ////////////  This piece of code is copy-pasted yo
 
     using T = Traits;
@@ -262,9 +256,15 @@ reorganizing your code logic.
     //************************************************************************
 
     template <typename AlgorithmTag>
-    inline constexpr decltype(auto) get_timer() const noexcept {
-      using Tag = typename Transform<AlgorithmTag>::type;
-      return tuples::get<Tag>(timers_);
+    inline constexpr decltype(auto) get_timer() & noexcept {
+      using ::elastica::get_meter;
+      return get_meter<AlgorithmTag>(timers_);
+    }
+
+    template <typename AlgorithmTag>
+    inline constexpr decltype(auto) get_timer() const& noexcept {
+      using ::elastica::get_meter;
+      return get_meter<AlgorithmTag>(timers_);
     }
 
    public:

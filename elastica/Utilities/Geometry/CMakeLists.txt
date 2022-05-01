@@ -4,8 +4,8 @@ elastica_target_sources(
         ${LIBRARY}
         PRIVATE
         AxisAngleRotation.cpp
-        #        get_closest_line_segment_points.cpp
-        #        get_closest_point_on_line.cpp
+        GetClosestLineSegmentPoints.cpp
+        GetClosestPointOnLine.cpp
 )
 
 elastica_target_headers(
@@ -14,6 +14,6 @@ elastica_target_headers(
         HEADERS
         Angles.hpp
         AxisAngleRotation.hpp
-        #        get_closest_line_segment_points.hpp
-        #        get_closest_point_on_line.hpp
+        GetClosestLineSegmentPoints.hpp
+        GetClosestPointOnLine.hpp
 )

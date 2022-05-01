@@ -1,88 +1,47 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Inclusion of all environment components of \elastica
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
 
-#include "elastica/Systems/Systems.hpp"
+//******************************************************************************
+// Includes
+//******************************************************************************
+// Implementation
+#include "Simulator/Environments/Environments.hpp"
+// Module interface
+#include "Simulator/Interface/Environments.hpp"
+
+//==============================================================================
+//
+//  DOXYGEN DOCUMENTATION
+//
+//==============================================================================
+
+//******************************************************************************
+/*!\defgroup environments Environments
+ * \brief Implementation of environments (i.e. modeling effects external to
+ * systems) that impose forces and torques on \elastica systems (such as rods,
+ * rigid bodies etc.).
+ */
+//******************************************************************************
 
 namespace elastica {
-  //  namespace rigidbody {
-  //    class Sphere;
-  //  }
 
-  namespace environments {
-
-    struct EnvironmentBase {
-     protected:
-      EnvironmentBase() = default;
-
-      // Must come from the confgiuration files, leave for now
-      using ValueType = double;
-      using TimeType = ValueType;
-
-     public:
-      virtual ~EnvironmentBase() = default;
-
-      template <typename System>
-      inline void apply(System& system, TimeType time_v);
-
-      virtual void apply_sphere(::elastica::SphereCollection&,
-                                TimeType time_v) const = 0;
-    };
-
-    template <>
-    inline void EnvironmentBase::apply<::elastica::SphereCollection>(
-        ::elastica::SphereCollection& sphere_collection, TimeType time_v) {
-      apply_sphere(sphere_collection, time_v);
-    }
-
-    struct ExternalField : public EnvironmentBase {
-      ExternalField() : EnvironmentBase(){};
-      ~ExternalField() override = default;
-
-      void apply_sphere(::elastica::SphereCollection& sphere_collection,
-                        TimeType /*time_v*/) const override {
-        auto& pos = sphere_collection.position_collection_;
-        auto x = blaze::row(pos, 0UL);
-        auto y = blaze::row(pos, 1UL);
-        //        auto z = blaze::row(pos, 2UL);
-
-        //        auto prefactor(std::cos(2.0 * M_PI * time_v));
-        auto prefactor(1.0);
-
-        auto& force = sphere_collection.force_collection_;
-        blaze::row(force, 0UL) = -4.0 * x;
-        blaze::row(force, 1UL) = -25.0 * y;
-        //        blaze::row(force, 0UL) += 2.0 * blaze::pow(blaze::sin(M_PI *
-        //        x), 2) *
-        //                                  blaze::sin(2.0 * M_PI * y) *
-        //                                  blaze::sin(2.0 * M_PI * z);
-        //        blaze::row(force, 1UL) -= blaze::sin(2.0 * M_PI * x) *
-        //                                  blaze::pow(blaze::sin(M_PI * y), 2)
-        //                                  * blaze::sin(2.0 * M_PI * z);
-        //        blaze::row(force, 2UL) -= blaze::sin(2.0 * M_PI * x) *
-        //                                  blaze::pow(blaze::sin(M_PI * z), 2)
-        //                                  * blaze::sin(2.0 * M_PI * y);
-        force *= prefactor;
-        //        blaze::row(force, 0UL) -= 2.0 * x;
-      };
-    };
-
-    struct GravityField : public EnvironmentBase {
-      GravityField() : EnvironmentBase(){};
-      ~GravityField() override = default;
-
-      void apply_sphere(::elastica::SphereCollection& sphere_collection,
-                        TimeType /*time_v*/) const override {
-        // In z dir
-        auto gravity(-0.9801);
-
-        auto& force = sphere_collection.force_collection_;
-        auto& mass = sphere_collection.mass_collection_;
-
-        blaze::row<0UL>(force) = 0.0;
-        blaze::row<1UL>(force) = 0.0;
-        blaze::row<2UL>(force) = mass * gravity;
-      };
-    };
-
-  }  // namespace environments
+  //****************************************************************************
+  /*!\brief Environment data-structures and subroutines
+  // \ingroup environments
+  */
+  namespace environments {}
+  //****************************************************************************
 
 }  // namespace elastica

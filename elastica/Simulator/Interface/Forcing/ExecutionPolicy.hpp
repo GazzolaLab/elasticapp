@@ -20,6 +20,7 @@
 
 ///
 #include "Simulator/Configuration/ModuleConfiguration/ExecutionPolicy.hpp"
+#include "Simulator/Interface/Affordances/detail/EmptyUpdateSteps.hpp"
 #include "Simulator/Interface/Forcing/Types.hpp"
 ///
 #include "Parallel/for_each.hpp"  // uses elastica's, not GLIBCXX
@@ -61,7 +62,9 @@ namespace elastica {
        */
       template <class ForcingTraits, class ForcingModule>
       class ExecutionPolicy
-          : public CRTPHelper<ForcingModule, ExecutionPolicy> {
+          : public CRTPHelper<ForcingModule, ExecutionPolicy>,
+            public ::elastica::modules::detail::EmptyUpdateSteps<
+                ForcingTraits, ExecutionPolicy<ForcingTraits, ForcingModule>> {
        private:
         //**Type definitions****************************************************
         //! CRTP Type
@@ -287,12 +290,8 @@ namespace elastica {
         //**Algorithmic order***************************************************
         /*!\name Algorithmic order of steps within a temporal loop*/
         //@{
-        //! Algorithms to be carried out after the kinematic update step
-        using PostKinematicUpdateSteps = tmpl::list<>;
         //! Algorithms to be carried out before the dynamic update step
         using PreDynamicUpdateSteps = tmpl::list<ForceSystems>;
-        //! Algorithms to be carried out after the dynamic update step
-        using PostDynamicUpdateSteps = tmpl::list<>;
         //@}
         //**********************************************************************
       };

@@ -177,7 +177,7 @@ namespace mock {
       using P IGNORE_UNUSED = decltype(config);
       using I IGNORE_UNUSED = InternalTraits<ListOfSystems>;
       explicit S(P config) : P(std::move(config)), I(){};
-      S(S const&) = delete;
+      S(S const&) = default;
       S(S&&) noexcept = default;
       ~S() = default;
     };

@@ -35,7 +35,7 @@ namespace elastica {
               "Number of elements in the cosserat rod"};
           // checks for <= for now, so 2 is still valid
           static type lower_bound() noexcept { return 1UL; }
-          using TagType = tags::NElement;
+          using TagType = ::elastica::tags::NElement;
         };
 
         // can be used for torque damping as well
@@ -44,6 +44,7 @@ namespace elastica {
           using P::P;
           static constexpr Options::String help = {
               "Material of the cosserat rod"};
+          using TagType = ::elastica::tags::Material;
         };
 
       }  // namespace option_tags
@@ -62,10 +63,15 @@ namespace elastica {
           using Tag = NElement;
           check_lower_bounds(options_cache, tmpl::list<Tag>{});
           // Make a special concession for n elements alone?!
-          return std::make_tuple(blocks::initialize<typename Tag::TagType>(
-              // do a copy here of tuple of initializers
-              [value = (std::get<Tag>(options_cache).value())](...) ->
-              typename Tag::type { return value; }));
+          return std::make_tuple(
+              blocks::initialize<typename Tag::TagType>(
+                  // do a copy here of tuple of initializers
+                  [value = (std::get<Tag>(options_cache).value())](...) ->
+                  typename Tag::type { return value; }),
+              blocks::initialize<typename Material::TagType>(
+                  // do a copy here of tuple of initializers
+                  [value = (std::get<Material>(options_cache).value())](...) ->
+                  typename Material::type { return value; }));
         }
       };
 

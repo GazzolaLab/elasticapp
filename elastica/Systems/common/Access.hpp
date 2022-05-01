@@ -87,4 +87,37 @@ namespace elastica {
   //@}
   //****************************************************************************
 
+  //**External loads functions**************************************************
+  /*!\name External loads functions */
+  //@{
+  /*!\brief Retrieves external loads of a given system
+   * \ingroup systems
+   */
+  inline constexpr decltype(auto) external_loads(AnyPhysicalSystem& t) noexcept;
+  inline constexpr decltype(auto) external_loads(
+      AnyPhysicalSystem const& t) noexcept;
+  inline constexpr decltype(auto) external_loads(AnyPhysicalSystem& t,
+                                                 std::size_t index) noexcept;
+  inline constexpr decltype(auto) external_loads(AnyPhysicalSystem const& t,
+                                                 std::size_t index) noexcept;
+  //@}
+  //****************************************************************************
+
+  //**External torques functions************************************************
+  /*!\name External torques functions */
+  //@{
+  /*!\brief Retrieves external torques of a given system
+   * \ingroup systems
+   */
+  inline constexpr decltype(auto) external_torques(
+      AnyPhysicalSystem& t) noexcept;
+  inline constexpr decltype(auto) external_torques(
+      AnyPhysicalSystem const& t) noexcept;
+  inline constexpr decltype(auto) external_torques(AnyPhysicalSystem& t,
+                                                   std::size_t index) noexcept;
+  inline constexpr decltype(auto) external_torques(AnyPhysicalSystem const& t,
+                                                   std::size_t index) noexcept;
+  //@}
+  //****************************************************************************
+
 }  // namespace elastica

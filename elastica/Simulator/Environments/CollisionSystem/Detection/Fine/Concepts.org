@@ -61,12 +61,12 @@
         HASH(a, b) = HASH(b, a)
         then it assures that nothing will be processed twice
     - What if three neighboring primitives intersect?
-    Assume withot loss of generality (Left (L), center (C) and right (R))
+    Assume withot loss of generality (Left (L), center (CollisionConfi) and right (R))
     primitives are AABB intersecting
         - cASE 1 : get closest poitn returns middle for all
             - the respective primitives take care
             - no issues
         - case 2 ; gcp returns right for L, left for R
-            - C : middle
+            - CollisionConfi : middle
                 - L takes care, no issues (two contact points there)
                 - no added contacts for L or R

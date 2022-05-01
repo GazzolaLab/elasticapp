@@ -20,13 +20,13 @@
 #include <type_traits>
 
 #include "Utilities/Requires.hpp"
-#include "Utilities/TypeTraits/Void.hpp"
 #include "Utilities/StlStreamDeclarations.hpp"
+#include "Utilities/TypeTraits/Void.hpp"
 
 namespace tt {
 
   // @{
-  /// \ingroup TypeTraitsGroup
+  /// \ingroup type_traits_group
   /// \brief Check if type `T` has operator<<(`S`, `T`) defined.
   ///
   /// \details

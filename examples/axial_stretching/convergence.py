@@ -14,7 +14,7 @@ def simulate_axial_stretching_with(n_elem: PositiveInt) -> float:
     sample_interval = 200
 
     base_radius = 0.025
-    base_area = np.pi * base_radius ** 2
+    base_area = np.pi * base_radius**2
 
     base_length = 1.0
     nu = 20.0

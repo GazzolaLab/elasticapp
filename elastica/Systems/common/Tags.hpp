@@ -29,21 +29,21 @@ namespace elastica {
     /*!\brief Tag indicating element positions
      * \ingroup systems
      */
-    struct Position{};
+    struct Position {};
     //**************************************************************************
 
     //**************************************************************************
     /*!\brief Tag indicating velocity
      * \ingroup systems
      */
-    struct Velocity{};
+    struct Velocity {};
     //**************************************************************************
 
     //**************************************************************************
     /*!\brief Tag indicating translational acceleration
      * \ingroup systems
      */
-    struct Acceleration{};
+    struct Acceleration {};
     //**************************************************************************
 
     // so3 group
@@ -52,21 +52,63 @@ namespace elastica {
     /*!\brief Tag indicating element orientations (director)
      * \ingroup systems
      */
-    struct Director{};
+    struct Director {};
     //**************************************************************************
 
     //**************************************************************************
     /*!\brief Tag indicating angular velocity
      * \ingroup systems
      */
-    struct AngularVelocity{};
+    struct AngularVelocity {};
     //**************************************************************************
 
     //**************************************************************************
     /*!\brief Tag indicating angular accelerations
      * \ingroup systems
      */
-    struct AngularAcceleration{};
+    struct AngularAcceleration {};
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Tag indicating material
+     * \ingroup systems
+     */
+    struct Material {};
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Tag indicating mass
+     * \ingroup systems
+     */
+    struct Mass {};
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Tag indicating mass second moment of inertia
+     * \ingroup systems
+     */
+    struct MassSecondMomentOfInertia {};
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Tag indicating inverse mass second moment of inertia
+     * \ingroup systems
+     */
+    struct InvMassSecondMomentOfInertia {};
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Tag indicating external loads
+     * \ingroup systems
+     */
+    struct ExternalLoads {};
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Tag indicating external torques
+     * \ingroup systems
+     */
+    struct ExternalTorques {};
     //**************************************************************************
 
     // D1, D2, D3

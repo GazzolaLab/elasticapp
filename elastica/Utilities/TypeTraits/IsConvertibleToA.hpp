@@ -42,7 +42,7 @@ namespace tt {
 
   //****************************************************************************
   /*!\brief Check if type `U` is convertible to a template specialization of `T`
-   * \ingroup type_traits
+   * \ingroup type_traits_group
    *
    * \requires `U` is a class template
    * \effects If `T` is convertible to a template specialization of `U`, then

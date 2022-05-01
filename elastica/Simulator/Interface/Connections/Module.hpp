@@ -171,6 +171,8 @@ namespace elastica {
       };
       using BatchingAlgorithm =
           tmpl::list<tmpl::type_<ConnectionFillerBatchAlgorithm>>;
+      //! Submodules of the current module
+      using SubModules = tmpl::list<Algorithm>;
       //************************************************************************
 
       //**Friendships***********************************************************

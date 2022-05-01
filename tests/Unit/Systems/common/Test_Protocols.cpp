@@ -61,6 +61,18 @@ namespace elastica {
   inline constexpr float angular_velocity(MySystem const&) noexcept {
     return 1.45F;
   }
+  inline constexpr std::uint16_t external_loads(MySystem&) noexcept {
+    return 1U;
+  }
+  inline constexpr std::uint16_t external_loads(MySystem const&) noexcept {
+    return 1U;
+  }
+  inline constexpr std::size_t external_torques(MySystem&) noexcept {
+    return 1UL;
+  }
+  inline constexpr std::size_t external_torques(MySystem const&) noexcept {
+    return 1UL;
+  }
   /// [systems_protocol_eg]
 
   static_assert(::tt::assert_conforms_to<MySystem, protocols::PhysicalSystem>,

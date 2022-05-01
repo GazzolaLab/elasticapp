@@ -12,5 +12,12 @@
 //
 //==============================================================================
 
+namespace elastica {
+
+  namespace collision {
+
 #include "elastica/Configuration/DEMSolver.hpp"
 
+  }
+
+}  // namespace elastica

@@ -58,8 +58,8 @@ namespace elastica {
 
   //****************************************************************************
   /*!\defgroup singleton Singleton
-   *
-   * Functionality relating to the Singleton pattern in \elastica
+   * \ingroup utils
+   * \brief Implements the Singleton pattern in \elastica
    */
   //****************************************************************************
 

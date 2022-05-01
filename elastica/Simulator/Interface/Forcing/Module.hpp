@@ -167,6 +167,8 @@ namespace elastica {
       using ForcerBatch = std::vector<ForcerID>;
       //! Batches of forcers
       using ForcerBatches = std::vector<ForcerBatch>;
+      //! Submodules of the current module
+      using SubModules = tmpl::list<Algorithm, BatchAlgorithm>;
       //************************************************************************
 
       //**Friendships***********************************************************

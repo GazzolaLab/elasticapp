@@ -9,6 +9,7 @@
 #include "Utilities/Math/Dot.hpp"
 #include "Utilities/Math/Length.hpp"
 #include "Utilities/Math/Normalize.hpp"
+#include "Utilities/Math/RotationConvention.hpp"
 #include "Utilities/Math/Zero.hpp"
 
 namespace elastica {
@@ -24,12 +25,14 @@ namespace elastica {
   }
 
   namespace detail {
+    using _internal_RT = std::array<Vec3, 3UL>;
+
     // v1 is normal, v2 is binormal, v3 is tangent
     // so normal x binormal => tangent
     auto make_orthogonal_bases_impl(Vec3 const& normal_guess,
                                     Vec3 const& binormal_guess = {0.8, 0.6,
                                                                   0.0}) noexcept
-        -> std::array<Vec3, 3UL> {
+        -> _internal_RT {
       Vec3 v1 = normalize(normal_guess);
 
       // Any initial guess thats not in the normal direction
@@ -50,35 +53,46 @@ namespace elastica {
       }
       return {v1, normalize(v2), normalize(v3)};
     }
+
+    auto permute(_internal_RT const& vectors, std::array<std::size_t, 3> axes)
+        -> _internal_RT {
+      return {vectors[axes[0UL]], vectors[axes[1UL]], vectors[axes[2UL]]};
+    }
+
+    auto rot_matrix_from(_internal_RT const& row_vectors) -> Rot3 {
+      return Rot3{
+          {row_vectors[0UL][0UL], row_vectors[0UL][1UL], row_vectors[0UL][2UL]},
+          {row_vectors[1UL][0UL], row_vectors[1UL][1UL], row_vectors[1UL][2UL]},
+          {row_vectors[2UL][0UL], row_vectors[2UL][1UL],
+           row_vectors[2UL][2UL]}};
+    }
   }  // namespace detail
 
   auto make_orthogonal_bases_from_binormal(Vec3 const& vector) noexcept
       -> Rot3 {
-    auto bases = detail::make_orthogonal_bases_impl(vector);
-
     // bases[1] always contains the vector
     // bases[1] x bases[2] = bases[3]
     // bases[0] , bases[1], bases[2]
     constexpr std::size_t d1 = 2UL;
     constexpr std::size_t d2 = 0UL;
     constexpr std::size_t d3 = 1UL;
-    return Rot3{{bases[d1][0], bases[d1][1], bases[d1][2]},
-                {bases[d2][0], bases[d2][1], bases[d2][2]},
-                {bases[d3][0], bases[d3][1], bases[d3][2]}};
+
+    using namespace detail;
+    return rot_matrix_from(
+        permute(make_orthogonal_bases_impl(vector), {d1, d2, d3}));
   }
 
   auto make_orthogonal_bases_from_normal(Vec3 const& vector) noexcept -> Rot3 {
-    auto bases = detail::make_orthogonal_bases_impl(vector);
-
     // bases[1] always contains the vector
     // bases[1] x bases[2] = bases[3]
     // bases[0] , bases[1], bases[2]
     constexpr std::size_t d1 = 0UL;
     constexpr std::size_t d2 = 1UL;
     constexpr std::size_t d3 = 2UL;
-    return Rot3{{bases[d1][0], bases[d1][1], bases[d1][2]},
-                {bases[d2][0], bases[d2][1], bases[d2][2]},
-                {bases[d3][0], bases[d3][1], bases[d3][2]}};
+
+    using namespace detail;
+    return rot_matrix_from(
+        permute(make_orthogonal_bases_impl(vector), {d1, d2, d3}));
   }
 
   auto make_orthogonal_bases_from_normal_and_tangent(
@@ -87,33 +101,31 @@ namespace elastica {
       throw std::logic_error(
           "The proposed normal and tangent are non-orthogonal!");
     }
-
-    auto bases = detail::make_orthogonal_bases_impl(
-        proposed_normal, proposed_tangent % proposed_normal);
-
     // bases[1] always contains the vector
     // bases[1] x bases[2] = bases[3]
     // bases[0] , bases[1], bases[2]
     constexpr std::size_t d1 = 0UL;
     constexpr std::size_t d2 = 1UL;
     constexpr std::size_t d3 = 2UL;
-    return Rot3{{bases[d1][0], bases[d1][1], bases[d1][2]},
-                {bases[d2][0], bases[d2][1], bases[d2][2]},
-                {bases[d3][0], bases[d3][1], bases[d3][2]}};
+
+    using namespace detail;
+    return rot_matrix_from(
+        permute(make_orthogonal_bases_impl(proposed_normal,
+                                           proposed_tangent % proposed_normal),
+                {d1, d2, d3}));
   }
 
   auto make_orthogonal_bases_from_tangent(Vec3 const& vector) noexcept -> Rot3 {
-    auto bases = detail::make_orthogonal_bases_impl(vector);
-
     // bases[1] always contains the vector
     // bases[1] x bases[2] = bases[3]
     // bases[0] , bases[1], bases[2]
     constexpr std::size_t d1 = 1UL;
     constexpr std::size_t d2 = 2UL;
     constexpr std::size_t d3 = 0UL;
-    return Rot3{{bases[d1][0], bases[d1][1], bases[d1][2]},
-                {bases[d2][0], bases[d2][1], bases[d2][2]},
-                {bases[d3][0], bases[d3][1], bases[d3][2]}};
+
+    using namespace detail;
+    return rot_matrix_from(
+        permute(make_orthogonal_bases_impl(vector), {d1, d2, d3}));
   }
 
   //  auto make_orthogonal_bases(const Vec3& arg_normal) noexcept -> Rot3 {

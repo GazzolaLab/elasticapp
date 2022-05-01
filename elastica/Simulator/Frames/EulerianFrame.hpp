@@ -71,11 +71,30 @@ namespace elastica {
      * \example
      * \snippet Test_EulerianFrame.cpp cast_along_eg
      *
-     * \param Dir A Direction to cast as index to
+     * \param dir A Direction to cast as index to
      */
-    inline constexpr auto cast_along(EulerianFrame::DirectionType Dir)
+    inline constexpr auto cast_along(EulerianFrame::DirectionType dir)
         -> std::size_t {
-      return static_cast<std::size_t>(Dir);
+      return static_cast<std::size_t>(dir);
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Casts a Eulerian frame direction into an index value
+     * \ingroup simulator
+     *
+     * \details
+     * Converts a EulerianFrame::DirectionType into an index value in
+     * associative arrays.
+     *
+     * \example
+     * \snippet Test_EulerianFrame.cpp cast_along_template_eg
+     *
+     * \tparam Dir A Direction to cast as index to
+     */
+    template <typename EulerianFrame::DirectionType Dir>
+    inline constexpr auto cast_along() -> std::size_t {
+      return cast_along(Dir);
     }
     //**************************************************************************
 

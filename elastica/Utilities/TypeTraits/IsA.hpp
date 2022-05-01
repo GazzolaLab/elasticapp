@@ -35,7 +35,7 @@ namespace tt {
   }  // namespace detail
 
   // @{
-  /// \ingroup TypeTraitsGroup
+  /// \ingroup type_traits_group
   /// \brief Check if type `T` is a template specialization of `U`
   ///
   /// \requires `U` is a class template

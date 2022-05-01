@@ -170,6 +170,8 @@ namespace elastica {
       using ConstrainerBatch = std::vector<ConstrainerID>;
       //! Batches of constrainers
       using ConstrainerBatches = std::vector<ConstrainerBatch>;
+      //! Submodules of the current module
+      using SubModules = tmpl::list<Algorithm, BatchAlgorithm>;
       //************************************************************************
 
       //**Friendships***********************************************************

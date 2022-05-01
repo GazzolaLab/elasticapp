@@ -13,9 +13,22 @@
 
 #pragma once
 
+//==============================================================================
+//
+//  DOXYGEN DOCUMENTATION
+//
+//==============================================================================
+
+//******************************************************************************
+/*!\defgroup default_collision_config Default Collision Configurations
+ * \ingroup default_config
+ * \brief Default collision configurations hard-coded inside \elastica.
+ */
+//******************************************************************************
+
 //******************************************************************************
 /*!\brief Selection of the coarse collision detection algorithm.
- * \ingroup config
+ * \ingroup default_collision_config
  *
  * This macro selects the coarse collision detection algorithm. The purpose of
  * this algorithm is used to efficiently sort out all pairs of rigid bodies that
@@ -32,7 +45,7 @@
 
 //******************************************************************************
 /*!\brief Selection of the fine collision detection algorithm.
- * \ingroup config
+ * \ingroup default_collision_config
  *
  * This macro selects the fine collision detection algorithm. The purpose of
  * this algorithm is the generation of contact points between colliding rigid
@@ -47,7 +60,7 @@
 
 //******************************************************************************
 /*!\brief Selection of the batch generation algorithm.
- * \ingroup config
+ * \ingroup default_collision_config
  *
  * This macro selects the batch generation algorithm. The purpose of this
  * algorithm is the setup of distinct groups/batches of contacts that can be
@@ -56,13 +69,14 @@
  *
  *   - elastica::collision::batches::SingleBatch
  *   - elastica::collision::batches::UnionFind
+ *   - elastica::collision::batches::HybridBatch
  */
-#define ELASTICA_BATCH_GENERATOR elastica::collision::batches::SingleBatch
+#define ELASTICA_BATCH_GENERATOR elastica::collision::batches::UnionFind
 //******************************************************************************
 
 //******************************************************************************
 /*!\brief Selection of the collision response algorithm.
- * \ingroup config
+ * \ingroup default_collision_config
  *
  * This macro selects the collision response algorithm. The collision response
  * is responsible to calculate contact forces/impulses to handle collisions

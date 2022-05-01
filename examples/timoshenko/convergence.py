@@ -14,7 +14,7 @@ ConvergenceResults = NewType("ConvergenceResults", List[float])
 
 def simulate_timoshenko_beam_with(n_elem: PositiveInt, is_rod_shearable: bool = True):
     base_radius = 0.25
-    base_area = np.pi * base_radius ** 2
+    base_area = np.pi * base_radius**2
 
     base_length = 3.0
     nu = 500.0

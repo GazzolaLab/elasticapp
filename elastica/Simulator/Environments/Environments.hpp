@@ -1,10 +1,26 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Include all environments headers
+//
+//  Copyright (C) 2020-2022 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
 
-// Include all environments
-#include "elastica/Simulator/Environments/CollisionSystem/CollisionSystem.hpp"
-
-namespace elastica {
-
-  namespace environments {}
-
-}  // namespace elastica
+//******************************************************************************
+// Includes
+//******************************************************************************
+///
+#include "Simulator/Environments/Types.hpp"
+///
+#include "Simulator/Environments/CollisionSystem.hpp"
+#include "Simulator/Environments/GravityField.hpp"
+#include "Simulator/Environments/Primitives.hpp"
+#include "Simulator/Environments/Tags.hpp"
+#include "Simulator/Environments/Transfer.hpp"

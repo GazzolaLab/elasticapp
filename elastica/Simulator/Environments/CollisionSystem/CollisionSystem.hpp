@@ -1,63 +1,87 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Inclusion of all collision components of \elastica
+//
+//  Copyright (C) 2020-2022 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
+
+//******************************************************************************
+// Includes
+//******************************************************************************
+#include "Simulator/Environments/CollisionSystem/Types.hpp"
+
+//==============================================================================
+//
+//  DOXYGEN DOCUMENTATION
+//
+//==============================================================================
+
+//******************************************************************************
+/*!\defgroup collision_system CollisionSystem
+ * \ingroup environments
+ * \brief Contains an engine to detect collisions between bodies efficiently and
+ * apply forces to resolve them.
+ */
+//******************************************************************************
+
+namespace elastica {
+
+  //****************************************************************************
+  /*!\brief Collision system data-structures and subroutines
+  // \ingroup collision_system
+  */
+  namespace collision {}
+  //****************************************************************************
+
+}  // namespace elastica
 
 namespace elastica {
 
   namespace collision {
 
-    //=================================================================================================
+    //==========================================================================
     //
     //  CLASS DEFINITION
     //
-    //=================================================================================================
+    //==========================================================================
 
-    //*************************************************************************************************
-    /*!\brief Collision system of the rigid body simulation world.
-     * \ingroup core
+    //**************************************************************************
+    /*!\brief Collision system of the \elastica simulation world.
+     * \ingroup collision_system
      *
      * The CollisionSystem class represents the collision system of the rigid
-     body simulation world,
-     * which is a combination of all collision related algorithms. The collision
-     system provides all
-     * functionality for the coarse collision detection (see
-     pe::pe_COARSE_COLLISION_DETECTOR), the
-     * fine collision detection (see pe::pe_FINE_COLLISION_DETECTOR), the batch
-     generation process
-     * (see pe::pe_BATCH_GENERATOR), and the collision response (see
-     pe::pe_CONSTRAINT_SOLVER). The
-     * CollisionSystem class is closely coupled to the World class and is
-     implemented in terms of
-     * the world's body storage and contact storage.\n
-     * The CollisionSystem needs to be instantiated with a single template
-     template argument of the
-     * following structure:
-
-       \code
-       template< template<typename> class CD                      // Type of the
-     coarse collision detection algorithm , typename FD // Type of the fine
-     collision detection algorithm , template<typename> class BG // Type of the
-     batch generation algorithm , template<typename,typename,typename> class CR
-     >
-     // Type of the collision response algorithm struct Configuration; \endcode
-
-     * The given template template argument must be take four template
-     arguments, where the first
-     * argument resembles the currently selected coarse collision detection
-     algorithm, the second
-     * represents the selected fine collision detection algorithm, the third is
-     the selected
-     * batch generation algorithm, and the fourth represents the selected
-     collision response
-     * algorithm. The attempt to instantiate the CollisionSystem with any other
-     type of template
-     * argument results in a compile time error!
+     * body simulation world, which is a combination of all collision related
+     * algorithms. The collision system provides all functionality for the
+     * coarse collision detection (see \ref ELASTICA_COARSE_COLLISION_DETECTOR),
+     * the fine collision detection (see \ref ELASTICA_FINE_COLLISION_DETECTOR),
+     * the batch generation process (see \ref ELASTICA_BATCH_GENERATOR), and the
+     * collision response (see \ref ELASTICA_CONSTRAINT_SOLVER).
+     *
+     * The CollisionSystem class is implemented as an elastica::Environment and
+     * uses its primitive and contact storage. The CollisionSystem needs to be
+     * instantiated with two template template parameters, one from the
+     * simulator, and one containing the configuration of the collision detector
+     *
+     * \tparam SimulatorConfig_ Configuration of \elastica simulation
+     * \tparam CollisionConfig_ Configuration specific to collision system
      */
-    template <class SimulatorConfig, class CollisionConfig>  // Type of the configuration
+    template <class SimulatorConfig_, class CollisionConfig_>
     class CollisionSystem;
-    //*************************************************************************************************
-
+    //**************************************************************************
 
   }  // namespace collision
 
 }  // namespace elastica
 
+//******************************************************************************
+// Post-includes
+//******************************************************************************
 #include "elastica/Simulator/Environments/CollisionSystem/DEMSolver.hpp"

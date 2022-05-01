@@ -26,6 +26,9 @@ namespace elastica {
     // ?
     auto make_orthogonal_bases_impl(Vec3 const&, Vec3 const&) noexcept
         -> std::array<Vec3, 3UL>;
+    auto permute(std::array<Vec3, 3UL> const& vectors,
+                 std::array<std::size_t, 3> axes) -> std::array<Vec3, 3UL>;
+    auto rot_matrix_from(std::array<Vec3, 3UL> const& row_vectors) -> Rot3;
   }  // namespace detail
 
   auto make_orthogonal_bases_from_binormal(Vec3 const& vector) noexcept -> Rot3;

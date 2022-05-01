@@ -111,4 +111,44 @@ namespace elastica {
   //@}
   //****************************************************************************
 
+  //**External loads functions**************************************************
+  /*!\name External loads functions */
+  //@{
+  /*!\brief Specialization of elastica::external_loads() for Cosserat rods
+   * \ingroup cosserat_rod
+   */
+  inline decltype(auto) external_loads(
+      cosserat_rod::detail::CosseratRodWithoutDampingBlockSlice const&
+          cosserat_rod) noexcept {
+    return cosserat_rod.get_external_loads();
+  }
+  inline decltype(auto) external_loads(
+      cosserat_rod::detail::CosseratRodWithoutDampingBlockSlice const&
+          cosserat_rod,
+      std::size_t index) noexcept {
+    return cosserat_rod.get_external_loads(index);
+  }
+  //@}
+  //****************************************************************************
+
+  //**External torques functions************************************************
+  /*!\name External torques functions */
+  //@{
+  /*!\brief Specialization of elastica::external_torques() for Cosserat rods
+   * \ingroup cosserat_rod
+   */
+  inline decltype(auto) external_torques(
+      cosserat_rod::detail::CosseratRodWithoutDampingBlockSlice const&
+          cosserat_rod) noexcept {
+    return cosserat_rod.get_external_torques();
+  }
+  inline decltype(auto) external_torques(
+      cosserat_rod::detail::CosseratRodWithoutDampingBlockSlice const&
+          cosserat_rod,
+      std::size_t index) noexcept {
+    return cosserat_rod.get_external_torques(index);
+  }
+  //@}
+  //****************************************************************************
+
 }  // namespace elastica

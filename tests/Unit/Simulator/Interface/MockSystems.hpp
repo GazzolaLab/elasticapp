@@ -81,6 +81,18 @@ namespace mock {
   inline constexpr void velocity(MockSystem const&) noexcept {}
   inline constexpr void angular_velocity(MockSystem&) noexcept {}
   inline constexpr void angular_velocity(MockSystem const&) noexcept {}
+  inline constexpr std::uint16_t external_loads(MockSystem&) noexcept {
+    return 1U;
+  }
+  inline constexpr std::uint16_t external_loads(MockSystem const&) noexcept {
+    return 1U;
+  }
+  inline constexpr std::size_t external_torques(MockSystem&) noexcept {
+    return 1UL;
+  }
+  inline constexpr std::size_t external_torques(MockSystem const&) noexcept {
+    return 1UL;
+  }
 
   static_assert(::tt::assert_conforms_to<MockSystem,
                                          ::elastica::protocols::PhysicalSystem>,

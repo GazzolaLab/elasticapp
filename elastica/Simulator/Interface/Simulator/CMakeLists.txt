@@ -5,7 +5,6 @@ elastica_target_headers(
         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
         HEADERS
         Configuration.hpp
-        Profiling.hpp
         Serialize.hpp
         Simulator.hpp
         Types.hpp

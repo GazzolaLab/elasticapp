@@ -1,14 +1,28 @@
-#include "elastica/Simulator/Environments/CollisionSystem/Response/DEMForces/LinearSpringDashpot.hpp"
+//==============================================================================
+/*!
+//  \file
+//  \brief Definition of LinearSpringDashpot
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
 
-#include <cmath>
-
-#include "elastica/ErrorHandling/Assert.hpp"
-#include "elastica/Simulator/Environments/CollisionSystem/Contact/Contact.hpp"
-#include "elastica/Simulator/Environments/Primitives/RigidBodyPrimitive.hpp"
-#include "elastica/Utilities/Logging.hpp"
-#include "elastica/Utilities/Math/Normalize.hpp"
-#include "elastica/Utilities/Math/Length.hpp"
-#include "elastica/Utilities/Math/Vec3.hpp"
+#include "Simulator/Environments/CollisionSystem/Response/DEMForces/LinearSpringDashpot.hpp"
+//
+#include <algorithm>  // min and max
+//
+#include "ErrorHandling/Assert.hpp"
+//
+#include "Simulator/Environments/CollisionSystem/Contact/Contact.hpp"  // Contact&
+//
+#include "Utilities/Logging.hpp"
+#include "Utilities/Math/Length.hpp"
+#include "Utilities/Math/Normalize.hpp"
+#include "Utilities/Math/Vec3.hpp"
 
 namespace elastica {
 
@@ -16,60 +30,53 @@ namespace elastica {
 
     namespace response {
 
-      // TODO Refactor to use a reference to prevent aliasing
-      //      template<>
-      //      real_t LinearSpringDashpot::operator()<ContactID>(ContactID c)
-      //      const noexcept {
+      real_t LinearSpringDashpot::operator()(
+          Contact const& contact) const noexcept {
+        BodyID b1(contact.get_first_body());
+        BodyID b2(contact.get_second_body());
 
-      real_t LinearSpringDashpot::operator()(ContactID c) const noexcept {
-        BodyID b1(c->getBody1());
-        BodyID b2(c->getBody2());
-
-        if (!c->is_penetrating()) {
+        if (not contact.is_penetrating()) {
           // Skip separated contacts
-          LOG_DEBUG_SECTION(log) { log << "Rejecting separated contact.\n"; }
+          using namespace ::elastica::logging;
+          log<debug>(
+              [](auto& log) { log << "Rejecting separated contact.\n"; });
           return 0;
         }
 
         ELASTICA_ASSERT(!b1->is_fixed() or !b2->is_fixed(),
                         "Invalid contact between two fixed objects.");
 
-        // Global position of contact
-        const Vec3& gpos(c->get_position());
-
         // The absolute value of the penetration length
-        real_t delta(-c->get_distance());
+        real_t delta(-contact.get_distance());
 
         // Calculating the relative velocity in normal and tangential
         // direction The negative signs result from the different definition
         // of the relative normal velocity of the pe (see Contact::getType)
-        const real_t relVelN(-c->get_normal_relative_velocity());
-        const Vec3 relVel(-c->get_relative_velocity());
-        const Vec3 relVelT(relVel - (relVelN * c->get_normal()));
+        const real_t relVelN(-contact.get_normal_relative_velocity());
+        const Vec3 relVel(-contact.get_relative_velocity());
+        const Vec3 relVelT(relVel - (relVelN * contact.get_normal()));
 
-        real_t fNabs(0);
+        // cannot add a negative force here, so threshold with 0
+        // this is a ReLU operation!
+        real_t const fNabs =
+            std::max(real_t(0), contact.get_stiffness() * delta +
+                                    contact.get_normal_damping() * relVelN);
 
-        fNabs = c->get_stiffness() * delta + c->get_normal_damping() * relVelN;
-        fNabs = std::max(real_t(0), fNabs);
-        //          if (fNabs < real_t(0))
-        //            fNabs = real_t(0);
-
-        Vec3 fN(fNabs * c->get_normal());
+        Vec3 fN(fNabs * contact.get_normal());
 
         // Calculating the tangential force based on the model by Haff and
         // Werner
-        const real_t fTabs(std::min(c->get_tangential_damping() * length(relVelT),
-                                    c->get_friction() * fNabs));
+        const real_t fTabs(
+            std::min(contact.get_tangential_damping() * length(relVelT),
+                     contact.get_friction() * fNabs));
         const Vec3 fT(fTabs * normalize(relVelT));
 
-        // TODO Careful here, needs mutexing or some other mechanism to prevent
-        //      data races if parallel
         // Add normal force at contact point
         Vec3 net_force = (fN + fT);
-        // should automatically move
-        b2->add_force_at_position(-net_force, gpos);
-        // Force move No point
-        b1->add_force_at_position(std::move(net_force), gpos);
+        // No point in moving
+        b2->add_force_at_position(-net_force, contact.get_position());
+        // No point in moving
+        b1->add_force_at_position(net_force, contact.get_position());
 
         //        // Add tangential force at contact point
         //        b1->addForceAtPos(fT, gpos);
@@ -78,10 +85,6 @@ namespace elastica {
         return delta;
       }
 
-      //      real_t LinearSpringDashpot::operator()(int c) const noexcept {
-      //        return real_t (c);
-      //      }
-      //
     }  // namespace response
 
   }  // namespace collision

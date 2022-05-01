@@ -8,14 +8,17 @@
 
 #include "ErrorHandling/Assert.hpp"
 #include "Systems/Block/Block.hpp"
+#include "Systems/CosseratRods/Traits/DataOpsTraits.hpp"
 #include "Systems/CosseratRods/Traits/PlacementTrait.hpp"
 #include "Systems/CosseratRods/Traits/Protocols.hpp"
-#include "Systems/CosseratRods/Traits/DataOpsTraits.hpp"
 #include "Utilities/NonCreatable.hpp"
 
 // because Vec3 is a blaze vector we need to include constructors for it
 #include <blaze/math/expressions/DVecScalarMultExpr.h>
 #include <vector>
+
+// Serializtaino suppot
+#include "Simulator/IO/Serialization.hpp"
 
 namespace mock {
 
@@ -34,8 +37,7 @@ namespace mock {
                                          std::size_t /*index*/) {
       return data;
     }
-    static inline void diagonal_assign(type const&, std::size_t,
-                                       type const&) {}
+    static inline void diagonal_assign(type const&, std::size_t, type const&) {}
   };
 
   template <std::size_t>
@@ -89,8 +91,32 @@ namespace mock {
     return static_cast<double>(lhs) == static_cast<double>(rhs);
   }
 
-
 }  // namespace mock
+
+namespace elastica {
+
+  namespace io {
+
+    // serialize a double
+    template <>
+    struct Serialize<::mock::CustomDouble> {
+      using type = ::mock::CustomDouble;
+
+      // 1. check if blocking is the same, else abort
+      template <typename InArchive>
+      static inline void load(InArchive& ar, type& val) {
+        ar(val.d_);
+      }
+
+      template <typename InArchive>
+      static inline void save(InArchive& ar, type const& val) {
+        ar(val.d_);
+      }
+    };
+
+  }  // namespace io
+
+}  // namespace elastica
 
 namespace mock {
 
@@ -121,28 +147,28 @@ namespace mock {
       using OnRod = PlacementMarker<3UL>;
     };
 
-//    struct Operations {
-//      template<typename A>
-//      static auto voronoi_length(A& a){return 1UL;}
-//      template<typename A, typename B>
-//      static void quadrature_kernel(A, B){}
-//      template<typename A, typename B>
-//      static void subtract_quadrature(A, B){}
-//      template<typename A, typename B>
-//      static void difference_kernel(A, B){}
-//      template<typename B>
-//      static auto difference_kernel(B){return 1UL;}
-//      template<typename A, typename B, typename C>
-//      static void batch_matvec(A, B, C){}
-//      template<typename A>
-//      static auto batch_norm(A){return 1UL;}
-//      template<typename A, typename B>
-//      static void batch_inv_rotate(A, B){}
-//      template<typename A, typename B, typename C>
-//      static void batch_inv_rotate_and_divide(A, B, C){}
-//      template<typename A>
-//      static void batch_subtract_z_unit(A){}
-//    };
+    //    struct Operations {
+    //      template<typename A>
+    //      static auto voronoi_length(A& a){return 1UL;}
+    //      template<typename A, typename B>
+    //      static void quadrature_kernel(A, B){}
+    //      template<typename A, typename B>
+    //      static void subtract_quadrature(A, B){}
+    //      template<typename A, typename B>
+    //      static void difference_kernel(A, B){}
+    //      template<typename B>
+    //      static auto difference_kernel(B){return 1UL;}
+    //      template<typename A, typename B, typename C>
+    //      static void batch_matvec(A, B, C){}
+    //      template<typename A>
+    //      static auto batch_norm(A){return 1UL;}
+    //      template<typename A, typename B>
+    //      static void batch_inv_rotate(A, B){}
+    //      template<typename A, typename B, typename C>
+    //      static void batch_inv_rotate_and_divide(A, B, C){}
+    //      template<typename A>
+    //      static void batch_subtract_z_unit(A){}
+    //    };
 
     // declare variables
     template <typename ParameterTag, typename RankTag, typename StaggerTag,
@@ -194,7 +220,9 @@ namespace mock {
     using ghost_type = T;
 
     // no params
-    static inline auto ghost_value() -> ghost_type { return T{3.14159}; }
+    static inline auto ghost_value() -> ghost_type {
+      return static_cast<ghost_type>(3.14159);
+    }
 
     // for initialization
     static inline reference_type slice(type& data, std::size_t index) {

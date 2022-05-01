@@ -1,0 +1,26 @@
+set(LIBRARY ContactContainerPolicy)
+
+add_elastica_library(${LIBRARY} INTERFACE)
+
+elastica_target_headers(
+        ${LIBRARY}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        NonSequentialPolicy.hpp
+        Sequential.hpp
+        Types.hpp
+)
+
+elastica_target_sources(
+        ${LIBRARY}
+        INTERFACE
+        NonSequentialPolicy.hpp
+        Sequential.hpp
+        Types.hpp
+)
+
+target_link_libraries(
+        ${LIBRARY}
+        INTERFACE
+        Parallel
+        Utilities
+)

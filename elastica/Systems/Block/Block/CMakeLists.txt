@@ -1,6 +1,8 @@
 # Distributed under the MIT License. See LICENSE.txt for details.
 
-set(LIBRARY Systems)
+set(LIBRARY BlockCore)
+
+add_elastica_library(${LIBRARY} INTERFACE)
 
 elastica_target_headers(
         ${LIBRARY}
@@ -16,4 +18,26 @@ elastica_target_headers(
         Protocols.hpp
         Types.hpp
         TypeTraits.hpp
+)
+
+elastica_target_sources(
+        ${LIBRARY}
+        INTERFACE
+        Aliases.hpp
+        AsVariables.hpp
+        Block.hpp
+        BlockFacade.hpp
+        BlockIterator.hpp
+        BlockSlice.hpp
+        DisplayVariables.hpp
+        Protocols.hpp
+        Types.hpp
+        TypeTraits.hpp
+)
+
+target_link_libraries(
+        ${LIBRARY}
+        INTERFACE
+        Utilities
+        BlockVariables
 )

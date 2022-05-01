@@ -1,38 +1,45 @@
-//=================================================================================================
+//==============================================================================
 /*!
- *  \file pe/core/batches/ContactTrait.h
- *  \brief Contact customization class for the batch generation
- *
- *  Copyright (C) 2009 Klaus Iglberger
- *
- *  This file is part of pe.
- *
- *  pe is free software: you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- *
- *  pe is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with
- * pe. If not, see <http://www.gnu.org/licenses/>.
- */
-//=================================================================================================
+//  \file
+//  \brief Contact specialization for batch generation
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+//
+//  This file contains implementation from the pe library with the following
+//  copyrights
+**
+**  Project home: https://www.cs10.tf.fau.de/research/software/pe/
+**
+**  Copyright (C) 2009 Klaus Iglberger
+**
+**  This file is part of pe.
+**
+**  pe is free software: you can redistribute it and/or modify it under the
+** terms of the GNU General Public License as published by the Free Software
+** Foundation, either version 3 of the License, or (at your option) any later
+** version.
+**
+**  pe is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+** A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License along with
+** pe. If not, see <http://www.gnu.org/licenses/>.
+**/
+//==============================================================================
 
 #pragma once
 
-//*************************************************************************************************
+//******************************************************************************
 // Includes
-//*************************************************************************************************
+//******************************************************************************
 
-//#include <pe/core/batches/BodyTrait.h>
-//#include <pe/core/batches/Types.h>
-//#include <pe/util/Types.h>
-
-#include "elastica/Simulator/Environments/CollisionSystem/Batches/RigidBodyPrimitiveTrait.hpp"
-#include "elastica/Simulator/Environments/CollisionSystem/Batches/Types.hpp"
+#include "Simulator/Environments/CollisionSystem/Batches/RigidBodyPrimitiveTrait.hpp"
+#include "Simulator/Environments/CollisionSystem/Batches/Types.hpp"
 
 namespace elastica {
 
@@ -40,71 +47,81 @@ namespace elastica {
 
     namespace batches {
 
-      //=================================================================================================
+      //========================================================================
       //
       //  CLASS DEFINITION
       //
-      //=================================================================================================
+      //========================================================================
 
-      //*************************************************************************************************
+      //************************************************************************
       /*!\brief Contact customization class for the batch generation.
        * \ingroup batch_generation
        *
-       * The batch generation ContactTrait class template is used to adapt the
-       * Contact class to the used batch generation algorithm. Depending on the
-       * used algorithm, a contact requires additional data or functionality to
-       * efficiently support the batch generation process.\n In order to adapt
-       * the Contact class to a particular algorithm, the base template needs to
-       * be specialized. The following members are expected for each
-       * specialization of the ContactTrait class template:
+       * The batch generation ContactTrait class template is used to
+       * adapt the Contact class to the used fine collision detection
+       * algorithm. Depending on the used algorithm, a contact requires
+       * additional data or functionality to efficiently support the batch
+       * generation process.
        *
-       *  - the 'mergeNodes()' function
+       * In order to adapt the Contact class to a particular algorithm, the
+       * base template needs to be specialized. For each specialization of the
+       * ContactTrait class template, we need the following types
+       * \snippet this expected_types
+       * and the following functions
+       * \snippet this expected_functions
        */
       template <typename C>  // Type of the configuration
       class ContactTrait {
        public:
-        //**Type
-        // definitions****************************************************************************
-        using Node = RigidBodyPrimitiveTrait<C>;  //!< Type of the corresponding
-                                                  //!< BodyTrait class.
-        using NodeID = Node*;                     //!< Handle to a Node object.
-        using ConstNodeID = const Node*;  //!< Handle to a constant Node object.
-        using Edge = ContactTrait<C>;  //!< Type of this ContactTrait instance.
-        //**********************************************************************************************
+        //**Type definitions****************************************************
+        // [expected_types]
+        //! Type of the corresponding RigidBodyPrimitiveTrait class
+        using Node = RigidBodyPrimitiveTrait<C>;
+        //! Handle to a Node object
+        using NodeID = Node*;
+        //! Handle to a constant Node object
+        using ConstNodeID = const Node*;
+        //! Type of this ContactTrait instance
+        using Edge = ContactTrait<C>;
+        // [expected_types]
+        //**********************************************************************
 
-        //**Edge
-        // functions******************************************************************************
+        //**Edge functions******************************************************
         /*!\name Edge functions */
         //@{
-        inline void mergeNodes(ConstNodeID node1, ConstNodeID node2) const;
+        // [expected_functions]
+        inline void merge_nodes(ConstNodeID node1,
+                                ConstNodeID node2) const noexcept;
+        // [expected_functions]
         //@}
-        //**********************************************************************************************
+        //**********************************************************************
       };
-      //*************************************************************************************************
+      //************************************************************************
 
-      //*************************************************************************************************
+      //************************************************************************
       /*!\brief Merging two adjacent contact graphs.
        *
        * \param node1 The first contacting node.
        * \param node2 The second contacting node.
        * \return void
        *
-       * Default implementation of the mergeNodes() function.
+       * Default implementation of the merge_nodes() function.
        */
       template <typename C>  // Type of the configuration
-      inline void ContactTrait<C>::mergeNodes(ConstNodeID /*node1*/,
-                                              ConstNodeID /*node2*/) const {}
-      //*************************************************************************************************
+      inline void ContactTrait<C>::merge_nodes(
+          ConstNodeID /*node1*/, ConstNodeID /*node2*/) const noexcept {}
+      //************************************************************************
 
-      //=================================================================================================
+      //========================================================================
       //
       //  SPECIALIZATION FOR THE UNION FIND ALGORITHM
       //
-      //=================================================================================================
+      //========================================================================
 
-      //*************************************************************************************************
+      //************************************************************************
       /*!\brief Specialization of the ContactTrait class template for the
-       * UnionFind algorithm. \ingroup batch_generation
+       * UnionFind algorithm.
+       * \ingroup batch_generation
        *
        * This specialization of the ContactTrait class template adapts rigid
        * bodies to the 'Union Find' batch generation algorithm. In this
@@ -130,28 +147,29 @@ namespace elastica {
           class C>  // Type of the configuration
       struct ContactTrait<C<CD, FD, UnionFind, CR> > {
        public:
-        //**Type
-        // definitions****************************************************************************
-        typedef C<CD, FD, UnionFind, CR>
-            CollisionConfig;  //!< Type of the actual configuration.
-        using Node = RigidBodyPrimitiveTrait<CollisionConfig>;  //!< Type of the corresponding
-                                                  //!< BodyTrait class.
-        using NodeID = Node*;                     //!< Handle to a Node object.
-        using ConstNodeID = const Node*;  //!< Handle to a constant Node object.
-        using Edge = ContactTrait<CollisionConfig>;  //!< Type of this ContactTrait instance.
-        //**********************************************************************************************
+        //**Type definitions****************************************************
+        //! Type of the actual configuration.
+        using CollisionConfig_ = C<CD, FD, UnionFind, CR>;
+        //! Type of the corresponding RigidBodyPrimitiveTrait class
+        using Node = RigidBodyPrimitiveTrait<CollisionConfig_>;
+        //! Handle to a Node object
+        using NodeID = Node*;
+        //! Handle to a constant Node object
+        using ConstNodeID = const Node*;
+        //! Type of this ContactTrait instance
+        using Edge = ContactTrait<CollisionConfig_>;
+        //**********************************************************************
 
-        //**Edge
-        // functions******************************************************************************
+        //**Edge functions******************************************************
         /*!\name Edge functions */
         //@{
-        inline void mergeNodes(ConstNodeID node1, ConstNodeID node2) const;
+        inline void merge_nodes(NodeID node1, NodeID node2) const noexcept;
         //@}
-        //**********************************************************************************************
+        //**********************************************************************
       };
-      //*************************************************************************************************
+      //************************************************************************
 
-      //*************************************************************************************************
+      //************************************************************************
       /*!\brief Merging two adjacent contact graphs.
        *
        * \param node1 The first contacting node.
@@ -178,23 +196,71 @@ namespace elastica {
               // Template signature of the collision response algorithm
               template <typename, typename, typename> class>
           class C>  // Type of the configuration
-      inline void ContactTrait<C<CD, FD, UnionFind, CR> >::mergeNodes(
-          ConstNodeID node1, ConstNodeID node2) const {
-        const ConstNodeID root1(node1->getRoot());
-        const ConstNodeID root2(node2->getRoot());
+      inline void ContactTrait<C<CD, FD, UnionFind, CR> >::merge_nodes(
+          NodeID node1, NodeID node2) const noexcept {
+        // convert pointer to const contact to simply a contact pointer
+        auto root1(const_cast<NodeID>(node1->get_root()));
+        auto root2(const_cast<NodeID>(node2->get_root()));
+
+        const auto rank_of_root1(root1->rank());
+        const auto rank_of_root2(root2->rank());
 
         if (root1 == root2) {
           return;
-        } else if (root1->rank_ > root2->rank_) {
-          root2->root_ = root1;
-        } else if (root2->rank_ > root1->rank_) {
-          root1->root_ = root2;
+        } else if (rank_of_root1 > rank_of_root2) {
+          root2->set_root(root1);
+        } else if (rank_of_root2 > rank_of_root1) {
+          root1->set_root(root2);
         } else {
-          root2->root_ = root1;
-          ++root1->rank_;
+          // equality give preference to root1
+          root2->set_root(root1);
+          root1->increment_rank();
         }
       }
-      //*************************************************************************************************
+      //************************************************************************
+
+      //========================================================================
+      //
+      //  SPECIALIZATION FOR THE HYBRID BATCH ALGORITHM
+      //
+      //========================================================================
+
+      //************************************************************************
+      /*!\brief Specialization of the ContactTrait class template for the
+       * HybridBatch algorithm.
+       * \ingroup batch_generation
+       *
+       * This specialization of the ContactTrait class template adapts rigid
+       * bodies to the 'Hybrid Batch' batch generation algorithm. In this
+       * algorithm, rigid bodies act as nodes in a graph and contacts between
+       * the rigid bodies act as edges.
+       */
+      template <
+          // Type of the coarse collision detection algorithm
+          template <typename> class CD,
+          // Type of the fine collision detection algorithm
+          typename FD,
+          // Type of the collision response algorithm
+          template <typename, typename, typename> class CR,
+          template <
+              // Template signature of the coarse collision detection algorithm
+              template <typename> class,
+              // Template signature of the fine collision detection algorithm
+              typename,
+              // Template signature of the batch generation algorithm
+              template <typename> class,
+              // Template signature of the collision response algorithm
+              template <typename, typename, typename> class>
+          class C>  // Type of the configuration
+      struct ContactTrait<C<CD, FD, HybridBatch, CR> >
+          : public ContactTrait<C<CD, FD, UnionFind, CR> > {
+        /* The contact trait should be actually specialized. However, we don't
+         * know at build-time what the parallel configuration would be. Only
+         * during compile-time will we get configuration. So we just forward
+         * and use the UnionFind ContactTrait.
+         */
+      };
+      //************************************************************************
 
     }  // namespace batches
 

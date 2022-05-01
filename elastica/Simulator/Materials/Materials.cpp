@@ -88,7 +88,7 @@ namespace elastica {
     //                       Granite                | Oak                    |
     //                       Fir
     //                       |
-    const real_t cor[5][5] = {
+    real_t const cor[5][5] = {
         {static_cast<real_t>(0.25), static_cast<real_t>(0.25),
          static_cast<real_t>(0.25), static_cast<real_t>(0.25),
          static_cast<real_t>(0.25)},  // Iron
@@ -112,7 +112,7 @@ namespace elastica {
     //                       Granite                | Oak                    |
     //                       Fir
     //                       |
-    const real_t csf[5][5] = {
+    real_t const csf[5][5] = {
         {static_cast<real_t>(0.20), static_cast<real_t>(0.20),
          static_cast<real_t>(0.20), static_cast<real_t>(0.20),
          static_cast<real_t>(0.20)},  // Iron
@@ -138,7 +138,7 @@ namespace elastica {
     //                       Granite                | Oak                    |
     //                       Fir
     //                       |
-    const real_t cdf[5][5] = {
+    real_t const cdf[5][5] = {
         {static_cast<real_t>(0.20), static_cast<real_t>(0.20),
          static_cast<real_t>(0.20), static_cast<real_t>(0.20),
          static_cast<real_t>(0.20)},  // Iron
@@ -235,7 +235,7 @@ namespace elastica {
    * \return The MaterialID for the new material.
    * \exception std::invalid_argument Invalid material parameter.
    */
-  MaterialID create_material(const std::string& name, real_t density,
+  MaterialID create_material(std::string const& name, real_t density,
                              real_t cor, real_t young, real_t shear,
                              real_t stiffness, real_t dampingN, real_t dampingT,
                              real_t forward_csf, real_t backward_csf,
@@ -309,12 +309,12 @@ namespace elastica {
       throw std::invalid_argument("Invalid damping coefficients");
 
     // Registering the new material
-    const real_t poisson(0.5);
+    real_t const poisson(0.5);
     M::materials_.push_back(Material(name, density, cor, poisson, young, shear,
                                      stiffness, dampingN, dampingT, forward_csf,
                                      backward_csf, lateral_csf, forward_cdf,
                                      backward_cdf, lateral_cdf));
-    const MaterialID mat(M::materials_.size() - 1);
+    MaterialID const mat(M::materials_.size() - 1);
 
     // Updating the restitution table, the static friction table and the dynamic
     // friction table
@@ -492,7 +492,7 @@ namespace elastica {
    * \return The MaterialID for the new material.
    * \exception std::invalid_argument Invalid material parameter.
    */
-  MaterialID create_material(const std::string& name, real_t density,
+  MaterialID create_material(std::string const& name, real_t density,
                              real_t cor, real_t young, real_t shear,
                              real_t stiffness, real_t dampingN, real_t dampingT,
                              real_t csf, real_t cdf) {
@@ -550,7 +550,7 @@ namespace elastica {
    * material is found, the corresponding MaterialID is returned. Otherwise, \a
    * invalid_material is returned.
    */
-  MaterialID Material::find(const std::string& name) noexcept {
+  MaterialID Material::find(std::string const& name) noexcept {
     for (Material::SizeType i = 0; i < Material::materials_.size(); ++i) {
       if (Material::materials_[i].get_name() == name) {
         return i;
@@ -574,7 +574,7 @@ namespace elastica {
   // the given string. Their IDs are assembled in an std::vector object. If no
   // Materials are found, the container is empty.
   */
-  std::vector<MaterialID> Material::find_prefix(const std::string& prefix) {
+  std::vector<MaterialID> Material::find_prefix(std::string const& prefix) {
     std::vector<MaterialID> results;
     for (Material::SizeType i = 0; i < Material::materials_.size(); ++i) {
       if (Material::materials_[i].get_name().compare(0, prefix.size(),

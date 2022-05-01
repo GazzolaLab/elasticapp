@@ -21,3 +21,4 @@
 #include "Systems/CosseratRods/Access.hpp"
 #include "Systems/CosseratRods/Serialize.hpp"
 #include "Systems/CosseratRods/Utility.hpp"
+#include "Systems/Customization/CosseratRods.hpp"

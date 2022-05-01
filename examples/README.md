@@ -40,14 +40,21 @@ Some examples provide additional file or link to published paper for a complete 
     * __Features__:
         * CosseratRod
         * Temporally varying constraints
-      
+
 * [`flexible_swinging_pendulum`](./flexible_swinging_pendulum)<img src="https://img.shields.io/badge/python-Case%20Study-brightgreen"/>
     * __Name__ : FlexibleSwingingPendulumCaseStudy
     * __Purpose__: Complex oscillatory dynamics of a flexible pendulum, swinging under the action of gravity.
     * __Features__:
         * CosseratRod
         * Constraints
-        * Forcing (body forces)
+        * Environments (gravity)
+
+* [`rigid_body_collision`](./rigid_body_collision)<img src="https://img.shields.io/badge/python-Case%20Study-brightgreen"/>
+    * __Name__ : RigidBodyCollisionCaseStudy
+    * __Purpose__: Modeling rigid body dynamics and collision forces.
+    * __Features__:
+        * Sphere (RigidBody)
+        * Environments (CollisionSystem)
 
 ### Rod Assembly
 

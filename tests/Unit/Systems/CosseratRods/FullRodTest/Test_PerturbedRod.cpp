@@ -7,14 +7,13 @@
 #include "Framework/TestingFramework.hpp"
 #include "Utilities/MakeArray.hpp"
 ///
+#include "Simulator/Materials.hpp"
+#include "Simulator/Materials/Materials.hpp"
 #include "Systems/Block.hpp"
 #include "Systems/Block/Protocols.hpp"
 #include "Systems/CosseratRods.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
-#include "Systems/CosseratRods/Initializers/StraightCosseratRod.hpp" // TODO : replace later
-#include "Simulator/Materials.hpp"
-#include "Simulator/Materials/Materials.hpp"
-
+#include "Systems/CosseratRods/Initializers/StraightCosseratRod.hpp"  // TODO : replace later
 #include "blaze/Blaze.h"
 #include "blaze_tensor/Blaze.h"
 
@@ -37,13 +36,11 @@ namespace {
 
     auto initializer = elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
         // Variables
-        blocks::initialize<elastica::tags::NElement>(
-            [](...) { return 5; }),
+        blocks::initialize<elastica::tags::NElement>([](...) { return 5UL; }),
         // Geometry Variables
         blocks::initialize<elastica::tags::Position>(
             [](std::size_t index) { return 1.0 * index; }),
-        blocks::initialize<elastica::tags::Director>(
-            [](...) { return 0.5; }),
+        blocks::initialize<elastica::tags::Director>([](...) { return 0.5; }),
         blocks::initialize<elastica::tags::ElementDimension>(
             [](...) { return 4.0; }),
         blocks::initialize<elastica::tags::ReferenceCurvature>(
@@ -61,10 +58,10 @@ namespace {
         blocks::initialize<elastica::tags::TorqueDampingCoefficient>(
             [](...) { return 1.0; }),
         // Kinematics Variables
-        blocks::initialize<elastica::tags::Mass>(
-            [](...) { return 1.0; }),
-        blocks::initialize<elastica::tags::Velocity>(
-            [](...) { return 0.0; }),
+        // blocks::initialize<tags::Mass>([](...) { return 1.0; }),
+        blocks::initialize<elastica::tags::Material>(
+            [](...) { return ::elastica::iron; }),
+        blocks::initialize<elastica::tags::Velocity>([](...) { return 0.0; }),
         blocks::initialize<elastica::tags::AngularVelocity>(
             [](...) { return 0.0; }),
         blocks::initialize<elastica::tags::Acceleration>(
@@ -221,8 +218,9 @@ namespace {
     // clang-format on
   }
 
-  ELASTICA_TEST_CASE("Unit.z.Integrated.CosseratRods.PerturbedInternalKinematics",
-                     "[Systems][Integrated]") {
+  ELASTICA_TEST_CASE(
+      "Unit.z.Integrated.CosseratRods.PerturbedInternalKinematics",
+      "[Systems][Integrated]") {
     /*
      * rng_seed = 100
      * shuffle_variables = {

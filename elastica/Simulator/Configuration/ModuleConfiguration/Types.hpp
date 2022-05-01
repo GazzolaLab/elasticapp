@@ -40,7 +40,7 @@ namespace elastica {
               typename BoundaryConditionInZ>
     class DomainConfiguration;
     template <typename EnvironmentTags, typename ImposedPrimitives,
-              typename ExecutionPolicy>
+              typename ExecutionPolicy, typename... IndividualConfigurations>
     class EnvironmentsConfiguration;
     template <typename ExecutionPolicy, typename Registrars>
     class ForcingConfiguration;

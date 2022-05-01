@@ -46,12 +46,15 @@ namespace {
     const std::size_t dummy_index = 0UL;
 
     constexpr std::size_t nelement_initializer = 0UL;
-    constexpr std::size_t radius_initializer = 1UL;
-    constexpr std::size_t position_initializer = 2UL;
-    constexpr std::size_t director_initializer = 3UL;
+    constexpr std::size_t material_initializer = 1UL;
+    constexpr std::size_t radius_initializer = 2UL;
+    constexpr std::size_t position_initializer = 3UL;
+    constexpr std::size_t director_initializer = 4UL;
 
     CHECK(std::get<nelement_initializer>(required_params).get()(dummy_index) ==
           20UL);
+    CHECK(std::get<material_initializer>(required_params).get()(dummy_index) ==
+          ::elastica::iron);
     CHECK(std::get<radius_initializer>(required_params).get()(dummy_index) ==
           approx(0.2));
     CHECK(std::get<position_initializer>(required_params).get()(dummy_index) ==

@@ -15,12 +15,21 @@ add_subdirectory(Configuration)
 add_subdirectory(Connections)
 add_subdirectory(Constraints)
 add_subdirectory(Domain)
-#add_subdirectory(Environments)
+add_subdirectory(Environments)
 add_subdirectory(Forcing)
+
 add_subdirectory(Frames)
+target_link_libraries(${LIBRARY} INTERFACE Frames)
+add_library(${LIBRARY}::Frames ALIAS Frames)
+
 add_subdirectory(Interface)
 add_subdirectory(IO)
+
 add_subdirectory(Materials)
+add_library(elastica::Materials ALIAS Materials)
+
+add_subdirectory(Utilities)
+add_library(Simulator::Utilities ALIAS SimulatorUtilities)
 
 elastica_target_headers(
         ${LIBRARY}
@@ -49,7 +58,10 @@ target_link_libraries(
         ErrorHandling
         Utilities
         Domain
+        Frames
         Parallel
+        SimulatorUtilities
+        Materials
 )
 #set(LIBRARY_SOURCES Trigger.cpp Visualization.cpp Materials.cpp)
 

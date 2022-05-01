@@ -16,6 +16,7 @@
 #include "Simulator/Interface/Affordances/detail/EmptyBatchingAlgorithm.hpp"
 #include "Simulator/Interface/Affordances/detail/EmptyFinalize.hpp"
 #include "Simulator/Interface/Affordances/detail/EmptyResetModule.hpp"
+#include "Simulator/Interface/Affordances/detail/EmptySubModules.hpp"
 #include "Simulator/Interface/Affordances/detail/EmptyUpdateSteps.hpp"
 
 namespace elastica {
@@ -26,10 +27,11 @@ namespace elastica {
 
       //************************************************************************
       /*! \cond ELASTICA_INTERNAL */
-      template <typename SimTraits, template <typename> class... Affordances>
+      template <typename SimTraits, typename Sim,
+                template <typename, typename> class... Affordances>
       struct inherit {
         // needs a name for [-Wnon-c-typedef-for-linkage]
-        using type = struct foo : public Affordances<SimTraits>... {};
+        using type = struct foo : public Affordances<SimTraits, Sim>... {};
       };
       /*! \endcond */
       //************************************************************************
@@ -51,10 +53,12 @@ namespace elastica {
      *                                 public NonCopyable {};
      * \endcode
      */
-    template <typename SimTraits>
-    using EmptyInterface = typename detail::inherit<
-        SimTraits, detail::EmptyUpdateSteps, detail::EmptyBatchingAlgorithm,
-        detail::EmptyFinalize, detail::EmptyResetModule>::type;
+    template <typename SimTraits, typename Sim>
+    using EmptyInterface =
+        typename detail::inherit<SimTraits, Sim, detail::EmptyUpdateSteps,
+                                 detail::EmptyBatchingAlgorithm,
+                                 detail::EmptyFinalize, detail::EmptySubModules,
+                                 detail::EmptyResetModule>::type;
     //**************************************************************************
 
   }  // namespace modules

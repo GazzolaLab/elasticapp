@@ -1,7 +1,7 @@
 //==============================================================================
 /*!
 //  \file
-//  \brief Common accessor tags for all \elastica systems
+//  \brief Accessor tags for all \elastica systems
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
@@ -13,5 +13,10 @@
 
 #pragma once
 
-#include "Systems/RigidBody/Tags.hpp"
+//******************************************************************************
+// Includes
+//******************************************************************************
 #include "Systems/common/Tags.hpp"
+//
+#include "Systems/CosseratRods/Tags.hpp"
+#include "Systems/RigidBody/Tags.hpp"

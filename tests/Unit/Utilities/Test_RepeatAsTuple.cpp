@@ -1,8 +1,8 @@
 //
 // Created by Tejaswin Parthasarathy on 6/2/21.
 //
-#include <tuple>
 #include <memory>
+#include <tuple>
 
 #include "Framework/TestingFramework.hpp"
 #include "Utilities/RepeatAsTuple.hpp"
@@ -26,16 +26,20 @@ namespace {
     CHECK(*std::get<0UL>(repeated_pi) == 2);
 
     // check for strucst
-    auto a = [x = 20](){ return x;};
+    auto a = [x = 20]() { return x; };
     auto repeated_a = repeat_as_tuple<3UL>(a);
     CHECK(std::get<0UL>(repeated_a)() == 20);
 
     // check if zero arguments make sense even with custom types
     auto another_pi = std::make_unique<int>(5);
     auto repeated_another_pi = repeat_as_tuple<0UL>(std::move(pi));
+    static_assert(cpp17::is_same_v<decltype(repeated_another_pi), std::tuple<>>,
+                  "Meta-failure");
 
-    auto another_func = [x = 10](){ return x;};
+    auto another_func = [x = 10]() { return x; };
     auto repeated_func = repeat_as_tuple<0UL>(a);
+    static_assert(cpp17::is_same_v<decltype(repeated_func), std::tuple<>>,
+                  "Meta-failure");
   }
 
 }  // namespace

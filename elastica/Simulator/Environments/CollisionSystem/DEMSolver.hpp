@@ -1,42 +1,81 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Implementation of a collision solver based on Discrete Element
+//  Method (DEM)
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
+
+//******************************************************************************
+// Includes
+//******************************************************************************
 
 #include <algorithm>
 #include <array>
 #include <iterator>
 #include <memory>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
+#include "ErrorHandling/Assert.hpp"
+//
+#include "ModuleSettings/Profiling.hpp"
+// Common environments
+#include "Simulator/Environments/Common.hpp"
+// All types
+#include "Simulator/Environments/CollisionSystem/Types.hpp"
+// Batches
+#include "Simulator/Environments/CollisionSystem/Batches/Batches.hpp"
+// Contacts
 #include "Simulator/Environments/CollisionSystem/Contact/Contact.hpp"
-#include "Simulator/Environments/CollisionSystem/Contact/ContactVector.hpp"
-//#include
-//"Simulator/Environments/CollisionSystem/Primitives/SpherePrimitive.hpp"
-#include "Simulator/Environments/CollisionSystem/Detection/Coarse/Detectors.hpp"
-#include "Simulator/Environments/CollisionSystem/Detection/Fine/Detectors.hpp"
-#include "Simulator/Environments/CollisionSystem/Policies/DomainPolicy.hpp"
-#include "Simulator/Environments/CollisionSystem/Response/DEMForces/TypeTraits.hpp"
-#include "Simulator/Environments/CollisionSystem/Response/DEMSolver.hpp"
-#include "Simulator/Environments/CollisionSystem/Tags.hpp"
-#include "Simulator/Environments/CollisionSystem/Transfer.hpp"
-#include "Types.hpp"
-#include "Utilities/MemoryMeter/MemoryMeter.hpp"
-#include "elastica/DataStructures/TaggedTuple.hpp"
-#include "elastica/ErrorHandling/Assert.hpp"
-#include "elastica/Utilities/DefineTypes.h"
-#include "elastica/Utilities/Logging/Logger.hpp"
-#include "elastica/Utilities/MakeArray.hpp"
-#include "elastica/Utilities/MemoryPool.hpp"
-#include "elastica/Utilities/ProfilingSection.hpp"
-#include "elastica/Utilities/Singleton.hpp"
-#include "elastica/Utilities/StdHelpers.hpp"
-#include "elastica/Utilities/TMPL.hpp"
-//#include "elastica/Utilities/TMPLDebugging.hpp"
-#include "elastica/Utilities/Timing.h"
+#include "Simulator/Environments/CollisionSystem/Contact/ContactContainerTrait.hpp"
+// Detection
+#include "Simulator/Environments/CollisionSystem/Detection/ContactCache.hpp"
+#include "Simulator/Environments/CollisionSystem/Detection/Detection.hpp"
+#include "Simulator/Environments/CollisionSystem/Detection/PairwiseTMPL.hpp"
+// Interface
+#include "Simulator/Environments/CollisionSystem/Detection/Fine/FineDetectionInterface.hpp"
+// Policies
+#include "Simulator/Environments/CollisionSystem/Policy/DomainPolicy.hpp"
+#include "Simulator/Environments/CollisionSystem/Policy/ExecutionPolicy.hpp"
+// Response
+#include "Simulator/Environments/CollisionSystem/Response/Response.hpp"
+//
+// TODO : refactor out later on
+#include "Simulator/Environments/Transfer/Transferer.hpp"
+// Module configuration
+#include "Simulator/Environments/CollisionSystem/ModuleConfiguration/ModuleConfiguration.hpp"
+//
+#include "Simulator/Utilities/MemoryMeters.hpp"
+#include "Simulator/Utilities/Timers.hpp"
+//
+#include "Time/SimulationTime.hpp"
+//
+#include "Utilities/AsConst.hpp"
+#include "Utilities/AsTaggedTuple.hpp"
+#include "Utilities/DefineTypes.h"
+#include "Utilities/Invoke.hpp"
+#include "Utilities/Logging.hpp"
+#include "Utilities/Logging/Logger.hpp"
+#include "Utilities/PrettyType.hpp"
+#include "Utilities/Singleton.hpp"
+#include "Utilities/Size.hpp"
+#include "Utilities/TMPL.hpp"
+//
 
-// TODO : Replace primitives with a tagged tuple
-// TODO : std::get function for accessing primitives_? (not strictly needed)
-// TODO : Symmetrize imposed primitives and primitives
+/*
+ * TODO : refactor the successive call counters into separate entity
+ */
 
 namespace elastica {
 
@@ -83,451 +122,678 @@ namespace elastica {
         : public Singleton<CollisionSystem<SimulatorConfig,
                                            C<CD, FD, BG, response::DEMSolver>>,
                            logging::Logger>,
-          public DomainPolicy<SimulatorConfig> {
+          public DomainPolicy<SimulatorConfig>,
+          public ::tt::ConformsTo<
+              ::elastica::environments::protocols::Environment> {
      public:
       //**Type definitions******************************************************
-      using CollisionConfig =
-          C<CD, FD, BG, response::DEMSolver>;  //!< Type of the configuration.
-                                               //! Type of the coarse collision
-                                               //! detection algorithm.
-
+      //! Type of the configuration.
+      using CollisionConfig = C<CD, FD, BG, response::DEMSolver>;
+      //! Type of the coarse collision detection algorithm.
       using This = CollisionSystem<SimulatorConfig, CollisionConfig>;
-
       //! Type of the fine collision detector.
       /*! The type of the fine collision detection algorithm is selected by the
-         setting of the pe::pe_FINE_COLLISION_DETECTOR macro. */
+         setting of the ELASTICA_FINE_COLLISION_DETECTOR macro. */
       using FineDetector = FD;
-
-      //! Type of the batch generation algorithm.
-      /*! The type of the batch generation algorithm is selected by the setting
-         of the pe_BATCH_GENERATOR macro. */
-      using BatchGenerator = BG<CollisionConfig>;
-
-      // Other typedefs
-      using ContactType =
-          typename CollisionConfig::ContactType;  //!< Type of the contacts.
-      using ContactID =
-          typename CollisionConfig::ContactID;  //!< Handle to a contact.
-      using ConstContactID =
-          typename CollisionConfig::ConstContactID;  //!< Handle to a constant
-                                                     //!< contact.
-      // Specialization : stores ptrs of ContactType
-      using Contacts = ContactVector<ContactType>;  //!< Container for contacts.
-
+      //! Type of the contacts.
+      // using Contact = typename CollisionConfig::Contact;
+      //! Typelist of admissible primitives in the simulator
       using AdmissiblePrimitives =
           typename SimulatorConfig::AdmissiblePrimitives;
-
-      template <typename Tag>
-      using GetSystemCollectionType =
-          typename SimulatorConfig::template GetSystemCollectionType<Tag>;
-
-      using AdmissibleSystemCollectionTags =
-          typename SimulatorConfig::AdmissibleSystemCollectionTags;
-
-      //      using AdmissibleImposedPrimitives =
-      //      typename SimulatorConfig::AdmissibleImposedPrimitives;
+      //! Typelist of admissible imposed primitives
+      using AdmissibleImposedPrimitives =
+          typename SimulatorConfig::AdmissibleImposedPrimitives;
+      //! Execution policy
+      using KernelExecutionPolicy = KernelExecutionPolicy<
+          typename SimulatorConfig::ForEachExecutionPolicy,
+          typename SimulatorConfig::OverPairsExecutionPolicy>;
+      //************************************************************************
 
      private:
-      //      // Some trait classes
-      //      template <typename T>
-      //      struct AddPrimitiveStorageType {
-      //        // TODO : Customize
-      //        using type = std::vector<T>;
-      //      };
-
-      //      using AdmissiblePrimitiveCollection =
-      //          tmpl::transform<tmpl::remove_duplicates<AdmissiblePrimitives>,
-      //                          AddPrimitiveStorageType<tmpl::_1>>;
-
+      //**Type definitions******************************************************
       using PrimitiveOrdering = typename FineDetector::PrimitiveOrdering;
+      //************************************************************************
+
+      //**Friendships***********************************************************
+      //! Friendship with Singleton
+      BEFRIEND_SINGLETON;
+      //************************************************************************
 
      public:
-      // DONE : Removing duplicates to be done upstream
-      // Get a stable ordering so that Fine detection works with the available
-      // methods
-      // DONE : Push upstream
-
-      // // OLD
-      //      using Primitives = tmpl::sort<
-      //          AdmissiblePrimitives,
-      //          tmpl::less<tmpl::bind<tmpl::index_of,
-      //          tmpl::pin<PrimitiveOrdering>,
-      //                                tmpl::_1>,
-      //                     tmpl::bind<tmpl::index_of,
-      //                     tmpl::pin<PrimitiveOrdering>,
-      //                                tmpl::_2>>>;
-      //
-
-      // Store only upper half to avoid redundancies while checking contact
-      // DONE : Push upstream
-      // ///// OLD
-      //      using PrimitiveCollection =
-      //          tmpl::transform<Primitives,
-      //          AddPrimitiveStorageType<tmpl::_1>>;
-
-      //!< Type of the domain policy
-      using DomainPolicy = DomainPolicy<SimulatorConfig>;
-      //!< Type of the simulation domain
-      using typename DomainPolicy::DomainType;
-
-      //!< Metafunction that returns type of the simulation boundaries
-      template <::elastica::detail::Directions::DirectionType N>
+      //**Type definitions******************************************************
+      //! Type of the domain policy
+      using DomainPolicyType = DomainPolicy<SimulatorConfig>;
+      //! Type of the simulation domain
+      using typename DomainPolicyType::DomainType;
+      //! Metafunction that returns type of the simulation boundaries
+      template <::elastica::detail::EulerianFrame::DirectionType N>
       using BoundaryTypeAlong =
           typename SimulatorConfig::template BoundaryTypeAlong<N>;
+      //! Time Type
+      using TimeType = typename SimulatorConfig::TimeType;
+      //! Real type
+      using Real = typename TimeType::Real;
 
-      using PrimitiveCollection = typename SimulatorConfig::PrimitiveCollection;
-      using ImposedPrimitiveCollection =
-          typename SimulatorConfig::ImposedPrimitiveCollection;
-
-      // Extract value type, sort the value types according to ordering,
-      // and add storage type back again
-      template <typename T>
-      using RemovePrimitiveStorageType =
-          typename SimulatorConfig::template RemovePrimitiveStorageType<T>;
-      template <typename T>
-      using AddPrimitiveStorageType =
-          typename SimulatorConfig::template AddPrimitiveStorageType<T>;
-
-      using OrderedPrimitives =
-          // Sort
-          tmpl::sort<
-              // Extract type
-              tmpl::transform<PrimitiveCollection,
-                              tmpl::bind<RemovePrimitiveStorageType, tmpl::_1>>
-              // End Extract type,
-              ,
-              // sort key
-              tmpl::less<tmpl::bind<tmpl::index_of,
-                                    tmpl::pin<PrimitiveOrdering>, tmpl::_1>,
-                         tmpl::bind<tmpl::index_of,
-                                    tmpl::pin<PrimitiveOrdering>, tmpl::_2>>
-              // End sort
-              >;
-      using OrderedPrimitiveCollection =
-          // Inject storage type
-          tmpl::transform<OrderedPrimitives,
-                          tmpl::bind<AddPrimitiveStorageType, tmpl::_1>>;
-
-      template <typename T>
-      using RemoveImposedPrimitiveStorageType =
-          typename SimulatorConfig::template RemoveImposedPrimitiveStorageType<
-              T>;
-      template <typename T>
-      using AddImposedPrimitiveStorageType =
-          typename SimulatorConfig::template AddImposedPrimitiveStorageType<T>;
-
-      using OrderedImposedPrimitives =
-          // Sort
-          tmpl::sort<
-              // Extract type
-              tmpl::transform<
-                  ImposedPrimitiveCollection,
-                  tmpl::bind<RemoveImposedPrimitiveStorageType, tmpl::_1>>
-              // End Extract type,
-              ,
-              // sort key
-              tmpl::less<tmpl::bind<tmpl::index_of,
-                                    tmpl::pin<PrimitiveOrdering>, tmpl::_1>,
-                         tmpl::bind<tmpl::index_of,
-                                    tmpl::pin<PrimitiveOrdering>, tmpl::_2>>
-              // End sort
-              >;
-
-      using OrderedImposedPrimitiveCollection =
-          tmpl::transform<OrderedImposedPrimitives,
-                          tmpl::bind<AddImposedPrimitiveStorageType, tmpl::_1>>;
-
-      // Matrix types, its convenient to separate collision of imposed bodies
-      // and non-imposed bodies for force reduction
-      // Store the entire matrix here, results in repeated entries
-      using PrimitivePrimitiveMatrix =
-          tmpl::cartesian_product<OrderedPrimitives, OrderedPrimitives>;
-      using PrimitiveImposedPrimitiveMatrix =
-          tmpl::cartesian_product<OrderedPrimitives, OrderedImposedPrimitives>;
-
-      using PrimitivePrimitiveCollectionMatrix =
-          tmpl::cartesian_product<OrderedPrimitiveCollection,
-                                  OrderedPrimitiveCollection>;
-      using PrimitiveImposedPrimitiveCollectionMatrix =
-          tmpl::cartesian_product<OrderedPrimitiveCollection,
-                                  OrderedImposedPrimitiveCollection>;
-
-      // Helper for removing matrix types
-      template <typename S, typename E>
-      struct RemoveUpperTriangularMatrixHelper;
-
-      template <typename S, typename E1, typename E2>
-      struct RemoveUpperTriangularMatrixHelper<S, tmpl::list<E1, E2>> {
-        using type = typename std::conditional<
-            std::is_same<tmpl::index_of<S, tmpl::list<E2, E1>>,
-                         tmpl::no_such_type_>::value,
-            tmpl::push_back<S, tmpl::list<E1, E2>>, S>::type;
-      };
+     protected:
+      //! A typelist of primitives ordered according to internal considerations
+      using OrderedPrimitives = tmpl::sort<
+          AdmissiblePrimitives,
+          tmpl::less<tmpl::bind<tmpl::index_of, tmpl::pin<PrimitiveOrdering>,
+                                tmpl::_1>,
+                     tmpl::bind<tmpl::index_of, tmpl::pin<PrimitiveOrdering>,
+                                tmpl::_2>>>;
+      //! A typelist of imposed primitives ordered internally
+      using OrderedImposedPrimitives = tmpl::sort<
+          AdmissibleImposedPrimitives,
+          tmpl::less<tmpl::bind<tmpl::index_of, tmpl::pin<PrimitiveOrdering>,
+                                tmpl::_1>,
+                     tmpl::bind<tmpl::index_of, tmpl::pin<PrimitiveOrdering>,
+                                tmpl::_2>>>;
+      /*
+       * We use the lower-triangular matrix only since this
+       * results in unique collision between primitives
+       *
+       * Assume PrimitivePrimitiveMatrix is the following:
+       *
+       * | Primitive | Cylinder | Box | Sphere |
+       * |-----------|----------|-----|--------|
+       * | Cylinder  | x        | x   | x      |
+       * | Box       | x        | x   | x      |
+       * | Sphere    | x        | x   | x      |
+       *
+       * If we iterate over all entries of the matrix, then there
+       * are repeated collision checks :  for example a Cylinder-Box
+       * check is the same as a Box-Cylinder check for the registered
+       * cylinder and box primitives. To avoid double-counting then
+       * its easy to extract the lower triangular component of the
+       * matrix above:
+       *
+       * | Primitive | Cylinder | Box | Sphere |
+       * |-----------|----------|-----|--------|
+       * | Cylinder  | x        |     |        |
+       * | Box       | x        | x   |        |
+       * | Sphere    | x        | x   | x      |
+       *
+       * Note that the Primitives are ordered according to the
+       * FineDetector's preferred ordering, so it helps reduce
+       * template instantiations.
+       */
+      //! Combination of ordered primitives and ordered primitives
+      using PrimitiveCombinations = combinations<OrderedPrimitives>;
 
       /*
-        We use the lower-triangular matrix only since this
-        results in unique collision between primitives
-
-        Assume PrimitivePrimitiveMatrix is the following:
-
-        | Primitive | Cylinder | Box | Sphere |
-        |-----------|----------|-----|--------|
-        | Cylinder  | x        | x   | x      |
-        | Box       | x        | x   | x      |
-        | Sphere    | x        | x   | x      |
-
-        If we iterate over all entries of the matrix, then there
-        are repeated collision checks :  for example a Cylinder-Box
-        check is the same as a Box-Cylinder check for the registered
-        cylinder and box primitives. To avoid double-counting then
-        its easy to extract the lower triangular component of the
-        matrix above:
-
-        | Primitive | Cylinder | Box | Sphere |
-        |-----------|----------|-----|--------|
-        | Cylinder  | x        |     |        |
-        | Box       | x        | x   |        |
-        | Sphere    | x        | x   | x      |
-
-        Note that the Primitives are ordered according to the
-        FineDetector's preferred ordering, so it helps reduce
-        template instantiations.
-
+       * In the case of the primitive-imposed primitive matrix, this
+       * siutation doesn't arise as a collision between a
+       * sphere primitive and an imposed box primitive is different
+       * than a box primitive and an imposed sphere primitive, since
+       * they correspond to different objects, although they use
+       * the same fine-detection code i.e.
+       *
+       * | P \ IP   | ImposedCyl | ImposedBox | ImposedSphere |
+       * |----------|------------|------------|---------------|
+       * | Cylinder | x          | x          | x             |
+       * | Box      | x          | x          | x             |
+       * | Sphere   | x          | x          | x             |
+       *
+       * should all be processed as rows and columns are different
        */
-      using LowerTriangularPrimitivePrimitiveMatrix = tmpl::fold<
-          PrimitivePrimitiveMatrix, tmpl::list<>,
-          RemoveUpperTriangularMatrixHelper<tmpl::_state, tmpl::_element>>;
+      //! Combination of ordered primitives and ordered imposed primitives
+      using PrimitiveImposedPrimitiveCombinations =
+          combinations_with_replacement<OrderedPrimitives,
+                                        OrderedImposedPrimitives>;
+      //! All combinations
+      using AllPrimitiveCombinations =
+          tmpl::append<PrimitiveCombinations,
+                       PrimitiveImposedPrimitiveCombinations>;
 
-      /*
-        In the case of the primitive-imposed primitive matrix, this
-        siutation doesn't arise as a collision between a
-        sphere primitive and an imposed box primitive is different
-        than a box primitive and an imposed sphere primitive, since
-        they correspond to different objects, although they use
-        the same fine-detection code i.e.
+     public:
+      //! Type of Contacts
+      using Contacts = typename ::elastica::collision::ContactContainerTrait<
+          typename KernelExecutionPolicy::ExecutionPolicy>::type;
+      //! Contact Cache
+      using ContactCache = ::elastica::ContactCache<
+          AllPrimitiveCombinations,
+          ::elastica::PairwiseCacheContainerPolicy<
+              typename KernelExecutionPolicy::ExecutionPolicy>>;
+      //! Batch type
+      using Batches = typename batches::BatchContainerTrait<
+          typename KernelExecutionPolicy::ExecutionPolicy>::type;
 
-        | P \ IP   | ImposedCyl | ImposedBox | ImposedSphere |
-        |----------|------------|------------|---------------|
-        | Cylinder | x          | x          | x             |
-        | Box      | x          | x          | x             |
-        | Sphere   | x          | x          | x             |
-
-        should all be processed as rows and columns are different
-       */
-
-      //  Storage types
-      ////// OLD
-      //// using PrimitiveStorage = tmpl::as_tuple<PrimitiveCollection>;
-      using PrimitiveStorage = typename SimulatorConfig::PrimitiveStorage;
-      using ImposedPrimitiveStorage =
-          typename SimulatorConfig::ImposedPrimitiveStorage;
-
-      // Stores the start indices of the currently filled primitives vector to
-      // help with filling and unfilling them. Essentially maps the system to
-      // the primitive
-      // TODO Should ideally be a taggedTuple with std::size_t as member with
-      // primitives as tags
-      using AdmissibleSystemCollections =
-          typename SimulatorConfig::AdmissibleSystemCollections;
-      using CollectionIndices =
-          std::array<std::size_t,
-                     tmpl::size<AdmissibleSystemCollections>::value>;
-      // Slightly dirty FIX :
-      // Enhance the CollisionConfiguration with PrimitiveInformation to CD
-      // This is fine since its internal to the collision system
-      struct CoarseDetectorCollisionConfig : public CollisionConfig {
+     protected:
+      //! Internal configuration inside the collision system
+      struct InternalCollisionConfig : public SimulatorConfig, CollisionConfig {
         // ///// Unused, dont pass
         //        using Primitives = This::Primitives;
 
         //!< Domain Type
         using DomainType = This::DomainType;
 
-        //!< Metafunction that returns type of the simulation boundaries
-        template <std::size_t N>
-        using BoundaryTypeAlong = This::BoundaryTypeAlong<N>;
+        //! Type of direction
+        // using DirectionType = typename DomainType::DirectionType;
 
-        //!< Matrix Types
-        using PrimitivePrimitiveMatrix = This::PrimitivePrimitiveMatrix;
-        using PrimitiveImposedPrimitiveMatrix =
-            This::PrimitiveImposedPrimitiveMatrix;
-        using LowerTriangularPrimitivePrimitiveMatrix =
-            This::LowerTriangularPrimitivePrimitiveMatrix;
+        //!< Metafunction that returns type of the simulation boundaries
+        // template <DirectionType D>
+        // using BoundaryTypeAlong = This::BoundaryTypeAlong<D>;
+
+        //!< Combination Types
+        using PrimitiveCombinations = This::PrimitiveCombinations;
+        using PrimitiveImposedPrimitiveCombinations =
+            This::PrimitiveImposedPrimitiveCombinations;
+
+        //! Kernel
+        using KernelExecutionPolicy = This::KernelExecutionPolicy;
 
         // Can add pointers here for a uniform interface
-        using PrimitiveStorage = This::PrimitiveStorage;
-        using ImposedPrimitiveStorage = This::ImposedPrimitiveStorage;
-        using AdmissiblePrimitives = This::AdmissiblePrimitives;
-        template <typename T>
-        using AddPrimitiveStorageType = This::AddPrimitiveStorageType<T>;
-        template <typename T>
-        using AddImposedPrimitiveStorageType =
-            This::AddImposedPrimitiveStorageType<T>;
+        // using PrimitiveStorage = This::PrimitiveStorage;
+        // using ImposedPrimitiveStorage = This::ImposedPrimitiveStorage;
+        // using AdmissiblePrimitives = This::AdmissiblePrimitives; // get from
+        // simulator config template <typename T> using AddPrimitiveStorageType
+        // = This::AddPrimitiveStorageType<T>; template <typename T> using
+        // AddImposedPrimitiveStorageType =
+        //     This::AddImposedPrimitiveStorageType<T>;
       };
-
-      /*! The type of the coarse collision detection algorithm is selected by
-         the setting of the pe::pe_COARSE_COLLISION_DETECTOR macro. */
-      using CoarseDetector = CD<CoarseDetectorCollisionConfig>;
-
-      struct ResponseCollisionConfig : public CollisionConfig {
-        // If user doesn't want to override defaults, leave it be
-        // else set to user overriden force model from client file
-
-        //        template <typename T>
-        //        struct FM_Helper_ {
-        //          using type = typename T::ForceModel;
-        //        };
-        //
-
-        // Cannot use conditional actively in a SFINAE context, hence enable
-        // SFINAE lazily i.e. dont' do conditional<B, FM_Helper<A>::type,
-        // FM_Helper<C>::type> but rather conditional<B, A, C>::NestedType;
-        using ForceModel = typename std::conditional_t<
-            response::tt::has_valid_force_model_member_v<SimulatorConfig>,
-            SimulatorConfig, CollisionConfig>::ForceModel;
-      };
-
-      //! Type of the collision response algorithm.
-      /*! The type of the collision response algorithm is selected by the
-         setting of the pe::pe_CONTACT_SOLVER macro. */
-      using ContactSolver = response::DEMSolver<ResponseCollisionConfig>;
-
-     private:
-      //**Constructor*********************************************************************************
-      /*!\name Constructor */
-      //@{
-      explicit CollisionSystem();
-
-      //@}
-      //**********************************************************************************************
+      //************************************************************************
 
      public:
-      //**Destructor**********************************************************************************
+      //**Algorithm tags********************************************************
+      /*!\name Algorithm tags */
+      //@{
+      //************************************************************************
+      /*!\brief Tags that denote the algorithms
+       */
+      struct TransferInfoFromSimulationStep {
+        using type = Transferer;
+      };
+      struct CoarseDetectionStep {
+        //! Type of the coarse collision detection algorithm
+        using type = CD<InternalCollisionConfig>;
+      };
+      struct FineDetectionStep {
+        //! Type of the fine collision detection algorithm
+        using type =
+            detection::fine::FineDetectionInterface<InternalCollisionConfig>;
+      };
+      struct ContactBatchingStep {
+        //! Type of the batch generation algorithm
+        using type = BG<InternalCollisionConfig>;
+      };
+      struct ContactResolutionStep {
+        //! Type of the contact resolution algorithm
+        using type = response::DEMSolver<InternalCollisionConfig>;
+      };
+      struct TransferInfoToSimulatorStep {
+        //! Type of algorithm to transfer
+        using type = Transferer;
+      };
+      //! Empty
+      struct AllCollisionSystemSteps;
+      //************************************************************************
+
+      //@}
+      //************************************************************************
+
+      //! Typelist of algorithms
+      using AlgorithmSteps =
+          tmpl::list<TransferInfoFromSimulationStep, CoarseDetectionStep,
+                     FineDetectionStep, ContactBatchingStep,
+                     ContactResolutionStep, TransferInfoToSimulatorStep>;
+      //! Tuple containing all algorithms
+      using Algorithms = tmpl::as_tagged_tuple<AlgorithmSteps>;
+      //! Type of tags
+      using Tags =
+          tmpl::append<tmpl::list<AllCollisionSystemSteps>, AlgorithmSteps>;
+      //! Type of timers
+      using Timers = ::elastica::Timers<Tags>;
+      //! Type of intrusive memory meters
+      using MemoryMeters = ::elastica::MemoryMeters<Tags>;
+      //************************************************************************
+
+     private:
+      //**Constructor***********************************************************
+      /*!\name Constructor */
+      //@{
+      //************************************************************************
+      /*!\brief Constructor of the CollisionSystem class.
+       */
+      explicit CollisionSystem()
+          :  // Initialization of the Singleton base object
+            Singleton<CollisionSystem, logging::Logger>(),
+            // Pointer to the simulation domain
+            DomainPolicyType(nullptr),
+            // The active collision algorithms
+            algorithms_(),
+            //! Batches of contacts for parallelization
+            batches_(),
+            //! The cache of contacts
+            contact_cache_(),
+            // The currently active contacts of the simulation world
+            contacts_(5000),
+            // Active memory profilers
+            memory_meters_(),
+            // Active time profilers
+            timers_(),
+            //! The time between sucessive calls to coarse detector
+            time_interval_between_each_detection_(0.0),
+            //! The time of previous call to coarse detector
+            time_of_last_detection_call_(Real(0.0)) {
+        // Logging the successful setup of the collision system
+        using namespace ::elastica::logging;
+        log<info>([](auto const& log) {
+          log << "Successfully initialized the collision system instance";
+        });
+      }
+      //************************************************************************
+
+      //@}
+      //************************************************************************
+
+     public:
+      //**Destructor************************************************************
       /*!\name Destructor */
       //@{
-      ~CollisionSystem();
-      //@}
-      //**********************************************************************************************
 
-      //**Get
-      // functions*******************************************************************************
+      //************************************************************************
+      /*!\brief Destructor of the CollisionSystem class.
+       */
+      ~CollisionSystem() {
+        clear();
+
+        using namespace ::elastica::logging;
+        log<info>([](auto const& log) {
+          log << "Successfully destroyed the collision system instance";
+        });
+      }
+      //************************************************************************
+
+      //@}
+      //************************************************************************
+
+      //**Get functions*********************************************************
       /*!\name Get functions */
       //@{
-      inline auto get_coarse_detector() noexcept -> CoarseDetector&;
-      inline auto get_contact_solver() noexcept -> ContactSolver&;
-      static constexpr auto get_number_of_primitive_collections() noexcept
-          -> std::size_t;
-      // TODO : Functions seem common, maybe refactor?
-      template <typename Primitive>
-      inline constexpr auto get_primitive_collection() noexcept
-          -> AddPrimitiveStorageType<Primitive>&;
-      template <typename Primitive>
-      inline constexpr auto get_primitive_collection() const noexcept
-          -> AddPrimitiveStorageType<Primitive> const&;
-      template <typename Primitive>
-      inline constexpr auto get_offset_index() noexcept -> std::size_t&;
-      template <typename Primitive>
-      inline constexpr auto get_offset_index() const noexcept
-          -> std::size_t const&;
-      template <typename TimerTag>
-      inline constexpr decltype(auto) get_timer() noexcept;
-      static inline constexpr std::size_t get_number_of_timers() noexcept;
-      template <typename MemoryMeterTag>
-      inline constexpr decltype(auto) get_memory_meter() noexcept;
-      static inline constexpr std::size_t
-      get_number_of_memory_meters() noexcept;
+
+      //************************************************************************
+      /*!\brief Gets the registered algorithms
+       */
+      inline constexpr auto get_algorithms() & noexcept -> Algorithms& {
+        return algorithms_;
+      }
+      inline constexpr auto get_algorithms() const& noexcept
+          -> Algorithms const& {
+        return algorithms_;
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Gets the algorithm correspondng to `AlgorithmStep`.
+       *
+       * \tparam AlgorithmStep Tag to fetch algorithm
+       */
+      template <typename AlgorithmStep>
+      inline constexpr decltype(auto) get_algorithms() {
+        return tuples::get<AlgorithmStep>(algorithms_);
+      }
+      //************************************************************************
+
+     public:
+      //************************************************************************
+      /*!\brief Gets the currently active coarse detector.
+       */
+      inline constexpr decltype(auto) get_coarse_detector() noexcept {
+        return get_algorithms<CoarseDetectionStep>();
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Gets the currently active fine detector.
+       */
+      inline constexpr decltype(auto) get_fine_detector() noexcept {
+        return get_algorithms<FineDetectionStep>();
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Gets the currently active batching algorithm
+       */
+      inline constexpr decltype(auto) get_batcher() noexcept {
+        return get_algorithms<ContactBatchingStep>();
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Gets the currently active contact resolution algorithm.
+       */
+      inline constexpr decltype(auto) get_contact_resolver() noexcept {
+        return get_algorithms<ContactResolutionStep>();
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Gets the registered contacts.
+       */
+      inline constexpr auto contacts() & noexcept -> Contacts& {
+        return contacts_;
+      }
+      inline constexpr auto contacts() const& noexcept -> Contacts const& {
+        return contacts_;
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Gets the batches.
+       */
+      inline constexpr auto batches() & noexcept -> Batches& {
+        return batches_;
+      }
+      inline constexpr auto batches() const& noexcept -> Batches const& {
+        return batches_;
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Gets the contact cache.
+       */
+      inline constexpr auto contact_cache() & noexcept -> ContactCache& {
+        return contact_cache_;
+      }
+      inline constexpr auto contact_cache() const& noexcept
+          -> ContactCache const& {
+        return contact_cache_;
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Gets the registered timers.
+       */
+      inline constexpr auto timers() & noexcept -> Timers& { return timers_; }
+      inline constexpr auto timers() const& noexcept -> Timers const& {
+        return timers_;
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Gets the registered memory_meters.
+       */
+      inline constexpr auto memory_meters() & noexcept -> MemoryMeters& {
+        return memory_meters_;
+      }
+      inline constexpr auto memory_meters() const& noexcept
+          -> MemoryMeters const& {
+        return memory_meters_;
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Gets the time interval between each detection.
+       */
+      constexpr auto time_interval_between_detection() & noexcept -> Real& {
+        return time_interval_between_each_detection_;
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Gets the time interval between each detection.
+       */
+      constexpr auto time_interval_between_detection() const& noexcept
+          -> Real const& {
+        return time_interval_between_each_detection_;
+      }
+      //************************************************************************
 
       //@}
-      //**********************************************************************************************
+      //************************************************************************
 
-      //**Query
-      // functions*****************************************************************************
+     protected:
+      //**Functors**************************************************************
+      /*!\name Functors */
+      //@{
+
+      //************************************************************************
+      /*!\brief Prologue of an algorithmic step
+       */
+      template <typename Step>
+      void prologue() /*const*/ noexcept {
+        using namespace ::elastica::logging;
+        using ::elastica::get_meter;
+
+        log<debug>([](auto const& log) {
+          log << "Performing " + ::pretty_type::short_name<Step>() + " ...\n";
+        });
+
+        ELASTICA_PROFILING_SECTION {
+          get_meter<Step>(timers()).start();
+          get_meter<Step>(memory_meters()).start();
+        }
+      };
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Epologue of an algorithmic step
+       */
+      template <typename Step>
+      void epilogue() /*const*/ noexcept {
+        using namespace ::elastica::logging;
+        using ::elastica::get_meter;
+
+        ELASTICA_PROFILING_SECTION {
+          get_meter<Step>(timers()).stop();
+          get_meter<Step>(memory_meters()).stop();
+        }
+
+        log<debug>([](auto const& log) {
+          log << "Finished " + ::pretty_type::short_name<Step>() + " ...\n";
+        });
+      };
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Perform an algorithmic step while recording time take/memory
+       * used
+       */
+      template <typename Step, typename... Args>
+      void perform(Args&&... args) /* const noexcept*/ {
+        prologue<Step>();
+        tuples::get<Step>(get_algorithms())(std::forward<Args>(args)...);
+        epilogue<Step>();
+      }
+      //************************************************************************
+
+      //@}
+      //************************************************************************
+
+      //**Query functions*******************************************************
       /*!\name Query functions */
       //@{
-      void log_profiling_summary() const noexcept;
-      //@}
-      //**********************************************************************************************
+      // void log_profiling_summary() const noexcept;
 
-      //**Utility
-      // functions***************************************************************************
+      //************************************************************************
+      /*!\brief Should coarse detection be performed?
+       * used
+       */
+      bool detection_is_to_be_performed(TimeType time_v) noexcept {
+        auto elapsed_time_between_calls = time_v - time_of_last_detection_call_;
+        time_of_last_detection_call_ = time_v;
+        return static_cast<Real>(elapsed_time_between_calls) >=
+               time_interval_between_each_detection_;
+      }
+      //************************************************************************
+
+      //@}
+      //************************************************************************
+
+      //**Utility functions*****************************************************
       /*!\name Utility functions */
       //@{
      public:
-      inline void clear();
-      inline void clear_contacts();
-      template <template <typename...> class HeterogenousContainer,
-                typename... CollectionContainers>
-      void initialize(DomainType const* d,
-                      HeterogenousContainer<CollectionContainers...> const& cct,
-                      ImposedPrimitiveStorage*);
-      template <template <typename...> class HeterogenousContainer,
-                typename TimeType, typename... CollectionContainers>
-      void resolve(HeterogenousContainer<CollectionContainers...>& cct,
-                   TimeType);
+      //************************************************************************
+      /*!\brief Clears the collision system.
+       *
+       * \return void
+       */
+      inline void clear() {
+        // Cleanup coarse detector
+        get_coarse_detector().clear();
+        // Cleanup data-structures
+        contacts().clear();
+        batches().clear();
+        contact_cache().clear();
+      };
+      //************************************************************************
 
-     private:
-      template <typename Collection>
-      void initialize_impl(Collection const&);
-      // TODO noexcept?
-      template <typename CollectionContainer>
-      void transfer_info(tags::from_t /* meta */,
-                         CollectionContainer const& collection_container);
-      template <typename CollectionContainer>
-      void transfer_info(tags::to_t /* meta */,
-                         CollectionContainer& collection_container) const;
+     public:
+      //************************************************************************
+      /*!\brief Initializes the collision detection environment from the
+       * main simulator
+       *
+       * \param simulator Current simulation
+       *
+       * \note
+       * `noexcept` not guaranteed since coarse detector has internal state
+       */
+      template <typename Simulator_>
+      void initialize(Simulator_& simulator) /*const noexcept*/ {
+        using namespace ::elastica::logging;
+        log<debug>([](auto const& log) {
+          log << "Start initialization of the CollisionSystem...\n";
+        });
+
+        // 0. Initialize the domain, may not be needed
+        DomainPolicyType::domain_ = &cpp17::as_const(simulator).domain();
+        get_coarse_detector().domain() = &cpp17::as_const(simulator).domain();
+
+        // 1. Transfer body contents to primitives
+        perform<TransferInfoFromSimulationStep>(elastica::collision::from,
+                                                simulator);
+
+        // 2. Add primitives to the coarse detector if it has some internal
+        // state
+        get_coarse_detector().add_all_primitives(elastica::collision::from,
+                                                 simulator);
+
+        // 3. For initialization, clearing all contacts to be safe
+        clear();
+
+        log<debug>([](auto const& log) {
+          log << "Finished initialization of the CollisionSystem...\n";
+        });
+      };
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Resolves all contacts for the current simulation world using
+       * a Discerte Element Method approach
+       *
+       * \details
+       * Serves as the main entry points to resolving the effect of a collision
+       * environment within \elastica.
+       *
+       * \param simulator Current simulation.
+       * \param time Current simulation time.
+       * \return void
+       *
+       * TODO : noexcept guarnatees?
+       */
+      template <typename Simulator>
+      void resolve(Simulator& simulator, TimeType time_v) {
+        prologue<AllCollisionSystemSteps>();
+
+        // TODO : does putting this in a pipeline aid parallelism?
+
+        perform<TransferInfoFromSimulationStep>(elastica::collision::from,
+                                                simulator);
+
+        // need a counter here
+        if (detection_is_to_be_performed(time_v)) {
+          contact_cache().clear();
+          perform<CoarseDetectionStep>(simulator.primitives(),
+                                       simulator.imposed_primitives(),
+                                       contact_cache());
+        }
+
+        {
+          contacts().clear();
+          perform<FineDetectionStep>(cpp17::as_const(contact_cache()),
+                                     contacts());
+        }
+
+        {
+          batches().clear();
+          // cannot be const because sometimes the index is set inside :/
+          perform<ContactBatchingStep>(contacts(), batches());
+        }
+
+        {
+          // TODO : Figure out passing max_overlap to time-step limiters in
+          //        explicit algorithms
+          perform<ContactResolutionStep>(cpp17::as_const(batches()));
+        }
+
+        {
+          perform<TransferInfoToSimulatorStep>(elastica::collision::to,
+                                               simulator);
+        }
+
+        epilogue<AllCollisionSystemSteps>();
+      };
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Resets the current collision system
+       *
+       * \details
+       * Resets the entire system
+       */
+      void reset(typename SimulatorConfig::TimeType) {
+        using elastica::for_each;
+        clear();
+        for_each(timers(), [](auto& m) { m.reset(); });
+        for_each(memory_meters(), [](auto& m) { m.reset(); });
+      }
+      //************************************************************************
 
       //@}
-      //**********************************************************************************************
+      //************************************************************************
 
      private:
-      //**Member  variables*****************************************************
+      //**Member variables******************************************************
       /*!\name Member variables */
       //@{
-      PrimitiveStorage primitives_;  //!< The collection of primitives that are
-                                     //!< updated as the simulation progresses
-      ImposedPrimitiveStorage*
-          imposed_primitives_;  //!< Pointer to the primitives that are fixed as
-                                //!< the simulation progresses
-      CollectionIndices offset_indices_to_primitives_;
-      Contacts contacts_;  //!< The currently active contacts of the simulation
-                           //!< world.
-      CoarseDetector detector_;  //!< The active collision detection algorithm.
-      ContactSolver solver_;     //!< The active collision response algorithm.
-
-      // DONE Tagged tuple of timers
-      using ElapsedTimeTags = tmpl::list<tags::TotalElapsedTimeTag,
-                                         tags::TransferIntoElapsedTimeTag,
-                                         tags::CollisionDetectionElapsedTimeTag,
-                                         tags::CollisionResponseElapsedTimeTag,
-                                         tags::TransferOutOfElapsedTimeTag>;
-      using Timers = tmpl::as_tagged_tuple<ElapsedTimeTags>;
-      Timers timers_;
-      //      timing::WcTimer time_collision_detection_,
-      //          time_collision_response_, time_transfer_from_,
-      //          time_transfer_to_;
-      //      std::vector<timing::WcTimer*> timers_;
-
-      using MemoryMeterTags = tmpl::list<tags::CollisionDetectionMemoryTag,
-                                         tags::CollisionResponseMemoryTag>;
-      using MemoryMeters = tmpl::as_tagged_tuple<MemoryMeterTags>;
+      //! All algorithms.
+      Algorithms algorithms_;
+      //! Batches of contacts for parallelization
+      Batches batches_;
+      //! The cache of contacts
+      ContactCache contact_cache_;
+      //! The currently active contacts of the simulation world
+      Contacts contacts_;
+      //! The intrusive memory meters
       MemoryMeters memory_meters_;
-
-      //      MemoryMeter mem_collision_detection_, mem_collision_response_;
-      //      std::vector<MemoryMeter*> memoryMeters_;
-
-      BEFRIEND_SINGLETON;
+      //! The instrusive timers
+      Timers timers_;
+      //! The time between sucessive calls to coarse detector
+      Real time_interval_between_each_detection_;
+      //! The time of previous call to coarse detector
+      TimeType time_of_last_detection_call_;
+      //@}
+      //************************************************************************
     };
+    //**************************************************************************
 
-    //=================================================================================================
+    //==========================================================================
     //
-    //  CONSTRUCTOR
+    //  FREE FUNCTIONS
     //
-    //=================================================================================================
+    //==========================================================================
 
-    //*************************************************************************************************
-    /*!\brief Constructor of the CollisionSystem class.
+    //************************************************************************
+    /*!\brief Resets the current collision system
+     * \ingroup environments
+     *
+     * \param field Gravity field to be reset
+     * \param time_v Time value
      */
     template <
-        // Simulator Configuration
+        // Type of the simulator configuration (everything except collision)
         class SimulatorConfig,
         // Type of the coarse collision detection algorithm
         template <typename> class CD,
@@ -535,6 +801,7 @@ namespace elastica {
         typename FD,
         // Type of the batch generation algorithm
         template <typename> class BG,
+        // Type of the configuration
         template <
             // Template signature of the coarse collision detection algorithm
             template <typename> class,
@@ -544,60 +811,23 @@ namespace elastica {
             template <typename> class,
             // Template signature of the collision response algorithm
             template <typename, typename, typename> class>
-        class C>  // Type of the configuration
-    CollisionSystem<SimulatorConfig,
-                    C<CD, FD, BG, response::DEMSolver>>::CollisionSystem()
-        :  // Initialization of the Singleton  base object
-          Singleton<CollisionSystem, logging::Logger>(),
-          // Pointer to the simulation domain
-          DomainPolicy(nullptr),
-          // The list of primitives
-          primitives_(),
-          // Pointer to fixed primitives
-          imposed_primitives_(nullptr),
-          // The offset indices of the registered systems into the primitive
-          // collection
-          offset_indices_to_primitives_(
-              make_array<tmpl::size<AdmissibleSystemCollections>::value>(0UL)),
-          // The currently active contacts of the simulation world
-          contacts_(5000),
-          // The active collision detection algorithm
-          detector_(DomainPolicy::domain_, primitives_,
-                    DomainPolicy::ghost_primitives_, imposed_primitives_),
-          // The active collision response algorithm
-          solver_(),
-          // TODO Does the tagged tuple constructor do the right thing?
-          // Active time profilers
-          timers_(),
-          // Active memory profilers
-          memory_meters_() {
-      // Registering all timers
-      //      timers_.push_back(&time_transfer_from_);
-      //      timers_.push_back(&time_collision_detection_);
-      //      timers_.push_back(&time_collision_response_);
-      //      timers_.push_back(&time_transfer_to_);
-
-      // Registering all memory meters
-      //      memoryMeters_.push_back(&mem_collision_detection_);
-      //      memoryMeters_.push_back(&mem_collision_response_);
-
-      // Logging the successful setup of the collision system
-      LOG_INFO_SECTION(log) {
-        log << "Successfully initialized the collision system instance";
-      }
+        class C>
+    void reset(CollisionSystem<SimulatorConfig,
+                               C<CD, FD, BG, response::DEMSolver>>& system,
+               ::elastica::Time time) {
+      system.reset(time);
     }
-    //*************************************************************************************************
+    //**************************************************************************
 
-    //=================================================================================================
-    //
-    //  DESTRUCTOR
-    //
-    //=================================================================================================
-    //*************************************************************************************************
-    /*!\brief Destructor of the CollisionSystem class.
+    //**************************************************************************
+    /*!\brief Initializes parameters of a gravity field from its configuration
+     * \ingroup environments
+     *
+     * \param field Gravity field to be initialized
+     * \param config Configuration of a gravity field
      */
     template <
-        // Simulator Configuration
+        // Type of the simulator configuration (everything except collision)
         class SimulatorConfig,
         // Type of the coarse collision detection algorithm
         template <typename> class CD,
@@ -605,6 +835,7 @@ namespace elastica {
         typename FD,
         // Type of the batch generation algorithm
         template <typename> class BG,
+        // Type of the configuration
         template <
             // Template signature of the coarse collision detection algorithm
             template <typename> class,
@@ -614,994 +845,206 @@ namespace elastica {
             template <typename> class,
             // Template signature of the collision response algorithm
             template <typename, typename, typename> class>
-        class C>  // Type of the configuration
-    CollisionSystem<SimulatorConfig,
-                    C<CD, FD, BG, response::DEMSolver>>::~CollisionSystem() {
-      // Clearing the collision system
-      clear();
-
-      clear_contacts();
-
-      // Non owning pointer, hence simply set it to null
-      imposed_primitives_ = nullptr;
-
-      // Logging the successful destruction of the collision system
-      LOG_INFO_SECTION(log) {
-        log << "Successfully destroyed the collision system instance";
-      }
+        class C,
+        typename Configuration_
+        /*
+        typename ForEachExecutionPolicy_, typename OverPairsExecutionPolicy_,
+        typename ForceModel_
+        */
+        >
+    void initialize_parameters(
+        CollisionSystem<SimulatorConfig, C<CD, FD, BG, response::DEMSolver>>&
+            system,
+        /* Commented for protocol conformance
+        configuration::CollisionSystemUserConfiguration<
+            ForEachExecutionPolicy_, OverPairsExecutionPolicy_,
+            ForceModel_>
+        */
+        Configuration_ const& config) noexcept {
+      // copy construct the force model
+      system.get_contact_resolver().force_model() = config.force_model();
     }
-    //*************************************************************************************************
+    //**************************************************************************
 
-    //=================================================================================================
-    //
-    //  GET FUNCTIONS
-    //
-    //=================================================================================================
-    //*************************************************************************************************
-    /*!\brief Returns the currently active coarse collision detector.
-     *
-     * \return Reference to the active coarse collision detector.
-     *
-     * With this function it is possible to access the currently active coarse
-     collision detector.
-     * The following code shows an example of how to use this function to
-     acquire a reference to the
-     * coarse collision detector:
-
-       \code
-       pe::CollisionSystemID collisionSystem = pe::theCollisionSystem();
-       pe::CoarseDetector& coarseDetector =
-     collisionSystem->getCoarseDetector(); \endcode
-     */
-    template <
-        // Simulator Configuration
-        class SimulatorConfig,
-        // Type of the coarse collision detection algorithm
-        template <typename> class CD,
-        // Type of the fine collision detection algorithm
-        typename FD,
-        // Type of the batch generation algorithm
-        template <typename> class BG,
-        template <
-            // Template signature of the coarse collision detection algorithm
-            template <typename> class,
-            // Template signature of the fine collision detection algorithm
-            typename,
-            // Template signature of the batch generation algorithm
-            template <typename> class,
-            // Template signature of the collision response algorithm
-            template <typename, typename, typename> class>
-        class C>  // Type of the configuration
-    inline typename CollisionSystem<
-        SimulatorConfig, C<CD, FD, BG, response::DEMSolver>>::CoarseDetector&
-    CollisionSystem<SimulatorConfig, C<CD, FD, BG, response::DEMSolver>>::
-        get_coarse_detector() noexcept {
-      return detector_;
-    }
-    //*************************************************************************************************
-    /*!\brief Returns the currently active contact solver.
-     *
-     * \return Reference to the active contact solver.
-     *
-     * With this function it is possible to access the currently active contact
-     solver. The
-     * following code shows an example of how to use this function to acquire a
-     reference to
-     * the contact solver:
-
-       \code
-       pe::CollisionSystemID collisionSystem = pe::theCollisionSystem();
-       pe::ContactSolver& contactSolver = collisionSystem->getContactSolver();
-       \endcode
-     */
-    template <
-        // Simulator Configuration
-        class SimulatorConfig,
-        // Type of the coarse collision detection algorithm
-        template <typename> class CD,
-        // Type of the fine collision detection algorithm
-        typename FD,
-        // Type of the batch generation algorithm
-        template <typename> class BG,
-        template <
-            // Template signature of the coarse collision detection algorithm
-            template <typename> class,
-            // Template signature of the fine collision detection algorithm
-            typename,
-            // Template signature of the batch generation algorithm
-            template <typename> class,
-            // Template signature of the collision response algorithm
-            template <typename, typename, typename> class>
-        class C>  // Type of the configuration
-    inline typename CollisionSystem<
-        SimulatorConfig, C<CD, FD, BG, response::DEMSolver>>::ContactSolver&
-    CollisionSystem<SimulatorConfig, C<CD, FD, BG, response::DEMSolver>>::
-        get_contact_solver() noexcept {
-      return solver_;
-    }
-    //*************************************************************************************************
-
-    template <
-        // Simulator Configuration
-        class SimulatorConfig,
-        // Type of the coarse collision detection algorithm
-        template <typename> class CD,
-        // Type of the fine collision detection algorithm
-        typename FD,
-        // Type of the batch generation algorithm
-        template <typename> class BG,
-        template <
-            // Template signature of the coarse collision detection algorithm
-            template <typename> class,
-            // Template signature of the fine collision detection algorithm
-            typename,
-            // Template signature of the batch generation algorithm
-            template <typename> class,
-            // Template signature of the collision response algorithm
-            template <typename, typename, typename> class>
-        class C>  // Type of the configuration
-    constexpr std::size_t
-    CollisionSystem<SimulatorConfig, C<CD, FD, BG, response::DEMSolver>>::
-        get_number_of_primitive_collections() noexcept {
-      return tmpl::size<PrimitiveStorage>::value;
-    };
-
-    template <
-        // Simulator Configuration
-        class SimulatorConfig,
-        // Type of the coarse collision detection algorithm
-        template <typename> class CD,
-        // Type of the fine collision detection algorithm
-        typename FD,
-        // Type of the batch generation algorithm
-        template <typename> class BG,
-        template <
-            // Template signature of the coarse collision detection algorithm
-            template <typename> class,
-            // Template signature of the fine collision detection algorithm
-            typename,
-            // Template signature of the batch generation algorithm
-            template <typename> class,
-            // Template signature of the collision response algorithm
-            template <typename, typename, typename> class>
-        class C>  // Type of the configuration
-    template <typename Primitive>
-    inline constexpr auto CollisionSystem<
-        SimulatorConfig,
-        C<CD, FD, BG, response::DEMSolver>>::get_primitive_collection() noexcept
-        -> AddPrimitiveStorageType<Primitive>& {
-      using PrimitiveCollectionType = AddPrimitiveStorageType<Primitive>;
-      return std::get<PrimitiveCollectionType>(primitives_);
-    }
-
-    template <
-        // Simulator Configuration
-        class SimulatorConfig,
-        // Type of the coarse collision detection algorithm
-        template <typename> class CD,
-        // Type of the fine collision detection algorithm
-        typename FD,
-        // Type of the batch generation algorithm
-        template <typename> class BG,
-        template <
-            // Template signature of the coarse collision detection algorithm
-            template <typename> class,
-            // Template signature of the fine collision detection algorithm
-            typename,
-            // Template signature of the batch generation algorithm
-            template <typename> class,
-            // Template signature of the collision response algorithm
-            template <typename, typename, typename> class>
-        class C>  // Type of the configuration
-    template <typename Primitive>
-    inline constexpr auto
-    CollisionSystem<SimulatorConfig, C<CD, FD, BG, response::DEMSolver>>::
-        get_primitive_collection() const noexcept
-        -> AddPrimitiveStorageType<Primitive> const& {
-      using PrimitiveCollectionType = AddPrimitiveStorageType<Primitive>;
-      return std::get<PrimitiveCollectionType>(primitives_);
-    }
-
-    template <
-        // Simulator Configuration
-        class SimulatorConfig,
-        // Type of the coarse collision detection algorithm
-        template <typename> class CD,
-        // Type of the fine collision detection algorithm
-        typename FD,
-        // Type of the batch generation algorithm
-        template <typename> class BG,
-        template <
-            // Template signature of the coarse collision detection algorithm
-            template <typename> class,
-            // Template signature of the fine collision detection algorithm
-            typename,
-            // Template signature of the batch generation algorithm
-            template <typename> class,
-            // Template signature of the collision response algorithm
-            template <typename, typename, typename> class>
-        class C>  // Type of the configuration
-    template <typename Collection>
-    inline constexpr auto CollisionSystem<
-        SimulatorConfig,
-        C<CD, FD, BG, response::DEMSolver>>::get_offset_index() noexcept
-        -> std::size_t& {
-      return std::get<
-          tmpl::index_of<AdmissibleSystemCollections, Collection>::value>(
-          offset_indices_to_primitives_);
-    }
-
-    template <
-        // Simulator Configuration
-        class SimulatorConfig,
-        // Type of the coarse collision detection algorithm
-        template <typename> class CD,
-        // Type of the fine collision detection algorithm
-        typename FD,
-        // Type of the batch generation algorithm
-        template <typename> class BG,
-        template <
-            // Template signature of the coarse collision detection algorithm
-            template <typename> class,
-            // Template signature of the fine collision detection algorithm
-            typename,
-            // Template signature of the batch generation algorithm
-            template <typename> class,
-            // Template signature of the collision response algorithm
-            template <typename, typename, typename> class>
-        class C>  // Type of the configuration
-    template <typename Collection>
-    inline constexpr auto CollisionSystem<
-        SimulatorConfig, C<CD, FD, BG, response::DEMSolver>>::get_offset_index()
-        const noexcept -> std::size_t const& {
-      return std::get<
-          tmpl::index_of<AdmissibleSystemCollections, Collection>::value>(
-          offset_indices_to_primitives_);
-    }
-
-    //=================================================================================================
+    //==========================================================================
     //
     //  UTILITY FUNCTIONS
     //
-    //=================================================================================================
+    //==========================================================================
 
-    //*************************************************************************************************
-    /*!\brief Clears the collision system.
-     *
-     * \return void
-     */
-    template <
-        // Simulator Configuration
-        class SimulatorConfig,
-        // Type of the coarse collision detection algorithm
-        template <typename> class CD,
-        // Type of the fine collision detection algorithm
-        typename FD,
-        // Type of the batch generation algorithm
-        template <typename> class BG,
-        template <
-            // Template signature of the coarse collision detection algorithm
-            template <typename> class,
-            // Template signature of the fine collision detection algorithm
-            typename,
-            // Template signature of the batch generation algorithm
-            template <typename> class,
-            // Template signature of the collision response algorithm
-            template <typename, typename, typename> class>
-        class C>  // Type of the configuration
-    inline void CollisionSystem<SimulatorConfig,
-                                C<CD, FD, BG, response::DEMSolver>>::clear() {
-      // Cleanup coarse detector
-      detector_.clear();
-
-      constexpr std::size_t n_primitive_collections(
-          get_number_of_primitive_collections());
-
-      //      // v is a vector of pointers of type T
-      //      const auto delete_and_clear = [](auto& v) {
-      //        using vector_type = decltype(v);
-      //        using value_type =
-      //            std::remove_pointer_t<typename vector_type::value_type>;
-      //        std::for_each(v.begin(), v.end(),
-      //        std::default_delete<value_type>());
-      //        // No need for setting to nullptr
-      //        v.clear();
-      //      };
-      //
-      //      // Clear the primitives stored in storage
-      //      ::index_apply<n_primitive_collections>(
-      //          [primitives_ = &(this->primitives_), delete_and_clear](auto...
-      //          Is) {
-      //            EXPAND_PACK_LEFT_TO_RIGHT(
-      //                delete_and_clear(std::get<Is>(primitives_)));
-      //          });
-
-      ::index_apply<n_primitive_collections>([this](auto... Is) {
-        EXPAND_PACK_LEFT_TO_RIGHT(std::get<Is>(primitives_).clear());
-      });
-    }
-    //*************************************************************************************************
-
-    //*************************************************************************************************
-    /*!\brief Clearing the contacts and batches of the simulation world.
-     *
-     * \return void.
-     *
-     * This function destroys all currently active contacts of the simulation
-     * world and resets the generated batches.
-     */
-    template <
-        // Simulator Configuration
-        class SimulatorConfig,
-        // Type of the coarse collision detection algorithm
-        template <typename> class CD,
-        // Type of the fine collision detection algorithm
-        typename FD,
-        // Type of the batch generation algorithm
-        template <typename> class BG,
-        template <
-            // Template signature of the coarse collision detection algorithm
-            template <typename> class,
-            // Template signature of the fine collision detection algorithm
-            typename,
-            // Template signature of the batch generation algorithm
-            template <typename> class,
-            // Template signature of the collision response algorithm
-            template <typename, typename, typename> class>
-        class C>  // Type of the configuration
-    inline void CollisionSystem<
-        SimulatorConfig, C<CD, FD, BG, response::DEMSolver>>::clear_contacts() {
-      // Needs a ptr based implementation for memory pooling for now
-      std::for_each(contacts_.begin(), contacts_.end(),
-                    std::default_delete<ContactType>());
-      contacts_.clear();
-    }
-    //*************************************************************************************************
-
-    template <
-        // Simulator Configuration
-        class SimulatorConfig,
-        // Type of the coarse collision detection algorithm
-        template <typename> class CD,
-        // Type of the fine collision detection algorithm
-        typename FD,
-        // Type of the batch generation algorithm
-        template <typename> class BG,
-        template <
-            // Template signature of the coarse collision detection algorithm
-            template <typename> class,
-            // Template signature of the fine collision detection algorithm
-            typename,
-            // Template signature of the batch generation algorithm
-            template <typename> class,
-            // Template signature of the collision response algorithm
-            template <typename, typename, typename> class>
-        class C>  // Type of the configuration
-    template <typename CollectionContainer>
-    void CollisionSystem<SimulatorConfig, C<CD, FD, BG, response::DEMSolver>>::
-        initialize_impl(CollectionContainer const& collection_container) {
-      using CollectionType =
-          std::remove_pointer_t<typename CollectionContainer::value_type>;
-
-      // Old way : intrusive in class, not extensible
-      //      using PrimitiveType = typename CollectionType::PrimitiveType;
-
-      // New way : Pay more in compile time to look up the tag, but helps
-      // in other aspects
-      using CollectionTag =
-          // Get result
-          tmpl::front<
-              // Find
-              tmpl::find<
-                  AdmissibleSystemCollectionTags,
-                  // Does it match the CollectionType?
-                  std::is_same<CollectionType,
-                               tmpl::bind<GetSystemCollectionType, tmpl::_1>>>>;
-
-      using PrimitiveType = typename CollectionTag::PrimitiveType;
-
-      // 1. Get reference to a vector of primitives
-      auto& primitive_collection_ = get_primitive_collection<PrimitiveType>();
-      std::size_t n_primitives(primitive_collection_.size());
-
-      // 2. Store the number of currently referenced primitives to the offset
-      // indices
-      get_offset_index<CollectionType>() = n_primitives;
-
-      // 2. reserve storage based on collection of containers
-      std::for_each(collection_container.cbegin(), collection_container.cend(),
-                    [&n_primitives](auto const& collection) {
-                      n_primitives += collection.size();
-                    });
-
-      // Needs the PrimitiveType to be move inserteable according to the
-      // standards Our primitive types cannot (and should not be copied), hence
-      // we provide an explicit move constructor for allocation of memory
-      primitive_collection_.reserve(n_primitives);
-
-      // 3. Create primitives, no need to transfer yet (achieved in first
-      // simulation step)
-      // TODO Refactor into separate ADD function
-      std::for_each(collection_container.cbegin(), collection_container.cend(),
-                    [&primitive_collection_](auto const& collection) {
-                      std::size_t end = collection.size();
-                      for (std::size_t i = 0UL; i < end; ++i) {
-                        id_t sid(0UL), uid(0UL);
-                        bool finite(true);
-                        // TODO : Tentative, collection [i] doesn't work for now
-                        // auto
-                        // materialID(collection[i].get_material());
-                        const auto materialID(collection.get_material(i));
-                        primitive_collection_.emplace_back(sid, uid, finite,
-                                                           materialID);
-                      }
-                    });
-    }
-
-    template <
-        // Simulator Configuration
-        class SimulatorConfig,
-        // Type of the coarse collision detection algorithm
-        template <typename> class CD,
-        // Type of the fine collision detection algorithm
-        typename FD,
-        // Type of the batch generation algorithm
-        template <typename> class BG,
-        template <
-            // Template signature of the coarse collision detection algorithm
-            template <typename> class,
-            // Template signature of the fine collision detection algorithm
-            typename,
-            // Template signature of the batch generation algorithm
-            template <typename> class,
-            // Template signature of the collision response algorithm
-            template <typename, typename, typename> class>
-        class C>  // Type of the configuration
-    template <template <typename...> class HeterogenousContainer,
-              typename... CollectionContainers>
-    void CollisionSystem<SimulatorConfig, C<CD, FD, BG, response::DEMSolver>>::
-        initialize(DomainType const* d,
-                   HeterogenousContainer<CollectionContainers...> const& cct,
-                   ImposedPrimitiveStorage* ips) {
-      // 0. Initialize the domain
-      DomainPolicy::domain_ = d;
-
-      // 1. Given the heterogenous container of a container of collections from
-      // the main simulator, it can initialize all primitives for contact
-      // detection NOTE: Expansion has to take place from left to right to
-      // introduce ordering in the system in case there are multiple collections
-      // with the same primitive type
-      EXPAND_PACK_LEFT_TO_RIGHT(
-          initialize_impl(std::get<CollectionContainers>(cct)));
-
-      // 2. Also initialize the fixed primitives_
-      imposed_primitives_ = ips;
-
-      // 3. Transfer body contents to primitives
-      // This is for properly initializing the primtives before adding all to
-      // the coarse collision detector
-      EXPAND_PACK_LEFT_TO_RIGHT(
-          transfer_info(from, std::get<CollectionContainers>(cct)));
-
-      // 3. Now that all primitives are initialized, add them to the coarse
-      // detector
-      detector_.add_all_primitives();
-
-      // 4. Once initialized, start the system by clearning all contacts
-      clear_contacts();
-    }
-
-    // TODO Remove function from collision detector, keep track of indices
-    //      Do before the initialization step for ease of managing the blocks
-    //      To get the ID of the object, its better to have a struct with the
-    //      CollectionID and UID (or pointers alternatively)
-
-    // Was initially templated for the MessageTag but we lost const correctness
-    // so revert back to overloading
-    template <
-        // Simulator Configuration
-        class SimulatorConfig,
-        // Type of the coarse collision detection algorithm
-        template <typename> class CD,
-        // Type of the fine collision detection algorithm
-        typename FD,
-        // Type of the batch generation algorithm
-        template <typename> class BG,
-        template <
-            // Template signature of the coarse collision detection algorithm
-            template <typename> class,
-            // Template signature of the fine collision detection algorithm
-            typename,
-            // Template signature of the batch generation algorithm
-            template <typename> class,
-            // Template signature of the collision response algorithm
-            template <typename, typename, typename> class>
-        class C>  // Type of the configuration
-    template <typename CollectionContainer>
-    void CollisionSystem<SimulatorConfig, C<CD, FD, BG, response::DEMSolver>>::
-        transfer_info(tags::from_t /* meta */,
-                      CollectionContainer const& collection_container) {
-      using CollectionType =
-          std::remove_pointer_t<typename CollectionContainer::value_type>;
-
-      // Old way : intrusive in class, not extensible
-      //      using PrimitiveType = typename CollectionType::PrimitiveType;
-
-      // New way : Pay more in compile time to look up the tag, but helps
-      // in other aspects
-      using CollectionTag =
-          // Get result
-          tmpl::front<
-              // Find
-              tmpl::find<
-                  AdmissibleSystemCollectionTags,
-                  // Does it match the CollectionType?
-                  std::is_same<CollectionType,
-                               tmpl::bind<GetSystemCollectionType, tmpl::_1>>>>;
-
-      using PrimitiveType = typename CollectionTag::PrimitiveType;
-
-      // 1. Get reference to a vector of primitives
-      auto& primitive_collection_ = get_primitive_collection<PrimitiveType>();
-
-      // Get offset into the primitive array, makes it easily parallelizable and
-      // thread safe instead of having an incremental counter here
-      using IteratorType = decltype(primitive_collection_.begin());
-      using DifferenceType =
-          typename std::iterator_traits<IteratorType>::difference_type;
-      // WARNING : The assumption here is that the offset index is not too big
-      // for the iterator of the stored container of primtives, hence we static
-      // cast it
-      const auto offset =
-          static_cast<DifferenceType>(get_offset_index<CollectionType>());
-      auto start_iterator = (primitive_collection_.begin() + offset);
-
-      // TODO : Parallel transfer here
-      // For all collections in the collection vector
-      for (auto const& collection : collection_container) {
-        // 2. Calculate start and end iterators for the current collection
-        auto end_iterator =
-            start_iterator + static_cast<DifferenceType>(collection.size());
-        ELASTICA_ASSERT(end_iterator <= primitive_collection_.end(),
-                        "Invalid iterator beyond end of collection");
-
-        // 3. Do transfer
-        // Old way
-        //        transfer(from, collection, to, start_iterator, end_iterator);
-
-        // New way
-        TransferWizard<CollectionTag>::transfer(from, collection, to,
-                                                start_iterator, end_iterator);
-
-        // Update start iterator to point to the next element
-        // Don't use next!
-        std::exchange(start_iterator, end_iterator);
-      }
-    }
-
-    template <
-        // Simulator Configuration
-        class SimulatorConfig,
-        // Type of the coarse collision detection algorithm
-        template <typename> class CD,
-        // Type of the fine collision detection algorithm
-        typename FD,
-        // Type of the batch generation algorithm
-        template <typename> class BG,
-        template <
-            // Template signature of the coarse collision detection algorithm
-            template <typename> class,
-            // Template signature of the fine collision detection algorithm
-            typename,
-            // Template signature of the batch generation algorithm
-            template <typename> class,
-            // Template signature of the collision response algorithm
-            template <typename, typename, typename> class>
-        class C>  // Type of the configuration
-    template <typename CollectionContainer>
-    void CollisionSystem<SimulatorConfig, C<CD, FD, BG, response::DEMSolver>>::
-        transfer_info(tags::to_t /* meta */,
-                      CollectionContainer& collection_container) const {
-      using CollectionType =
-          std::remove_pointer_t<typename CollectionContainer::value_type>;
-
-      // Old way : intrusive in class, not extensible
-      //      using PrimitiveType = typename CollectionType::PrimitiveType;
-
-      // New way : Pay more in compile time to look up the tag, but helps
-      // in other aspects
-      using CollectionTag =
-          // Get result
-          tmpl::front<
-              // Find
-              tmpl::find<
-                  AdmissibleSystemCollectionTags,
-                  // Does it match the CollectionType?
-                  std::is_same<CollectionType,
-                               tmpl::bind<GetSystemCollectionType, tmpl::_1>>>>;
-
-      using PrimitiveType = typename CollectionTag::PrimitiveType;
-
-      // 1. Get reference to a vector of primitives
-      auto& primitive_collection_ = get_primitive_collection<PrimitiveType>();
-
-      // Get offset into the primitive array, makes it easily parallelizable and
-      // thread safe instead of having an incremental counter here
-      using IteratorType = decltype(primitive_collection_.cbegin());
-      using DifferenceType =
-          typename std::iterator_traits<IteratorType>::difference_type;
-      // TODO : Safe convert
-      //  WARNING : The assumption here is that the offset index is not too big
-      // for the iterator of the stored container of primtives, hence we static
-      // cast it
-      const auto offset =
-          static_cast<DifferenceType>(get_offset_index<CollectionType>());
-      auto start_iterator = (primitive_collection_.cbegin() + offset);
-
-      // TODO : Parallel transfer here
-      // For all collections in the collection vector
-      for (auto& collection : collection_container) {
-        // 2. Calculate start and end iterators for the current collection
-        auto end_iterator =
-            start_iterator + static_cast<DifferenceType>(collection.size());
-        ELASTICA_ASSERT(end_iterator <= primitive_collection_.cend(),
-                        "Invalid iterator beyond end of collection");
-
-        // 3. Do transfer
-        // Old way
-        //        transfer(to, collection, from, start_iterator, end_iterator);
-
-        // New way
-        TransferWizard<CollectionTag>::transfer(to, collection, from,
-                                                start_iterator, end_iterator);
-
-        // Update start iterator to point to the next element
-        // Don't use next!
-        std::exchange(start_iterator, end_iterator);
-      }
-    }
-
-    // TODO : noexcept guarnatees?
-    template <
-        // Simulator Configuration
-        class SimulatorConfig,
-        // Type of the coarse collision detection algorithm
-        template <typename> class CD,
-        // Type of the fine collision detection algorithm
-        typename FD,
-        // Type of the batch generation algorithm
-        template <typename> class BG,
-        template <
-            // Template signature of the coarse collision detection algorithm
-            template <typename> class,
-            // Template signature of the fine collision detection algorithm
-            typename,
-            // Template signature of the batch generation algorithm
-            template <typename> class,
-            // Template signature of the collision response algorithm
-            template <typename, typename, typename> class>
-        class C>  // Type of the configuration
-    template <template <typename...> class HeterogenousContainer,
-              typename TimeType, typename... CollectionContainers>
-    void CollisionSystem<SimulatorConfig, C<CD, FD, BG, response::DEMSolver>>::
-        resolve(HeterogenousContainer<CollectionContainers...>& cct,
-                TimeType /* time*/) {
-      // NOTE : cct cannot be const in this scope because we also transfer
-      // information to it at the end of the day
-      // TODO : Parallel pipeline?
-      using namespace tags;
-
-      PROFILING_SECTION {
-        get_timer<TotalElapsedTimeTag>().start();
-        get_timer<TransferIntoElapsedTimeTag>().start();
-      }
-
-      // 1. Transfer body to primitive
-      // TODO Parallel invoke on transfer?
-      EXPAND_PACK_LEFT_TO_RIGHT(
-          transfer_info(from, std::get<CollectionContainers>(cct)));
-
-      // 2. Detect collision
-      LOG_DEBUG_SECTION(log) { log << "Detecting contacts...\n"; }
-
-      PROFILING_SECTION {
-        get_timer<TransferIntoElapsedTimeTag>().stop();
-        get_timer<CollisionDetectionElapsedTimeTag>().start();
-        get_memory_meter<CollisionDetectionMemoryTag>().start();
-      }
-
-      detector_.find_contacts(contacts_);
-
-      PROFILING_SECTION {
-        get_timer<CollisionDetectionElapsedTimeTag>().stop();
-        //        time_collision_detection_.stop();
-        get_memory_meter<CollisionDetectionMemoryTag>().stop();
-        //        mem_collision_detection_.stop();
-        get_timer<CollisionResponseElapsedTimeTag>().start();
-        //        time_collision_response_.start();
-        get_memory_meter<CollisionResponseMemoryTag>().start();
-        //        mem_collision_response_.start();
-      }
-      // 3. Resolve collision
-      // TODO : Future : Figure out passing max_overlap to time-step limiters
-      //                 algorithms
-      // real_t max_overlap =
-      solver_.resolve_contacts(contacts_);
-
-      PROFILING_SECTION {
-        get_timer<CollisionResponseElapsedTimeTag>().stop();
-        //        time_collision_response_.stop();
-        get_memory_meter<CollisionResponseMemoryTag>().stop();
-        //        mem_collision_response_.stop();
-        get_timer<TransferOutOfElapsedTimeTag>().start();
-        //        time_transfer_to_.start();
-      }
-
-      // 4. Transfer primitive to body
-      // TODO : By templating MessageTag we have lost const correctness in the
-      //    to phase
-      //    Is there a DRY way to correct this?
-      EXPAND_PACK_LEFT_TO_RIGHT(
-          transfer_info(to, std::get<CollectionContainers>(cct)));
-
-      PROFILING_SECTION {
-        get_timer<TransferOutOfElapsedTimeTag>().stop();
-        get_timer<TotalElapsedTimeTag>().stop();
-      }
-
-      // 5. Clear contacts for next iteration
-      clear_contacts();
-    }
-
-    //*************************************************************************************************
+    //**************************************************************************
     /*!\brief Writes a profiling summary into the log file.
      *
      * \return void
      *
-     * In case the profiling mode is enabled and the log level is at least info
-     * this function writes a summary of profiling information to the log files.
-     * The information is reduced over all previous time steps and in a separate
-     * compilation over all time steps and all ranks.
+     * In case the profiling mode is enabled and the log level is at least
+     * info this function writes a summary of profiling information to the log
+     * files. The information is reduced over all previous time steps and in a
+     * separate compilation over all time steps and all ranks.
      */
-
-    template <
-        // Simulator Configuration
-        class SimulatorConfig,
-        // Type of the coarse collision detection algorithm
-        template <typename> class CD,
-        // Type of the fine collision detection algorithm
-        typename FD,
-        // Type of the batch generation algorithm
-        template <typename> class BG,
-        template <
-            // Template signature of the coarse collision detection algorithm
-            template <typename> class,
-            // Template signature of the fine collision detection algorithm
-            typename,
-            // Template signature of the batch generation algorithm
-            template <typename> class,
-            // Template signature of the collision response algorithm
-            template <typename, typename, typename> class>
-        class C>  // Type of the configuration
-    void CollisionSystem<SimulatorConfig, C<CD, FD, BG, response::DEMSolver>>::
-        log_profiling_summary() const noexcept {
-      // Logging the profiling results
-      PROFILING_SECTION {
-        if (logging::loglevel >= logging::info) {
-          // 1. Time logging
-          {
-            constexpr std::size_t n_timers(get_number_of_timers());
-            // Look ma, on stack
-            std::array<double, n_timers> minValues, maxValues, totalValues;
-            std::array<std::size_t, n_timers> numValues;
-
-            auto registrant = [this, &minValues, &maxValues, &totalValues,
-                               &numValues](auto Is) {
-              auto& timer = get_timer<tmpl::at_c<ElapsedTimeTags, Is>>();
-              minValues[Is] = timer.min();
-              maxValues[Is] = timer.max();
-              totalValues[Is] = timer.total();
-              numValues[Is] = timer.getCounter();
-            };
-
-            // Compile time for-each, don't like brigands' type_ ID
-            index_apply<n_timers>([&registrant](auto... Is) {
-              EXPAND_PACK_LEFT_TO_RIGHT(registrant(Is));
-            });
-
-            LOG_INFO_SECTION(log) {
-              // clang-format off
-              log << "Timing results reduced over all time steps on current process:\n" << std::fixed << std::setprecision(4)
-                  << "code part              min time     max time     avg time     total time   executions\n"
-                  << "--------------------   ----------   ----------   ----------   ----------   ----------\n";
-              // clang-format on
-              // Now automatically format based on tags
-              auto printer = [this, &log, &minValues, &maxValues, &totalValues,
-                              &numValues](auto Is) {
-                using Tag = tmpl::at_c<ElapsedTimeTags, Is>;
-                log << Tag::name() << std::setw(9) << minValues[Is] << "   "
-                    << std::setw(10) << maxValues[Is] << "   " << std::setw(10)
-                    << totalValues[Is] / numValues[Is] << " = " << std::setw(10)
-                    << totalValues[Is] << " / " << std::setw(10)
-                    << numValues[Is] << "\n";
-              };
-
-              // Compile time for-each, don't like brigands' type_ ID
-              index_apply<n_timers>([&printer](auto... Is) {
-                EXPAND_PACK_LEFT_TO_RIGHT(printer(Is));
-              });
-
-              // clang-format off
-              log << "--------------------   ----------   ----------   ----------   ----------   ----------\n";
-              // clang-format on
-            }  // LOG
-
-          }  // Time logging
-
-          // 2. Memory meter logging
-          {
-            constexpr std::size_t n_memory_meters(
-                get_number_of_memory_meters());
-            // Look ma, on stack
-            std::array<double, n_memory_meters> minAllocValues, maxAllocValues,
-                totalAllocValues, minInUseValues, maxInUseValues,
-                totalInUseValues;
-            std::array<std::size_t, n_memory_meters> numAllocValues;
-
-            auto registrant = [&, this](auto Is) {
-              auto& memory_meter =
-                  get_memory_meter<tmpl::at_c<MemoryMeterTags, Is>>();
-              minAllocValues[Is] = memory_meter.minAllocation();
-              maxAllocValues[Is] = memory_meter.maxAllocation();
-              totalAllocValues[Is] = memory_meter.totalAllocation();
-              minInUseValues[Is] = memory_meter.minInUse();
-              maxInUseValues[Is] = memory_meter.maxInUse();
-              totalInUseValues[Is] = memory_meter.totalInUse();
-              numAllocValues[Is] = memory_meter.getCounter();
-            };
-
-            index_apply<n_memory_meters>([&registrant](auto... Is) {
-              EXPAND_PACK_LEFT_TO_RIGHT(registrant(Is));
-            });
-
-            LOG_INFO_SECTION(log) {
-              // clang-format off
-              log << "Memory metering results reduced over all time steps on current process:\n"
-                  << "code part              min alloc    max alloc    sum alloc    min in use   max in use   sum in use   executions\n"
-                  << "--------------------   ----------   ----------   ----------   ----------   ----------   ----------   ----------\n" << std::fixed << std::setprecision(4);
-              // clang-format on
-
-              auto printer = [&, this](auto Is) {
-                using Tag = tmpl::at_c<ElapsedTimeTags, Is>;
-                log << Tag::name() << std::setw(9) << minAllocValues[Is]
-                    << "   " << std::setw(10) << maxAllocValues[Is] << "   "
-                    << std::setw(10) << totalAllocValues[Is] << "   "
-                    << std::setw(10) << minInUseValues[Is] << "   "
-                    << std::setw(10) << maxInUseValues[Is] << "   "
-                    << std::setw(10) << totalInUseValues[Is] << "   "
-                    << std::setw(10) << numAllocValues[Is] << "\n";
-              };
-
-              // Compile time for-each, don't like brigands' type_ ID
-              index_apply<n_memory_meters>([&printer](auto... Is) {
-                EXPAND_PACK_LEFT_TO_RIGHT(printer(Is));
-              });
-
-              // clang-format off
-              log <<  "--------------------   ----------   ----------   ----------   ----------   ----------   ----------   ----------\n";
-              // clang-format on
-
-            }  // INFO SECTION
-
-          }  // Memory meter logging
-
-        }  // Info level
-
-      }  // PROFILING SECTION
-    }
-    //*************************************************************************************************
-
-    template <
-        // Simulator Configuration
-        class SimulatorConfig,
-        // Type of the coarse collision detection algorithm
-        template <typename> class CD,
-        // Type of the fine collision detection algorithm
-        typename FD,
-        // Type of the batch generation algorithm
-        template <typename> class BG,
-        template <
-            // Template signature of the coarse collision detection algorithm
-            template <typename> class,
-            // Template signature of the fine collision detection algorithm
-            typename,
-            // Template signature of the batch generation algorithm
-            template <typename> class,
-            // Template signature of the collision response algorithm
-            template <typename, typename, typename> class>
-        class C>  // Type of the configuration
-    template <typename TimerTag>
-    constexpr decltype(auto)
-    CollisionSystem<SimulatorConfig,
-                    C<CD, FD, BG, response::DEMSolver>>::get_timer() noexcept {
-      return std::get<TimerTag>(timers_);
-    }
-
-    template <
-        // Simulator Configuration
-        class SimulatorConfig,
-        // Type of the coarse collision detection algorithm
-        template <typename> class CD,
-        // Type of the fine collision detection algorithm
-        typename FD,
-        // Type of the batch generation algorithm
-        template <typename> class BG,
-        template <
-            // Template signature of the coarse collision detection algorithm
-            template <typename> class,
-            // Template signature of the fine collision detection algorithm
-            typename,
-            // Template signature of the batch generation algorithm
-            template <typename> class,
-            // Template signature of the collision response algorithm
-            template <typename, typename, typename> class>
-        class C>  // Type of the configuration
-    constexpr std::size_t CollisionSystem<
-        SimulatorConfig,
-        C<CD, FD, BG, response::DEMSolver>>::get_number_of_timers() noexcept {
-      return tmpl::size<ElapsedTimeTags>::value;
-    }
-
-    template <
-        // Simulator Configuration
-        class SimulatorConfig,
-        // Type of the coarse collision detection algorithm
-        template <typename> class CD,
-        // Type of the fine collision detection algorithm
-        typename FD,
-        // Type of the batch generation algorithm
-        template <typename> class BG,
-        template <
-            // Template signature of the coarse collision detection algorithm
-            template <typename> class,
-            // Template signature of the fine collision detection algorithm
-            typename,
-            // Template signature of the batch generation algorithm
-            template <typename> class,
-            // Template signature of the collision response algorithm
-            template <typename, typename, typename> class>
-        class C>  // Type of the configuration
-    template <typename MemoryMeterTag>
-    constexpr decltype(auto) CollisionSystem<
-        SimulatorConfig,
-        C<CD, FD, BG, response::DEMSolver>>::get_memory_meter() noexcept {
-      return std::get<MemoryMeterTag>(memory_meters_);
-    }
-
-    template <
-        // Simulator Configuration
-        class SimulatorConfig,
-        // Type of the coarse collision detection algorithm
-        template <typename> class CD,
-        // Type of the fine collision detection algorithm
-        typename FD,
-        // Type of the batch generation algorithm
-        template <typename> class BG,
-        template <
-            // Template signature of the coarse collision detection algorithm
-            template <typename> class,
-            // Template signature of the fine collision detection algorithm
-            typename,
-            // Template signature of the batch generation algorithm
-            template <typename> class,
-            // Template signature of the collision response algorithm
-            template <typename, typename, typename> class>
-        class C>  // Type of the configuration
-    constexpr std::size_t
-    CollisionSystem<SimulatorConfig, C<CD, FD, BG, response::DEMSolver>>::
-        get_number_of_memory_meters() noexcept {
-      return tmpl::size<MemoryMeterTags>::value;
-    }
+    //    template <
+    //        // Simulator Configuration
+    //        class SimulatorConfig,
+    //        // Type of the coarse collision detection algorithm
+    //        template <typename> class CD,
+    //        // Type of the fine collision detection algorithm
+    //        typename FD,
+    //        // Type of the batch generation algorithm
+    //        template <typename> class BG,
+    //        template <
+    //            // Template signature of the coarse collision detection
+    //            algorithm template <typename> class,
+    //            // Template signature of the fine collision detection
+    //            algorithm typename,
+    //            // Template signature of the batch generation algorithm
+    //            template <typename> class,
+    //            // Template signature of the collision response algorithm
+    //            template <typename, typename, typename> class>
+    //        class C>  // Type of the configuration
+    //    void CollisionSystem<SimulatorConfig, C<CD, FD, BG,
+    //    response::DEMSolver>>::
+    //        log_profiling_summary() const noexcept {
+    //      // Logging the profiling results
+    //
+    //      ELASTICA_PROFILING_SECTION {
+    //        // 1. Time logging
+    //        const auto white_space = std::string(3UL, ' ');
+    //        auto fmt_unit = std::string(10UL, '-') + white_space;
+    //        {
+    //          using namespace ::elastica::logging;
+    //          log<info>([this, fmt_unit, white_space](auto const& log) {
+    //            // Look ma, on stack
+    //            std::array<double, n_timers()> minValues, maxValues,
+    //            totalValues; std::array<std::size_t, n_timers()> numValues;
+    //            auto fmt_str = std::string(20UL, '-') + white_space +
+    //            fmt_unit
+    //            +
+    //                           fmt_unit + fmt_unit + fmt_unit +
+    //                           std::string(10UL, '-') + "\n";
+    //
+    //            auto populate_times = [this, &minValues, &maxValues,
+    //            &totalValues,
+    //                                   &numValues](auto Is) {
+    //              auto const& timer = this->get_timer<tmpl::at_c<TimerTags,
+    //              Is>>(); minValues[Is] = timer.min(); maxValues[Is] =
+    //              timer.max(); totalValues[Is] = timer.total();
+    //              numValues[Is] = timer.getCounter();
+    //            };
+    //
+    //            // Compile time for-each, don't like brigands' type_ ID
+    //            index_apply<n_timers>(
+    //                [populate_times = std::move(populate_times)](auto... Is)
+    //                {
+    //                  EXPAND_PACK_LEFT_TO_RIGHT(populate_times(Is));
+    //                });
+    //
+    //            // clang-format off
+    //              log << "Timing results reduced over all time steps on
+    //              current process:\n" << std::fixed << std::setprecision(4)
+    //                  << "code part               min time     max time avg
+    //                  time     total time   executions\n"
+    //                  << fmt_str;
+    //            // clang-format on
+    //            // Now automatically format based on tags
+    //
+    //            auto pretty_printer = [this, &log, &minValues, &maxValues,
+    //                                   &totalValues, &numValues,
+    //                                   white_space](auto Is) {
+    //              using Tag = tmpl::at_c<TimerTags, Is>;
+    //              log << Tag::log_name() << std::setw(10) << minValues[Is]
+    //                  << white_space << std::setw(10) << maxValues[Is]
+    //                  << white_space << std::setw(10)
+    //                  << totalValues[Is] / numValues[Is] << " = " <<
+    //                  std::setw(10)
+    //                  << totalValues[Is] << " / " << std::setw(10) <<
+    //                  numValues[Is]
+    //                  << "\n";
+    //            };
+    //
+    //            // Compile time for-each, don't like brigands' type_ ID
+    //            index_apply<n_timers>(
+    //                [pretty_printer = std::move(pretty_printer)](auto... Is)
+    //                {
+    //                  EXPAND_PACK_LEFT_TO_RIGHT(printer(Is));
+    //                });
+    //
+    //            log << fmt_str;
+    //          });  // log
+    //
+    //        }  // Time logging
+    //
+    //        // 2. Memory meter logging
+    //        {
+    //          using namespace ::elastica::logging;
+    //          log<info>([this, fmt_unit, white_space](auto const& log) {
+    //            // Look ma, on stack
+    //            std::array<double, n_memory_meters()> minAllocValues,
+    //                maxAllocValues, totalAllocValues, minInUseValues,
+    //                maxInUseValues, totalInUseValues;
+    //            std::array<std::size_t, n_memory_meters()> numAllocValues;
+    //            auto fmt_str = std::string(20UL, '-') + white_space +
+    //            fmt_unit
+    //            +
+    //                           fmt_unit + fmt_unit + fmt_unit + fmt_unit +
+    //                           fmt_unit + std::string(10UL, '-') + "\n";
+    //
+    //            auto populate_allocations = [&, this](auto Is) {
+    //              auto const& memory_meter =
+    //                  get_memory_meter<tmpl::at_c<MemoryMeterTags, Is>>();
+    //              minAllocValues[Is] = memory_meter.minAllocation();
+    //              maxAllocValues[Is] = memory_meter.maxAllocation();
+    //              totalAllocValues[Is] = memory_meter.totalAllocation();
+    //              minInUseValues[Is] = memory_meter.minInUse();
+    //              maxInUseValues[Is] = memory_meter.maxInUse();
+    //              totalInUseValues[Is] = memory_meter.totalInUse();
+    //              numAllocValues[Is] = memory_meter.getCounter();
+    //            };
+    //
+    //            index_apply<n_memory_meters>(
+    //                [populate_allocations =
+    //                     std::move(populate_allocations)](auto... Is) {
+    //                  EXPAND_PACK_LEFT_TO_RIGHT(populate_allocations(Is));
+    //                });
+    //
+    //            // clang-format off
+    //              log << "Memory metering results reduced over all time
+    //              steps on current process:\n"
+    //                  << "code part               min alloc    max alloc sum
+    //                  alloc    min in use   max in use   sum in use
+    //                  executions\n"
+    //                  << fmt_str;
+    //            // clang-format on
+    //
+    //            auto printer = [&, this, white_space](auto Is) {
+    //              using Tag = tmpl::at_c<MemoryMeterTags, Is>;
+    //              log << Tag::log_name() << std::setw(10) <<
+    //              minAllocValues[Is]
+    //                  << white_space << std::setw(10) << maxAllocValues[Is]
+    //                  << white_space << std::setw(10) <<
+    //                  totalAllocValues[Is]
+    //                  << white_space << std::setw(10) << minInUseValues[Is]
+    //                  << white_space << std::setw(10) << maxInUseValues[Is]
+    //                  << white_space << std::setw(10) <<
+    //                  totalInUseValues[Is]
+    //                  << white_space << std::setw(10) << numAllocValues[Is]
+    //                  <<
+    //                  "\n";
+    //            };
+    //
+    //            // Compile time for-each, don't like brigands' type_ ID
+    //            index_apply<n_memory_meters>(
+    //                [printer = std::move(printer)](auto... Is) {
+    //                  EXPAND_PACK_LEFT_TO_RIGHT(printer(Is));
+    //                });
+    //
+    //            log << fmt_str;
+    //          });  // log
+    //
+    //        }  // Memory meter logging
+    //
+    //      }  // PROFILING SECTION
+    //    }
+    //    //**************************************************************************
 
   }  // namespace collision
 

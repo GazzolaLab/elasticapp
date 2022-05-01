@@ -34,9 +34,9 @@
 
 //******************************************************************************
 /*!\defgroup connections Connections
+ * \brief Implementation of connectivity (joints) linking two \elastica entities
+ * (rods, rigid bodies, etc.).
  *
- * The connections module contains implementations of connectivity (joints)
- * linking two \elastica entities (rods, rigid bodies, etc.).
  */
 //******************************************************************************
 

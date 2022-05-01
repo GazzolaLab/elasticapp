@@ -493,6 +493,14 @@ namespace elastica {
           inline constexpr decltype(auto) get_element_length() const& noexcept {
             return blocks::get<::elastica::tags::ElementLength>(self());
           }
+          inline constexpr decltype(auto) get_element_length(
+              index_type idx) & noexcept {
+            return ElementLength::slice(get_element_length(), idx);
+          }
+          inline constexpr decltype(auto) get_element_length(
+              index_type idx) const& noexcept {
+            return ElementLength::slice(get_element_length(), idx);
+          }
           //@}
           //********************************************************************
 
@@ -511,6 +519,16 @@ namespace elastica {
             return blocks::get<::elastica::tags::ReferenceElementLength>(
                 self());
           }
+          inline constexpr decltype(auto) get_reference_element_length(
+              index_type idx) & noexcept {
+            return ReferenceElementLength::slice(get_reference_element_length(),
+                                                 idx);
+          }
+          inline constexpr decltype(auto) get_reference_element_length(
+              index_type idx) const& noexcept {
+            return ReferenceElementLength::slice(get_reference_element_length(),
+                                                 idx);
+          }
           //@}
           //********************************************************************
 
@@ -522,10 +540,17 @@ namespace elastica {
           inline constexpr decltype(auto) get_reference_curvature() & noexcept {
             return blocks::get<::elastica::tags::ReferenceCurvature>(self());
           }
-
           inline constexpr decltype(auto) get_reference_curvature()
               const& noexcept {
             return blocks::get<::elastica::tags::ReferenceCurvature>(self());
+          }
+          inline constexpr decltype(auto) get_reference_curvature(
+              index_type idx) & noexcept {
+            return ReferenceCurvature::slice(get_reference_curvature(), idx);
+          }
+          inline constexpr decltype(auto) get_reference_curvature(
+              index_type idx) const& noexcept {
+            return ReferenceCurvature::slice(get_reference_curvature(), idx);
           }
           //@}
           //********************************************************************
@@ -540,11 +565,20 @@ namespace elastica {
             return blocks::get<::elastica::tags::ReferenceShearStretchStrain>(
                 self());
           }
-
           inline constexpr decltype(auto) get_reference_shear_stretch_strain()
               const& noexcept {
             return blocks::get<::elastica::tags::ReferenceShearStretchStrain>(
                 self());
+          }
+          inline constexpr decltype(auto) get_reference_shear_stretch_strain(
+              index_type idx) & noexcept {
+            return ReferenceShearStretchStrain::slice(
+                get_reference_shear_stretch_strain(), idx);
+          }
+          inline constexpr decltype(auto) get_reference_shear_stretch_strain(
+              index_type idx) const& noexcept {
+            return ReferenceShearStretchStrain::slice(
+                get_reference_shear_stretch_strain(), idx);
           }
           //@}
           //********************************************************************

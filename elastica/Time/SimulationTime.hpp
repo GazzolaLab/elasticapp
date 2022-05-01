@@ -51,12 +51,18 @@ namespace elastica {
      * The time in a simulation.  Times can be safely compared for equality and
      * provides more meaningful program semantics
      */
-    template <typename Real>
+    template <typename Real_>
     class SimulationTime {
      private:
       //**Type definitions******************************************************
-      using TimeDelta = SimulationTimeDelta<Real>;
-      using This = SimulationTime<Real>;
+      using TimeDelta = SimulationTimeDelta<Real_>;
+      using This = SimulationTime<Real_>;
+      //************************************************************************
+
+     public:
+      //**Type definitions******************************************************
+      //! Real type
+      using Real = Real_;
       //************************************************************************
 
      public:
@@ -171,12 +177,18 @@ namespace elastica {
      * \details
      * Represents an interval of time between two Times.
      */
-    template <typename Real>
+    template <typename Real_>
     class SimulationTimeDelta {
      private:
       //**Type definitions******************************************************
-      using Time = SimulationTime<Real>;
-      using This = SimulationTimeDelta<Real>;
+      using Time = SimulationTime<Real_>;
+      using This = SimulationTimeDelta<Real_>;
+      //************************************************************************
+
+     public:
+      //**Type definitions******************************************************
+      //! Real type
+      using Real = Real_;
       //************************************************************************
 
      public:

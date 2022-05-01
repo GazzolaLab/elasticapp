@@ -6,6 +6,7 @@ log_info("Finding Doxygen")
 find_package(Doxygen REQUIRED)
 
 if (DOXYGEN_FOUND)
+    log_debug("DOXYGEN_VERSION: ${DOXYGEN_VERSION}")
 
     set(ELASTICA_DOX_GENERATE_HTML "YES")
     set(ELASTICA_DOX_GENERATE_XML "NO")
@@ -23,7 +24,6 @@ if (DOXYGEN_FOUND)
 
     # Parse the command into a CMake list for the `add_custom_target`
     separate_arguments(GENERATE_DOCS_COMMAND)
-
 
     add_custom_target(
             doc

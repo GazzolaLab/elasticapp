@@ -21,3 +21,9 @@
 #include "Simulator/Interface/TypeTraits/Constraints.hpp"
 #include "Simulator/Interface/TypeTraits/Environments.hpp"
 
+//****************************************************************************
+/*!\defgroup interface_type_traits Interface type-traits
+ * \ingroup interface
+ * \brief Type traits concerning the library API
+ */
+//****************************************************************************

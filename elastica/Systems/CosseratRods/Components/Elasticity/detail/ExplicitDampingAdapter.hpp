@@ -23,6 +23,7 @@
 #include "Systems/Block.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/detail/ExplicitDampingAdapterFacade.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/detail/TypeTraits.hpp"
+#include "Systems/CosseratRods/Components/helpers.hpp"
 #include "Utilities/CRTP.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -72,8 +73,8 @@ namespace elastica {
            */
           struct ForceDampingCoefficient
               : public Traits::template CosseratRodInitializedVariable<
-                    ::elastica::tags::ForceDampingCoefficient,     //
-                    typename Traits::DataType::Scalar,  //
+                    ::elastica::tags::ForceDampingCoefficient,  //
+                    typename Traits::DataType::Scalar,          //
                     typename Traits::Place::OnNode> {};
           //********************************************************************
 
@@ -83,8 +84,8 @@ namespace elastica {
            */
           struct TorqueDampingCoefficient
               : public Traits::template CosseratRodInitializedVariable<
-                    ::elastica::tags::TorqueDampingCoefficient,    //
-                    typename Traits::DataType::Scalar,  //
+                    ::elastica::tags::TorqueDampingCoefficient,  //
+                    typename Traits::DataType::Scalar,           //
                     typename Traits::Place::OnElement> {};
           //********************************************************************
 
@@ -95,7 +96,8 @@ namespace elastica {
           //! List of computed variables
           using ComputedVariables = tmpl::list<>;
           //! List of initialized variables
-          using InitializedVariables = tmpl::list<ForceDampingCoefficient, TorqueDampingCoefficient>;
+          using InitializedVariables =
+              tmpl::list<ForceDampingCoefficient, TorqueDampingCoefficient>;
           //! List of all variables
           using Variables =
               tmpl::append<InitializedVariables, ComputedVariables>;
@@ -162,7 +164,7 @@ namespace elastica {
                   CRT, ComputationalBlock,
                   // if interface passed in by mistake, doesn't derive from the
                   // interface, but rather from the implementation, this way
-                  tt::GetBaseElasticityModel_t<ElasticityModelParam<
+                  tt::elasticity_component_trait_t<ElasticityModelParam<
                       CRT, ComputationalBlock, ElasticityModelMetaArgs...>>,
                   detail::ExplicitDampingAdapterVariables> {
          private:
@@ -173,7 +175,7 @@ namespace elastica {
           using ThisModel = ElasticityModelParam<Traits, ComputationalBlock,
                                                  ElasticityModelMetaArgs...>;
           //! Base model (not need this complexity)
-          using BaseModel = tt::GetBaseElasticityModel_t<ThisModel>;
+          using BaseModel = tt::elasticity_component_trait_t<ThisModel>;
           //! Parent type
           using Parent = ExplicitDampingAdapterFacade<
               CRT, ComputationalBlock, BaseModel,
@@ -243,8 +245,8 @@ namespace elastica {
            */
           struct ForceDampingCoefficient
               : public Traits::template CosseratRodInitializedVariable<
-                    ::elastica::tags::ForceDampingCoefficient,     //
-                    typename Traits::DataType::Scalar,  //
+                    ::elastica::tags::ForceDampingCoefficient,  //
+                    typename Traits::DataType::Scalar,          //
                     typename Traits::Place::OnRod> {};
           //********************************************************************
 
@@ -254,8 +256,8 @@ namespace elastica {
            */
           struct TorqueDampingCoefficient
               : public Traits::template CosseratRodInitializedVariable<
-                    ::elastica::tags::TorqueDampingCoefficient,    //
-                    typename Traits::DataType::Scalar,  //
+                    ::elastica::tags::TorqueDampingCoefficient,  //
+                    typename Traits::DataType::Scalar,           //
                     typename Traits::Place::OnRod> {};
           //********************************************************************
 
@@ -266,7 +268,8 @@ namespace elastica {
           //! List of computed variables
           using ComputedVariables = tmpl::list<>;
           //! List of initialized variables
-          using InitializedVariables = tmpl::list<ForceDampingCoefficient, TorqueDampingCoefficient>;
+          using InitializedVariables =
+              tmpl::list<ForceDampingCoefficient, TorqueDampingCoefficient>;
           //! List of all variables
           using Variables =
               tmpl::append<InitializedVariables, ComputedVariables>;
@@ -333,7 +336,7 @@ namespace elastica {
                                  ElasticityModelMetaArgs...>>
             : public ExplicitDampingAdapterFacade<
                   CRT, ComputationalBlock,
-                  tt::GetBaseElasticityModel_t<ElasticityModelParam<
+                  tt::elasticity_component_trait_t<ElasticityModelParam<
                       CRT, ComputationalBlock, ElasticityModelMetaArgs...>>,
                   ExplicitDampingAdapterVariablesPerRod> {
          private:
@@ -344,7 +347,7 @@ namespace elastica {
           using ThisModel = ElasticityModelParam<Traits, ComputationalBlock,
                                                  ElasticityModelMetaArgs...>;
           //! Base model (not need this complexity)
-          using BaseModel = tt::GetBaseElasticityModel_t<ThisModel>;
+          using BaseModel = tt::elasticity_component_trait_t<ThisModel>;
           //! Parent type
           using Parent = ExplicitDampingAdapterFacade<
               CRT, ComputationalBlock, BaseModel,

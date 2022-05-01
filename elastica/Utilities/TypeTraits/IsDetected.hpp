@@ -33,7 +33,7 @@ namespace tt {
 
   //****************************************************************************
   /*!\brief Default result type for the detected_t type trait.
-  // \ingroup type_traits
+  // \ingroup type_traits_group
   */
   using ::NoSuchType;
   //****************************************************************************
@@ -41,7 +41,7 @@ namespace tt {
   //****************************************************************************
   /*! \cond ELASTICA_INTERNAL */
   /*!\brief Auxiliary helper struct for the is_detected type trait.
-  // \ingroup type_traits
+  // \ingroup type_traits_group
   */
   template <typename Default, typename AlwaysVoid,
             template <typename...> class OP, typename... Ts>
@@ -56,7 +56,7 @@ namespace tt {
   /*! \cond ELASTICA_INTERNAL */
   /*!\brief Specialization of the Detector class template for a successful
   // evaluation of \a OP.
-  // \ingroup type_traits
+  // \ingroup type_traits_group
   */
   template <typename Default, template <typename...> class OP, typename... Ts>
   struct Detector<Default, cpp17::void_t<OP<Ts...> >, OP, Ts...> {
@@ -68,7 +68,7 @@ namespace tt {
 
   //****************************************************************************
   /*!\brief Compile time detection of type properties.
-  // \ingroup type_traits
+  // \ingroup type_traits_group
   //
   // \details
   // The detected_t type trait determines if the given `Op` can be evaluated
@@ -100,7 +100,7 @@ namespace tt {
 
   //****************************************************************************
   /*!\brief Evaluates the type upon applying `Op` for the given types `Ts...`
-  // \ingroup type_traits
+  // \ingroup type_traits_group
   //
   // \details
   // The detected_t type trait determines if the given `Op` can be evaluated
@@ -131,7 +131,7 @@ namespace tt {
 
   //****************************************************************************
   /*!\brief Auxiliary variable template for `detected_or`.
-  // \ingroup type_traits
+  // \ingroup type_traits_group
   //
   // \details
   // The detected_or_t variable template provides a convenient shortcut to
@@ -161,7 +161,7 @@ namespace tt {
 
   //****************************************************************************
   /*!\brief Detect if `OP` can be evaluated for the given types `Ts...`
-  // \ingroup type_traits
+  // \ingroup type_traits_group
   //
   // \details
   // Determines if the given `OP` can be evaluated for the given types `Ts...`.
@@ -202,7 +202,7 @@ namespace tt {
 
   //****************************************************************************
   /*!\brief Auxiliary variable template for eager check of `is_detected`
-  // \ingroup type_traits
+  // \ingroup type_traits_group
   //
   // \details
   // The is_detected_v variable template provides a convenient shortcut to

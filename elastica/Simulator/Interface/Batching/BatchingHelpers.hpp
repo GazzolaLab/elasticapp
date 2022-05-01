@@ -1,9 +1,21 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Common policies for batching objects in \elastica modules
 //
-// Created by Tejaswin Parthasarathy on 10/13/21.
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
 //
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
 
 #pragma once
 
+//******************************************************************************
+// Includes
+//******************************************************************************
 #include <cstddef>
 
 #include "Simulator/Configuration/ModuleConfiguration/ExecutionPolicy.hpp"
@@ -27,18 +39,26 @@ namespace elastica {
       template <typename F>
       using BatchingOperationForParallelExecution =
           BatchingOperation<::elastica::configuration::parallel_policy, F>;
+      //**********************************************************************
 
-      struct DefaultDecision {
+      //**********************************************************************
+      /*!\brief Default operation for deciding the number of batches
+       */
+      struct DefaultDecisionForNumberOfBatches {
         std::size_t operator()(std::size_t const n_dofs,
                                std::size_t const n_threads) const {
           return n_dofs / n_threads;
         };
       };
+      //**********************************************************************
 
+      //**Type definitions****************************************************
+      using DefaultDecision = DefaultDecisionForNumberOfBatches;
       using DefaultBatchingOperationForSequentialExecution =
           BatchingOperationForSequentialExecution<DefaultDecision>;
       using DefaultBatchingOperationForParallelExecution =
           BatchingOperationForParallelExecution<DefaultDecision>;
+      //**********************************************************************
 
       //**********************************************************************
       /*!\brief Batch primitives for sequential execution
@@ -50,8 +70,7 @@ namespace elastica {
         /*!\brief Policy constructor.
          */
         BatchingOperation(const std::size_t /*threadsize*/,
-                          const std::size_t /*threshold*/, F const& /*meta*/) {
-        }
+                          const std::size_t /*threshold*/, F const& /*meta*/) {}
         //********************************************************************
 
         //********************************************************************

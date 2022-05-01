@@ -47,6 +47,11 @@ namespace mock {
       using type = MockBatcher;
     };
 
+    struct UpdateStepWrapper{
+      using type = UpdateStep;
+    };
+
+    using UpdateSteps = tmpl::list<UpdateStepWrapper>;
     using PostKinematicUpdateSteps = tmpl::list<FirstUpdateStep>;
     using PreDynamicUpdateSteps = tmpl::list<SecondUpdateStep>;
     using PostDynamicUpdateSteps = tmpl::list<ThirdUpdateStep>;

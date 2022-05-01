@@ -57,7 +57,7 @@ namespace cpp17 {
   //****************************************************************************
   /*!\brief Determines whether F can be invoked with the arguments A... to
    * yield a result that is convertible to R.
-   * \ingroup type_traits
+   * \ingroup type_traits_group
    *
    * \details
    * Inherits from std::true_type if `F` has the call operator, operator()
@@ -100,7 +100,7 @@ namespace cpp17 {
 
   //****************************************************************************
   /*!\brief Variable template for eager check of `is_invocable_r`
-   * \ingroup type_traits
+   * \ingroup type_traits_group
    *
    * \details
    * The is_invocable_r_v is a helper variable template to obtain the nested
@@ -117,7 +117,7 @@ namespace cpp17 {
 
   //****************************************************************************
   /*!\brief Determines whether F can be invoked with the arguments A...
-   * \ingroup type_traits
+   * \ingroup type_traits_group
    *
    * \details
    * Inherits from std::true_type if `F` has the call operator, operator()
@@ -156,7 +156,7 @@ namespace cpp17 {
 
   //****************************************************************************
   /*!\brief Variable template for eager check of `is_invocable`
-   * \ingroup type_traits
+   * \ingroup type_traits_group
    *
    * \details
    * The is_invocable_v is a helper variable template to obtain the nested
@@ -175,7 +175,7 @@ namespace cpp17 {
   //****************************************************************************
   /*!\brief Determines whether F can be called with the arguments A... and
    * that such call is known not to throw any exceptions.
-   * \ingroup type_traits
+   * \ingroup type_traits_group
    *
    * \details
    * Inherits from std::true_type if `F` has the call operator, operator()
@@ -219,7 +219,7 @@ namespace cpp17 {
   /*!\brief Determines whether F can be invoked with the arguments A... to
    * yield a result that is convertible to R, and that such call is known not
    * to throw any exceptions.
-   * \ingroup type_traits
+   * \ingroup type_traits_group
    *
    * \details
    * Inherits from std::true_type if `F` has a `noexcept` call operator,
@@ -263,7 +263,7 @@ namespace cpp17 {
 
   //****************************************************************************
   /*!\brief Variable template for eager check of `is_nothrow_invocable_r`
-   * \ingroup type_traits
+   * \ingroup type_traits_group
    *
    * \details
    * The is_nothrow_invocable_r_v is a helper variable template to obtain the
@@ -282,7 +282,7 @@ namespace cpp17 {
   //****************************************************************************
   /*!\brief Determines whether F can be invoked with the arguments A... and
    * that such call is known not to throw any exceptions.
-   * \ingroup type_traits
+   * \ingroup type_traits_group
    *
    * \details
    * Inherits from std::true_type if `F` has a `noexcept` call operator,
@@ -323,7 +323,7 @@ namespace cpp17 {
 
   //****************************************************************************
   /*!\brief Variable template for eager check of `is_nothrow_invocable`
-   * \ingroup type_traits
+   * \ingroup type_traits_group
    *
    * \details
    * The is_nothrow_invocable_v is a helper variable template to obtain the

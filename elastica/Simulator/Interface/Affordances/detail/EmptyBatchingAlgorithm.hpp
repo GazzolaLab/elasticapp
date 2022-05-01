@@ -26,7 +26,7 @@ namespace elastica {
 
       //************************************************************************
       /*! \cond ELASTICA_INTERNAL */
-      template <typename>
+      template <typename, typename>
       struct EmptyBatchingAlgorithm {
        public:
         //**Batching algorithm**************************************************

@@ -15,6 +15,11 @@ namespace {
   using ::elastica::Time;
   using ::elastica::TimeDelta;
 
+  static_assert(cpp17::is_same_v<typename Time::Real, ::elastica::real_t>,
+                "Meta-failure");
+  static_assert(cpp17::is_same_v<typename TimeDelta::Real, ::elastica::real_t>,
+                "Meta-failure");
+
   ELASTICA_TEST_CASE("Unit.Time.Time", "[Unit][Time]") {
     const double tstart_d = 0.68138945475734402635;
     const double tend_d = 76.34481744714527451379;

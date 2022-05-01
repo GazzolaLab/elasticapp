@@ -1,14 +1,34 @@
 # Distributed under the MIT License. See LICENSE.txt for details.
 
-set(LIBRARY Systems)
+set(LIBRARY SystemsCommon)
+
+add_elastica_library(${LIBRARY} INTERFACE)
 
 elastica_target_headers(
         ${LIBRARY}
         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
-        HEADERS
         Access.hpp
         Protocols.hpp
         SymplecticStepperAdapter.hpp
         Tags.hpp
+        Types.hpp
 )
 
+elastica_target_sources(
+        ${LIBRARY}
+        PUBLIC
+        Access.hpp
+        Components.hpp
+        Protocols.hpp
+        SymplecticStepperAdapter.hpp
+        Tags.hpp
+        Types.hpp
+)
+
+add_subdirectory(Components)
+
+target_link_libraries(
+        ${LIBRARY}
+        INTERFACE
+        Components
+)

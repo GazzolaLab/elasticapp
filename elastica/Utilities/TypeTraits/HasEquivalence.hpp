@@ -14,7 +14,7 @@ namespace tt {
     //**************************************************************************
     /*! \cond ELASTICA_INTERNAL */
     /*!\brief Check for existence of an equality operator
-    // \ingroup type_traits
+    // \ingroup type_traits_group
     */
     template <class T>
     using equivalence_t = decltype(std::declval<T>() = std::declval<T>());
@@ -24,7 +24,7 @@ namespace tt {
 
   //****************************************************************************
   /* \brief Check if type `T` has operator== defined.
-  // \ingroup type_traits
+  // \ingroup type_traits_group
   //
   // \details
   // Inherits from std::true_type if the type `T` has operator== defined,
@@ -62,7 +62,7 @@ namespace tt {
 
   //****************************************************************************
   /*!\brief Auxiliary variable template for eager check of `has_equivalence`
-  // \ingroup type_traits
+  // \ingroup type_traits_group
   //
   // \details
   // The has_equivalence_v variable template provides a convenient shortcut to
@@ -89,7 +89,7 @@ namespace tt {
 
   //****************************************************************************
   /*!\brief Auxiliary variable template for `has_equivalence`.
-  // \ingroup type_traits
+  // \ingroup type_traits_group
   //
   // \details
   // The has_equivalence_t variable template provides a convenient shortcut to

@@ -16,17 +16,25 @@ elastica_target_headers(
         reduce.hpp
 )
 
-if (ELASTICA_SMP)
-    target_link_libraries(
-            ${LIBRARY}
-            INTERFACE
-            Utilities
-            TBB
-    )
-else ()
-    target_link_libraries(
-            ${LIBRARY}
-            INTERFACE
-            Utilities
-    )
-endif ()
+target_link_libraries(
+        ${LIBRARY}
+        INTERFACE
+        Utilities
+        # Make this link to TBB
+        ModuleSettings
+)
+
+#if (ELASTICA_SMP)
+#    target_link_libraries(
+#            ${LIBRARY}
+#            INTERFACE
+#            Utilities
+#            TBB
+#    )
+#else ()
+#    target_link_libraries(
+#            ${LIBRARY}
+#            INTERFACE
+#            Utilities
+#    )
+#endif ()

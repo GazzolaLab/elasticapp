@@ -22,6 +22,7 @@
 
 ///
 #include "Simulator/Configuration/ModuleConfiguration/ExecutionPolicy.hpp"
+#include "Simulator/Interface/Affordances/detail/EmptyUpdateSteps.hpp"
 #include "Simulator/Interface/Systems/Types.hpp"
 ///
 #include "Parallel/for_each.hpp"  // uses elastica's, not GLIBCXX
@@ -77,7 +78,9 @@ namespace elastica {
        */
       template <class SystemsTraits, class SystemsModule>
       class ExecutionPolicy
-          : public CRTPHelper<SystemsModule, ExecutionPolicy> {
+          : public CRTPHelper<SystemsModule, ExecutionPolicy>,
+            public ::elastica::modules::detail::EmptyUpdateSteps<
+                SystemsTraits, ExecutionPolicy<SystemsTraits, SystemsModule>> {
        private:
         //**Type definitions****************************************************
         //! CRTP Type
@@ -143,7 +146,7 @@ namespace elastica {
              * error.
              */
             return [func = FWD_CAPTURE(func)](
-                       auto /*const*/& system_collection) mutable
+                       auto /*const*/& system_collection) /*mutable*/
                    -> void /*decltype(auto)*/ {
               // parallelism should go here
               using std::begin;
@@ -198,7 +201,7 @@ namespace elastica {
              * [func = std::forward<F>(func)]
              */
             return [func = FWD_CAPTURE(func)](
-                       auto /*const*/& system_collection) mutable
+                       auto /*const*/& system_collection) /*mutable*/
                    -> void /*decltype(auto)*/ {
               // parallelism should go here
               using ::elastica::size;
@@ -383,7 +386,7 @@ namespace elastica {
                   // op_for_each is copied to each thread here, so pay attention
                   // to state
                   parallel::invoke([op_for_each = detail::access(op_for_each),
-                                    &system_collections]() mutable {
+                                    &system_collections]() /*mutable*/ {
                     op_for_each(system_collections);
                   }...);
                   //  EXPAND_PACK_LEFT_TO_RIGHT(

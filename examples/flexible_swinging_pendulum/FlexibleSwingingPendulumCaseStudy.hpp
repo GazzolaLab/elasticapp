@@ -3,7 +3,8 @@
 //  \file
 //  \brief Flexible swinging pendulum case study
 //
-//  Copyright (C) 2020-2022 Tejaswin Parthasarathy, Yashraj Bhosale - All Rights Reserved
+//  Copyright (C) 2020-2022 Tejaswin Parthasarathy, Yashraj Bhosale - All Rights
+//  Reserved
 //  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
 //
 //  Distributed under the MIT License.
@@ -16,6 +17,7 @@
 #include <elastica/CaseStudy.hpp>
 //
 #include <elastica/Simulator/Constraints.hpp>
+#include <elastica/Simulator/Environments.hpp>
 #include <elastica/Simulator/Forcing.hpp>
 #include <elastica/Simulator/Simulator.hpp>
 #include <elastica/Systems/CosseratRods.hpp>
@@ -38,13 +40,14 @@ struct FlexibleSwingingPendulumConfiguration {
 
     return ec::make_simulator_configuration(
         ec::DefaultDomainConfiguration{}, system_config,
-        ec::DefaultParallelConfiguration{}, ec::DefaultForcingConfiguration{},
-        ec::DefaultConstraintsConfiguration{});
+        ec::DefaultParallelConfiguration{},
+        ec::DefaultConstraintsConfiguration{},
+        ec::DefaultEnvironmentsConfiguration{});
   }
 
   static inline auto make_simulator() {
-    return elastica::make_simulator<::elastica::modules::Forcing,
-                                    ::elastica::modules::Constraints>(
+    return elastica::make_simulator<::elastica::modules::Constraints,
+                                    ::elastica::modules::Environments>(
         make_simulator_configuration());
   }
 
@@ -103,7 +106,7 @@ geometrically exact Cosserat rods. Multibody System Dynamics, 25(3), 285-312)
     static type default_value() { return (5e6 / 1.5); }
   };
 
-  //replace by gravity
+  // replace by gravity
   struct gravitational_acc {
     using type = ::elastica::real_t;
     static constexpr String help = {"Gravitational acceleration"};
@@ -131,8 +134,9 @@ geometrically exact Cosserat rods. Multibody System Dynamics, 25(3), 285-312)
     }
   };
 
-  using Parameters = tmpl::list<n_elements, damping, youngs_modulus,
-                                shear_modulus, gravitational_acc, radius, length, dt>;
+  using Parameters =
+      tmpl::list<n_elements, damping, youngs_modulus, shear_modulus,
+                 gravitational_acc, radius, length, dt>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);
@@ -144,7 +148,8 @@ geometrically exact Cosserat rods. Multibody System Dynamics, 25(3), 285-312)
   }
 
   FlexibleSwingingPendulumCaseStudy() = default;
-  FlexibleSwingingPendulumCaseStudy(FlexibleSwingingPendulumCaseStudy&&) noexcept = default;
+  FlexibleSwingingPendulumCaseStudy(
+      FlexibleSwingingPendulumCaseStudy&&) noexcept = default;
 
   decltype(Configuration::make_time_stepper()) time_stepper =
       Configuration::make_time_stepper();

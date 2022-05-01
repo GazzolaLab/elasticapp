@@ -23,97 +23,104 @@
 
 #pragma once
 
-//*************************************************************************************************
+//******************************************************************************
 // Includes
-//*************************************************************************************************
+//******************************************************************************
 
+#include <utility>  // swap and move
 #include <vector>
 
-#include "elastica/ErrorHandling/Assert.hpp"
-#include "elastica/Utilities/Byte.hpp"
-#include "elastica/Utilities/NonCopyable.hpp"
+#include "ErrorHandling/Assert.hpp"
+#include "Utilities/Byte.hpp"
+#include "Utilities/NonCopyable.hpp"
 
 namespace elastica {
 
-  //=================================================================================================
+  //============================================================================
   //
   //  CLASS DEFINITION
   //
-  //=================================================================================================
+  //============================================================================
 
-  //*************************************************************************************************
+  //****************************************************************************
   /*!\brief Memory pool for small objects.
    * \ingroup util
    *
    * The memory pool efficiently improves the performance of dynamic memory
    * allocations for small objects. By allocating a large block of memory that
    * can be dynamically assigned to small objects, the memory allocation is
-   * reduced from a few hundred cycles to only a few cycles.\n The memory pool
-   * is build from memory blocks of type Block, which hold the memory for a
-   * specified number of objects. The memory of these blocks is managed as a
-   * single free list.
+   * reduced from a few hundred cycles to only a few cycles.
+   *
+   * The memory pool is build from memory blocks of type Block, which hold the
+   * memory for a specified number of objects. The memory of these blocks is
+   * managed as a single free list.
    */
   template <typename Type, std::size_t BlockSize>
   class MemoryPool : private NonCopyable {
    private:
-    //**union
-    // FreeObject****************************************************************************
+    //**union FreeObject********************************************************
     /*!\brief A single element of the free list of the memory pool.
      */
     union FreeObject {
-      FreeObject* next_;  //!< Pointer to the next free object.
-      byte dummy_[sizeof(
-          Type)];  //!< Dummy array to create an object of the appropriate size.
+      //! Pointer to the next free object.
+      FreeObject* next_;
+      //! Dummy array to create an object of the appropriate size.
+      byte dummy_[sizeof(Type)];
     };
-    //**********************************************************************************************
+    /***************************************************************************
 
-    //**struct
-    // Block********************************************************************************
+    //**Struct Block************************************************************
     /*!\brief Memory block within the memory bool.
     //
     // One memory block holds the memory for exactly \a BlockSize objects of
-    type \a Type.
+    // type \a Type.
     */
     struct Block {
      public:
-      //**Memory management
-      // functions**************************************************************
+      //**Memory management functions*******************************************
       /*!\name Memory management functions */
       //@{
       void init();
       void free();
       //@}
-      //*******************************************************************************************
+      //************************************************************************
 
-      //**Member
-      // variables*************************************************************************
+      //**Member variables******************************************************
       /*!\name Member variables */
       //@{
-      FreeObject* rawMemory_;  //!< Allocated memory pool of the block.
-                               //@}
-      //*******************************************************************************************
+      //! Allocated memory pool of the block.
+      FreeObject* rawMemory_;
+      //@}
+      //************************************************************************
     };
-    //**********************************************************************************************
+    //**************************************************************************
 
-    //**Type
-    // definitions****************************************************************************
+    //**Type definitions********************************************************
     using Blocks = std::vector<Block>;  //!< Vector of memory blocks.
-    //**********************************************************************************************
+    //**************************************************************************
 
    public:
-    //**Constructor*********************************************************************************
+    //**Constructor*************************************************************
     /*!\name Constructor */
     //@{
     inline MemoryPool();
+    MemoryPool(MemoryPool&&) noexcept;
     //@}
-    //**********************************************************************************************
+    //**************************************************************************
 
-    //**Destructor**********************************************************************************
+    //**Destructor**************************************************************
     /*!\name Destructor */
     //@{
     inline ~MemoryPool();
     //@}
-    //**********************************************************************************************
+    //**************************************************************************
+
+    friend void swap(MemoryPool& first, MemoryPool& second) {
+      using std::swap;  // bring in swap for built-in types
+
+      swap(first.blocks_, second.blocks_);
+      swap(first.free_list_, second.free_list_);
+    }
 
     //**Memory management
     // functions*****************************************************************
@@ -125,31 +132,30 @@ namespace elastica {
     //**********************************************************************************************
 
    private:
-    //**Memory management
-    // functions*****************************************************************
+    //**Memory management functions*********************************************
     /*!\name Memory management functions */
     //@{
     inline bool checkMemory(FreeObject* toRelease) const;
     //@}
-    //**********************************************************************************************
+    //**************************************************************************
 
-    //**Member
-    // variables****************************************************************************
+    //**Member variables********************************************************
     /*!\name Member variables */
     //@{
-    FreeObject* freeList_;  //!< Head of the free list.
-    Blocks blocks_;         //!< Vector of available memory blocks.
-                            //@}
-    //**********************************************************************************************
+    FreeObject* free_list_;  //!< Head of the free list.
+    Blocks blocks_;          //!< Vector of available memory blocks.
+    //@}
+    //**************************************************************************
   };
+  //****************************************************************************
 
-  //=================================================================================================
+  //============================================================================
   //
   //  CLASS MEMORYPOOL::BLOCK
   //
-  //=================================================================================================
+  //============================================================================
 
-  //*************************************************************************************************
+  //****************************************************************************
   /*!\brief Initialization of a memory block.
    *
    * \return void
@@ -166,9 +172,9 @@ namespace elastica {
     }
     rawMemory_[BlockSize - 1].next_ = nullptr;
   }
-  //*************************************************************************************************
+  //****************************************************************************
 
-  //*************************************************************************************************
+  //****************************************************************************
   /*!\brief Release of the entire memory block.
    *
    * \return void
@@ -177,15 +183,15 @@ namespace elastica {
   inline void MemoryPool<Type, BlockSize>::Block::free() {
     delete[] rawMemory_;
   }
-  //*************************************************************************************************
+  //****************************************************************************
 
-  //=================================================================================================
+  //============================================================================
   //
   //  CLASS MEMORYPOOL
   //
-  //=================================================================================================
+  //============================================================================
 
-  //*************************************************************************************************
+  //****************************************************************************
   /*!\brief Constructor of the memory pool.
    */
   template <typename Type, size_t BlockSize>
@@ -193,42 +199,52 @@ namespace elastica {
     blocks_.push_back(Block());
     Block& block = blocks_.back();
     block.init();
-    freeList_ = block.rawMemory_;
+    free_list_ = block.rawMemory_;
   }
-  //*************************************************************************************************
+  //****************************************************************************
 
-  //*************************************************************************************************
+  //****************************************************************************
+  /*!\brief Constructor of the memory pool.
+   */
+  template <typename Type, size_t BlockSize>
+  MemoryPool<Type, BlockSize>::MemoryPool(MemoryPool&& other) noexcept
+      : blocks_(std::move(other.blocks_)), free_list_(other.free_list_) {
+    other.free_list_ = nullptr;
+  }
+  //****************************************************************************
+
+  //****************************************************************************
   /*!\brief Destructor of the memory pool.
    */
   template <typename Type, size_t BlockSize>
   inline MemoryPool<Type, BlockSize>::~MemoryPool() {
-    for (Block& block_ : blocks_) {
+    for (auto& block_ : blocks_) {
       block_.free();
     }
   }
-  //*************************************************************************************************
+  //****************************************************************************
 
-  //*************************************************************************************************
+  //****************************************************************************
   /*!\brief Allocation of raw memory for an object of type \a Type.
    *
    * \return Pointer to the raw memory.
    */
   template <typename Type, size_t BlockSize>
   inline void* MemoryPool<Type, BlockSize>::malloc() {
-    if (!freeList_) {
+    if (!free_list_) {
       blocks_.push_back(Block());
       Block& block = blocks_.back();
       block.init();
-      freeList_ = block.rawMemory_;
+      free_list_ = block.rawMemory_;
     }
 
-    void* ptr = freeList_;
-    freeList_ = freeList_->next_;
+    void* ptr = free_list_;
+    free_list_ = free_list_->next_;
     return ptr;
   }
-  //*************************************************************************************************
+  //****************************************************************************
 
-  //*************************************************************************************************
+  //****************************************************************************
   /*!\brief Deallocation of raw memory for an object of type \a Type.
    *
    * \param rawMemory Pointer to the raw memory.
@@ -238,12 +254,12 @@ namespace elastica {
   inline void MemoryPool<Type, BlockSize>::free(void* rawMemory) {
     auto* ptr = reinterpret_cast<FreeObject*>(rawMemory);
     ELASTICA_ASSERT(checkMemory(ptr), "Memory pool check failed");
-    ptr->next_ = freeList_;
-    freeList_ = ptr;
+    ptr->next_ = free_list_;
+    free_list_ = ptr;
   }
-  //*************************************************************************************************
+  //****************************************************************************
 
-  //*************************************************************************************************
+  //****************************************************************************
   /*!\brief Performing a number of checks on the memory to be released.
    *
    * \param toRelease Pointer to the memory to be released.
@@ -259,15 +275,15 @@ namespace elastica {
       if (toRelease >= it->rawMemory_ and
           toRelease < it->rawMemory_ + BlockSize) {
         // Alignment check
-        const byte* const ptr1(reinterpret_cast<const byte*>(toRelease));
-        const byte* const ptr2(reinterpret_cast<const byte*>(it->rawMemory_));
+        byte const * const ptr1(reinterpret_cast<byte const *>(toRelease));
+        byte const * const ptr2(reinterpret_cast<byte const *>(it->rawMemory_));
 
         if ((ptr1 - ptr2) % sizeof(FreeObject) != 0)
           return false;
 
         // Duplicate free check : if memory to be released is located in the
         // free pool of the blocks, then there's an issue
-        FreeObject* ptr(freeList_);
+        FreeObject* ptr(free_list_);
         while (ptr) {
           if (ptr == toRelease)
             return false;
@@ -279,6 +295,6 @@ namespace elastica {
     }
     return false;
   }
-  //*************************************************************************************************
+  //****************************************************************************
 
 }  // namespace elastica

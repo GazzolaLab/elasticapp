@@ -23,7 +23,7 @@
 namespace tt {
 
   // @{
-  /// \ingroup TypeTraitsGroup
+  /// \ingroup type_traits_group
   /// \brief Check if type T has a begin() and end() function
   ///
   /// \details

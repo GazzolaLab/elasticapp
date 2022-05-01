@@ -15,29 +15,48 @@ namespace {
     /// [rod_member_api]
     cosserat_rod.get_position();
     cosserat_rod.get_director();
+    //
     cosserat_rod.get_reference_curvature();
     cosserat_rod.get_element_length();
     cosserat_rod.get_reference_element_length();
     cosserat_rod.get_reference_curvature();
     cosserat_rod.get_reference_shear_stretch_strain();
+    //
     cosserat_rod.get_element_dimension();
     cosserat_rod.get_element_volume();
-
+    //
     cosserat_rod.get_velocity();
     cosserat_rod.get_angular_velocity();
+    //
+    cosserat_rod.get_material();
+    cosserat_rod.get_external_loads();
+    cosserat_rod.get_external_torques();
+    //
     cosserat_rod.get_acceleration();
     cosserat_rod.get_angular_acceleration();
     /// [rod_member_api]
 
     /// [rod_member_index_api]
-    const std::size_t index = 4UL;
+    const std::size_t index = 3UL;  // consider n_voronoi into account
     cosserat_rod.get_position(index);
     cosserat_rod.get_director(index);
 
+    cosserat_rod.get_reference_curvature(index);
+    cosserat_rod.get_element_length(index);
+    cosserat_rod.get_reference_element_length(index);
+    cosserat_rod.get_reference_curvature(index);
+    cosserat_rod.get_reference_shear_stretch_strain(index);
+
     cosserat_rod.get_element_dimension(index);
+    cosserat_rod.get_element_volume(index);
 
     cosserat_rod.get_velocity(index);
     cosserat_rod.get_angular_velocity(index);
+
+    cosserat_rod.get_material(index);
+
+    cosserat_rod.get_external_loads(index);
+    cosserat_rod.get_external_torques(index);
     /// [rod_member_index_api]
   }
 
@@ -101,6 +120,8 @@ namespace {
     ::elastica::director(cosserat_rod);
     ::elastica::velocity(cosserat_rod);
     ::elastica::angular_velocity(cosserat_rod);
+    ::elastica::external_loads(cosserat_rod);
+    ::elastica::external_torques(cosserat_rod);
     /// [rod_free_api]
 
     /// [rod_free_index_api]
@@ -109,6 +130,8 @@ namespace {
     ::elastica::director(cosserat_rod, index);
     ::elastica::velocity(cosserat_rod, index);
     ::elastica::angular_velocity(cosserat_rod, index);
+    ::elastica::external_loads(cosserat_rod, index);
+    ::elastica::external_torques(cosserat_rod, index);
     /// [rod_free_index_api]
   }
 

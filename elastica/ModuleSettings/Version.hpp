@@ -46,5 +46,5 @@
  * instance, in \elastica version 3.9.0, the ELASTICA_PATCH_VERSION corresponds
  * to 0.
  */
-#define ELASTICA_PATCH_VERSION 1
+#define ELASTICA_PATCH_VERSION 2
 //******************************************************************************

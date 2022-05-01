@@ -1,47 +1,59 @@
-//=================================================================================================
+//==============================================================================
 /*!
- *  \file pe/core/rigidbody/GeomPrimitive.h
- *  \brief Header file for the GeomPrimitive class
- *
- *  Copyright (C) 2009 Klaus Iglberger
- *
- *  This file is part of pe.
- *
- *  pe is free software: you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- *
- *  pe is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with
- * pe. If not, see <http://www.gnu.org/licenses/>.
- */
-//=================================================================================================
+//  \file
+//  \brief Base class for rigid environment primitives with some material
+//  properties
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+//
+//  This file contains implementation from the pe library with the following
+//  copyrights
+**
+**  Project home: https://www.cs10.tf.fau.de/research/software/pe/
+**
+**  Copyright (C) 2009 Klaus Iglberger
+**
+**  This file is part of pe.
+**
+**  pe is free software: you can redistribute it and/or modify it under the
+** terms of the GNU General Public License as published by the Free Software
+** Foundation, either version 3 of the License, or (at your option) any later
+** version.
+**
+**  pe is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+** A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License along with
+** pe. If not, see <http://www.gnu.org/licenses/>.
+*/
+//==============================================================================
 
 #pragma once
 
-#include "RigidBodyPrimitive.hpp"
-#include "elastica/Simulator/Types.hpp"
+//
+#include "Simulator/Environments/Primitives/Types.hpp"
+//
+#include "Simulator/Environments/Primitives/RigidBodyPrimitive.hpp"
+//
+#include "Simulator/Types.hpp"
 
 namespace elastica {
 
   namespace collision {
 
-    //*************************************************************************************************
-    /*!\defgroup geometric_primitive Geometric primitives
-     * \ingroup rigid_body
-     */
+    //**************************************************************************
     /*!\brief Base class for all primitive geometries.
-     * \ingroup geometric_primitive
+     * \ingroup primitives
      *
      * The GeomPrimitive class is the abstract basis for all geometric
      * primitives of the collision engine. The class provides the common data
      * members and the common functionality for all geometry classes.
      */
-
     class GeomPrimitive : public RigidBodyPrimitive {
      public:
       //**Type
@@ -49,55 +61,53 @@ namespace elastica {
       //    struct Parameters : public RigidBody::Parameters {
       //      MaterialID material_;
       //    };
-      //**********************************************************************************************
+      //************************************************************************
 
-      //**Get
-      // functions*******************************************************************************
+      //**Get functions*********************************************************
       /*!\name Get functions */
       //@{
       inline MaterialID get_material() const;
       //@}
-      //**********************************************************************************************
+      //************************************************************************
 
      protected:
-      //**Constructor*********************************************************************************
+      //**Constructor***********************************************************
       /*!\name Constructor */
       //@{
       explicit GeomPrimitive(bool finite, id_t sid, id_t uid,
                              MaterialID material);
-      GeomPrimitive(GeomPrimitive&&) noexcept;
+      GeomPrimitive(GeomPrimitive&&) noexcept = default;
       //@}
-      //**********************************************************************************************
+      //************************************************************************
 
-      //**Destructor**********************************************************************************
+      //**Destructor************************************************************
       /*!\name Destructor */
       //@{
-      ~GeomPrimitive() override = 0;
+      ~GeomPrimitive() /*override = 0*/;
       //@}
-      //**********************************************************************************************
+      //************************************************************************
 
-      //**Member
-      // variables****************************************************************************
+      //**Member variables******************************************************
       /*!\name Member variables */
       //@{
       MaterialID material_;  //!< The material of the geometric primitive.
                              //@}
-      //**********************************************************************************************
+      //************************************************************************
     };
 
-    //=================================================================================================
+    //==========================================================================
     //
     //  GET FUNCTIONS
     //
-    //=================================================================================================
+    //==========================================================================
 
-    //*************************************************************************************************
+    //**************************************************************************
     /*!\brief Returns the material of the geometric primitive.
      *
      * \return The coefficient of restitution of the rigid body.
      */
     inline MaterialID GeomPrimitive::get_material() const { return material_; }
-    //*************************************************************************************************
+    //**************************************************************************
 
   }  // namespace collision
 

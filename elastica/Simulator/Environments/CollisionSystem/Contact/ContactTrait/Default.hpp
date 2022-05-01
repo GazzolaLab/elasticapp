@@ -1,140 +1,107 @@
-//=================================================================================================
+//==============================================================================
 /*!
- *  \file pe/core/contact/contacttrait/Default.h
- *  \brief Header file for the default implementation of the ContactTrait class
- * template.
- *
- *  Copyright (C) 2009 Klaus Iglberger
- *
- *  This file is part of pe.
- *
- *  pe is free software: you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- *
- *  pe is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with
- * pe. If not, see <http://www.gnu.org/licenses/>.
- */
-//=================================================================================================
+//  \file
+//  \brief Default implementation of the ContactTrait class template
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+//
+//  This file contains implementation from the pe library with the following
+//  copyrights
+**
+**  Project home: https://www.cs10.tf.fau.de/research/software/pe/
+**
+**  Copyright (C) 2009 Klaus Iglberger
+**
+**  This file is part of pe.
+**
+**  pe is free software: you can redistribute it and/or modify it under the
+** terms of the GNU General Public License as published by the Free Software
+** Foundation, either version 3 of the License, or (at your option) any later
+** version.
+**
+**  pe is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+** A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License along with
+** pe. If not, see <http://www.gnu.org/licenses/>.
+**/
+//==============================================================================
 
 #pragma once
 
-//*************************************************************************************************
+//******************************************************************************
 // Includes
-//*************************************************************************************************
-#include "elastica/Simulator/Environments/CollisionSystem/Contact/ContactBase.hpp"
-#include "elastica/Simulator/Environments/CollisionSystem/Types.hpp"
-#include "elastica/Simulator/Environments/Primitives/GeomPrimitive.hpp"
-#include "elastica/Utilities/DefineTypes.h"
-#include "elastica/Utilities/Math/Vec3.hpp"
+//******************************************************************************
+//
+#include "Simulator/Environments/CollisionSystem/Contact/Types.hpp"
+///
+#include "Simulator/Environments/CollisionSystem/Contact/ContactBase.hpp"
+//
+#include "Simulator/Environments/Primitives/GeomPrimitive.hpp"  // geomid
+//
+#include "Utilities/DefineTypes.h"
+#include "Utilities/Math/Vec3.hpp"
 
 namespace elastica {
 
   namespace collision {
 
-    //=================================================================================================
-    //
-    //  CLASS DEFINITION
-    //
-    //=================================================================================================
+    namespace detail {
 
-    //*************************************************************************************************
-    /*!\brief Contact customization class for the collision response.
-     * \ingroup contact
-     *
-     * The ContactTrait class template is a customization class for contacts in
-     * general. Its main purpose is the customization of the Contact class for
-     * the selected collision response algorithm (see
-     * pe::pe_CONSTRAINT_SOLVER).\n Depending on the used algorithm, a contact
-     * may require additional data or functionality to efficiently support the
-     * collision response calculations. In order to add this specific
-     * functionality or data and to adapt contacts to a particular algorithm,
-     * the base template needs to be specialized.
-     */
-    // Empty base optimization applies here for the Default Configuration
-    template <typename C>  // Type of the collision system configuration
-    class ContactTrait : public ContactBase {
-     protected:
-      //**Type
-      // definitions****************************************************************************
-      using Parent = ContactBase;  //!< The type of the parent class.
-      //**********************************************************************************************
+      //========================================================================
+      //
+      //  CLASS DEFINITION
+      //
+      //========================================================================
 
-      //**Constructor*********************************************************************************
-      /*!\name Constructor */
-      //@{
-      inline ContactTrait(GeomID g1, GeomID g2, const Vec3& gpos,
-                          const Vec3& normal, real_t dist);
-      inline ContactTrait(GeomID g1, GeomID g2, const Vec3& gpos,
-                          const Vec3& normal, const Vec3& e1, const Vec3& e2,
-                          real_t dist);
-      //@}
-      //**********************************************************************************************
+      //************************************************************************
+      /*!\brief Contact customization class for the collision response.
+       * \ingroup contact
+       *
+       * The ContactTrait class template is a customization class for contacts
+       * in general. Its main purpose is the customization of the Contact class
+       * for the selected collision response algorithm (see
+       * pe::pe_CONSTRAINT_SOLVER).\n Depending on the used algorithm, a contact
+       * may require additional data or functionality to efficiently support the
+       * collision response calculations. In order to add this specific
+       * functionality or data and to adapt contacts to a particular algorithm,
+       * the base template needs to be specialized.
+       *
+       * \tparam C Type of the collision system configuration
+       *
+       * \note
+       * Empty base optimization applies here for the Default Configuration
+       */
+      template <typename C>
+      class ContactTrait : public ContactBase {
+       protected:
+        //**Type definitions****************************************************
+        using Parent = ContactBase;  //!< The type of the parent class.
+        //**********************************************************************
 
-      //**Destructor**********************************************************************************
-      /*!\name Destructor */
-      //@{
-      inline ~ContactTrait();
-      //@}
-      //**********************************************************************************************
-    };
-    //*************************************************************************************************
+        //**Constructor*********************************************************
+        /*!\name Constructor */
+        //@{
+        using Parent::Parent;
+        ContactTrait(ContactTrait&&) noexcept = default;
+        //@}
+        //**********************************************************************
 
-    //*************************************************************************************************
-    /*!\brief Default implementation of the ContactTrait constructor for
-     * vertex-face contacts.
-     *
-     * \param g1 The first contacting geometric primitive.
-     * \param g2 The second contacting geometric primitive.
-     * \param gpos The global position of the contact.
-     * \param normal The global normal of the contact (running from body 2 to
-     * body 1). \param dist The distance between the surfaces of the contacting
-     * rigid bodies. \return void
-     *
-     * Default implementation of the ContactTrait constructor for vertex-face
-     * contacts.
-     */
-    template <typename C>  // Type of the configuration
-    inline ContactTrait<C>::ContactTrait(GeomID g1, GeomID g2, const Vec3& gpos,
-                                         const Vec3& normal, real_t dist)
-        : ContactBase(g1, g2, gpos, normal,
-                      dist)  // Initialization of the ContactBase base object
-    {}
-    //*************************************************************************************************
+        //**Destructor**********************************************************
+        /*!\name Destructor */
+        //@{
+        inline ~ContactTrait() = default;
+        //@}
+        //**********************************************************************
+      };
+      //************************************************************************
 
-    //*************************************************************************************************
-    /*!\brief Default implementation of the ContactTrait constructor for
-     * edge/edge contacts.
-     *
-     * \param g1 The first contacting geometric primitive.
-     * \param g2 The second contacting geometric primitive.
-     * \param gpos The global position of the contact.
-     * \param normal The global normal of the contact (running from body 2 to
-     * body 1). \param e1 Edge direction of the colliding edge of the first
-     * colliding rigid body. \param e2 Edge direction of the colliding edge of
-     * the second colliding rigid body. \param dist The distance between the
-     * surfaces of the contacting rigid bodies.
-     */
-    template <typename C>  // Type of the configuration
-    inline ContactTrait<C>::ContactTrait(GeomID g1, GeomID g2, const Vec3& gpos,
-                                         const Vec3& normal, const Vec3& e1,
-                                         const Vec3& e2, real_t dist)
-        : ContactBase(g1, g2, gpos, normal, e1, e2,
-                      dist)  // Initialization of the ContactBase base object
-    {}
-    //*************************************************************************************************
-
-    //*************************************************************************************************
-    /*!\brief Default implementation of the ContactTrait destructor.
-     */
-    template <typename C>  // Type of the configuration
-    inline ContactTrait<C>::~ContactTrait() {}
-    //*************************************************************************************************
+    }  // namespace detail
 
   }  // namespace collision
 

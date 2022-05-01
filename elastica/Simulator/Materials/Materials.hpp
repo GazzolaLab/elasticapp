@@ -58,9 +58,8 @@ namespace elastica {
   //****************************************************************************
   /*!\defgroup materials Materials
    * \ingroup simulator
-   *
-   * The Materials module contains material information and functionality to
-   * to access and implement new materials.
+   * \brief Contains functionality to implement and access data of new
+   * materials that constitute soft and rigid-bodies.
    */
   //****************************************************************************
 
@@ -175,8 +174,8 @@ namespace elastica {
     inline real_t get_backward_dynamic_friction() const noexcept;
     inline real_t get_lateral_dynamic_friction() const noexcept;
 
-    static MaterialID find(const std::string& name) noexcept;
-    static std::vector<MaterialID> find_prefix(const std::string& prefix);
+    static MaterialID find(std::string const& name) noexcept;
+    static std::vector<MaterialID> find_prefix(std::string const& prefix);
     static inline const std::string& get_name(MaterialID material) noexcept;
     static inline real_t get_density(MaterialID material) noexcept;
     static inline real_t get_restitution(MaterialID material) noexcept;
@@ -435,11 +434,11 @@ namespace elastica {
 
     //**Friend declarations*****************************************************
     /*! \cond ELASTICA_INTERNAL */
-    friend MaterialID create_material(const std::string& name, real_t density,
+    friend MaterialID create_material(std::string const& name, real_t density,
                                       real_t cor, real_t young, real_t shear,
                                       real_t stiffness, real_t dampingN,
                                       real_t dampingT, real_t csf, real_t cdf);
-    friend MaterialID create_material(const std::string& name, real_t density,
+    friend MaterialID create_material(std::string const& name, real_t density,
                                       real_t cor, real_t young, real_t shear,
                                       real_t stiffness, real_t dampingN,
                                       real_t dampingT, real_t forward_csf,
@@ -1070,13 +1069,13 @@ namespace elastica {
     ELASTICA_ASSERT(material1 < materials_.size(), "Invalid material ID");
     ELASTICA_ASSERT(material2 < materials_.size(), "Invalid material ID");
 
-    const real_t nu1(get_poisson_ratio(material1));
-    const real_t nu2(get_poisson_ratio(material2));
-    const real_t y1(get_youngs_modulus(material1));
-    const real_t y2(get_youngs_modulus(material2));
+    real_t const nu1(get_poisson_ratio(material1));
+    real_t const nu2(get_poisson_ratio(material2));
+    real_t const y1(get_youngs_modulus(material1));
+    real_t const y2(get_youngs_modulus(material2));
 
-    const real_t tmp1(y2 * (real_t(1) - nu1 * nu1));
-    const real_t tmp2(y1 * (real_t(1) - nu2 * nu2));
+    real_t const tmp1(y2 * (real_t(1) - nu1 * nu1));
+    real_t const tmp2(y1 * (real_t(1) - nu2 * nu2));
 
     return ((y1 * y2) / (tmp1 + tmp2));
   }
@@ -1535,8 +1534,8 @@ namespace elastica {
       : Material("copper", static_cast<real_t>(8.92), static_cast<real_t>(0.5),
                  static_cast<real_t>(0.33), static_cast<real_t>(117),
                  Material::calculate_shear_modulus(117, 0.33),
-                 static_cast<real_t>(117), static_cast<real_t>(0),
-                 static_cast<real_t>(0), static_cast<real_t>(0.1),
+                 static_cast<real_t>(117), static_cast<real_t>(1e-10),
+                 static_cast<real_t>(1e-10), static_cast<real_t>(0.1),
                  static_cast<real_t>(0.1)) {
     static_assert(sizeof(Material) == sizeof(Copper), "Not same size");
   }
@@ -1606,8 +1605,8 @@ namespace elastica {
       : Material("granite", static_cast<real_t>(2.8), static_cast<real_t>(0.5),
                  static_cast<real_t>(0.25), static_cast<real_t>(55),
                  Material::calculate_shear_modulus(55, 0.25),
-                 static_cast<real_t>(55), static_cast<real_t>(0),
-                 static_cast<real_t>(0), static_cast<real_t>(0.1),
+                 static_cast<real_t>(55), static_cast<real_t>(1e-10),
+                 static_cast<real_t>(1e-10), static_cast<real_t>(0.1),
                  static_cast<real_t>(0.1)) {
     static_assert(sizeof(Material) == sizeof(Granite), "Not same size");
   }
@@ -1677,8 +1676,8 @@ namespace elastica {
       : Material("oak", static_cast<real_t>(0.8), static_cast<real_t>(0.5),
                  static_cast<real_t>(0.35), static_cast<real_t>(11),
                  Material::calculate_shear_modulus(11, 0.35),
-                 static_cast<real_t>(11), static_cast<real_t>(0),
-                 static_cast<real_t>(0), static_cast<real_t>(0.1),
+                 static_cast<real_t>(11), static_cast<real_t>(1e-10),
+                 static_cast<real_t>(1e-10), static_cast<real_t>(0.1),
                  static_cast<real_t>(0.1)) {
     static_assert(sizeof(Material) == sizeof(Oak), "Not same size");
   }
@@ -1748,8 +1747,8 @@ namespace elastica {
       : Material("fir", static_cast<real_t>(0.5), static_cast<real_t>(0.5),
                  static_cast<real_t>(0.34), static_cast<real_t>(13),
                  Material::calculate_shear_modulus(13, 0.34),
-                 static_cast<real_t>(13), static_cast<real_t>(0),
-                 static_cast<real_t>(0), static_cast<real_t>(0.1),
+                 static_cast<real_t>(13), static_cast<real_t>(1e-10),
+                 static_cast<real_t>(1e-10), static_cast<real_t>(0.1),
                  static_cast<real_t>(0.1)) {
     static_assert(sizeof(Material) == sizeof(Fir), "Not same size");
   }
@@ -1772,7 +1771,7 @@ namespace elastica {
    * - Density: \f$ 7.874 \frac{kg}{dm^3} \f$
    * - Restitution factor: 0.5
    */
-  const MaterialID iron = 0;
+  MaterialID const iron = 0;
   //****************************************************************************
 
   //****************************************************************************
@@ -1788,7 +1787,7 @@ namespace elastica {
    * - Coefficient of static friction: 0.1
    * - Coefficient of dynamic friction: 0.1
    */
-  const MaterialID copper = 1;
+  MaterialID const copper = 1;
   //****************************************************************************
 
   //****************************************************************************
@@ -1797,7 +1796,7 @@ namespace elastica {
    *
    * This material can be used to create granite rigid bodies.
    */
-  const MaterialID granite = 2;
+  MaterialID const granite = 2;
   //****************************************************************************
 
   //****************************************************************************
@@ -1806,7 +1805,7 @@ namespace elastica {
    *
    * This material can be used to create rigid bodies made from oak wood.
    */
-  const MaterialID oak = 3;
+  MaterialID const oak = 3;
   //****************************************************************************
 
   //****************************************************************************
@@ -1815,7 +1814,7 @@ namespace elastica {
    *
    * This material can be used to create rigid bodies made from fir wood.
    */
-  const MaterialID fir = 4;
+  MaterialID const fir = 4;
   //****************************************************************************
 
   //****************************************************************************
@@ -1826,7 +1825,7 @@ namespace elastica {
    * material with the specified name is returned. This value should not be used
    * to create rigid bodies or in any other function!
    */
-  const MaterialID invalid_material = static_cast<MaterialID>(-1);
+  MaterialID const invalid_material = static_cast<MaterialID>(-1);
   //****************************************************************************
 
   //============================================================================
@@ -1838,7 +1837,7 @@ namespace elastica {
   //****************************************************************************
   /*!\name Material functions */
   //@{
-  MaterialID create_material(const std::string& name, real_t density,
+  MaterialID create_material(std::string const& name, real_t density,
                              real_t cor, real_t young, real_t shear,
                              real_t stiffness, real_t dampingN, real_t dampingT,
                              real_t forward_csf, real_t backward_csf,
@@ -1850,7 +1849,7 @@ namespace elastica {
                              real_t backward_csf, real_t lateral_csf,
                              real_t forward_cdf, real_t backward_cdf,
                              real_t lateral_cdf);
-  MaterialID create_material(const std::string& name, real_t density,
+  MaterialID create_material(std::string const& name, real_t density,
                              real_t cor, real_t young, real_t shear,
                              real_t stiffness, real_t dampingN, real_t dampingT,
                              real_t csf, real_t cdf);

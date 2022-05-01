@@ -29,7 +29,7 @@ namespace {
   template <typename CRT, typename B>
   class TestElasticityModel
       : public elastica::CRTPHelper<B, TestElasticityModel>,
-        public Component<TestElasticityModel<CRT, B>> {
+        public ElasticityComponent<TestElasticityModel<CRT, B>> {
     using CRTP = elastica::CRTPHelper<B, TestElasticityModel>;
     using CRTP::self;
 
@@ -136,7 +136,9 @@ namespace {
         blocks::initialize<tags::BendingTwistRigidityMatrix>(
             [](...) { return 4.0; }),
         // Kinematics Variables
-        blocks::initialize<tags::Mass>([](...) { return 1.0; }),
+        // blocks::initialize<tags::Mass>([](...) { return 1.0; }),
+        blocks::initialize<tags::Material>(
+            [](...) { return ::elastica::iron; }),
         blocks::initialize<tags::Velocity>([](...) { return 0.0; }),
         blocks::initialize<tags::AngularVelocity>([](...) { return 0.0; }),
         blocks::initialize<tags::Acceleration>([](...) { return 0.0; }),
@@ -173,7 +175,9 @@ namespace {
         blocks::initialize<tags::TorqueDampingCoefficient>(
             [](...) { return 4.0; }),
         // Kinematics Variables
-        blocks::initialize<tags::Mass>([](...) { return 1.0; }),
+        // blocks::initialize<tags::Mass>([](...) { return 1.0; }),
+        blocks::initialize<tags::Material>(
+            [](...) { return ::elastica::iron; }),
         blocks::initialize<tags::Velocity>([](...) { return 0.0; }),
         blocks::initialize<tags::AngularVelocity>([](...) { return 0.0; }),
         blocks::initialize<tags::Acceleration>([](...) { return 0.0; }),

@@ -29,7 +29,7 @@ namespace tt {
   }  // namespace detail
 
   // @{
-  /// \ingroup TypeTraitsGroup
+  /// \ingroup type_traits_group
   /// \brief Get the size of a std::array as a std::integral_constant
   ///
   /// \details

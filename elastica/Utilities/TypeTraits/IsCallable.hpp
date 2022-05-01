@@ -31,7 +31,7 @@ namespace tt {
 
   //****************************************************************************
   /*!\brief Check if type `T` has a call operator
-  // \ingroup type_traits
+  // \ingroup type_traits_group
   //
   // \details
   // The is_callable type trait inherits from std::true_type if `T` has the
@@ -72,7 +72,7 @@ namespace tt {
   //****************************************************************************
   /*! \cond ELASTICA_INTERNAL */
   /*!\brief Specialization of is_callable for scenarios
-  // \ingroup type_traits
+  // \ingroup type_traits_group
   */
   template <typename T, typename U, typename... Args>
   struct is_callable<T(Args...), U> : std::true_type {};

@@ -1,4 +1,4 @@
-//=================================================================================================
+//==============================================================================
 /*!
  *  \file pe/core/detection/fine/EPA.h
  *  \brief The Expanding-Polytope Algorithm
@@ -28,30 +28,33 @@
  * code permitted the relicensing of the SOLID-3.5 library under the GPL version
  * 3 license.
  */
-//=================================================================================================
+//==============================================================================
 
 #pragma once
 
-//*************************************************************************************************
+//******************************************************************************
 // Includes
-//*************************************************************************************************
+//******************************************************************************
 
 #include <algorithm>
 #include <limits>
 #include <vector>
 
-#include "elastica/ErrorHandling/Assert.hpp"
-#include "elastica/Simulator/Environments/CollisionSystem/Detection/Fine/GJK.hpp"
-#include "elastica/Simulator/Thresholds.hpp"
-#include "elastica/Utilities/DefineTypes.h"
-#include "elastica/Utilities/Math/Accuracy.hpp"
-#include "elastica/Utilities/Math/Dot.hpp"
-#include "elastica/Utilities/Math/Length.hpp"
-#include "elastica/Utilities/Math/Normalize.hpp"
-#include "elastica/Utilities/Math/Rot3.hpp"
-#include "elastica/Utilities/Math/Rotations.hpp"
-#include "elastica/Utilities/Math/SqrLength.hpp"
-#include "elastica/Utilities/Math/Trans.hpp"
+#include "ErrorHandling/Assert.hpp"
+//
+//
+#include "Utilities/DefineTypes.h"
+#include "Utilities/Geometry/AxisAngleRotation.hpp"
+#include "Utilities/Math/Accuracy.hpp"
+#include "Utilities/Math/Dot.hpp"
+#include "Utilities/Math/Length.hpp"
+#include "Utilities/Math/Normalize.hpp"
+#include "Utilities/Math/Rot3.hpp"
+#include "Utilities/Math/SqrLength.hpp"
+#include "Utilities/Math/Trans.hpp"
+#include "Utilities/Thresholds.hpp"
+//
+#include "Simulator/Environments/CollisionSystem/Detection/Fine/GJK.hpp"
 
 //#include <pe/core/Thresholds.h>
 //#include <pe/core/detection/fine/GJK.h>
@@ -675,9 +678,9 @@ namespace elastica {
               Vec3 normal = normalize(current->getClosest());
 
               supportA.push_back(
-                  first_primitive.supportContactThreshold(normal));
+                  first_primitive.support_contact_threshold(normal));
               supportB.push_back(
-                  second_primitive.supportContactThreshold(-normal));
+                  second_primitive.support_contact_threshold(-normal));
               support = supportA.back() - supportB.back();
               epaVolume.push_back(support);
 
@@ -981,26 +984,33 @@ namespace elastica {
               Quat q(d, 2.0 / 3.0 * M_PI);
               Rot3 rot = q.toRotationMatrix();
               */
-              Rot3 rot(rotation_from_axis_angle(d, 2.0 / 3.0 * M_PI));
+              Rot3 rot(::elastica::geometry::detail::axis_angle_rotation_impl(
+                  d, 2.0 / 3.0 * M_PI));
 
               Vec3 direction2 = normalize(rot * direction1);
               Vec3 direction3 = normalize(rot * direction2);
 
               // add point in positive normal direction1
-              supportA.push_back(first_primitive.supportContactThreshold(direction1));
-              supportB.push_back(second_primitive.supportContactThreshold(-direction1));
+              supportA.push_back(
+                  first_primitive.support_contact_threshold(direction1));
+              supportB.push_back(
+                  second_primitive.support_contact_threshold(-direction1));
               Vec3 support1 = supportA.back() - supportB.back();
               epaVolume.push_back(support1);  // epaVolume[2]
 
               // add point in negative normal direction2
-              supportA.push_back(first_primitive.supportContactThreshold(direction2));
-              supportB.push_back(second_primitive.supportContactThreshold(-direction2));
+              supportA.push_back(
+                  first_primitive.support_contact_threshold(direction2));
+              supportB.push_back(
+                  second_primitive.support_contact_threshold(-direction2));
               Vec3 support2 = supportA.back() - supportB.back();
               epaVolume.push_back(support2);  // epaVolume[3]
 
               // add point in negative normal direction3
-              supportA.push_back(first_primitive.supportContactThreshold(direction3));
-              supportB.push_back(second_primitive.supportContactThreshold(-direction3));
+              supportA.push_back(
+                  first_primitive.support_contact_threshold(direction3));
+              supportB.push_back(
+                  second_primitive.support_contact_threshold(-direction3));
               Vec3 support3 = supportA.back() - supportB.back();
               epaVolume.push_back(support3);  // epaVolume[4]
 
@@ -1071,14 +1081,18 @@ namespace elastica {
               const Vec3 ABC = normalize(AB % AC);
 
               // add point in positive normal direction
-              supportA.push_back(first_primitive.supportContactThreshold(ABC));
-              supportB.push_back(second_primitive.supportContactThreshold(-ABC));
+              supportA.push_back(
+                  first_primitive.support_contact_threshold(ABC));
+              supportB.push_back(
+                  second_primitive.support_contact_threshold(-ABC));
               Vec3 support1 = supportA.back() - supportB.back();
               epaVolume.push_back(support1);  // epaVolume[3]
 
               // add point in negative normal direction
-              supportA.push_back(first_primitive.supportContactThreshold(-ABC));
-              supportB.push_back(second_primitive.supportContactThreshold(ABC));
+              supportA.push_back(
+                  first_primitive.support_contact_threshold(-ABC));
+              supportB.push_back(
+                  second_primitive.support_contact_threshold(ABC));
               Vec3 support2 = supportA.back() - supportB.back();
               epaVolume.push_back(support2);  // epaVolume[4]
 

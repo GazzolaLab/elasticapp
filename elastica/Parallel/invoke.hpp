@@ -1,7 +1,7 @@
 //==============================================================================
 /*!
 //  \file
-//  \brief parallel invoke
+//  \brief Invoke a collection of functions in parallel
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
@@ -50,9 +50,21 @@ namespace elastica {
     }  // namespace detail
 
     //**************************************************************************
-    /* \brief Executes a list of tasks in parallel and waits for all tasks to
-     * complete.
+    /*!\brief Executes a list of functions in parallel
      * \ingroup parallel
+     *
+     * \details
+     * The functions are prescribed as parallel tasks to a runtime engine if
+     * \elastica is complied with requested parallelism. The function blocks
+     * until for all tasks are completed.
+     *
+     * \example
+     * \code
+     * auto f1 = [i = 0]() mutable { i *= 2; };
+     * auto f2 = [j = 1]() mutable { j -= 1; };
+     * auto f3 = [x = 2]() mutable { x += 2; };
+     * elastica::parallel::invoke(f1, f2, f3);
+     * \endcode
      *
      * \param funcs functions to execute in parallel
      */

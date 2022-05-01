@@ -42,11 +42,17 @@ namespace {
     const std::size_t dummy_index = 0UL;
 
     constexpr std::size_t nelement_initializer = 0UL;
-    constexpr std::size_t bend_twist_initializer = 1UL;
-    constexpr std::size_t shear_stretch_initializer = 2UL;
+    constexpr std::size_t material_initializer = 1UL;
+    constexpr std::size_t bend_twist_initializer = 2UL;
+    constexpr std::size_t shear_stretch_initializer = 3UL;
 
     CHECK(std::get<nelement_initializer>(required_params).get()(dummy_index) ==
           20UL);
+    static_assert(cpp17::is_same_v<decltype(std::get<material_initializer>(
+                                                required_params)
+                                                .get()(dummy_index)),
+                                   ::elastica::MaterialID>,
+                  "Failure");
     static_assert(cpp17::is_same_v<decltype(std::get<bend_twist_initializer>(
                                                 required_params)
                                                 .get()(dummy_index)),
@@ -96,13 +102,16 @@ namespace {
     const std::size_t dummy_index = 0UL;
 
     constexpr std::size_t nelement_initializer = 0UL;
-    constexpr std::size_t bend_twist_initializer = 1UL;
-    constexpr std::size_t shear_stretch_initializer = 2UL;
-    constexpr std::size_t force_damping_initializer = 3UL;
-    constexpr std::size_t torque_damping_initializer = 4UL;
+    constexpr std::size_t material_initializer = 1UL;
+    constexpr std::size_t bend_twist_initializer = 2UL;
+    constexpr std::size_t shear_stretch_initializer = 3UL;
+    constexpr std::size_t force_damping_initializer = 4UL;
+    constexpr std::size_t torque_damping_initializer = 5UL;
 
     CHECK(std::get<nelement_initializer>(required_params).get()(dummy_index) ==
           20UL);
+    CHECK(std::get<material_initializer>(required_params).get()(dummy_index) ==
+          ::elastica::iron);
     static_assert(cpp17::is_same_v<decltype(std::get<bend_twist_initializer>(
                                                 required_params)
                                                 .get()(dummy_index)),
@@ -131,12 +140,13 @@ namespace {
       // a tuple of functions depending on index
       CHECK_THROWS(initializer.get_required_parameters());
     }
-    SECTION("Torque damping not properly initialized"){
+    SECTION("Torque damping not properly initialized") {
       TestLinearHyperElasticModelWithDamping initializer{
           TestLinearHyperElasticModelWithDamping::NElement{20UL},
           TestLinearHyperElasticModelWithDamping::Material{::elastica::iron},
           TestLinearHyperElasticModelWithDamping::ForceDampingCoefficient{0.2},
-          TestLinearHyperElasticModelWithDamping::TorqueDampingCoefficient{-0.3},
+          TestLinearHyperElasticModelWithDamping::TorqueDampingCoefficient{
+              -0.3},
       };
 
       // a tuple of functions depending on index

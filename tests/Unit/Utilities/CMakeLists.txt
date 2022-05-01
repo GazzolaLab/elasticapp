@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
         Test_AsConst.cpp
         Test_AsTaggedTuple.cpp
         Test_Clamp.cpp
+        Test_CountingIterator.cpp
         Test_CRTP.cpp
         Test_Defer.cpp
         Test_End.cpp

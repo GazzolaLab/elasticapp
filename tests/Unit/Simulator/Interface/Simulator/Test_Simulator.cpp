@@ -200,6 +200,10 @@ namespace {
     using PreDynamicUpdateSteps = tmpl::list<PreDynamicUpdateStep>;
     //! Algorithms to be carried out after the dynamic update step
     using PostDynamicUpdateSteps = tmpl::list<PostDynamicUpdateStep>;
+    //! Algorithms after update
+    using UpdateSteps = tmpl::list<>;
+    //!
+    using SubModules = tmpl::list<>;
   };
 
   template <class SimTraits, class Sim>

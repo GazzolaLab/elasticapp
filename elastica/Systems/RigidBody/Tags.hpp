@@ -1,3 +1,22 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Access tags of @ref rigid_body
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
 
-#include "elastica/Systems/RigidBody/Tags/SphereCollectionTag.hpp"
+//******************************************************************************
+// Includes
+//******************************************************************************
+
+#include "Systems/CosseratRods/Components/Tags.hpp"  // for n_elements
+#include "Systems/RigidBody/Components/Tags.hpp"
+#include "Systems/RigidBody/Sphere/Tags.hpp"

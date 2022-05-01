@@ -38,8 +38,8 @@ namespace elastica {
 
   //****************************************************************************
   /*!\defgroup named_type Named Types
-   *
-   * Named types in \elastica
+   * \ingroup utils
+   * \brief Utilities to stamp out named types in \elastica
    */
   //****************************************************************************
 

@@ -5,12 +5,12 @@
 
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Configuration.hpp"
-#include "Simulator/Interface/Simulator/Profiling.hpp"
 #include "Simulator/Interface/Systems/Mocks.hpp"
 #include "Simulator/Interface/Systems/Module.hpp"
 #include "Simulator/Interface/TimeSteppers/SymplecticSteppers.hpp"
+#include "Simulator/Utilities/Timers.hpp"
 #include "Systems/Block.hpp"
-#include "Systems/CosseratRods/CosseratRods.hpp"
+#include "Systems/CosseratRods.hpp"  // have access here so that external loads are qualified
 #include "Systems/CosseratRods/Mocks/CosseratRodTraits.hpp"
 #include "Time/Protocols.hpp"
 #include "Time/SimulationTime.hpp"
@@ -34,6 +34,11 @@ namespace {
     }
   };
 
+  struct Assignable {
+    template <typename T>
+    void operator=(T) {}
+  };
+
   // copied from Test_Module, with some changes
   template <typename, typename>
   struct EmptyComponent {
@@ -53,6 +58,12 @@ namespace {
 
     void compute_internal_dynamics(::elastica::Time) { /* no-op*/
     }
+
+    /* For conformance with external_loads and torques*/
+    auto get_external_loads() & { return Assignable{}; }
+    auto get_external_loads() const& { return Assignable{}; }
+    auto get_external_torques() & { return Assignable{}; }
+    auto get_external_torques() const& { return Assignable{}; }
   };
 
   template <typename, typename>
@@ -72,6 +83,12 @@ namespace {
 
     void compute_internal_dynamics(::elastica::Time) { /* no-op*/
     }
+
+    /* For conformance with external_loads and torques*/
+    auto get_external_loads() & { return Assignable{}; }
+    auto get_external_loads() const& { return Assignable{}; }
+    auto get_external_torques() & { return Assignable{}; }
+    auto get_external_torques() const& { return Assignable{}; }
   };
 
   // to test for_each() over a subset of systems
@@ -92,6 +109,12 @@ namespace {
 
     void compute_internal_dynamics(::elastica::Time) { /* no-op*/
     }
+
+    /* For conformance with external_loads and torques*/
+    auto get_external_loads() & { return Assignable{}; }
+    auto get_external_loads() const& { return Assignable{}; }
+    auto get_external_torques() & { return Assignable{}; }
+    auto get_external_torques() const& { return Assignable{}; }
   };
 
 }  // namespace
@@ -135,14 +158,8 @@ namespace mock {
     static constexpr std::size_t n_algorithms =
         tmpl::size<AlgorithmSteps>::value;
 
-    template <typename T>
-    struct Transform {
-      using type = ::elastica::interface::tags::WcProfilerTag<T>;
-    };
-    //! Tags for timers profiling the code
-    using TimerTags = tmpl::transform<AlgorithmSteps, Transform<tmpl::_1>>;
     //! Cache for timers for profiling the code
-    using Timers = tmpl::as_tagged_tuple<TimerTags>;
+    using Timers = ::elastica::Timers<AlgorithmSteps>;
 
     ////////////  This piece of code is copy-pasted yo
 
@@ -217,9 +234,15 @@ reorganizing your code logic.
     //************************************************************************
 
     template <typename AlgorithmTag>
-    inline constexpr decltype(auto) get_timer() const noexcept {
-      using Tag = typename Transform<AlgorithmTag>::type;
-      return tuples::get<Tag>(timers_);
+    inline constexpr decltype(auto) get_timer() & noexcept {
+      using ::elastica::get_meter;
+      return get_meter<AlgorithmTag>(timers_);
+    }
+
+    template <typename AlgorithmTag>
+    inline constexpr decltype(auto) get_timer() const& noexcept {
+      using ::elastica::get_meter;
+      return get_meter<AlgorithmTag>(timers_);
     }
 
    public:

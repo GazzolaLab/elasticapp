@@ -29,6 +29,7 @@
 
 //#include <pe/math/Vector3.h>
 //#include <pe/util/Limits.h>
+#include <iostream>  //for error message
 #include <vector>
 
 #include "elastica/ErrorHandling/Assert.hpp"
@@ -77,7 +78,7 @@ namespace elastica {
 
           template <typename FirstPrimitive, typename SecondPrimitive>
           inline bool do_contact_threshold(FirstPrimitive& first_primitive,
-                                            SecondPrimitive& second_primitive);
+                                           SecondPrimitive& second_primitive);
 
           //@}
           //**********************************************************************************************
@@ -290,8 +291,8 @@ namespace elastica {
           if (numPoints_ != 0) {
             d_ = normalize(d_);
           }
-          supportA_[0] = first_primitive.supportContactThreshold(d_);
-          supportB_[0] = second_primitive.supportContactThreshold(-d_);
+          supportA_[0] = first_primitive.support_contact_threshold(d_);
+          supportB_[0] = second_primitive.support_contact_threshold(-d_);
           support = supportA_[0] - supportB_[0];
 
           // add this point to the simplex_
@@ -318,9 +319,10 @@ namespace elastica {
           while (true) {
             // get the support point in the current search direction
             d_ = normalize(d_);
-            supportA_[numPoints_] = first_primitive.supportContactThreshold(d_);
+            supportA_[numPoints_] =
+                first_primitive.support_contact_threshold(d_);
             supportB_[numPoints_] =
-                second_primitive.supportContactThreshold(-d_);
+                second_primitive.support_contact_threshold(-d_);
             support = supportA_[numPoints_] - supportB_[numPoints_];
 
             // check if "support" is passed the origin in search direction
@@ -1035,7 +1037,7 @@ namespace elastica {
 
                     numPoints_ = 3;
 
-                    numPoints_ = 3;
+                    // numPoints_ = 3;
                     d = ADB;
                   }
                 }

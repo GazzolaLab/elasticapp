@@ -28,7 +28,8 @@ namespace tt {
 
   //****************************************************************************
   /*!\brief Check whether a given type `Derived` is derived from
-   * 'CRTPBaseTemplate' using the CRTP pattern \ingroup type_traits
+   * 'CRTPBaseTemplate' using the CRTP pattern
+   * \ingroup type_traits_group
    *
    * \details
    * Inherits from std::true_type if `Derived` is derived from

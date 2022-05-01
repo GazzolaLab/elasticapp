@@ -1,78 +1,59 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Tag to create a collision engine
+//
+//  Copyright (C) 2020-2022 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
 
-#include <string>
+//******************************************************************************
+// Includes
+//******************************************************************************
+#include <utility>  // true type
 
-#include "Configuration.hpp"
-#include "elastica/Utilities/Timing.h"
-#include "elastica/Utilities/MemoryMeter.hpp"
+#include "Simulator/Environments/CollisionSystem/Types.hpp"
+//
+#include "Simulator/Environments/CollisionSystem/Configuration.hpp"
+#include "Simulator/Environments/Protocols.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 
 namespace elastica {
 
-  namespace collision {
-
-    // Forward declare collision system
-    template <class SimulatorConfig,
-              class CollisionConfig>  // Type of the configuration
-    class CollisionSystem;
+  namespace environments {
 
     namespace tags {
 
-      // TODO : Type trait adherence to have a type member
-      // Usage
-      struct CollisionDetectionTag {
+      //========================================================================
+      //
+      //  CLASS DEFINITION
+      //
+      //========================================================================
+
+      //************************************************************************
+      /*!\brief Tag for marking a collision engine over systems
+       * \ingroup environments
+       */
+      struct CollisionSystemTag
+          : public ::tt::ConformsTo<
+                ::elastica::environments::protocols::EnvironmentTag> {
+        //! Does environment need primitives?
+        using requires_primitives = std::true_type;
+
         template <typename SimulatorConfig>
-        using type =
-            CollisionSystem<SimulatorConfig, collision::CollisionConfig>;
+        using type = elastica::collision::CollisionSystem<
+            SimulatorConfig, elastica::collision::CollisionConfig>;
       };
-
-      // These are for internal use and is not exposed in environment tags
-
-      struct CollisionDetectionElapsedTimeTag : timing::tags::WcTimerTag {
-        // TODO
-        //    Annoying fix because our current Tagged Tuple implementation
-        //    needs data_type instead of type
-        using data_type = typename timing::tags::WcTimerTag::type;
-        static std::string name() noexcept { return "Collision Detection Time"; }
-      };
-
-      struct CollisionResponseElapsedTimeTag : timing::tags::WcTimerTag {
-        using data_type = typename timing::tags::WcTimerTag::type;
-        static std::string name() noexcept { return "Collision Response Time "; }
-      };
-
-      struct TransferIntoElapsedTimeTag : timing::tags::WcTimerTag {
-        using data_type = typename timing::tags::WcTimerTag::type;
-        static std::string name() noexcept { return "Transfer into CD Time   "; }
-      };
-
-      struct TransferOutOfElapsedTimeTag : timing::tags::WcTimerTag {
-        using data_type = typename timing::tags::WcTimerTag::type;
-        static std::string name() noexcept { return "Transfer out of CD Time "; }
-      };
-
-      struct TotalElapsedTimeTag : timing::tags::WcTimerTag {
-        using data_type = typename timing::tags::WcTimerTag::type;
-        static std::string name() noexcept { return "Total time for CD       "; }
-      };
-
-      struct CollisionDetectionMemoryTag : ::elastica::tags::MemoryMeterTag {
-        // TODO
-        //    Annoying fix because our current Tagged Tuple implementation
-        //    needs data_type instead of type
-        using data_type = typename ::elastica::tags::MemoryMeterTag::type;
-        static std::string name() noexcept { return "Collision Detection Mem."; }
-      };
-
-      struct CollisionResponseMemoryTag : ::elastica::tags::MemoryMeterTag{
-        // TODO
-        //    Annoying fix because our current Tagged Tuple implementation
-        //    needs data_type instead of type
-        using data_type = typename ::elastica::tags::MemoryMeterTag::type;
-        static std::string name() noexcept { return "Collision Response Mem. "; }
-      };
+      //************************************************************************
 
     }  // namespace tags
 
-  }  // namespace collision
+  }  // namespace environments
 
 }  // namespace elastica

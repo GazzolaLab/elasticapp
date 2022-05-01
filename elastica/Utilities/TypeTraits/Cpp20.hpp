@@ -20,7 +20,7 @@
 
 namespace cpp20 {
 
-  /// \ingroup TypeTraitsGroup
+  /// \ingroup type_traits_group
   /// \brief Given a type T, removes reference and cv-qualifiers
   ///
   /// \details

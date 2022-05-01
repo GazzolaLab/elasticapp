@@ -34,7 +34,6 @@
 #include "Simulator/Domain/Domain.hpp"
 /// Interface methods
 #include "Simulator/Interface/Simulator/Configuration.hpp"
-#include "Simulator/Interface/Simulator/Profiling.hpp"
 #include "Simulator/Interface/Systems/Module.hpp"
 #if (ELASTICA_EXPLICIT_STEPPER)
 #include "Simulator/Interface/TimeSteppers/ExplicitSteppers.hpp"
@@ -46,6 +45,9 @@
 /// Serialization support
 #include "Simulator/Configuration/TypeTraits/Aliases.hpp"
 #include "Simulator/IO/Serialization/Types.hpp"
+//
+#include "Simulator/Utilities/MemoryMeters.hpp"
+#include "Simulator/Utilities/Timers.hpp"
 ///
 #include "ErrorHandling/NestedExceptions.hpp"
 /// Utilities
@@ -287,7 +289,9 @@ namespace elastica {
       using PostDynamicUpdateSteps = tmpl::append<
           typename Modules<SimTraits, This>::PostDynamicUpdateSteps...>;
       //! Update steps over the systems
-      using typename SystemsModule::UpdateSteps;
+      using UpdateSteps =
+          tmpl::append<typename SystemsModule::UpdateSteps,
+                       typename Modules<SimTraits, This>::UpdateSteps...>;
       //! Get all algorithm steps
       using AlgorithmSteps =
           tmpl::append<UpdateSteps, PostKinematicUpdateSteps,
@@ -314,14 +318,21 @@ namespace elastica {
       //************************************************************************
       /*!\name Profiler type definitions */
       //@{
-      template <typename T>
-      struct Transform {
-        using type = tags::WcProfilerTag<T>;
-      };
-      //! Tags for timers profiling the code
-      using TimerTags = tmpl::transform<AlgorithmSteps, Transform<tmpl::_1>>;
       //! Cache for timers for profiling the code
-      using Timers = tmpl::as_tagged_tuple<TimerTags>;
+      using Timers = ::elastica::Timers<AlgorithmSteps>;
+      //! Cache of intrusive memory meters
+      using MemoryMeters = ::elastica::MemoryMeters<AlgorithmSteps>;
+      //@}
+      //************************************************************************
+
+      //************************************************************************
+      /*!\name Submodules type definitions */
+      //@{
+      using SubModules =
+          tmpl::append<tmpl::list<SystemsModule>,  // so that even if there are
+                                                   // no submodules friendship
+                                                   // is declared with systems
+                       typename Modules<SimTraits, This>::SubModules...>;
       //@}
       //************************************************************************
 
@@ -379,6 +390,14 @@ namespace elastica {
       REPEAT_8(FRIEND, 0UL)
 
 #undef FRIEND
+
+#define FRIEND(N) \
+  friend tmpl::at_c<SubModules, std::min(N, tmpl::size<SubModules>::value - 1)>;
+      // Declare friendship with each requested submodule so that they have
+      // access to private get<> functions
+      REPEAT_8(FRIEND, 0U)
+#undef FRIEND
+
 #undef REPEAT_8
 #undef REPEAT_4
 #undef REPEAT_2
@@ -443,7 +462,7 @@ namespace elastica {
       }
       //************************************************************************
 
-     protected:
+     public:
       //************************************************************************
       /*!\brief Access to the domain value, useful for serialization
        */
@@ -565,7 +584,7 @@ reorganizing your code logic.
       //@}
       //************************************************************************
 
-     protected:
+     public:
       //**Integration methods***************************************************
       /*!\name Temporal integration methods*/
       //@{
@@ -610,6 +629,68 @@ reorganizing your code logic.
         return tuples::get<BatchingAlgorithmTag>(batching_algorithms());
       }
       //************************************************************************
+     protected:
+      //************************************************************************
+      template <typename Step>
+      void prologue() /*const*/ noexcept {
+        using namespace ::elastica::logging;
+
+        log<debug>([](auto const& log) {
+          log << "Performing " + ::pretty_type::short_name<Step>() + " ...\n";
+        });
+
+        ELASTICA_PROFILING_SECTION {
+          get_timer<Step>().start();
+          get_memory_meter<Step>().start();
+        }
+      };
+      //************************************************************************
+
+      //************************************************************************
+      template <typename Step>
+      void epilogue() /*const*/ noexcept {
+        using namespace ::elastica::logging;
+
+        ELASTICA_PROFILING_SECTION {
+          get_timer<Step>().stop();
+          get_timer<Step>().stop();
+        }
+
+        log<debug>([](auto const& log) {
+          log << "Finished " + ::pretty_type::short_name<Step>() + " ...\n";
+        });
+      };
+      //************************************************************************
+
+     public:
+      //************************************************************************
+      /*!\brief Perform an algorithmic step without additional book-keeping for
+       * time taken/memory used
+       *
+       * \note
+       * We need strong exception safety guarantee from all algorithms here.
+       */
+      template <typename Step, typename... Args>
+      void perform_without_instrumentation(
+          Args&&... args) /* const */ noexcept {
+        tuples::get<Step>(algorithms())(std::forward<Args>(args)...);
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Perform an algorithmic step while recording time take/memory
+       * used
+       *
+       * \note
+       * We need strong exception safety guarantee from all algorithms here.
+       */
+      template <typename Step, typename... Args>
+      void perform(Args&&... args) /* const */ noexcept {
+        prologue<Step>();
+        perform_without_instrumentation<Step>(std::forward<Args>(args)...);
+        epilogue<Step>();
+      }
+      //************************************************************************
 
       //************************************************************************
       /*!\brief Apply algorithmic updates across modules occurring after the
@@ -621,21 +702,10 @@ reorganizing your code logic.
        * \param time_v Time of simulation
        * \return void
        */
-      inline auto apply_post_kinematic_updates(TimeType time_v) const noexcept
-          -> void {
-        // if no profiling this is fine
-        // tuples::apply<PostKinematicUpdateSteps>(
-        //     [=](auto const&... post_kinematic_updates) {
-        //       EXPAND_PACK_LEFT_TO_RIGHT(post_kinematic_updates(time_v));
-        //     },
-        //     algorithms());
-
-        // else do this
+      inline auto apply_post_kinematic_updates(
+          TimeType time_v) /*const*/ noexcept -> void {
         tmpl::for_each<PostKinematicUpdateSteps>([this, time_v](auto update) {
-          using UpdateStep = tmpl::type_from<decltype(update)>;
-          ELASTICA_PROFILING_SECTION { get_timer<UpdateStep>().start(); }
-          tuples::get<UpdateStep>(algorithms())(time_v);
-          ELASTICA_PROFILING_SECTION { get_timer<UpdateStep>().stop(); }
+          perform<tmpl::type_from<decltype(update)>>(time_v);
         });
       }
       //************************************************************************
@@ -650,19 +720,10 @@ reorganizing your code logic.
        * \param time_v Time of simulation
        * \return void
        */
-      inline auto apply_pre_dynamic_updates(TimeType time_v) const noexcept
+      inline auto apply_pre_dynamic_updates(TimeType time_v) /*const*/ noexcept
           -> void {
-        // tuples::apply<PreDynamicUpdateSteps>(
-        //     [=](auto const&... pre_dynamic_updates) {
-        //       EXPAND_PACK_LEFT_TO_RIGHT(pre_dynamic_updates(time_v));
-        //     },
-        //     algorithms());
-
         tmpl::for_each<PreDynamicUpdateSteps>([this, time_v](auto update) {
-          using UpdateStep = tmpl::type_from<decltype(update)>;
-          ELASTICA_PROFILING_SECTION { get_timer<UpdateStep>().start(); }
-          tuples::get<UpdateStep>(algorithms())(time_v);
-          ELASTICA_PROFILING_SECTION { get_timer<UpdateStep>().stop(); }
+          perform<tmpl::type_from<decltype(update)>>(time_v);
         });
       }
       //************************************************************************
@@ -677,19 +738,10 @@ reorganizing your code logic.
        * \param time_v Time of simulation
        * \return void
        */
-      inline auto apply_post_dynamic_updates(TimeType time_v) const noexcept
+      inline auto apply_post_dynamic_updates(TimeType time_v) /*const*/ noexcept
           -> void {
-        // tuples::apply<PostDynamicUpdateSteps>(
-        //     [=](auto const&... post_dynamic_updates) {
-        //       EXPAND_PACK_LEFT_TO_RIGHT(post_dynamic_updates(time_v));
-        //     },
-        //     algorithms());
-
         tmpl::for_each<PostDynamicUpdateSteps>([this, time_v](auto update) {
-          using UpdateStep = tmpl::type_from<decltype(update)>;
-          ELASTICA_PROFILING_SECTION { get_timer<UpdateStep>().start(); }
-          tuples::get<UpdateStep>(algorithms())(time_v);
-          ELASTICA_PROFILING_SECTION { get_timer<UpdateStep>().stop(); }
+          perform<tmpl::type_from<decltype(update)>>(time_v);
         });
       }
       //************************************************************************
@@ -703,7 +755,7 @@ reorganizing your code logic.
        * \param time_v Time of simulation
        * \return void
        */
-      inline auto apply_updates(TimeType time_v) const noexcept -> void {
+      inline auto apply_updates(TimeType time_v) /*const*/ noexcept -> void {
         apply_post_kinematic_updates(time_v);
         apply_pre_dynamic_updates(time_v);
         apply_post_dynamic_updates(time_v);
@@ -713,22 +765,78 @@ reorganizing your code logic.
       //@}
       //************************************************************************
 
-     protected:
+     public:  // For access to modules such as with primitives
       //**Profiling methods*****************************************************
       /*!\name Profiling methods*/
       //@{
 
       //************************************************************************
+      /*!\name Timer functions */
+      //@{
+      /*!\brief Gets the registered timers.
+       */
+      inline constexpr auto timers() & noexcept -> Timers& { return timers_; }
+      inline constexpr auto timers() const& noexcept -> Timers const& {
+        return timers_;
+      }
+      //@}
+      //************************************************************************
+
+      //************************************************************************
+      /*!\name Timer functions */
+      //@{
       /*!\brief Get a timer corresponding to an algorithm
        *
        * \tparam AlgorithmTag Tag for obtaining the algorithm
        * \return Algorithm callable
        */
       template <typename AlgorithmTag>
-      inline constexpr decltype(auto) get_timer() const noexcept {
-        using Tag = typename Transform<AlgorithmTag>::type;
-        return tuples::get<Tag>(timers_);
+      inline constexpr decltype(auto) get_timer() & noexcept {
+        using ::elastica::get_meter;
+        return get_meter<AlgorithmTag>(timers());
       }
+      template <typename AlgorithmTag>
+      inline constexpr decltype(auto) get_timer() const& noexcept {
+        using ::elastica::get_meter;
+        return get_meter<AlgorithmTag>(timers());
+      }
+      //@}
+      //************************************************************************
+
+      //************************************************************************
+      /*!\name Memory meter functions */
+      //@{
+      /*!\brief Gets the registered memory meters
+       */
+      inline constexpr auto memory_meters() & noexcept -> MemoryMeters& {
+        return memory_meters_;
+      }
+      inline constexpr auto memory_meters() const& noexcept
+          -> MemoryMeters const& {
+        return memory_meters_;
+      }
+      //@}
+      //************************************************************************
+
+      //************************************************************************
+      /*!\name Memory meter functions */
+      //@{
+      /*!\brief Get a memory meter corresponding to an algorithm
+       *
+       * \tparam AlgorithmTag Tag for obtaining the algorithm
+       * \return Algorithm callable
+       */
+      template <typename AlgorithmTag>
+      inline constexpr decltype(auto) get_memory_meter() & noexcept {
+        using ::elastica::get_meter;
+        return get_meter<AlgorithmTag>(memory_meters());
+      }
+      template <typename AlgorithmTag>
+      inline constexpr decltype(auto) get_memory_meter() const& noexcept {
+        using ::elastica::get_meter;
+        return get_meter<AlgorithmTag>(memory_meters());
+      }
+      //@}
       //************************************************************************
 
      public:
@@ -739,6 +847,7 @@ reorganizing your code logic.
        * \return os
        */
       inline void stream_profiling_summary_to(std::ostream& os) const {
+        /*
         ELASTICA_PROFILING_SECTION {
           constexpr std::size_t n_timers = tmpl::size<Timers>::value;
           std::array<double, n_timers> minValues, maxValues, totalValues;
@@ -799,6 +908,7 @@ reorganizing your code logic.
             EXPAND_PACK_LEFT_TO_RIGHT(pretty_printer(Is));
           });
         }
+         */
       }
       //************************************************************************
 
@@ -1056,6 +1166,7 @@ reorganizing your code logic.
             batching_algorithms_(nullptr),
             domain_(nullptr),
             timers_(),
+            memory_meters_(),
             ready_for_integration_(false) {
         using namespace ::elastica::logging;
         log<info>([](auto const& log) {
@@ -1086,6 +1197,12 @@ reorganizing your code logic.
           EXPAND_PACK_LEFT_TO_RIGHT(
               Modules<SimTraits, This>::reset_module(time_v));
           ready_for_integration_ = false;
+
+          // tuples::apply() is const
+          using ::elastica::for_each;
+          for_each(timers(), [](auto& meter) { meter.reset(); });
+          for_each(memory_meters(), [](auto& meter) { meter.reset(); });
+
         } catch (...) {
           const char* error_message =
               "Resetting the simulator for temporal integration failed "
@@ -1114,7 +1231,9 @@ reorganizing your code logic.
       //! Handle to a domain object
       std::unique_ptr<DomainType const> domain_;
       //! Timer caches
-      mutable Timers timers_;
+      Timers timers_;
+      //! Memory meter caches
+      MemoryMeters memory_meters_;
       //! State of simulation finalization
       bool ready_for_integration_;
       //************************************************************************

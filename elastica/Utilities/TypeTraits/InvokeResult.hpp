@@ -89,8 +89,8 @@ namespace cpp17 {
       struct invoke_result<decltype(void(detail::INVOKE(
                                std::declval<F>(), std::declval<Args>()...))),
                            F, Args...> {
-        using type = decltype(
-            detail::INVOKE(std::declval<F>(), std::declval<Args>()...));
+        using type = decltype(detail::INVOKE(std::declval<F>(),
+                                             std::declval<Args>()...));
       };
       /*! \endcond */
       //************************************************************************
@@ -104,7 +104,7 @@ namespace cpp17 {
 
     //**************************************************************************
     /*!\brief Get result of invocation for type `F` with `Args`
-    // \ingroup type_traits
+    // \ingroup type_traits_group
     //
     // \details
     // The invoke_result type trait has a nested member `type` when
@@ -129,7 +129,7 @@ namespace cpp17 {
 
     //**************************************************************************
     /*!\brief Eager result of invocation for type `F` with `Args`
-    // \ingroup type_traits
+    // \ingroup type_traits_group
     //
     // \details
     // The invoke_result_t type trait is a helper template to obtain the nested

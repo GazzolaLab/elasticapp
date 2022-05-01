@@ -176,8 +176,8 @@ namespace blocks {
         return index_to_be_sliced;
       } else {
         throw std::out_of_range(
-            "Index to be sliced exceeds the number of rods inside a Cosserat "
-            "rod block!");
+            "Index to be sliced exceeds the number of dofs inside a Cosserat "
+            "rod blockslice!");
       }
     }
     inline auto check(elastica::from_end index_to_be_sliced) const
@@ -190,8 +190,8 @@ namespace blocks {
         return max_index - fe;
       } else {
         throw std::out_of_range(
-            "Index to be sliced from the end exceeds the number of rods inside "
-            "a Cosserat rod block!");
+            "Index to be sliced from the end exceeds the number of dogs inside "
+            "a Cosserat rod blocksize!");
       }
     };
     //**************************************************************************

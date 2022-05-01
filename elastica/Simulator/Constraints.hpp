@@ -36,10 +36,9 @@
 
 //******************************************************************************
 /*!\defgroup constraints Constraints
+ * \brief Implementation of constraints (i.e . boundary conditions) imposing
+ * degrees of freedom of an \elastica entity (such as rods, rigid bodies etc.).
  *
- * The constraints module contains implementations of different constraints (i.e
- * . boundary conditions) reducing/imposing various degrees of freedom of an
- * \elastica entity (such as rods, rigid bodies etc.).
  */
 //******************************************************************************
 

@@ -31,17 +31,19 @@
 
 //******************************************************************************
 /*!\defgroup logging Logging
- *
- * The logging module contains a lightweight logger (without additional fluff)
+ * \ingroup utils
+ * \brief Contains a lightweight logger, without too much fluff
  */
 //******************************************************************************
 
 namespace elastica {
 
+  //****************************************************************************
   /*!\brief Logging utilities
    * \ingroup logging
    */
   namespace logging {}
+  //****************************************************************************
 
 }  // namespace elastica
 

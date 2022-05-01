@@ -20,6 +20,7 @@
 
 ///
 #include "Simulator/Configuration/ModuleConfiguration/ExecutionPolicy.hpp"
+#include "Simulator/Interface/Affordances/detail/EmptyUpdateSteps.hpp"
 #include "Simulator/Interface/Connections/Types.hpp"
 ///
 #include "Utilities/CRTP.hpp"
@@ -58,7 +59,10 @@ namespace elastica {
        */
       template <class ConnectionsTraits, class ConnectionsModule>
       class ExecutionPolicy
-          : public CRTPHelper<ConnectionsModule, ExecutionPolicy> {
+          : public CRTPHelper<ConnectionsModule, ExecutionPolicy>,
+            public ::elastica::modules::detail::EmptyUpdateSteps<
+                ConnectionsTraits,
+                ExecutionPolicy<ConnectionsTraits, ConnectionsModule>> {
        private:
         //**Type definitions****************************************************
         //! CRTP Type
@@ -269,9 +273,9 @@ namespace elastica {
           //**Info method*******************************************************
           static std::string info(
               ConnectionsModule const& module_handle) noexcept {
-            return std::string(MakeString{}
-                               << "--Apply " << module_handle.n_connections()
-                               << " connections\n");
+            return std::string(MakeString{} << "--Apply "
+                                            << module_handle.n_connections()
+                                            << " connections\n");
           }
           //********************************************************************
         };
@@ -283,12 +287,8 @@ namespace elastica {
         //**Algorithmic order***************************************************
         /*!\name Algorithmic order of steps within a temporal loop*/
         //@{
-        //! Algorithms to be carried out after the kinematic update step
-        using PostKinematicUpdateSteps = tmpl::list<>;
         //! Algorithms to be carried out before the dynamic update step
         using PreDynamicUpdateSteps = tmpl::list<ConnectSystems>;
-        //! Algorithms to be carried out after the dynamic update step
-        using PostDynamicUpdateSteps = tmpl::list<>;
         //@}
         //**********************************************************************
       };

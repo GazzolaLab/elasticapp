@@ -67,7 +67,7 @@ namespace elastica {
        * \tparam ComponentParam A valid Cosserat rod Component template
        */
       template <typename ComponentParam,
-                bool B = IsComponent<ComponentParam>::value>
+                bool B = tt::IsComponent<ComponentParam>::value>
       struct Adapt;
 
       //**********************************************************************
