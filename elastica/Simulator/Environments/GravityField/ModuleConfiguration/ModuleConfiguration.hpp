@@ -46,6 +46,16 @@ namespace elastica {
     //**************************************************************************
 
     //**************************************************************************
+    struct DefaultGravityFieldUserConfiguration
+        : public GravityFieldUserConfiguration {
+     public:
+      DefaultGravityFieldUserConfiguration() noexcept
+          : GravityFieldUserConfiguration{::elastica::Vec3{0., 0., 0.}} {}
+      ~DefaultGravityFieldUserConfiguration() = default;
+    };
+    //**************************************************************************
+
+    //**************************************************************************
     /*!\brief Idiomatically makes a gravity configuration
      * \ingroup config
      *

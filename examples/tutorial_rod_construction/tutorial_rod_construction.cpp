@@ -221,7 +221,8 @@ int main() {
           blocks::initialize<elastica::tags::TorqueDampingCoefficient>(
               [](...) { return 1.0; }),
           // Kinematics Variables
-          blocks::initialize<elastica::tags::Mass>([](...) { return 1.0; }),
+          blocks::initialize<elastica::tags::Material>(
+              [=](...) { return my_material; }),
           blocks::initialize<elastica::tags::Velocity>([](...) { return 0.0; }),
           blocks::initialize<elastica::tags::AngularVelocity>(
               [](...) { return 0.0; }),

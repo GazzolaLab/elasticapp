@@ -58,16 +58,22 @@ namespace elastica {
         : public EnvironmentsConfiguration<
               ELASTICA_DEFAULT_ADMISSIBLE_ENVIRONMENT_TAGS,
               ELASTICA_DEFAULT_ADMISSIBLE_IMPOSED_PRIMITIVES,
-              ELASTICA_DEFAULT_EXECUTION_POLICY_FOR_ENVIRONMENTS> {
+              ELASTICA_DEFAULT_EXECUTION_POLICY_FOR_ENVIRONMENTS,
+              DefaultGravityFieldUserConfiguration> {
      private:
       //**Type definitions******************************************************
       //! Parent type
       using Parent = EnvironmentsConfiguration<
           ELASTICA_DEFAULT_ADMISSIBLE_ENVIRONMENT_TAGS,
           ELASTICA_DEFAULT_ADMISSIBLE_IMPOSED_PRIMITIVES,
-          ELASTICA_DEFAULT_EXECUTION_POLICY_FOR_ENVIRONMENTS>;
+          ELASTICA_DEFAULT_EXECUTION_POLICY_FOR_ENVIRONMENTS,
+          DefaultGravityFieldUserConfiguration>;
+
+     public:
       //! Inherit constructors
-      using Parent::Parent;
+      DefaultEnvironmentsConfiguration() noexcept
+          : Parent(DefaultGravityFieldUserConfiguration{}){};
+      ~DefaultEnvironmentsConfiguration() = default;
       //************************************************************************
     };
     //**************************************************************************

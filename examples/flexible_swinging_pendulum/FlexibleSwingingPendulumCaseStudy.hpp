@@ -38,11 +38,17 @@ struct FlexibleSwingingPendulumConfiguration {
                 ec::iterate_across_system_types_in(ec::seq),
                 ec::iterate_over_systems_in(ec::seq)));
 
+    auto env_config = ec::make_environments_configuration<
+        tmpl::list<::elastica::environments::tags::GravityTag>>(
+        // process environments in sequence
+        ec::seq,
+        // set global gravity field to 0., can be modified later
+        ec::make_gravity_configuration(::elastica::Vec3{0., 0., 0.}));
+
     return ec::make_simulator_configuration(
         ec::DefaultDomainConfiguration{}, system_config,
         ec::DefaultParallelConfiguration{},
-        ec::DefaultConstraintsConfiguration{},
-        ec::DefaultEnvironmentsConfiguration{});
+        ec::DefaultConstraintsConfiguration{}, env_config);
   }
 
   static inline auto make_simulator() {
