@@ -18,7 +18,7 @@
 //******************************************************************************
 #include <utility>
 
-#include "Simulator/Environments/CollisionSystem/ModuleConfiguration/Types.hpp"
+#include "Simulator/Environments/GravityField/ModuleConfiguration/Types.hpp"
 //
 #include "Utilities/DefineTypes.h"
 #include "Utilities/Math/Vec3.hpp"

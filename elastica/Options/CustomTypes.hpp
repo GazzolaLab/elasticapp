@@ -11,6 +11,8 @@
 */
 //==============================================================================
 
+#pragma once
+
 #include "Options/Options.hpp"
 #include "Utilities/Math/Vec3.hpp"
 
