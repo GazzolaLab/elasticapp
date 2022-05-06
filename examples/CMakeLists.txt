@@ -13,6 +13,8 @@ add_subdirectory(rod_collision)
 add_subdirectory(rod_plane_collision)
 add_subdirectory(nest)
 
+add_subdirectory(magnetism)
+
 # examples
 include(ElasticaAddExamples)
 add_subdirectory(algorithm_metadata)
