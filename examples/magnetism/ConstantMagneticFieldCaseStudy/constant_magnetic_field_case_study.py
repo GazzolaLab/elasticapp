@@ -7,10 +7,10 @@ from rich.progress import Progress
 
 
 def run_constant_magnetic_field_case_study(
-        magnetization_density: float,
-        magnetic_field_amplitude: float,
-        magnetic_field_angle: float,
-        progress_ctx: Progress = None
+    magnetization_density: float,
+    magnetic_field_amplitude: float,
+    magnetic_field_angle: float,
+    progress_ctx: Progress = None,
 ):
     n_elements = 100
     length = 6.0
