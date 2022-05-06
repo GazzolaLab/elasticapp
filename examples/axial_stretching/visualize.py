@@ -24,7 +24,8 @@ from elasticapp import Blaze  # noqa
 from elasticapp.CaseStudies.PyAxialStretchingCaseStudy import AxialStretchingCaseStudy
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
-from tqdm import tqdm
+from cli.progress import track_simulation
+from cli.help import print_help
 
 
 def run_example(
@@ -76,7 +77,7 @@ def run_example(
     # 5.4 `cs.run_for(n_iterations=20)` : Runs the simulator for additional
     # 20 iterations.
     # 5.5 `cs.run_for_n_iterations(20)` : Same as above
-    for iteration in tqdm(range(n_iterations)):
+    for _ in track_simulation(range(n_iterations)):
         cs.run_for(additional_time=time_interval)
         # cs.iteration()
 
@@ -150,6 +151,5 @@ def run_example(
 
 
 if __name__ == "__main__":
-    eg_pyelastica_file = "/Users/tp5/code/PrivatePyElasticaMyFork/examples/AxialStretchingCase/pyelastic_samples.csv"
-    # eg_pyelastica_file = None
+    print_help(AxialStretchingCaseStudy)
     run_example()

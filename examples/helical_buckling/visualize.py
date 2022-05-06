@@ -2,9 +2,8 @@ import numpy as np
 from elasticapp import Blaze  # noqa
 from elasticapp.CaseStudies.PyHelicalBucklingCaseStudy import HelicalBucklingCaseStudy
 
-# from matplotlib import pyplot as plt
-# from matplotlib.colors import to_rgb
-from tqdm import tqdm
+from cli.progress import track_simulation
+from cli.help import print_help
 
 from postprocess import plot_helicalbuckling_results as plot_results
 
@@ -39,7 +38,7 @@ def run_example(
         p, _, _, _ = cas.communicate()
         position_histories.append(np.copy(np.asarray(p)))
 
-    for step in tqdm(range(n_steps)):
+    for _ in track_simulation(range(n_steps)):
         cs.run_for(additional_time=time_interval)
 
     collect_stats_from(cs)
@@ -55,4 +54,5 @@ def run_example(
 
 
 if __name__ == "__main__":
+    print_help(HelicalBucklingCaseStudy)
     run_example()

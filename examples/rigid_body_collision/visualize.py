@@ -8,7 +8,8 @@ from elasticapp.CaseStudies.PyRigidBodyCollisionCaseStudy import (
     RigidBodyCollisionCaseStudy,
 )
 from matplotlib import pyplot as plt
-from tqdm import tqdm
+from cli.progress import track_simulation
+from cli.help import print_help
 
 from postprocess import plot_position, plot_video, plot_energies
 
@@ -75,7 +76,7 @@ def run_example(
     # initial
     collect_stats_from(cs)
 
-    for _ in tqdm(range(n_steps)):
+    for _ in track_simulation(range(n_steps)):
         cs.run_for(additional_time=time_interval)
         collect_stats_from(cs)
 
@@ -91,4 +92,5 @@ def run_example(
 
 
 if __name__ == "__main__":
+    print_help(RigidBodyCollisionCaseStudy)
     run_example()

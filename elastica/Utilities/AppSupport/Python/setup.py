@@ -13,7 +13,7 @@ setup(
     url="cosseratrods.org",
     license="MIT",
     packages=['elasticapp'],
-    install_requires=['numpy', 'scipy'],
+    install_requires=['numpy', 'scipy', 'matplotlib', 'rich', 'pandas'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

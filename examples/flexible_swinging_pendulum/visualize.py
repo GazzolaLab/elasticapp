@@ -8,11 +8,12 @@ from elasticapp.CaseStudies.PyFlexibleSwingingPendulumCaseStudy import (
 )
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
-from tqdm import tqdm
+from cli.progress import track_simulation
+from cli.help import print_help
 
 
 def run_example(
-    pyelastica_file: os.PathLike = "",
+    reference_file: os.PathLike = "",
     save_to_csv: bool = False,
     save_figure: bool = False,
     plot_cpp_py_deviation: bool = False,
@@ -49,7 +50,7 @@ def run_example(
     tip_displacements_x.append(np.asarray(curr_positions)[0, -1])
     tip_displacements_z.append(np.asarray(curr_positions)[2, -1])
 
-    for _ in tqdm(range(n_iterations)):
+    for _ in track_simulation(range(n_iterations)):
         cs.run_for(additional_time=time_interval)
         curr_time = cs.current_time()
         curr_positions = cs.communicate()
@@ -81,32 +82,30 @@ def run_example(
         )
         ax.set_xlabel("Time")
         ax.set_ylabel("Tip displacements")
-        if os.path.exists(pyelastica_file):
-            pyelastica_results = np.loadtxt(pyelastica_file, delimiter=",")
+        if os.path.exists(reference_file):
+            reference_results = np.loadtxt(reference_file, delimiter=",")
             ax.plot(
-                pyelastica_results[:, 0],
-                pyelastica_results[:, 1],
+                reference_results[:, 0],
+                reference_results[:, 1],
                 c="r",
                 label="py : X disp.",
             )
             ax.plot(
-                pyelastica_results[:, 0],
-                pyelastica_results[:, 2],
+                reference_results[:, 0],
+                reference_results[:, 2],
                 "--",
                 c="r",
                 label="py : Z disp.",
             )
             if plot_cpp_py_deviation:
                 assert np.allclose(
-                    times.shape, pyelastica_results[:, 0].shape
+                    times.shape, reference_results[:, 0].shape
                 ), "C++ and Python data not of equal size"
                 cpp_py_tip_deviation_x = (
-                    np.fabs(tip_displacements_x - pyelastica_results[:, 1])
-                    / base_length
+                    np.fabs(tip_displacements_x - reference_results[:, 1]) / base_length
                 )
                 cpp_py_tip_deviation_z = (
-                    np.fabs(tip_displacements_z - pyelastica_results[:, 2])
-                    / base_length
+                    np.fabs(tip_displacements_z - reference_results[:, 2]) / base_length
                 )
                 fig2 = plt.figure(figsize=(8, 4), frameon=True, dpi=150)
                 ax2 = fig2.add_subplot(111)
@@ -159,8 +158,7 @@ def run_example(
 
 
 if __name__ == "__main__":
-    eg_pyelastica_file = (
-        "/Users/mattiagazzola/Desktop/comp_try/pyelastica/tip_displacements.csv"
-    )
-    # run_example(pyelastica_file=eg_pyelastica_file)
-    run_example(pyelastica_file=eg_pyelastica_file, plot_cpp_py_deviation=True)
+    print_help(FlexibleSwingingPendulumCaseStudy)
+    reference_values_file = ""
+    # run_example(reference_file=eg_reference_file)
+    run_example(reference_file=reference_values_file, plot_cpp_py_deviation=True)

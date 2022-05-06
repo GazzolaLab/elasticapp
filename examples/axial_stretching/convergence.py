@@ -3,14 +3,15 @@ from typing import NewType, List
 import numpy as np
 from elasticapp import Blaze  # noqa
 from elasticapp.CaseStudies.PyAxialStretchingCaseStudy import AxialStretchingCaseStudy
-from tqdm.auto import trange
+
+from cli.progress import p_map, ProgressionStatus
 
 PositiveInt = NewType("PositiveInt", int)
 Elements = list[PositiveInt]
 ConvergenceResults = NewType("ConvergenceResults", List[float])
 
 
-def simulate_axial_stretching_with(n_elem: PositiveInt) -> float:
+def simulate_axial_stretching_with(n_elem: PositiveInt, progress, uuid: int) -> float:
     sample_interval = 200
 
     base_radius = 0.025
@@ -38,7 +39,7 @@ def simulate_axial_stretching_with(n_elem: PositiveInt) -> float:
     times = []
     tip_displacements = []
 
-    for _ in trange(n_steps):
+    for i_step in range(n_steps):
         cs.run_for(additional_time=time_interval)
         # cs.step()
 
@@ -47,6 +48,9 @@ def simulate_axial_stretching_with(n_elem: PositiveInt) -> float:
         curr_positions = cs.communicate()
         times.append(curr_time)
         tip_displacements.append(np.asarray(curr_positions)[0, -1])
+
+        # state
+        progress[uuid] = ProgressionStatus(current=i_step + 1, total=n_steps)
 
     # First-order theory with base-length
     expected_tip_disp = end_force_x * base_length / base_area / youngs_modulus
@@ -68,12 +72,7 @@ def simulate_axial_stretching_with(n_elem: PositiveInt) -> float:
 
 
 def convergence_for_axial_stretching_with(elements: Elements) -> ConvergenceResults:
-    import multiprocessing as mp
-
-    with mp.Pool(mp.cpu_count()) as pool:
-        results = pool.map(simulate_axial_stretching_with, elements)
-
-    return ConvergenceResults(results)
+    return ConvergenceResults(p_map(simulate_axial_stretching_with, elements))
 
 
 def _visualize_results(elements: Elements, results: ConvergenceResults):
@@ -83,8 +82,8 @@ def _visualize_results(elements: Elements, results: ConvergenceResults):
     fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
 
     ax = fig.add_subplot(111)
-    ax.grid(b=True, which="minor", color="k", linestyle="--")
-    ax.grid(b=True, which="major", color="k", linestyle="-")
+    ax.grid(visible=True, which="minor", color="k", linestyle="--", lw=0.5)
+    ax.grid(visible=True, which="major", color="k", linestyle="-", lw=0.5)
     ax.loglog(
         elements,
         results,
@@ -93,6 +92,8 @@ def _visualize_results(elements: Elements, results: ConvergenceResults):
         c=to_rgb("xkcd:bluish"),
         lw=2,
     )
+    ax.set_xlabel("Number of elements")
+    ax.set_ylabel("Error")
     # fig.legend(prop={"size": 20})
     # block for me to see
     plt.show()

@@ -6,13 +6,18 @@ from elasticapp.CaseStudies.PyTimoshenkoCaseStudy import TimoshenkoCaseStudy
 
 from helpers.analytical import analytical_shearable, analytical_unshearable
 from helpers.convergence_helpers import plot_convergence, calculate_error_norm
+from cli.progress import ProgressionStatus
 
 PositiveInt = NewType("PositiveInt", int)
 Elements = list[PositiveInt]
 ConvergenceResults = NewType("ConvergenceResults", List[float])
 
 
-def simulate_timoshenko_beam_with(n_elem: PositiveInt, is_rod_shearable: bool = True):
+def simulate_timoshenko_beam_with(
+    n_elem: PositiveInt, progress, uuid: int, is_rod_shearable: bool = True
+):
+    sample_interval = 500
+
     base_radius = 0.25
     base_area = np.pi * base_radius**2
 
@@ -28,6 +33,8 @@ def simulate_timoshenko_beam_with(n_elem: PositiveInt, is_rod_shearable: bool = 
     end_force_transverse = -15.0
     dt = 0.01 * (base_length / n_elem)
     final_time = 500.0
+    time_interval = sample_interval * dt
+    n_steps = int(final_time / time_interval)
 
     cs = TimoshenkoCaseStudy(
         n_elements=n_elem,
@@ -40,7 +47,10 @@ def simulate_timoshenko_beam_with(n_elem: PositiveInt, is_rod_shearable: bool = 
         dt=dt,
     )
 
-    cs.run_for(additional_time=final_time)
+    for i_step in range(n_steps):
+        cs.run_for(additional_time=time_interval)
+        # state
+        progress[uuid] = ProgressionStatus(current=i_step + 1, total=n_steps)
 
     final_positions, _ = cs.communicate()
     final_positions = np.copy(final_positions)
@@ -64,7 +74,7 @@ def simulate_timoshenko_beam_with(n_elem: PositiveInt, is_rod_shearable: bool = 
 
 
 if __name__ == "__main__":
-    from p_tqdm import p_map
+    from cli.progress import p_map
     from functools import partial
 
     # 5, 6, ... 9

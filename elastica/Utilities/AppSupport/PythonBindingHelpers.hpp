@@ -75,19 +75,21 @@ namespace py_bindings {
     //**************************************************************************
 
     //**************************************************************************
-    /*!\brief Generate the argument names
+    /*!\brief Generate the argument metadata
      *
      * \details
-     * Generates the names of the arguments for the __init__ method
+     * Generates the names, and default values of the arguments for the __init__
+     * method
      */
-    static auto generate_argument_names() {
-      auto generate_arg_name_for = [](auto input_parameter) -> std::string {
+    static auto generate_argument_metadata() {
+      auto generate_arg_metadata_for = [](auto input_parameter) -> std::string {
         using Parameter = decltype(input_parameter);
         return pretty_type::short_name<Parameter>();
       };
       return cpp17::apply(
-          [generate_arg_name_for](auto... input_parameter) {
-            return std::make_tuple(generate_arg_name_for(input_parameter)...);
+          [generate_arg_metadata_for](auto... input_parameter) {
+            return std::make_tuple(
+                generate_arg_metadata_for(input_parameter)...);
           },
           Parameters{});
     }

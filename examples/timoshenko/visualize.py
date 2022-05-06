@@ -2,7 +2,8 @@ import numpy as np
 from elasticapp import Blaze  # noqa
 from elasticapp.CaseStudies.PyTimoshenkoCaseStudy import TimoshenkoCaseStudy
 from matplotlib import pyplot as plt
-from tqdm import tqdm
+from cli.progress import track_simulation
+from cli.help import print_help
 
 from helpers.postprocess import plot_beam, plot_velocity
 from helpers.analytical import analytical_shearable, analytical_unshearable
@@ -48,7 +49,7 @@ def run_example(
     times = []
     velocity_norms = []
 
-    for _ in tqdm(range(n_steps)):
+    for _ in track_simulation(range(n_steps)):
         cs.run_for(additional_time=time_interval)
         # cs.step()
 
@@ -86,4 +87,5 @@ def run_example(
 
 
 if __name__ == "__main__":
+    print_help(TimoshenkoCaseStudy)
     run_example()

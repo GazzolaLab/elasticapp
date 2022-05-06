@@ -127,7 +127,10 @@ namespace standalone_bindings {
     }
 
     if (not ::elastica::size(result.arguments())) {
-      std::cout << options.help() << std::endl;
+      auto change_color_to_yellow = "\033[33m";
+      auto reset_color = "\033[0m";
+      std::cout << change_color_to_yellow << options.help() << reset_color
+                << std::endl;
       std::cout << "Running " << case_study_name << " with default parameters"
                 << std::endl;
     }

@@ -6,8 +6,9 @@ import pandas as pd
 from elasticapp import Blaze  # noqa
 from elasticapp.CaseStudies.PyHingeJointCaseStudy import HingeJointCaseStudy
 from matplotlib import pyplot as plt
-from tqdm import tqdm
 from postprocess import plot_position, plot_video
+from cli.progress import track_simulation
+from cli.help import print_help
 
 PositiveInt = NewType("PositiveInt", int)
 
@@ -65,7 +66,7 @@ def run_example(
     # initial
     collect_stats_from(cs)
 
-    for _ in tqdm(range(n_steps)):
+    for _ in track_simulation(range(n_steps)):
         cs.run_for(additional_time=time_interval)
         collect_stats_from(cs)
 
@@ -80,4 +81,5 @@ def run_example(
 
 
 if __name__ == "__main__":
+    print_help(HingeJointCaseStudy)
     run_example()

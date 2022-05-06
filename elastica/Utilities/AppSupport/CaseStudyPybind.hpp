@@ -70,7 +70,7 @@ namespace py_bindings {
               Initializer::generate_docstring().c_str(),
               py::arg(std::move(arg_name).c_str()).noconvert()...);
         },
-        Initializer::generate_argument_names());
+        Initializer::generate_argument_metadata());
 
     // Register the methods here, we need to know the interface here apriori
     // (see CaseStudyInterface)

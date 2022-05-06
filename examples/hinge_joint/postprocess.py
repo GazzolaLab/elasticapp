@@ -43,7 +43,7 @@ def plot_video(
     fps=15,
 ):  # (time step, x/y/z, node)
     from matplotlib.animation import FuncAnimation  # noqa
-    from tqdm import tqdm  # noqa
+    from rich.progress import Progress
 
     time = np.asarray(rod1_stats.time)
     step = np.asarray(rod1_stats.step)
@@ -97,26 +97,27 @@ def plot_video(
 
     ax.legend()
 
-    def update(curr_frame):
-        curr_time = time[curr_frame]
-        curr_step = step[curr_frame]
-        text_step.set_text(f"Step : {curr_step:04d}")
-        text_time.set_text(f"Time : {curr_time:.2f}")
-        rod1_line.set_data(
-            position_of_rod1[curr_frame, 0], position_of_rod1[curr_frame, 1]
-        )
-        rod1_line.set_3d_properties(position_of_rod1[curr_frame, 2])
-        rod2_line.set_data(
-            position_of_rod2[curr_frame, 0], position_of_rod2[curr_frame, 1]
-        )
-        rod2_line.set_3d_properties(position_of_rod2[curr_frame, 2])
-        pbar.update()
-
     n_frames = len(time)
-    pbar = tqdm(total=n_frames)
-    ani = FuncAnimation(fig, update, frames=n_frames)
+    with Progress() as progress:
+        animation_task = progress.add_task("[magenta] Animating...", total=n_frames)
+
+        def update(curr_frame, bar):
+            curr_time = time[curr_frame]
+            curr_step = step[curr_frame]
+            text_step.set_text(f"Step : {curr_step:04d}")
+            text_time.set_text(f"Time : {curr_time:.2f}")
+            rod1_line.set_data(
+                position_of_rod1[curr_frame, 0], position_of_rod1[curr_frame, 1]
+            )
+            rod1_line.set_3d_properties(position_of_rod1[curr_frame, 2])
+            rod2_line.set_data(
+                position_of_rod2[curr_frame, 0], position_of_rod2[curr_frame, 1]
+            )
+            rod2_line.set_3d_properties(position_of_rod2[curr_frame, 2])
+            bar.update(animation_task, advance=1)
+
+        ani = FuncAnimation(fig, update, frames=n_frames, fargs=(progress,))
 
     ani.save(video_name, fps=fps, extra_args=["-vcodec", "h264", "-pix_fmt", "yuv420p"])
-    pbar.close()
 
     return
