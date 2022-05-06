@@ -5,12 +5,15 @@ from rich.console import Console
 from rich.progress import Progress
 from rich.text import Text
 
-from constant_magnetic_field_case_study import run_constant_magnetic_field_case_study, ConstantMagneticFieldCaseStudy
+from constant_magnetic_field_case_study import (
+    run_constant_magnetic_field_case_study,
+    ConstantMagneticFieldCaseStudy,
+)
 
 
 def run_example(
-        save_to_csv: bool = False,
-        save_figure: bool = False,
+    save_to_csv: bool = False,
+    save_figure: bool = False,
 ):
     # setting up magnetic properties
     magnetization_density = 1e5
@@ -22,7 +25,7 @@ def run_example(
             magnetization_density=magnetization_density,
             magnetic_field_amplitude=magnetic_field_amplitude,
             magnetic_field_angle=magnetic_field_angle,
-            progress_ctx=progress
+            progress_ctx=progress,
         )
 
     with plt.style.context("ggplot"):
@@ -63,7 +66,11 @@ def run_example(
 
     if save_to_csv:
         np.savetxt("magnetic_beam_profile.csv", position, delimiter=",")
-        np.savetxt("magnetic_beam_velocity_norms.csv", np.c_[times, velocity_norms], delimiter=",")
+        np.savetxt(
+            "magnetic_beam_velocity_norms.csv",
+            np.c_[times, velocity_norms],
+            delimiter=",",
+        )
 
     plt.show()
 
