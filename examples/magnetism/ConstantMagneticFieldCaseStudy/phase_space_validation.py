@@ -1,24 +1,19 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
-from rich.live import Live
-from rich.progress import Progress, Group
 
+from rich.console import Console
+from rich.text import Text
+from cli.progress import ProgressionStatus
 from constant_magnetic_field_analytical_solution import MagneticBeamAnalytical
 from constant_magnetic_field_case_study import run_constant_magnetic_field_case_study
 
 
-def run_example(
-    magnetization_density,
-    magnetic_field_angle,
-    magnetic_field_amplitude,
+def run_case_study(
+    magnetization_density, magnetic_field_angle, magnetic_field_amplitude, *args
 ):
     final_position, final_tangents, _, _ = run_constant_magnetic_field_case_study(
-        magnetization_density=magnetization_density,
-        magnetic_field_amplitude=magnetic_field_amplitude,
-        magnetic_field_angle=magnetic_field_angle,
-        # may not be even needed
-        progress_ctx=Progress(),
+        magnetization_density, magnetic_field_amplitude, magnetic_field_angle, *args
     )
 
     # Compute MBAL2/EI
@@ -48,8 +43,17 @@ def run_example(
     return MBAL2_EI, deflection, tip_angle
 
 
+def run_example(params, *args):
+    """Helper to do starmap"""
+    return run_case_study(*params, *args)
+
+
 def compute_analytical_solution(
-    magnetization_density, magnetic_field_angle, magnetic_field
+    magnetization_density,
+    magnetic_field_angle,
+    magnetic_field,
+    progress,
+    uuid,
 ):
     base_length = 6
     base_radius = 0.15
@@ -81,19 +85,18 @@ def compute_analytical_solution(
             theta_dot_initial_guess=theta_dot_initial_guess,
         )
         theta[i], deflection[i], theta_dot[i] = magneto()
+        progress[uuid] = ProgressionStatus(current=i, total=f.shape[0])
 
     return f * base_length**2 / (E * I), deflection, theta
 
 
-if __name__ == "__main__":
-    slow_path = True
+def run_analytical_solution(params, *args):
+    """Helper to do starmap"""
+    return compute_analytical_solution(*params, *args)
 
-    if slow_path:
-        import multiprocessing as mp
-        from concurrent.futures import ProcessPoolExecutor as Executor  # noqa
-    else:
-        from pathos.pools import ProcessPool as Pool
-        from pathos.helpers import cpu_count
+
+if __name__ == "__main__":
+    from cli.progress import p_map
 
     magnetization_density = 144e3
     magnetic_field_amplitude = np.linspace(0, 42, 4) * 1e-3
@@ -104,123 +107,51 @@ if __name__ == "__main__":
     # Run elastica simulations as a batch job
     from itertools import product
 
-    # progress bar for current phase space
-    phase_space_progress = Progress()
+    console = Console()
+    text = Text("Performing numerical simulations", style="yellow")
+    console.print(text)
 
-    progress_group = Group(
-        phase_space_progress,
+    results = p_map(
+        run_example,
+        product(
+            [magnetization_density],
+            magnetic_field_angle,
+            magnetic_field_amplitude,
+        ),
     )
 
-    with Live(progress_group):
-        phase_space_task = phase_space_progress.add_task("[blue]Phase space progress")
-
-        futures = []
-
-        if slow_path:
-            with Executor(max_workers=mp.cpu_count()) as executor:
-                # set visible false so we don't have a lot of bars all at once:
-
-                for params in product(
-                    [magnetization_density],
-                    magnetic_field_angle,
-                    magnetic_field_amplitude,
-                ):
-                    futures.append(executor.submit(run_example, *params))
-
-                # monitor the progress:
-                while (n_finished := sum([future.done() for future in futures])) < len(
-                    futures
-                ):
-                    phase_space_progress.update(
-                        phase_space_task, completed=n_finished, total=len(futures)
-                    )
-
-                # phase_space_progress.update(phase_space_task_id, description="[green]Done")
-                results = [future.result() for future in futures]
-
-        else:
-
-            def run_example_with_progressbar(args):
-                phase_space_progress.update(phase_space_task, advance=1)
-                return run_example(*args)
-
-            with Pool(ncpus=cpu_count()) as pool:
-                results = pool.map(
-                    run_example_with_progressbar,
-                    product(
-                        [magnetization_density],
-                        magnetic_field_angle,
-                        magnetic_field_amplitude,
-                    ),
-                )
-
-        def as_matrix(func):
-            return np.asarray(list(map(func, results))).reshape(
-                (magnetic_field_angle.shape[0], magnetic_field_amplitude.shape[0])
-            )
-
-        MBAL2_EI = as_matrix(lambda x: x[0])
-        deflection = as_matrix(lambda x: x[1])
-        theta = as_matrix(lambda x: x[2])
-
-        phase_space_progress.stop_task(phase_space_task)
-        phase_space_progress.update(phase_space_task, visible=False)
-        phase_space_task = phase_space_progress.add_task(
-            "[blue]Analytical solutions progress"
+    def as_matrix(func):
+        return np.asarray(list(map(func, results))).reshape(
+            (magnetic_field_angle.shape[0], magnetic_field_amplitude.shape[0])
         )
 
-        if slow_path:
-            futures.clear()
+    MBAL2_EI = as_matrix(lambda x: x[0])
+    deflection = as_matrix(lambda x: x[1])
+    theta = as_matrix(lambda x: x[2])
 
-            with Executor(max_workers=mp.cpu_count()) as executor:
-                # set visible false so we don't have a lot of bars all at once:
+    text = Text("Performing analytical computations", style="yellow")
+    console.print(text)
 
-                for params in product(
-                    [magnetization_density],
-                    magnetic_field_angle,
-                    [magnetic_field_amplitude_analytical],
-                ):
-                    futures.append(
-                        executor.submit(compute_analytical_solution, *params)
-                    )
+    analytical_results = p_map(
+        run_analytical_solution,
+        product(
+            [magnetization_density],
+            magnetic_field_angle,
+            [magnetic_field_amplitude_analytical],
+        ),
+    )
 
-                # monitor the progress:
-                while (n_finished := sum([future.done() for future in futures])) < len(
-                    futures
-                ):
-                    phase_space_progress.update(
-                        phase_space_task, completed=n_finished, total=len(futures)
-                    )
-
-                # phase_space_progress.update(phase_space_task_id, description="[green]Done")
-                analytical_results = [future.result() for future in futures]
-
-        else:
-            # Run analytical solutions
-            with Pool(ncpus=cpu_count()) as pool:
-                analytical_results = pool.map(
-                    lambda x: compute_analytical_solution(*x),
-                    product(
-                        [magnetization_density],
-                        magnetic_field_angle,
-                        [magnetic_field_amplitude_analytical],
-                    ),
-                )
-
-        def as_analytical_matrix(func):
-            return np.asarray(list(map(func, analytical_results))).reshape(
-                (
-                    magnetic_field_angle.shape[0],
-                    magnetic_field_amplitude_analytical.shape[0],
-                )
+    def as_analytical_matrix(func):
+        return np.asarray(list(map(func, analytical_results))).reshape(
+            (
+                magnetic_field_angle.shape[0],
+                magnetic_field_amplitude_analytical.shape[0],
             )
+        )
 
-        MBAL2_EI_analytical = as_analytical_matrix(lambda x: x[0])
-        deflection_analytical = as_analytical_matrix(lambda x: x[1])
-        theta_analytical = as_analytical_matrix(lambda x: x[2])
-
-        phase_space_progress.stop_task(phase_space_task)
-        phase_space_progress.update(phase_space_task, visible=False)
+    MBAL2_EI_analytical = as_analytical_matrix(lambda x: x[0])
+    deflection_analytical = as_analytical_matrix(lambda x: x[1])
+    theta_analytical = as_analytical_matrix(lambda x: x[2])
 
     fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
 

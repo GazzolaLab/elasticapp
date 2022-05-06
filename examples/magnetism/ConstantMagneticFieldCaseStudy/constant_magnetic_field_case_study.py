@@ -1,16 +1,20 @@
+from typing import Dict, Optional
+
 import numpy as np
 from elasticapp import Blaze  # noqa
 from elasticapp.CaseStudies.PyConstantMagneticFieldCaseStudy import (
     ConstantMagneticFieldCaseStudy,
 )
-from rich.progress import Progress
+
+from cli.progress import ProgressionStatus, TaskID
 
 
 def run_constant_magnetic_field_case_study(
     magnetization_density: float,
     magnetic_field_amplitude: float,
     magnetic_field_angle: float,
-    progress_ctx: Progress = None,
+    progress: Optional[Dict[TaskID, ProgressionStatus]] = None,
+    uuid: Optional[TaskID] = None,
 ):
     n_elements = 100
     length = 6.0
@@ -45,20 +49,21 @@ def run_constant_magnetic_field_case_study(
 
     # first round
     collect_stats(cs)
+    if progress is not None:
 
-    if progress_ctx is None:
-        progress_ctx = Progress()
+        def update_progress(step):
+            progress[uuid] = ProgressionStatus(current=step + 1, total=n_steps)
 
-    simulation_task = progress_ctx.add_task("[red]Simulating...", total=n_steps)
+    else:
 
-    for _ in range(n_steps):
+        def update_progress(step):
+            pass
+
+    for i_step in range(n_steps):
         cs.run_for(additional_time=time_interval)
         collect_stats(cs)
-        progress_ctx.update(simulation_task, advance=1)
-
-    # stop and hide progress bar for this step when done
-    progress_ctx.stop_task(simulation_task)
-    progress_ctx.update(simulation_task, visible=False)
+        # state
+        update_progress(i_step)
 
     # last round
     collect_stats(cs)
