@@ -15,6 +15,8 @@ add_subdirectory(nest)
 
 add_subdirectory(magnetism)
 
+add_subdirectory(magnetism)
+
 # examples
 include(ElasticaAddExamples)
 add_subdirectory(algorithm_metadata)
