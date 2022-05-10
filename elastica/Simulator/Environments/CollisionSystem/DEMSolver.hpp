@@ -18,14 +18,9 @@
 // Includes
 //******************************************************************************
 
-#include <algorithm>
-#include <array>
-#include <iterator>
-#include <memory>
-#include <tuple>
+#include <limits>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "ErrorHandling/Assert.hpp"
 //
@@ -348,6 +343,15 @@ namespace elastica {
       using MemoryMeters = ::elastica::MemoryMeters<Tags>;
       //************************************************************************
 
+     protected:
+      //************************************************************************
+      /*!\brief Initialization logic for detection
+       */
+      static Real default_time_of_last_detection_call() {
+        return std::numeric_limits<Real>::lowest();
+      }
+      //************************************************************************
+
      private:
       //**Constructor***********************************************************
       /*!\name Constructor */
@@ -375,7 +379,10 @@ namespace elastica {
             //! The time between sucessive calls to coarse detector
             time_interval_between_each_detection_(0.0),
             //! The time of previous call to coarse detector
-            time_of_last_detection_call_(Real(0.0)) {
+            /* I initialize it to a highly negative number so that detection
+             * will always be performed at the start*/
+            time_of_last_detection_call_(
+                default_time_of_last_detection_call()) {
         // Logging the successful setup of the collision system
         using namespace ::elastica::logging;
         log<info>([](auto const& log) {
@@ -612,9 +619,9 @@ namespace elastica {
        */
       bool detection_is_to_be_performed(TimeType time_v) noexcept {
         auto elapsed_time_between_calls = time_v - time_of_last_detection_call_;
-        time_of_last_detection_call_ = time_v;
-        return static_cast<Real>(elapsed_time_between_calls) >=
-               time_interval_between_each_detection_;
+        bool b = static_cast<Real>(elapsed_time_between_calls) >=
+                 time_interval_between_each_detection_;
+        return b ? (time_of_last_detection_call_ = time_v, b) : b;
       }
       //************************************************************************
 
@@ -748,6 +755,9 @@ namespace elastica {
         clear();
         for_each(timers(), [](auto& m) { m.reset(); });
         for_each(memory_meters(), [](auto& m) { m.reset(); });
+        time_interval_between_each_detection_ = 0.0;
+        time_of_last_detection_call_ =
+            TimeType{default_time_of_last_detection_call()};
       }
       //************************************************************************
 
@@ -770,6 +780,12 @@ namespace elastica {
       MemoryMeters memory_meters_;
       //! The instrusive timers
       Timers timers_;
+      //@}
+      //************************************************************************
+     protected:
+      //**Member variables******************************************************
+      /*!\name Member variables */
+      //@{
       //! The time between sucessive calls to coarse detector
       Real time_interval_between_each_detection_;
       //! The time of previous call to coarse detector
