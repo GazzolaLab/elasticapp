@@ -3,6 +3,7 @@
 //
 
 #include <algorithm>
+#include <memory>
 
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Configuration.hpp"  // all configuration
@@ -238,17 +239,12 @@ namespace {
                            another_rod_ref, yet_another_rod_ref);
   }
 
-  template <typename CollisionSolverPtr, typename Refs>
-  void pre_collision_check(CollisionSolverPtr& solver, Refs& refs) {
+  template <typename CollisionSolverPtr>
+  void pre_collision_check(CollisionSolverPtr& solver) {
     using ::elastica::collision::CapsuleFromRodPrimitive;
     using ::elastica::collision::SpherePrimitive;
     using ImposedSphere = ::elastica::collision::ImposedPrimitiveAdapter<
         ::elastica::collision::SpherePrimitive>;
-    auto sphere_ref = std::get<0UL>(refs);
-    auto another_sphere_ref = std::get<1UL>(refs);
-    auto rod_ref = std::get<2UL>(refs);
-    auto another_rod_ref = std::get<3UL>(refs);
-    auto yet_another_rod_ref = std::get<4UL>(refs);
 
     auto& ss_cache = solver->contact_cache()
                          .template data<SpherePrimitive, SpherePrimitive>();
@@ -279,6 +275,15 @@ namespace {
 
     auto& batches = solver->batches();
     CHECK(batches.empty());
+  }
+
+  template <typename Refs>
+  void pre_collision_check_states(Refs const& refs) {
+    auto sphere_ref = std::get<0UL>(refs);
+    auto another_sphere_ref = std::get<1UL>(refs);
+    auto rod_ref = std::get<2UL>(refs);
+    auto another_rod_ref = std::get<3UL>(refs);
+    auto yet_another_rod_ref = std::get<4UL>(refs);
 
     CHECK(sphere_ref.get().get_external_loads(0UL) == ::elastica::Vec3{});
     CHECK(sphere_ref.get().get_external_torques(0UL) == ::elastica::Vec3{});
@@ -298,17 +303,12 @@ namespace {
     CHECK(yet_another_rod_ref.get().get_external_torques() == 0.0);
   }
 
-  template <typename CollisionSolverPtr, typename Refs>
-  void post_collision_check(CollisionSolverPtr& solver, Refs& refs) {
+  template <typename CollisionSolverPtr>
+  void post_collision_check(CollisionSolverPtr& solver) {
     using ::elastica::collision::CapsuleFromRodPrimitive;
     using ::elastica::collision::SpherePrimitive;
     using ImposedSphere = ::elastica::collision::ImposedPrimitiveAdapter<
         ::elastica::collision::SpherePrimitive>;
-    auto sphere_ref = std::get<0UL>(refs);
-    auto another_sphere_ref = std::get<1UL>(refs);
-    auto rod_ref = std::get<2UL>(refs);
-    auto another_rod_ref = std::get<3UL>(refs);
-    auto yet_another_rod_ref = std::get<4UL>(refs);
 
     auto& ss_cache = solver->contact_cache()
                          .template data<SpherePrimitive, SpherePrimitive>();
@@ -383,6 +383,15 @@ namespace {
       CHECK(::elastica::size(batches.at(0UL)) == total_n_expected_contacts);
       CHECK(&batches.at(0UL).at(0UL).get() == &contacts.at(0UL));
     }
+  }
+
+  template <typename Refs>
+  void post_collision_check_states(Refs const& refs) {
+    auto sphere_ref = std::get<0UL>(refs);
+    auto another_sphere_ref = std::get<1UL>(refs);
+    auto rod_ref = std::get<2UL>(refs);
+    auto another_rod_ref = std::get<3UL>(refs);
+    auto yet_another_rod_ref = std::get<4UL>(refs);
 
     // some value is there
     CHECK_FALSE(sphere_ref.get().get_external_loads(0UL) == ::elastica::Vec3{});
@@ -426,11 +435,33 @@ namespace {
     // ::elastica::Vec3{});
   }
 
+  template <typename C, typename S>
+  class TestSolver : public ::elastica::collision::CollisionSystem<C, S> {
+   protected:
+    using P = ::elastica::collision::CollisionSystem<C, S>;
+    using This = TestSolver<C, S>;
+    using T = std::shared_ptr<This>;
+
+   public:
+    using P::detection_is_to_be_performed;
+    using P::time_of_last_detection_call_;
+    using typename P::TimeType;
+
+    static T instance() {
+      static T object(std::static_pointer_cast<This>(P::instance()));
+      return object;
+    }
+
+    auto time_of_last_detection() & noexcept -> TimeType& {
+      return time_of_last_detection_call_;
+    }
+  };
+
   ELASTICA_TEST_CASE("Unit.Environments.CollisionSystem.DEMSolver",
                      "[Unit][Environments]") {
     auto config = make_configuration();
-    using Solver = ::elastica::collision::CollisionSystem<
-        decltype(config), ::elastica::collision::CollisionConfig>;
+    using Solver =
+        TestSolver<decltype(config), ::elastica::collision::CollisionConfig>;
     static_assert(::tt::assert_conforms_to<
                       Solver, ::elastica::environments::protocols::Environment>,
                   "Meta-failure");
@@ -496,9 +527,35 @@ namespace {
 
       solver->initialize(*simulator);
 
-      pre_collision_check(solver, refs);
+      pre_collision_check(solver);
+      pre_collision_check_states(refs);
       solver->resolve(*simulator, decltype(config)::TimeType{0.0});
-      post_collision_check(solver, refs);
+      post_collision_check(solver);
+      post_collision_check_states(refs);
+    }
+
+    SECTION("Coarse detection skipping") {
+      {
+        // needs to be ordered top to bottom because time subtraction cant occur
+        // from earlier times
+        CHECK(solver->detection_is_to_be_performed(::elastica::Time{0.0}));
+        CHECK(solver->detection_is_to_be_performed(::elastica::Time{1.234567}));
+        CHECK(solver->detection_is_to_be_performed(::elastica::Time{100.0}));
+      }
+      {
+        // reset it to default state
+        solver->time_of_last_detection() =
+            ::elastica::Time{-2.0};  // > 1.0 to trigger a detection
+        solver->time_interval_between_detection() = 1.0;
+        // time_interval_between_detection() < 0 - (-2.0), so should trigger
+        CHECK(solver->detection_is_to_be_performed(::elastica::Time{0.0}));
+        // last tim is now 0.0, interval is 1.0, so should not trigger
+        CHECK_FALSE(
+            solver->detection_is_to_be_performed(::elastica::Time{0.5}));
+        // last time is 0.0, interval is 1.0, so should trigger
+        CHECK(solver->detection_is_to_be_performed(
+            ::elastica::Time{1.0 + 1e-10}));
+      }
     }
   }
 
@@ -540,26 +597,49 @@ namespace {
                      "[Integrated][Environments]") {
     auto simulator = make_integrated_simulator();
     simulator->reset();
-
     auto refs = setup_state(simulator);
 
     auto& solver = simulator->get_environment<
         elastica::environments::tags::CollisionSystemTag>();
 
+    // restore solver to base state was before, so that the integrated tests
+    // won't buckle
+    solver->reset(::elastica::Time{});
+
     simulator->finalize();
     // primitives are filled up
 
-    SECTION("Check skip of coarse detection") {
-      pre_collision_check(solver, refs);
-      solver->time_interval_between_detection() = 1.0;  // anything > 0.0
-      simulator->apply_environmental_effects(::elastica::Time{0.0});
-      pre_collision_check(solver, refs);
-    }
     SECTION("Check DEMsolver") {
-      pre_collision_check(solver, refs);
-      solver->time_interval_between_detection() = 0.0;
-      simulator->apply_environmental_effects(::elastica::Time{0.0});
-      post_collision_check(solver, refs);
+      SECTION("Check first instance of coarse detection always works") {
+        pre_collision_check(solver);
+        pre_collision_check_states(refs);
+        solver->time_interval_between_detection() = 1.0;  // anything > 0.0
+        simulator->apply_environmental_effects(::elastica::Time{0.0});
+        post_collision_check(solver);
+        post_collision_check_states(refs);
+
+        // needs the setup from above
+        SECTION("Check skip of coarse detection, after first skip") {
+          // reset quantities
+          solver->clear();
+          pre_collision_check(solver);
+          // < 1.0
+          simulator->apply_environmental_effects(::elastica::Time{0.5});
+          // state should not have changed here
+          pre_collision_check(solver);
+        }
+
+        // needs the setup from above
+        SECTION("Check no-skip of coarse detection for long intervals") {
+          // reset quantities
+          solver->clear();
+          pre_collision_check(solver);
+          // > 1.0
+          simulator->apply_environmental_effects(::elastica::Time{1.5});
+          // changes states
+          post_collision_check(solver);
+        }
+      }
     }
   }
 
