@@ -14,7 +14,7 @@ elastica_target_headers(
 
 elastica_target_sources(
         ${LIBRARY}
-        PRIVATE
+        INTERFACE
         # DomainPolicy.hpp
         ExecutionPolicy.hpp
 )

@@ -5,5 +5,5 @@ elastica_target_headers(
         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
         HEADERS
         BatchingHelpers.hpp
-				DefaultBatcher.hpp
+        DefaultBatcher.hpp
 )

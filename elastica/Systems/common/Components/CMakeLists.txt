@@ -16,7 +16,7 @@ elastica_target_headers(
 
 elastica_target_sources(
         ${LIBRARY}
-        PUBLIC
+        INTERFACE
         Component.hpp
         GeometryComponent.hpp
         KinematicsComponent.hpp

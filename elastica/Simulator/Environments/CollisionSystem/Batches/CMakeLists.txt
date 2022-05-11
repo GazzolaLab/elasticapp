@@ -23,7 +23,7 @@ elastica_target_headers(
 
 elastica_target_sources(
         ${LIBRARY}
-        PUBLIC
+        INTERFACE
         Batches.hpp
         BatchContainerTrait.hpp
         BatchGenerators.hpp

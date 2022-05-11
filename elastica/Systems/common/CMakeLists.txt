@@ -16,7 +16,7 @@ elastica_target_headers(
 
 elastica_target_sources(
         ${LIBRARY}
-        PUBLIC
+        INTERFACE
         Access.hpp
         Components.hpp
         Protocols.hpp

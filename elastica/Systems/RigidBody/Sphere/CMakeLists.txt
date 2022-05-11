@@ -15,7 +15,7 @@ elastica_target_headers(
 
 elastica_target_sources(
         ${LIBRARY}
-        PUBLIC
+        INTERFACE
         Tags.hpp
         Types.hpp
         Sphere.hpp

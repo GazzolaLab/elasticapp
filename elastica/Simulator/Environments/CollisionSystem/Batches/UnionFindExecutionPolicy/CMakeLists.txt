@@ -12,7 +12,7 @@ elastica_target_headers(
 
 elastica_target_sources(
         ${LIBRARY}
-        PUBLIC
+        INTERFACE
         ParallelExecutionPolicy.hpp
         SequentialExecutionPolicy.hpp
         Types.hpp

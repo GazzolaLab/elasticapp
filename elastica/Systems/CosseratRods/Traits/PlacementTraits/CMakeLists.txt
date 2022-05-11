@@ -14,7 +14,7 @@ elastica_target_headers(
 
 elastica_target_sources(
         ${LIBRARY}
-        PUBLIC
+        INTERFACE
         PlacementTraits.hpp
         Protocols.hpp
         TypeTraits.hpp
