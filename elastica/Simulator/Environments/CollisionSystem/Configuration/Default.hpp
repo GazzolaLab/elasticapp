@@ -66,7 +66,7 @@ namespace elastica {
       //! Handle to a constant rigid body
       using ConstBodyID = const RigidBodyPrimitive*;
       //! Type of the contacts
-      using Contact = Contact;
+      using ContactT = Contact;
       //! Handle to a contact
       using ContactID = Contact*;
       //! Handle to a constant contact

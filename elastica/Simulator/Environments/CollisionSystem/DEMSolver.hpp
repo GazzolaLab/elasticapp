@@ -139,7 +139,7 @@ namespace elastica {
       using AdmissibleImposedPrimitives =
           typename SimulatorConfig::AdmissibleImposedPrimitives;
       //! Execution policy
-      using KernelExecutionPolicy = KernelExecutionPolicy<
+      using ExecutionPolicy = KernelExecutionPolicy<
           typename SimulatorConfig::ForEachExecutionPolicy,
           typename SimulatorConfig::OverPairsExecutionPolicy>;
       //************************************************************************
@@ -244,15 +244,15 @@ namespace elastica {
      public:
       //! Type of Contacts
       using Contacts = typename ::elastica::collision::ContactContainerTrait<
-          typename KernelExecutionPolicy::ExecutionPolicy>::type;
+          typename ExecutionPolicy::ExecutionPolicy>::type;
       //! Contact Cache
       using ContactCache = ::elastica::ContactCache<
           AllPrimitiveCombinations,
           ::elastica::PairwiseCacheContainerPolicy<
-              typename KernelExecutionPolicy::ExecutionPolicy>>;
+              typename ExecutionPolicy::ExecutionPolicy>>;
       //! Batch type
       using Batches = typename batches::BatchContainerTrait<
-          typename KernelExecutionPolicy::ExecutionPolicy>::type;
+          typename ExecutionPolicy::ExecutionPolicy>::type;
 
      protected:
       //! Internal configuration inside the collision system
@@ -276,7 +276,7 @@ namespace elastica {
             This::PrimitiveImposedPrimitiveCombinations;
 
         //! Kernel
-        using KernelExecutionPolicy = This::KernelExecutionPolicy;
+        using KernelExecutionPolicy = This::ExecutionPolicy;
 
         // Can add pointers here for a uniform interface
         // using PrimitiveStorage = This::PrimitiveStorage;
