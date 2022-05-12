@@ -44,7 +44,7 @@ namespace elastica {
                         collection.get_external_loads(index + 1UL) +=
                             0.5 * primitive.get_force();
 
-                        collection.get_external_torques(index) =
+                        collection.get_external_torques(index) +=
                             primitive.get_torque();
                         ++index;
                       });
