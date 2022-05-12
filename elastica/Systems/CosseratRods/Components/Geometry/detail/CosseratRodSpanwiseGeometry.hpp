@@ -161,7 +161,23 @@ namespace elastica {
           struct ElementLength : public Traits::template CosseratRodVariable<
                                      ::elastica::tags::ElementLength,    //
                                      typename Traits::DataType::Scalar,  //
-                                     typename Traits::Place::OnElement> {};
+                                     typename Traits::Place::OnElement> {
+            //**Type definitions************************************************
+            //! The element type of a ghost
+            using ghost_type = typename Traits::DataType::Scalar::ghost_type;
+            //******************************************************************
+
+            //******************************************************************
+            /*!\brief Obtain the ghost value
+             *
+             * \details
+             * Overrides the default value for putting in ghost elements.
+             */
+            static inline constexpr auto ghost_value() noexcept -> ghost_type {
+              return ghost_type(1.0);
+            }
+            //******************************************************************
+          };
           //********************************************************************
 
           //********************************************************************
@@ -580,6 +596,31 @@ namespace elastica {
             return ReferenceShearStretchStrain::slice(
                 get_reference_shear_stretch_strain(), idx);
           }
+          //@}
+          //********************************************************************
+
+          //********************************************************************
+          /*!\name tangent methods*/
+          //@{
+          /*!\brief Gets tangents of the current rod
+           */
+          inline constexpr decltype(auto) get_tangent() & noexcept {
+            return blocks::get<::elastica::tags::Tangent>(self());
+          }
+          inline constexpr decltype(auto) get_tangent() const& noexcept {
+            return blocks::get<::elastica::tags::Tangent>(self());
+          }
+          inline constexpr decltype(auto) get_tangent(
+              index_type idx) & noexcept {
+            return Tangent::slice(get_tangent(), idx);
+          }
+          inline constexpr decltype(auto) get_tangent(
+              index_type idx) const& noexcept {
+            return Tangent::slice(get_tangent(), idx);
+          }
+          //@}
+          //********************************************************************
+
           //@}
           //********************************************************************
         };

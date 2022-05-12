@@ -539,6 +539,9 @@ namespace elastica {
             auto& tangent_collection(blocks::get<tags::Tangent>(self()));
             auto& reference_length_collection(
                 blocks::get<tags::ReferenceElementLength>(self()));
+            // before division by element_length, I fill ghosts so that
+            // enable_floating_point exceptions do not throw a raise by 0 error
+            self().template fill_ghosts_for<tags::ElementLength>();
             Traits::Operations::batch_division_matvec(
                 tangent_collection, position_diff,
                 element_length_collection);  // TODO should be length_collection

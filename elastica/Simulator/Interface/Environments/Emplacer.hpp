@@ -121,7 +121,7 @@ namespace elastica {
           get_offset<BlockType>(offsets)[&block] =
               ::elastica::size(primitive_collection);
 
-          const std::size_t sid_base = get_offset<BlockType>(offsets)[&block];
+          std::size_t sid_base = get_offset<BlockType>(offsets)[&block];
 
           // slice can be copied for now
           for (auto slice : block) {
@@ -129,7 +129,8 @@ namespace elastica {
 
             for (std::size_t idx = 0UL; idx < end_idx; ++idx) {
               id_t sid = sid_base + idx;
-              id_t uid = idx;  // user id, not important
+              id_t uid = idx;  // user id, not important, we allocate it to
+                               // subslice for now
               const bool finite(true);
 
               // 2. Create primitives, no need to transfer yet (achieved in
@@ -137,6 +138,7 @@ namespace elastica {
               primitive_collection.emplace_back(sid, uid, finite,
                                                 slice.get_material(idx));
             }
+            sid_base += end_idx;
           }
         });
       }
