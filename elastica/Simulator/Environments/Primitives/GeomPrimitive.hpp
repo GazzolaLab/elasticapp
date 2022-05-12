@@ -38,6 +38,7 @@
 //
 #include "Simulator/Environments/Primitives/Types.hpp"
 //
+#include "Simulator/Environments/Primitives/Access.hpp"
 #include "Simulator/Environments/Primitives/RigidBodyPrimitive.hpp"
 //
 #include "Simulator/Types.hpp"

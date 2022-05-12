@@ -4,7 +4,10 @@
 
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Environments/Primitives/RigidBodyPrimitive.hpp"
+#include "Utilities/AsConst.hpp"
 #include "Utilities/Math/Orthogonal.hpp"
+//
+#include "Simulator/Environments/Primitives/Test_AccessAPI.hpp"
 
 namespace {
 
@@ -28,6 +31,16 @@ namespace {
 
   auto get_rigid_primitive() noexcept -> TestRigidBodyPrimitive {
     return {true, 0, 1};
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE(
+      "Unit.Environments.Primitives.RigidBodyPrimitive.access_API",
+      "[Unit][Simulator][Environments]") {
+    // clang-format on
+    auto rb(get_rigid_primitive());
+    ::testing::check_access_API(rb);
+    ::testing::check_access_API(cpp17::as_const(rb));
   }
 
   // clang-format off
@@ -134,7 +147,7 @@ namespace {
       CHECK(rp.get_torque() == expected_torque);
     }
 
-    SECTION("2D test") {
+    SECTION("3D test") {
       Vec3 position{3.0, 6.0, 2.0};
       rp.get_position() = Vec3{2.0, 5.0, 0.0};
 

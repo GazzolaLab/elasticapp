@@ -22,6 +22,7 @@ elastica_target_sources(
 elastica_target_headers(
         ${LIBRARY}
         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        Access.hpp
         CapsuleFromRodPrimitive.hpp
         CapsulePrimitive.hpp
         CylinderPrimitive.hpp

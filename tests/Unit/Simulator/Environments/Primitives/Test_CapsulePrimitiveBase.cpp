@@ -8,10 +8,13 @@
 #include "Simulator/Environments/Primitives/Protocols.hpp"
 #include "Simulator/Environments/Primitives/detail/CapsulePrimitiveBase.hpp"
 #include "Simulator/Materials.hpp"
+#include "Utilities/AsConst.hpp"
 #include "Utilities/Geometry/Angles.hpp"
 #include "Utilities/Math/Identity.hpp"
 #include "Utilities/Math/Vec3.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+//
+#include "Simulator/Environments/Primitives/Test_AccessAPI.hpp"
 
 namespace {
 
@@ -36,6 +39,22 @@ namespace {
 
     CHECK(capsule.get_radius() == approx(radius));
     CHECK(capsule.get_length() == approx(length));
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE(
+      "Unit.Environments.Primitives.CapsulePrimitiveBase.access_API",
+      "[Unit][Simulator][Environments]") {
+    // clang-format on
+
+    Vec3 position{5.0, 3.0, 6.0};
+    real_t radius(4.0);
+    real_t length(3.0);
+
+    CapsulePrimitiveBase capsule(0UL, 0UL, true, position, Vec3{1.0, 1.1, 1.2},
+                                 radius, length, iron);
+    ::testing::check_access_API(capsule);
+    ::testing::check_access_API(cpp17::as_const(capsule));
   }
 
   // clang-format off
@@ -220,8 +239,7 @@ namespace {
 
       CHECK(capsule.support(Vec3{0.0, first_direction, -second_direction}) ==
             lower_cap_point + contact_threshold +
-            4.0 * Vec3{0.0, first_direction, -second_direction});
-
+                4.0 * Vec3{0.0, first_direction, -second_direction});
     }
   }
 

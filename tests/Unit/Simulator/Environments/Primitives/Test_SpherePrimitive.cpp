@@ -5,10 +5,13 @@
 #include "Simulator/Environments/Primitives/Protocols.hpp"
 #include "Simulator/Environments/Primitives/SpherePrimitive.hpp"
 #include "Simulator/Materials.hpp"
+#include "Utilities/AsConst.hpp"
 #include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/Math/Rot3.hpp"
 #include "Utilities/Math/Vec3.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+//
+#include "Simulator/Environments/Primitives/Test_AccessAPI.hpp"
 
 namespace {
 
@@ -41,6 +44,19 @@ namespace {
     //    CHECK(sphere.get_AABB()[5] == approx(10.0));
 
     CHECK(sphere.get_radius() == approx(radius));
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE(
+      "Unit.Environments.Primitives.SpherePrimitive.access_API",
+      "[Unit][Simulator][Environments]") {
+    // clang-format on
+
+    Vec3 position{5.0, 3.0, 6.0};
+    real_t radius(4.0);
+    SpherePrimitive sphere(0UL, 0UL, true, position, radius, iron);
+    ::testing::check_access_API(sphere);  // only const
+    ::testing::check_access_API(cpp17::as_const(sphere));
   }
 
   ELASTICA_TEST_CASE("Unit.Environments.Primitives.SpherePrimitive.support",

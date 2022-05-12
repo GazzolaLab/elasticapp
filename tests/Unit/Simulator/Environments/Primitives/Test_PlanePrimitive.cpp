@@ -3,12 +3,13 @@
 //
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Environments/Primitives/PlanePrimitive.hpp"
-#include "Simulator/Environments/Primitives/Protocols.hpp"
 #include "Simulator/Materials.hpp"
+#include "Utilities/AsConst.hpp"
 #include "Utilities/Math/Infinity.hpp"
 #include "Utilities/Math/Vec3.hpp"
-#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Thresholds.hpp"
+//
+#include "Simulator/Environments/Primitives/Test_AccessAPI.hpp"
 
 namespace {
 
@@ -47,6 +48,24 @@ namespace {
                 6.0 - contact_threshold, 5.0 + contact_threshold,
                 15.0 + contact_threshold, 6.0 + contact_threshold));
     }
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE(
+      "Unit.Environments.Primitives.PlanePrimitive.access_API",
+      "[Unit][Simulator][Environments]") {
+    // clang-format on
+
+    Vec3 position = {0.0, 5.0, 6.0};
+    auto normals = {0.0, 0.0, 1.0};
+    auto binormals = {0.0, 1.0, 0.0};
+    auto tangents = {1.0, 0.0, 0.0};
+    // implicit convention
+    Rot3 Q = {normals, binormals, tangents};
+
+    PlanePrimitive plane(0UL, 0UL, true, position, Q, {10.0, 20.0}, iron);
+
+    ::testing::check_access_API(cpp17::as_const(plane));
   }
 
 }  // namespace

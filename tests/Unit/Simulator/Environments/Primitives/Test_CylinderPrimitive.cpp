@@ -7,10 +7,13 @@
 #include "Simulator/Environments/Primitives/CylinderPrimitive.hpp"
 #include "Simulator/Environments/Primitives/Protocols.hpp"
 #include "Simulator/Materials.hpp"
+#include "Utilities/AsConst.hpp"
 #include "Utilities/Geometry/Angles.hpp"
 #include "Utilities/Math/Identity.hpp"
 #include "Utilities/Math/Vec3.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+//
+#include "Simulator/Environments/Primitives/Test_AccessAPI.hpp"
 
 namespace {
 
@@ -34,6 +37,22 @@ namespace {
 
     CHECK(cylinder.get_radius() == approx(radius));
     CHECK(cylinder.get_length() == approx(length));
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE(
+      "Unit.Environments.Primitives.CylinderPrimitive.access_API",
+      "[Unit][Simulator][Environments]") {
+    // clang-format on
+
+    Vec3 position{5.0, 3.0, 6.0};
+    real_t radius(4.0);
+    real_t length(3.0);
+
+    CylinderPrimitive cylinder(0UL, 0UL, true, position, Vec3{1.0, 1.1, 1.2},
+                               radius, length, iron);
+    ::testing::check_access_API(cylinder);
+    ::testing::check_access_API(cpp17::as_const(cylinder));
   }
 
   ELASTICA_TEST_CASE(
