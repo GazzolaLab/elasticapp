@@ -6,6 +6,7 @@ elastica_target_headers(
         ${LIBRARY}
         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
         ConstantMagneticField.hpp
+        OscillatoryMagneticField.hpp
         RampedAdapter.hpp
         Rampup.hpp
 )
@@ -14,6 +15,7 @@ elastica_target_sources(
         ${LIBRARY}
         INTERFACE
         ConstantMagneticField.hpp
+        OscillatoryMagneticField.hpp
         RampedAdapter.hpp
         Rampup.hpp
 )
