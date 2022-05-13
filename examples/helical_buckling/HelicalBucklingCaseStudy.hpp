@@ -83,9 +83,9 @@ Gazzola et. al. R. Soc. 2018  section 3.4.1
   //    static constexpr String help = {"Radius of the rod"};
   //  };
 
-  struct damping {
+  struct damping_rate {
     using type = ::elastica::real_t;
-    static constexpr String help = {"Internal damping in the rod"};
+    static constexpr String help = {"Rate of damping in the rod"};
     static type default_value() { return 0.01; }
   };
 
@@ -95,7 +95,7 @@ Gazzola et. al. R. Soc. 2018  section 3.4.1
     static type default_value() { return 0.001; }
   };
 
-  using Parameters = tmpl::list<n_elements, damping, dt>;
+  using Parameters = tmpl::list<n_elements, damping_rate, dt>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);

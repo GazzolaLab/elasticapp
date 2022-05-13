@@ -14,13 +14,15 @@
 
 #pragma once
 
+#include "Simulator/Frames.hpp"
 ///// Types always first
 #include "Systems/CosseratRods/Components/Elasticity/detail/Types.hpp"
 /////
 #include "Systems/Block.hpp"
-#include "Systems/CosseratRods/Components/Tags.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/detail/Tags/ExplicitDampingAdapterFacadeTags.hpp"
+#include "Systems/CosseratRods/Components/Tags.hpp"
 #include "Utilities/CRTP.hpp"
+#include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace elastica {
@@ -79,8 +81,8 @@ namespace elastica {
           using Variables =
               tmpl::append<typename Parent::Variables,
                            typename VariableDefinitions::Variables>;
-          using typename VariableDefinitions::ForceDampingCoefficient;
-          using typename VariableDefinitions::TorqueDampingCoefficient;
+          using typename VariableDefinitions::ForceDampingRate;
+          using typename VariableDefinitions::TorqueDampingRate;
 
          private:
           // Form friendships
@@ -137,39 +139,50 @@ namespace elastica {
          protected:
           inline void compute_internal_modeled_loads_impl() /*noexcept*/ {
             auto& internal_force(blocks::get<tags::InternalLoads>(self()));
-            auto& dissipation_constant(blocks::get<tags::ForceDampingCoefficient>(self()));
-            auto& length(blocks::get<tags::ElementLength>(self()));
+            auto& dissipation_constant(
+                blocks::get<tags::ForceDampingRate>(self()));
+            auto& mass(blocks::get<tags::Mass>(self()));
             auto& velocity(blocks::get<tags::Velocity>(self()));
-            auto& damping_load(blocks::get<tags::_DummyNodeVector>(self()));
-            auto& dummy_loads(blocks::get<tags::_DummyElementVector>(self()));
-            auto elemental_velocity =
-                Traits::Operations::average_kernel(velocity);
 
             // need this to match pyelastica's definitions
             Parent::compute_internal_modeled_loads_impl();
-            dummy_loads = elemental_velocity %
-                          Traits::Operations::transpose(
-                              Traits::Operations::expand_for_broadcast(length));
-            self().template fill_ghosts_for<tags::_DummyElementVector>();
-
-            Traits::Operations::quadrature_kernel(damping_load, dummy_loads);
-            // fill in ghosts for element velocity
 
             internal_force -= Traits::Operations::transpose(
                                   Traits::Operations::expand_for_broadcast(
-                                      dissipation_constant)) %
-                              damping_load;
+                                      mass * dissipation_constant)) %
+                              velocity;
           }
 
           inline void compute_internal_modeled_torques_impl() /*noexcept*/ {
             auto& internal_torque(blocks::get<tags::InternalTorques>(self()));
-            auto& dissipation_constant(blocks::get<tags::TorqueDampingCoefficient>(self()));
+            auto& dissipation_constant(
+                blocks::get<tags::TorqueDampingRate>(self()));
             auto& angular_velocity(blocks::get<tags::AngularVelocity>(self()));
-            auto& length(blocks::get<tags::ElementLength>(self()));
+            auto& mass_SMOI(
+                blocks::get<tags::MassSecondMomentOfInertia>(self()));
+            auto& dilatation(blocks::get<tags::ElementDilatation>(self()));
 
             Parent::compute_internal_modeled_torques_impl();
-            internal_torque -= angular_velocity %
-                     Traits::Operations::transpose(Traits::Operations::expand_for_broadcast(length * dissipation_constant));
+
+            // do not need ghosts here since dissipation constant in zero in
+            // element ghosts
+            // may need evaluation, but we don't have a dummy allocated
+
+            for (std::size_t i_dof = 0UL;
+                 i_dof < TorqueDampingRate::get_dofs(cpp17::size(self()));
+                 ++i_dof) {
+              for (auto direction :
+                   {::elastica::cast_along<elastica::LagrangianFrame::D1>(),
+                    ::elastica::cast_along<elastica::LagrangianFrame::D2>(),
+                    ::elastica::cast_along<elastica::LagrangianFrame::D3>()}) {
+                // This assumes a uniform cross section
+                // Can be fixed later on
+                internal_torque(direction, i_dof) -=
+                    mass_SMOI(direction, direction, i_dof) *
+                    angular_velocity(direction, i_dof) *
+                    dissipation_constant[i_dof] / dilatation[i_dof];
+              }
+            }
           }
         };
 

@@ -60,10 +60,10 @@ void FlexibleSwingingPendulumCaseStudy::setup(
       StraightInit::Origin{origin},
       StraightInit::Direction{::elastica::Vec3{0.0, 0.0, 1.0}},
       StraightInit::Normal{::elastica::Vec3{1.0, 0.0, 0.0}},
-      StraightInit::ForceDampingCoefficient{
-          ::elastica::get<damping>(input_parameters)},
-      StraightInit::TorqueDampingCoefficient{
-          ::elastica::get<damping>(input_parameters)},
+      StraightInit::ForceDampingRate{
+          ::elastica::get<damping_rate>(input_parameters)},
+      StraightInit::TorqueDampingRate{
+          ::elastica::get<damping_rate>(input_parameters)},
   };
 
   rod_ref = simulator->emplace_back<CosseratRod>(

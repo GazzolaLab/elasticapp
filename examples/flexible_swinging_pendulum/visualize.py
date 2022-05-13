@@ -13,15 +13,18 @@ from cli.help import print_help
 
 
 def run_example(
-    reference_file: os.PathLike = "",
-    save_to_csv: bool = False,
-    save_figure: bool = False,
-    plot_cpp_py_deviation: bool = False,
+        reference_file: os.PathLike = "",
+        save_to_csv: bool = False,
+        save_figure: bool = False,
+        plot_cpp_py_deviation: bool = False,
 ):
     n_elem = 50
     base_radius = 0.005
     base_length = 1.0
-    nu = 1e-6
+
+    expected_density = 1.1e3
+    base_area = np.pi * base_radius ** 2
+    damping_rate = 1e-5
     youngs_modulus = 5e6
     shear_modulus = 5e6 / 1.5
     gravitational_acc = -9.80665
@@ -32,7 +35,7 @@ def run_example(
 
     cs = FlexibleSwingingPendulumCaseStudy(
         n_elements=n_elem,
-        damping=nu,
+        damping_rate=damping_rate,
         youngs_modulus=youngs_modulus,
         shear_modulus=shear_modulus,
         gravitational_acc=gravitational_acc,
@@ -102,10 +105,10 @@ def run_example(
                     times.shape, reference_results[:, 0].shape
                 ), "C++ and Python data not of equal size"
                 cpp_py_tip_deviation_x = (
-                    np.fabs(tip_displacements_x - reference_results[:, 1]) / base_length
+                        np.fabs(tip_displacements_x - reference_results[:, 1]) / base_length
                 )
                 cpp_py_tip_deviation_z = (
-                    np.fabs(tip_displacements_z - reference_results[:, 2]) / base_length
+                        np.fabs(tip_displacements_z - reference_results[:, 2]) / base_length
                 )
                 fig2 = plt.figure(figsize=(8, 4), frameon=True, dpi=150)
                 ax2 = fig2.add_subplot(111)

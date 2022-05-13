@@ -9,17 +9,17 @@ from postprocess import plot_helicalbuckling_results as plot_results
 
 
 def run_example(
-    save_to_csv: bool = False,
-    save_figure: bool = False,
+        save_to_csv: bool = False,
+        save_figure: bool = False,
 ):
     n_elem = 100
     base_length = 100.0
     dt = 0.001 * (base_length / n_elem)
-    final_time = 40.0
-    damping = 0.01
+    final_time = 1000.0
+    damping_rate = 0.01
 
     n_steps_if_not_sampled = int(final_time / dt)
-    sample_interval = n_steps_if_not_sampled // 2
+    sample_interval = n_steps_if_not_sampled // 100
     time_interval = sample_interval * dt
     n_steps = int(final_time / time_interval)
 
@@ -29,7 +29,7 @@ def run_example(
     cs = HelicalBucklingCaseStudy(
         n_elements=n_elem,
         dt=dt,
-        damping=damping,
+        damping_rate=damping_rate,
     )
 
     position_histories = []

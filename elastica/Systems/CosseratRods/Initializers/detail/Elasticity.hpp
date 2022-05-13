@@ -29,23 +29,23 @@ namespace elastica {
       namespace option_tags {
 
         // can be used for torque damping as well
-        struct ForceDampingCoefficient : Options::Parameter<real_t> {
+        struct ForceDampingRate : Options::Parameter<real_t> {
           using P = Options::Parameter<real_t>;
           using P::P;
           static constexpr Options::String help = {
-              "Velocity and angular velocity damping coefficient"};
+              "Coefficient to damp forces in proportion to velocity"};
           static type lower_bound() noexcept { return 0.0; }
-          using TagType = tags::ForceDampingCoefficient;
+          using TagType = tags::ForceDampingRate;
         };
 
         // can be used for torque damping as well
-        struct TorqueDampingCoefficient : Options::Parameter<real_t> {
+        struct TorqueDampingRate : Options::Parameter<real_t> {
           using P = Options::Parameter<real_t>;
           using P::P;
           static constexpr Options::String help = {
-              "Velocity and angular velocity damping coefficient"};
+              "Coefficient to damp torques in proportion to angular velocity"};
           static type lower_bound() noexcept { return 0.0; }
-          using TagType = tags::TorqueDampingCoefficient;
+          using TagType = tags::TorqueDampingRate;
         };
 
       }  // namespace option_tags
@@ -81,19 +81,27 @@ namespace elastica {
         using P = LinearHyperElasticModel;
 
        public:
-        using ForceDampingCoefficient = option_tags::ForceDampingCoefficient;
-        using TorqueDampingCoefficient = option_tags::TorqueDampingCoefficient;
+        using ForceDampingRate = option_tags::ForceDampingRate;
+        using TorqueDampingRate = option_tags::TorqueDampingRate;
+        using ForceDampingCoefficient [[deprecated(R"error(
+ForceDampingCoefficient is deprecated and will be removed in a future release.
+Use ForceDampingRate instead.
+)error")]] = ForceDampingRate;
+        using TorqueDampingCoefficient [[deprecated(R"error(
+TorqueDampingCoefficient is deprecated and will be removed in a future release.
+Use TorqueDampingRate instead.
+)error")]] = TorqueDampingRate;
 
         // parent has no required parameters
         using RequiredParameters =
-            tmpl::list<ForceDampingCoefficient, TorqueDampingCoefficient>;
+            tmpl::list<ForceDampingRate, TorqueDampingRate>;
         using DefaultParameters = tmpl::list<>;
 
        protected:
         template <typename OptionsTuple>
         decltype(auto) get_required_parameters(
             OptionsTuple const& options_cache) const /*noexcept*/ {
-          tmpl::list<ForceDampingCoefficient, TorqueDampingCoefficient> tags{};
+          tmpl::list<ForceDampingRate, TorqueDampingRate> tags{};
           check_lower_bounds(options_cache, tags);
 
           return std::tuple_cat(

@@ -170,10 +170,8 @@ namespace {
             [](...) { return 4.0; }),
         blocks::initialize<tags::BendingTwistRigidityMatrix>(
             [](...) { return 4.0; }),
-        blocks::initialize<tags::ForceDampingCoefficient>(
-            [](...) { return 4.0; }),
-        blocks::initialize<tags::TorqueDampingCoefficient>(
-            [](...) { return 4.0; }),
+        blocks::initialize<tags::ForceDampingRate>([](...) { return 4.0; }),
+        blocks::initialize<tags::TorqueDampingRate>([](...) { return 4.0; }),
         // Kinematics Variables
         // blocks::initialize<tags::Mass>([](...) { return 1.0; }),
         blocks::initialize<tags::Material>(

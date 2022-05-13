@@ -65,8 +65,8 @@ int main() {
       StraightInit::Origin{::elastica::Vec3{0.0, 0.0, 0.0}},
       StraightInit::Direction{::elastica::Vec3{0.0, 1.0, 0.0}},
       StraightInit::Normal{::elastica::Vec3{0.0, 0.0, 1.0}},
-      StraightInit::ForceDampingCoefficient{0.2},
-      StraightInit::TorqueDampingCoefficient{0.2},
+      StraightInit::ForceDampingRate{0.2},
+      StraightInit::TorqueDampingRate{0.2},
   };
   //
 

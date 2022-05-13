@@ -27,7 +27,8 @@ namespace mock {
   };
 
   // B can be block or block slice
-  template <typename Tr, template <typename> class B, template <typename> class... T>
+  template <typename Tr, template <typename> class B,
+            template <typename> class... T>
   struct MultiComponentPlugin
       : public T<B<MultiComponentPlugin<Tr, B, T...>>>...,
         public ::tt::ConformsTo<blocks::protocols::Plugin> {
@@ -39,7 +40,7 @@ namespace mock {
     using ComputedVariables =
         tmpl::append<typename T<Model>::ComputedVariables...>;
 
-    //using Traits = tmpl::front<tmpl::list<typename T<Model>::Traits...>>;
+    // using Traits = tmpl::front<tmpl::list<typename T<Model>::Traits...>>;
     using Traits = Tr;
 
     using IndexType = typename Traits::DataType::Index;
@@ -64,6 +65,11 @@ namespace mock {
     static constexpr auto size_of_block() noexcept -> std::size_t {
       return This::size_of<IndexType>() + This::size_of<ScalarType>() +
              This::size_of<VectorType>() + This::size_of<MatrixType>();
+    }
+
+    // needed for the way new force damping is done
+    auto size() const noexcept -> std::size_t {
+      return 10UL;  // This is from initialize_block's logic
     }
 
     //**************************************************************************

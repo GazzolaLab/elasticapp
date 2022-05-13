@@ -68,10 +68,10 @@ void HelicalBucklingCaseStudy::setup(InputTypes<This> const& input_parameters) {
       StraightInit::Origin{origin},
       StraightInit::Direction{rod_direction},
       StraightInit::Normal{normal_direction},
-      StraightInit::ForceDampingCoefficient{
-          ::elastica::get<damping>(input_parameters)},
-      StraightInit::TorqueDampingCoefficient{
-          ::elastica::get<damping>(input_parameters)},
+      StraightInit::ForceDampingRate{
+          ::elastica::get<damping_rate>(input_parameters)},
+      StraightInit::TorqueDampingRate{
+          ::elastica::get<damping_rate>(input_parameters)},
   };
 
   rod_ref =

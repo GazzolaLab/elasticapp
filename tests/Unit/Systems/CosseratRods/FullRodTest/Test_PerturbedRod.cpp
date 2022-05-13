@@ -53,9 +53,9 @@ namespace {
             [](...) { return 4.0; }),
         blocks::initialize<elastica::tags::ElementDilatation>(
             [](...) { return 1.0; }),
-        blocks::initialize<elastica::tags::ForceDampingCoefficient>(
+        blocks::initialize<elastica::tags::ForceDampingRate>(
             [](...) { return 4.0; }),
-        blocks::initialize<elastica::tags::TorqueDampingCoefficient>(
+        blocks::initialize<elastica::tags::TorqueDampingRate>(
             [](...) { return 1.0; }),
         // Kinematics Variables
         // blocks::initialize<tags::Mass>([](...) { return 1.0; }),
@@ -93,8 +93,8 @@ namespace {
         Init::Origin{::elastica::Vec3{0.0, 0.0, 0.0}},
         Init::Direction{::elastica::Vec3{0.0, 1.0, 0.0}},
         Init::Normal{::elastica::Vec3{0.0, 0.0, 1.0}},
-        Init::ForceDampingCoefficient{0.2},
-        Init::TorqueDampingCoefficient{0.2},
+        Init::ForceDampingRate{0.2},
+        Init::TorqueDampingRate{0.2},
     };
     auto slicedrod =
         simple_rod.emplace_back(straight_initializer.initialize<Plugin>());
@@ -250,8 +250,8 @@ namespace {
         Init::Origin{::elastica::Vec3{0.0, 0.0, 0.0}},
         Init::Direction{::elastica::Vec3{0.0, 1.0, 0.0}},
         Init::Normal{::elastica::Vec3{0.0, 0.0, 1.0}},
-        Init::ForceDampingCoefficient{0.2},
-        Init::TorqueDampingCoefficient{0.2},
+        Init::ForceDampingRate{0.2},
+        Init::TorqueDampingRate{0.2},
     };
     auto slicedrod =
         simple_rod.emplace_back(straight_initializer.initialize<Plugin>());
@@ -432,8 +432,8 @@ namespace {
         Init::Origin{::elastica::Vec3{0.0, 0.0, 0.0}},
         Init::Direction{::elastica::Vec3{0.0, 1.0, 0.0}},
         Init::Normal{::elastica::Vec3{0.0, 0.0, 1.0}},
-        Init::ForceDampingCoefficient{0.2},
-        Init::TorqueDampingCoefficient{0.2},
+        Init::ForceDampingRate{0.2},
+        Init::TorqueDampingRate{0.2},
     };
     auto slicedrod =
         simple_rod.emplace_back(straight_initializer.initialize<Plugin>());
@@ -630,8 +630,8 @@ namespace {
         Init::Origin{::elastica::Vec3{0.0, 0.0, 0.0}},
         Init::Direction{::elastica::Vec3{0.0, 1.0, 0.0}},
         Init::Normal{::elastica::Vec3{0.0, 0.0, 1.0}},
-        Init::ForceDampingCoefficient{0.2},
-        Init::TorqueDampingCoefficient{0.2},
+        Init::ForceDampingRate{0.2},
+        Init::TorqueDampingRate{0.2},
     };
     auto slicedrod =
         simple_rod.emplace_back(straight_initializer.initialize<Plugin>());
@@ -804,8 +804,8 @@ namespace {
         Init::Origin{::elastica::Vec3{0.0, 0.0, 0.0}},
         Init::Direction{::elastica::Vec3{0.0, 1.0, 0.0}},
         Init::Normal{::elastica::Vec3{0.0, 0.0, 1.0}},
-        Init::ForceDampingCoefficient{0.2},
-        Init::TorqueDampingCoefficient{0.2},
+        Init::ForceDampingRate{0.2},
+        Init::TorqueDampingRate{0.2},
     };
     auto slicedrod =
         simple_rod.emplace_back(straight_initializer.initialize<Plugin>());

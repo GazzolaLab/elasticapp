@@ -24,10 +24,10 @@
 /////
 #include "Systems/Block.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/detail/Tags/ElasticityInterfaceTags.hpp"
+#include "Time/SimulationTime.hpp"
 #include "Utilities/CRTP.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsDetected.hpp"
-#include "Time/SimulationTime.hpp"
 
 namespace elastica {
 
@@ -74,9 +74,9 @@ namespace elastica {
            * hierarchy
            */
           struct InternalLoads : public Traits::template CosseratRodVariable<
-              ::elastica::tags::InternalLoads,    //
-              typename Traits::DataType::Vector,  //
-              typename Traits::Place::OnNode> {};
+                                     ::elastica::tags::InternalLoads,    //
+                                     typename Traits::DataType::Vector,  //
+                                     typename Traits::Place::OnNode> {};
           //********************************************************************
 
           //********************************************************************
@@ -84,9 +84,9 @@ namespace elastica {
            * hierarchy
            */
           struct InternalStress : public Traits::template CosseratRodVariable<
-                                     ::elastica::tags::InternalStress,    //
-                                     typename Traits::DataType::Vector,  //
-                                     typename Traits::Place::OnElement> {};
+                                      ::elastica::tags::InternalStress,   //
+                                      typename Traits::DataType::Vector,  //
+                                      typename Traits::Place::OnElement> {};
           //********************************************************************
 
           //********************************************************************
@@ -104,9 +104,9 @@ namespace elastica {
            * hierarchy
            */
           struct InternalCouple : public Traits::template CosseratRodVariable<
-              ::elastica::tags::InternalCouple,  //
-              typename Traits::DataType::Vector,  //
-              typename Traits::Place::OnVoronoi> {};
+                                      ::elastica::tags::InternalCouple,   //
+                                      typename Traits::DataType::Vector,  //
+                                      typename Traits::Place::OnVoronoi> {};
           //********************************************************************
 
           //********************************************************************
@@ -114,26 +114,21 @@ namespace elastica {
            * Avoid temp memory allocations. Use only if must
            *  - Some exception: branch of operation
            */
-          struct _DummyNodeVector: public Traits::template CosseratRodVariable<
-              ::elastica::tags::_DummyNodeVector,
-              typename Traits::DataType::Vector,
-              typename Traits::Place::OnNode> {};
-          struct _DummyElementVector: public Traits::template CosseratRodVariable<
-              ::elastica::tags::_DummyElementVector,
-              typename Traits::DataType::Vector,
-              typename Traits::Place::OnElement> {};
-          struct _DummyElementVector2: public Traits::template CosseratRodVariable<
-              ::elastica::tags::_DummyElementVector2,
-              typename Traits::DataType::Vector,
-              typename Traits::Place::OnElement> {};
-          struct _DummyVoronoiVector: public Traits::template CosseratRodVariable<
-              ::elastica::tags::_DummyVoronoiVector,
-              typename Traits::DataType::Vector,
-              typename Traits::Place::OnVoronoi> {};
-          struct _DummyMatrix: public Traits::template CosseratRodVariable<
-              ::elastica::tags::_DummyMatrix,
-              typename Traits::DataType::Matrix,
-              typename Traits::Place::OnElement> {};
+          struct _DummyElementVector
+              : public Traits::template CosseratRodVariable<
+                    ::elastica::tags::_DummyElementVector,
+                    typename Traits::DataType::Vector,
+                    typename Traits::Place::OnElement> {};
+          struct _DummyElementVector2
+              : public Traits::template CosseratRodVariable<
+                    ::elastica::tags::_DummyElementVector2,
+                    typename Traits::DataType::Vector,
+                    typename Traits::Place::OnElement> {};
+          struct _DummyVoronoiVector
+              : public Traits::template CosseratRodVariable<
+                    ::elastica::tags::_DummyVoronoiVector,
+                    typename Traits::DataType::Vector,
+                    typename Traits::Place::OnVoronoi> {};
           //********************************************************************
 
           //@}
@@ -143,16 +138,10 @@ namespace elastica {
           //! List of initialized variables
           using InitializedVariables = tmpl::list<>;
           //! List of computed variables
-          using ComputedVariables = tmpl::list<
-              InternalLoads,
-              InternalTorques,
-              InternalStress,
-              InternalCouple,
-              _DummyNodeVector,
-              _DummyElementVector,
-              _DummyElementVector2,
-              _DummyVoronoiVector,
-              _DummyMatrix>;
+          using ComputedVariables =
+              tmpl::list<InternalLoads, InternalTorques, InternalStress,
+                         InternalCouple, _DummyElementVector,
+                         _DummyElementVector2, _DummyVoronoiVector>;
           //! List of all variables
           using Variables =
               tmpl::append<InitializedVariables, ComputedVariables>;
@@ -253,10 +242,10 @@ namespace elastica {
               tmpl::append<typename ElasticityModel::Variables,
                            typename VariableDefinitions::Variables>;
           //! Variables from definitions
-          using typename VariableDefinitions::InternalLoads;
-          using typename VariableDefinitions::InternalTorques;
           using typename VariableDefinitions::InternalCouple;
+          using typename VariableDefinitions::InternalLoads;
           using typename VariableDefinitions::InternalStress;
+          using typename VariableDefinitions::InternalTorques;
 
           //********************************************************************
           /*!\brief Initialize method for the current component
@@ -342,7 +331,7 @@ namespace elastica {
            * \return void/None
            *
            */
-          inline void compute_internal_dynamics(::elastica::Time time_v){
+          inline void compute_internal_dynamics(::elastica::Time time_v) {
             (void)time_v;
             compute_internal_forces();
             compute_internal_torques();

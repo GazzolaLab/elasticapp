@@ -76,8 +76,8 @@ namespace {
                          Init::Origin{::elastica::Vec3{0.0, 0.0, 0.0}},
                          Init::Direction{::elastica::Vec3{0.0, 0.0, 1.0}},
                          Init::Normal{::elastica::Vec3{1.0, 0.0, 0.0}},
-                         Init::ForceDampingCoefficient{0.2},
-                         Init::TorqueDampingCoefficient{0.2}};
+                         Init::ForceDampingRate{0.2},
+                         Init::TorqueDampingRate{0.2}};
 
         sim->template emplace_back<Plugin>(initializer.initialize<Plugin>());
       }
@@ -166,9 +166,9 @@ namespace {
     sim->finalize();
     // because the environments do not need support for primitives, they are not
     // initialized, so we initialize them
-    if (sim->primitives_are_required()){
+    if (sim->primitives_are_required()) {
       // it takes care of populating it
-    } else{
+    } else {
       sim->populate_primitives();
     }
 

@@ -93,8 +93,8 @@ namespace {
     TestLinearHyperElasticModelWithDamping initializer{
         TestLinearHyperElasticModelWithDamping::NElement{20UL},
         TestLinearHyperElasticModelWithDamping::Material{::elastica::iron},
-        TestLinearHyperElasticModelWithDamping::ForceDampingCoefficient{0.2},
-        TestLinearHyperElasticModelWithDamping::TorqueDampingCoefficient{0.3},
+        TestLinearHyperElasticModelWithDamping::ForceDampingRate{0.2},
+        TestLinearHyperElasticModelWithDamping::TorqueDampingRate{0.3},
     };
 
     // a tuple of functions depending on index
@@ -133,8 +133,8 @@ namespace {
       TestLinearHyperElasticModelWithDamping initializer{
           TestLinearHyperElasticModelWithDamping::NElement{20UL},
           TestLinearHyperElasticModelWithDamping::Material{::elastica::iron},
-          TestLinearHyperElasticModelWithDamping::ForceDampingCoefficient{-0.2},
-          TestLinearHyperElasticModelWithDamping::TorqueDampingCoefficient{0.3},
+          TestLinearHyperElasticModelWithDamping::ForceDampingRate{-0.2},
+          TestLinearHyperElasticModelWithDamping::TorqueDampingRate{0.3},
       };
 
       // a tuple of functions depending on index
@@ -144,9 +144,8 @@ namespace {
       TestLinearHyperElasticModelWithDamping initializer{
           TestLinearHyperElasticModelWithDamping::NElement{20UL},
           TestLinearHyperElasticModelWithDamping::Material{::elastica::iron},
-          TestLinearHyperElasticModelWithDamping::ForceDampingCoefficient{0.2},
-          TestLinearHyperElasticModelWithDamping::TorqueDampingCoefficient{
-              -0.3},
+          TestLinearHyperElasticModelWithDamping::ForceDampingRate{0.2},
+          TestLinearHyperElasticModelWithDamping::TorqueDampingRate{-0.3},
       };
 
       // a tuple of functions depending on index

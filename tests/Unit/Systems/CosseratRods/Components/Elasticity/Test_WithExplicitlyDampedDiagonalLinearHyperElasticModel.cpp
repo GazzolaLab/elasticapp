@@ -101,10 +101,8 @@ namespace {
         blocks::initialize<tags::AngularVelocity>([](...) { return 1.0; }),
         blocks::initialize<tags::Acceleration>([](...) { return 3.0; }),
         blocks::initialize<tags::AngularAcceleration>([](...) { return 1.0; }),
-        blocks::initialize<tags::ForceDampingCoefficient>(
-            [](...) { return 2.0; }),
-        blocks::initialize<tags::TorqueDampingCoefficient>(
-            [](...) { return 2.0; }));
+        blocks::initialize<tags::ForceDampingRate>([](...) { return 2.0; }),
+        blocks::initialize<tags::TorqueDampingRate>([](...) { return 2.0; }));
 
     Model::initialize(model, std::move(initializer));
 

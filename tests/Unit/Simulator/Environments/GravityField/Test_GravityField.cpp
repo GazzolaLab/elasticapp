@@ -128,8 +128,8 @@ namespace {
         StraightInit::Origin{origin},
         StraightInit::Direction{::elastica::Vec3{1.0, 0.0, 0.0}},
         StraightInit::Normal{::elastica::Vec3{0.0, 1.0, 0.0}},
-        StraightInit::ForceDampingCoefficient{0.1},
-        StraightInit::TorqueDampingCoefficient{0.1},
+        StraightInit::ForceDampingRate{0.1},
+        StraightInit::TorqueDampingRate{0.1},
     };
 
     auto rod_ref = simulator->emplace_back<CosseratRod>(
@@ -233,8 +233,8 @@ namespace {
         StraightInit::Origin{origin},
         StraightInit::Direction{::elastica::Vec3{1.0, 0.0, 0.0}},
         StraightInit::Normal{::elastica::Vec3{0.0, 1.0, 0.0}},
-        StraightInit::ForceDampingCoefficient{0.1},
-        StraightInit::TorqueDampingCoefficient{0.1},
+        StraightInit::ForceDampingRate{0.1},
+        StraightInit::TorqueDampingRate{0.1},
     };
 
     auto rod_ref = simulator->emplace_back<CosseratRod>(

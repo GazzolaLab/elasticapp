@@ -39,4 +39,5 @@ target_link_libraries(
         ErrorHandling
         Utilities
         SystemsCommon
+        Frames # For cast_along
 )

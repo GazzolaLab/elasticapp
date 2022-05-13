@@ -14,15 +14,23 @@ ConvergenceResults = NewType("ConvergenceResults", List[float])
 
 
 def simulate_timoshenko_beam_with(
-    n_elem: PositiveInt, progress, uuid: int, is_rod_shearable: bool = True
+        n_elem: PositiveInt, progress, uuid: int, is_rod_shearable: bool = True
 ):
     sample_interval = 500
 
     base_radius = 0.25
-    base_area = np.pi * base_radius**2
+    base_area = np.pi * base_radius ** 2
 
     base_length = 3.0
-    nu = 500.0
+    density = 5e3
+    """
+    We set this value higher than usual because it accelerates convergence
+    to the quasi-steady state, where forces balance out each other. We are only 
+    interested in this state, to enable comparison with theory. It is worth noting
+    that in this state, rates (v and omega) are zero : hence the damping contribution 
+    to force is zero---so this coefficient does not really matter.
+    """
+    damping_rate = 0.5
     youngs_modulus = 1e6
 
     shear_modulus = 1e4 if is_rod_shearable else 1e9
@@ -32,13 +40,13 @@ def simulate_timoshenko_beam_with(
 
     end_force_transverse = -15.0
     dt = 0.01 * (base_length / n_elem)
-    final_time = 500.0
+    final_time = 200.0
     time_interval = sample_interval * dt
     n_steps = int(final_time / time_interval)
 
     cs = TimoshenkoCaseStudy(
         n_elements=n_elem,
-        damping=nu,
+        damping_rate=damping_rate,
         youngs_modulus=youngs_modulus,
         shear_modulus=shear_modulus,
         applied_force=end_force_transverse,

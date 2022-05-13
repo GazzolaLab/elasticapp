@@ -94,12 +94,6 @@ oscillations enables comparison with theory.
     static type default_value() { return 49UL; }
   };
 
-  struct damping {
-    using type = ::elastica::real_t;
-    static constexpr String help = {"Internal damping in the rod"};
-    static type default_value() { return 20.0; }
-  };
-
   struct youngs_modulus {
     using type = ::elastica::real_t;
     static constexpr String help = {"Youngs modulus of the rod"};
@@ -118,6 +112,21 @@ oscillations enables comparison with theory.
     static type default_value() { return 0.025; }
   };
 
+  struct damping_rate {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Rate of damping in the rod"};
+    static type default_value() {
+      /* We set this value higher than usual because it accelerates convergence
+       * to the quasi-steady state, where forces balance out each other. We are
+       * only interested in this state, to enable comparison with theory. It is
+       * worth noting that in this state, rates (v and omega) are zero : hence
+       * the damping contribution to force is zero---so this coefficient does
+       * not really matter.
+       */
+      return 10.0;
+    }
+  };
+
   struct length {
     using type = ::elastica::real_t;
     static constexpr String help = {"Length of the rod"};
@@ -133,7 +142,7 @@ oscillations enables comparison with theory.
     }
   };
 
-  using Parameters = tmpl::list<n_elements, damping, youngs_modulus,
+  using Parameters = tmpl::list<n_elements, damping_rate, youngs_modulus,
                                 applied_force, radius, length, dt>;
 
   /* Required functions */

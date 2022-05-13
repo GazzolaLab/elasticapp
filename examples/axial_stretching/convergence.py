@@ -15,10 +15,17 @@ def simulate_axial_stretching_with(n_elem: PositiveInt, progress, uuid: int) -> 
     sample_interval = 200
 
     base_radius = 0.025
-    base_area = np.pi * base_radius**2
+    base_area = np.pi * base_radius ** 2
 
     base_length = 1.0
-    nu = 20.0
+    """
+    We set this value higher than usual because it accelerates convergence
+    to the quasi-steady state, where forces balance out each other. We are only 
+    interested in this state, to enable comparison with theory. It is worth noting
+    that in this state, rates (v and omega) are zero : hence the damping contribution 
+    to force is zero---so this coefficient does not really matter.
+    """
+    damping_rate = 10.0
     youngs_modulus = 1e4
     end_force_x = 1.0
     dt = 0.01 * (base_length / n_elem)
@@ -28,7 +35,7 @@ def simulate_axial_stretching_with(n_elem: PositiveInt, progress, uuid: int) -> 
 
     cs = AxialStretchingCaseStudy(
         n_elements=n_elem,
-        damping=nu,
+        damping_rate=damping_rate,
         youngs_modulus=youngs_modulus,
         applied_force=end_force_x,
         radius=base_radius,
@@ -56,7 +63,7 @@ def simulate_axial_stretching_with(n_elem: PositiveInt, progress, uuid: int) -> 
     expected_tip_disp = end_force_x * base_length / base_area / youngs_modulus
     # First-order theory with modified-length, gives better estimates
     expected_tip_disp_improved = (
-        end_force_x * base_length / (base_area * youngs_modulus - end_force_x)
+            end_force_x * base_length / (base_area * youngs_modulus - end_force_x)
     )
 
     times = np.asarray(times)

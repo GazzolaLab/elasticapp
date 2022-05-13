@@ -97,8 +97,8 @@ int main() {
       StraightInit::Origin{::elastica::Vec3{0.0, 0.0, 0.0}},
       StraightInit::Direction{::elastica::Vec3{0.0, 1.0, 0.0}},
       StraightInit::Normal{::elastica::Vec3{0.0, 0.0, 1.0}},
-      StraightInit::ForceDampingCoefficient{0.2},
-      StraightInit::TorqueDampingCoefficient{0.2},
+      StraightInit::ForceDampingRate{0.2},
+      StraightInit::TorqueDampingRate{0.2},
   };
 
   // Note that the order of arguments here do not matter, as long as all
@@ -109,11 +109,11 @@ int main() {
       StraightInit::Length{0.18},
       StraightInit::NElement{10UL},
       StraightInit::Normal{::elastica::Vec3{0.0, 0.0, 1.0}},
-      StraightInit::ForceDampingCoefficient{0.2},
+      StraightInit::ForceDampingRate{0.2},
       StraightInit::Material{my_material},
       StraightInit::Origin{::elastica::Vec3{0.0, 0.0, 0.0}},
       StraightInit::Direction{::elastica::Vec3{0.0, 1.0, 0.0}},
-      StraightInit::TorqueDampingCoefficient{0.2},
+      StraightInit::TorqueDampingRate{0.2},
   };
 
   /*
@@ -216,9 +216,9 @@ int main() {
               [](...) { return 4.0; }),
           blocks::initialize<elastica::tags::ElementDilatation>(
               [](...) { return 1.0; }),
-          blocks::initialize<elastica::tags::ForceDampingCoefficient>(
+          blocks::initialize<elastica::tags::ForceDampingRate>(
               [](...) { return 4.0; }),
-          blocks::initialize<elastica::tags::TorqueDampingCoefficient>(
+          blocks::initialize<elastica::tags::TorqueDampingRate>(
               [](...) { return 1.0; }),
           // Kinematics Variables
           blocks::initialize<elastica::tags::Material>(

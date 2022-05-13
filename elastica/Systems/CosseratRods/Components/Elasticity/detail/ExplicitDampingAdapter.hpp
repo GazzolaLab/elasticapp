@@ -71,10 +71,10 @@ namespace elastica {
           /*!\brief Variable marking a scalar coefficient for damping forces
            * within the Cosserat rod hierarchy
            */
-          struct ForceDampingCoefficient
+          struct ForceDampingRate
               : public Traits::template CosseratRodInitializedVariable<
-                    ::elastica::tags::ForceDampingCoefficient,  //
-                    typename Traits::DataType::Scalar,          //
+                    ::elastica::tags::ForceDampingRate,  //
+                    typename Traits::DataType::Scalar,   //
                     typename Traits::Place::OnNode> {};
           //********************************************************************
 
@@ -82,10 +82,10 @@ namespace elastica {
           /*!\brief Variable marking a scalar coefficient for damping torques
            * within the Cosserat rod hierarchy
            */
-          struct TorqueDampingCoefficient
+          struct TorqueDampingRate
               : public Traits::template CosseratRodInitializedVariable<
-                    ::elastica::tags::TorqueDampingCoefficient,  //
-                    typename Traits::DataType::Scalar,           //
+                    ::elastica::tags::TorqueDampingRate,  //
+                    typename Traits::DataType::Scalar,    //
                     typename Traits::Place::OnElement> {};
           //********************************************************************
 
@@ -97,7 +97,7 @@ namespace elastica {
           using ComputedVariables = tmpl::list<>;
           //! List of initialized variables
           using InitializedVariables =
-              tmpl::list<ForceDampingCoefficient, TorqueDampingCoefficient>;
+              tmpl::list<ForceDampingRate, TorqueDampingRate>;
           //! List of all variables
           using Variables =
               tmpl::append<InitializedVariables, ComputedVariables>;
@@ -245,8 +245,8 @@ namespace elastica {
            */
           struct ForceDampingCoefficient
               : public Traits::template CosseratRodInitializedVariable<
-                    ::elastica::tags::ForceDampingCoefficient,  //
-                    typename Traits::DataType::Scalar,          //
+                    ::elastica::tags::ForceDampingRate,  //
+                    typename Traits::DataType::Scalar,   //
                     typename Traits::Place::OnRod> {};
           //********************************************************************
 
@@ -256,8 +256,8 @@ namespace elastica {
            */
           struct TorqueDampingCoefficient
               : public Traits::template CosseratRodInitializedVariable<
-                    ::elastica::tags::TorqueDampingCoefficient,  //
-                    typename Traits::DataType::Scalar,           //
+                    ::elastica::tags::TorqueDampingRate,  //
+                    typename Traits::DataType::Scalar,    //
                     typename Traits::Place::OnRod> {};
           //********************************************************************
 

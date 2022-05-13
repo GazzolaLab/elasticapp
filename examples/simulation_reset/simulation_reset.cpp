@@ -61,8 +61,8 @@ int main() {
       Init::Origin{::elastica::Vec3{0.0, 0.0, 0.0}},
       Init::Direction{::elastica::Vec3{0.0, 1.0, 0.0}},
       Init::Normal{::elastica::Vec3{0.0, 0.0, 1.0}},
-      Init::ForceDampingCoefficient{0.2},
-      Init::TorqueDampingCoefficient{0.2},
+      Init::ForceDampingRate{0.2},
+      Init::TorqueDampingRate{0.2},
   };
 
   // Add two systems

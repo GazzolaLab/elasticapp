@@ -94,12 +94,6 @@ geometrically exact Cosserat rods. Multibody System Dynamics, 25(3), 285-312)
     static type default_value() { return 50UL; }
   };
 
-  struct damping {
-    using type = ::elastica::real_t;
-    static constexpr String help = {"Internal damping in the rod"};
-    static type default_value() { return 1e-6; }
-  };
-
   struct youngs_modulus {
     using type = ::elastica::real_t;
     static constexpr String help = {"Youngs modulus of the rod"};
@@ -125,6 +119,12 @@ geometrically exact Cosserat rods. Multibody System Dynamics, 25(3), 285-312)
     static type default_value() { return 0.005; }
   };
 
+  struct damping_rate {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Rate of damping in the rod"};
+    static type default_value() { return 1e-5; }
+  };
+
   struct length {
     using type = ::elastica::real_t;
     static constexpr String help = {"Length of the rod"};
@@ -141,7 +141,7 @@ geometrically exact Cosserat rods. Multibody System Dynamics, 25(3), 285-312)
   };
 
   using Parameters =
-      tmpl::list<n_elements, damping, youngs_modulus, shear_modulus,
+      tmpl::list<n_elements, damping_rate, youngs_modulus, shear_modulus,
                  gravitational_acc, radius, length, dt>;
 
   /* Required functions */
