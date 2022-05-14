@@ -25,8 +25,7 @@ from elasticapp.CaseStudies.PyAxialStretchingCaseStudy import AxialStretchingCas
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
 
-from cli.help import print_description
-from cli.progress import track_simulation
+from cli import print_description, track_simulation
 
 
 def run_example(

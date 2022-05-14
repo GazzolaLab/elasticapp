@@ -6,6 +6,7 @@ add_subdirectory(helical_buckling)
 add_subdirectory(flexible_swinging_pendulum)
 add_subdirectory(hinge_joint)
 add_subdirectory(rigid_body_collision)
+add_subdirectory(rod_collision)
 
 # examples
 include(ElasticaAddExamples)

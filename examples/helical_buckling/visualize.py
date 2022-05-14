@@ -2,8 +2,7 @@ import numpy as np
 from elasticapp import Blaze  # noqa
 from elasticapp.CaseStudies.PyHelicalBucklingCaseStudy import HelicalBucklingCaseStudy
 
-from cli.help import print_description
-from cli.progress import track_simulation
+from cli import print_description, track_simulation
 from postprocess import plot_helicalbuckling_results as plot_results
 
 

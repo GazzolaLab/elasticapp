@@ -3,8 +3,7 @@ from elasticapp import Blaze  # noqa
 from elasticapp.CaseStudies.PyTimoshenkoCaseStudy import TimoshenkoCaseStudy
 from matplotlib import pyplot as plt
 
-from cli.help import print_description
-from cli.progress import track_simulation
+from cli import print_description, track_simulation
 from helpers.analytical import analytical_shearable, analytical_unshearable
 from helpers.postprocess import plot_beam, plot_velocity
 

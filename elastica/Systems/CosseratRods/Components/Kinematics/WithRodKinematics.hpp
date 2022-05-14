@@ -536,6 +536,27 @@ namespace elastica {
         //**********************************************************************
 
         //**********************************************************************
+        /*!\name Mass methods*/
+        //@{
+        /*!\brief Gets mass of the current rod
+         */
+        inline constexpr decltype(auto) get_mass() & noexcept {
+          return blocks::get<tags::Mass>(self());
+        }
+        inline constexpr decltype(auto) get_mass() const& noexcept {
+          return blocks::get<tags::Mass>(self());
+        }
+        inline constexpr decltype(auto) get_mass(std::size_t idx) & noexcept {
+          return Mass::slice(get_mass(), idx);
+        }
+        inline constexpr decltype(auto) get_mass(
+            std::size_t idx) const& noexcept {
+          return Mass::slice(get_mass(), idx);
+        }
+        //@}
+        //**********************************************************************
+
+        //**********************************************************************
         /*!\name External Loads methods*/
         //@{
         /*!\brief Gets external loads of the current rod

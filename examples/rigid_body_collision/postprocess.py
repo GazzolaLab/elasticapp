@@ -208,7 +208,7 @@ def animate_scenario(
         ani = FuncAnimation(fig, update, frames=range(0, n_frames, frame_skip))
         if save_figure:
             progress.console.print(
-                "[red]Rendering animation to file. It will be displayed on-screen completed."
+                "[red]Rendering animation to file. It will be displayed on-screen once completed."
             )
             progress.update(animation_task, visible=True)
             ani.save(

@@ -6,8 +6,7 @@ from elasticapp.CaseStudies.PyRigidBodyCollisionCaseStudy import (
 )
 from matplotlib import pyplot as plt
 
-from cli.help import print_description
-from cli.progress import track_simulation
+from cli import print_description, track_simulation
 from postprocess import plot_position, animate_scenario, plot_energies, Stats
 
 

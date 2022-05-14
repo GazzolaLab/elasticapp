@@ -191,7 +191,9 @@ namespace {
       auto post_capsule_check = [](auto const& p) {
         CHECK(p.get_radius() == approx(0.2));
         // CHECK(p.get_position() == ::elastica::Vec3{1., 0., 0.});
-        CHECK(p.get_rotation_matrix() == (::elastica::identity3()));
+        // don't check for entire matrix, only check for tangents
+        CHECK(blaze::row<2UL>(p.get_rotation_matrix()) ==
+              blaze::row<2UL>(::elastica::identity3()));
         CHECK(p.get_velocity() == ::elastica::Vec3{0., 0., 0.});
         CHECK(p.get_angular_velocity() == ::elastica::Vec3{0., 0., 0.});
       };

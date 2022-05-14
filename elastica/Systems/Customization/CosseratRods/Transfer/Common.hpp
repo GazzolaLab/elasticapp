@@ -21,6 +21,8 @@
 #include "Simulator/Environments/Transfer/TransferTags.hpp"  // refactor
 //
 #include "Systems/Customization/CosseratRods/Geometry/PrimitiveTrait.hpp"
+//
+#include "Utilities/Math/Orthogonal.hpp"
 
 namespace elastica {
 
@@ -69,10 +71,19 @@ namespace elastica {
                   ::elastica::Vec3{0.5 *
                                    (collection.get_position(index) +
                                     collection.get_position(index + 1UL))},
-                  collection.get_director(index),
-                  ::elastica::Vec3{0.5 *
-                                   (collection.get_velocity(index) +
-                                    collection.get_velocity(index + 1UL))},
+                  // Warning : do NOT use directors directly here, as it results
+                  // in a shear-wave instability arising from discrete-contact
+                  // events, such as those occuring in rod-collision case study.
+                  make_orthogonal_bases_from_tangent(
+                      collection.get_tangent(index)),
+                  // we scale it up by the mass to conserve total momentum
+                  // while doing node 2 element
+                  ::elastica::Vec3{(collection.get_mass(index) *
+                                        collection.get_velocity(index) +
+                                    collection.get_mass(index + 1UL) *
+                                        collection.get_velocity(index + 1UL)) /
+                                   (collection.get_mass(index) +
+                                    collection.get_mass(index + 1UL))},
                   ::elastica::Vec3{collection.get_angular_velocity(index)});
               ++index;
             });

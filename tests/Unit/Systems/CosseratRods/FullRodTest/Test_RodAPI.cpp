@@ -21,6 +21,7 @@ namespace {
     cosserat_rod.get_reference_element_length();
     cosserat_rod.get_reference_curvature();
     cosserat_rod.get_reference_shear_stretch_strain();
+    cosserat_rod.get_tangent();
     //
     cosserat_rod.get_element_dimension();
     cosserat_rod.get_element_volume();
@@ -29,6 +30,7 @@ namespace {
     cosserat_rod.get_angular_velocity();
     //
     cosserat_rod.get_material();
+    cosserat_rod.get_mass();
     cosserat_rod.get_external_loads();
     cosserat_rod.get_external_torques();
     //
@@ -46,6 +48,7 @@ namespace {
     cosserat_rod.get_reference_element_length(index);
     cosserat_rod.get_reference_curvature(index);
     cosserat_rod.get_reference_shear_stretch_strain(index);
+    cosserat_rod.get_tangent(index);
 
     cosserat_rod.get_element_dimension(index);
     cosserat_rod.get_element_volume(index);
@@ -54,6 +57,7 @@ namespace {
     cosserat_rod.get_angular_velocity(index);
 
     cosserat_rod.get_material(index);
+    cosserat_rod.get_mass(index);
 
     cosserat_rod.get_external_loads(index);
     cosserat_rod.get_external_torques(index);
