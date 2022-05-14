@@ -68,22 +68,31 @@ namespace elastica {
       //**Access operators******************************************************
       /*!\name Access operators */
       //@{
-      inline auto field_vector(::elastica::Time time_v) & noexcept
-          -> ::elastica::Vec3& {
+      inline auto field_vector(::elastica::real_t time_v) & noexcept {
         field_ =
             field_amplitude_ * blaze::sin(time_v * field_angular_frequency_ +
                                           field_phase_difference_);
         return field_;
       }
+      inline auto field_amplitude() & noexcept -> ::elastica::Vec3& {
+        return field_amplitude_;
+      }
+      inline auto field_angular_frequency() & noexcept -> ::elastica::Vec3& {
+        return field_angular_frequency_;
+      }
+      inline auto field_phase_difference() & noexcept -> ::elastica::Vec3& {
+        return field_phase_difference_;
+      }
+
       //@}
       //************************************************************************
 
       //**Function methods******************************************************
       /*!\name Function methods */
       //@{
-      inline auto operator()(::elastica::Time time_v) noexcept
-          -> ::elastica::Vec3 {
-        return field_vector(time_v);
+      inline auto operator()(::elastica::Time time_v) const noexcept {
+        return field_amplitude_ * blaze::sin(time_v * field_angular_frequency_ +
+                                             field_phase_difference_);
       }
       //@}
       //************************************************************************
