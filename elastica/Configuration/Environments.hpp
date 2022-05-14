@@ -29,7 +29,7 @@
  * by default. This can be customized as needed in the client file.
  */
 #define ELASTICA_DEFAULT_ADMISSIBLE_ENVIRONMENT_TAGS \
-  tmpl::list<elastica::environments::tags::GravityField>
+  tmpl::list<elastica::environments::tags::GravityTag>
 //******************************************************************************
 
 //******************************************************************************

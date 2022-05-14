@@ -162,7 +162,7 @@ namespace {
 
   struct IntegratedConfiguration {
     static_assert(::tt::assert_conforms_to<
-                      ::elastica::environments::tags::GravityField,
+                      ::elastica::environments::tags::GravityTag,
                       ::elastica::environments::protocols::EnvironmentTag>,
                   "Meta-failure");
 
@@ -177,7 +177,7 @@ namespace {
       // tested elsewhere
       auto gravity_config = ec::make_gravity_configuration(0.1, 0.0, 0.0);
       auto env_config = ec::make_environments_configuration<
-          tmpl::list<::elastica::environments::tags::GravityField>>(
+          tmpl::list<::elastica::environments::tags::GravityTag>>(
           ec::seq, gravity_config);
 
       return ec::make_simulator_configuration(

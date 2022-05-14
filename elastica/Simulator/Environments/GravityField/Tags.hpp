@@ -38,21 +38,15 @@ namespace elastica {
       /*!\brief Tag for marking a uniform gravity field over systems
        * \ingroup environments
        */
-      struct GravityField
+      struct GravityTag
           : public ::tt::ConformsTo<
                 ::elastica::environments::protocols::EnvironmentTag> {
         //! Does environment require primitives?
         using requires_primitives = std::false_type;
 
         template <typename Traits>
-        using type = ::elastica::environments::GravityField<Traits>;
+        using type = GravityField<Traits>;
       };
-      //************************************************************************
-
-      //**Type definitions******************************************************
-      using GravityTag [[deprecated(R"error(
-       tags::GravityTag is deprecated and will be removed in a future
-       release. Use tags::GravityField instead. )error")]] = GravityField;
       //************************************************************************
 
     }  // namespace tags

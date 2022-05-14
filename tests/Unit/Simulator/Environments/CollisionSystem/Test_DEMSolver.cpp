@@ -564,7 +564,7 @@ namespace {
 namespace {
 
   template <typename EnvironmentTags =
-                tmpl::list<elastica::environments::tags::CollisionSystem>>
+                tmpl::list<elastica::environments::tags::CollisionSystemTag>>
   static inline auto make_integrated_configuration() {
     using namespace ::elastica::configuration;
     using ImposedPrimitives =
@@ -599,9 +599,8 @@ namespace {
     simulator->reset();
     auto refs = setup_state(simulator);
 
-    auto& solver =
-        simulator
-            ->get_environment<elastica::environments::tags::CollisionSystem>();
+    auto& solver = simulator->get_environment<
+        elastica::environments::tags::CollisionSystemTag>();
 
     // restore solver to base state was before, so that the integrated tests
     // won't buckle

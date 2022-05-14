@@ -28,7 +28,7 @@ namespace elastica {
     class GravityField;
 
     namespace tags {
-      struct GravityField;
+      struct GravityTag;
     }
     /*! \endcond */
     //**************************************************************************

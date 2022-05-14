@@ -311,7 +311,7 @@ namespace elastica {
       /*!\brief Sets a uniform gravity of the simulation world if the gravity
        * environment is present.
        */
-      template <typename Tag = ::elastica::environments::tags::GravityField,
+      template <typename Tag = ::elastica::environments::tags::GravityTag,
                 bool B = tmpl::list_contains_v<AdmissibleEnvironmentTags, Tag>,
                 Requires<B> = nullptr>
       inline auto set_gravity(::elastica::Vec3 const& g) noexcept -> void {
