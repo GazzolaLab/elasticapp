@@ -40,7 +40,7 @@ namespace elastica {
     //**************************************************************************
     /*! \cond ELASTICA_INTERNAL */
     namespace tags {
-      struct CollisionSystemTag;
+      struct CollisionSystem;
     }
     /*! \endcond */
     //**************************************************************************

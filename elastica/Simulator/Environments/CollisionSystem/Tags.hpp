@@ -40,7 +40,7 @@ namespace elastica {
       /*!\brief Tag for marking a collision engine over systems
        * \ingroup environments
        */
-      struct CollisionSystemTag
+      struct CollisionSystem
           : public ::tt::ConformsTo<
                 ::elastica::environments::protocols::EnvironmentTag> {
         //! Does environment need primitives?
@@ -50,6 +50,12 @@ namespace elastica {
         using type = elastica::collision::CollisionSystem<
             SimulatorConfig, elastica::collision::CollisionConfig>;
       };
+      //************************************************************************
+
+      //**Type definitions******************************************************
+      using CollisionSystemTag [[deprecated(R"error(
+       tags::CollisionSystemTag is deprecated and will be removed in a future
+       release. Use tags::CollisionSystem instead. )error")]] = CollisionSystem;
       //************************************************************************
 
     }  // namespace tags

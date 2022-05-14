@@ -39,7 +39,7 @@ struct FlexibleSwingingPendulumConfiguration {
                 ec::iterate_over_systems_in(ec::seq)));
 
     auto env_config = ec::make_environments_configuration<
-        tmpl::list<::elastica::environments::tags::GravityTag>>(
+        tmpl::list<::elastica::environments::tags::GravityField>>(
         // process environments in sequence
         ec::seq,
         // set global gravity field to 0., can be modified later
