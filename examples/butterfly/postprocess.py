@@ -1,21 +1,22 @@
 from dataclasses import dataclass, field
+from typing import List
 
+import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
-import numpy as np
 
 
 @dataclass
 class Stats:
-    times: list[float] = field(default_factory=list)
-    positions: list[np.ndarray] = field(default_factory=list)
-    translation_e: list[float] = field(default_factory=list)
-    rotation_e: list[float] = field(default_factory=list)
-    shear_e: list[float] = field(default_factory=list)
-    bend_e: list[float] = field(default_factory=list)
+    times: List[float] = field(default_factory=list)
+    positions: List[np.ndarray] = field(default_factory=list)
+    translation_e: List[float] = field(default_factory=list)
+    rotation_e: List[float] = field(default_factory=list)
+    shear_e: List[float] = field(default_factory=list)
+    bend_e: List[float] = field(default_factory=list)
 
 
-def plot_trajectory(stats: Stats, save_figure: bool):
+def plot_trajectory(stats: Stats, save_figure: bool = False) -> plt.Figure:
     positions = stats.positions
 
     with plt.style.context("ggplot"):
@@ -53,10 +54,10 @@ def plot_trajectory(stats: Stats, save_figure: bool):
     if save_figure:
         fig.savefig("butterfly.pdf")
 
-    return
+    return fig
 
 
-def plot_energies(stats: Stats, save_figure: bool):
+def plot_energies(stats: Stats, save_figure: bool = False) -> plt.Figure:
     with plt.style.context("ggplot"):
         new_fig = plt.figure(figsize=(5, 4), dpi=150)
 
@@ -87,4 +88,4 @@ def plot_energies(stats: Stats, save_figure: bool):
     if save_figure:
         new_fig.savefig("energies.pdf")
 
-    return
+    return new_fig

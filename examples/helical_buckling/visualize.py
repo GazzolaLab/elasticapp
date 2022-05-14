@@ -2,15 +2,14 @@ import numpy as np
 from elasticapp import Blaze  # noqa
 from elasticapp.CaseStudies.PyHelicalBucklingCaseStudy import HelicalBucklingCaseStudy
 
+from cli.help import print_description
 from cli.progress import track_simulation
-from cli.help import print_help
-
 from postprocess import plot_helicalbuckling_results as plot_results
 
 
 def run_example(
-        save_to_csv: bool = False,
-        save_figure: bool = False,
+    save_to_csv: bool = False,
+    save_figure: bool = False,
 ):
     n_elem = 100
     base_length = 100.0
@@ -54,5 +53,5 @@ def run_example(
 
 
 if __name__ == "__main__":
-    print_help(HelicalBucklingCaseStudy)
+    print_description(HelicalBucklingCaseStudy)
     run_example()

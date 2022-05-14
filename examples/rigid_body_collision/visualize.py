@@ -1,6 +1,3 @@
-from dataclasses import dataclass, field
-from typing import NewType
-
 import numpy as np
 import pandas as pd
 from elasticapp import Blaze  # noqa
@@ -8,21 +5,10 @@ from elasticapp.CaseStudies.PyRigidBodyCollisionCaseStudy import (
     RigidBodyCollisionCaseStudy,
 )
 from matplotlib import pyplot as plt
+
+from cli.help import print_description
 from cli.progress import track_simulation
-from cli.help import print_help
-
-from postprocess import plot_position, plot_video, plot_energies
-
-PositiveInt = NewType("PositiveInt", int)
-
-
-@dataclass
-class Stats:
-    time: list[float] = field(default_factory=list)
-    step: list[PositiveInt] = field(default_factory=list)
-    position: list[np.ndarray] = field(default_factory=list)
-    velocity: list[np.ndarray] = field(default_factory=list)
-    penetration_depth: list[float] = field(default_factory=list)
+from postprocess import plot_position, animate_scenario, plot_energies, Stats
 
 
 def run_example(
@@ -34,7 +20,7 @@ def run_example(
     radius1 = 0.05
     radius2 = 0.05
     xvelocity1 = 0.2  # go right
-    xvelocity2 = 0.1  # go left
+    xvelocity2 = -0.1  # go left
     dt = 1e-3
     final_time = 10.0
     time_interval = sample_interval * dt
@@ -48,11 +34,9 @@ def run_example(
         dt=dt,
     )
 
-    first_sphere_stats = Stats()
-    second_sphere_stats = Stats()
+    first_sphere_stats = Stats(radius1)
+    second_sphere_stats = Stats(radius2)
 
-    first_sphere_stats.radius = radius1
-    second_sphere_stats.radius = radius2
     sphere_stats = (first_sphere_stats, second_sphere_stats)
 
     def collect(cas):
@@ -80,9 +64,15 @@ def run_example(
         cs.run_for(additional_time=time_interval)
         collect_stats_from(cs)
 
-    plot_energies(first_sphere_stats, second_sphere_stats, save_figure=save_figure)
-    plot_position(first_sphere_stats, second_sphere_stats, save_figure=save_figure)
-    # plot_video(first_sphere_stats, second_sphere_stats)
+    energy_fig = plot_energies(
+        first_sphere_stats, second_sphere_stats, save_figure=save_figure
+    )
+    position_fig = plot_position(
+        first_sphere_stats, second_sphere_stats, save_figure=save_figure
+    )
+    ani = animate_scenario(
+        first_sphere_stats, second_sphere_stats, save_figure=save_figure, frame_skip=5
+    )
 
     if save_to_csv:
         pd.DataFrame(first_sphere_stats).to_csv("first_sphere_states.csv")
@@ -92,5 +82,11 @@ def run_example(
 
 
 if __name__ == "__main__":
-    print_help(RigidBodyCollisionCaseStudy)
+    additional_description = (
+        "Additionally, in this case, the spheres are identical. Hence, upon collision, "
+        "they simply exchange their velocity magnitudes with a change in the direction alone. "
+    )
+    print_description(
+        RigidBodyCollisionCaseStudy, additional_description=additional_description
+    )
     run_example()

@@ -1,14 +1,29 @@
+from dataclasses import dataclass, field
+from typing import NewType, List
+
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib.animation import FuncAnimation  # noqa
 from matplotlib.colors import to_rgb
+from rich.progress import Progress
+
+PositiveInt = NewType("PositiveInt", int)
+
+
+@dataclass
+class Stats:
+    time: List[float] = field(default_factory=list)
+    step: List[PositiveInt] = field(default_factory=list)
+    position: List[np.ndarray] = field(default_factory=list)
+    velocity: List[np.ndarray] = field(default_factory=list)
 
 
 def plot_position(
-    rod1_stats,
-    rod2_stats,
-    save_figure,
-    filename="spherical_joint_test.png",
-):
+    rod1_stats: Stats,
+    rod2_stats: Stats,
+    save_figure: bool = False,
+    filename: str = "spherical_joint_test.png",
+) -> plt.Figure:
     position_of_rod1 = np.asarray(rod1_stats.position)
     position_of_rod2 = np.asarray(rod2_stats.position)
 
@@ -33,17 +48,17 @@ def plot_position(
     if save_figure:
         fig.savefig(filename)
 
-    return
+    return fig
 
 
-def plot_video(
-    rod1_stats,
-    rod2_stats,
-    video_name="hinge_joint.mp4",
-    fps=15,
-):  # (time step, x/y/z, node)
-    from matplotlib.animation import FuncAnimation  # noqa
-    from rich.progress import Progress
+def animate_scenario(
+    rod1_stats: Stats,
+    rod2_stats: Stats,
+    video_name: str = "hinge_joint.mp4",
+    fps: PositiveInt = 15,
+    frame_skip: PositiveInt = 1,
+    save_figure: bool = False,
+) -> FuncAnimation:  # (time step, x/y/z, node)
 
     time = np.asarray(rod1_stats.time)
     step = np.asarray(rod1_stats.step)
@@ -99,9 +114,11 @@ def plot_video(
 
     n_frames = len(time)
     with Progress() as progress:
-        animation_task = progress.add_task("[magenta] Animating...", total=n_frames)
+        animation_task = progress.add_task(
+            "[magenta] Animating...", total=n_frames, visible=False
+        )
 
-        def update(curr_frame, bar):
+        def update(curr_frame):
             curr_time = time[curr_frame]
             curr_step = step[curr_frame]
             text_step.set_text(f"Step : {curr_step:04d}")
@@ -114,10 +131,21 @@ def plot_video(
                 position_of_rod2[curr_frame, 0], position_of_rod2[curr_frame, 1]
             )
             rod2_line.set_3d_properties(position_of_rod2[curr_frame, 2])
-            bar.update(animation_task, advance=1)
+            progress.update(animation_task, advance=1)
+            return text_time, text_step, rod1_line, rod2_line
 
-        ani = FuncAnimation(fig, update, frames=n_frames, fargs=(progress,))
+        ani = FuncAnimation(
+            fig, update, frames=range(0, n_frames, frame_skip), blit=True
+        )
+        if save_figure:
+            progress.console.print(
+                "[red]Rendering animation to file. It will be displayed on-screen completed."
+            )
+            progress.update(animation_task, visible=True)
+            ani.save(
+                video_name,
+                fps=fps,
+                extra_args=["-vcodec", "h264", "-pix_fmt", "yuv420p"],
+            )
 
-    ani.save(video_name, fps=fps, extra_args=["-vcodec", "h264", "-pix_fmt", "yuv420p"])
-
-    return
+    return ani

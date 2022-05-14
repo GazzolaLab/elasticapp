@@ -24,21 +24,22 @@ from elasticapp import Blaze  # noqa
 from elasticapp.CaseStudies.PyAxialStretchingCaseStudy import AxialStretchingCaseStudy
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
+
+from cli.help import print_description
 from cli.progress import track_simulation
-from cli.help import print_help
 
 
 def run_example(
-        pyelastica_file: os.PathLike = "",
-        save_to_csv: bool = False,
-        save_figure: bool = False,
+    pyelastica_file: os.PathLike = "",
+    save_to_csv: bool = False,
+    save_figure: bool = False,
 ):
     # 3. Define the input parameters to the case study.
     sample_interval = 200
 
     n_elem = 49
     base_radius = 0.025
-    base_area = np.pi * base_radius ** 2
+    base_area = np.pi * base_radius**2
 
     base_length = 1.0
     """
@@ -112,7 +113,7 @@ def run_example(
     expected_tip_disp = end_force_x * base_length / base_area / youngs_modulus
     # First-order theory with modified-length, gives better estimates
     expected_tip_disp_improved = (
-            end_force_x * base_length / (base_area * youngs_modulus - end_force_x)
+        end_force_x * base_length / (base_area * youngs_modulus - end_force_x)
     )
 
     times = np.asarray(times)
@@ -158,5 +159,5 @@ def run_example(
 
 
 if __name__ == "__main__":
-    print_help(AxialStretchingCaseStudy)
+    print_description(AxialStretchingCaseStudy)
     run_example()

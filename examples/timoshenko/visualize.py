@@ -2,23 +2,23 @@ import numpy as np
 from elasticapp import Blaze  # noqa
 from elasticapp.CaseStudies.PyTimoshenkoCaseStudy import TimoshenkoCaseStudy
 from matplotlib import pyplot as plt
-from cli.progress import track_simulation
-from cli.help import print_help
 
-from helpers.postprocess import plot_beam, plot_velocity
+from cli.help import print_description
+from cli.progress import track_simulation
 from helpers.analytical import analytical_shearable, analytical_unshearable
+from helpers.postprocess import plot_beam, plot_velocity
 
 
 def run_example(
-        is_rod_shearable: bool = True,
-        save_to_csv: bool = False,
-        save_figure: bool = False,
+    is_rod_shearable: bool = True,
+    save_to_csv: bool = False,
+    save_figure: bool = False,
 ):
     sample_interval = 500
 
     n_elem = 100
     base_radius = 0.25
-    base_area = np.pi * base_radius ** 2
+    base_area = np.pi * base_radius**2
 
     base_length = 3.0
     density = 5e3
@@ -96,5 +96,5 @@ def run_example(
 
 
 if __name__ == "__main__":
-    print_help(TimoshenkoCaseStudy)
+    print_description(TimoshenkoCaseStudy)
     run_example()

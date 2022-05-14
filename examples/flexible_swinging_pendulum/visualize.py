@@ -1,29 +1,30 @@
 import os
-import numpy as np
 
-np.set_printoptions(floatmode="unique")
+import numpy as np
 from elasticapp import Blaze  # noqa
 from elasticapp.CaseStudies.PyFlexibleSwingingPendulumCaseStudy import (
     FlexibleSwingingPendulumCaseStudy,
 )
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
+
+from cli.help import print_description
 from cli.progress import track_simulation
-from cli.help import print_help
 
 
 def run_example(
-        reference_file: os.PathLike = "",
-        save_to_csv: bool = False,
-        save_figure: bool = False,
-        plot_cpp_py_deviation: bool = False,
+    reference_file: os.PathLike = "",
+    save_to_csv: bool = False,
+    save_figure: bool = False,
+    plot_cpp_py_deviation: bool = False,
 ):
+    np.set_printoptions(floatmode="unique")
     n_elem = 50
     base_radius = 0.005
     base_length = 1.0
 
     expected_density = 1.1e3
-    base_area = np.pi * base_radius ** 2
+    base_area = np.pi * base_radius**2
     damping_rate = 1e-5
     youngs_modulus = 5e6
     shear_modulus = 5e6 / 1.5
@@ -105,10 +106,10 @@ def run_example(
                     times.shape, reference_results[:, 0].shape
                 ), "C++ and Python data not of equal size"
                 cpp_py_tip_deviation_x = (
-                        np.fabs(tip_displacements_x - reference_results[:, 1]) / base_length
+                    np.fabs(tip_displacements_x - reference_results[:, 1]) / base_length
                 )
                 cpp_py_tip_deviation_z = (
-                        np.fabs(tip_displacements_z - reference_results[:, 2]) / base_length
+                    np.fabs(tip_displacements_z - reference_results[:, 2]) / base_length
                 )
                 fig2 = plt.figure(figsize=(8, 4), frameon=True, dpi=150)
                 ax2 = fig2.add_subplot(111)
@@ -161,7 +162,7 @@ def run_example(
 
 
 if __name__ == "__main__":
-    print_help(FlexibleSwingingPendulumCaseStudy)
+    print_description(FlexibleSwingingPendulumCaseStudy)
     reference_values_file = ""
     # run_example(reference_file=eg_reference_file)
     run_example(reference_file=reference_values_file, plot_cpp_py_deviation=True)

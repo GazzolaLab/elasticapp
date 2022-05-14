@@ -4,22 +4,22 @@ import numpy as np
 from elasticapp import Blaze  # noqa
 from elasticapp.CaseStudies.PyTimoshenkoCaseStudy import TimoshenkoCaseStudy
 
+from cli.progress import ProgressionStatus
 from helpers.analytical import analytical_shearable, analytical_unshearable
 from helpers.convergence_helpers import plot_convergence, calculate_error_norm
-from cli.progress import ProgressionStatus
 
 PositiveInt = NewType("PositiveInt", int)
-Elements = list[PositiveInt]
+Elements = List[PositiveInt]
 ConvergenceResults = NewType("ConvergenceResults", List[float])
 
 
 def simulate_timoshenko_beam_with(
-        n_elem: PositiveInt, progress, uuid: int, is_rod_shearable: bool = True
+    n_elem: PositiveInt, progress, uuid: int, is_rod_shearable: bool = True
 ):
     sample_interval = 500
 
     base_radius = 0.25
-    base_area = np.pi * base_radius ** 2
+    base_area = np.pi * base_radius**2
 
     base_length = 3.0
     density = 5e3

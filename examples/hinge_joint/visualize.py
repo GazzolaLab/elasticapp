@@ -1,24 +1,12 @@
-from dataclasses import dataclass, field
-from typing import NewType
-
 import numpy as np
 import pandas as pd
 from elasticapp import Blaze  # noqa
 from elasticapp.CaseStudies.PyHingeJointCaseStudy import HingeJointCaseStudy
 from matplotlib import pyplot as plt
-from postprocess import plot_position, plot_video
+
+from cli.help import print_description
 from cli.progress import track_simulation
-from cli.help import print_help
-
-PositiveInt = NewType("PositiveInt", int)
-
-
-@dataclass
-class Stats:
-    time: list[float] = field(default_factory=list)
-    step: list[PositiveInt] = field(default_factory=list)
-    position: list[np.ndarray] = field(default_factory=list)
-    velocity: list[np.ndarray] = field(default_factory=list)
+from postprocess import plot_position, animate_scenario, Stats
 
 
 def run_example(
@@ -71,7 +59,9 @@ def run_example(
         collect_stats_from(cs)
 
     plot_position(first_rod_stats, second_rod_stats, save_figure=save_figure)
-    plot_video(first_rod_stats, second_rod_stats)
+    animation = animate_scenario(
+        first_rod_stats, second_rod_stats, save_figure=save_figure, frame_skip=5
+    )
 
     if save_to_csv:
         pd.DataFrame(first_rod_stats).to_csv("hinge_joint_first.csv")
@@ -81,5 +71,5 @@ def run_example(
 
 
 if __name__ == "__main__":
-    print_help(HingeJointCaseStudy)
+    print_description(HingeJointCaseStudy)
     run_example()

@@ -3,9 +3,10 @@ import pandas as pd
 from elasticapp import Blaze  # noqa
 from elasticapp.CaseStudies.PyButterflyCaseStudy import ButterflyCaseStudy
 from matplotlib import pyplot as plt
-from postprocess import Stats, plot_trajectory, plot_energies
+
+from cli.help import print_description
 from cli.progress import track_simulation
-from cli.help import print_help
+from postprocess import Stats, plot_trajectory, plot_energies
 
 
 def run_example(
@@ -62,5 +63,5 @@ def run_example(
 
 
 if __name__ == "__main__":
-    print_help(ButterflyCaseStudy)
+    print_description(ButterflyCaseStudy)
     run_example()
