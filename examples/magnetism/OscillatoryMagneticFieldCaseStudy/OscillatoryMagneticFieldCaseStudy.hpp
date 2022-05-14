@@ -27,8 +27,8 @@
 //
 #include "Extension/Simulator/Environments.hpp"
 #include "Extension/Systems/CosseratRods.hpp"
-#include "FieldProfiles/ConstantMagneticField.hpp"  // customization
-#include "FieldProfiles/RampedAdapter.hpp"          // customization
+#include "FieldProfiles/OscillatoryMagneticField.hpp"  //customization
+#include "FieldProfiles/RampedAdapter.hpp"             // customization
 
 // global is fine since its a cpp file
 using String = const char* const;
@@ -49,15 +49,11 @@ struct OscillatoryMagneticFieldConfiguration {
     auto env_config = ec::make_environments_configuration<EnvironmentTags>(
         // process environments in sequence
         ec::seq,
-        // you can pass in a lambda function here as well, but I explicitly
-        // make a struct so that the example is clear
-        ec::make_magnetic_field_configuration(
-            // I initialize some parameter values here, but these can be
-            // modified later on
-            ::elastica::make_ramped_field(
-                ::elastica::environments::ConstantMagneticField{
-                    ::elastica::Vec3{0.0, 0.8, 2.0}},
-                ::elastica::make_linear_rampup(0.0, 200.0))));
+        ec::make_magnetic_field_configuration(::elastica::make_ramped_field(
+            ::elastica::environments::OscillatoryMagneticField(),
+            // I initialize some parameter values here, but these can
+            // be modified later on
+            ::elastica::make_linear_rampup(0.0, 200.0))));
 
     return ec::make_simulator_configuration(
         ec::DefaultDomainConfiguration{}, system_config,
@@ -87,9 +83,9 @@ struct OscillatoryMagneticFieldCaseStudy
 Oscillatory Magnetic field study
 -----------------------------
 
-Demonstrates rod deformations under a oscillatory magnetic field.
+Demonstrates rod deformations under an oscillatory magnetic field.
 
-// TODO : Arman fill
+// TODO : Yash fill
 
 )help"};
 

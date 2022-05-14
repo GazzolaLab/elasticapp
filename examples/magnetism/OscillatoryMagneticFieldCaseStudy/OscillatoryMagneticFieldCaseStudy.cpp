@@ -102,23 +102,16 @@ void OscillatoryMagneticFieldCaseStudy::setup(
   const auto amp = ::elastica::get<magnetic_field_amplitude>(input_parameters);
   const auto ang = ::elastica::get<magnetic_field_angle>(input_parameters);
 
-  simulator->get_environment<::elastica::environments::tags::MagneticFieldTag>()
-      ->profile()
-      .field_vector() =
-      ::elastica::Vec3{amp * std::cos(ang), amp * std::sin(ang), 0.0};
+  magnetic_field->profile().field_amplitude() = ::elastica::Vec3{amp, amp, 0.0};
+  magnetic_field->profile().field_angular_frequency() =
+      ::elastica::Vec3{1.0, 1.0, 0.0};
+  magnetic_field->profile().field_phase_difference() =
+      ::elastica::Vec3{M_PI_2, 0.0, 0.0};
 
   // can be parametrized if needed
   magnetic_field->profile().rampup_profile().start_time() = 0.0;
   magnetic_field->profile().rampup_profile().interval() =
       ::elastica::get<rampup_interval>(input_parameters);
-
-#ifdef ELASTICA_DEBUG
-  std::cout << magnetic_field->profile().field_vector() << std::endl;
-  std::cout << magnetic_field->profile().rampup_profile().start_time()
-            << std::endl;
-  std::cout << magnetic_field->profile().rampup_profile().interval()
-            << std::endl;
-#endif ELASTICA_DEBUG
 
   simulator->finalize();
 
@@ -138,9 +131,11 @@ void OscillatoryMagneticFieldCaseStudy::run() {
   */
   enable_floating_point_exceptions();
 
-  auto& magnetic_field =
-      simulator
-          ->get_environment<::elastica::environments::tags::MagneticFieldTag>();
+  /*
+    auto& magnetic_field =
+        simulator
+            ->get_environment<::elastica::environments::tags::MagneticFieldTag>();
+  */
 
   // TODO : replace with event and triggers
   const ::elastica::real_t final_time(500.0);
