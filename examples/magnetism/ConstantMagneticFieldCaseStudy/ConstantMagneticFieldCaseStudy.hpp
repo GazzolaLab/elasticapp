@@ -89,8 +89,19 @@ Constant Magnetic field study
 
 Demonstrates rod deformations under a constant magnetic field.
 
-// TODO : Arman fill
+Here, we consider a magnetic Cosserat rod, clamped at the origin, and
+initially inclined along the X axis. The rod is magnetised with a constant
+magnetisation density, along the length i.e. the X axis. The rod is placed
+under the influence of a spatio-temporally invariant (ramped in time for
+stability) magnetic field, inclined along an in-plane angle given by the user.
+The rod then bends as result of the magnetic torques, and eventually attains
+an equilibrium configuration. Here, we validate our solver against an
+analytical solution for this scenario, as derived in:
+Wang, L., Kim, Y., Guo, C. F., & Zhao, X. (2020). Hard-magnetic elastica.
+Journal of the Mechanics and Physics of Solids, 142, 104045.
 
+This case serves as an illustration of extending the core elasticapp library
+for custom environments (magnetic field) as well as systems (magnetic rods).
 )help"};
 
   struct n_elements {
