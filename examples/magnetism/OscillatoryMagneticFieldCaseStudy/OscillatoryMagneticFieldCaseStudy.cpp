@@ -149,7 +149,6 @@ void OscillatoryMagneticFieldCaseStudy::run() {
   */
 
   // TODO : replace with event and triggers
-  const ::elastica::real_t final_time(500.0);
   const std::size_t n_steps = (final_time / current_dt());
 
   for (std::size_t i = 0UL; i < n_steps; ++i) {
