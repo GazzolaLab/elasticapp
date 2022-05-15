@@ -216,7 +216,6 @@ for custom environments (magnetic field) as well as systems (magnetic rods).
   inline auto communicate_from(RodRef& ref) {
     auto rod = ref.get();
     return std::make_tuple(::elastica::position(rod),
-                           ::blocks::get<::elastica::tags::Tangent>(rod),
                            ::elastica::velocity(rod));
   }
   inline auto communicate() {
