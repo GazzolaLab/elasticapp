@@ -85,7 +85,23 @@ Oscillatory Magnetic field study
 
 Demonstrates rod deformations under an oscillatory magnetic field.
 
-// TODO : Yash fill
+Here, we consider a magnetic Cosserat rod, clamped at the origin, and
+initially inclined along the X axis. The rod is magnetised with a constant
+magnetisation density, along a direction prescribed by the user. We then
+place the rod under the influence of a spatially invariant (ramped in time for
+stability) temporally varying magnetic field, inclined along an in-plane angle
+given by the user, and rotating in the XY plane. The rod then bends as result
+of the magnetic torques, trying to align with the time varying magnetic field,
+resulting in a rich dynamic set of motions. To mimic the experimental
+perturbations present in the original setup (Gu 2020, detailed citation below),
+a small spatio-temporally invariant magnetic field is applied along the Z axis.
+For additional details on the setup, refer to:
+Gu, H., Boehler, Q., Cui, H., Secchi, E., Savorana, G., De Marco, C., ... &
+Nelson, B. J. (2020). Magnetic cilia carpets with programmable metachronal
+waves. Nature communications, 11(1), 1-10
+
+This case serves as an illustration of extending the core elasticapp library
+for custom environments (magnetic field) as well as systems (magnetic rods).
 
 )help"};
 
