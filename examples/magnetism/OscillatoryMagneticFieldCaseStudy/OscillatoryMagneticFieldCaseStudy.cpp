@@ -33,7 +33,7 @@ void OscillatoryMagneticFieldCaseStudy::setup(
       // Young's modulus
       ::elastica::get<youngs_modulus>(input_parameters),
       // Shear modulus
-      ::elastica::get<youngs_modulus>(input_parameters) / 1.5,
+      ::elastica::get<shear_modulus>(input_parameters),
       // Properties below don't matter
       // Contact stiffness
       200,
