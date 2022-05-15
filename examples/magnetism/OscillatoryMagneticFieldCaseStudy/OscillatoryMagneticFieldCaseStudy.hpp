@@ -137,6 +137,12 @@ for custom environments (magnetic field) as well as systems (magnetic rods).
     static type default_value() { return (5e6 / 1.5); }
   };
 
+  struct damping_rate {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Internal damping rate of the rod"};
+    static type default_value() { return 10.0; }
+  };
+
   struct magnetization_density {
     using type = ::elastica::real_t;
     static constexpr String help = {"Magnetization density of the rod"};
@@ -199,13 +205,12 @@ for custom environments (magnetic field) as well as systems (magnetic rods).
     static type default_value() { return type(200.0); }
   };
 
-  using Parameters =
-      tmpl::list<n_elements, length, radius, youngs_modulus, shear_modulus,
-                 magnetization_density, magnetic_field_in_plane_amplitude,
-                 magnetic_field_out_of_plane_amplitude,
-                 magnetic_field_initial_angle, magnetization_angle,
-                 magnetic_field_angular_frequency, rampup_interval, dt,
-                 final_sim_time>;
+  using Parameters = tmpl::list<
+      n_elements, length, radius, youngs_modulus, shear_modulus, damping_rate,
+      magnetization_density, magnetic_field_in_plane_amplitude,
+      magnetic_field_out_of_plane_amplitude, magnetic_field_initial_angle,
+      magnetization_angle, magnetic_field_angular_frequency, rampup_interval,
+      dt, final_sim_time>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);
