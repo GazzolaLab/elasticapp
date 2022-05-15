@@ -125,6 +125,12 @@ for custom environments (magnetic field) as well as systems (magnetic rods).
     static type default_value() { return 6.0; }
   };
 
+  struct youngs_modulus {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Youngs modulus of the rod"};
+    static type default_value() { return 5e6; }
+  };
+
   struct magnetization_density {
     using type = ::elastica::real_t;
     static constexpr String help = {"Magnetization density of the rod"};
@@ -188,7 +194,7 @@ for custom environments (magnetic field) as well as systems (magnetic rods).
   };
 
   using Parameters = tmpl::list<
-      n_elements, length, radius, magnetization_density,
+      n_elements, length, radius, youngs_modulus, magnetization_density,
       magnetic_field_in_plane_amplitude, magnetic_field_out_of_plane_amplitude,
       magnetic_field_initial_angle, magnetization_angle,
       magnetic_field_angular_frequency, rampup_interval, dt, final_sim_time>;

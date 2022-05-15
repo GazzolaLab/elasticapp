@@ -27,13 +27,13 @@ void OscillatoryMagneticFieldCaseStudy::setup(
 
   elastica::MaterialID my_material = elastica::create_material(
       // material density
-      5e3,  // pyelastica values
+      2.39e3,  // pyelastica values
       // coefficient of restitution
       0.24,
       // Young's modulus
-      1e6,
+      ::elastica::get<youngs_modulus>(input_parameters),
       // Shear modulus
-      5e5,
+      ::elastica::get<youngs_modulus>(input_parameters) / 1.5,
       // Properties below don't matter
       // Contact stiffness
       200,
