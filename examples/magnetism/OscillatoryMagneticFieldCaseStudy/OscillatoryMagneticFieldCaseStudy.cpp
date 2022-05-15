@@ -62,15 +62,15 @@ void OscillatoryMagneticFieldCaseStudy::setup(
       RodInitializer::Radius{::elastica::get<radius>(input_parameters)},
       RodInitializer::Length{base_length},
       RodInitializer::Origin{origin},
-      RodInitializer::Direction{::elastica::Vec3{1.0, 0.0, 0.0}},
-      RodInitializer::Normal{::elastica::Vec3{0.0, 1.0, 0.0}},
+      RodInitializer::Direction{::elastica::Vec3{0.0, 0.0, 1.0}},
+      RodInitializer::Normal{::elastica::Vec3{1.0, 0.0, 0.0}},
       RodInitializer::ForceDampingCoefficient{10},
       RodInitializer::TorqueDampingCoefficient{10},
       RodInitializer::MagnetizationDensity{
           ::elastica::get<magnetization_density>(input_parameters)},
       RodInitializer::UniformMagnetizationDirectionInWorldFrame{
-          ::elastica::Vec3{std::cos(rod_magnetization_angle),
-                           std::sin(rod_magnetization_angle), 0.0}}};
+          ::elastica::Vec3{std::sin(rod_magnetization_angle), 0.0,
+                           std::cos(rod_magnetization_angle)}}};
 
   // This is to store
   rod_refs[0UL] = simulator->emplace_back<MagnetizedCosseratRod>(
@@ -112,11 +112,11 @@ void OscillatoryMagneticFieldCaseStudy::setup(
       ::elastica::get<magnetic_field_initial_angle>(input_parameters);
 
   magnetic_field->profile().field_amplitude() = ::elastica::Vec3{
-      in_plane_amplitude, in_plane_amplitude, out_of_plane_amplitude};
+      in_plane_amplitude, out_of_plane_amplitude, in_plane_amplitude};
   magnetic_field->profile().field_angular_frequency() =
-      ::elastica::Vec3{frequency, frequency, 0.0};
+      ::elastica::Vec3{frequency, 0.0, frequency};
   magnetic_field->profile().field_phase_difference() =
-      ::elastica::Vec3{M_PI_2 - initial_angle, initial_angle, M_PI_2};
+      ::elastica::Vec3{initial_angle, M_PI_2, M_PI_2 - initial_angle};
 
   // can be parametrized if needed
   magnetic_field->profile().rampup_profile().start_time() = 0.0;
