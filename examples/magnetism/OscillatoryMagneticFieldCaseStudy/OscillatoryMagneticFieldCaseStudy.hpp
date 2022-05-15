@@ -115,17 +115,38 @@ Demonstrates rod deformations under an oscillatory magnetic field.
     static type default_value() { return 6.0; }
   };
 
-  struct magnetic_field_angle {
+  struct magnetization_angle {
     using type = ::elastica::real_t;
-    static constexpr String help = {
-        "In-plane angle of the external magnetic field"};
-    static type default_value() { return elastica::geometry::deg2rad(120.0); }
+    static constexpr String help = {"In-plane angle of the rod magnetization"};
+    static type default_value() { return elastica::geometry::deg2rad(90.0); }
   };
 
-  struct magnetic_field_amplitude {
+  struct magnetic_field_in_plane_amplitude {
     using type = ::elastica::real_t;
-    static constexpr String help = {"Amplitude of the external magnetic field"};
-    static type default_value() { return 1e-2; }
+    static constexpr String help = {
+        "Amplitude of the in-plane external oscillating magnetic field"};
+    static type default_value() { return 1.0; }
+  };
+
+  struct magnetic_field_out_of_plane_amplitude {
+    using type = ::elastica::real_t;
+    static constexpr String help = {
+        "Amplitude of the out-of-plane invariant external magnetic field"};
+    static type default_value() { return 0.01; }
+  };
+
+  struct magnetic_field_angular_frequency {
+    using type = ::elastica::real_t;
+    static constexpr String help = {
+        "Angular frequency the external oscillating magnetic field"};
+    static type default_value() { return 1.0; }
+  };
+
+  struct magnetic_field_initial_angle {
+    using type = elastica::real_t;
+    static constexpr String help = {
+        "Initial in-plane angle of the external oscillating magnetic field"};
+    static type default_value() { return M_PI_2; }
   };
 
   struct rampup_interval {
@@ -144,14 +165,23 @@ Demonstrates rod deformations under an oscillatory magnetic field.
     }
   };
 
-  using Parameters = tmpl::list<n_elements, length, radius,
-                                magnetization_density, magnetic_field_amplitude,
-                                magnetic_field_angle, rampup_interval, dt>;
+  struct final_sim_time {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Final simulation time"};
+    static type default_value() { return type(200.0); }
+  };
+
+  using Parameters = tmpl::list<
+      n_elements, length, radius, magnetization_density,
+      magnetic_field_in_plane_amplitude, magnetic_field_out_of_plane_amplitude,
+      magnetic_field_initial_angle, magnetization_angle,
+      magnetic_field_angular_frequency, rampup_interval, dt, final_sim_time>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);
   void step();
   void run();
+  ::elastica::real_t final_time;
 
   decltype(Configuration::make_time_stepper()) time_stepper =
       Configuration::make_time_stepper();

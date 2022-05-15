@@ -50,6 +50,8 @@ void OscillatoryMagneticFieldCaseStudy::setup(
   const ::elastica::real_t base_length{
       ::elastica::get<length>(input_parameters)};
   const std::size_t n_elem = ::elastica::get<n_elements>(input_parameters);
+  const ::elastica::real_t rod_magnetization_angle =
+      ::elastica::get<magnetization_angle>(input_parameters);
 
   using RodInitializer =
       ::elastica::cosserat_rod::StraightUniformMagnetizedCosseratRodInitializer;
@@ -67,7 +69,8 @@ void OscillatoryMagneticFieldCaseStudy::setup(
       RodInitializer::MagnetizationDensity{
           ::elastica::get<magnetization_density>(input_parameters)},
       RodInitializer::UniformMagnetizationDirectionInWorldFrame{
-          ::elastica::Vec3{1.0, 0.0, 0.0}}};
+          ::elastica::Vec3{std::cos(rod_magnetization_angle),
+                           std::sin(rod_magnetization_angle), 0.0}}};
 
   // This is to store
   rod_refs[0UL] = simulator->emplace_back<MagnetizedCosseratRod>(
@@ -99,20 +102,28 @@ void OscillatoryMagneticFieldCaseStudy::setup(
           ->get_environment<::elastica::environments::tags::MagneticFieldTag>();
 
   // The field profile was set in the hpp file, can be modified if needed here
-  const auto amp = ::elastica::get<magnetic_field_amplitude>(input_parameters);
-  const auto ang = ::elastica::get<magnetic_field_angle>(input_parameters);
+  const auto in_plane_amplitude =
+      ::elastica::get<magnetic_field_in_plane_amplitude>(input_parameters);
+  const auto out_of_plane_amplitude =
+      ::elastica::get<magnetic_field_out_of_plane_amplitude>(input_parameters);
+  const auto frequency =
+      ::elastica::get<magnetic_field_angular_frequency>(input_parameters);
+  const auto initial_angle =
+      ::elastica::get<magnetic_field_initial_angle>(input_parameters);
 
-  magnetic_field->profile().field_amplitude() = ::elastica::Vec3{amp, amp, 0.0};
+  magnetic_field->profile().field_amplitude() = ::elastica::Vec3{
+      in_plane_amplitude, in_plane_amplitude, out_of_plane_amplitude};
   magnetic_field->profile().field_angular_frequency() =
-      ::elastica::Vec3{1.0, 1.0, 0.0};
+      ::elastica::Vec3{frequency, frequency, 0.0};
   magnetic_field->profile().field_phase_difference() =
-      ::elastica::Vec3{M_PI_2, 0.0, 0.0};
+      ::elastica::Vec3{M_PI_2 - initial_angle, initial_angle, M_PI_2};
 
   // can be parametrized if needed
   magnetic_field->profile().rampup_profile().start_time() = 0.0;
   magnetic_field->profile().rampup_profile().interval() =
       ::elastica::get<rampup_interval>(input_parameters);
 
+  final_time = ::elastica::get<final_sim_time>(input_parameters);
   simulator->finalize();
 
   // Set the dt value
