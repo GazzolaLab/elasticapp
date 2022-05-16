@@ -62,8 +62,8 @@ void ConstantMagneticFieldCaseStudy::setup(
       RodInitializer::Origin{origin},
       RodInitializer::Direction{::elastica::Vec3{1.0, 0.0, 0.0}},
       RodInitializer::Normal{::elastica::Vec3{0.0, 1.0, 0.0}},
-      RodInitializer::ForceDampingCoefficient{10},
-      RodInitializer::TorqueDampingCoefficient{10},
+      RodInitializer::ForceDampingRate{0.03},
+      RodInitializer::TorqueDampingRate{0.03},
       RodInitializer::MagnetizationDensity{
           ::elastica::get<magnetization_density>(input_parameters)},
       RodInitializer::UniformMagnetizationDirectionInWorldFrame{
