@@ -60,9 +60,9 @@ void OscillatoryMagneticFieldCaseStudy::setup(
       RodInitializer::Origin{origin},
       RodInitializer::Direction{::elastica::Vec3{0.0, 0.0, 1.0}},
       RodInitializer::Normal{::elastica::Vec3{1.0, 0.0, 0.0}},
-      RodInitializer::ForceDampingCoefficient{
+      RodInitializer::ForceDampingRate{
           ::elastica::get<damping_rate>(input_parameters)},
-      RodInitializer::TorqueDampingCoefficient{
+      RodInitializer::TorqueDampingRate{
           ::elastica::get<damping_rate>(input_parameters)},
       RodInitializer::MagnetizationDensity{
           ::elastica::get<magnetization_density>(input_parameters)},
