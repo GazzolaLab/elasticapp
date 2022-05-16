@@ -21,10 +21,6 @@
 
 void OscillatoryMagneticFieldCaseStudy::setup(
     InputTypes<This> const& input_parameters) {
-  if (simulator->ready()) {
-    simulator->reset();
-  }
-
   elastica::MaterialID my_material = elastica::create_material(
       // material density
       2.39e3,  // pyelastica values
