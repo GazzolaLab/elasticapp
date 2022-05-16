@@ -1,6 +1,6 @@
 from animate import animate_magnetic_rod
 
-from cli.help import print_help
+from cli.help import print_description
 from cli.progress import track_simulation
 
 from elasticapp import Blaze  # noqa
@@ -117,5 +117,5 @@ def run_oscillating_field_magnetic_rod_case_study(
 
 
 if __name__ == "__main__":
-    print_help(OscillatoryMagneticFieldCaseStudy)
+    print_description(OscillatoryMagneticFieldCaseStudy)
     run_oscillating_field_magnetic_rod_case_study()
