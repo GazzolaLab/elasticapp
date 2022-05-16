@@ -44,7 +44,7 @@ def run_oscillating_field_magnetic_rod_case_study(
     base_area = np.pi * base_radius ** 2
     volume = base_area * base_length
     moment_of_inertia = np.pi / 4 * base_radius ** 4
-    nu = 50.0
+    nu = 0.3
     angular_frequency = np.deg2rad(
         2.5
     )  # angular frequency of the rotating magnetic field
