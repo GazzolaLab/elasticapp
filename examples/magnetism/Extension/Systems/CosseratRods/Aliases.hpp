@@ -19,3 +19,4 @@
 #include <elastica/Systems/CosseratRods/Aliases.hpp>
 
 #include "Extension/Systems/CosseratRods/Aliases/MagnetizedCosseratRod.hpp"
+#include "Extension/Systems/CosseratRods/Aliases/MagnetizedCosseratRodWithoutDamping.hpp"

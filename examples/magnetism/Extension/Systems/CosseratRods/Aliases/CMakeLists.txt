@@ -14,6 +14,7 @@ elastica_target_sources(
         ${LIBRARY}
         PUBLIC
         MagnetizedCosseratRod.hpp
+        MagnetizedCosseratRodWithoutDamping.hpp
 )
 
 target_link_libraries(
