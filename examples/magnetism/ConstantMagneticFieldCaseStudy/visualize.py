@@ -1,8 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
-from cli.progress import p_map
-from cli.help import print_help
+from cli import p_map, print_description
 
 from constant_magnetic_field_case_study import (
     run_constant_magnetic_field_case_study,
@@ -79,5 +78,5 @@ def run_example(
 
 
 if __name__ == "__main__":
-    print_help(ConstantMagneticFieldCaseStudy)
+    print_description(ConstantMagneticFieldCaseStudy)
     run_example()
