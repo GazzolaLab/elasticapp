@@ -16,7 +16,7 @@ def run_constant_magnetic_field_case_study(
     progress: Optional[Dict[TaskID, ProgressionStatus]] = None,
     uuid: Optional[TaskID] = None,
 ):
-    n_elements = 100
+    n_elements = 40
     length = 6.0
     dt = 0.01 * (length / n_elements)
     # dt = 0.1
