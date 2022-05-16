@@ -17,12 +17,8 @@ Reserved
 //******************************************************************************
 // Includes
 //******************************************************************************
-#include <elastica/Options/Options.hpp>
-#include <elastica/Options/Parameter.hpp>
 #include <elastica/Time/SimulationTime.hpp>
 #include <elastica/Utilities/Math/Vec3.hpp>
-
-#include "RampedAdapter.hpp"
 
 namespace elastica {
 
@@ -43,16 +39,13 @@ namespace elastica {
       /*!\name Constructor */
       //@{
       OscillatoryMagneticField()
-          : field_(::elastica::Vec3{0.0, 0., 0.0}),
-            field_amplitude_(::elastica::Vec3{0.0, 0., 0.0}),
+          : field_amplitude_(::elastica::Vec3{0.0, 0., 0.0}),
             field_angular_frequency_(::elastica::Vec3{0., 0., 0.}),
             field_phase_difference_(::elastica::Vec3{0., 0., 0.}){};
-      OscillatoryMagneticField(const ::elastica::Vec3& field,
-                               const ::elastica::Vec3& field_amplitude,
+      OscillatoryMagneticField(const ::elastica::Vec3& field_amplitude,
                                const ::elastica::Vec3& field_angular_frequency,
                                const ::elastica::Vec3& field_phase_difference)
-          : field_(field),
-            field_amplitude_(field_amplitude),
+          : field_amplitude_(field_amplitude),
             field_angular_frequency_(field_angular_frequency),
             field_phase_difference_(field_phase_difference){};
       //@}
@@ -68,12 +61,6 @@ namespace elastica {
       //**Access operators******************************************************
       /*!\name Access operators */
       //@{
-      inline auto field_vector(::elastica::real_t time_v) & noexcept {
-        field_ =
-            field_amplitude_ * blaze::sin(time_v * field_angular_frequency_ +
-                                          field_phase_difference_);
-        return field_;
-      }
       inline auto field_amplitude() & noexcept -> ::elastica::Vec3& {
         return field_amplitude_;
       }
@@ -101,8 +88,6 @@ namespace elastica {
       //**Member variables******************************************************
       /*!\name Member variables */
       //@{
-      //! Magnetic field vector
-      ::elastica::Vec3 field_;
       //! Magnetic field amplitude
       ::elastica::Vec3 field_amplitude_;
       //! Magnetic field angular frequency

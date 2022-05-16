@@ -19,7 +19,6 @@
 #include <elastica/CaseStudy.hpp>
 //
 #include <elastica/Simulator/Constraints.hpp>
-#include <elastica/Simulator/EnableReset.hpp>  // for convergence studies
 #include <elastica/Simulator/Simulator.hpp>
 #include <elastica/Utilities/DefineTypes.h>
 #include <elastica/Utilities/Geometry/Angles.hpp>
@@ -63,8 +62,7 @@ struct OscillatoryMagneticFieldConfiguration {
 
   static inline auto make_simulator() {
     return elastica::make_simulator<::elastica::modules::Constraints,
-                                    ::elastica::modules::Environments,
-                                    ::elastica::modules::EnableReset>(
+                                    ::elastica::modules::Environments>(
         make_simulator_configuration());
   }
 
