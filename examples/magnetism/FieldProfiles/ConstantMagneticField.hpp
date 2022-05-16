@@ -21,8 +21,6 @@
 #include <elastica/Time/SimulationTime.hpp>
 #include <elastica/Utilities/Math/Vec3.hpp>
 
-#include "RampedAdapter.hpp"
-
 namespace elastica {
 
   namespace environments {
