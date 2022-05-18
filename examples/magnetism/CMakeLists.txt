@@ -19,3 +19,4 @@ target_link_libraries(
 
 add_subdirectory(ConstantMagneticFieldCaseStudy)
 add_subdirectory(OscillatoryMagneticFieldCaseStudy)
+add_subdirectory(OscillatoryMagneticCiliaCarpetCaseStudy)

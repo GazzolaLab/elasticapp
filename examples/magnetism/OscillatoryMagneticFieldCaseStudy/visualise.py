@@ -1,5 +1,3 @@
-from animate import animate_magnetic_rod
-
 from cli.help import print_description
 from cli.progress import track_simulation
 
@@ -14,13 +12,14 @@ import numpy as np
 
 import pandas as pd
 
-from stats import Stats
+from post_processing.animate import animate_rods
+from post_processing.stats import Stats
 
 
 def run_oscillating_field_magnetic_rod_case_study(
-        magnetization_angle: float = 0.0,
-        save_to_csv: bool = False,
-        save_figure: bool = False,
+    magnetization_angle: float = 0.0,
+    save_to_csv: bool = False,
+    save_figure: bool = False,
 ):
     # Parameters below are one-to-one from Gu2020 (see case help message)
     youngs_modulus = 1.85e5  # Pa
@@ -31,10 +30,10 @@ def run_oscillating_field_magnetic_rod_case_study(
     Gu_reference_I = np.pi / 4 * (0.4e-3) ** 4
     Gu_reference_length = 4e-3
     MBAL2_EI = (
-            Gu_reference_magnetization
-            * in_plane_magnetic_field_strength
-            * Gu_reference_length
-            / (youngs_modulus * Gu_reference_I)
+        Gu_reference_magnetization
+        * in_plane_magnetic_field_strength
+        * Gu_reference_length
+        / (youngs_modulus * Gu_reference_I)
     )  # Magnetization magnitude * B * Length/(EI)
 
     # setting up test params (slightly different for higher time step)
@@ -49,10 +48,10 @@ def run_oscillating_field_magnetic_rod_case_study(
         2.5
     )  # angular frequency of the rotating magnetic field
     magnetization_density = (
-            MBAL2_EI
-            * youngs_modulus
-            * moment_of_inertia
-            / (volume * in_plane_magnetic_field_strength * base_length)
+        MBAL2_EI
+        * youngs_modulus
+        * moment_of_inertia
+        / (volume * in_plane_magnetic_field_strength * base_length)
     )
     magnetization_angle = np.deg2rad(magnetization_angle)
     dl = base_length / n_elem
@@ -103,9 +102,11 @@ def run_oscillating_field_magnetic_rod_case_study(
         cs.run_for(additional_time=time_interval)
         collect_stats_from(cs)
 
-    animation = animate_magnetic_rod(
-        cosserat_rod_stats,
-        rod_length=base_length,
+    animation = animate_rods(
+        rod_group_stats=[cosserat_rod_stats],
+        x_lim=(-1.25 * base_length, 1.25 * base_length),
+        y_lim=(-1.25 * base_length, 1.25 * base_length),
+        z_lim=(0.0, 1.5 * base_length),
         save_figure=save_figure,
         frame_skip=5,
     )
