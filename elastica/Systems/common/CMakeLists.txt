@@ -26,9 +26,11 @@ elastica_target_sources(
 )
 
 add_subdirectory(Components)
+add_subdirectory(Warnings)
 
 target_link_libraries(
         ${LIBRARY}
         INTERFACE
         Components
+        SystemsWarnings
 )

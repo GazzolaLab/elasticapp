@@ -10,6 +10,8 @@
 #include "Options/Options.hpp"
 #include "Options/Parameter.hpp"
 ///
+#include "Systems/common/Warnings/UserWarnings.hpp"
+///
 #include "Systems/CosseratRods/Tags.hpp"
 ///
 #include "Utilities/DefineTypes.h"
@@ -155,6 +157,26 @@ namespace elastica {
           // common so fine to use
           const std::size_t n_elements =
               std::get<option_tags::NElement>(options_cache).value();
+
+          // check if L > 2d
+          systems_warning_if(
+              [&]() -> bool {
+                const auto per_element_length =
+                    std::get<Length>(options_cache).value() / n_elements;
+                const auto rad = std::get<Radius>(options_cache).value();
+                return per_element_length < (2 * rad);
+              },
+              [](auto& log) -> void {
+               auto msg =  R"error(
+Element length of a cosserat rod is less than twice its radius. This is usually
+a sign that there are more elements than required, in which case our discrete
+lumping assumptions no longer hold true. However, our equations still converge.
+But, if you are using the CollisionSystem, this will lead to spurious forces
+within the rod. In this case, consider reducing the number of elements within
+a rod.
+)error";
+                    log << msg;
+              });
 
           return std::tuple_cat(
               // for things that don't need to be processed, pass as wrapped

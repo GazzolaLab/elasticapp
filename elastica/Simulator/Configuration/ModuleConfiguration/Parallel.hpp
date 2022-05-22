@@ -85,7 +85,7 @@ namespace elastica {
         -> ParallelConfiguration {
       // can throw, hence outside
       const std::size_t env_threads_hint = []() {
-        const char* cnthreads = std::getenv("ELASTICA_NUM_THREADS");
+        const char* cnthreads = std::getenv(ENV_ELASTICA_NUM_THREADS);
         if (cnthreads)
           return static_cast<std::size_t>(std::atoi(cnthreads));  // NOLINT
         else

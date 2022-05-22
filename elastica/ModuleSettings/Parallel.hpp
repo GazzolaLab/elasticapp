@@ -29,7 +29,7 @@ namespace elastica {
 
 //******************************************************************************
 /*!\brief Compilation switch for TBB parallelization.
- * \ingroup config parallel
+ * \ingroup parallel
  *
  * This compilation switch enables/disables TBB parallelization. In case TBB is
  * enabled during compilation, \elastica attempts to parallelize computations,

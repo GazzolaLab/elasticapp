@@ -97,3 +97,19 @@ constexpr std::size_t default_blocking_policy_size() { return 1024UL; }
 #define ELASTICA_DEFAULT_ITERATION_POLICY_FOR_EACH_SYSTEM_TYPE \
   ::elastica::configuration::sequential_policy
 //******************************************************************************
+
+//******************************************************************************
+/*!\brief Environment variable to control if potential warnings are shown during
+ * system initialization
+ * \ingroup systems
+ *
+ * The macro defines the environment variable that is searched for controlling
+ * the behavior of (potential) warnings when initialization systems in
+ * Elastica++. By default, potential warnings are enabled. To disable user
+ * warnings the environment variable can be set to 1, i.e.
+ * \code
+ * ELASTICA_NO_SYSTEM_WARN=1 ./<your_application> [options]
+ * \endcode
+ */
+#define ENV_ELASTICA_NO_SYSTEM_WARN "ELASTICA_NO_SYSTEM_WARN"
+//****************************************************************************

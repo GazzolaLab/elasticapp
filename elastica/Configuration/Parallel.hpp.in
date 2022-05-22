@@ -51,7 +51,20 @@
 //******************************************************************************
 /*!\brief Compile time hint for number of threads to be used in an elastica
  * application
- * \ingroup config parallel
+ * \ingroup parallel
  */
 constexpr std::size_t elastica_threads_hint() { return 2UL; }
 //******************************************************************************
+
+//******************************************************************************
+/*!\brief Environment variable to set a hint for the number of threads used
+ * \ingroup parallel
+ *
+ * The macro defines the environment variable used to provide hint for the
+ * number of threads to set for Elastica++ applications.
+ * For user applications (i.e. when writing your own main-file), this variable
+ * does not factor in : rather the user can set the number of threads they want
+ * using the specific parallelism library they employed.
+ */
+#define ENV_ELASTICA_NUM_THREADS "ELASTICA_NUM_THREADS"
+  //****************************************************************************

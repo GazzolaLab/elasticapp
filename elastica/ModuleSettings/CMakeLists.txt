@@ -15,6 +15,7 @@ elastica_target_headers(
         HashGrids.hpp
         Parallel.hpp
         Profiling.hpp
+        Systems.hpp
         Version.hpp
 )
 
@@ -26,6 +27,7 @@ elastica_target_sources(
         HashGrids.hpp
         Parallel.hpp
         Profiling.hpp
+        Systems.hpp
         Version.hpp
 )
 
