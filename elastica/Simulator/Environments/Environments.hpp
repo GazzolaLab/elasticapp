@@ -21,6 +21,7 @@
 ///
 #include "Simulator/Environments/CollisionSystem.hpp"
 #include "Simulator/Environments/GravityField.hpp"
+#include "Simulator/Environments/Kinematics.hpp"
 #include "Simulator/Environments/Primitives.hpp"
 #include "Simulator/Environments/Tags.hpp"
 #include "Simulator/Environments/Transfer.hpp"

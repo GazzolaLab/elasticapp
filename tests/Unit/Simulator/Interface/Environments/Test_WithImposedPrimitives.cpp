@@ -11,11 +11,20 @@
 #include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/Invoke.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Math/Identity.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 /// serializatoin
 #include "Simulator/IO/Serialization.hpp"
 #include "Simulator/Interface/Environments/Serialize.hpp"
+
+//
+#include "Simulator/Environments/Kinematics.hpp"
+#include "Simulator/Environments/Primitives.hpp"
+#include "Simulator/Frames.hpp"
+#include "Simulator/Materials.hpp"
+#include "Time/SimulationTime.hpp"
+#include "Utilities/Invoke.hpp"
 
 namespace mock {
 
@@ -26,11 +35,41 @@ namespace mock {
    public:
     using P = ::elastica::interface::environments::WithImposedPrimitives<
         Traits, WithImposedPrimitivesSimulator<Traits>>;
-    WithImposedPrimitivesSimulator(bool arg_is_final = false)
-        : P(), is_final(arg_is_final) {}
     using typename P::ImposedPrimitives;
     using typename P::ListOfAdmissibleImposedPrimitives;
     using TimeType = typename Traits::TimeType;
+
+    ////////////  This piece of code is copy-pasted yo
+    //! Get all algorithm steps
+    using This = WithImposedPrimitivesSimulator<Traits>;
+    using AlgorithmSteps = tmpl::append<typename P::PostKinematicUpdateSteps,
+                                        typename P::PostDynamicUpdateSteps>;
+    //! Algorithm cache type
+    using Algorithms = tmpl::as_tagged_tuple<AlgorithmSteps>;
+    static constexpr std::size_t n_algorithms =
+        tmpl::size<AlgorithmSteps>::value;
+
+    //! Cache for timers for profiling the code
+    // using Timers = ::elastica::Timers<AlgorithmSteps>;
+    ////////////  This piece of code is copy-pasted yo
+
+    WithImposedPrimitivesSimulator(Traits traits, bool arg_is_final = false)
+        : P(),
+          ////////////  This piece of code is copy-pasted yo
+          algorithms(cpp17::apply(
+              [](auto&&... initializer_as_a_tuple) noexcept {
+                return Algorithms(
+                    std::forward<decltype(initializer_as_a_tuple)>(
+                        initializer_as_a_tuple)...);
+              },
+              repeat_as_tuple<n_algorithms>(
+                  // make_tuple doesn't work?
+                  std::tuple<This*, Traits const&>(this, traits)))),
+          ////////////  This piece of code is copy-pasted yo
+          is_final(arg_is_final) {}
+    ~WithImposedPrimitivesSimulator() = default;
+    WithImposedPrimitivesSimulator(WithImposedPrimitivesSimulator&&) noexcept =
+        default;
 
     // before
     using P::check_if_admissible;
@@ -38,6 +77,19 @@ namespace mock {
     using P::imposed_primitives;
 
     using P::reset_module;
+
+    // copied
+    //************************************************************************
+    /*!\brief Get an algorithm from the simulator cache
+     *
+     * \tparam AlgorithmTag Tag for obtaining the algorithm
+     * \return Algorithm callable
+     */
+    template <typename AlgorithmTag>
+    inline constexpr decltype(auto) get_algorithm() const noexcept {
+      return tuples::get<AlgorithmTag>(algorithms);
+    }
+    //************************************************************************
 
     // ditto copy
     auto check_if_not_final() const -> void {
@@ -51,6 +103,7 @@ reorganizing your code logic.
     }
     inline auto ready() const noexcept -> bool { return is_final; }
     void finalize(TimeType = {}) { is_final = true; }
+    Algorithms algorithms;
     bool is_final;
   };
 
@@ -93,7 +146,7 @@ namespace {
     //
     using Config = std::decay_t<decltype(config)>;
     using Sim = ::mock::WithImposedPrimitivesSimulator<Config>;
-    return Sim();
+    return Sim(config);
   }
 
   using MockImposedPrimitiveOne = std::tuple<int, std::uint16_t>;
@@ -136,8 +189,8 @@ namespace {
     using ListOfImposedPrimitives =
         tmpl::list<MockImposedPrimitiveOne, MockImposedPrimitiveTwo>;
     auto sim = make_imposed_systems_simulator<ListOfImposedPrimitives>();
-    (void)(sim.get_invalid_primitive_ref<MockImposedPrimitiveOne>());
-    (void)(sim.get_invalid_primitive_ref<MockImposedPrimitiveTwo>());
+    (void)(sim.get_invalid_ref<MockImposedPrimitiveOne>());
+    (void)(sim.get_invalid_ref<MockImposedPrimitiveTwo>());
   }
   // clang-format off
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Environment.WithImposedPrimitives.emplace_back",
@@ -153,13 +206,12 @@ namespace {
     CHECK(get_collection<MockImposedPrimitiveTwo>(sim.imposed_primitives())
               .empty());
 
-    auto imposed_primitive_ref =
-        sim.get_invalid_primitive_ref<MockImposedPrimitiveOne>();
+    auto imposed_primitive_ref = sim.get_invalid_ref<MockImposedPrimitiveOne>();
     auto another_imposed_primitive_ref =
-        sim.get_invalid_primitive_ref<MockImposedPrimitiveTwo>();
+        sim.get_invalid_ref<MockImposedPrimitiveTwo>();
     SECTION("Emplace back correctness") {
       imposed_primitive_ref =
-          sim.emplace_back_imposed<MockImposedPrimitiveOne>(-1, 127U);
+          sim.emplace_back<MockImposedPrimitiveOne>(-1, 127U);
 
       CHECK(std::get<int>(imposed_primitive_ref.get()) == -1);
       CHECK(std::get<std::uint16_t>(imposed_primitive_ref.get()) == 127U);
@@ -168,7 +220,7 @@ namespace {
                 cpp17::as_const(imposed_primitive_ref).get()) == 127U);
 
       another_imposed_primitive_ref =
-          sim.emplace_back_imposed<MockImposedPrimitiveTwo>('a', 4.525);
+          sim.emplace_back<MockImposedPrimitiveTwo>('a', 4.525);
       CHECK(std::get<char>(another_imposed_primitive_ref.get()) == 'a');
       CHECK(std::get<double>(another_imposed_primitive_ref.get()) ==
             approx(4.525));
@@ -192,15 +244,15 @@ namespace {
       // I think catch's section does something weird here.
       // If i don't have this, gsl::not_null complains here
       imposed_primitive_ref =
-          sim.emplace_back_imposed<MockImposedPrimitiveOne>(-1, 127U);
+          sim.emplace_back<MockImposedPrimitiveOne>(-1, 127U);
       another_imposed_primitive_ref =
-          sim.emplace_back_imposed<MockImposedPrimitiveTwo>('a', 4.525);
+          sim.emplace_back<MockImposedPrimitiveTwo>('a', 4.525);
 
       for (std::size_t i = 0UL; i < 20UL; ++i) {
-        sim.emplace_back_imposed<MockImposedPrimitiveOne>(
-            -1 + int(i), 127U + std::uint8_t(i));
-        sim.emplace_back_imposed<MockImposedPrimitiveTwo>(
-            char(i), 4.525 + double(2 * i));
+        sim.emplace_back<MockImposedPrimitiveOne>(-1 + int(i),
+                                                  127U + std::uint8_t(i));
+        sim.emplace_back<MockImposedPrimitiveTwo>(char(i),
+                                                  4.525 + double(2 * i));
       }
 
       CHECK(std::get<int>(imposed_primitive_ref.get()) == -1);
@@ -212,9 +264,8 @@ namespace {
     }
     SECTION("Emplace back throws exception after finalize") {
       sim.finalize();
-      CHECK_THROWS_WITH(
-          sim.emplace_back_imposed<MockImposedPrimitiveTwo>('b', 234.2),
-          Catch::Contains("simulator has been finalized"));
+      CHECK_THROWS_WITH(sim.emplace_back<MockImposedPrimitiveTwo>('b', 234.2),
+                        Catch::Contains("simulator has been finalized"));
     }
   }
 
@@ -230,8 +281,8 @@ namespace {
       using P = tmpl::at_c<ListOfImposedPrimitives, Is>;
       auto initializer = std::get<Is>(initializers);
       for (auto i = 0UL; i < n_units; ++i)
-        sim.emplace_back_imposed<P>(std::get<0UL>(initializer),
-                                    std::get<1UL>(initializer));
+        sim.emplace_back<P>(std::get<0UL>(initializer),
+                            std::get<1UL>(initializer));
     };
     index_apply<n_primitives>(
         [&](auto... Is) { EXPAND_PACK_LEFT_TO_RIGHT(add_primitives(Is)); });
@@ -283,6 +334,108 @@ namespace {
     expected_counters[0UL] += n_units;
     CHECK(counters == expected_counters);
     CHECK(sum == (-5 * int(n_units)));  // for my own sanity
+  }
+
+  inline decltype(auto) setup_sim_with_actual_imposed_systems() {
+    using ListOfImposedPrimitives =
+        tmpl::list<elastica::collision::ImposedSpherePrimitive,
+                   elastica::collision::ImposedCapsulePrimitive>;
+    auto sim = make_imposed_systems_simulator<ListOfImposedPrimitives>();
+    auto initializers =
+        std::make_tuple(std::make_tuple(-5, 45U), std::make_tuple('c', 450.03));
+    // gives n_units / 2 blocks of ECBlock and n_units ECNamedBlock
+    constexpr auto n_primitives = tmpl::size<ListOfImposedPrimitives>::value;
+
+    elastica::Vec3 position{5.0, 3.0, 6.0};
+    elastica::real_t radius(4.0);
+
+    auto wrap = [](elastica::real_t inp) noexcept {
+      return [=](elastica::real_t) noexcept -> elastica::real_t { return inp; };
+    };
+
+    auto pX = wrap(1.0);
+    auto pY = wrap(2.0);
+    auto pZ = wrap(3.0);
+
+    auto vX = wrap(11.0);
+    auto vY = wrap(12.0);
+    auto vZ = wrap(13.0);
+
+    auto translations_buffer = elastica::kinematics::make_translations(
+        elastica::kinematics::translate_along<elastica::EulerianFrame::X>(
+            elastica::kinematics::mark_position(pX),
+            elastica::kinematics::mark_velocity(vX)),
+        elastica::kinematics::translate_along<elastica::EulerianFrame::Y>(
+            elastica::kinematics::mark_position(pY),
+            elastica::kinematics::mark_velocity(vY)),
+        elastica::kinematics::translate_along<elastica::EulerianFrame::Z>(
+            elastica::kinematics::mark_position(pZ),
+            elastica::kinematics::mark_velocity(vZ)));
+
+    // kinematic constructor
+    sim.emplace_back<elastica::collision::ImposedSpherePrimitive>(
+        elastica::collision::SpherePrimitive(0UL, 0UL, true, position, radius,
+                                             elastica::iron),
+        translations_buffer);
+
+    elastica::real_t length{12.0};
+    sim.emplace_back<elastica::collision::ImposedCapsulePrimitive>(
+        elastica::collision::CapsulePrimitive(1UL, 1UL, true, position,
+                                              elastica::identity3(), radius,
+                                              length, elastica::iron),
+        translations_buffer);
+
+    return sim;
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Environment.WithImposedPrimitives.update_values",
+                     "[Unit][Simulator][Interface][Environments]") {
+    // clang-format on
+    auto sim = setup_sim_with_actual_imposed_systems();
+
+    auto pre_update_primitive_check = [=](auto& p) {
+      CHECK(p.get_position()[0] == approx(5.0));
+      CHECK(p.get_position()[1] == approx(3.0));
+      CHECK(p.get_position()[2] == approx(6.0));
+    };
+
+    auto post_update_primitive_check = [=](auto& p) {
+      CHECK(p.get_position()[0] == approx(1.0));
+      CHECK(p.get_position()[1] == approx(2.0));
+      CHECK(p.get_position()[2] == approx(3.0));
+    };
+
+    sim.for_each_imposed_primitive(pre_update_primitive_check);
+
+    ::elastica::Time time_v{0.0};
+    sim.update_values_of_imposed_primitives(time_v);
+    sim.for_each_imposed_primitive(post_update_primitive_check);
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Environment.WithImposedPrimitives.update_rates",
+                     "[Unit][Simulator][Interface][Environments]") {
+    // clang-format on
+    auto sim = setup_sim_with_actual_imposed_systems();
+
+    auto pre_update_primitive_check = [=](auto& p) {
+      CHECK(p.get_velocity()[0] == approx(0.0));
+      CHECK(p.get_velocity()[1] == approx(0.0));
+      CHECK(p.get_velocity()[2] == approx(0.0));
+    };
+
+    auto post_update_primitive_check = [=](auto& p) {
+      CHECK(p.get_velocity()[0] == approx(11.0));
+      CHECK(p.get_velocity()[1] == approx(12.0));
+      CHECK(p.get_velocity()[2] == approx(13.0));
+    };
+
+    sim.for_each_imposed_primitive(pre_update_primitive_check);
+
+    ::elastica::Time time_v{0.0};
+    sim.update_rates_of_imposed_primitives(time_v);
+    sim.for_each_imposed_primitive(post_update_primitive_check);
   }
 
   // clang-format off

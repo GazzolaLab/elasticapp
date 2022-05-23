@@ -359,7 +359,7 @@ namespace elastica {
 
 namespace {
 
-  template <typename ListOfSystems>
+  template <typename ListOfSystemPlugins>
   inline decltype(auto) make_primitives_simulator() {
     using namespace ::elastica::configuration;
     using ListOfImposedPrimitives = tmpl::list<>;
@@ -367,7 +367,7 @@ namespace {
     auto env_config =
         ::mock::make_environments_configuration<ListOfImposedPrimitives>(
             elastica::configuration::seq);
-    auto sys_config = ::mock::make_systems_configuration<ListOfSystems>(
+    auto sys_config = ::mock::make_systems_configuration<ListOfSystemPlugins>(
         // this does not matter
         make_blocking_policy(RestrictSizeAcrossBlockTypes{20UL}),
         make_iteration_policy(iterate_across_system_types_in(seq),
@@ -386,8 +386,8 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Environments.WithPrimitives.Module",
                      "[Unit][Simulator][Interface][Environments]") {
     // clang-format on
-    using ListOfSystems = tmpl::list<ECBlock, ECNamedBlock>;
-    auto sim = make_primitives_simulator<ListOfSystems>();
+    using ListOfSystemPlugins = tmpl::list<ECPlugin, ECNamedPlugin>;
+    auto sim = make_primitives_simulator<ListOfSystemPlugins>();
     using Sim = decltype(sim);
     static_assert(Sim::get_number_of_system_collections() == 2,
                   "Systems meta-failure!");
@@ -408,13 +408,13 @@ namespace {
 
   inline decltype(auto) setup_sim_with_state(const std::size_t n_units) {
     const std::size_t n_elements = 16UL;
-    using ListOfSystems = tmpl::list<ECBlock, ECNamedBlock, AnotherECBlock>;
+    using ListOfSystemPlugins =
+        tmpl::list<ECPlugin, ECNamedPlugin, AnotherECPlugin>;
 
-    auto sim = make_primitives_simulator<ListOfSystems>();
+    auto sim = make_primitives_simulator<ListOfSystemPlugins>();
     // gives n_units / 2 blocks of ECBlock and n_units ECNamedBlock
-    tmpl::for_each<ListOfSystems>([&](auto p) {
-      using Block = tmpl::type_from<decltype(p)>;
-      using Plugin = GetPluginFromBlock<Block>;
+    tmpl::for_each<ListOfSystemPlugins>([&](auto p) {
+      using Plugin = tmpl::type_from<decltype(p)>;
       for (auto i = 0UL; i < n_units; ++i)
         sim.template emplace_back<Plugin>(
             ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(

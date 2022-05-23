@@ -17,6 +17,9 @@ add_library(Environments::Primitives ALIAS Primitives)
 add_subdirectory(GravityField)
 add_library(Environments::GravityField ALIAS GravityField)
 
+add_subdirectory(Kinematics)
+add_library(Environments::Kinematics ALIAS Kinematics)
+
 add_subdirectory(ModuleConfiguration)
 add_library(Environments::ModuleConfiguration ALIAS EnvironmentsModuleConfiguration)
 

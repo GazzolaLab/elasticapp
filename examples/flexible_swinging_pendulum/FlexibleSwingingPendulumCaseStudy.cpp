@@ -89,7 +89,10 @@ void FlexibleSwingingPendulumCaseStudy::setup(
 
   const ::elastica::Vec3 gravity_acc_vector{
       ::elastica::get<gravitational_acc>(input_parameters), 0.0, 0.0};
-  simulator->set_gravity(gravity_acc_vector);
+  auto& gravity_environment =
+      simulator
+          ->get_environment<::elastica::environments::tags::GravityField>();
+  gravity_environment->gravity() = gravity_acc_vector;
 
   simulator->finalize();
 

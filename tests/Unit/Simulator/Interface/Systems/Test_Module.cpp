@@ -359,8 +359,8 @@ namespace {
    ELASTICA_TEST_CASE("Unit.Simulator.Interface.Systems.Module",
                       "[Unit][Simulator][Interface][Systems]") {
     // clang-format on
-    using ListOfSystems = tmpl::list<ECBlock, ECNamedBlock>;
-    auto sim = make_systems_simulator<ListOfSystems>(
+    using ListOfSystemPlugins = tmpl::list<ECPlugin, ECNamedPlugin>;
+    auto sim = make_systems_simulator<ListOfSystemPlugins>(
         make_blocking_policy(RestrictSizeAcrossBlockTypes{20UL}));
     using Sim = decltype(sim);
     static_assert(Sim::get_number_of_system_collections() == 2,
@@ -379,10 +379,10 @@ namespace {
         cpp17::is_same_v<typename Sim::as_block<ECNamedPlugin>, ECNamedBlock>,
         "Systems meta-failure!");
 
-    using Plugins = tmpl::list<ECPlugin, ECNamedPlugin>;
-    static_assert(
-        cpp17::is_same_v<typename Sim::as_blocks<Plugins>, ListOfSystems>,
-        "Systems meta-failure!");
+    using ListOfSystems = tmpl::list<ECBlock, ECNamedBlock>;
+    static_assert(cpp17::is_same_v<typename Sim::as_blocks<ListOfSystemPlugins>,
+                                   ListOfSystems>,
+                  "Systems meta-failure!");
 
     (void)(sim.blocking_policy());
     (void)(cpp17::as_const(sim).blocking_policy());
@@ -392,8 +392,8 @@ namespace {
   }
 
   void test_emplace_back_by_LooselyRestrictSizeAcrossBlockTypes() {
-    using ListOfSystems = tmpl::list<ECBlock, ECNamedBlock>;
-    auto sim = make_systems_simulator<ListOfSystems>(
+    using ListOfSystemPlugins = tmpl::list<ECPlugin, ECNamedPlugin>;
+    auto sim = make_systems_simulator<ListOfSystemPlugins>(
         make_blocking_policy(LooselyRestrictSizeAcrossBlockTypes{20UL}));
 
     CHECK(sim.template get_system_collection_container<ECBlock>().empty());
@@ -401,9 +401,9 @@ namespace {
     // check if push back works in accordance with the blocking policy
     const std::size_t n_elements = 13UL;  // boo!
 
-    tmpl::for_each<ListOfSystems>([&](auto p) {
-      using Block = tmpl::type_from<decltype(p)>;
-      using Plugin = GetPluginFromBlock<Block>;
+    tmpl::for_each<ListOfSystemPlugins>([&](auto p) {
+      using Plugin = tmpl::type_from<decltype(p)>;
+      using Block = GenerateBlock<Plugin>;
 
       sim.emplace_back<Plugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
@@ -434,8 +434,8 @@ namespace {
   }
 
   void test_emplace_back_by_RestrictSizeAcrossBlockTypes() {
-    using ListOfSystems = tmpl::list<ECBlock, ECNamedBlock>;
-    auto sim = make_systems_simulator<ListOfSystems>(
+    using ListOfSystemPlugins = tmpl::list<ECPlugin, ECNamedPlugin>;
+    auto sim = make_systems_simulator<ListOfSystemPlugins>(
         make_blocking_policy(RestrictSizeAcrossBlockTypes{20UL}));
 
     CHECK(sim.template get_system_collection_container<ECBlock>().empty());
@@ -443,9 +443,9 @@ namespace {
     // check if push back works in accordance with the blocking policy
     const std::size_t n_elements = 8UL;
 
-    tmpl::for_each<ListOfSystems>([&](auto p) {
-      using Block = tmpl::type_from<decltype(p)>;
-      using Plugin = GetPluginFromBlock<Block>;
+    tmpl::for_each<ListOfSystemPlugins>([&](auto p) {
+      using Plugin = tmpl::type_from<decltype(p)>;
+      using Block = GenerateBlock<Plugin>;
 
       sim.emplace_back<Plugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
@@ -478,9 +478,9 @@ namespace {
 
   // needed for validationg the apply_over_blcoks test
   void test_emplace_back_by_LooselyRestrictCustomizedToBlockTypes() {
-    using ListOfSystems = tmpl::list<ECBlock, ECNamedBlock>;
+    using ListOfSystemPlugins = tmpl::list<ECPlugin, ECNamedPlugin>;
     const std::size_t n_elements = 8UL;
-    auto sim = make_systems_simulator<ListOfSystems>(
+    auto sim = make_systems_simulator<ListOfSystemPlugins>(
         // check if push back works in accordance with the blocking policy
         make_blocking_policy(
             LooselyRestrictSizeOf<ECBlock>{2 * n_elements},
@@ -547,8 +547,8 @@ namespace {
     // I just test the two most complex here as if they work, the rest will
     // also work.
 
-    using ListOfSystems = tmpl::list<ECBlock, ECNamedBlock>;
-    auto sim = make_systems_simulator<ListOfSystems>(
+    using ListOfSystemPlugins = tmpl::list<ECPlugin, ECNamedPlugin>;
+    auto sim = make_systems_simulator<ListOfSystemPlugins>(
         make_blocking_policy(LooselyRestrictSizeAcrossBlockTypes{20UL}));
 
     CHECK(sim.template get_system_collection_container<ECBlock>().empty());
@@ -557,9 +557,8 @@ namespace {
     const std::size_t n_elements = 13UL;  // boo!
     std::size_t n_system_count = 0UL;
 
-    tmpl::for_each<ListOfSystems>([&](auto p) {
-      using Block = tmpl::type_from<decltype(p)>;
-      using Plugin = GetPluginFromBlock<Block>;
+    tmpl::for_each<ListOfSystemPlugins>([&](auto p) {
+      using Plugin = tmpl::type_from<decltype(p)>;
 
       sim.emplace_back<Plugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
@@ -583,8 +582,8 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Systems.Module.exception_testing_for_emplace_back",
                      "[Unit][Simulator][Interface][Systems]") {
     // clang-format on
-    using ListOfSystems = tmpl::list<ECBlock, ECNamedBlock>;
-    auto sim = make_systems_simulator<ListOfSystems>(
+    using ListOfSystemPlugins = tmpl::list<ECPlugin, ECNamedPlugin>;
+    auto sim = make_systems_simulator<ListOfSystemPlugins>(
         make_blocking_policy(RestrictSizeAcrossBlockTypes{20UL}));
     sim.finalize();
 
@@ -602,13 +601,13 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Systems.Module.check_if_registered",
                      "[Unit][Simulator][Interface][Systems]") {
     // clang-format on
-    using ListOfSystems = tmpl::list<ECBlock, ECNamedBlock>;
-    auto sim = make_systems_simulator<ListOfSystems>(
+    using ListOfSystemPlugins = tmpl::list<ECPlugin, ECNamedPlugin>;
+    auto sim = make_systems_simulator<ListOfSystemPlugins>(
         make_blocking_policy(RestrictSizeAcrossBlockTypes{20UL}));
 
-    tmpl::for_each<ListOfSystems>([&](auto p) {
-      using Block = tmpl::type_from<decltype(p)>;
-      using Plugin = GetPluginFromBlock<Block>;
+    tmpl::for_each<ListOfSystemPlugins>([&](auto p) {
+      using Plugin = tmpl::type_from<decltype(p)>;
+      using Block = GenerateBlock<Plugin>;
       const std::size_t n_elements = 16UL;
 
       CHECK(sim.template get_system_collection_container<Block>().empty());
@@ -632,13 +631,13 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Systems.Module.confirm_as_registered",
                      "[Unit][Simulator][Interface][Systems]") {
     // clang-format on
-    using ListOfSystems = tmpl::list<ECBlock, ECNamedBlock>;
-    auto sim = make_systems_simulator<ListOfSystems>(
+    using ListOfSystemPlugins = tmpl::list<ECPlugin, ECNamedPlugin>;
+    auto sim = make_systems_simulator<ListOfSystemPlugins>(
         make_blocking_policy(RestrictSizeAcrossBlockTypes{20UL}));
 
-    tmpl::for_each<ListOfSystems>([&](auto p) {
-      using Block = tmpl::type_from<decltype(p)>;
-      using Plugin = GetPluginFromBlock<Block>;
+    tmpl::for_each<ListOfSystemPlugins>([&](auto p) {
+      using Plugin = tmpl::type_from<decltype(p)>;
+      using Block = GenerateBlock<Plugin>;
       const std::size_t n_elements = 16UL;
 
       CHECK(sim.template get_system_collection_container<Block>().empty());
@@ -663,8 +662,8 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Systems.Module.to_be_iterated_sequentially",
                      "[Unit][Simulator][Interface][Systems]") {
     // clang-format on
-    using ListOfSystems = tmpl::list<ECBlock, ECNamedBlock>;
-    auto sim = make_systems_simulator<ListOfSystems>(
+    using ListOfSystemPlugins = tmpl::list<ECPlugin, ECNamedPlugin>;
+    auto sim = make_systems_simulator<ListOfSystemPlugins>(
         make_blocking_policy(RestrictSizeAcrossBlockTypes{20UL}));
     CHECK(sim.to_be_iterated_sequentially(
         sim.get_system_collection_container<ECBlock>()));
@@ -674,15 +673,15 @@ namespace {
 
   inline decltype(auto) setup_sim_with_state(const std::size_t n_units) {
     const std::size_t n_elements = 16UL;
-    using ListOfSystems = tmpl::list<ECBlock, ECNamedBlock, AnotherECBlock>;
-    auto sim = make_systems_simulator<ListOfSystems>(make_blocking_policy(
+    using ListOfSystemPlugins =
+        tmpl::list<ECPlugin, ECNamedPlugin, AnotherECPlugin>;
+    auto sim = make_systems_simulator<ListOfSystemPlugins>(make_blocking_policy(
         LooselyRestrictSizeOf<ECBlock>{2 * n_elements},
         LooselyRestrictSizeOf<ECNamedBlock>{n_elements - 1UL},
         RestrictSizeOf<AnotherECBlock>{n_elements}));
     // gives n_units / 2 blocks of ECBlock and n_units ECNamedBlock
-    tmpl::for_each<ListOfSystems>([&](auto p) {
-      using Block = tmpl::type_from<decltype(p)>;
-      using Plugin = GetPluginFromBlock<Block>;
+    tmpl::for_each<ListOfSystemPlugins>([&](auto p) {
+      using Plugin = tmpl::type_from<decltype(p)>;
       for (auto i = 0UL; i < n_units; ++i)
         sim.template emplace_back<Plugin>(
             ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(

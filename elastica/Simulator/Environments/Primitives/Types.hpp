@@ -43,13 +43,6 @@ namespace elastica {
     template <typename T>
     class ImposedPrimitiveAdapter;
 
-    /* Do not expose to clients
-    using ImposedSphere = ImposedPrimitiveAdapter<SpherePrimitive>;
-    using ImposedCapsule = ImposedPrimitiveAdapter<CapsulePrimitive>;
-    using ImposedPlane = ImposedPrimitiveAdapter<PlanePrimitive>;
-    using ImposedCylinder = ImposedPrimitiveAdapter<CylinderPrimitive>;
-    */
-
     using GeomID = GeomPrimitive*;
     using ConstGeomID = const GeomPrimitive*;
 

@@ -23,6 +23,7 @@ elastica_target_headers(
         ${LIBRARY}
         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
         Access.hpp
+        Aliases.hpp
         CapsuleFromRodPrimitive.hpp
         CapsulePrimitive.hpp
         CylinderPrimitive.hpp
@@ -30,9 +31,12 @@ elastica_target_headers(
         ImposedPrimitiveAdapter.hpp
         PlanePrimitive.hpp
         PrimitivesCollection.hpp
+        Protocols.hpp
         RigidBodyPrimitive.hpp
         Serialize.hpp
         SpherePrimitive.hpp
+        Types.hpp
+        TypeTraits.hpp
 )
 
 add_subdirectory(detail)
@@ -46,4 +50,7 @@ target_link_libraries(
         Materials
         ErrorHandling
         Utilities
+        # For imposed primitives
+        Time
+        Kinematics
 )

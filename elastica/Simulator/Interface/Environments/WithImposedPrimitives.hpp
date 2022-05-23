@@ -26,6 +26,7 @@
 
 ///
 #include "Simulator/Interface/Environments/Types.hpp"
+#include "Simulator/Interface/Environments/WithImposedPrimitivesExecutionPolicy.hpp"
 /// Serialization support
 #include "Simulator/Environments/Primitives/PrimitivesCollection.hpp"
 #include "Simulator/IO/Serialization/Types.hpp"
@@ -35,8 +36,10 @@
 #include "Utilities/Invoke.hpp"
 #include "Utilities/Logging.hpp"
 #include "Utilities/NonCopyable.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace elastica {
 
@@ -67,7 +70,10 @@ namespace elastica {
       template <class EnvironmentsTraits, class Sim>
       class WithImposedPrimitives
           : public CRTPHelper<Sim, WithImposedPrimitives>,
-            public NonCopyable {
+            public NonCopyable,
+            protected WithImposedPrimitivesExecutionPolicy<
+                EnvironmentsTraits,
+                WithImposedPrimitives<EnvironmentsTraits, Sim>> {
        private:
         //**Type definitions****************************************************
         //! This type
@@ -78,6 +84,9 @@ namespace elastica {
         using CRTP::self;
         //! Internal size type
         using SizeType = typename EnvironmentsTraits::SizeType;
+        //! Algorithm type
+        using Algorithm = ::elastica::interface::environments::
+            WithImposedPrimitivesExecutionPolicy<EnvironmentsTraits, This>;
         //**********************************************************************
 
         //**Friendships*********************************************************
@@ -102,6 +111,12 @@ namespace elastica {
         //! Type for storing imposed primitives
         using ImposedPrimitives = ::elastica::collision::PrimitivesCollection<
             ListOfAdmissibleImposedPrimitives>;
+        //! Metafunction to check if a plugin is valid
+        template <typename ImposedPrimitive>
+        using an_admissible = cpp17::bool_constant<
+            // brigand's bool constant does not have constexpr bool() operator
+            tmpl::list_contains<ListOfAdmissibleImposedPrimitives,
+                                ImposedPrimitive>::value>;
         //**********************************************************************
 
        public:
@@ -109,6 +124,8 @@ namespace elastica {
         //! Type of simulation time
         using TimeType = typename EnvironmentsTraits::TimeType;
         // public for protocols
+        //! Typelist of submodules
+        using SubModules = tmpl::list<Algorithm>;
         //**********************************************************************
 
        protected:
@@ -277,6 +294,38 @@ namespace elastica {
           return for_each_imposed_primitive(std::move(func),
                                             ImposedPrimitivesList{});
         }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Update the values of each imposed primitives
+         *
+         * \param time_v The current time of simulation
+         */
+        inline auto update_values_of_imposed_primitives(TimeType time_v) const
+            -> void {
+          // this is internal so a member function suffices.
+          auto const& algorithm =
+              self()
+                  .template get_algorithm<
+                      typename Algorithm::UpdatePrimitives>();
+          algorithm(time_v);
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Update the rates of each imposed primitives
+         *
+         * \param time_v The current time of simulation
+         */
+        inline auto update_rates_of_imposed_primitives(TimeType time_v) const
+            -> void {
+          // this is internal so a member function suffices.
+          auto const& algorithm =
+              self().template get_algorithm<typename Algorithm::UpdateRates>();
+          algorithm(time_v);
+        }
+        //**********************************************************************
+
         //@}
         //**********************************************************************
 
@@ -341,8 +390,9 @@ namespace elastica {
          * Convenience function to get a reference wrapper to a primitive added
          * to the simulator. Typical use is in case-studies.
          */
-        template <typename ImposedPrimitive>
-        decltype(auto) get_invalid_primitive_ref() const noexcept {
+        template <typename ImposedPrimitive,
+                  Requires<an_admissible<ImposedPrimitive>{}> = nullptr>
+        decltype(auto) get_invalid_ref() const noexcept {
           using RT = IndexedReferenceWrapper<ImposedPrimitive>;
           return RT{};
         }
@@ -375,8 +425,7 @@ namespace elastica {
          * \tparam ImposedPrimitive Type of imposed primitive to emplace back
          */
         template <typename ImposedPrimitive,
-                  bool B = tmpl::list_contains_v<
-                      ListOfAdmissibleImposedPrimitives, ImposedPrimitive>>
+                  bool B = an_admissible<ImposedPrimitive>{}>
         static inline constexpr auto check_if_admissible() noexcept -> void {
           static_assert(B,
                         R"error(
@@ -463,10 +512,10 @@ Please add them to the above type-list, using EnvironmentsConfiguration
          * \param args Arguments for the Imposed Primitive
          * \return Mutable reference to the imposed primitive emplaced in
          */
-        template <class ImposedPrimitive, class... Args>
-        inline decltype(auto) emplace_back_imposed(Args&&... args) {
+        template <class ImposedPrimitive, class... Args,
+                  Requires<an_admissible<ImposedPrimitive>{}> = nullptr>
+        inline decltype(auto) emplace_back(Args&&... args) {
           self().check_if_not_final();
-          check_if_admissible<ImposedPrimitive>();
 
           return emplace_back_imposed_impl<ImposedPrimitive>(
               std::forward<Args>(args)...);

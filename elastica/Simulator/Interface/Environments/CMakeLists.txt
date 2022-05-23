@@ -8,6 +8,7 @@ elastica_target_headers(
         Emplacer.hpp
         ExecutionPolicy.hpp
         WithImposedPrimitives.hpp
+        WithImposedPrimitivesExecutionPolicy.hpp
         Module.hpp
         Serialize.hpp
         WithPrimitives.hpp

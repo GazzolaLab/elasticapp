@@ -34,6 +34,7 @@
 #include "Simulator/Domain/Domain.hpp"
 /// Interface methods
 #include "Simulator/Interface/Simulator/Configuration.hpp"
+#include "Simulator/Interface/Simulator/SystemsRegistrationHelpers.hpp"
 #include "Simulator/Interface/Systems/Module.hpp"
 #if (ELASTICA_EXPLICIT_STEPPER)
 #include "Simulator/Interface/TimeSteppers/ExplicitSteppers.hpp"
@@ -581,6 +582,55 @@ reorganizing your code logic.
         ready_for_integration_ = true;
       }
       //************************************************************************
+      //@}
+      //************************************************************************
+
+     public:
+      //**Interface methods*****************************************************
+      /*!\name System interface methods*/
+      //@{
+
+      //************************************************************************
+      /*!\brief Interface for emplacing entities into the simulator
+       *
+       * \details
+       * Forwards to the most relevant emplace_back() found by searching all the
+       * modules
+       *
+       * \see ::elastica::modules::Systems::emplace_back(),
+       * ::elastica::interface::environments::WithImposedPrimitives::emplace_back()
+       */
+      template <class AnyRegisteredSystem, class... Args>
+      inline decltype(auto) emplace_back(Args&&... args) {
+        using ModuleWithAppropriateOverload = typename ChooseMethodOverload<
+            detail::tt::has_emplace_back_t,
+            ModulesList>::template For<AnyRegisteredSystem, Args&&...>::type;
+        return static_cast<ModuleWithAppropriateOverload*>(this)
+            ->template emplace_back<AnyRegisteredSystem>(
+                std::forward<Args>(args)...);
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Get an invalid reference type for given a system type
+       *
+       * \details
+       * Forwards to the most relevant get_invalid_ref() found by searching all
+       * the modules
+       *
+       * \see ::elastica::modules::Systems::get_invalid_ref(),
+       * ::elastica::interface::environments::WithImposedPrimitives::get_invalid_ref()
+       */
+      template <class AnyRegisteredSystem>
+      inline decltype(auto) get_invalid_ref() const noexcept {
+        using ModuleWithAppropriateOverload = typename ChooseMethodOverload<
+            detail::tt::has_get_invalid_ref,
+            ModulesList>::template For<AnyRegisteredSystem>::type;
+        return static_cast<ModuleWithAppropriateOverload const*>(this)
+            ->template get_invalid_ref<AnyRegisteredSystem>();
+      }
+      //************************************************************************
+
       //@}
       //************************************************************************
 

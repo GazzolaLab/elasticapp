@@ -7,5 +7,6 @@ elastica_target_headers(
         Configuration.hpp
         Serialize.hpp
         Simulator.hpp
+        SystemsRegistrationHelpers.hpp
         Types.hpp
 )

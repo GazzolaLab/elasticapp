@@ -1986,9 +1986,9 @@ namespace {
                            first_capsule.get_rotation_matrix(), velocity,
                            omega);
 
-    const auto R1(make_orthogonal_bases_from_tangent(Vec3{1.0, 0.0, 0.0}));
-    const auto R2(make_orthogonal_bases_from_tangent(Vec3{0.0, 1.0, 0.0}));
-    const auto R3(make_orthogonal_bases_from_tangent(Vec3{0.0, 0.0, 1.0}));
+    // const auto R1(make_orthogonal_bases_from_tangent(Vec3{1.0, 0.0, 0.0}));
+    // const auto R2(make_orthogonal_bases_from_tangent(Vec3{0.0, 1.0, 0.0}));
+    // const auto R3(make_orthogonal_bases_from_tangent(Vec3{0.0, 0.0, 1.0}));
 
     SECTION("Bodies do not contact") {
       const real_t second_capsule_radius = 2.0;

@@ -31,6 +31,9 @@ namespace elastica {
       class WithImposedPrimitives;
 
       template <class /*EnvironmentsTraits*/, class /* Sim*/>
+      class WithImposedPrimitivesExecutionPolicy;
+
+      template <class /*EnvironmentsTraits*/, class /* Sim*/>
       class WithPrimitives;
 
       template <class /*EnvironmentsTraits*/, class /*EnvironmentsModule*/>

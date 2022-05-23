@@ -144,8 +144,9 @@ namespace {
               // This incurs a collision with the spheres added later on
               ::elastica::Vec3{static_cast<::elastica::real_t>(0.6 + i), 0.,
                                0.};
-          auto ref = simulator->template emplace_back_imposed<ImposedSphere>(
-              i, 0UL, false, pos, first_radius, ::elastica::iron);
+          auto ref =
+              simulator->template emplace_back<ImposedSphere>(SpherePrimitive(
+                  i, 0UL, false, pos, first_radius, ::elastica::iron));
           // TODO : need proper initialization syntax for imposed
           // primitives
           ref.get().transfer(first_radius, std::move(pos),
@@ -510,12 +511,6 @@ namespace {
     SECTION("Test Utility") {
       auto refs = setup_state(simulator);
 
-      auto sphere_ref = std::get<0UL>(refs);
-      auto another_sphere_ref = std::get<1UL>(refs);
-      auto rod_ref = std::get<2UL>(refs);
-      auto another_rod_ref = std::get<3UL>(refs);
-      auto yet_another_rod_ref = std::get<4UL>(refs);
-
       simulator->finalize();
       // because the environments do not need support for primitives, they are
       // not initialized, so we initialize them
@@ -564,7 +559,7 @@ namespace {
 namespace {
 
   template <typename EnvironmentTags =
-                tmpl::list<elastica::environments::tags::CollisionSystemTag>>
+                tmpl::list<elastica::environments::tags::CollisionSystem>>
   static inline auto make_integrated_configuration() {
     using namespace ::elastica::configuration;
     using ImposedPrimitives =
@@ -599,8 +594,9 @@ namespace {
     simulator->reset();
     auto refs = setup_state(simulator);
 
-    auto& solver = simulator->get_environment<
-        elastica::environments::tags::CollisionSystemTag>();
+    auto& solver =
+        simulator
+            ->get_environment<elastica::environments::tags::CollisionSystem>();
 
     // restore solver to base state was before, so that the integrated tests
     // won't buckle

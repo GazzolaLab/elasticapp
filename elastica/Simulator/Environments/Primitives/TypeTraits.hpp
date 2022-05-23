@@ -97,7 +97,8 @@ namespace elastica {
       //************************************************************************
 
       //************************************************************************
-      /// \see IsRigidPrimitive
+      /// \see elastica::collision::tt::IsRigidPrimitive
+      /// \ingroup primitives
       template <typename T>
       constexpr bool IsRigidPrimitive_v = IsRigidPrimitive<T>::value;
       //************************************************************************
@@ -155,7 +156,8 @@ namespace elastica {
       //************************************************************************
 
       //************************************************************************
-      /// \see PrimitiveTrait
+      /// \see elastica::collision::tt::PrimitiveTrait
+      /// \ingroup primitives
       template <typename T>
       using PrimitiveTrait_t = typename PrimitiveTrait<T>::type;
       //************************************************************************

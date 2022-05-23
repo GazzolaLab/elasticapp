@@ -41,7 +41,7 @@ namespace {
     real_t radius(4.0);
 
     using P = ImposedSpherePrimitive;
-    P first_sphere(0UL, 0UL, true, position, radius, iron);
+    P first_sphere(SpherePrimitive(0UL, 0UL, true, position, radius, iron));
 
     Vec3 velocity{1.0, 0.0, 0.0};
     Vec3 omega{0.0, 0.0, 0.0};

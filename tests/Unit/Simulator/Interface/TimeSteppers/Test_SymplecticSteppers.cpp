@@ -283,8 +283,9 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Time.SymplecticSteppers",
                      "[Unit][Simulator][Interface][Time]") {
     // clang-format on
-    using ListOfSystems = tmpl::list<ECBlock, ECNamedBlock, AnotherECBlock>;
-    auto sim = make_systems_simulator<ListOfSystems>(
+    using ListOfSystemPlugins =
+        tmpl::list<ECPlugin, ECNamedPlugin, AnotherECPlugin>;
+    auto sim = make_systems_simulator<ListOfSystemPlugins>(
         make_blocking_policy(RestrictSizeAcrossBlockTypes{20UL}));
     using Sim IGNORE_UNUSED = decltype(sim);
     elastica::ignore_unused(sim);

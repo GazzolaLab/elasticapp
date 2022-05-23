@@ -1,4 +1,5 @@
 add_subdirectory(CollisionSystem)
 add_subdirectory(Primitives)
 add_subdirectory(GravityField)
+add_subdirectory(Kinematics)
 add_subdirectory(Transfer)

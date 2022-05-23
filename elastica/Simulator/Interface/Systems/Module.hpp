@@ -61,6 +61,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace elastica {
 
@@ -139,6 +140,9 @@ namespace elastica {
       //**Type definitions******************************************************
       //! Type of simulation time
       using TimeType = typename SimTraits::TimeType;  // public for protocols
+      //! Typelist of admissible plugins
+      using AdmissibleSystemPlugins =
+          typename SimTraits::AdmissibleSystemPlugins;
       //! Typelist of admissible systems
       //! \example <Sphere, Box, Cylinder, CosseratRod>
       using ListOfAdmissibleSystemCollections =
@@ -190,6 +194,12 @@ namespace elastica {
       //! Metafunction for converting Plugins to Blocks
       template <typename PluginsList>
       using as_blocks = tmpl::wrap<PluginsList, as_block_wrapper>;
+      //! Metafunction to check if a plugin is valid
+      template <typename Plugin>
+      using an_admissible =
+          cpp17::bool_constant<
+              // brigand's bool constant does not have constexpr bool() operator
+              tmpl::list_contains<AdmissibleSystemPlugins, Plugin>::value>;
       //@}
       //************************************************************************
 
@@ -306,9 +316,10 @@ namespace elastica {
       /*!\brief Get an invalid reference type for given a system type
        *
        * \details
-       * For convenience, one can get an
+       * Convenience function, used especially in case-studies, to get the type
+       * and default value of a wrapped reference
        */
-      template <typename Plugin>
+      template <typename Plugin, Requires<an_admissible<Plugin>{}> = nullptr>
       decltype(auto) get_invalid_ref() const noexcept {
         using RT = LazyBlockSliceGenerator<Plugin>;
         return RT{};
@@ -730,21 +741,21 @@ the above type-list, using SystemsConfiguration.
        * \param args Arguments for the SystemCollection
        * \return Mutable reference to the system emplaced in
        */
-      template <class SystemCollection, class... Args,
-                Requires<not blocks::is_plugin_v<SystemCollection>> = nullptr>
-      inline auto emplace_back_impl(Args&&... args) -> SystemCollection& {
-        auto& system_collection_container =
-            get_system_collection_container<SystemCollection>();
-        system_collection_container.emplace_back(std::forward<Args>(args)...);
-
-        constexpr std::size_t n =
-            tmpl::index_of<ListOfAdmissibleSystemCollections,
-                           SystemCollection>::value;
-        ++n_total_systems_[n];
-
-        // return non-owning handle to the System just pushed back
-        return system_collection_container.back();
-      }
+//      template <class SystemCollection, class... Args,
+//                Requires<not blocks::is_plugin_v<SystemCollection>> = nullptr>
+//      inline auto emplace_back_impl(Args&&... args) -> SystemCollection& {
+//        auto& system_collection_container =
+//            get_system_collection_container<SystemCollection>();
+//        system_collection_container.emplace_back(std::forward<Args>(args)...);
+//
+//        constexpr std::size_t n =
+//            tmpl::index_of<ListOfAdmissibleSystemCollections,
+//                           SystemCollection>::value;
+//        ++n_total_systems_[n];
+//
+//        // return non-owning handle to the System just pushed back
+//        return system_collection_container.back();
+//      }
       //************************************************************************
 
       //**Implementation of emplace back****************************************
@@ -758,7 +769,6 @@ the above type-list, using SystemsConfiguration.
                 Requires<blocks::is_plugin_v<SystemPlugin>> = nullptr>
       inline auto emplace_back_impl(Initializer&& initializer) {
         using Key = as_block<SystemPlugin>;
-        check_if_admissible<Key>();
         auto& system_block_container = get_system_collection_container<Key>();
         auto system_block_it = blocking_policy().get_iterator_to_block(
             system_block_container,
@@ -810,10 +820,11 @@ the above type-list, using SystemsConfiguration.
        * \return A view/reference of the emplaced system, with the exact same
        *         interface
        */
-      template <class SystemCollection, class... Args>
+      template <class SystemPlugin, class... Args,
+                Requires<an_admissible<SystemPlugin>{}> = nullptr>
       inline decltype(auto) emplace_back(Args&&... args) {
         self().check_if_not_final();
-        return emplace_back_impl<SystemCollection>(std::forward<Args>(args)...);
+        return emplace_back_impl<SystemPlugin>(std::forward<Args>(args)...);
       }
       //************************************************************************
       //@}

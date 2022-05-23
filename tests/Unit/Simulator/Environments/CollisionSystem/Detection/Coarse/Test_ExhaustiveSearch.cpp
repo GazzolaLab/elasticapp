@@ -184,7 +184,7 @@ namespace {
     typename Config::ImposedPrimitiveStorage imposed_primitive_storage{};
 
     auto domain_ptr = (&domain);
-    auto imposed_ptr = (&imposed_primitive_storage);
+    // auto imposed_ptr = (&imposed_primitive_storage);
 
     // TODO : update these ugly pointers bro
     Algorithm algorithm(domain_ptr);
@@ -324,7 +324,8 @@ namespace {
             // P sphere();
             // sphere.transfer(/*new_radius, */ position, velocity, omega);
             get_collection<P>(imposed_primitive_storage)
-                .emplace_back(0UL, 0UL, true, position, radius, iron);
+                .emplace_back(
+                    SpherePrimitive(0UL, 0UL, true, position, radius, iron));
             get_collection<P>(imposed_primitive_storage)
                 .back()
                 .transfer(
@@ -345,8 +346,9 @@ namespace {
             // primitive.transfer(position, identity3(), velocity, omega);
 
             get_collection<P>(imposed_primitive_storage)
-                .emplace_back(0UL, 0UL, true, position, identity3(), radius,
-                              length, iron);
+                .emplace_back(CapsulePrimitive(0UL, 0UL, true, position,
+                                               identity3(), radius, length,
+                                               iron));
             get_collection<P>(imposed_primitive_storage)
                 .back()
                 .transfer(position, identity3(), velocity, omega);
@@ -532,7 +534,8 @@ namespace {
 
             using Q = ImposedSpherePrimitive;
             get_collection<Q>(imposed_primitive_storage)
-                .emplace_back(0UL, 1UL, true, second_position, radius, iron);
+                .emplace_back(SpherePrimitive(0UL, 1UL, true, second_position,
+                                              radius, iron));
             get_collection<Q>(imposed_primitive_storage)
                 .back()
                 .transfer(
@@ -589,9 +592,9 @@ namespace {
 
             using Q = ImposedCapsulePrimitive;
             get_collection<Q>(imposed_primitive_storage)
-                .emplace_back(1UL, 1UL, true, second_capsule_position,
-                              capsule_axis, second_capsule_radius,
-                              second_capsule_length, iron);
+                .emplace_back(CapsulePrimitive(
+                    1UL, 1UL, true, second_capsule_position, capsule_axis,
+                    second_capsule_radius, second_capsule_length, iron));
             get_collection<Q>(imposed_primitive_storage)
                 .back()
                 .transfer(second_capsule_position, identity3(), velocity,
@@ -637,8 +640,9 @@ namespace {
             const Vec3 capsule_position{position[0], position[1],
                                         position[2] + radius + 1.75 * radius};
             get_collection<Q>(imposed_primitive_storage)
-                .emplace_back(1UL, 1UL, true, capsule_position, identity3(),
-                              capsule_radius, capsule_length, iron);
+                .emplace_back(CapsulePrimitive(1UL, 1UL, true, capsule_position,
+                                               identity3(), capsule_radius,
+                                               capsule_length, iron));
             get_collection<Q>(imposed_primitive_storage)
                 .back()
                 .transfer(capsule_position, identity3(), velocity, omega);

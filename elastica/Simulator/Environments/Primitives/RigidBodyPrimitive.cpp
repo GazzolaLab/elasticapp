@@ -80,13 +80,13 @@ namespace elastica {
           force_(real_t(0.0)),   // Total force
           torque_(real_t(0.0)),  // Total torque
 #else
-          mass_(0),   // Total mass of the rigid body
-          gpos_(),    // Global position of the center of mass
-          Q_(),       // Rotation matrix
-          v_(),       // Linear velocity
-          w_(),       // Angular velocity
-          force_(),   // Total force
-          torque_(),  // Total torque
+          mass_(0.0),                 // Total mass of the rigid body
+          gpos_(real_t(0.0)),         // Global position of the center of mass
+          Q_(elastica::identity3()),  // Rotation matrix
+          v_(real_t(0.0)),            // Linear velocity
+          w_(real_t(0.0)),            // Angular velocity
+          force_(real_t(0.0)),        // Total force
+          torque_(real_t(0.0)),       // Total torque
 #endif
           finite_(finite),
           sid_(sid),

@@ -162,7 +162,7 @@ namespace {
 
   struct IntegratedConfiguration {
     static_assert(::tt::assert_conforms_to<
-                      ::elastica::environments::tags::GravityTag,
+                      ::elastica::environments::tags::GravityField,
                       ::elastica::environments::protocols::EnvironmentTag>,
                   "Meta-failure");
 
@@ -177,7 +177,7 @@ namespace {
       // tested elsewhere
       auto gravity_config = ec::make_gravity_configuration(0.1, 0.0, 0.0);
       auto env_config = ec::make_environments_configuration<
-          tmpl::list<::elastica::environments::tags::GravityTag>>(
+          tmpl::list<::elastica::environments::tags::GravityField>>(
           ec::seq, gravity_config);
 
       return ec::make_simulator_configuration(
@@ -195,7 +195,12 @@ namespace {
                      "[Unit][Simulator][Environments]") {
     auto simulator = IntegratedConfiguration::make_simulator();
     ::elastica::Vec3 my_gravity{0.1, 0.0, 0.0};
-    simulator->set_gravity(my_gravity);
+
+    auto& gravity_environment =
+        simulator
+            ->get_environment<::elastica::environments::tags::GravityField>();
+    gravity_environment->gravity() = my_gravity;
+    //    simulator->set_gravity(my_gravity);
 
     // Copy-pasted from non-integrated test earlier
     elastica::MaterialID my_material = elastica::create_material(

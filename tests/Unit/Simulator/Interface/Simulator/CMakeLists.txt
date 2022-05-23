@@ -5,6 +5,7 @@ set(LIBRARY "Test_Interface_Simulator")
 
 set(LIBRARY_SOURCES
         Test_Simulator.cpp
+        Test_SystemsRegistrationHelpers.cpp
         )
 
 add_test_library(

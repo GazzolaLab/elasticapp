@@ -166,13 +166,20 @@ namespace mock {
     using TimeDeltaType IGNORE_UNUSED = ::elastica::TimeDelta;
     template <typename T>
     using AddSystemStorageType = std::vector<T>;
-    using ListOfAdmissibleSystemCollections = ListOfSystems;
+
+    template <typename Plugin>
+    struct AddBlock {
+      using type = blocks::Block<Plugin>;
+    };
+    using ListOfAdmissibleSystemCollections =
+        tmpl::transform<ListOfSystems, AddBlock<tmpl::_1>>;
   };
 
   template <typename ListOfSystems, typename... Args>
   inline constexpr auto make_systems_configuration(Args&&... args) noexcept {
-    auto config = ::elastica::configuration::make_systems_configuration(
-        std::forward<Args>(args)...);
+    auto config =
+        ::elastica::configuration::make_systems_configuration<ListOfSystems>(
+            std::forward<Args>(args)...);
     struct S : public decltype(config), public InternalTraits<ListOfSystems> {
       using P IGNORE_UNUSED = decltype(config);
       using I IGNORE_UNUSED = InternalTraits<ListOfSystems>;

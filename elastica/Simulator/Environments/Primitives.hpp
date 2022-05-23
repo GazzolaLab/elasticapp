@@ -18,6 +18,7 @@
 //******************************************************************************
 
 // Forward declarations come first
+#include "Simulator/Environments/Primitives/Aliases.hpp"
 #include "Simulator/Environments/Primitives/TypeTraits.hpp"
 #include "Simulator/Environments/Primitives/Types.hpp"
 //

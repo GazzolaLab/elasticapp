@@ -47,7 +47,7 @@ Some examples provide additional file or link to published paper for a complete 
     * __Features__:
         * CosseratRod
         * Constraints
-        * Environments (gravity)
+        * Environments (GravityField)
 
 * [`rigid_body_collision`](./rigid_body_collision)<img src="https://img.shields.io/badge/python-Case%20Study-brightgreen"/>
     * __Name__ : RigidBodyCollisionCaseStudy
@@ -55,6 +55,22 @@ Some examples provide additional file or link to published paper for a complete 
     * __Features__:
         * Sphere (RigidBody)
         * Environments (CollisionSystem)
+
+* [`rod_collision`](./rod_collision)<img src="https://img.shields.io/badge/python-Case%20Study-brightgreen"/>
+    * __Name__ : RodCollisionCaseStudy
+    * __Purpose__: Modeling collision forces between moving elastic rods.
+    * __Features__:
+        * CosseratRod
+        * Environments (CollisionSystem)
+
+* [`imposed_primitives`](./imposed_primitives)<img src="https://img.shields.io/badge/python-Case%20Study-brightgreen"/>
+    * __Name__ : ImposedPrimitivesCaseStudy
+    * __Purpose__: Imposing oscillatory motion of primitives (plane) interacting with other objects (sphere)
+    * __Features__:
+        * Sphere (RigidBody)
+        * ImposedPlane (RigidBody)
+        * Translations (Kinematics)
+        * Environments (CollisionSystem, GravityField)
 
 ### Rod Assembly
 

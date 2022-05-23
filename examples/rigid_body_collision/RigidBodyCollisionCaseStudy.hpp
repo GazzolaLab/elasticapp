@@ -37,7 +37,7 @@ struct RigidBodyCollisionConfiguration {
                                   ec::iterate_over_systems_in(ec::seq)));
 
     auto environment_config = ec::make_environments_configuration<
-        tmpl::list<elastica::environments::tags::CollisionSystemTag>>(
+        tmpl::list<elastica::environments::tags::CollisionSystem>>(
         // iteration, currently unused
         ec::seq,
         // use default force model of a linear spring damper
@@ -170,8 +170,9 @@ conserved.
                      return this->communicate_from(rod_ref);
                    });
     // return also the interpenetration here
-    auto& collision_system = simulator->get_environment<
-        elastica::environments::tags::CollisionSystemTag>();
+    auto& collision_system =
+        simulator
+            ->get_environment<elastica::environments::tags::CollisionSystem>();
     auto& contacts = collision_system->contacts();
     ::elastica::real_t penetration_depth =
         contacts.empty() ? 0.0 : -contacts[0].get_distance();

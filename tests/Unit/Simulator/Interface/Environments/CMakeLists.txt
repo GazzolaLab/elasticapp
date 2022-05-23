@@ -16,5 +16,5 @@ add_test_library(
         ${LIBRARY}
         "Simulator/Interface/Environments"
         "${LIBRARY_SOURCES}"
-        "ErrorHandling;Utilities;Primitives;Simulator"
+        "ErrorHandling;Utilities;Primitives;Simulator;Time"
 )

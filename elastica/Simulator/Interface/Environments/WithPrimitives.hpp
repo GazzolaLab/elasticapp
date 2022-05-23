@@ -143,6 +143,7 @@ namespace elastica {
         //! Type for storing offsets
         using OffsetsMap_ = elastica::OffsetsMap<
             typename EnvironmentsTraits::ListOfAdmissibleSystemCollections>;
+        //! Typelist of submodules
         using SubModules = tmpl::list<Algorithm>;
         //**********************************************************************
 
