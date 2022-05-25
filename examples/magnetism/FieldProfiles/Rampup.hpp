@@ -15,17 +15,49 @@
 
 #pragma once
 
+#include <cmath>
+
 namespace elastica {
 
   namespace detail {
 
-    template <typename Real>
+    template <typename Real_>
     struct LinearProfile {
+      using Real = Real_;
+
       Real operator()(Real val, Real start, Real interval) const noexcept {
         return (val < start)
                    ? 0.0
                    : ((val <= (start + interval)) ? ((val - start) / interval)
                                                   : 1.0);
+      }
+    };
+
+    template <typename Real_>
+    struct SinProfile {
+      using Real = Real_;
+
+      // See https://doi.org/10.1016/0021-9991(77)90100-0
+      // As reference from
+      // https://scihub.bban.top/https://doi.org/10.1137/0729022
+      // In his convention kernel's width is 4h. That is 4h_paper = h_impl, so
+      // the kernel is modified accordingly
+
+      // Discrete Heaviside
+      // Expr is 0.5*x + 0.5*sin(pi*x)/pi + 0.5
+      inline auto op(Real shifted_scaled_x) const noexcept -> Real {
+        return (static_cast<Real>(0.5) *
+                (1.0 + shifted_scaled_x +
+                 std::sin(static_cast<Real>(M_PI) * shifted_scaled_x) / M_PI));
+      };
+
+      Real operator()(Real val, Real start, Real interval) const noexcept {
+        return (val < start)
+                   ? 0.0
+                   : ((val <= (start + interval))
+                          ? op(Real(2.0) * ((val - start) / interval) -
+                               Real(1.0))
+                          : 1.0);
       }
     };
 
@@ -129,6 +161,17 @@ namespace elastica {
   auto make_linear_rampup(Real_ start, Real_ interval) {
     return make_rampup(std::move(start), std::move(interval),
                        detail::LinearProfile<Real_>{});
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Idiomatically makes a sin rampup
+   * \ingroup extension
+   */
+  template <typename Real_>
+  auto make_sin_rampup(Real_ start, Real_ interval) {
+    return make_rampup(std::move(start), std::move(interval),
+                       detail::SinProfile<Real_>{});
   }
   //****************************************************************************
 
