@@ -123,7 +123,7 @@ oscillations enables comparison with theory.
        * the damping contribution to force is zero---so this coefficient does
        * not really matter.
        */
-      return 10.0;
+      return 0.5;
     }
   };
 
@@ -131,6 +131,13 @@ oscillations enables comparison with theory.
     using type = ::elastica::real_t;
     static constexpr String help = {"Length of the rod"};
     static type default_value() { return 1.0; }
+  };
+
+  struct rampup_interval {
+    using type = ::elastica::real_t;
+    static constexpr String help = {
+        "Time interval for which we rampup the force"};
+    static type default_value() { return type(100.0); }
   };
 
   struct dt {
@@ -142,8 +149,9 @@ oscillations enables comparison with theory.
     }
   };
 
-  using Parameters = tmpl::list<n_elements, damping_rate, youngs_modulus,
-                                applied_force, radius, length, dt>;
+  using Parameters =
+      tmpl::list<n_elements, damping_rate, youngs_modulus, applied_force,
+                 radius, length, rampup_interval, dt>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);
@@ -151,7 +159,8 @@ oscillations enables comparison with theory.
   void run();
   inline auto communicate() {
     // TODO : inefficiency : slices at runtime, slice can be stored instead
-    return ::elastica::position(rod_ref.get());
+    return std::make_tuple(::elastica::position(rod_ref.get()),
+                           ::elastica::velocity(rod_ref.get()));
   }
 
   AxialStretchingCaseStudy() = default;

@@ -39,7 +39,8 @@ def run_example(
 
     end_force_transverse = -15.0
     dt = 0.01 * (base_length / n_elem)
-    final_time = 200.0
+    final_time = 5000.0
+    rampup_interval = final_time * 0.5
     time_interval = sample_interval * dt
     n_steps = int(final_time / time_interval)
 
@@ -51,21 +52,23 @@ def run_example(
         applied_force=end_force_transverse,
         radius=base_radius,
         length=base_length,
+        rampup_interval=rampup_interval,
         dt=dt,
     )
 
     times = []
     velocity_norms = []
 
+    def collect_statistics(cas):
+        times.append(cas.current_time())
+        _, curr_velocity_norms = cs.communicate()
+        velocity_norms.append(np.linalg.norm(np.asarray(curr_velocity_norms)))
+
+    collect_statistics(cs)
+
     for _ in track_simulation(range(n_steps)):
         cs.run_for(additional_time=time_interval)
-        # cs.step()
-
-        # if not (step % 200):
-        curr_time = cs.current_time()
-        _, curr_velocity_norms = cs.communicate()
-        times.append(curr_time)
-        velocity_norms.append(np.linalg.norm(np.asarray(curr_velocity_norms)))
+        collect_statistics(cs)
 
     final_positions, _ = cs.communicate()
     final_positions = np.copy(final_positions)
@@ -81,13 +84,22 @@ def run_example(
         ),
         save_figure=save_figure,
     )
-    plot_velocity(np.asarray(times), np.asarray(velocity_norms))
+    tv = (np.asarray(times), np.asarray(velocity_norms))
+    plot_velocity(*tv)
 
-    # print(tip_displacements)
     if save_to_csv:
         np.savetxt(
             "tip_displacements.csv",
             final_positions,
+            delimiter=",",
+        )
+
+        def as_time_series(v):
+            return v.T
+
+        np.savetxt(
+            "velocity_norms.csv",
+            as_time_series(np.stack(tv)),
             delimiter=",",
         )
 
@@ -96,4 +108,4 @@ def run_example(
 
 if __name__ == "__main__":
     print_description(TimoshenkoCaseStudy)
-    run_example()
+    run_example(save_to_csv=False)

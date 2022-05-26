@@ -13,6 +13,7 @@
 
 #include "AxialStretchingCaseStudy.hpp"
 
+#include <cmath>
 #include <elastica/Simulator/Materials.hpp>
 #include <elastica/Utilities/Get.hpp>
 #include <elastica/Utilities/Size.hpp>
@@ -31,7 +32,8 @@ void AxialStretchingCaseStudy::setup(InputTypes<This> const& input_parameters) {
       // Young's modulus
       ::elastica::get<youngs_modulus>(input_parameters),
       // Shear modulus
-      1e4,  // doesn't matter
+      ::elastica::get<youngs_modulus>(input_parameters) /
+          ::elastica::real_t(1.5),  // doesn't matter
       // Contact stiffness
       200,
       // normal contact damping
@@ -89,10 +91,14 @@ void AxialStretchingCaseStudy::setup(InputTypes<This> const& input_parameters) {
 
   const ::elastica::Vec3 F{::elastica::get<applied_force>(input_parameters),
                            0.0, 0.0};
+  const auto rampup_time{::elastica::get<rampup_interval>(input_parameters)};
+
   auto force_generator = efo::make_forcing(
-      efo::make_force([F](auto /*time*/, auto& rod_system, std::size_t index) {
+      efo::make_force([=](auto time_v, auto& rod_system, std::size_t index) {
         using Tag = ::elastica::tags::ExternalLoads;
-        blaze::column(::elastica::get<Tag>(rod_system), index + 1UL) = F;
+        blaze::column(::elastica::get<Tag>(rod_system), index + 1UL) =
+            F * std::min(1.0,
+                         static_cast<::elastica::real_t>(time_v) / rampup_time);
       }),
       efo::make_torque([](auto /*time*/, auto&, std::size_t) {}));
 

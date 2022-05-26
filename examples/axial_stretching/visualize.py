@@ -36,7 +36,7 @@ def run_example(
     # 3. Define the input parameters to the case study.
     sample_interval = 200
 
-    n_elem = 49
+    n_elem = 19
     base_radius = 0.025
     base_area = np.pi * base_radius**2
 
@@ -48,11 +48,12 @@ def run_example(
     that in this state, rates (v and omega) are zero : hence the damping contribution 
     to force is zero---so this coefficient does not really matter.
     """
-    damping_rate = 10.0
+    damping_rate = 0.5
     youngs_modulus = 1e4
     end_force_x = 1.0
     dt = 0.01 * (base_length / n_elem)
-    final_time = 50.0
+    final_time = 120.0
+    rampup_interval = 1e-2
     time_interval = sample_interval * dt
     n_iterations = int(final_time / time_interval)
 
@@ -69,12 +70,14 @@ def run_example(
         applied_force=end_force_x,
         radius=base_radius,
         length=base_length,
+        rampup_interval=rampup_interval,
         dt=dt,
     )
 
     times = []
     iterations = []
     tip_displacements = []
+    velocity_norms = []
 
     # 5. Run the case study. Different ways to run the case study are
     # 5.1 `cs.run()` : Runs the simulator till the user-defined criterion.
@@ -98,7 +101,7 @@ def run_example(
 
         # 5.8 `cs.communicate()` : Gets the system properties marked in the
         # function of the same name, defined in AxialStretchingCaseStudy.hpp
-        curr_positions = cs.communicate()
+        curr_positions, curr_velocities = cs.communicate()
         times.append(curr_time)
         iterations.append(curr_iteration)
 
@@ -106,6 +109,7 @@ def run_example(
         # allocated, rather it uses the memory in the C++ buffer. So changes
         # are reflected on the C++ side too!
         tip_displacements.append(np.asarray(curr_positions)[0, -1])
+        velocity_norms.append(np.linalg.norm(np.asarray(curr_velocities)))
 
     # 7. Postprocess and visualize the results.
     # First-order theory with base-length
@@ -139,18 +143,33 @@ def run_example(
         ax.hlines(avg_tip_displacement, 0.0, final_time, "r", lw=0.5)
         ax.set_xlabel("Time")
         ax.set_ylabel("Tip displacement")
+        fig.show()
+
+        new_fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
+        new_ax = new_fig.add_subplot(111)
+        new_ax.semilogy(times, velocity_norms, c=to_rgb("xkcd:reddish"), lw=2.0)
+
+        new_ax.set_xlabel("t")
+        new_ax.set_ylabel("|v|")
+
+        new_fig.show()
 
     if os.path.exists(pyelastica_file):
         pyelastica_results = np.loadtxt(pyelastica_file, delimiter=",")
         ax.plot(pyelastica_results[:, 0], pyelastica_results[:, 1], "r-")
 
-    # print(tip_displacements)
     if save_to_csv:
         np.savetxt(
             "tip_displacements.csv",
             np.c_[np.asarray(times), np.asarray(tip_displacements)],
             delimiter=",",
         )
+        np.savetxt(
+            "velocity_norms.csv",
+            np.c_[np.asarray(times), np.asarray(velocity_norms)],
+            delimiter=",",
+        )
+
     if save_figure:
         fig.savefig("axial_stretching.pdf")
 
@@ -159,4 +178,4 @@ def run_example(
 
 if __name__ == "__main__":
     print_description(AxialStretchingCaseStudy)
-    run_example()
+    run_example(save_to_csv=False)

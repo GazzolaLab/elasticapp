@@ -18,6 +18,7 @@
 #include <elastica/Utilities/Size.hpp>
 //#include <iomanip>
 //#include <ostream>
+#include <cmath>
 #include <utility>
 
 void TimoshenkoCaseStudy::setup(InputTypes<This> const& input_parameters) {
@@ -94,12 +95,16 @@ void TimoshenkoCaseStudy::setup(InputTypes<This> const& input_parameters) {
 
   const ::elastica::Vec3 F{::elastica::get<applied_force>(input_parameters),
                            0.0, 0.0};
+  const auto rampup_time{::elastica::get<rampup_interval>(input_parameters)};
   auto force_generator = efo::make_forcing(
-      efo::make_force([F](auto /*time*/, auto& rod_system, std::size_t index) {
+      efo::make_force([F, rampup_time](auto time_v, auto& rod_system,
+                                       std::size_t index) {
         using Tag = ::elastica::tags::ExternalLoads;
         // using V =
         // cpp17::remove_reference_t<decltype(rod_system)>::VariableMap
-        blaze::column(::elastica::get<Tag>(rod_system), index + 1) = F;
+        blaze::column(::elastica::get<Tag>(rod_system), index + 1) =
+            F * std::min(1.0,
+                         static_cast<::elastica::real_t>(time_v) / rampup_time);
       }),
       efo::make_torque([](auto /*time*/, auto&, std::size_t) {}));
   simulator->force(rod_ref).at(::elastica::end - 1UL).with(force_generator());

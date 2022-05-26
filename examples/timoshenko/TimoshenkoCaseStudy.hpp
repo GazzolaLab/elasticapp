@@ -132,6 +132,13 @@ Section 3.4.3.
     static type default_value() { return 3.0; }
   };
 
+  struct rampup_interval {
+    using type = ::elastica::real_t;
+    static constexpr String help = {
+        "Time interval for which we rampup the force"};
+    static type default_value() { return type(100.0); }
+  };
+
   struct dt {
     using type = ::elastica::real_t;
     static constexpr String help = {"Time step of simulation"};
@@ -143,7 +150,7 @@ Section 3.4.3.
 
   using Parameters =
       tmpl::list<n_elements, damping_rate, youngs_modulus, shear_modulus,
-                 applied_force, radius, length, dt>;
+                 applied_force, radius, length, rampup_interval, dt>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);
