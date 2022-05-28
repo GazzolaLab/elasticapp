@@ -31,13 +31,6 @@ using CosseratRod = ::elastica::cosserat_rod::CosseratRod;
 
 struct FlexibleSwingingPendulumConfiguration {
   static inline auto make_simulator_configuration() {
-    auto system_config =
-        ec::make_systems_configuration<tmpl::list<CosseratRod>>(
-            ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{50UL}),
-            ec::make_iteration_policy(
-                ec::iterate_across_system_types_in(ec::seq),
-                ec::iterate_over_systems_in(ec::seq)));
-
     auto env_config = ec::make_environments_configuration<
         tmpl::list<::elastica::environments::tags::GravityField>>(
         // process environments in sequence
@@ -46,7 +39,7 @@ struct FlexibleSwingingPendulumConfiguration {
         ec::make_gravity_configuration(::elastica::Vec3{0., 0., 0.}));
 
     return ec::make_simulator_configuration(
-        ec::DefaultDomainConfiguration{}, system_config,
+        ec::DefaultDomainConfiguration{}, ec::DefaultSystemsConfiguration{},
         ec::DefaultParallelConfiguration{},
         ec::DefaultConstraintsConfiguration{}, env_config);
   }

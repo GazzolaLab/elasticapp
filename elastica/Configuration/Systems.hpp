@@ -22,13 +22,15 @@
  * simulation that comprise the degrees of freedom. The following \system tags
  * are available:
  *
- *   - elastica::SphereCollectionTag
+ *   - elastica::cosserat_rod::CosseratRod
+ *   - elastica::cosserat_rod::CosseratRodWithoutDamping
+ *   - elastica::rigid_body::Sphere
  *
  * All available systems are added to the list by default. This can be
  * customized as needed in the client file.
  */
-#define ELASTICA_DEFAULT_ADMISSIBLE_PLUGINS_FOR_SYSTEMS tmpl::list<>
-// tmpl::list<::elastica::SphereCollectionTag>
+#define ELASTICA_DEFAULT_ADMISSIBLE_PLUGINS_FOR_SYSTEMS \
+  tmpl::list<elastica::cosserat_rod::CosseratRod>
 //******************************************************************************
 
 //******************************************************************************

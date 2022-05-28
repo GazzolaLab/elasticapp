@@ -44,6 +44,27 @@ namespace elastica {
     //**************************************************************************
 
     //**************************************************************************
+    /*!\brief Gets the nested type `check_plugins_for_conformance` from `T`.
+     * \ingroup config_type_traits
+     *
+     * \details
+     * Provides a convenient shortcut to access the nested
+     * `check_plugins_for_conformance` type definition from the given type `T`.
+     * The following code example shows both ways to access the nested type
+     * definition:
+     *
+     * \example
+     * \code
+     *   using Type1 = typename T::check_plugins_for_conformance;
+     *   using Type2 = elastica::tt::admissible_system_plugins_t<T>;
+     * \endcode
+     */
+    template <typename T>
+    using check_plugins_for_conformance_t =
+        typename T::check_plugins_for_conformance;
+    //**************************************************************************
+
+    //**************************************************************************
     /*!\brief Gets the nested type `BlockingPolicy` from `T`.
      * \ingroup config_type_traits
      *

@@ -19,13 +19,12 @@
 ///
 #include "Simulator/Configuration/Defaults/Types.hpp"
 ///
-////////// Forward declarations come first
-#include "Systems/RigidBody/Types.hpp"
-//////////
 #include "Simulator/Configuration/ModuleConfiguration/BlockingPolicy.hpp"
 #include "Simulator/Configuration/ModuleConfiguration/IterationPolicy.hpp"
 #include "Simulator/Configuration/ModuleConfiguration/Systems.hpp"
-// #include "Systems/Tags.hpp"
+////////// Forward declarations come first
+#include "Systems/Types.hpp"
+//////////
 #include "Utilities/TMPL.hpp"  // needed because the Macro is a typelist
 
 //==============================================================================
@@ -116,17 +115,34 @@ namespace elastica {
       using Parent =
           SystemsConfiguration<ELASTICA_DEFAULT_ADMISSIBLE_PLUGINS_FOR_SYSTEMS,
                                DefaultBlockingPolicy, DefaultIterationPolicy>;
+      //************************************************************************
 
      public:
-      //! Inherit constructors
+      //**Type definitions******************************************************
+      //! Should we check the system plugins for conformance
+      using check_plugins_for_conformance = std::false_type;
+      // Here we assume that the ELASTICA_DEFAULT_ADMISSIBLE_PLUGINS_FOR_SYSTEMS
+      // contains conformant systems. This can be, and is, explicitly checked
+      // while testing the defaults
+      //************************************************************************
+
+     public:
+      //**Constructors**********************************************************
+      /*!\name Constructors */
+      //@{
       DefaultSystemsConfiguration() noexcept
           : Parent(DefaultBlockingPolicy{}, DefaultIterationPolicy{}){};
+      //@}
+      //************************************************************************
+
+      //**Destructor************************************************************
+      /*!\name Destructor*/
+      //@{
       ~DefaultSystemsConfiguration() = default;
+      //@}
       //************************************************************************
     };
     //**************************************************************************
-
-    // DONE Type trait/protocol for valid Systems Configuration
 
   }  // namespace configuration
 

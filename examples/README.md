@@ -18,6 +18,14 @@ Some examples provide additional file or link to published paper for a complete 
         * Forcing
         * Constraints
 
+* [`butterfly`](./butterfly)<img src="https://img.shields.io/badge/python-Case%20Study-brightgreen"/>
+    * __Name__ : ButterflyCaseStudy
+    * __Purpose__: Demonstrate simple restoration with initial strain.
+    * __Features__:
+        * CosseratRodWithoutDamping
+        * Customizing simulator with a user-defined configuration
+        * Custom initializers
+
 * [`timoshenko`](./timoshenko)<img src="https://img.shields.io/badge/python-Case%20Study-brightgreen"/>
     * __Name__ : TimoshenkoCaseStudy
     * __Purpose__: Physical convergence test of simple Timoshenko beam.
@@ -26,13 +34,6 @@ Some examples provide additional file or link to published paper for a complete 
         * Forcing
         * Constraints
         * EnableReset
-
-* [`butterfly`](./butterfly)<img src="https://img.shields.io/badge/python-Case%20Study-brightgreen"/>
-    * __Name__ : ButterflyCaseStudy
-    * __Purpose__: Demonstrate simple restoration with initial strain.
-    * __Features__:
-        * CosseratRodWithoutDamping
-        * Custom initializers
 
 * [`helical_buckling`](./helical_buckling)<img src="https://img.shields.io/badge/python-Case%20Study-brightgreen"/>
     * __Name__ : HelicalBucklingCaseStudy

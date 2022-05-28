@@ -34,18 +34,31 @@ struct ButterflyConfiguration {
   static inline auto make_simulator_configuration() {
     auto system_config =
         ec::make_systems_configuration<tmpl::list<CosseratRodWithoutDamping>>(
+            /*
+             * We use the ec::make_blocking_policy to idiomatically construct
+             * blocking policies to determine how memory will be arranged. For
+             * more details see the tutorial_blocking
+             */
             ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{50UL}),
+            /*
+             * We use the ec::make_iteration_policy to idiomatically construct
+             * iteration policies to determine how parallel kernels will operate
+             * over the memory above. For more details see the tutorial_blocking
+             */
             ec::make_iteration_policy(
                 ec::iterate_across_system_types_in(ec::seq),
                 ec::iterate_over_systems_in(ec::seq)));
 
-    return ec::make_simulator_configuration(
-        ec::DefaultDomainConfiguration{}, system_config,
-        ec::DefaultParallelConfiguration{}, ec::DefaultForcingConfiguration{},
-        ec::DefaultConstraintsConfiguration{});
+    // We don't need forces or constraints, so we dont provide those
+    // configurations
+    return ec::make_simulator_configuration(ec::DefaultDomainConfiguration{},
+                                            system_config,
+                                            ec::DefaultParallelConfiguration{});
   }
 
   static inline auto make_simulator() {
+    // No extension moduels needed, so the template is left blank
+    // Configuration is an argument
     return elastica::make_simulator<>(make_simulator_configuration());
   }
 

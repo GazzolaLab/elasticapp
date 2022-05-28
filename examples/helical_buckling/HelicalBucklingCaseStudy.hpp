@@ -30,23 +30,8 @@ namespace ec = elastica::configuration;
 using CosseratRod = ::elastica::cosserat_rod::CosseratRod;
 
 struct HelicalBucklingConfiguration {
-  static inline auto make_simulator_configuration() {
-    auto system_config =
-        ec::make_systems_configuration<tmpl::list<CosseratRod>>(
-            ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{50UL}),
-            ec::make_iteration_policy(
-                ec::iterate_across_system_types_in(ec::seq),
-                ec::iterate_over_systems_in(ec::seq)));
-
-    return ec::make_simulator_configuration(
-        ec::DefaultDomainConfiguration{}, system_config,
-        ec::DefaultParallelConfiguration{},
-        ec::DefaultConstraintsConfiguration{});
-  }
-
   static inline auto make_simulator() {
-    return elastica::make_simulator<::elastica::modules::Constraints>(
-        make_simulator_configuration());
+    return elastica::make_simulator<::elastica::modules::Constraints>();
   }
 
   static inline auto make_time_stepper() {

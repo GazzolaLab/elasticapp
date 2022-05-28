@@ -22,6 +22,9 @@
 #include "Simulator/Configuration/ModuleConfiguration/BlockingPolicy.hpp"
 #include "Simulator/Configuration/ModuleConfiguration/IterationPolicy.hpp"
 #include "Simulator/Configuration/Protocols/Systems.hpp"
+//
+#include "Systems/Types.hpp"  // For types to be registered
+//
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"  // for registrants
 #include "Utilities/TypeTraits/Cpp20.hpp"
@@ -52,10 +55,12 @@ namespace elastica {
      * systems modeled (such as types of cosserat rods, rigid bodies etc.)
      * within an ::elastica::interface::Simulator. It offers the ability to
      *
-     * 1) customize the simulation with custom systems via the template parameter.
-     * 2) control (via policy classes) how new systems will be added to blocks
-     * 3) control (via policy classes) how systems will be iterated upon (in
-     * serial/parallel) when executing some kernel over them.
+     * 1) customize the simulation with custom systems via the template
+     * parameter.
+     * 2) control (via policy classes) how new systems will be added
+     * to blocks
+     * 3) control (via policy classes) how systems will be iterated
+     * upon (in serial/parallel) when executing some kernel over them.
      *
      * \tparam SystemPlugins Tags for indicating which systems need to be
      * assembled in the current \elastica simulation.
@@ -82,6 +87,8 @@ namespace elastica {
       //! Tags of admissible systems in the default simulation
       using AdmissibleSystemPlugins =
           tmpl::transform<SystemPlugins, cpp20::remove_cvref<tmpl::_1>>;
+      //! Should we check the system plugins for conformance
+      using check_plugins_for_conformance = std::true_type;
       //! Policy for blocking
       using BlockingPolicy = BlockingStrategy;
       //! Policy for iteration

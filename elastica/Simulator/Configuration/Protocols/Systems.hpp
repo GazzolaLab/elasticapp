@@ -75,18 +75,35 @@ namespace elastica {
          public:
           // and all of its contents should conform to a block variable protocol
           template <typename SystemPlugin>
-          struct ReportPluginsProtocolConformation : std::true_type {
+          struct ReportPluginProtocolConformation : std::true_type {
             static_assert(::tt::assert_conforms_to<SystemPlugin,
                                                    ::blocks::protocols::Plugin>,
                           R"error(
 `SystemPlugin` above does not conform to the protocols expected by a Plugin!
 )error");
-//            static_assert(
-//                ::tt::assert_conforms_to<SystemPlugin,
-//                                         ::elastica::protocols::PhysicalSystem>,
-//                R"error(
-//`SystemPlugin` above does not conform to the protocols expected by a PhysicalSystem!
-//)error");
+            //            static_assert(
+            //                ::tt::assert_conforms_to<SystemPlugin,
+            //                                         ::elastica::protocols::PhysicalSystem>,
+            //                R"error(
+            //`SystemPlugin` above does not conform to the protocols expected by
+            // a PhysicalSystem! )error");
+          };
+
+          template <typename ListOfPlugins, typename BoolConstant>
+          struct ReportPluginsProtocolConformation;
+
+          template <typename ListOfPlugins>
+          struct ReportPluginsProtocolConformation<ListOfPlugins,
+                                                   std::true_type> {
+            using plugin_checks IGNORE_UNUSED = decltype(
+                tmpl::transform<ListOfPlugins,
+                                ReportPluginProtocolConformation<tmpl::_1>>{});
+          };
+
+          template <typename ListOfPlugins>
+          struct ReportPluginsProtocolConformation<ListOfPlugins,
+                                                   std::false_type> {
+            using plugin_checks IGNORE_UNUSED = std::false_type;
           };
 
           /// [expected_types]
@@ -102,9 +119,21 @@ Not a conforming Systems configuration, doesn't have a nested type
           static_assert(
               ::tt::is_a_v<tmpl::list, AdmissibleSystemPlugins>,
               "Admissible system tags should reside in a tmpl::list!");
+
+          static_assert(::tt::is_detected_v<
+                            ::elastica::tt::check_plugins_for_conformance_t,
+                            ConformingType>,
+                        R"error(
+Not a conforming Systems configuration, doesn't have a nested type
+`check_plugins_for_conformance`
+)error");
+
+          using check_conformance_flag =
+              ::elastica::tt::check_plugins_for_conformance_t<ConformingType>;
+
           using plugin_checks IGNORE_UNUSED = decltype(
-              tmpl::transform<AdmissibleSystemPlugins,
-                              ReportPluginsProtocolConformation<tmpl::_1>>{});
+              ReportPluginsProtocolConformation<AdmissibleSystemPlugins,
+                                                check_conformance_flag>{});
 
           static_assert(::tt::is_detected_v<::elastica::tt::blocking_policy_t,
                                             ConformingType>,

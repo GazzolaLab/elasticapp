@@ -65,11 +65,63 @@ namespace {
     using S::reset_modules;  // tested
   };
 
+  // Override here because I want the systems list to be empty
+  struct OverrideDefaultSystemsConfiguration
+      : public SystemsConfiguration<tmpl::list<>, DefaultBlockingPolicy,
+                                    DefaultIterationPolicy> {
+    using Parent = SystemsConfiguration<tmpl::list<>, DefaultBlockingPolicy,
+                                        DefaultIterationPolicy>;
+
+    //! Inherit constructors
+    OverrideDefaultSystemsConfiguration() noexcept
+        : Parent(DefaultBlockingPolicy{}, DefaultIterationPolicy{}){};
+    ~OverrideDefaultSystemsConfiguration() = default;
+  };
+
+  class OverrideDefaultSimulatorConfiguration
+      : public SimulatorConfiguration<
+            DefaultConnectionsConfiguration, DefaultConstraintsConfiguration,
+            DefaultDomainConfiguration, DefaultEnvironmentsConfiguration,
+            DefaultForcingConfiguration, DefaultParallelConfiguration,
+            OverrideDefaultSystemsConfiguration> {
+    // all should be default constructible
+   private:
+    //**Type definitions******************************************************
+    using Parent = SimulatorConfiguration<
+        DefaultConnectionsConfiguration, DefaultConstraintsConfiguration,
+        DefaultDomainConfiguration, DefaultEnvironmentsConfiguration,
+        DefaultForcingConfiguration, DefaultParallelConfiguration,
+        OverrideDefaultSystemsConfiguration>;
+    //************************************************************************
+
+   public:
+    //**Constructors**********************************************************
+    /*!\name Constructors */
+    //@{
+    OverrideDefaultSimulatorConfiguration() noexcept
+        : Parent(DefaultConnectionsConfiguration{},
+                 DefaultConstraintsConfiguration{},
+                 DefaultDomainConfiguration{},
+                 DefaultEnvironmentsConfiguration{},
+                 DefaultForcingConfiguration{}, DefaultParallelConfiguration{},
+                 OverrideDefaultSystemsConfiguration{}){};
+    //@}
+    //************************************************************************
+
+    //**Destructor************************************************************
+    /*!\name Destructor*/
+    //@{
+    ~OverrideDefaultSimulatorConfiguration() = default;
+    //@}
+    //************************************************************************
+  };
+  //**************************************************************************
+
   template <template <typename /*Simulator*/,  // base simulator
                       typename /*SimTraits*/>  // simulator traits
             class... AddOns,                   // all capabilities
             typename SimulationConfig_ =       // configuration
-            configuration::DefaultSimulatorConfiguration>
+            OverrideDefaultSimulatorConfiguration>
   auto& make_test_simulator(SimulationConfig_ config = {}) {
     using TSI = TestSimulatorInterface<SimulationConfig_, AddOns...>;
     return *std::static_pointer_cast<TSI>(TSI::initialize(std::move(config)));
@@ -111,7 +163,7 @@ namespace {
     CHECK_NOTHROW(simulator.check_domain());
 
     auto periodic_config = make_simulator_configuration(
-        get_periodic_domain_config(), DefaultSystemsConfiguration{},
+        get_periodic_domain_config(), OverrideDefaultSystemsConfiguration{},
         DefaultParallelConfiguration{});
     auto& another_simulator = make_test_simulator(periodic_config);
     CHECK_NOTHROW(another_simulator.check_domain());
@@ -133,7 +185,7 @@ namespace {
     // need to make it with a different configuration to not make the statics
     // trigger
     auto periodic_config = make_simulator_configuration(
-        get_periodic_domain_config(), DefaultSystemsConfiguration{},
+        get_periodic_domain_config(), OverrideDefaultSystemsConfiguration{},
         DefaultParallelConfiguration{});
     auto& another_simulator = make_test_simulator(periodic_config);
     CHECK_THROWS_WITH(another_simulator.check_if_final(),

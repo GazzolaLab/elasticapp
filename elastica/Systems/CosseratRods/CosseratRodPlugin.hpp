@@ -25,7 +25,7 @@
 /// Forward declarations
 #include "Systems/CosseratRods/Types.hpp"
 ///
-#include "Systems/CosseratRods/CosseratRodTraits.hpp"
+#include "Systems/Block/Block.hpp"  // for plugin, get
 ///
 #include "Systems/CosseratRods/Tags.hpp"
 #include "Utilities/End.hpp"

@@ -9,6 +9,12 @@
 #include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 
+/* We need to include the definition of a CosseratRod here for
+ * defaults to work, since the protocol check requires the definition, as
+ * opposed to just declaration of the CosseratRod kernel.
+ */
+#include "Systems/CosseratRods/CosseratRods.hpp"
+
 namespace {
 
   /// [is_systems_config_eg]

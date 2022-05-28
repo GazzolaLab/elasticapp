@@ -21,7 +21,7 @@
 // blocks
 #include "Systems/Block/Types.hpp"
 // cosserat rod components
-#include "Systems/CosseratRods/Types.hpp"
+#include "Systems/CosseratRods/_Types.hpp"
 
 namespace elastica {
 

@@ -21,6 +21,7 @@
 #include "Systems/CosseratRods/BlockSlice.hpp"
 #include "Systems/CosseratRods/Components.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
+#include "Systems/CosseratRods/CosseratRodTraits.hpp"  // for definition of default traits
 #include "Systems/common/SymplecticStepperAdapter.hpp"
 
 namespace elastica {

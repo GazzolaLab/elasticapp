@@ -28,6 +28,7 @@
 #include "Systems/CosseratRods/BlockSlice.hpp"
 #include "Systems/CosseratRods/Components.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
+#include "Systems/CosseratRods/CosseratRodTraits.hpp"
 #include "Systems/CosseratRods/Initializers.hpp"
 ///
 /// include aliased classes now

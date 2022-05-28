@@ -11,6 +11,13 @@
 #include "Simulator/Configuration/TypeTraits.hpp"
 #include "Simulator/Frames.hpp"
 
+/*
+ * We need to include the definition of a CosseratRod here for
+ * defaults to work, since the protocol check requires the definition, as
+ * opposed to just declaration of the CosseratRod kernel.
+ */
+#include "Systems/CosseratRods/CosseratRods.hpp"
+
 namespace {
 
   ELASTICA_TEST_CASE("Unit.Simulator.Configuration.SimulatorConfiguration",

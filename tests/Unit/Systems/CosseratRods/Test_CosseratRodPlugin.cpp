@@ -55,8 +55,8 @@ namespace {
   };
 
   using plugin_checks IGNORE_UNUSED =
-      tmpl::transform<PluginsToBeTested,
-                      ReportPluginProtocolConformation<tmpl::_1>>;
+      decltype(tmpl::transform<PluginsToBeTested,
+                               ReportPluginProtocolConformation<tmpl::_1>>{});
 
 }  // namespace
 
@@ -71,7 +71,6 @@ namespace {
     template <class DownstreamBlock, class CosseratInitializer>
     static void initialize(DownstreamBlock&, CosseratInitializer&&) {}
   };
-
 
 }  // namespace
 

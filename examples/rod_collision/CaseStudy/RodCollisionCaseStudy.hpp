@@ -31,14 +31,6 @@ using ::elastica::cosserat_rod::CosseratRod;
 
 struct RodCollisionConfiguration {
   static inline auto make_simulator_configuration() {
-    auto system_config =
-        ec::make_systems_configuration<tmpl::list<CosseratRod>>(
-            ec::DefaultBlockingPolicy{},
-            // sequential
-            ec::make_iteration_policy(
-                ec::iterate_across_system_types_in(ec::seq),
-                ec::iterate_over_systems_in(ec::seq)));
-
     auto environment_config = ec::make_environments_configuration<
         tmpl::list<elastica::environments::tags::CollisionSystemTag>>(
         // iteration, currently unused
@@ -47,7 +39,7 @@ struct RodCollisionConfiguration {
         ec::make_collision_configuration(ec::seq, ec::seq));
 
     return ec::make_simulator_configuration(
-        ec::DefaultDomainConfiguration{}, system_config,
+        ec::DefaultDomainConfiguration{}, ec::DefaultSystemsConfiguration{},
         ec::DefaultParallelConfiguration{}, environment_config);
   }
 
