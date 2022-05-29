@@ -1,0 +1,35 @@
+# https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes#configuring-automatically-generated-release-notes
+
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+  categories:
+    - title: 'Breaking Changes and Deprecations :boom:'
+      labels:
+        - breaking
+        - deprecated
+    - title: 'New Features :tada:'
+      labels:
+        - enhancement
+    - title: 'Build System :package:'
+      labels:
+        - buildsystem
+    - title: 'Bug fixes :beetle:'
+      labels:
+        - bug
+        - bug-compile
+        - bug-runtime
+        - bug-invalid
+    - title: 'Performance :racehorse:'
+      labels:
+        - optimization
+    - title: 'Documentation :books:'
+      labels:
+        - documentation
+    - title: 'Refactor :hammer:'
+      labels:
+        - refactor
+    - title: Other Changes
+      labels:
+        - "*"
