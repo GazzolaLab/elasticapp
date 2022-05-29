@@ -18,8 +18,6 @@
 //******************************************************************************
 
 #include "Systems/CosseratRods/Traits/PlacementTraits/TypeTraits.hpp"
-#include "Systems/CosseratRods/TypeTraits/Aliases.hpp"
-#include "Systems/CosseratRods/TypeTraits/Initializers.hpp"
 
 namespace elastica {
 
