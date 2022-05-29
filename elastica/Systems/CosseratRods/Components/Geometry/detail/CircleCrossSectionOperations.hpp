@@ -117,7 +117,11 @@ namespace cosserat_rod {
          * theory of elasticity
          */
         static inline constexpr auto shape_factor() noexcept -> real_type {
-          return static_cast<real_type>(4.) / static_cast<real_type>(3.);
+          // Value taken based on best correlation (A from fig. 2):
+          // \alpha = \frac{6 + 12 \sigma + 6 \sigma^2}{7 + 12 \sigma + 4 \sigma^2}
+          // evaluated at Poisson ratio (\sigma) = 0.5, from
+          // "On Timoshenko's correction for shear in vibrating beams" by Kaneko, 1975
+          return static_cast<real_type>(13.5) / static_cast<real_type>(14.);
         }
         //********************************************************************
 

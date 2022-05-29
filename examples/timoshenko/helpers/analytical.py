@@ -16,8 +16,10 @@ def analytical_shearable(
         acting_force = applied_force
     acting_force = np.abs(acting_force)
 
-    cs_area = np.pi * radius**2
-    shear = (4.0 / 3.0) * shear_modulus * cs_area
+    cs_area = np.pi * radius ** 2
+    shear_shape_factor = 13.5 / 14.0
+    shear = shear_shape_factor * shear_modulus * cs_area
+
     linear_prefactor = -acting_force / shear
     # ?
     I = cs_area**2 / (4.0 * np.pi)

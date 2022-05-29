@@ -108,10 +108,11 @@ namespace {
 
     /* Check the function compute_internal_forces() */
     // clang-format off
+    const double ref_shape_factor = 13.5 / 14.0;
     const Rot3 shear_stretch_rigidity_matrix({
-                        {16 * 4 * M_PI * 4 / 3, 0.0                  , 0.0},
-                        {0.0                  , 16 * 4 * M_PI * 4 / 3, 0.0},
-                        {0.0                  , 0.0                  , 16 * 4 * M_PI}});
+      {16 * 4 * M_PI * ref_shape_factor, 0.0                              , 0.0},
+      {0.0                             , 16 * 4 * M_PI * ref_shape_factor},
+      {0.0                             , 0.0                              , 16 * 4 * M_PI}});
     const Rot3 director(0.5);
     const Vec3 shear_solution(
         {3 * (0.5 / sqrt(3)),

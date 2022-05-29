@@ -29,7 +29,8 @@ namespace {
     CHECK(Operations::compute_second_moment_of_area(1.0) ==
           approx(0.25 * M_PI));
     CHECK(Operations::update_dimension(M_PI, 1.0) == approx(1.0));
-    CHECK(Operations::shape_factor() == approx(4.0 / 3.0));
+    //CHECK(Operations::shape_factor() == approx(4.0 / 3.0));
+    CHECK(Operations::shape_factor() == approx(13.5 / 14.0));
   }
 
 }  // namespace
@@ -102,7 +103,8 @@ namespace {
     CHECK(model.get_element_volume() == approx(M_PI*4.0*4.0*blaze::sqrt(3)));
 
     CHECK(model.get_area() == M_PI * 4.0 * 4.0);
-    CHECK(model.shape_factor() == 4.0 / 3.0);
+    //CHECK(model.shape_factor() == 4.0 / 3.0);
+    CHECK(model.shape_factor() == 13.5 / 14.0);
 
     using LocalFrame = typename Model::Frame;
     const double expected_second_moment = M_PI * 4. * 4. * 4.;

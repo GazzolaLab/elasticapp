@@ -110,10 +110,11 @@ namespace {
 
     /* Check the function compute_internal_forces() */
     // clang-format off
+    const double ref_shape_factor = (13.5 / 14.);
     const Rot3 shear_stretch_rigidity_matrix({
-      {16 * 4 * M_PI * 4 / 3, 0.0                  , 0.0},
-      {0.0                  , 16 * 4 * M_PI * 4 / 3, 0.0},
-      {0.0                  , 0.0                  , 16 * 4 * M_PI}});
+      {16 * 4 * M_PI * ref_shape_factor, 0.0                              , 0.0},
+      {0.0                             , 16 * 4 * M_PI * ref_shape_factor},
+      {0.0                             , 0.0                              , 16 * 4 * M_PI}});
     const Rot3 director(0.5);
     const Vec3 shear_solution(
       {3 * (0.5 / sqrt(3)),
@@ -177,8 +178,8 @@ namespace {
     auto ssr_Id3 = Traits::DataType::Matrix::slice(ssr_matrix, 4UL)(1UL, 0UL);
     auto ssr_Id4 = Traits::DataType::Matrix::slice(ssr_matrix, 4UL)(2UL, 0UL);
     auto ssr_Id5 = Traits::DataType::Matrix::slice(ssr_matrix, 4UL)(2UL, 1UL);
-    CHECK(ssr_I0 == 4.0 * area * 4.0 / 3.0);
-    CHECK(ssr_I1 == 4.0 * area * 4.0 / 3.0);
+    CHECK(ssr_I0 == 4.0 * area * ref_shape_factor);
+    CHECK(ssr_I1 == 4.0 * area * ref_shape_factor);
     CHECK(ssr_I2 == 4.0 * area);
     CHECK(ssr_Id0 == 0.0);
     CHECK(ssr_Id1 == 0.0);

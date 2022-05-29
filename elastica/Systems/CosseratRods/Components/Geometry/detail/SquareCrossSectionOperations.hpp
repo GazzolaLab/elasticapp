@@ -111,6 +111,8 @@ namespace elastica {
           static inline constexpr auto shape_factor() noexcept -> real_type {
             // Timoshenko and Gere Mechanics of Materials book
             // (2nd edition page 143)
+            // This value is pretty close to more recent published values,
+            // hence not touching it.
             return 9.0 / 10.0;
           }
           //********************************************************************
