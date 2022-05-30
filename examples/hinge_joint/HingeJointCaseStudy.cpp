@@ -13,11 +13,12 @@
 
 #include "HingeJointCaseStudy.hpp"
 
-#include <cmath>
 #include <elastica/Simulator/Materials.hpp>
 #include <elastica/Utilities/Get.hpp>
 #include <elastica/Utilities/Math/Dot.hpp>
 #include <elastica/Utilities/Math/Normalize.hpp>
+//
+#include <cmath>
 #include <iomanip>
 #include <ostream>
 

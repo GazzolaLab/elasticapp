@@ -42,6 +42,14 @@ Some examples provide additional file or link to published paper for a complete 
         * CosseratRod
         * Temporally varying constraints
 
+* [`hinge_joint`](./hinge_joint)<img src="https://img.shields.io/badge/python-Case%20Study-brightgreen"/>
+    * __Name__ : HingeJointCaseStudy
+    * __Purpose__: Demonstrate connecting two rods using joints
+    * __Features__:
+        * CosseratRod
+        * Temporally varying Connections between rods
+        * Forcing
+
 * [`flexible_swinging_pendulum`](./flexible_swinging_pendulum)<img src="https://img.shields.io/badge/python-Case%20Study-brightgreen"/>
     * __Name__ : FlexibleSwingingPendulumCaseStudy
     * __Purpose__: Complex oscillatory dynamics of a flexible pendulum, swinging under the action of gravity.

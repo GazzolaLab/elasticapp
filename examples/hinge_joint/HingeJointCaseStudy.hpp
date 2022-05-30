@@ -24,6 +24,10 @@
 #include <elastica/Systems/CosseratRods.hpp>
 #include <elastica/Utilities/DefineTypes.h>
 #include <elastica/Utilities/TMPL.hpp>
+//
+#include <algorithm>  // transform
+#include <tuple>
+#include <vector>
 
 // global is fine since its a cpp file
 using String = const char* const;
@@ -31,26 +35,10 @@ namespace ec = elastica::configuration;
 using CosseratRod = ::elastica::cosserat_rod::CosseratRod;
 
 struct HingeJointConfiguration {
-  static inline auto make_simulator_configuration() {
-    auto system_config =
-        ec::make_systems_configuration<tmpl::list<CosseratRod>>(
-            ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{50UL}),
-            ec::make_iteration_policy(
-                ec::iterate_across_system_types_in(ec::seq),
-                ec::iterate_over_systems_in(ec::seq)));
-
-    return ec::make_simulator_configuration(
-        ec::DefaultDomainConfiguration{}, system_config,
-        ec::DefaultParallelConfiguration{}, ec::DefaultForcingConfiguration{},
-        ec::DefaultConstraintsConfiguration{},
-        ec::DefaultConnectionsConfiguration{});
-  }
-
   static inline auto make_simulator() {
     return elastica::make_simulator<::elastica::modules::Forcing,
                                     ::elastica::modules::Constraints,
-                                    ::elastica::modules::Connections>(
-        make_simulator_configuration());
+                                    ::elastica::modules::Connections>();
   }
 
   static inline auto make_time_stepper() {
