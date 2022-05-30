@@ -21,7 +21,12 @@
 #include <elastica/Simulator/Simulator.hpp>
 #include <elastica/Systems/RigidBody.hpp>
 #include <elastica/Utilities/DefineTypes.h>
+#include <elastica/Utilities/Math/Vec3.hpp>
 #include <elastica/Utilities/TMPL.hpp>
+//
+#include <tuple>
+#include <utility>
+#include <vector>
 
 // global is fine since its a cpp file
 using String = const char* const;
@@ -181,7 +186,8 @@ Vibrating Table,” J. Sound Vib., 64(2), pp. 173–189.
     using V = blaze::DynamicVector<::elastica::real_t>;
     V pp{::elastica::position(imposed_plane_ref.get())};
     V pv{::elastica::velocity(imposed_plane_ref.get())};
-    return std::make_tuple(penetration_depth, communicate_from(sphere_refs[0UL]),
+    return std::make_tuple(penetration_depth,
+                           communicate_from(sphere_refs[0UL]),
                            std::make_tuple(std::move(pp), std::move(pv)));
   }
 };

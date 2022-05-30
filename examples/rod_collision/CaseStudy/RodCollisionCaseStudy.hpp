@@ -23,6 +23,11 @@
 #include <elastica/Utilities/DefineTypes.h>
 #include <elastica/Utilities/Geometry/Angles.hpp>
 #include <elastica/Utilities/TMPL.hpp>
+//
+#include <algorithm>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 // global is fine since its a cpp file
 using String = const char* const;

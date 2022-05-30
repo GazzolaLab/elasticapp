@@ -81,6 +81,15 @@ Some examples provide additional file or link to published paper for a complete 
         * Translations (Kinematics)
         * Environments (CollisionSystem, GravityField)
 
+* [`rod_plane_collision`](./rod_plane_collision)<img src="https://img.shields.io/badge/python-Case%20Study-brightgreen"/>
+    * __Name__ : RodPlaneCollisionCaseStudy
+    * __Purpose__: Imposing oscillatory motion of primitives (plane) interacting with rods
+    * __Features__:
+        * CosseratRod
+        * ImposedPlane (RigidBody)
+        * Translations (Kinematics)
+        * Environments (CollisionSystem, GravityField)
+
 ### Rod Assembly
 
 * [`tutorial_single_rod`](./tutorial_single_rod)

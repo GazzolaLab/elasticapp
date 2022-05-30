@@ -17,10 +17,13 @@
 #include <elastica/ErrorHandling/FloatingPointExceptions.hpp>
 #include <elastica/Simulator/Materials.hpp>
 #include <elastica/Utilities/Get.hpp>
+#include <elastica/Utilities/Math/Vec3.hpp>
 #include <elastica/Utilities/Size.hpp>
-#include <iomanip>
-#include <ostream>
-#include <utility>  // pair
+//
+#include <iomanip>  // run()
+#include <ostream>  // run()
+#include <tuple>
+#include <vector>
 
 void FlexibleSwingingPendulumCaseStudy::setup(
     InputTypes<This> const& input_parameters) {

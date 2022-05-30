@@ -25,6 +25,8 @@
 #include <elastica/Time/Time.hpp>
 #include <elastica/Utilities/DefineTypes.h>
 #include <elastica/Utilities/TMPL.hpp>
+//
+#include <string>  // ramp
 #include <tuple>
 
 // global is fine since its a cpp file

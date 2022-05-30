@@ -19,8 +19,10 @@
 #include <elastica/Simulator/Frames.hpp>
 #include <elastica/Simulator/Materials.hpp>
 #include <elastica/Utilities/Get.hpp>
-#include <random>
-#include <utility>  // pair
+#include <elastica/Utilities/Math/Rot3.hpp>
+#include <elastica/Utilities/Math/Vec3.hpp>
+//
+#include <utility>  // move
 
 void RodPlaneCollisionCaseStudy::setup(
     InputTypes<This> const& input_parameters) {

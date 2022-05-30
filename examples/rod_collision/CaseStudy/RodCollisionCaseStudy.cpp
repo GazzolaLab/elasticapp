@@ -13,11 +13,13 @@
 
 #include "RodCollisionCaseStudy.hpp"
 
-#include <cmath>
 #include <elastica/ErrorHandling/FloatingPointExceptions.hpp>
 #include <elastica/Simulator/Materials.hpp>
 #include <elastica/Utilities/Get.hpp>
 #include <elastica/Utilities/Math/Identity.hpp>
+#include <elastica/Utilities/Math/Vec3.hpp>
+//
+#include <cmath>
 
 void RodCollisionCaseStudy::setup(InputTypes<This> const& input_parameters) {
   elastica::MaterialID my_material = elastica::create_material(

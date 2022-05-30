@@ -22,6 +22,7 @@
 #include <elastica/Simulator/Simulator.hpp>
 #include <elastica/Systems/CosseratRods.hpp>
 #include <elastica/Utilities/DefineTypes.h>
+#include <elastica/Utilities/Math/Vec3.hpp>
 #include <elastica/Utilities/TMPL.hpp>
 
 // global is fine since its a cpp file

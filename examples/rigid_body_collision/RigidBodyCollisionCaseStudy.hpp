@@ -22,6 +22,11 @@
 #include <elastica/Systems/Sphere.hpp>
 #include <elastica/Utilities/DefineTypes.h>
 #include <elastica/Utilities/TMPL.hpp>
+//
+#include <algorithm>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 // global is fine since its a cpp file
 using String = const char* const;

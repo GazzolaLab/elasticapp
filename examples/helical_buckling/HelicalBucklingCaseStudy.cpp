@@ -13,7 +13,6 @@
 
 #include "HelicalBucklingCaseStudy.hpp"
 
-#include <cmath>
 #include <elastica/Simulator/Materials.hpp>
 #include <elastica/Utilities/Geometry/AxisAngleRotation.hpp>
 #include <elastica/Utilities/Get.hpp>
@@ -21,6 +20,8 @@
 #include <elastica/Utilities/Math/Rot3.hpp>
 #include <elastica/Utilities/Math/Vec3.hpp>
 #include <elastica/Utilities/Math/Zero.hpp>
+//
+#include <cmath>  // M_PI
 
 void HelicalBucklingCaseStudy::setup(InputTypes<This> const& input_parameters) {
   const ::elastica::real_t radius(0.35);

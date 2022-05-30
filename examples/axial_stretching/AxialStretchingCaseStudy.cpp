@@ -15,13 +15,17 @@
 
 #include <elastica/Simulator/Materials.hpp>
 #include <elastica/Utilities/Get.hpp>
+#include <elastica/Utilities/Math/Vec3.hpp>
 #include <elastica/Utilities/Rampup.hpp>
 #include <elastica/Utilities/Size.hpp>
 //
-#include <cmath>
-#include <iomanip>
-#include <ostream>
-#include <utility>  // pair
+#include <algorithm>   // equal
+#include <cctype>      // tolower()
+#include <functional>  // ramp
+#include <iomanip>     // run()
+#include <ostream>     // run()
+#include <utility>     // pair
+#include <vector>      // run()
 
 void AxialStretchingCaseStudy::setup(InputTypes<This> const& input_parameters) {
   //  void AxialStretchingCaseStudy::setup(

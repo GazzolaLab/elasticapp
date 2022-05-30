@@ -21,6 +21,9 @@
 #include <elastica/Systems/CosseratRods.hpp>
 #include <elastica/Utilities/DefineTypes.h>
 #include <elastica/Utilities/TMPL.hpp>
+//
+#include <tuple>  // make_tuple
+#include <string> // ramp
 
 // global is fine since its a cpp file
 using String = const char* const;

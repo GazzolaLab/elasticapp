@@ -33,6 +33,8 @@ def run_example(
     save_to_csv: bool = False,
     save_figure: bool = False,
 ):
+    np.set_printoptions(floatmode="unique")
+
     # 3. Define the input parameters to the case study.
     sample_interval = 200
 

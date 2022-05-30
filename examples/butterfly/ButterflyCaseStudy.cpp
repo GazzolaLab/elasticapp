@@ -13,12 +13,17 @@
 
 #include "ButterflyCaseStudy.hpp"
 
-#include <algorithm>
 #include <elastica/Simulator/Materials.hpp>
 #include <elastica/Utilities/Get.hpp>
-#include <elastica/Utilities/Math/Identity.hpp>
 #include <elastica/Utilities/Math/Rot3.hpp>
 #include <elastica/Utilities/Math/Vec3.hpp>
+//
+#include <algorithm>
+#include <cmath>    // sin, cos
+#include <iomanip>  // run()
+#include <ostream>  // run()
+#include <utility>  // move
+#include <vector>   // run()
 
 void ButterflyCaseStudy::setup(InputTypes<This> const& input_parameters) {
   elastica::MaterialID my_material = elastica::create_material(

@@ -18,6 +18,7 @@
 //******************************************************************************
 
 #include <iostream>
+#include <string>
 
 // external dependency : needed at example build time
 #include "cxxopts.hpp"
@@ -42,6 +43,13 @@ namespace standalone_bindings {
     using default_detected = std::true_type;
     using default_not_detected = std::false_type;
 
+    template <typename T>
+    inline std::string as_string(T const& t) {
+      return std::to_string(t);
+    }
+
+    inline std::string as_string(std::string const& s) { return s; }
+
     template <typename Parameter>
     void add_options(cxxopts::Options& options, Parameter /*meta*/,
                      default_detected /*meta*/) {
@@ -49,7 +57,7 @@ namespace standalone_bindings {
       options.add_options()(pretty_type::short_name<Parameter>(),  //
                             Parameter::help,                       //
                             cxxopts::value<Value>()->default_value(
-                                std::to_string(Parameter::default_value())));
+                                as_string(Parameter::default_value())));
     }
 
     template <typename Parameter>

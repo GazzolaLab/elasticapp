@@ -18,9 +18,11 @@
 #include <elastica/Simulator/Materials.hpp>
 #include <elastica/Utilities/Get.hpp>
 #include <elastica/Utilities/Math/Identity.hpp>
+#include <elastica/Utilities/Math/Rot3.hpp>
+#include <elastica/Utilities/Math/Vec3.hpp>
+//
 #include <iomanip>
 #include <ostream>
-#include <utility>  // pair
 
 void ImposedPrimitiveCaseStudy::setup(
     InputTypes<This> const& input_parameters) {

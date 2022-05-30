@@ -15,11 +15,13 @@
 
 #include <elastica/Simulator/Materials.hpp>
 #include <elastica/Utilities/Get.hpp>
+#include <elastica/Utilities/Math/Rot3.hpp>
+#include <elastica/Utilities/Math/Vec3.hpp>
 #include <elastica/Utilities/Rampup.hpp>
 #include <elastica/Utilities/Size.hpp>
 //
-#include <algorithm>
-#include <cmath>
+#include <algorithm>  // equal
+#include <cctype>     // tolower()
 #include <functional>
 #include <utility>
 
