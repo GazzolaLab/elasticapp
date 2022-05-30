@@ -8,6 +8,7 @@ add_subdirectory(hinge_joint)
 add_subdirectory(imposed_primitives)
 add_subdirectory(rigid_body_collision)
 add_subdirectory(rod_collision)
+add_subdirectory(rod_plane_collision)
 
 # examples
 include(ElasticaAddExamples)
