@@ -42,6 +42,8 @@ def simulate_timoshenko_beam_with(
     dt = 0.01 * (base_length / n_elem)
     final_time = 200.0
     time_interval = sample_interval * dt
+    rampup_interval = 0.5 * final_time
+    rampup_profile = "sinusoidal"
     n_steps = int(final_time / time_interval)
 
     cs = TimoshenkoCaseStudy(
@@ -52,6 +54,8 @@ def simulate_timoshenko_beam_with(
         applied_force=end_force_transverse,
         radius=base_radius,
         length=base_length,
+        rampup_interval=rampup_interval,
+        rampup_profile=rampup_profile,
         dt=dt,
     )
 

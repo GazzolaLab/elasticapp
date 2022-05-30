@@ -69,6 +69,7 @@ elastica_target_headers(
         PrettyType.hpp
         PrintHelpers.hpp
         ProtocolHelpers.hpp
+        Rampup.hpp
         Registration.hpp
         Requires.hpp
         Singleton.hpp

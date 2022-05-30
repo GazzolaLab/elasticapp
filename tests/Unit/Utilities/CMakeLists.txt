@@ -27,6 +27,7 @@ set(LIBRARY_SOURCES
         Test_ProtocolHelpers.cpp
         # Test_PtrVector.cpp
         Test_PrettyType.cpp
+        Test_Rampup.cpp
         Test_Registration.cpp
         Test_RepeatAsTuple.cpp
         Test_Requires.cpp

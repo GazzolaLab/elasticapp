@@ -39,8 +39,9 @@ def run_example(
 
     end_force_transverse = -15.0
     dt = 0.01 * (base_length / n_elem)
-    final_time = 5000.0
-    rampup_interval = final_time * 0.5
+    final_time = 500.0
+    rampup_interval = final_time * 0.25
+    rampup_profile = "sinusoidal"  # or otherwise sinusoidal
     time_interval = sample_interval * dt
     n_steps = int(final_time / time_interval)
 
@@ -53,6 +54,7 @@ def run_example(
         radius=base_radius,
         length=base_length,
         rampup_interval=rampup_interval,
+        rampup_profile=rampup_profile,
         dt=dt,
     )
 

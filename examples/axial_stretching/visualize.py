@@ -53,7 +53,8 @@ def run_example(
     end_force_x = 1.0
     dt = 0.01 * (base_length / n_elem)
     final_time = 120.0
-    rampup_interval = 1e-2
+    rampup_interval = 10.0
+    rampup_profile = "linear"  # or otherwise sinusoidal
     time_interval = sample_interval * dt
     n_iterations = int(final_time / time_interval)
 
@@ -71,6 +72,7 @@ def run_example(
         radius=base_radius,
         length=base_length,
         rampup_interval=rampup_interval,
+        rampup_profile=rampup_profile,
         dt=dt,
     )
 

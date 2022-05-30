@@ -13,10 +13,12 @@
 
 #include "AxialStretchingCaseStudy.hpp"
 
-#include <cmath>
 #include <elastica/Simulator/Materials.hpp>
 #include <elastica/Utilities/Get.hpp>
+#include <elastica/Utilities/Rampup.hpp>
 #include <elastica/Utilities/Size.hpp>
+//
+#include <cmath>
 #include <iomanip>
 #include <ostream>
 #include <utility>  // pair
@@ -89,16 +91,40 @@ void AxialStretchingCaseStudy::setup(InputTypes<This> const& input_parameters) {
 
   namespace efo = ::elastica::forcing;
 
+  // setup ramping
+  auto ramping_fn = [&](::elastica::real_t start_time,
+                        ::elastica::real_t rampup_time) {
+    using RuntimeProfile =
+        std::function<::elastica::real_t(::elastica::real_t)>;
+    RuntimeProfile ramp;
+
+    auto iequals = [](std::string const& a, std::string const& b) -> bool {
+      return std::equal(a.begin(), a.end(), b.begin(), b.end(),
+                        [](unsigned char a, unsigned char b) {
+                          return std::tolower(a) == std::tolower(b);
+                        });
+    };
+
+    if (iequals(::elastica::get<rampup_profile>(input_parameters),
+                rampup_profile::default_value()))
+      ramp = elastica::make_linear_rampup(start_time, rampup_time);
+    else
+      ramp = elastica::make_sin_rampup(start_time, rampup_time);
+
+    return ramp;
+  };
+
+  ::elastica::real_t start_time{0.0};
+  const auto rampup_time{::elastica::get<rampup_interval>(input_parameters)};
   const ::elastica::Vec3 F{::elastica::get<applied_force>(input_parameters),
                            0.0, 0.0};
-  const auto rampup_time{::elastica::get<rampup_interval>(input_parameters)};
 
   auto force_generator = efo::make_forcing(
-      efo::make_force([=](auto time_v, auto& rod_system, std::size_t index) {
+      efo::make_force([F, ramp = ramping_fn(start_time, rampup_time)](
+                          auto time_v, auto& rod_system, std::size_t index) {
         using Tag = ::elastica::tags::ExternalLoads;
         blaze::column(::elastica::get<Tag>(rod_system), index + 1UL) =
-            F * std::min(1.0,
-                         static_cast<::elastica::real_t>(time_v) / rampup_time);
+            F * ramp(static_cast<::elastica::real_t>(time_v));
       }),
       efo::make_torque([](auto /*time*/, auto&, std::size_t) {}));
 

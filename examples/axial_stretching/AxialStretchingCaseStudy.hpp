@@ -125,6 +125,14 @@ oscillations enables comparison with theory.
     static type default_value() { return type(100.0); }
   };
 
+  struct rampup_profile {
+    // This should ideally be an enum, but we stick with strings for now
+    using type = std::string;
+    static constexpr String help = {
+        "Profile for the rampup in force, linear or sinusoidal"};
+    static type default_value() { return "linear"; }
+  };
+
   struct dt {
     using type = ::elastica::real_t;
     static constexpr String help = {"Time step of simulation"};
@@ -136,7 +144,7 @@ oscillations enables comparison with theory.
 
   using Parameters =
       tmpl::list<n_elements, damping_rate, youngs_modulus, applied_force,
-                 radius, length, rampup_interval, dt>;
+                 radius, length, rampup_interval, rampup_profile, dt>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);
