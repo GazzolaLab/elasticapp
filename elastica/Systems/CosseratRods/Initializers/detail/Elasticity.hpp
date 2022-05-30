@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <stdexcept>
 #include <tuple>
 
 #include "Options/Options.hpp"
@@ -102,7 +103,17 @@ Use TorqueDampingRate instead.
         decltype(auto) get_required_parameters(
             OptionsTuple const& options_cache) const /*noexcept*/ {
           tmpl::list<ForceDampingRate, TorqueDampingRate> tags{};
-          check_lower_bounds(options_cache, tags);
+          try {
+            check_lower_bounds(options_cache, tags);
+          } catch (std::domain_error& exception) {
+            std::string context_msg = std::string(
+                R"error(
+If your intention is to use a rod without damping and you are currently using
+`elastica::cosserat_rod::CosseratRod`, consider the undamped alternative
+`elastica::cosserat_rod::CosseratRodWithoutDamping`.
+)error");
+            throw std::domain_error(exception.what() + context_msg);
+          }
 
           return std::tuple_cat(
               // for things that don't need to be processed, pass as wrapped

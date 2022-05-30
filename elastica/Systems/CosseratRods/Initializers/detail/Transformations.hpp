@@ -9,6 +9,9 @@
 #include <tuple>
 ///
 #include "Systems/CosseratRods/BlockInitializer.hpp"
+//
+#include "Utilities/MakeString.hpp"  // for more contextual error messages
+#include "Utilities/PrettyType.hpp"  // for more contextual error messages
 
 namespace elastica {
 
@@ -40,18 +43,19 @@ namespace elastica {
         tmpl::for_each<L>([&](auto v) {
           using ApplyTag = tmpl::type_from<decltype(v)>;
           if (std::get<ApplyTag>(cache).value() <= ApplyTag ::lower_bound()) {
-            throw std::domain_error(std::string(ApplyTag::help) +
-                                    " requested is too small!");
+            throw std::domain_error(std::string(
+                MakeString{} << pretty_type::short_name<ApplyTag>()
+                             << " requested is too small!"
+                             << "\n"
+                             // need to stringify apply help here, else
+                             // constexpr symbols are not found when launching
+                             // case-studies from python
+                             << "Help : " << std::string(ApplyTag::help) << "\n"
+                             << "Provide a value greater than : "
+                             << ApplyTag ::lower_bound() << "\n"));
           }
         });
       }
-
-      // inline auto concat_helps(char const* one, char const* two)
-      //     -> std::string {
-      //   std::string buf(one);
-      //   buf.append(two);
-      //   return buf;
-      // }
 
     }  // namespace detail
 
