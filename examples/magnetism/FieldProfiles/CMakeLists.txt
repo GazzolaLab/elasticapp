@@ -8,7 +8,6 @@ elastica_target_headers(
         ConstantMagneticField.hpp
         OscillatoryMagneticField.hpp
         RampedAdapter.hpp
-        Rampup.hpp
 )
 
 elastica_target_sources(
@@ -17,7 +16,6 @@ elastica_target_sources(
         ConstantMagneticField.hpp
         OscillatoryMagneticField.hpp
         RampedAdapter.hpp
-        Rampup.hpp
 )
 
 target_link_libraries(
