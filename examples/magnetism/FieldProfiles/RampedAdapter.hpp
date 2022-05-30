@@ -5,8 +5,7 @@
 #pragma once
 
 #include <elastica/Utilities/DefineTypes.h>
-
-#include "Rampup.hpp"
+#include <elastica/Utilities/Rampup.hpp>
 
 namespace elastica {
 
@@ -105,8 +104,9 @@ namespace elastica {
    * \ingroup extension
    */
   template <typename Field_, typename Real_, typename F_>
-  auto make_ramped_field(Field_ field, Rampup<Real_, F_> rampup_profile) {
-    return RampedFieldAdapter<Field_, Rampup<Real_, F_>>(
+  auto make_ramped_field(Field_ field,
+                         rampup::Rampup<Real_, F_> rampup_profile) {
+    return RampedFieldAdapter<Field_, rampup::Rampup<Real_, F_>>(
         std::move(field), std::move(rampup_profile));
   }
   //****************************************************************************
