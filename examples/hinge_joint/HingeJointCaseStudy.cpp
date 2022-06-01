@@ -58,7 +58,7 @@ void HingeJointCaseStudy::setup(InputTypes<This> const& input_parameters) {
   const std::size_t n_elem = ::elastica::get<n_elements>(input_parameters);
 
   using StraightInit = ::elastica::cosserat_rod::StraightCosseratRodInitializer;
-  const ::elastica::real_t damping_rate = 0.004;
+  const ::elastica::real_t damping_rate = 0.015;
 
   StraightInit straight_initializer{
       // StraightInitialization Wrapper

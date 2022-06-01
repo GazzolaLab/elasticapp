@@ -158,31 +158,18 @@ namespace elastica {
             auto& dissipation_constant(
                 blocks::get<tags::TorqueDampingRate>(self()));
             auto& angular_velocity(blocks::get<tags::AngularVelocity>(self()));
-            auto& mass_SMOI(
-                blocks::get<tags::MassSecondMomentOfInertia>(self()));
-            auto& dilatation(blocks::get<tags::ElementDilatation>(self()));
+            auto& mass(blocks::get<tags::Mass>(self()));
+            auto elemental_mass = Traits::Operations::average_kernel(mass);
 
             Parent::compute_internal_modeled_torques_impl();
 
             // do not need ghosts here since dissipation constant in zero in
             // element ghosts
             // may need evaluation, but we don't have a dummy allocated
-
-            for (std::size_t i_dof = 0UL;
-                 i_dof < TorqueDampingRate::get_dofs(cpp17::size(self()));
-                 ++i_dof) {
-              for (auto direction :
-                   {::elastica::cast_along<elastica::LagrangianFrame::D1>(),
-                    ::elastica::cast_along<elastica::LagrangianFrame::D2>(),
-                    ::elastica::cast_along<elastica::LagrangianFrame::D3>()}) {
-                // This assumes a uniform cross section
-                // Can be fixed later on
-                internal_torque(direction, i_dof) -=
-                    mass_SMOI(direction, direction, i_dof) *
-                    angular_velocity(direction, i_dof) *
-                    dissipation_constant[i_dof] / dilatation[i_dof];
-              }
-            }
+            internal_torque -= Traits::Operations::transpose(
+                                   Traits::Operations::expand_for_broadcast(
+                                       elemental_mass * dissipation_constant)) %
+                               angular_velocity;
           }
         };
 

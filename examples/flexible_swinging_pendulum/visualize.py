@@ -24,7 +24,7 @@ def run_example(
 
     expected_density = 1.1e3
     base_area = np.pi * base_radius**2
-    damping_rate = 1e-5
+    damping_rate = 1e-4
     youngs_modulus = 5e6
     shear_modulus = 5e6 / 1.5
     gravitational_acc = -9.80665

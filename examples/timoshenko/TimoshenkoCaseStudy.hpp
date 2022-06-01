@@ -109,7 +109,7 @@ Section 3.4.3.
        * the damping contribution to force is zero---so this coefficient does
        * not really matter.
        */
-      return 0.5;
+      return 5e-4;
     }
   };
 

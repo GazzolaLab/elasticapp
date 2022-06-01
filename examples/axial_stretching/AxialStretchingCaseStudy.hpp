@@ -111,7 +111,7 @@ oscillations enables comparison with theory.
        * the damping contribution to force is zero---so this coefficient does
        * not really matter.
        */
-      return 0.5;
+      return 1.0;
     }
   };
 

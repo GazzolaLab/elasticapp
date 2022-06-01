@@ -50,7 +50,7 @@ def run_example(
     that in this state, rates (v and omega) are zero : hence the damping contribution 
     to force is zero---so this coefficient does not really matter.
     """
-    damping_rate = 0.5
+    damping_rate = 1.0
     youngs_modulus = 1e4
     end_force_x = 1.0
     dt = 0.01 * (base_length / n_elem)

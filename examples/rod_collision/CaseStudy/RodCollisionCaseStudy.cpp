@@ -58,8 +58,8 @@ void RodCollisionCaseStudy::setup(InputTypes<This> const& input_parameters) {
       RodInitializer::Origin{anchor + normal * 0.2},
       RodInitializer::Direction{direction}, RodInitializer::Normal{normal},
       // maybe needs to be scaled later
-      RodInitializer::ForceDampingRate{0.001},
-      RodInitializer::TorqueDampingRate{0.001}};
+      RodInitializer::ForceDampingRate{0.002},
+      RodInitializer::TorqueDampingRate{0.002}};
 
   cosserat_rod_refs[0] = simulator->template emplace_back<CosseratRod>(
       straight_initializer.initialize<CosseratRod>(

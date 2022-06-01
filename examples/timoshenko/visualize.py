@@ -29,7 +29,7 @@ def run_example(
     that in this state, rates (v and omega) are zero : hence the damping contribution 
     to force is zero---so this coefficient does not really matter.
     """
-    damping_rate = 0.5
+    damping_rate = 5e-4
     youngs_modulus = 1e6
 
     shear_modulus = 1e4 if is_rod_shearable else 1e9

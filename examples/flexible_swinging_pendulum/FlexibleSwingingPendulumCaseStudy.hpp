@@ -116,7 +116,7 @@ geometrically exact Cosserat rods. Multibody System Dynamics, 25(3), 285-312)
   struct damping_rate {
     using type = ::elastica::real_t;
     static constexpr String help = {"Rate of damping in the rod"};
-    static type default_value() { return 1e-5; }
+    static type default_value() { return 1e-4; }
   };
 
   struct length {
