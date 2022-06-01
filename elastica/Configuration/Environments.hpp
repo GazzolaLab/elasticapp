@@ -21,8 +21,8 @@
  * \a typelist is to add tags indicating the environments in the simulation. The
  * following module tags are available:
  *
- *   - elastica::environments::tags::GravityTag
- *   - elastica::environments::tags::CollisionDetectionTag
+ *   - elastica::environments::tags::GravityField
+ *   - elastica::environments::tags::CollisionDetection
  *
  * Each module has its own customization entry points in the appropriate
  * configuration files. All available environments are added to the list
@@ -42,10 +42,10 @@
  * integrated) in the simulator. Usually, but no necessarily, these correspond
  * to infinite objects. The following primitives are available:
  *
- *   - elastica::collision::PlanePrimitive
- *   - elastica::collision::SpherePrimitive
+ *   - elastica::collision::ImposedPlanePrimitive
+ *   - elastica::collision::ImposedSpherePrimitive
+ *   - elastica::collision::ImposedCapsulePrimitive
  *
- * Only the plane primitive is added to the list by default.
  * This list can be customized as needed in the client file.
  */
 #define ELASTICA_DEFAULT_ADMISSIBLE_IMPOSED_PRIMITIVES tmpl::list<>

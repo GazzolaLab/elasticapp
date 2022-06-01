@@ -445,6 +445,21 @@ namespace elastica {
     };
     //**************************************************************************
 
+    //**************************************************************************
+    /*!\brief Documentation stub with tags of CosseratRodPlugin
+     * \ingroup cosserat_rod_component
+     *
+     * | Cosserat Rod Variables   ||
+     * |--------------------------|-----------------------------|
+     * | On Rod                   | elastica::tags::NElement    |
+     */
+    template <typename CRT, template <typename> class ComputationalBlock,
+              template <typename /*CRT*/, typename /* ComputationalBlock */>
+              class... Components>
+    using CosseratRodPluginTagsDocsStub =
+        CosseratRodPlugin<CRT, ComputationalBlock, Components...>;
+    //**************************************************************************
+
   }  // namespace cosserat_rod
 
 }  // namespace elastica

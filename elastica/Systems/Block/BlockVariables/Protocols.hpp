@@ -34,7 +34,7 @@ namespace blocks {
 
     //**************************************************************************
     /*!\brief Block variable protocol.
-     * \ingroup blocks
+     * \ingroup block_protocols
      *
      * Class to enforce adherence to interface expected by Variables in blocks.
      * Any valid blocks Variable within the \elastica library should (publicly)

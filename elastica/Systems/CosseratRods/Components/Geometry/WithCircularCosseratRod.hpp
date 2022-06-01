@@ -107,6 +107,26 @@ namespace elastica {
       };
       //************************************************************************
 
+      // clang-format off
+//******************************************************************************
+/*!\brief Documentation stub with tags of  WithCircularCosseratRod
+ * \ingroup cosserat_rod_component
+ *
+| Geometry Variables             ||
+|--------------------------------|----------------------------------------------------------------------------------------------------------------|
+| On Nodes    (`n_elements+1`)   | elastica::tags::Position                                                                                       |
+| On Elements (`n_elements`)     | elastica::tags::Director,  elastica::tags::ElementDilatation, elastica::tags::ElementDimension,                |
+|^                               | elastica::tags::ElementLength, elastica::tags::ElementVolume, elastica::tags::ReferenceElementLength,          |
+|^                               | elastica::tags::ReferenceShearStretchStrain, elastica::tags::ShearStretchStrain, elastica::tags::Tangent,      |
+| On Voronoi  (`n_elements - 1`) | elastica::tags::Curvature, elastica::tags::ReferenceCurvature, elastica::tags::ReferenceVoronoiLength,         |
+|^                               | elastica::tags::VoronoiDilatation, elastica::tags::VoronoiLength                                               |
+*/
+      template <typename CRT, typename ComputationalBlock>
+      using WithCircularCosseratRodTagsDocsStub =
+      WithCircularCosseratRod<CRT, ComputationalBlock>;
+//******************************************************************************
+      // clang-format on
+
     }  // namespace component
 
   }  // namespace cosserat_rod

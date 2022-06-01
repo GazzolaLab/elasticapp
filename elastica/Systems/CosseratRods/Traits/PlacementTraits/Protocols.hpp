@@ -35,12 +35,18 @@ namespace elastica {
       //========================================================================
 
       //************************************************************************
+      /*! \cond ELASTICA_INTERNAL */
+
+      //************************************************************************
       /*!\brief Common types for placement tags
        * \ingroup cosserat_rod
        */
       struct commons {
         using size_type = std::size_t;
       };
+      //************************************************************************
+
+      /*! \endcond */
       //************************************************************************
 
       //========================================================================
@@ -51,7 +57,7 @@ namespace elastica {
 
       //************************************************************************
       /*!\brief Placement-trait protocol.
-       * \ingroup cosserat_rod
+       * \ingroup cosserat_rod_traits
        *
        * Class to enforce adherence to a Cosserat Rod Placement-trait protocol.
        * Any valid data trait class within the \elastica library should
@@ -87,8 +93,7 @@ Not a conforming placement trait, doesn't properly implement static function
 `commons::size_type get_dofs(commons::size_type)`
 )error");
 
-          using n_ghosts_return_type =
-          decltype(ConformingType::n_ghosts());
+          using n_ghosts_return_type = decltype(ConformingType::n_ghosts());
           static_assert(cpp17::is_same_v<n_ghosts_return_type, size_type>,
                         R"error(
 Not a conforming placement trait, doesn't properly implement static function

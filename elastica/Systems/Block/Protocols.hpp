@@ -19,3 +19,27 @@
 
 #include "Systems/Block/Block/Protocols.hpp"
 #include "Systems/Block/BlockVariables/Protocols.hpp"
+
+//==============================================================================
+//
+//  DOXYGEN DOCUMENTATION
+//
+//==============================================================================
+
+//******************************************************************************
+/*!\defgroup block_protocols Block Protocols
+ * \ingroup blocks
+ * \brief Protocols for programming blocks
+ */
+//******************************************************************************
+
+namespace blocks {
+
+  //****************************************************************************
+  /*!\brief Block protocols
+  // \ingroup block_protocols
+  */
+  namespace protocols {}
+  //****************************************************************************
+
+}  // namespace blocks

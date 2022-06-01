@@ -36,7 +36,7 @@ namespace elastica {
 
       //************************************************************************
       /*!\brief Data-trait protocol.
-       * \ingroup cosserat_rod
+       * \ingroup cosserat_rod_traits
        *
        * Class to enforce adherence to a Cosserat Rod Data-trait protocol. Any
        * valid data trait class within the \elastica library should (publicly)

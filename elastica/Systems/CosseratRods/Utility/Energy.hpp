@@ -33,7 +33,6 @@ namespace elastica {
     namespace detail {
 
       //************************************************************************
-      /*! \cond ELASTICA_INTERNAL */
       /*!\brief Helper for computing rod energy
       // \ingroup cosserat_rod
       */
@@ -51,7 +50,7 @@ namespace elastica {
             -> real_type {
           return real_type(0.5) *
                  blaze::dot(mass_batch, blaze::sum<blaze::columnwise>(
-                                             velocity_batch % velocity_batch));
+                                            velocity_batch % velocity_batch));
         }
         //**********************************************************************
 
@@ -151,6 +150,7 @@ namespace elastica {
 
   //****************************************************************************
   /*!\brief Computes translational kinetic energy of the cosserat_rod.
+  // \ingroup cosserat_rod
   //
   // \details
   // Computes translational kinetic energy of the cosserat_rod given nodal
@@ -183,6 +183,7 @@ namespace elastica {
 
   //****************************************************************************
   /*!\brief Computes rotational kinetic energy of the cosserat_rod.
+  // \ingroup cosserat_rod
   //
   // \details
   // Computes rotational kinetic energy of the cosserat_rod given elemental
@@ -216,6 +217,7 @@ namespace elastica {
 
   //****************************************************************************
   /*!\brief Computes bending mode energy of the system
+  // \ingroup cosserat_rod
   //
   // \details
   // Computes bending mode energy of the system given voronoidal
@@ -249,6 +251,7 @@ namespace elastica {
 
   //****************************************************************************
   /*!\brief Computes shearing mode energy of the cosserat_rod.
+  // \ingroup cosserat_rod
   //
   // \details
   // Computes shearing mode energy of the cosserat_rod given elemental

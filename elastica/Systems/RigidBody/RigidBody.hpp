@@ -30,12 +30,12 @@
 #include "Systems/RigidBody/RigidBodyPlugin.hpp"
 //#include "Systems/RigidBody/Initializers.hpp"
 ///
-/// include aliased classes now
-/// Developer note:
-/// These can be instantiated in C++ files to massively speed up compilation,
-/// but we don't do that here to give full flexibility to the user for
-/// initializing it. In our applications, we can do an instantiation if needed,
-/// according to the initializers we use.
+// include aliased classes now
+// Developer note:
+// These can be instantiated in C++ files to massively speed up compilation,
+// but we don't do that here to give full flexibility to the user for
+// initializing it. In our applications, we can do an instantiation if needed,
+// according to the initializers we use.
 ///
 #include "Systems/RigidBody/Aliases.hpp"
 
@@ -48,9 +48,7 @@
 //******************************************************************************
 /*!\defgroup rigid_body RigidBody
  * \ingroup systems
- *
- * The RigidBody rods module implements data and operations for manipulating
- * rigid bodies, in the style of @ref blocks within \elastica.
+ * \brief Data, operations and helpers for manipulating rigid bodies
  */
 //******************************************************************************
 

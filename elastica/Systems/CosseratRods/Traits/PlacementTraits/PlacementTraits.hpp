@@ -32,13 +32,12 @@ namespace elastica {
 
       //************************************************************************
       /*!\brief Tag indicating placement on nodes in a staggered grid
-       * \ingroup cosserat_rod
+       * \ingroup cosserat_rod_traits
        */
       struct OnNode : /* public NonCreatable*/ public ::tt::ConformsTo<
                           protocols::PlacementTrait> {
         //**********************************************************************
         /*!\brief Get size/degrees of freedom for the given placement
-         * \ingroup cosserat_rod
          */
         static inline auto get_dofs(
             protocols::commons::size_type n_elems) noexcept
@@ -51,7 +50,6 @@ namespace elastica {
 
         //**********************************************************************
         /*!\brief Gets number of ghosts needed for the given placement
-         * \ingroup cosserat_rod
          */
         static inline auto n_ghosts() noexcept
             -> protocols::commons::size_type {
@@ -63,13 +61,12 @@ namespace elastica {
 
       //************************************************************************
       /*!\brief Tag indicating placement on elements in a staggered grid
-       * \ingroup cosserat_rod
+       * \ingroup cosserat_rod_traits
        */
       struct OnElement : /* public NonCreatable*/ public ::tt::ConformsTo<
                              protocols::PlacementTrait> {
         //**********************************************************************
         /*!\brief Get size/degrees of freedom for the given placement
-         * \ingroup cosserat_rod
          */
         inline static auto get_dofs(
             protocols::commons::size_type n_elems) noexcept
@@ -82,7 +79,6 @@ namespace elastica {
 
         //**********************************************************************
         /*!\brief Gets number of ghosts needed for the given placement
-         * \ingroup cosserat_rod
          */
         static inline auto n_ghosts() noexcept
             -> protocols::commons::size_type {
@@ -94,7 +90,7 @@ namespace elastica {
 
       //************************************************************************
       /*!\brief Tag indicating placement on voronoi elements in a staggered grid
-       * \ingroup cosserat_rod
+       * \ingroup cosserat_rod_traits
        *
        * \details
        * A voronoi element in this case refers to interior nodes which form the
@@ -113,7 +109,6 @@ namespace elastica {
                              protocols::PlacementTrait> {
         //**********************************************************************
         /*!\brief Get size/degrees of freedom for the given placement
-         * \ingroup cosserat_rod
          */
         inline static auto get_dofs(
             protocols::commons::size_type n_elems) noexcept
@@ -126,27 +121,24 @@ namespace elastica {
 
         //**********************************************************************
         /*!\brief Gets number of ghosts needed for the given placement
-         * \ingroup cosserat_rod
          */
         static inline auto n_ghosts() noexcept
-        -> protocols::commons::size_type {
+            -> protocols::commons::size_type {
           return 3UL;
         }
         //**********************************************************************
-
       };
       //************************************************************************
 
       //************************************************************************
       /*!\brief Tag indicating placement on a whole rod, as opposed to
        * on a grid
-       * \ingroup cosserat_rod
+       * \ingroup cosserat_rod_traits
        */
       struct OnRod : /* public NonCreatable*/ public ::tt::ConformsTo<
                          protocols::PlacementTrait> {
         //**********************************************************************
         /*!\brief Get size/degrees of freedom for the given placement
-         * \ingroup cosserat_rod
          */
         inline static auto get_dofs(
             protocols::commons::size_type /*n_elems*/) noexcept
@@ -162,14 +154,12 @@ namespace elastica {
 
         //**********************************************************************
         /*!\brief Gets number of ghosts needed for the given placement
-         * \ingroup cosserat_rod
          */
         static inline auto n_ghosts() noexcept
-        -> protocols::commons::size_type {
+            -> protocols::commons::size_type {
           return 0UL;
         }
         //**********************************************************************
-
       };
       //************************************************************************
 

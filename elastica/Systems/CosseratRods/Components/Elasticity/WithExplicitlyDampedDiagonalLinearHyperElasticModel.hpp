@@ -100,6 +100,24 @@ namespace elastica {
                               detail::ExplicitDampingAdapter> {};
       //************************************************************************
 
+      // clang-format off
+//******************************************************************************
+/*!\brief Documentation stub with tags of  WithExplicitlyDampedDiagonalLinearHyperElasticModel
+ * \ingroup cosserat_rod_component
+ *
+| Elasticity Variables           ||
+|--------------------------------|-------------------------------------------------------------------------------|
+| On Nodes    (`n_elements+1`)   | elastica::tags::ForceDampingRate, elastica::tags::InternalLoads               |
+| On Elements (`n_elements`)     | elastica::tags::InternalTorques, elastica::tags::InternalStress               |
+|^                               | elastica::tags::ShearStretchRigidityMatrix, elastica::tags::TorqueDampingRate |
+| On Voronoi  (`n_elements - 1`) | elastica::tags::InternalCouple, elastica::tags::BendingTwistRigidityMatrix    |
+*/
+      template <typename CRT, typename ComputationalBlock>
+      using WithExplicitlyDampedDiagonalLinearHyperElasticModelTagsDocsStub =
+      WithExplicitlyDampedDiagonalLinearHyperElasticModel<CRT, ComputationalBlock>;
+//******************************************************************************
+      // clang-format on
+
     }  // namespace component
 
   }  // namespace cosserat_rod

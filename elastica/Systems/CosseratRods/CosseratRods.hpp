@@ -31,12 +31,12 @@
 #include "Systems/CosseratRods/CosseratRodTraits.hpp"
 #include "Systems/CosseratRods/Initializers.hpp"
 ///
-/// include aliased classes now
-/// Developer note:
-/// These can be instantiated in C++ files to massively speed up compilation,
-/// but we don't do that here to give full flexibility to the user for
-/// initializing it. In our applications, we can do an instantiation if needed,
-/// according to the initializers we use.
+// include aliased classes now
+// Developer note:
+// These can be instantiated in C++ files to massively speed up compilation,
+// but we don't do that here to give full flexibility to the user for
+// initializing it. In our applications, we can do an instantiation if needed,
+// according to the initializers we use.
 ///
 #include "Systems/CosseratRods/Aliases.hpp"
 
@@ -49,17 +49,17 @@
 //******************************************************************************
 /*!\defgroup cosserat_rod Cosserat rods
  * \ingroup systems
- *
- * The Cosserat rods module implements data and operations for manipulating
- * Cosserat rods, in the style of @ref blocks within \elastica.
+ * \brief Data, operations and helpers for manipulating Cosserat rods
  */
 //******************************************************************************
 
 namespace elastica {
 
+  //****************************************************************************
   /*!\brief Cosserat rod data-structures and routines
   // \ingroup cosserat_rod
   */
   namespace cosserat_rod {}
+  //****************************************************************************
 
 }  // namespace elastica

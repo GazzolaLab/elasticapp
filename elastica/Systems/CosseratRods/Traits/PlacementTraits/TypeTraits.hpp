@@ -29,7 +29,7 @@ namespace elastica {
 
       //************************************************************************
       /*!\brief Placement traits of variables in a staggered Cosserat rod grid
-       * \ingroup cosserat_rod
+       * \ingroup cosserat_rod_tt
        *
        * \usage
        * For any PlacementTrait collecting placements together (each of which
@@ -53,7 +53,7 @@ namespace elastica {
 
         //**********************************************************************
         /*!\brief Check if `Var` is placed on the nodes in the Cosserat rod grid
-         * \ingroup cosserat_rod
+         * \ingroup cosserat_rod_tt
          *
          * \requires `Var` is a CosseratRodVariable
          * \effects If `Var` inherits from `OnNode`, then inherits from
@@ -89,7 +89,7 @@ namespace elastica {
         //**********************************************************************
         /*!\brief Check if `Var` is placed on the elements in the Cosserat rod
          * grid
-         * \ingroup cosserat_rod
+         * \ingroup cosserat_rod_tt
          *
          * \requires `Var` is a CosseratRodVariable
          * \effects If `Var` inherits from `OnElement`, then inherits from
@@ -126,7 +126,7 @@ namespace elastica {
         //**********************************************************************
         /*!\brief Check if `Var` is placed on the voronois in the Cosserat rod
          * grid
-         * \ingroup cosserat_rod
+         * \ingroup cosserat_rod_tt
          *
          * \requires `Var` is a CosseratRodVariable
          * \effects If `Var` inherits from `OnVoronoi`, then inherits from
@@ -163,7 +163,7 @@ namespace elastica {
         //**********************************************************************
         /*!\brief Check if `Var` is placed on the rods in the Cosserat rod
          * grid
-         * \ingroup cosserat_rod
+         * \ingroup cosserat_rod_tt
          *
          * \requires `Var` is a CosseratRodVariable
          * \effects If `Var` inherits from `OnRod`, then inherits from

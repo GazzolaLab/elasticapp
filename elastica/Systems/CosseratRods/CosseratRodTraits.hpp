@@ -19,19 +19,29 @@
 
 #include <type_traits>
 
-// Elastica
+#include "Systems/Block/Block.hpp"
+//
 #include "Systems/CosseratRods/Traits/DataOpsTraits.hpp"
 #include "Systems/CosseratRods/Traits/PlacementTrait.hpp"
-#include "Systems/CosseratRods/Types.hpp"
-//#include "Systems/CosseratRods/Policies/Policies.hpp"
 #include "Systems/CosseratRods/TypeTraits.hpp"
-
-// this comes from the simulator module, which seems like an anti-pattern
-// should be in Systems instead
-#include "Systems/Block/Block.hpp"
+#include "Systems/CosseratRods/Types.hpp"
+//
 #include "Utilities/NonCreatable.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
+
+//==============================================================================
+//
+//  DOXYGEN DOCUMENTATION
+//
+//==============================================================================
+
+//******************************************************************************
+/*!\defgroup cosserat_rod_traits Cosserat Rod Traits
+ * \ingroup cosserat_rod
+ * \brief Traits and protocols for customizing behavior of Cosserat Rods
+ */
+//******************************************************************************
 
 namespace elastica {
 
@@ -46,7 +56,7 @@ namespace elastica {
     //**************************************************************************
     /*!\brief Traits class collecting common meta-functions for implementing
      * Cosserat Rods
-     * \ingroup cosserat_rod
+     * \ingroup cosserat_rod_traits
      *
      * \details
      * CosseratRodTraits offers a compile-time customization point for the data
@@ -197,7 +207,13 @@ namespace elastica {
 
     //**************************************************************************
     /*!\brief Default traits for Cosserat Rods
-     * \ingroup cosserat_rod
+     * \ingroup cosserat_rod_traits
+     *
+     * \details
+     * DefaultCosseratRodTraits is our implementation of default traits for all
+     * canned CosseratRod types. It uses the `blaze` library for matrix and
+     * tensor operations, implemented in DataOpsTraits and uses PlacementTrait
+     * to control the domain of variables (on node, elements, voronois etc).
      *
      * \see CosseratRodTraits
      */

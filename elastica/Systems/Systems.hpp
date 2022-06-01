@@ -26,3 +26,15 @@
 #include "Systems/CosseratRods.hpp"
 #include "Systems/RigidBody.hpp"
 #include "Systems/States/States.hpp"
+
+//==============================================================================
+//
+//  DOXYGEN DOCUMENTATION
+//
+//==============================================================================
+
+//******************************************************************************
+/*!\defgroup systems Physical systems
+ * \brief Physical systems (that occupy space and evolve in time) in \elastica
+ */
+//******************************************************************************

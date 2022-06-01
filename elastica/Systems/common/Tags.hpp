@@ -23,25 +23,24 @@ namespace elastica {
     //
     //==========================================================================
 
-    // se3 group
-
     //**************************************************************************
-    /*!\brief Tag indicating element positions
-     * \ingroup systems
+    /*!\brief Tag indicating positions in the Eulerian lab frame of reference.
+     * \ingroup system_tags
      */
     struct Position {};
     //**************************************************************************
 
     //**************************************************************************
-    /*!\brief Tag indicating velocity
-     * \ingroup systems
+    /*!\brief Tag indicating velocity in the Eulerian lab frame of reference.
+     * \ingroup system_tags
      */
     struct Velocity {};
     //**************************************************************************
 
     //**************************************************************************
-    /*!\brief Tag indicating translational acceleration
-     * \ingroup systems
+    /*!\brief Tag indicating translational acceleration in the Eulerian lab
+     * frame of reference.
+     * \ingroup system_tags
      */
     struct Acceleration {};
     //**************************************************************************
@@ -49,71 +48,74 @@ namespace elastica {
     // so3 group
 
     //**************************************************************************
-    /*!\brief Tag indicating element orientations (director)
-     * \ingroup systems
+    /*!\brief Tag indicating orientations as a set of three axes, called the
+     * directors, in the Lagrangian material frame of reference
+     * \ingroup system_tags
      */
     struct Director {};
     //**************************************************************************
 
     //**************************************************************************
-    /*!\brief Tag indicating angular velocity
-     * \ingroup systems
+    /*!\brief Tag indicating angular velocity in the Lagrangian material frame
+     * of reference
+     * \ingroup system_tags
      */
     struct AngularVelocity {};
     //**************************************************************************
 
     //**************************************************************************
-    /*!\brief Tag indicating angular accelerations
-     * \ingroup systems
+    /*!\brief Tag indicating angular accelerations in the Lagrangian material
+     * frame
+     * \ingroup system_tags
      */
     struct AngularAcceleration {};
     //**************************************************************************
 
     //**************************************************************************
-    /*!\brief Tag indicating material
-     * \ingroup systems
+    /*!\brief Tag indicating material description of a physical system, see
+     * elastica::Material
+     * \ingroup system_tags
      */
     struct Material {};
     //**************************************************************************
 
     //**************************************************************************
-    /*!\brief Tag indicating mass
-     * \ingroup systems
+    /*!\brief Tag indicating mass of a physical system
+     * \ingroup system_tags
      */
     struct Mass {};
     //**************************************************************************
 
     //**************************************************************************
-    /*!\brief Tag indicating mass second moment of inertia
-     * \ingroup systems
+    /*!\brief Tag indicating mass second moment of inertia of a physical system
+     * \ingroup system_tags
      */
     struct MassSecondMomentOfInertia {};
     //**************************************************************************
 
     //**************************************************************************
-    /*!\brief Tag indicating inverse mass second moment of inertia
-     * \ingroup systems
+    /*!\brief Tag indicating inverse mass second moment of inertia of a physical
+     * system
+     * \ingroup system_tags
      */
     struct InvMassSecondMomentOfInertia {};
     //**************************************************************************
 
     //**************************************************************************
-    /*!\brief Tag indicating external loads
-     * \ingroup systems
+    /*!\brief Tag indicating external loads in the Eulerian lab frame of
+     * reference
+     * \ingroup system_tags
      */
     struct ExternalLoads {};
     //**************************************************************************
 
     //**************************************************************************
-    /*!\brief Tag indicating external torques
-     * \ingroup systems
+    /*!\brief Tag indicating external torques in the Lagrangian material frame
+     * of reference
+     * \ingroup system_tags
      */
     struct ExternalTorques {};
     //**************************************************************************
-
-    // D1, D2, D3
-    // x, y, z
-    // accessor
 
   }  // namespace tags
 

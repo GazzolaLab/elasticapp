@@ -32,7 +32,9 @@ namespace elastica {
     //**************************************************************************
     /*!\defgroup cosserat_rod_component Cosserat Rod Components
      * \ingroup cosserat_rod
+     * \brief Data-structures to customize orthogonal aspects of Cosserat rods
      *
+     * \details
      * `Components` are structures customizing orthogonal aspects of a Cosserat
      * rod within \elastica. Indeed, a typical rod has features broadly
      * encompassing geometry, elasticity etc. which can be decoupled from one

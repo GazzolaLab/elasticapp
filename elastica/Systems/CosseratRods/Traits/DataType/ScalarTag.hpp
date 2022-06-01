@@ -35,7 +35,7 @@ namespace elastica {
 
     //**************************************************************************
     /*!\brief Tag for a Rank 1 tensor within Cosserat rods in \elastica
-     * \ingroup cosserat_rod
+     * \ingroup cosserat_rod_traits
      *
      * \details
      * ScalarTag is used within the Cosserat rod components of \elastica to

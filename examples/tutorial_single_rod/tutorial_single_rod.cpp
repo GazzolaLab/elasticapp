@@ -140,7 +140,9 @@ int main() {
    * Firstly, the positions are a (3, n + 1) array, where n corresponds to the
    * number of elements. You can programatically obtain the shape as shown below
    */
-  auto rod_position = ::elastica::get<elastica::tags::Position>(rod);
+  /// [tag_example]
+  auto rod_position = ::elastica::get<::elastica::tags::Position>(rod);
+  /// [tag_example]
   std::cout << "Shape of position : (" << rod_position.rows() << ", "
             << rod_position.columns() << ")" << std::endl;
 

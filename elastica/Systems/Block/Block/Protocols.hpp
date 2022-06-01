@@ -39,7 +39,7 @@ namespace blocks {
 
     //**************************************************************************
     /*!\brief Block plugin protocol.
-     * \ingroup blocks
+     * \ingroup block_protocols
      *
      * Class to enforce adherence to interface expected of a Plugin in blocks.
      * Any valid blocks Plugin within the \elastica library should (publicly)

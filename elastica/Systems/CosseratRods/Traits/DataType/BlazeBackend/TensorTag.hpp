@@ -35,8 +35,8 @@
 // this comes from the simulator module, which seems like an anti-pattern
 // should be in Systems instead
 #include "Simulator/Frames.hpp"
-#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Math/Vec3.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 
 namespace elastica {
 
@@ -50,7 +50,7 @@ namespace elastica {
 
     //**************************************************************************
     /*!\brief Tag for a Rank 3 tensor within Cosserat rods in \elastica
-     * \ingroup cosserat_rod
+     * \ingroup cosserat_rod_traits
      *
      * \details
      * TensorTag is used within the Cosserat rod components of \elastica to
@@ -229,7 +229,8 @@ namespace elastica {
         ELASTICA_ASSERT(data.columns() <= new_size,
                         "Contract violation, block shrinks");
         // (o, m, n)
-        return data.resize(Frames::Dimension, Frames::Dimension, new_size, true);
+        return data.resize(Frames::Dimension, Frames::Dimension, new_size,
+                           true);
       }
       //************************************************************************
 

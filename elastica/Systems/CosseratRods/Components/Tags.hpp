@@ -24,8 +24,12 @@ namespace elastica {
 
   namespace tags {
 
-    // Total number of elements within a Cosserat rod
-    struct NElement{};
+    //**************************************************************************
+    /*!\brief Tag indicating total number of elements within a cosserat rod
+     * \ingroup system_tags
+     */
+    struct NElement {};
+    //**************************************************************************
 
   }  // namespace tags
 

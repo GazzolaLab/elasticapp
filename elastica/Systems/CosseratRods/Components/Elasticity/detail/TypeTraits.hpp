@@ -34,7 +34,7 @@ namespace elastica {
 
       //************************************************************************
       /*!\brief Gets the nested `ElasticityModel` from `T`
-       * \ingroup blocks
+       * \ingroup cosserat_rod
        *
        * The elasticity_model_t alias declaration provides a convenient shortcut
        * to access the nested `ElasticityModel` type definition of the given

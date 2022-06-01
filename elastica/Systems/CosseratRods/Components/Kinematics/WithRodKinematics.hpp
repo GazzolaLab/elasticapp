@@ -734,6 +734,23 @@ namespace elastica {
       };
       //************************************************************************
 
+      // clang-format off
+//******************************************************************************
+/*!\brief Documentation stub with tags of WithRodKinematics
+ * \ingroup cosserat_rod_component
+ *
+| Kinematics Variables           ||
+|--------------------------------|------------------------------------------------------------------------------------------------------------------|
+| On Nodes    (`n_elements+1`)   | elastica::tags::Acceleration, elastica::tags::ExternalLoads, elastica::tags::Mass, elastica::tags::Velocity      |
+| On Elements (`n_elements`)     | elastica::tags::AngularVelocity, elastica::tags::AngularAcceleration,                                            |
+|^                               | elastica::tags::ExternalTorques, elastica::tags::MassSecondMomentOfInertia, elastica::tags::Material             |
+|^                               | elastica::tags::InvMassSecondMomentOfInertia                                                                     |
+*/
+      template <typename CRT, typename ComputationalBlock>
+      using WithRodKinematicsTagsDocsStub = WithRodKinematics<CRT, ComputationalBlock>;
+//******************************************************************************
+      // clang-format on
+
     }  // namespace component
 
   }  // namespace cosserat_rod

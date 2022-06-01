@@ -23,7 +23,12 @@ namespace elastica {
   //
   //============================================================================
 
+  //****************************************************************************
+  /*!\brief Any physical system adhering to elastica::protocols::PhysicalSystem
+  // \ingroup systems
+  */
   struct AnyPhysicalSystem {};
+  //****************************************************************************
 
   //**Position functions********************************************************
   /*!\name Position functions */

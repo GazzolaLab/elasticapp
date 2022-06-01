@@ -23,7 +23,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Gets the nested `Variables` from `T`
-   * \ingroup blocks
+   * \ingroup block_tt
    *
    * The variables_t alias declaration provides a convenient
    * shortcut to access the nested `Variables` type definition of
@@ -46,7 +46,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Gets the nested `InitializedVariables` from `T`
-   * \ingroup blocks
+   * \ingroup block_tt
    *
    * The initialized_variables_t alias declaration provides a convenient
    * shortcut to access the nested `InitializedVariables` type definition of
@@ -69,7 +69,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Gets the nested `ComputedVariables` from `T`
-   * \ingroup blocks
+   * \ingroup block_tt
    *
    * The computed_variables_t alias declaration provides a convenient
    * shortcut to access the nested `ComputedVariables` type definition of

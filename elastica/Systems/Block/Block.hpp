@@ -40,6 +40,7 @@
 //******************************************************************************
 /*!\defgroup blocks Blocks
  * \ingroup systems
+ * \brief Efficient blockwise-programming of \elastica entities
  *
  * The blocks module contains the interface for efficiently programming
  * different \elastica entities (such as rods, rigid bodies etc.) and more

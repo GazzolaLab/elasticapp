@@ -130,7 +130,7 @@ namespace elastica {
 
   //****************************************************************************
   /*!\brief Computes the center of mass of a CosseratRod
-   * \ingroup cosserat_rod blocks
+   * \ingroup cosserat_rod
    *
    * \usage
    * \code
@@ -156,12 +156,12 @@ namespace elastica {
   //****************************************************************************
 
   //****************************************************************************
-  /*!\brief Computes the center of mass of a CosseratRod
-   * \ingroup cosserat_rod blocks
+  /*!\brief Computes velocity of the center of mass of a CosseratRod
+   * \ingroup cosserat_rod
    *
    * \usage
    * \code
-     Vec3 com = ::elastica::compute_center_of_mass(rod);
+     Vec3 com = ::elastica::compute_center_of_mass_velocity(rod);
    * \endcode
    *
    * \param cosserat_rod The cosserat rod whose com is to be calculated

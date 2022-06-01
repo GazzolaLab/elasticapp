@@ -49,14 +49,14 @@ namespace elastica {
 
     //**************************************************************************
     /*!\brief Traits implementing data-structures for Cosserat rods in \elastica
-     * \ingroup cosserat_rod
+     * \ingroup cosserat_rod_traits
      *
      * \details
-     * DataOpsTraits is the customization point for altering the data-structures to
-     * be used within the Cosserat rod hierarchy implemented using @ref blocks
-     * in \elastica. It defines (domain-specific) types corresponding to a
-     * Cosserat rod (such as a matrix, vector etc.), and is intended for use as
-     * a template parameter in CosseratRodTraits.
+     * DataOpsTraits is the customization point for altering the data-structures
+     * to be used within the Cosserat rod hierarchy implemented using @ref
+     * blocks in \elastica. It defines (domain-specific) types corresponding to
+     * a Cosserat rod (such as a matrix, vector etc.), and is intended for use
+     * as a template parameter in CosseratRodTraits.
      *
      * \see elastica::cosserat_rod::CosseratRodTraits
      */

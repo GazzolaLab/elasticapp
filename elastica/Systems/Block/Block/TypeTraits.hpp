@@ -35,7 +35,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Check whether a given type `B` is a Block
-   * \ingroup blocks
+   * \ingroup block_tt
    *
    * \details
    * Inherits from std::true_type if `B` is a template specialization of a
@@ -73,7 +73,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Auxiliary variable template for the IsBlock type trait.
-   * \ingroup blocks
+   * \ingroup block_tt
    *
    * The is_block_v variable template provides a convenient
    * shortcut to access the nested \a value of the IsBlock
@@ -95,7 +95,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Check whether a given type `B` is a BlockSlice
-   * \ingroup blocks
+   * \ingroup block_tt
    *
    * \details
    * Inherits from std::true_type if `B` is a template specialization of a
@@ -133,7 +133,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Auxiliary variable template for the IsBlockSlice type trait.
-   * \ingroup blocks
+   * \ingroup block_tt
    *
    * The is_block_slice_v variable template provides a convenient
    * shortcut to access the nested \a value of the IsBlockSlice
@@ -155,7 +155,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Check whether a given type `B` is a ConstBlockSlice
-   * \ingroup blocks
+   * \ingroup block_tt
    *
    * \details
    * Inherits from std::true_type if `B` is a template specialization of a
@@ -193,7 +193,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Auxiliary variable template for the IsConstBlockSlice type trait.
-   * \ingroup blocks
+   * \ingroup block_tt
    *
    * The is_const_block_slice_v variable template provides a convenient
    * shortcut to access the nested \a value of the IsConstBlockSlice
@@ -215,7 +215,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Check whether a given type `P` is a Plugin type
-   * \ingroup blocks
+   * \ingroup block_tt
    *
    * \details
    * Inherits from std::true_type if `B` is a Plugin type otherwise inherits
@@ -254,7 +254,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Auxiliary variable template for the IsPlugin type trait.
-   * \ingroup blocks
+   * \ingroup block_tt
    *
    * The is_plugin_v variable template provides a convenient shortcut to access
    * the nested `value` of the IsPlugin class template. For instance, given the
@@ -276,7 +276,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Check whether a given type `B` models the \a Block concept
-   * \ingroup blocks
+   * \ingroup block_tt
    *
    * \details
    * Inherits from std::true_type if `B` models the \a Block concept, that is
@@ -317,7 +317,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Get the plugin type `P` of a block type `B`
-   * \ingroup blocks
+   * \ingroup block_tt
    *
    * \details
    * The PluginTrait type trait has a nested member `type` representing the
@@ -347,7 +347,7 @@ namespace blocks {
   //****************************************************************************
   /*! \cond ELASTICA_INTERNAL */
   /*!\brief Specialization of PluginTrait for a plain plugin
-   * \ingroup blocks
+   * \ingroup block_tt
    */
   template <typename Plugin>
   struct PluginTrait<Block<Plugin>> {
@@ -361,7 +361,7 @@ namespace blocks {
   /*! \cond ELASTICA_INTERNAL */
   /*!\brief Specialization of PluginTrait for a plugin with Block, without
    * Traits
-   * \ingroup blocks
+   * \ingroup block_tt
    */
   template <template <template <typename /*Plugin*/> class /*BlockLike*/,
                       template <typename /*InstantiatedBlock*/>
@@ -378,7 +378,7 @@ namespace blocks {
   //****************************************************************************
   /*! \cond ELASTICA_INTERNAL */
   /*!\brief Specialization of PluginTrait for a plugin with Block and Traits
-   * \ingroup blocks
+   * \ingroup block_tt
    */
   template <
       template <typename /*Traits*/,
@@ -400,7 +400,7 @@ namespace blocks {
   /*! \cond ELASTICA_INTERNAL */
   /*!\brief Specialization of PluginTrait for a plugin with Traits, Tag, Block
    * and components
-   * \ingroup blocks
+   * \ingroup block_tt
    */
   template <
       template <typename /*Traits*/,
@@ -422,7 +422,7 @@ namespace blocks {
   //****************************************************************************
   /*! \cond ELASTICA_INTERNAL */
   /*!\brief Specialization of PluginTrait for a plain plugin
-   * \ingroup blocks
+   * \ingroup block_tt
    */
   template <typename Plugin>
   struct PluginTrait<BlockSlice<Plugin>> {
@@ -436,7 +436,7 @@ namespace blocks {
   /*! \cond ELASTICA_INTERNAL */
   /*!\brief Specialization of PluginTrait for a plugin with Block, without
    * Traits
-   * \ingroup blocks
+   * \ingroup block_tt
    */
   template <template <template <typename /*Plugin*/> class /*BlockLike*/,
                       template <typename /*InstantiatedBlock*/>
@@ -453,7 +453,7 @@ namespace blocks {
   //****************************************************************************
   /*! \cond ELASTICA_INTERNAL */
   /*!\brief Specialization of PluginTrait for a plugin with Block and Traits
-   * \ingroup blocks
+   * \ingroup block_tt
    */
   template <
       template <typename /*Traits*/,
@@ -475,7 +475,7 @@ namespace blocks {
   /*! \cond ELASTICA_INTERNAL */
   /*!\brief Specialization of PluginTrait for a plugin with Traits, Tag, Block
    * and components
-   * \ingroup blocks
+   * \ingroup block_tt
    */
   template <
       template <typename /*Traits*/,
@@ -498,7 +498,7 @@ namespace blocks {
   //****************************************************************************
   /*! \cond ELASTICA_INTERNAL */
   /*!\brief Specialization of PluginTrait for a plain plugin
-   * \ingroup blocks
+   * \ingroup block_tt
    */
   template <typename Plugin>
   struct PluginTrait<ConstBlockSlice<Plugin>> {
@@ -512,7 +512,7 @@ namespace blocks {
   /*! \cond ELASTICA_INTERNAL */
   /*!\brief Specialization of PluginTrait for a plugin with Block, without
    * Traits
-   * \ingroup blocks
+   * \ingroup block_tt
    */
   template <template <template <typename /*Plugin*/> class /*BlockLike*/,
                       template <typename /*InstantiatedBlock*/>
@@ -529,7 +529,7 @@ namespace blocks {
   //****************************************************************************
   /*! \cond ELASTICA_INTERNAL */
   /*!\brief Specialization of PluginTrait for a plugin with Block and Traits
-   * \ingroup blocks
+   * \ingroup block_tt
    */
   template <
       template <typename /*Traits*/,
@@ -552,7 +552,7 @@ namespace blocks {
   /*! \cond ELASTICA_INTERNAL */
   /*!\brief Specialization of PluginTrait for a plugin with Traits, Tag, Block
    * and components
-   * \ingroup blocks
+   * \ingroup block_tt
    */
   template <
       template <typename /*Traits*/,
@@ -574,7 +574,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Eager result for obtaining plugin type `P` of a block model `B`
-   * \ingroup blocks
+   * \ingroup block_tt
    *
    * \details
    * The PluginFrom type trait is a helper template to obtain the nested

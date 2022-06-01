@@ -324,6 +324,24 @@ namespace elastica {
                 template with<detail::ElasticityInterface> {};
       //************************************************************************
 
+      // clang-format off
+//******************************************************************************
+/*!\brief Documentation stub with tags of  WithDiagonalLinearHyperElasticModel
+ * \ingroup cosserat_rod_component
+ *
+| Elasticity Variables           ||
+|--------------------------------|-------------------------------------------------------------------------------|
+| On Nodes    (`n_elements+1`)   | elastica::tags::InternalLoads                                                 |
+| On Elements (`n_elements`)     | elastica::tags::InternalTorques, elastica::tags::InternalStress               |
+|^                               | elastica::tags::ShearStretchRigidityMatrix                                    |
+| On Voronoi  (`n_elements - 1`) | elastica::tags::InternalCouple, elastica::tags::BendingTwistRigidityMatrix    |
+*/
+      template <typename CRT, typename ComputationalBlock>
+      using WithDiagonalLinearHyperElasticModelTagsDocsStub =
+      WithDiagonalLinearHyperElasticModel<CRT, ComputationalBlock>;
+//******************************************************************************
+      // clang-format on
+
     }  // namespace component
 
   }  // namespace cosserat_rod

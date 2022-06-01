@@ -24,3 +24,16 @@
 #include "Block/TypeTraits.hpp"
 #include "BlockVariables/Aliases.hpp"
 #include "BlockVariables/TypeTraits.hpp"
+
+//==============================================================================
+//
+//  DOXYGEN DOCUMENTATION
+//
+//==============================================================================
+
+//******************************************************************************
+/*!\defgroup block_tt Block Type Traits
+ * \ingroup blocks
+ * \brief Type traits for blocks
+ */
+//******************************************************************************
