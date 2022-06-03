@@ -2,6 +2,7 @@ set(LIBRARY "Test_CosseratRod_FullRodTest")
 
 set(LIBRARY_SOURCES
         Test_PerturbedRod.cpp
+        Test_PerturbedRodStepWithoutDamping.cpp
         Test_PerturbedRodWithNoStep.cpp
         Test_PerturbedRodWithOneStep.cpp
         Test_PerturbedRodWithTwoStep.cpp
