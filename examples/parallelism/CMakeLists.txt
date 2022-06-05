@@ -8,8 +8,7 @@ target_link_libraries(example_parallelism
         Systems
         Utilities
         Materials
-        # link against TBB as well
-        TBB
+        Parallel
         ElasticaFlags
         )
 
