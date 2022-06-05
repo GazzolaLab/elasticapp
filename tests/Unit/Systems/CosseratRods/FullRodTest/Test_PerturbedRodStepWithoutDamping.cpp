@@ -274,7 +274,7 @@ namespace {
       }
       // clang-format on
       simulator->reset();
-    };  // namespace
+    };
     SECTION("OneStep") {
       approx.epsilon(3e-14);
 

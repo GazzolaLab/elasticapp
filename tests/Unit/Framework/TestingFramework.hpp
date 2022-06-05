@@ -6,12 +6,12 @@
 
 #pragma once
 
-#include <iostream>
 #include <catch.hpp>
 #include <complex>
 #include <csignal>
 #include <cstddef>
 #include <iomanip>
+#include <iostream>
 #include <limits>
 #include <sstream>
 #include <stdexcept>
@@ -38,7 +38,8 @@ namespace TestHelpers_detail {
   template <typename T>
   std::string format_capture_precise(const T& t) noexcept {
     std::ostringstream os;
-    os << std::scientific << std::setprecision(18) << t;
+    os << std::scientific
+       << std::setprecision(std::numeric_limits<double>::max_digits10 + 1) << t;
     return os.str();
   }
 }  // namespace TestHelpers_detail

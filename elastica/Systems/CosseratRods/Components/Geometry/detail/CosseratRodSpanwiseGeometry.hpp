@@ -107,7 +107,7 @@ namespace elastica {
 
           //********************************************************************
           /*!\brief Variable marking ReferenceCurvatures within the Cosserat
-           * rod hierarchy
+           * rod hierarchy (rest kappa)
            */
           struct ReferenceCurvature
               : public Traits::template CosseratRodInitializedVariable<
@@ -118,7 +118,7 @@ namespace elastica {
 
           //********************************************************************
           /*!\brief Variable marking ReferenceShearStretchStrain within the
-           * Cosserat rod hierarchy (kappa)
+           * Cosserat rod hierarchy (sigma)
            */
           struct ReferenceShearStretchStrain
               : public Traits::template CosseratRodInitializedVariable<
@@ -214,6 +214,7 @@ namespace elastica {
 
           //********************************************************************
           /*!\brief Variable marking Curvature within the Cosserat rod hierarchy
+           * (kapa)
            */
           struct Curvature : public Traits::template CosseratRodVariable<
                                  ::elastica::tags::Curvature,        //
@@ -232,7 +233,7 @@ namespace elastica {
 
           //********************************************************************
           /*!\brief Variable marking ShearStretchStrain within the Cosserat
-           * rod hierarchy (kappa)
+           * rod hierarchy (sigma)
            */
           struct ShearStretchStrain
               : public Traits::template CosseratRodVariable<
