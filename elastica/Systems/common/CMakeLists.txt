@@ -27,6 +27,7 @@ elastica_target_sources(
 
 add_subdirectory(Components)
 add_subdirectory(Warnings)
+add_subdirectory(Python)
 
 target_link_libraries(
         ${LIBRARY}

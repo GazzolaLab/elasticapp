@@ -35,3 +35,14 @@ elastica_add_python_bindings_test(
         Test_TensorView.py
         "Unit;Blaze;Python"
         PyArrays)
+
+elastica_add_python_bindings_test(
+        "Unit.Blaze.Python.IndexVector"
+        Test_IndexVector.py
+        "Unit;Blaze;Python"
+        PyArrays)
+elastica_add_python_bindings_test(
+        "Unit.Blaze.Python.IndexVectorView"
+        Test_IndexVectorView.py
+        "Unit;Blaze;Python"
+        PyArrays)

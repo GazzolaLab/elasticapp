@@ -26,8 +26,8 @@
  *   - elastica::cosserat_rod::CosseratRodWithoutDamping
  *   - elastica::rigid_body::Sphere
  *
- * All available systems are added to the list by default. This can be
- * customized as needed in the client file.
+ * Consult the documentation page of elastica::PhysicalSystemPlugins for more
+ * information. This can be customized as needed in the client file.
  */
 #define ELASTICA_DEFAULT_ADMISSIBLE_PLUGINS_FOR_SYSTEMS \
   tmpl::list<elastica::cosserat_rod::CosseratRod>

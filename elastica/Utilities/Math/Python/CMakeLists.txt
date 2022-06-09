@@ -10,6 +10,8 @@ elastica_python_add_module(
         Bindings.cpp
         BlazeVector.cpp
         BlazeSubvector.cpp
+        BlazeIndexVector.cpp
+        BlazeIndexSubVector.cpp
         BlazeMatrix.cpp
         BlazeSubmatrix.cpp
         BlazeTensor.cpp

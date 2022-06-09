@@ -3,6 +3,7 @@ add_subdirectory(Components)
 add_subdirectory(Initializers)
 add_subdirectory(Traits)
 add_subdirectory(FullRodTest)
+add_subdirectory(Python)
 
 set(LIBRARY "Test_CosseratRod")
 

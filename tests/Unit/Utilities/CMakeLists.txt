@@ -47,6 +47,7 @@ add_test_library(${LIBRARY}
 
 add_subdirectory(Math/BlazeDetail)
 add_subdirectory(AppSupport)
+add_subdirectory(ConvertCase)
 add_subdirectory(Geometry)
 add_subdirectory(NamedType)
 add_subdirectory(TypeTraits)

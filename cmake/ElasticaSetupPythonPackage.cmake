@@ -407,6 +407,14 @@ function(ELASTICA_ADD_PYTHON_TEST TEST_NAME FILE TAGS
     endif ()
     set(_TEST_ENV_VARS "PYTHONPATH=${_PYTHONPATH}")
 
+    if (DEFINED ENV{ELASTICA_NO_SYSTEM_WARN})
+        set(_ELASTICA_NO_SYSTEM_WARN "$ENV{ELASTICA_NO_SYSTEM_WARN}")
+    else ()
+        set(_ELASTICA_NO_SYSTEM_WARN "0")
+    endif ()
+    # workaround for CosseratRod tests crying about environment variables being unset
+    list(APPEND _TEST_ENV_VARS "ELASTICA_NO_SYSTEM_WARN=${_ELASTICA_NO_SYSTEM_WARN}")
+
     # The fail regular expression is what Python.unittest returns when no
     # tests are found to be run. We treat this as a test failure.
     set_tests_properties(
