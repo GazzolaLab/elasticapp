@@ -24,4 +24,4 @@ add_elastica_case_study(PyRigidBodyCollisionCaseStudy
         )
 #
 elastica_python_link_libraries(PyRigidBodyCollisionCaseStudy PRIVATE Blaze)
-elastica_python_add_dependencies(PyRigidBodyCollisionCaseStudy PyBlaze)
+elastica_python_add_dependencies(PyRigidBodyCollisionCaseStudy PyArrays)

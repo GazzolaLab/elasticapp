@@ -11,6 +11,14 @@
 */
 //==============================================================================
 
+//
+#include "PythonBindings/BoundChecks.hpp"
+//
+#include "Utilities/DefineTypes.h"
+#include "Utilities/MakeString.hpp"
+//
+#include "Utilities/Math/Python/SliceHelpers.hpp"
+//
 #include <array>
 #include <cstddef>
 #include <sstream>
@@ -23,17 +31,12 @@
 //
 #include <blaze_tensor/math/DynamicTensor.h>
 #include <blaze_tensor/math/Subtensor.h>
-//
-#include "PythonBindings/BoundChecks.hpp"
-#include "Utilities/DefineTypes.h"
-#include "Utilities/MakeString.hpp"
 
 namespace py = pybind11;
 
 namespace py_bindings {
 
   //****************************************************************************
-  /*! \cond ELASTICA_INTERNAL */
   /*!\brief Helps bind a tensor view in \elastica
    * \ingroup python_bindings
    */
@@ -75,10 +78,11 @@ namespace py_bindings {
                                   std::get<2>(x));
               return self(std::get<0>(x), std::get<1>(x), std::get<2>(x));
             })
-        // Need __str__ for converting to string/printing
         .def(
-            "__str__",
-            +[](const type& self) { return std::string(MakeString{} << self); })
+            "__getitem__",
+            +[](type& self, std::tuple<py::slice, py::slice, py::slice> slice) {
+              return array_slice(self, std::move(slice));
+            })
         .def(
             "__setitem__",
             +[](type& self,
@@ -87,11 +91,12 @@ namespace py_bindings {
               tensor_bounds_check(self, std::get<0>(x), std::get<1>(x),
                                   std::get<2>(x));
               self(std::get<0>(x), std::get<1>(x), std::get<2>(x)) = val;
+            })
+        .def(
+            "__str__", +[](const type& self) {
+              return std::string(MakeString{} << self);
             });
   }
   //****************************************************************************
 
 }  // namespace py_bindings
-//
-// Created by Tejaswin Parthasarathy on 1/12/22.
-//

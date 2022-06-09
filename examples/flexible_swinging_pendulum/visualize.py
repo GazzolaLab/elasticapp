@@ -1,7 +1,7 @@
 import os
 
 import numpy as np
-from elasticapp import Blaze  # noqa
+from elasticapp import Arrays  # noqa
 from elasticapp.CaseStudies.PyFlexibleSwingingPendulumCaseStudy import (
     FlexibleSwingingPendulumCaseStudy,
 )

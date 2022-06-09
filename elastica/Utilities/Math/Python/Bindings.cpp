@@ -27,7 +27,8 @@ namespace py_bindings {
   void bind_blaze_subtensor(py::module& m);  // NOLINT
 }  // namespace py_bindings
 
-PYBIND11_MODULE(_PyBlaze, m) {  // NOLINT
+
+PYBIND11_MODULE(_PyArrays, m) {  // NOLINT
   m.doc() = R"pbdoc(
     Bindings for Elastica++ array types
     )pbdoc";

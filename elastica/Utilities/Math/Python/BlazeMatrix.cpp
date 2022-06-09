@@ -15,6 +15,14 @@
 // Includes
 //******************************************************************************
 
+//
+#include "PythonBindings/BoundChecks.hpp"
+//
+#include "Utilities/DefineTypes.h"
+#include "Utilities/MakeString.hpp"
+//
+#include "Utilities/Math/Python/SliceHelpers.hpp"
+//
 #include <array>
 #include <cstddef>
 #include <sstream>
@@ -26,17 +34,12 @@
 #include <pybind11/stl.h>
 //
 #include <blaze/math/DynamicMatrix.h>
-//
-#include "PythonBindings/BoundChecks.hpp"
-#include "Utilities/DefineTypes.h"
-#include "Utilities/MakeString.hpp"
 
 namespace py = pybind11;
 
 namespace py_bindings {
 
   //****************************************************************************
-  /*! \cond ELASTICA_INTERNAL */
   /*!\brief Helps bind a matrix type in \elastica
    * \ingroup python_bindings
    */
@@ -93,6 +96,11 @@ namespace py_bindings {
                 const std::tuple<std::size_t, std::size_t>& x) {
               matrix_bounds_check(self, std::get<0>(x), std::get<1>(x));
               return self(std::get<0>(x), std::get<1>(x));
+            })
+        .def(
+            "__getitem__",
+            +[](type& t, std::tuple<py::slice, py::slice> const slice) {
+              return array_slice(t, std::move(slice));
             })
         // Need __str__ for converting to string/printing
         .def(

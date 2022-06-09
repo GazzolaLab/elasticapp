@@ -23,4 +23,4 @@ add_elastica_case_study(PyAxialStretchingCaseStudy
         )
 #
 elastica_python_link_libraries(PyAxialStretchingCaseStudy PRIVATE Blaze)
-elastica_python_add_dependencies(PyAxialStretchingCaseStudy PyBlaze)
+elastica_python_add_dependencies(PyAxialStretchingCaseStudy PyArrays)

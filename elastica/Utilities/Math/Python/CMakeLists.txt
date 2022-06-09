@@ -1,10 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "PyBlaze")
+set(LIBRARY "PyArrays")
 
 elastica_python_add_module(
-        Blaze
+        Arrays
         LIBRARY_NAME ${LIBRARY}
         SOURCES
         Bindings.cpp

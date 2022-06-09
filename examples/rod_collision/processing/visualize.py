@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from cli import track_simulation
-from elasticapp import Blaze  # noqa
+from elasticapp import Arrays  # noqa
 from elasticapp.CaseStudies.PyRodCollisionCaseStudy import (
     RodCollisionCaseStudy,
 )

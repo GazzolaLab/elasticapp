@@ -23,4 +23,4 @@ add_elastica_case_study(PyHingeJointCaseStudy
         )
 #
 elastica_python_link_libraries(PyHingeJointCaseStudy PRIVATE Blaze)
-elastica_python_add_dependencies(PyHingeJointCaseStudy PyBlaze)
+elastica_python_add_dependencies(PyHingeJointCaseStudy PyArrays)

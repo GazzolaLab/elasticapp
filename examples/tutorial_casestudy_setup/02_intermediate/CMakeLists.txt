@@ -20,4 +20,4 @@ add_elastica_case_study(PyIntermediateCaseStudy
         AS elastica::python_object)
 
 elastica_python_link_libraries(PyIntermediateCaseStudy PRIVATE Blaze Utilities)
-elastica_python_add_dependencies(PyIntermediateCaseStudy PyBlaze)
+elastica_python_add_dependencies(PyIntermediateCaseStudy PyArrays)

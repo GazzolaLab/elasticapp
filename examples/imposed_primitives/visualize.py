@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from elasticapp import Blaze  # noqa
+from elasticapp import Arrays  # noqa
 from elasticapp.CaseStudies.PyImposedPrimitiveCaseStudy import (
     ImposedPrimitiveCaseStudy,
 )

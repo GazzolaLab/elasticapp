@@ -1,7 +1,7 @@
 from typing import NewType, List
 
 import numpy as np
-from elasticapp import Blaze  # noqa
+from elasticapp import Arrays  # noqa
 from elasticapp.CaseStudies.PyTimoshenkoCaseStudy import TimoshenkoCaseStudy
 
 from cli.progress import ProgressionStatus
