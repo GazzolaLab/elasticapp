@@ -19,13 +19,6 @@ target_link_libraries(_elastica_standalone_support INTERFACE Utilities _elastica
 # TODO : Is this a good idea?
 #target_include_directories(_elastica_standalone_support INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(_elastica_python_support INTERFACE)
-elastica_target_headers(_elastica_python_support
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
-        HEADERS
-        CaseStudyPybind.hpp
-        PythonBindingHelpers.hpp)
-target_link_libraries(_elastica_python_support INTERFACE Utilities _elastica_case_study)
 
 # pybindings
 add_subdirectory(Helpers)

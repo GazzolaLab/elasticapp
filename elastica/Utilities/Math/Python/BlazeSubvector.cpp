@@ -28,7 +28,7 @@
 #include <blaze/math/DynamicVector.h>
 #include <blaze/math/Subvector.h>
 //
-#include "Utilities/AppSupport/Python/BoundChecks.hpp"
+#include "PythonBindings/BoundChecks.hpp"
 #include "Utilities/DefineTypes.h"
 #include "Utilities/GetOutput.hpp"
 

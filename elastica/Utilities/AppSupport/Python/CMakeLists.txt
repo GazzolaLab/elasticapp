@@ -1,43 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-if (${ELASTICA_BUILD_PYTHON_BINDINGS})
-    set(LIBRARY "PyBindings")
-
-    add_elastica_library(${LIBRARY} INTERFACE)
-
-    elastica_target_headers(
-            ${LIBRARY}
-            INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica/Utilities/AppSupport/Python
-            HEADERS
-            BoundChecks.hpp
-    )
-
-    target_link_libraries(${LIBRARY}
-            INTERFACE
-            Utilities)
-endif ()
-
-set(LIBRARY "PyBlaze")
-
-elastica_python_add_module(
-        Blaze
-        LIBRARY_NAME ${LIBRARY}
-        SOURCES
-        Bindings.cpp
-        BlazeVector.cpp
-        BlazeSubvector.cpp
-        BlazeMatrix.cpp
-        BlazeSubmatrix.cpp
-        BlazeTensor.cpp
-        BlazeSubtensor.cpp
-)
-
-elastica_python_link_libraries(
-        ${LIBRARY}
-        PRIVATE
-        Blaze
-        BlazeTensor
-        pybind11::module
-        Utilities
-)
+add_library(_elastica_python_support INTERFACE)
+elastica_target_headers(_elastica_python_support
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        HEADERS
+        CaseStudyPybind.hpp
+        PythonBindingHelpers.hpp)
+target_link_libraries(_elastica_python_support INTERFACE Utilities _elastica_case_study)

@@ -20,7 +20,7 @@
 #include <pybind11/stl.h>
 #include <string>
 
-#include "Utilities/AppSupport/PythonBindingHelpers.hpp"
+#include "PythonBindingHelpers.hpp"
 #include "Utilities/Invoke.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TypeTraits/IsDetected.hpp"

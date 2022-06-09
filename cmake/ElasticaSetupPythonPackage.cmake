@@ -1,9 +1,18 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-option(ELASTICA_PYTHON_TEST_TIMEOUT_FACTOR
-        "Multiply timeout for Python tests by this factor"
-        1)
+elastica_define_test_timeout_factor_option(PYTHON "python")
+
+option(PY_DEV_MODE "Enable development mode for the Python package, meaning \
+that Python files are symlinked rather than copied to the build directory" OFF)
+function(configure_or_symlink_py_file SOURCE_FILE TARGET_FILE)
+    if (PY_DEV_MODE)
+        execute_process(COMMAND
+                ${CMAKE_COMMAND} -E create_symlink ${SOURCE_FILE} ${TARGET_FILE})
+    else ()
+        configure_file(${SOURCE_FILE} ${TARGET_FILE})
+    endif ()
+endfunction()
 
 set(ELASTICA_PYTHON_PREFIX "${CMAKE_BINARY_DIR}/bin/python/elasticapp/")
 get_filename_component(
@@ -20,10 +29,42 @@ if (NOT EXISTS "${ELASTICA_PYTHON_PREFIX}/__init__.py")
             "__all__ = []")
 endif ()
 
-# Write a file for installing the Python modules
+# Create the root __main__.py entry point
+configure_or_symlink_py_file(
+        "${CMAKE_SOURCE_DIR}/elastica/Utilities/AppSupport/Python/__main__.py"
+        "${ELASTICA_PYTHON_PREFIX}/__main__.py"
+)
+
+# Also link the main entry point to bin/
+set(PYTHON_SCRIPT_LOCATION "elastica")
 configure_file(
-        "${CMAKE_SOURCE_DIR}/elastica/Utilities/AppSupport/Python/setup.py"
-        "${ELASTICA_PYTHON_PREFIX_PARENT}/setup.py")
+        "${CMAKE_SOURCE_DIR}/cmake/ElasticaPythonExecutable.sh"
+        "${CMAKE_BINARY_DIR}/tmp/elastica")
+file(COPY "${CMAKE_BINARY_DIR}/tmp/elastica"
+        DESTINATION "${CMAKE_BINARY_DIR}/bin"
+        FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+        GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
+# Write configuration files for installing the Python modules
+configure_or_symlink_py_file(
+        "${CMAKE_SOURCE_DIR}/elastica/PythonBindings/pyproject.toml"
+        "${ELASTICA_PYTHON_PREFIX_PARENT}/pyproject.toml")
+configure_or_symlink_py_file(
+        "${CMAKE_SOURCE_DIR}/elastica/PythonBindings/setup.cfg"
+        "${ELASTICA_PYTHON_PREFIX_PARENT}/setup.cfg")
+
+# Install the elastica Python package to the CMAKE_INSTALL_PREFIX, using pip.
+# This will install the package into the expected subdirectory, typically
+# `lib/pythonX.Y/site-packages/`. It also creates symlinks to entry points
+# specified in `setup.cfg`.
+install(
+        CODE "execute_process(\
+    COMMAND ${Python_EXECUTABLE} -m pip install \
+      --no-deps --no-input --no-cache-dir --no-index --ignore-installed \
+      --disable-pip-version-check --no-build-isolation \
+      --prefix ${CMAKE_INSTALL_PREFIX} ${ELASTICA_PYTHON_PREFIX_PARENT} \
+    )"
+)
 
 # Write a file to be able to set up the new python path.
 file(WRITE
@@ -113,10 +154,23 @@ function(ELASTICA_PYTHON_ADD_MODULE MODULE_NAME)
                 CXX__VISIBILITY_PRESET OFF
                 VISIBLITY_INLINES_HIDDEN OFF
         )
-        target_link_libraries(
-                ${ARG_LIBRARY_NAME}
-                PUBLIC PyBindings
-        )
+        # In order to avoid runtime errors about missing compatibility functions
+        # defined in the PythonBindings library, we need to link in the whole
+        # archive. This is not needed on macOS.
+        if (APPLE)
+            target_link_libraries(
+                    ${ARG_LIBRARY_NAME}
+                    PUBLIC PythonBindings
+            )
+        else ()
+            target_link_libraries(
+                    ${ARG_LIBRARY_NAME}
+                    PUBLIC
+                    -Wl,--whole-archive
+                    PythonBindings
+                    -Wl,--no-whole-archive
+            )
+        endif ()
         target_link_libraries(
                 ${ARG_LIBRARY_NAME}
                 PRIVATE
@@ -216,6 +270,8 @@ function(ELASTICA_PYTHON_ADD_MODULE MODULE_NAME)
         # Write an executable in `${CMAKE_BINARY_DIR}/bin` that runs the Python
         # script in the correct Python environment
         if (${PYTHON_FILE} IN_LIST ARG_PYTHON_EXECUTABLES)
+            set(PYTHON_SCRIPT_LOCATION
+                    "${PYTHON_MODULE_LOCATION}.${PYTHON_FILE_JUST_NAME_WE}")
             configure_file(
                     "${CMAKE_SOURCE_DIR}/cmake/ElasticaPythonExecutable.sh"
                     "${CMAKE_BINARY_DIR}/tmp/${PYTHON_FILE_JUST_NAME_WE}")
@@ -317,4 +373,76 @@ function(elastica_python_add_dependencies LIBRARY_NAME)
             # Forward all remaining arguments
             ${ARGN}
     )
+endfunction()
+
+# Register a python test file with ctest.
+# - TEST_NAME    The name of the test,
+#                e.g. "Unit.DataStructures.Python.DataVector"
+#
+# - FILE         The file to add, e.g. Test_DataVector.py
+#
+# - TAGS         A semicolon separated list of labels for the test,
+#                e.g. "Unit;DataStructures;Python"
+# - PY_MODULE_DEPENDENCY
+#                The python module that this test depends on
+#                Set to None if there is no python module dependency
+function(ELASTICA_ADD_PYTHON_TEST TEST_NAME FILE TAGS
+        PY_MODULE_DEPENDENCY)
+    get_filename_component(FILE "${FILE}" ABSOLUTE)
+    string(TOLOWER "${TAGS}" TAGS)
+
+    add_test(
+            NAME "\"${TEST_NAME}\""
+            COMMAND
+            ${Python_EXECUTABLE}
+            ${FILE}
+    )
+
+    elastica_test_timeout(TIMEOUT PYTHON 2)
+
+    set(_PYTHONPATH "${ELASTICA_PYTHON_PREFIX_PARENT}")
+    # Avoid "uninitialized variable" warnings
+    if (DEFINED ENV{PYTHONPATH})
+        set(_PYTHONPATH "${_PYTHONPATH}:$ENV{PYTHONPATH}")
+    endif ()
+    set(_TEST_ENV_VARS "PYTHONPATH=${_PYTHONPATH}")
+
+    # The fail regular expression is what Python.unittest returns when no
+    # tests are found to be run. We treat this as a test failure.
+    set_tests_properties(
+            "\"${TEST_NAME}\""
+            PROPERTIES
+            FAIL_REGULAR_EXPRESSION "Ran 0 test"
+            TIMEOUT ${TIMEOUT}
+            LABELS "${TAGS};Python"
+            ENVIRONMENT "${_TEST_ENV_VARS}"
+    )
+    # check if this is a unit test, and if so add it to the dependencies
+    foreach (LABEL ${TAGS})
+        string(TOLOWER "${LABEL}" LOWER_LABEL)
+        string(TOLOWER "${PY_MODULE_DEPENDENCY}" LOWER_DEP)
+        if ("${LOWER_LABEL}" STREQUAL "unit"
+                AND NOT "${LOWER_DEP}" STREQUAL "none")
+            add_dependencies(unit-tests ${PY_MODULE_DEPENDENCY})
+        endif ()
+    endforeach ()
+endfunction()
+
+# Register a python test file that uses bindings with ctest.
+# - TEST_NAME    The name of the test,
+#                e.g. "Unit.DataStructures.Python.DataVector"
+#
+# - FILE         The file to add, e.g. Test_DataVector.py
+#
+# - TAGS         A semicolon separated list of labels for the test,
+#                e.g. "Unit;DataStructures;Python"
+# - PY_MODULE_DEPENDENCY
+#                The python module that this test depends on
+#                Set to None if there is no python module dependency
+function(ELASTICA_ADD_PYTHON_BINDINGS_TEST TEST_NAME FILE TAGS
+        PY_MODULE_DEPENDENCY)
+    if (NOT ELASTICA_BUILD_PYTHON_BINDINGS)
+        return()
+    endif ()
+    elastica_add_python_test(${TEST_NAME} ${FILE} "${TAGS}" ${PY_MODULE_DEPENDENCY})
 endfunction()

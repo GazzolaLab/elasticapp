@@ -117,7 +117,7 @@ function(_elastica_setup_python_object
  * Edit at your own peril.
  */
 @INCLUDES@
-#include <elastica/Utilities/AppSupport/CaseStudyPybind.hpp>
+#include <elastica/Utilities/AppSupport/Python/CaseStudyPybind.hpp>
 
 namespace py = pybind11;
 

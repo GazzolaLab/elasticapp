@@ -1,7 +1,7 @@
 //==============================================================================
 /*!
 //  \file
-//  \brief Defines python bindings for a \elastica tensor view
+//  \brief Defines python bindings for a \elastica tensor type
 //
 //  Copyright (C) 2020-2022 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
@@ -22,9 +22,8 @@
 #include <pybind11/stl.h>
 //
 #include <blaze_tensor/math/DynamicTensor.h>
-#include <blaze_tensor/math/Subtensor.h>
 //
-#include "Utilities/AppSupport/Python/BoundChecks.hpp"
+#include "PythonBindings/BoundChecks.hpp"
 #include "Utilities/DefineTypes.h"
 #include "Utilities/MakeString.hpp"
 
@@ -34,16 +33,34 @@ namespace py_bindings {
 
   //****************************************************************************
   /*! \cond ELASTICA_INTERNAL */
-  /*!\brief Helps bind a tensor view in \elastica
+  /*!\brief Helps bind a tensor type in \elastica
    * \ingroup python_bindings
    */
-  void bind_blaze_subtensor(py::module& m) {  // NOLINT
+  void bind_blaze_tensor(py::module& m) {  // NOLINT
     using Real = ::elastica::real_t;
-    using data_type = ::blaze::DynamicTensor<Real>;
-    using type = ::blaze::Subtensor<data_type, ::blaze::unaligned>;
+    using type = ::blaze::DynamicTensor<Real>;
 
     // Wrapper for basic type operations
-    py::class_<type>(m, "TensorView", py::buffer_protocol())
+    py::class_<type>(m, "Tensor", py::buffer_protocol())
+        .def(py::init<std::size_t, std::size_t, std::size_t>(),
+             py::arg("pages"), py::arg("rows"), py::arg("columns"))
+        .def(py::init([](py::buffer buffer) {
+               py::buffer_info info = buffer.request();
+               // Sanity-check the buffer
+               if (info.format != py::format_descriptor<Real>::format()) {
+                 throw std::runtime_error(
+                     "Incompatible format: expected a Real array.");
+               }
+               if (info.ndim != 3) {
+                 throw std::runtime_error("Incompatible dimension.");
+               }
+               const auto pages = static_cast<std::size_t>(info.shape[0]);
+               const auto rows = static_cast<std::size_t>(info.shape[1]);
+               const auto columns = static_cast<std::size_t>(info.shape[2]);
+               auto data = static_cast<Real*>(info.ptr);
+               return type(pages, rows, columns, data);
+             }),
+             py::arg("buffer"))
         // Expose the data as a Python buffer so it can be cast into Numpy
         // arrays
         .def_buffer([](type& tensor) {
@@ -92,6 +109,3 @@ namespace py_bindings {
   //****************************************************************************
 
 }  // namespace py_bindings
-//
-// Created by Tejaswin Parthasarathy on 1/12/22.
-//
