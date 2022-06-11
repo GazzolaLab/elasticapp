@@ -102,13 +102,19 @@ namespace {
         blocks::initialize<tags::Acceleration>([](...) { return 3.0; }),
         blocks::initialize<tags::AngularAcceleration>([](...) { return 1.0; }),
         blocks::initialize<tags::ForceDampingRate>([](...) { return 2.0; }),
-        blocks::initialize<tags::TorqueDampingRate>([](...) { return 2.0; }));
+        blocks::initialize<tags::TorqueDampingRate>([](...) { return 3.0; }));
 
     Model::initialize(model, std::move(initializer));
 
     /* Check the function compute_internal_forces() */
     // clang-format off
-    const double ref_shape_factor = 13.5 / 14.0;
+    const double length(sqrt(3));
+    const double area(M_PI * sq(4.0));
+    const double density(7.874);  // iron density
+    const double I_0(area * area * 0.25 * M_1_PI);
+    const double element_mass(density * length * area);
+    const double damped_force = 1.0 * 2.0 * element_mass; // damping rate * mass * velocity
+    const double ref_shape_factor(13.5 / 14.0);
     const Rot3 shear_stretch_rigidity_matrix({
       {16 * 4 * M_PI * ref_shape_factor, 0.0                              , 0.0},
       {0.0                             , 16 * 4 * M_PI * ref_shape_factor},
@@ -127,25 +133,28 @@ namespace {
         Traits::DataType::Vector::slice(compute_internal_forces_result, 2UL);
     const Vec3 end_force =
         Traits::DataType::Vector::slice(compute_internal_forces_result, 10UL);
-    CHECK(edge_force == director * internal_stress - sqrt(3));
-    CHECK(mid_force == -sqrt(3) * 2);
-    CHECK(end_force == -(director * internal_stress) - sqrt(3));
+    CHECK(edge_force == director * internal_stress - damped_force / 2.0);
+    CHECK(mid_force == -damped_force);
+    CHECK(end_force == -(director * internal_stress) - damped_force / 2.0);
 
     /* Check the function compute_internal_torques() */
     // clang-format off
+    const Vec3 damped_torque =
+        Vec3({3.0 * element_mass, 3.0 * element_mass, 3.0 * element_mass}) *
+        3.0 / 4.0;  // damping rate * mass * angular velocity
     const Rot3 BendTwistRigidityMatrix({
-                        {4.0*(0.25*M_1_PI)*sq(4*4*M_PI), 0.0, 0.0},
-                        {0.0, 4.0*(0.25*M_1_PI)*sq(4*4*M_PI), 0.0},
-                        {0.0, 0.0, 2.0*4.0*(0.25*M_1_PI)*sq(4*4*M_PI)}});
+      {4.0*(0.25*M_1_PI)*sq(4*4*M_PI), 0.0                           , 0.0},
+      {0.0                           , 4.0*(0.25*M_1_PI)*sq(4*4*M_PI), 0.0},
+      {0.0                           , 0.0                           , 2.0*4.0*(0.25*M_1_PI)*sq(4*4*M_PI)}});
     const Vec3 couple_solution = BendTwistRigidityMatrix * Vec3({-1.0,-1.0,-1.0});
     const Vec3 q_into_t(
         {3 * (0.5 / sqrt(3)),
          3 * (0.5 / sqrt(3)),
          3 * (0.5 / sqrt(3))});
-    const Vec3 shear_stretch_couple = sqrt(3) * (q_into_t % internal_stress) - (2*sqrt(3));
-    const Rot3 msmoi({{sqrt(3)*(0.25*M_1_PI)*sq(4*4*M_PI), 0.0, 0.0},
-                      {0.0, sqrt(3)*(0.25*M_1_PI)*sq(4*4*M_PI), 0.0},
-                      {0.0, 0.0, 2.0*sqrt(3)*(0.25*M_1_PI)*sq(4*4*M_PI)}});
+    const Vec3 shear_stretch_couple = sqrt(3) * (q_into_t % internal_stress);
+    const Rot3 msmoi({{density*length*I_0, 0.0, 0.0},
+                      {0.0, density*length*I_0, 0.0},
+                      {0.0, 0.0, 2.0*density*length*I_0}});
     const Vec3 joueb(msmoi * Vec3({1.0, 1.0, 1.0}));
     const Vec3 lagrangian_transport(joueb % Vec3({1.0, 1.0, 1.0}));
     // clang-format on
@@ -158,20 +167,16 @@ namespace {
         Traits::DataType::Vector::slice(compute_internal_torques_result, 2UL);
     const Vec3 end_torque =
         Traits::DataType::Vector::slice(compute_internal_torques_result, 9UL);
-    CHECK(edge_torque ==
-          couple_solution + shear_stretch_couple + lagrangian_transport);
-    CHECK(mid_torque == shear_stretch_couple + lagrangian_transport);
-    CHECK(end_torque ==
-          -couple_solution + shear_stretch_couple + lagrangian_transport);
+    CHECK(edge_torque == couple_solution + shear_stretch_couple +
+                             lagrangian_transport - damped_torque);
+    CHECK(mid_torque == shear_stretch_couple + lagrangian_transport -
+                            (damped_torque * 4. / 3.));
+    CHECK(end_torque == -couple_solution + shear_stretch_couple +
+                            lagrangian_transport - damped_torque);
 
     // check if initialization is done as expected
     auto expected_call_count = make_array(11U, 10U, 10U, 9U, 10U, 10U, 10U);
     CHECK_ITERABLE_APPROX(n_times_called, expected_call_count);
-
-    // Check RigidityMatrix
-    // [0] element : stiff  * I_0
-    const double area = M_PI * 4.0 * 4.0;
-    const double I_0 = area * area * 0.25 * M_1_PI;
   }
 
 }  // namespace
