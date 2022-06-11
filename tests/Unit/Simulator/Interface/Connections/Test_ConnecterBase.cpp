@@ -14,6 +14,8 @@ namespace {
   ELASTICA_TEST_CASE(
       "Unit.Simulator.Interface.Connections.ConnecterBase.constructor",
       "[Unit][Simulator][Interface][Connections]") {
+    EMPTY_TEST();
+
     {
       using Connecter = ::mock::Connecter;
       Connecter(ConnectionUUID(4, "test"));

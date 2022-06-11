@@ -77,6 +77,8 @@ namespace {
       "[Unit][Simulator][Interface][Environments]") {
     // clang-format on
     SECTION("Empty tags") {
+      EMPTY_TEST();
+
       using EnvironmentTags = tmpl::list<>;
       auto env_config =
           mock::make_environments_configuration_with_tags<EnvironmentTags>(
@@ -149,6 +151,8 @@ namespace {
       "[Unit][Simulator][Interface][Environments]") {
     // clang-format on
     SECTION("Empty tags") {
+      EMPTY_TEST();
+
       using EnvironmentTags = tmpl::list<>;
       auto env_config =
           mock::make_environments_configuration_with_tags<EnvironmentTags>(

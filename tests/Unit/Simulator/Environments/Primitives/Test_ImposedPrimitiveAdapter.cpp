@@ -27,6 +27,8 @@ namespace {
       "Unit.Environments.Primitives.ImposedPrimitiveAdapter",
       "[Unit][Simulator][Environments]") {
     // clang-format on
+    EMPTY_TEST();
+
     Vec3 position{5.0, 3.0, 6.0};
     real_t radius(4.0);
 
@@ -55,6 +57,7 @@ namespace {
       "Unit.Environments.Primitives.ImposedPrimitiveAdapter.access_API",
       "[Unit][Simulator][Environments]") {
     // clang-format on
+    EMPTY_TEST();
 
     Vec3 position{5.0, 3.0, 6.0};
     real_t radius(4.0);

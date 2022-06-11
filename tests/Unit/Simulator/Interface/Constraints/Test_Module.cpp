@@ -40,6 +40,8 @@ namespace {
       "Unit.Simulator.Interface.Constraints.Module",
       "[Unit][Simulator][Interface][Constraints]") {
     // clang-format on
+    EMPTY_TEST();
+
     auto sim_config =
         mock::make_simulator_configuration(DefaultConstraintsConfiguration{});
     // check cases without an error first.

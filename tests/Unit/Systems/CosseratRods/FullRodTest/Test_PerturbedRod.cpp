@@ -64,6 +64,7 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.z.Integrated.CosseratRods.InitializeStraightRod",
                      "[Systems][Integrated]") {
+    EMPTY_TEST();
     /*
      * rng_seed = 150
      * NROD=1, N=5, n_step=1, time=0.0, time_step=2e-05

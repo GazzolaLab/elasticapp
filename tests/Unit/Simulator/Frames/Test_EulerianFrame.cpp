@@ -11,6 +11,8 @@ namespace {
   "Unit.Simulator.Frames.EulerianFrame",
   "[Unit][Simulator]") {
     // clang-format on
+    EMPTY_TEST();
+
     static_assert(elastica::EulerianFrame::Dimension == 3UL,
                   "Frame dimension mismatch!");
 

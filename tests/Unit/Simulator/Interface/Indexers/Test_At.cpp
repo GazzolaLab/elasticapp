@@ -310,10 +310,8 @@ namespace {
     }
   }
 
-  // [[OutputRegex, "as the number of degrees of freedom is only 100"]]
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Indexers.At.to_numeric_throws",
                      "[Unit][Simulator][Interface]") {
-    ERROR_TEST();
     auto sys = ThrowSystem{};
     {  //
       auto x = at(1UL, 3UL, 5UL);

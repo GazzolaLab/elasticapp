@@ -316,6 +316,8 @@ namespace {
   // https://github.com/joboccara/NamedType/blob/master/test/tests.cpp
   ELASTICA_TEST_CASE("Unit.Utilities.NamedType.constexpr",
                      "[Unit][Utilities]") {
+    EMPTY_TEST();
+
     using strong_bool = NamedType<bool, struct BoolTag, Gettable>;
 
     static_assert(strong_bool{true}.get(), "NamedType is not constexpr");

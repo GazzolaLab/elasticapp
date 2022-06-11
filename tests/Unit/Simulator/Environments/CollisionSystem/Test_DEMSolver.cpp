@@ -474,6 +474,8 @@ namespace {
 
     SECTION("Test interface") {
       SECTION("Free API") {
+        EMPTY_TEST();
+
         using ::elastica::configuration::make_collision_configuration;
         using ::elastica::environments::initialize_parameters;
         using ::elastica::environments::reset;
@@ -488,6 +490,8 @@ namespace {
         reset(*solver, ::elastica::Time{0.0});
       }
       SECTION("Member API") {
+        EMPTY_TEST();
+
         auto check_member_API = [](auto& sol) {
           (void)sol->get_algorithms();
           (void)sol->get_coarse_detector();

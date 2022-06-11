@@ -49,13 +49,15 @@ namespace {
 namespace {
 
   ELASTICA_TEST_CASE(
-      "Unit.Systems.CosseratRods.WithDiagonalLinearHyperElasticModel:EBO",
+      "Unit.Systems.CosseratRods.WithDiagonalLinearHyperElasticModel.EBO",
       "[Systems][Unit]") {
+    EMPTY_TEST();
+
     CHECK_EBO(Model);
   }
 
   ELASTICA_TEST_CASE(
-      "Unit.Systems.CosseratRods.WithDiagonalLinearHyperElasticModel:data",
+      "Unit.Systems.CosseratRods.WithDiagonalLinearHyperElasticModel.data",
       "[Systems][Unit]") {
     Model model{};
 

@@ -35,8 +35,10 @@ namespace {
   // using Model = blocks::Block<Plugin>;
   using Model = typename Plugin::Model;
 
-  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.RodSpanwiseGeometry:EBO",
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.RodSpanwiseGeometry.EBO",
                      "[Systems][Unit]") {
+    EMPTY_TEST();
+
     CHECK_EBO(Model);
   }
 
@@ -44,6 +46,8 @@ namespace {
   constexpr bool const_check = std::is_const<std::remove_reference_t<T>>::value;
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.RodSpanwiseGeometry.getters",
                      "[Systems][Unit]") {
+    EMPTY_TEST();
+
     Model model{};
     auto& const_model = static_cast<const Model&>(model);
     static_assert(const_check<decltype(const_model.get_position())>, "Oops");

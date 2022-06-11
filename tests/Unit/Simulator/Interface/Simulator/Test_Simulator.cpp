@@ -145,6 +145,8 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Simulator.buffers",
                      "[Unit][Simulator][Interface]") {
     // clang-format on
+    EMPTY_TEST();
+
     auto& simulator = make_test_simulator<>();
     (void)(cpp17::as_const(simulator).domain());
 
@@ -365,9 +367,13 @@ namespace {
       (void)(simulator.template get_algorithm<UpdateStep>());
     };
     SECTION("Check algorithms and timers") {
+      EMPTY_TEST();
+
       tmpl::for_each<typename Sim::AlgorithmSteps>(checker);
     }
     SECTION("Check batching algorithms") {
+      EMPTY_TEST();
+
       using Batcher = tmpl::type_<typename Sim::ConnectionFillerBatchAlgorithm>;
       (void)(simulator.template get_batching_algorithm<Batcher>());
     }
@@ -378,6 +384,8 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Simulator.profiling",
                      "[Unit][Simulator][Interface]") {
     // clang-format on
+    EMPTY_TEST();
+
     auto& simulator = make_test_simulator<TestModule>();
 
     Time time_v{0.0};

@@ -13,6 +13,8 @@ namespace {
   using namespace elastica;
 
   ELASTICA_TEST_CASE("Unit.Utilities.Defer.defer", "[Unit][Utilities]") {
+    EMPTY_TEST();
+
     /// [defer_example]
     // marks a pair as deferred to a later point in time
     auto p = std::make_pair(elastica::defer, elastica::defer);

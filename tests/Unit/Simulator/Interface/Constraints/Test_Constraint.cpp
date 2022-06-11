@@ -751,11 +751,9 @@ namespace {
   }
 
   // clang-format off
-  // [[OutputRegex, "Attempts to constrain system of type float with a ConstraintWithNonCopyableTypes at the following indices failed: 43, as the number of degrees of freedom is only 20"]]
   ELASTICA_TEST_CASE(
       "Unit.Simulator.Interface.Constraints.Constraint.exception_for_incorrect_indices",
       "[Unit][Simulator][Interface][Constraints]") {
-    ERROR_TEST();
     // clang-format on
     using ConcreteConstraint =
         TestConstraint<std::reference_wrapper<MockSystem>>;

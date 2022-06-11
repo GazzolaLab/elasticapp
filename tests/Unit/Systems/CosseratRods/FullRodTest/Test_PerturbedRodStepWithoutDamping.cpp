@@ -38,12 +38,12 @@ namespace {
 
     Approx approx = Approx::custom();
 
-    elastica::MaterialID myMaterial = elastica::create_material(
-        7.874, 0.24, 200, 200.0 / (2. * (1. + 0.50)), 200, 1e-10, 1e-10, 0.1,
-        0.1);
+    elastica::MaterialID myMaterial =
+        elastica::create_material(7.874, 0.24, 200, 200.0 / (2. * (1. + 0.50)),
+                                  200, 1e-10, 1e-10, 0.1, 0.1);
 
-    using Init = ::elastica::cosserat_rod::
-        StraightCosseratRodWithoutDampingInitializer;
+    using Init =
+        ::elastica::cosserat_rod::StraightCosseratRodWithoutDampingInitializer;
     Init straight_initializer{
         // Initialization Wrapper
         Init::NElement{5UL},
@@ -64,9 +64,8 @@ namespace {
         ec::DefaultDomainConfiguration{}, system_config,
         ec::DefaultParallelConfiguration{});
 
-    auto simulator =
-        elastica::make_simulator<::elastica::modules::EnableReset>(
-            simulator_config);
+    auto simulator = elastica::make_simulator<::elastica::modules::EnableReset>(
+        simulator_config);
 
     auto slicedrod_000_it = (simulator->emplace_back<Plugin>(
         straight_initializer.initialize<Plugin>()));
@@ -172,6 +171,8 @@ namespace {
     // clang-format on
 
     SECTION("NoStep") {
+      EMPTY_TEST();
+
       approx.epsilon(1e-20);
 
       //**************************************************************************
@@ -279,7 +280,7 @@ namespace {
       approx.epsilon(3e-14);
 
       std::size_t step = 1;
-      while(step--)
+      while (step--)
         simulator->step(time_stepper, time_v, time_delta);
 
       //**************************************************************************
@@ -321,7 +322,7 @@ namespace {
       approx.epsilon(6e-14);
 
       std::size_t step = 3;
-      while(step--)
+      while (step--)
         simulator->step(time_stepper, time_v, time_delta);
 
       //**************************************************************************
@@ -362,7 +363,7 @@ namespace {
       approx.epsilon(7e-14);
 
       std::size_t step = 5;
-      while(step--)
+      while (step--)
         simulator->step(time_stepper, time_v, time_delta);
 
       //**************************************************************************

@@ -104,10 +104,14 @@ namespace {
     auto second_it = add_a_rod();
 
     SECTION("Block API") {
+      EMPTY_TEST();
+
       check_member_API(cosserat_rod);
       check_member_API(cpp17::as_const(cosserat_rod));
     }
     SECTION("Slice API") {
+      EMPTY_TEST();
+
       check_member_API(first_it);
       check_member_API(cpp17::as_const(first_it));
       check_member_API(second_it);
@@ -167,10 +171,14 @@ namespace {
     auto second_it = add_a_rod();
 
     SECTION("Block API") {
+      EMPTY_TEST();
+
       check_free_API(cosserat_rod);
       check_free_API(cpp17::as_const(cosserat_rod));
     }
     SECTION("Slice API") {
+      EMPTY_TEST();
+
       check_free_API(first_it);
       check_free_API(cpp17::as_const(first_it));
       check_free_API(second_it);

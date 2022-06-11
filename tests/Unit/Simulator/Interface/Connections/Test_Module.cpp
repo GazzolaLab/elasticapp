@@ -45,6 +45,8 @@ namespace {
       "Unit.Simulator.Interface.Connections.Module",
       "[Unit][Simulator][Interface][Connections]") {
     // clang-format on
+    EMPTY_TEST();
+
     auto sim_config =
         mock::make_simulator_configuration(DefaultConnectionsConfiguration{});
     // check cases without an error first.

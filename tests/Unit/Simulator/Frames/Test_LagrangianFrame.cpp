@@ -10,6 +10,8 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.Frames.LagrangianFrame",
                      "[Unit][Simulator]") {
     // clang-format on
+    EMPTY_TEST();
+
     static_assert(elastica::LagrangianFrame::Dimension == 3UL,
                   "Frame dimension mismatch!");
 

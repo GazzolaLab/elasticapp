@@ -7,11 +7,11 @@
 // #include "Systems/CosseratRods/Components/Geometry/Protocols.hpp"
 #include "Systems/CosseratRods/Components/Geometry/WithCircularCosseratRod.hpp"
 #include "Systems/CosseratRods/Components/Geometry/detail/CircleCrossSectionOperations.hpp"
-#include "Systems/CosseratRods/Tags.hpp"
 #include "Systems/CosseratRods/CosseratRodTraits.hpp"
+#include "Systems/CosseratRods/Tags.hpp"
 ///
 #include "Systems/CosseratRods/Mocks.hpp"
-///j
+/// j
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Math/Sqrt.hpp"
 
@@ -20,7 +20,9 @@ namespace {
   //  Test static operations first
 
   using Traits = typename elastica::cosserat_rod::DefaultCosseratRodTraits;
-  using Operations = elastica::cosserat_rod::component::detail::CircleCrossSectionOperations<Traits>;
+  using Operations =
+      elastica::cosserat_rod::component::detail::CircleCrossSectionOperations<
+          Traits>;
 
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.CircleCrossSectionOperations",
                      "[Systems][Unit]") {
@@ -29,7 +31,7 @@ namespace {
     CHECK(Operations::compute_second_moment_of_area(1.0) ==
           approx(0.25 * M_PI));
     CHECK(Operations::update_dimension(M_PI, 1.0) == approx(1.0));
-    //CHECK(Operations::shape_factor() == approx(4.0 / 3.0));
+    // CHECK(Operations::shape_factor() == approx(4.0 / 3.0));
     CHECK(Operations::shape_factor() == approx(13.5 / 14.0));
   }
 
@@ -39,8 +41,7 @@ namespace {
   using namespace elastica::cosserat_rod::component;
 
   template <typename B>
-  class TestGeometry
-      : public WithCircularCosseratRod<Traits, B> {
+  class TestGeometry : public WithCircularCosseratRod<Traits, B> {
     // The point of this class is to bring
     //    Frame;
     //    DirectionType;
@@ -59,17 +60,18 @@ namespace {
 
   using Plugin = mock::MockPlugin<Traits, TestGeometry>;
   using Model = typename Plugin::Model;
-  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.WithCircularCosseratRod: EBO",
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.WithCircularCosseratRod.EBO",
                      "[Systems][Unit]") {
+    EMPTY_TEST();
+
     CHECK_EBO(Model);
   }
 
-//  static_assert(
-//      tt::assert_conforms_to<Plugin,
-//      ::elastica::cosserat_rod::protocols::Shape>, "failure!");
+  //  static_assert(
+  //      tt::assert_conforms_to<Plugin,
+  //      ::elastica::cosserat_rod::protocols::Shape>, "failure!");
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.WithCircularCosseratRod.data",
                      "[Systems][Unit]") {
-
     Model model{};
 
     // same as cross_section_interface
@@ -80,15 +82,38 @@ namespace {
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
         // from before
-        blocks::initialize<elastica::tags::Position>([&i = n_times_called[0]](std::size_t index) { ++i; return index * 1.0; }),
-        blocks::initialize<elastica::tags::Director>([&i = n_times_called[1]](...) { ++i; return 0.5; }),
+        blocks::initialize<elastica::tags::Position>(
+            [&i = n_times_called[0]](std::size_t index) {
+              ++i;
+              return index * 1.0;
+            }),
+        blocks::initialize<elastica::tags::Director>(
+            [&i = n_times_called[1]](...) {
+              ++i;
+              return 0.5;
+            }),
         // from before
-        blocks::initialize<elastica::tags::ElementDimension>( [&i = n_times_called[2]](...) { ++i; return 4.0; }),
-        blocks::initialize<elastica::tags::ReferenceCurvature>( [&i = n_times_called[3]](...) { ++i; return 1.0; }),
-        blocks::initialize<elastica::tags::ReferenceShearStretchStrain>( [&i = n_times_called[4]](...) { ++i; return 1.0; }),
+        blocks::initialize<elastica::tags::ElementDimension>(
+            [&i = n_times_called[2]](...) {
+              ++i;
+              return 4.0;
+            }),
+        blocks::initialize<elastica::tags::ReferenceCurvature>(
+            [&i = n_times_called[3]](...) {
+              ++i;
+              return 1.0;
+            }),
+        blocks::initialize<elastica::tags::ReferenceShearStretchStrain>(
+            [&i = n_times_called[4]](...) {
+              ++i;
+              return 1.0;
+            }),
 
-        blocks::initialize<elastica::tags::ElementDilatation>([&i = n_times_called[5]](...) { ++i; return 1.0; })
-      );
+        blocks::initialize<elastica::tags::ElementDilatation>(
+            [&i = n_times_called[5]](...) {
+              ++i;
+              return 1.0;
+            }));
 
     Model::initialize(model, std::move(initializer));
 
@@ -100,10 +125,11 @@ namespace {
     CHECK(model.get_element_dimension() == 4.0);
     // blocks::get<tags::ElementLength>(model) = 2.0;
     // volume = dimension * length, only calculated somewhere inside
-    CHECK(model.get_element_volume() == approx(M_PI*4.0*4.0*blaze::sqrt(3)));
+    CHECK(model.get_element_volume() ==
+          approx(M_PI * 4.0 * 4.0 * blaze::sqrt(3)));
 
     CHECK(model.get_area() == M_PI * 4.0 * 4.0);
-    //CHECK(model.shape_factor() == 4.0 / 3.0);
+    // CHECK(model.shape_factor() == 4.0 / 3.0);
     CHECK(model.shape_factor() == 13.5 / 14.0);
 
     using LocalFrame = typename Model::Frame;
@@ -116,7 +142,7 @@ namespace {
     CHECK(model.get_second_moment_of_area<LocalFrame::D3>(0UL) ==
           2.0 * expected_second_moment);
 
-    //model.compute_shear_strains();
+    // model.compute_shear_strains();
   }
 
 }  // namespace

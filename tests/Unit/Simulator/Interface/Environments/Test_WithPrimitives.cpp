@@ -386,6 +386,8 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Environments.WithPrimitives.Module",
                      "[Unit][Simulator][Interface][Environments]") {
     // clang-format on
+    EMPTY_TEST();
+
     using ListOfSystemPlugins = tmpl::list<ECPlugin, ECNamedPlugin>;
     auto sim = make_primitives_simulator<ListOfSystemPlugins>();
     using Sim = decltype(sim);

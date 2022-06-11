@@ -72,8 +72,10 @@ namespace {
   using Model = typename Plugin::Model;
 
   ELASTICA_TEST_CASE(
-      "Unit.Systems.CosseratRods.CosseratRodCrossSectionInterface: EBO",
+      "Unit.Systems.CosseratRods.CosseratRodCrossSectionInterface.EBO",
       "[Systems][Unit]") {
+    EMPTY_TEST();
+
     CHECK_EBO(Model);
   }
 
@@ -83,6 +85,8 @@ namespace {
   ELASTICA_TEST_CASE(
       "Unit.Systems.CosseratRods.CosseratRodCrossSectionInterface.getters",
       "[Systems][Unit]") {
+    EMPTY_TEST();
+
     Model model{};
     auto& const_model = static_cast<const Model&>(model);
     static_assert(const_check<decltype(const_model.get_element_dimension())>,

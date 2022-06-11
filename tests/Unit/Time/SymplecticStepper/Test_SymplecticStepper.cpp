@@ -28,6 +28,8 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Time.SymplecticSteppers.SymplecticStepper",
                      "[Time][Unit]") {
+    EMPTY_TEST();
+
     // check default initialization
     tmpl::for_each<SymplecticAlgorithms>([](auto algo) {
       using Algorithm = tmpl::type_from<decltype(algo)>;
@@ -80,6 +82,8 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Time.SymplecticSteppers.Algorithms.PositionVerlet",
                      "[Time][Unit]") {
     SECTION("Constexpr are correctly resolved") {
+      EMPTY_TEST();
+
       using Algorithm = PositionVerlet;
       using TimeStepper = SymplecticStepper<Algorithm>;
       static_assert(TimeStepper::n_fevals_per_step() == 1UL,

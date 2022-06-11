@@ -171,6 +171,8 @@ namespace {
     // clang-format on
 
     SECTION("NoStep") {
+      EMPTY_TEST();
+
       approx.epsilon(1e-20);
 
       //**************************************************************************

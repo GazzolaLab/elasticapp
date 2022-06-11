@@ -39,6 +39,8 @@ namespace {
   "Unit.Environments.CoarseDetection.RigidBodyPrimitiveTrait.ExhaustiveSearch",
       "[Unit][Environments]") {
     // clang-format on
+    EMPTY_TEST();
+
     void* p = nullptr;
     Testing<FirstTrait> testing(static_cast<::elastica::collision::BodyID>(p));
 

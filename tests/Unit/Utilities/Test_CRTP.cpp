@@ -17,25 +17,30 @@ namespace {
 
    public:
     // Constrain the interface here
-    void print() {
-      std::cout << self().get_details() << "\t" << self().get_details() << "\t";
+    std::ostream& print(std::ostream& os) const {
+      return os << self().get_details() << "    " << self().get_details()
+                << "    ";
     }
   };
+  template <typename T>
+  std::ostream& operator<<(std::ostream& os,
+                           PrintInterface<T> const& interface) {
+    return interface.print(os);
+  }
 
-  struct IntegerPrinter : PrintInterface<IntegerPrinter> {
-    int get_details() { return 2; }
+  struct CharAPrinter : PrintInterface<CharAPrinter> {
+    char get_details() const { return 'a'; }
   };
 
-  struct FloatPrinter : PrintInterface<FloatPrinter> {
-    float get_details() { return 2.1415F; }
+  struct CharBPrinter : PrintInterface<CharBPrinter> {
+    char get_details() const { return 'b'; }
   };
   /// [crtp_example]
 
-  // [[OutputRegex, 2    2    2.1415    2.1415]]
   ELASTICA_TEST_CASE("Unit.Utilities.CRTP", "[Unit][Utilities]") {
-    OUTPUT_TEST();
-    IntegerPrinter().print();
-    FloatPrinter().print();
+    std::stringstream ss;
+    ss << CharAPrinter() << CharBPrinter();
+    CHECK(ss.str() == "a    a    b    b    ");
   }
 
 }  // namespace

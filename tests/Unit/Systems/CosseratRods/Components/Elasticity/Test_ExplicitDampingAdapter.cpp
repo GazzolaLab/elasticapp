@@ -109,14 +109,16 @@ namespace {
 
 namespace {
 
-  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.ExplicitDampingAdapter:EBO",
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.ExplicitDampingAdapter.EBO",
                      "[Systems][Unit]") {
+    EMPTY_TEST();
+
     CHECK_EBO(Model);
     CHECK_EBO(DampedModel);
   }
 
   ELASTICA_TEST_CASE(
-      "Unit.Systems.CosseratRods.ExplicitDampingAdapter:without.damp",
+      "Unit.Systems.CosseratRods.ExplicitDampingAdapter.compute_forces_torques",
       "[Systems][Unit]") {
     Model model{};
 
@@ -150,9 +152,11 @@ namespace {
     CHECK(model.compute_internal_torques() == 42.0);
   }
 
+  // clang-format off
   ELASTICA_TEST_CASE(
-      "Unit.Systems.CosseratRods.ExplicitDampingAdapter:with.damp",
+      "Unit.Systems.CosseratRods.ExplicitDampingAdapter.compute_forces_torques_with_damping",
       "[Systems][Unit]") {
+    // clang-format on
     DampedModel model{};
 
     auto initializer = mock::initialize_block<DampedPlugin>(

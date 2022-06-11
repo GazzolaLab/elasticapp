@@ -8,6 +8,8 @@
 namespace {
 
   ELASTICA_TEST_CASE("Unit.Utilities.system_clock", "[Unit][Utilities]") {
+    EMPTY_TEST();
+
     /// [system_clock_creation]
     auto clock_handle = elastica::the_system_clock();
     /// [system_clock_creation]

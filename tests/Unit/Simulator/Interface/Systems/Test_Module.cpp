@@ -359,6 +359,8 @@ namespace {
    ELASTICA_TEST_CASE("Unit.Simulator.Interface.Systems.Module",
                       "[Unit][Simulator][Interface][Systems]") {
     // clang-format on
+    EMPTY_TEST();
+
     using ListOfSystemPlugins = tmpl::list<ECPlugin, ECNamedPlugin>;
     auto sim = make_systems_simulator<ListOfSystemPlugins>(
         make_blocking_policy(RestrictSizeAcrossBlockTypes{20UL}));

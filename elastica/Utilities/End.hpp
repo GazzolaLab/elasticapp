@@ -174,7 +174,6 @@ namespace elastica {
  */
 ELASTICA_ALWAYS_INLINE constexpr elastica::from_end operator-(
     decltype(elastica::end) /* meta */, std::size_t i) noexcept {
-  // assert(i >= 0);
   return {i};
 }
 //******************************************************************************
@@ -195,7 +194,6 @@ ELASTICA_ALWAYS_INLINE constexpr elastica::from_end operator-(
  */
 ELASTICA_ALWAYS_INLINE constexpr elastica::from_end operator-(
     elastica::from_end end_marker, std::size_t i) noexcept {
-  // assert(i >= 0);
   end_marker.i += i;
   return end_marker;
 }
