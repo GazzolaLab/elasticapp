@@ -98,7 +98,6 @@ namespace {
               return 4.0;
             }),
         blocks::initialize<tags::ElementDilatation>([](...) { return 1.0; }),
-        // blocks::initialize<tags::Mass>([](...) { return 1.0; }),
         blocks::initialize<tags::Material>(
             [](...) { return ::elastica::iron; }),
         blocks::initialize<tags::Velocity>([](...) { return 1.0; }),
@@ -112,21 +111,21 @@ namespace {
     // clang-format off
     const double length(sqrt(3));
     const double area(M_PI * sq(4.0));
-    const double I_0 = area * area * 0.25 * M_1_PI;
+    const double I_0 = sq(area) * 0.25 * M_1_PI;
     const double density(7.874);  // iron density
     const double element_mass(density * length * area);
     const double ref_shape_factor = (13.5 / 14.);
-    const Rot3 shear_stretch_rigidity_matrix({
-      {16 * 4 * M_PI * ref_shape_factor, 0.0                              , 0.0},
-      {0.0                             , 16 * 4 * M_PI * ref_shape_factor},
-      {0.0                             , 0.0                              , 16 * 4 * M_PI}});
+    const Rot3 shear_stretch_rigidity_matrix({ // G=E=4
+      {area * 4 * ref_shape_factor, 0.0                         , 0.0},
+      {0.0                        , area * 4 * ref_shape_factor},
+      {0.0                        , 0.0                         , area * 4}});
     const Rot3 director(0.5);
-    const Vec3 shear_solution(
-      {3 * (0.5 / sqrt(3)),
-       3 * (0.5 / sqrt(3)),
-       3 * (0.5 / sqrt(3)) - 1.0});
-    const Vec3 internal_stress = shear_stretch_rigidity_matrix * (shear_solution-1.0);
+    const Vec3 shear_solution({3 * (0.5 / length), // 0.5 is side length
+                               3 * (0.5 / length),
+                               3 * (0.5 / length) - 1.0});
     // clang-format on
+    const Vec3 internal_stress =
+        shear_stretch_rigidity_matrix * (shear_solution - 1.0);
     auto compute_internal_forces_result = model.compute_internal_forces();
     const Vec3 edge_force =
         Traits::DataType::Vector::slice(compute_internal_forces_result, 0UL);
@@ -140,15 +139,14 @@ namespace {
 
     /* Check the function compute_internal_torques() */
     // clang-format off
-    const Rot3 BendTwistRigidityMatrix({
-      {4.0*(0.25*M_1_PI)*sq(4*4*M_PI), 0.0                           , 0.0},
-      {0.0                           , 4.0*(0.25*M_1_PI)*sq(4*4*M_PI), 0.0},
-      {0.0                           , 0.0                           , 2.0*4.0*(0.25*M_1_PI)*sq(4*4*M_PI)}});
-    const Vec3 couple_solution = BendTwistRigidityMatrix * Vec3({-1.0,-1.0,-1.0});
-    const Vec3 q_into_t(
-        {3 * (0.5 / sqrt(3)),
-         3 * (0.5 / sqrt(3)),
-         3 * (0.5 / sqrt(3))});
+    const Rot3 BendTwistRigidityMatrix({{4.0*I_0, 0.0    , 0.0},
+                                        {0.0    , 4.0*I_0, 0.0},
+                                        {0.0    , 0.0    , 2.0*4.0*I_0}});
+    const Vec3 couple_solution =
+        BendTwistRigidityMatrix * Vec3({-1.0,-1.0,-1.0});
+    const Vec3 q_into_t({3 * (0.5 / length),
+                         3 * (0.5 / length),
+                         3 * (0.5 / length)});
     const Vec3 shear_stretch_couple = sqrt(3) * (q_into_t % internal_stress);
     const Rot3 msmoi({{density*length*I_0, 0.0, 0.0},
                       {0.0, density*length*I_0, 0.0},
