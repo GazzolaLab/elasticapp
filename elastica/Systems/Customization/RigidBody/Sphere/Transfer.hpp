@@ -48,7 +48,8 @@ namespace elastica {
             begin, end,
             [&collection, index = 0UL](PrimitiveType const& primitive) mutable {
               collection.get_external_loads(index) += primitive.get_force();
-              collection.get_external_torques(index) += primitive.get_torque();
+              collection.get_external_torques(index) +=
+                  primitive.get_rotation_matrix() * primitive.get_torque();
               ++index;
             });
       }

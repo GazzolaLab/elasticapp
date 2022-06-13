@@ -46,7 +46,10 @@ namespace elastica {
                         collection.get_external_loads(index + 1UL) +=
                             0.5 * primitive.get_force();
 
+                        // here, we have something in the global FOR, we now
+                        // recast it back to the Q FOR
                         collection.get_external_torques(index) +=
+                            collection.get_director(index) *
                             primitive.get_torque();
                         ++index;
                       });
