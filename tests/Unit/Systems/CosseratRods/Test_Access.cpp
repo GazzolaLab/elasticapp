@@ -27,17 +27,9 @@ namespace {
       CosseratRodPlugin<mock::MinimalCosseratRodTraits, blocks::Block, T...>;
 
   template <template <typename, typename> class... T>
-  using GenerateTestPluginProduction =
-      CosseratRodPlugin<DefaultCosseratRodTraits, blocks::Block, T...>;
-
-  template <template <typename, typename> class... T>
   using GenerateTestSlicePlugin =
       CosseratRodPlugin<mock::MinimalCosseratRodTraits, blocks::BlockSlice,
                         T...>;
-
-  template <template <typename, typename> class... T>
-  using GenerateTestSlicePluginProduction =
-      CosseratRodPlugin<DefaultCosseratRodTraits, blocks::BlockSlice, T...>;
 
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.access.minimal_traits",
                      "[Systems][Unit]") {
@@ -46,12 +38,11 @@ namespace {
     using Rod = GenerateBlock<TestPlugin>;
     Rod rod{};
     Rod const& const_rod = static_cast<Rod const&>(rod);
-    using DataVector =
-        typename mock::MinimalCosseratRodTraits::DataType::Vector::type;
-    using DataVectorSlice =
-        typename mock::MinimalCosseratRodTraits::DataType::Vector::slice_type;
-    using DataVectorConstSlice = typename mock::MinimalCosseratRodTraits::
-        DataType::Vector::const_slice_type;
+    using Traits = mock::MinimalCosseratRodTraits;
+    using DataVector = typename Traits::DataType::Vector::type;
+    using DataVectorSlice = typename Traits::DataType::Vector::slice_type;
+    using DataVectorConstSlice =
+        typename Traits::DataType::Vector::const_slice_type;
 
     const std::size_t new_n_elements(10UL);
 
