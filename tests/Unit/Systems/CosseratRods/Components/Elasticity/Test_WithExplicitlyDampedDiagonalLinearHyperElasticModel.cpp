@@ -48,10 +48,11 @@ namespace {
 
 namespace {
 
+  // clang-format off
   ELASTICA_TEST_CASE(
-      "Unit.Systems.CosseratRods."
-      "WithExplicitlyDampedDiagonalLinearHyperElasticModel.data",
+      "Unit.Systems.CosseratRods.WithExplicitlyDampedDiagonalLinearHyperElasticModel.data",
       "[Systems][Unit]") {
+    // clang-format on
     Model model{};
 
     // Reference Parameters
