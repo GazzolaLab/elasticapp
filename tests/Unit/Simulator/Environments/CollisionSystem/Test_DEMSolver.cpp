@@ -215,13 +215,12 @@ namespace {
         Init::TorqueDampingRate{0.2},
     };
 
-    using ::elastica::cosserat_rod::CosseratRod;
+    using CosseratRod = ::elastica::cosserat_rod::CosseratRod;
     auto rod_ref = simulator->template emplace_back<CosseratRod>(
         straight_initializer.initialize<CosseratRod>());
 
     // add another cosserat rod touching the previous cosserat rod at the tip
     // for creating a CR-CR contact
-    using ::elastica::cosserat_rod::CosseratRod;
     auto another_rod_ref = simulator->template emplace_back<CosseratRod>(
         straight_initializer
             .but_with(Init::Origin{::elastica::Vec3{-0.41, 0.31, 0.0}},

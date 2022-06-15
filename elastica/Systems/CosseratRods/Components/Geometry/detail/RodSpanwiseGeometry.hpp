@@ -96,9 +96,9 @@ namespace elastica {
             static inline auto ghost_value() noexcept -> ghost_type {
               using Real = typename Traits::DataType::Scalar::ghost_type;
               // Identity is too perfect, lets have something more approximate
-              return ghost_type{{{0.8}, {0.6}, {0.0}},
-                                {{0.0}, {0.0}, {1.0}},
-                                {{0.6}, {-0.8}, {0.0}}};
+              return ghost_type{{Real{0.8}, Real{+0.6}, Real{0.0}},
+                                {Real{0.0}, Real{+0.0}, Real{1.0}},
+                                {Real{0.6}, Real{-0.8}, Real{0.0}}};
             }
           };
           //********************************************************************

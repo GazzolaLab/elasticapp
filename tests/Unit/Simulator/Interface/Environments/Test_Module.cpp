@@ -59,7 +59,7 @@ namespace {
 
   // so that code compiles
   struct WithPrimitivesConfiguration {
-    using ListOfAdmissibleSystemCollections = tmpl::list<>;
+    // using ListOfAdmissibleSystemCollections = tmpl::list<>;
   };
 
   auto get_systems_configuration() {

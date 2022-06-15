@@ -52,10 +52,10 @@ namespace mock {
 
   struct CustomDouble {
    private:
-    double access(double d) { return d; }
+    constexpr double access(double d) { return d; }
 
     template <typename L>
-    double access(std::initializer_list<L> l) {
+    constexpr double access(std::initializer_list<L> l) {
       return l.size() ? access(*(l.begin())) : access(0.0);
     }
 

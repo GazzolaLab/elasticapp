@@ -161,6 +161,7 @@ namespace {
     slicedrod_00000.compute_internal_torques();
     slicedrod_00000.update_acceleration();
 
+    /*
     auto ROD000_ElementDimension(blocks::get<elastica::tags::ElementDimension>(slicedrod_00000));
     auto ROD000_MassSecondMomentOfInertia(blocks::get<elastica::tags::MassSecondMomentOfInertia>(slicedrod_00000));
     auto ROD000_InvMassSecondMomentOfInertia(blocks::get<elastica::tags::InvMassSecondMomentOfInertia>(slicedrod_00000));
@@ -188,6 +189,7 @@ namespace {
     auto ROD000_AngularVelocity(blocks::get<elastica::tags::AngularVelocity>(slicedrod_00000));
     auto ROD000_Acceleration(blocks::get<elastica::tags::Acceleration>(slicedrod_00000));
     auto ROD000_AngularAcceleration(blocks::get<elastica::tags::AngularAcceleration>(slicedrod_00000));
+    */
 
 
 #define COMPARE_ELASTICAPP_AGAINST_PYELASTICA \

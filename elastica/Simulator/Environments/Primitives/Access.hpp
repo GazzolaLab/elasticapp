@@ -32,7 +32,7 @@ namespace elastica {
   /*!\brief Retrieves position of a primitive
    * \ingroup primitives
    */
-  inline constexpr decltype(auto) position(
+  inline /*constexpr*/ decltype(auto) position(
       collision::RigidBodyPrimitive const& primitive) noexcept {
     return primitive.get_position();
   }
@@ -42,7 +42,7 @@ namespace elastica {
   /*!\brief Retrieves director of a primitive
    * \ingroup primitives
    */
-  inline constexpr decltype(auto) director(
+  inline /*constexpr*/ decltype(auto) director(
       collision::RigidBodyPrimitive const& primitive) noexcept {
     return primitive.get_rotation_matrix();
   }
@@ -52,7 +52,7 @@ namespace elastica {
   /*!\brief Retrieves velocity of a primitive
    * \ingroup primitives
    */
-  inline constexpr decltype(auto) velocity(
+  inline /*constexpr*/ decltype(auto) velocity(
       collision::RigidBodyPrimitive const& primitive) noexcept {
     return primitive.get_velocity();
   }
@@ -62,7 +62,7 @@ namespace elastica {
   /*!\brief Retrieves angular velocity of a primitive
    * \ingroup primitives
    */
-  inline constexpr decltype(auto) angular_velocity(
+  inline /*constexpr*/ decltype(auto) angular_velocity(
       collision::RigidBodyPrimitive const& primitive) noexcept {
     return primitive.get_angular_velocity();
   }
@@ -72,7 +72,7 @@ namespace elastica {
   /*!\brief Retrieves external loads on a primitive
    * \ingroup primitives
    */
-  inline constexpr decltype(auto) external_loads(
+  inline /*constexpr*/ decltype(auto) external_loads(
       collision::RigidBodyPrimitive const& primitive) noexcept {
     return primitive.get_force();
   }
@@ -82,7 +82,7 @@ namespace elastica {
   /*!\brief Retrieves external torques on a primitive
    * \ingroup primitives
    */
-  inline constexpr decltype(auto) external_torques(
+  inline /*constexpr*/ decltype(auto) external_torques(
       collision::RigidBodyPrimitive const& primitive) noexcept {
     return primitive.get_torque();
   }

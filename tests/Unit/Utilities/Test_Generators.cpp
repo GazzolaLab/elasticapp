@@ -108,7 +108,7 @@ namespace {
       CHECK(gen(2UL) == end);
 
       auto another_gen = linspace_generator(start, end, 1UL, true);
-      CHECK(gen(0UL) == start);
+      CHECK(another_gen(0UL) == start);
     }
   }
 

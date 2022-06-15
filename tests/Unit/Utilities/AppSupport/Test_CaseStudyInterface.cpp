@@ -2,8 +2,6 @@
 // Created by Tejaswin Parthasarathy on 2/3/22.
 //
 
-#pragma once
-
 #include "Framework/TestingFramework.hpp"
 #include "Utilities/AppSupport/CaseStudyInterface.hpp"
 
