@@ -61,6 +61,14 @@ namespace {
       "[Systems][Unit]") {
     Model model{};
 
+    // Reference Parameters
+    const std::size_t dim = 3UL;
+    const real_t moduli = 4.0;
+    const real_t reference_curvature = 1.0;
+    const real_t director_component = 0.5;
+    const real_t velocity_component = 1.0;
+    const real_t angular_velocity_component = 1.0;
+
     constexpr auto n_initializers = 7UL;
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
@@ -70,19 +78,20 @@ namespace {
               ++i;
               return index * 1.0;
             }),
-        blocks::initialize<tags::Director>([&i = n_times_called[1]](...) {
-          ++i;
-          return 0.5;
-        }),
+        blocks::initialize<tags::Director>(
+            [&i = n_times_called[1], director_component](...) {
+              ++i;
+              return director_component;
+            }),
         blocks::initialize<tags::ElementDimension>(
             [&i = n_times_called[2]](...) {
               ++i;
               return 4.0;
             }),
         blocks::initialize<tags::ReferenceCurvature>(
-            [&i = n_times_called[3]](...) {
+            [&i = n_times_called[3], reference_curvature](...) {
               ++i;
-              return 1.0;
+              return reference_curvature;
             }),
         blocks::initialize<tags::ReferenceShearStretchStrain>(
             [&i = n_times_called[4]](...) {
@@ -90,40 +99,49 @@ namespace {
               return 1.0;
             }),
         blocks::initialize<tags::ShearStretchRigidityMatrix>(
-            [&i = n_times_called[5]](...) {
+            [&i = n_times_called[5], moduli](...) {
               ++i;
-              return 4.0;
+              return moduli;
             }),
         blocks::initialize<tags::BendingTwistRigidityMatrix>(
-            [&i = n_times_called[6]](...) {
+            [&i = n_times_called[6], moduli](...) {
               ++i;
-              return 4.0;
+              return moduli;
             }),
         blocks::initialize<tags::ElementDilatation>([](...) { return 1.0; }),
-        // blocks::initialize<tags::Mass>([](...) { return 1.0; }),
         blocks::initialize<tags::Material>(
             [](...) { return ::elastica::iron; }),
-        blocks::initialize<tags::Velocity>([](...) { return 0.0; }),
-        blocks::initialize<tags::AngularVelocity>([](...) { return 0.0; }),
-        blocks::initialize<tags::Acceleration>([](...) { return 0.0; }),
-        blocks::initialize<tags::AngularAcceleration>([](...) { return 1.0; }));
+        blocks::initialize<tags::Velocity>(
+            [=](...) { return velocity_component; }),
+        blocks::initialize<tags::AngularVelocity>(
+            [=](...) { return angular_velocity_component; }),
+        blocks::initialize<tags::Acceleration>([](...) { return 3.0; }),
+        blocks::initialize<tags::AngularAcceleration>(
+            [](...) { return 1.0; }));
 
     Model::initialize(model, std::move(initializer));
 
     /* Check the function compute_internal_forces() */
     // clang-format off
-    const double ref_shape_factor = (13.5 / 14.);
-    const Rot3 shear_stretch_rigidity_matrix({
-      {16 * 4 * M_PI * ref_shape_factor, 0.0                              , 0.0},
-      {0.0                             , 16 * 4 * M_PI * ref_shape_factor},
-      {0.0                             , 0.0                              , 16 * 4 * M_PI}});
+    const real_t length(sqrt(3));
+    const real_t area(M_PI * sq(4.0));
+    const real_t density(::elastica::Iron().get_density());  // iron density
+    const real_t I_0 = sq(area) * M_1_PI / 4.;
+    const real_t reference_strain = 1.0;
+    const real_t element_mass(density * length * area);
+    const real_t ref_shape_factor(13.5 / 14.0);
+    const Vec3 omega_vector({angular_velocity_component, angular_velocity_component, angular_velocity_component});
+    const Rot3 shear_stretch_rigidity_matrix({ // G=E=4
+      {area * moduli * ref_shape_factor, 0.0                             , 0.0},
+      {0.0                             , area * moduli * ref_shape_factor, 0.0},
+      {0.0                             , 0.0                             , area * moduli}});
     const Rot3 director(0.5);
-    const Vec3 shear_solution(
-      {3 * (0.5 / sqrt(3)),
-       3 * (0.5 / sqrt(3)),
-       3 * (0.5 / sqrt(3)) - 1.0});
-    const Vec3 internal_stress = shear_stretch_rigidity_matrix * (shear_solution-1.0);
+    const Vec3 shear_solution({dim * (director_component / length), // director * tangent - z
+                               dim * (director_component / length),
+                               dim * (director_component / length) - 1.0});
     // clang-format on
+    const Vec3 internal_stress =
+        shear_stretch_rigidity_matrix * (shear_solution - reference_strain);
     auto compute_internal_forces_result = model.compute_internal_forces();
     const Vec3 edge_force =
         Traits::DataType::Vector::slice(compute_internal_forces_result, 0UL);
@@ -137,16 +155,20 @@ namespace {
 
     /* Check the function compute_internal_torques() */
     // clang-format off
-    const Rot3 BendTwistRigidityMatrix({
-      {4.0*(0.25*M_1_PI)*sq(4*4*M_PI), 0.0, 0.0},
-      {0.0, 4.0*(0.25*M_1_PI)*sq(4*4*M_PI), 0.0},
-      {0.0, 0.0, 2.0*4.0*(0.25*M_1_PI)*sq(4*4*M_PI)}});
-    const Vec3 couple_solution = BendTwistRigidityMatrix * Vec3({-1.0,-1.0,-1.0});
-    const Vec3 q_into_t(
-        {3 * (0.5 / sqrt(3)),
-         3 * (0.5 / sqrt(3)),
-         3 * (0.5 / sqrt(3))});
+    const Rot3 BendTwistRigidityMatrix({{moduli*I_0, 0.0       , 0.0},
+                                        {0.0       , moduli*I_0, 0.0},
+                                        {0.0       , 0.0       , 2.0*moduli*I_0}});
+    const Vec3 couple_solution = // Internal_couple solution
+      BendTwistRigidityMatrix * (-Vec3({reference_curvature, reference_curvature, reference_curvature}));
+    const Vec3 q_into_t({dim * (director_component / length),
+                         dim * (director_component / length),
+                         dim * (director_component / length)});
     const Vec3 shear_stretch_couple = sqrt(3) * (q_into_t % internal_stress);
+    const Rot3 mass_second_moment_of_inertia({{density*length*I_0, 0.0, 0.0},
+                                              {0.0, density*length*I_0, 0.0},
+                                              {0.0, 0.0, 2.0*density*length*I_0}});
+    const Vec3 j_omega_upon_e(mass_second_moment_of_inertia * omega_vector);
+    const Vec3 lagrangian_transport(j_omega_upon_e % omega_vector);
     // clang-format on
 
     const auto compute_internal_torques_result =
@@ -157,9 +179,12 @@ namespace {
         Traits::DataType::Vector::slice(compute_internal_torques_result, 2UL);
     const Vec3 end_torque =
         Traits::DataType::Vector::slice(compute_internal_torques_result, 9UL);
-    CHECK(edge_torque == couple_solution + shear_stretch_couple);
-    CHECK(mid_torque == shear_stretch_couple);
-    CHECK(end_torque == -couple_solution + shear_stretch_couple);
+    // Remove 3./4. end-effector after fixing mass issue.
+    CHECK(edge_torque ==
+          couple_solution + shear_stretch_couple + lagrangian_transport);
+    CHECK(mid_torque == shear_stretch_couple + lagrangian_transport);
+    CHECK(end_torque ==
+          -couple_solution + shear_stretch_couple + lagrangian_transport);
 
     // check if initialization is done as expected
     auto expected_call_count = make_array(11U, 10U, 10U, 9U, 10U, 10U, 10U);
@@ -167,8 +192,6 @@ namespace {
 
     // Check RigidityMatrix
     // [0] element : stiff  * I_0
-    const double area = M_PI * 4.0 * 4.0;
-    const double I_0 = area * area * 0.25 * M_1_PI;
 
     auto ssr_matrix = blocks::get<tags::ShearStretchRigidityMatrix>(model);
     auto ssr_I0 = Traits::DataType::Matrix::slice(ssr_matrix, 2UL)(0UL, 0UL);
