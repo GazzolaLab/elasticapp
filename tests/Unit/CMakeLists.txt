@@ -32,6 +32,8 @@ add_executable(${executable} ${executable}.cpp)
 target_link_libraries(${executable} ${ELASTICA_TESTS_LIBRARIES}
         ${ELASTICA_LIBRARIES})
 
+add_dependencies(unit-tests ${executable})
+
 elastica_add_catch_tests(${executable} "${ELASTICA_TESTS_LIBRARIES}")
 
 

@@ -23,4 +23,4 @@ add_elastica_case_study(PyHelicalBucklingCaseStudy
         )
 #
 elastica_python_link_libraries(PyHelicalBucklingCaseStudy PRIVATE Blaze)
-elastica_python_add_dependencies(PyHelicalBucklingCaseStudy PyBlaze)
+elastica_python_add_dependencies(PyHelicalBucklingCaseStudy PyArrays)

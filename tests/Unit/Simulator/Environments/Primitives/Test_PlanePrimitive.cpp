@@ -55,6 +55,7 @@ namespace {
       "Unit.Environments.Primitives.PlanePrimitive.access_API",
       "[Unit][Simulator][Environments]") {
     // clang-format on
+    EMPTY_TEST();
 
     Vec3 position = {0.0, 5.0, 6.0};
     auto normals = {0.0, 0.0, 1.0};

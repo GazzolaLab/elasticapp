@@ -38,6 +38,8 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Forcing.ForcingBase.constructor",
                      "[Unit][Simulator][Interface][Forcing]") {
+    EMPTY_TEST();
+
     {
       using RegistrarList = tmpl::list<>;
       using ConcreteForcing = MockForcing<RegistrarList>;

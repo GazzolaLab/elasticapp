@@ -13,6 +13,8 @@ namespace {
       "Unit.Simulator.Environments.CollisionSystem.make_collision_configuration",
       "[Unit][Simulator][Environments]") {
     // clang-format on
+    EMPTY_TEST();
+
     using namespace elastica::configuration;
     auto a = make_collision_configuration(seq, seq);
     (void)make_collision_configuration(seq, par);

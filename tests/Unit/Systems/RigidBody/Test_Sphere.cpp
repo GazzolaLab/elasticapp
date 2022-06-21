@@ -382,6 +382,8 @@ namespace {
       };
 
       SECTION("member functions") {
+        EMPTY_TEST();
+
         check_member_API(model);
         check_member_API(cpp17::as_const(model));
 
@@ -424,6 +426,8 @@ namespace {
       };
 
       SECTION("Access") {
+        EMPTY_TEST();
+
         check_access_API(model);
         check_access_API(cpp17::as_const(model));
 
@@ -437,6 +441,8 @@ namespace {
       }
 
       SECTION("Iteration") {
+        EMPTY_TEST();
+
         for (auto slice : model) {
           check_member_API(slice);
           check_member_API(cpp17::as_const(slice));

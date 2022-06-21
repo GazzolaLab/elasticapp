@@ -94,3 +94,67 @@ def animate_rods(
             )
 
     return ani
+
+
+def plot_energies(
+    rod_group_stats: List[Stats], save_figure: bool = False
+) -> plt.Figure:
+    with plt.style.context("ggplot"):
+        new_fig = plt.figure(figsize=(5, 4), dpi=150)
+
+        new_ax = new_fig.add_subplot(111)
+
+        new_ax.set_xlabel("time")
+        new_ax.set_ylabel("energies")
+
+        stats = rod_group_stats[-1]
+        times = np.asarray(stats.time)
+        te = np.asarray(stats.translational_energy)
+        re = np.asarray(stats.rotational_energy)
+        be = np.asarray(stats.bending_energy)
+        se = np.asarray(stats.shearing_energy)
+        # two springs in series
+        k_collision = 0.5 * stats.contact_stiffness
+
+        # at every instant there may actually be no or multiple penetrations
+        def compute_pe(depths):
+            return 0.5 * k_collision * np.sum(np.asarray(depths) ** 2)
+
+        pe_collision = np.fromiter(
+            map(compute_pe, stats.penetration_depths), dtype=float
+        )
+        # potential energy from gravity
+        reference_z = 0.0
+        pe_gravity = np.sum(
+            stats.gravitational_acc
+            * (reference_z - np.asarray(stats.position)[:, 2, :])  # (time, n_nodes)
+            * stats.mass.reshape(1, -1),
+            axis=-1,
+        )
+
+        new_ax.plot(times, te, c=to_rgb("xkcd:reddish"), lw=2.0, label="Translations")
+        new_ax.plot(times, re, c=to_rgb("xkcd:bluish"), lw=2.0, label="Rotation")
+        new_ax.plot(times, be, c=to_rgb("xkcd:burple"), lw=2.0, label="Bend")
+        new_ax.plot(times, se, c=to_rgb("xkcd:goldenrod"), lw=2.0, label="Shear")
+        new_ax.plot(
+            times, pe_collision, c=to_rgb("xkcd:greenish"), lw=2.0, label="Collision"
+        )
+        new_ax.plot(
+            times, pe_gravity, c=to_rgb("xkcd:pinky purple"), lw=2.0, label="Gravity"
+        )
+        new_ax.plot(
+            times,
+            te + re + be + se + pe_collision + pe_gravity,
+            c="k",
+            lw=2.0,
+            label="Total energy",
+        )
+
+        new_fig.legend()
+
+        new_fig.show()
+
+    if save_figure:
+        new_fig.savefig("energies.pdf")
+
+    return new_fig

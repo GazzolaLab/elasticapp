@@ -1,5 +1,5 @@
 import numpy as np
-from elasticapp import Blaze  # noqa
+from elasticapp import Arrays  # noqa
 from elasticapp.CaseStudies.PyTimoshenkoCaseStudy import TimoshenkoCaseStudy
 from matplotlib import pyplot as plt
 

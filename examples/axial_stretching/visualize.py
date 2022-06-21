@@ -20,7 +20,7 @@ import numpy as np
 # imported.
 # 2.2 All case studies registered with the CMake case-study helper sit in
 # elasticapp.CaseStudies.
-from elasticapp import Blaze  # noqa
+from elasticapp import Arrays  # noqa
 from elasticapp.CaseStudies.PyAxialStretchingCaseStudy import AxialStretchingCaseStudy
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb

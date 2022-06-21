@@ -64,9 +64,11 @@ namespace {
   using Model = typename Plugin::Model;
   // TypeDisplayer<typename Model::MatrixVariables> td{};
 
-  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.WithSquareCosseratRod: EBO",
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.WithSquareCosseratRod.EBO",
                      "[Systems][Unit]") {
-    // Assert Equal EBO test
+    // Assert Equal EBO test:
+    EMPTY_TEST();
+
     CHECK_EBO(Model);
   }
 

@@ -37,11 +37,20 @@
 #               For example, to match "some (word) and" you must specify the
 #               string "some \(word\) and".
 
-option(ELASTICA_UNIT_TEST_TIMEOUT_FACTOR
-        "Multiply timeout for unit tests by this factor"
-        1)
+add_custom_target(unit-tests)
+
+elastica_define_test_timeout_factor_option(UNIT "unit")
 
 find_package(Python REQUIRED)
+
+# Environment variables for test
+set(_TEST_ENV_VARS "")
+# - Disable ASAN's leak sanitizer because Charm++ has false positives
+list(APPEND _TEST_ENV_VARS "ASAN_OPTIONS=detect_leaks=0")
+# - Set PYTHONPATH to find Python modules
+if (DEFINED ENV{PYTHONPATH})
+    list(APPEND _TEST_ENV_VARS "PYTHONPATH=$ENV{PYTHONPATH}")
+endif ()
 
 # Main function - the only one designed to be called from outside this module.
 function(elastica_add_catch_tests TEST_TARGET TEST_LIBS)
@@ -231,6 +240,7 @@ function(elastica_parse_file SOURCE_FILE TEST_TARGET)
             math(EXPR TIMEOUT "2 * ${TIMEOUT}")
         endif ()
 
+        elastica_test_timeout(TIMEOUT UNIT ${TIMEOUT})
 
         # Add the test and set its properties
         add_test(NAME "\"${CTEST_NAME}\""
@@ -254,9 +264,9 @@ function(elastica_parse_file SOURCE_FILE TEST_TARGET)
                     PASS_REGULAR_EXPRESSION
                     "${OUTPUT_REGEX}"
                     LABELS
-                    "${TAGS}")
-#                    ENVIRONMENT
-#                    "ASAN_OPTIONS=detect_leaks=0")
+                    "${TAGS}"
+                    ENVIRONMENT
+                    "${_TEST_ENV_VARS}")
             set(FAILURE_TESTS "\"~${CTEST_NAME}\";${FAILURE_TESTS}")
         else ()
             set_tests_properties("\"${CTEST_NAME}\""
@@ -267,7 +277,7 @@ function(elastica_parse_file SOURCE_FILE TEST_TARGET)
                     LABELS
                     "${TAGS}"
                     ENVIRONMENT
-                    "ASAN_OPTIONS=detect_leaks=0")
+                    "${_TEST_ENV_VARS}")
         endif ()
     endforeach ()
 

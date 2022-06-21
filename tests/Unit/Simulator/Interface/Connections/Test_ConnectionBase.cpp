@@ -40,6 +40,8 @@ namespace {
   ELASTICA_TEST_CASE(
       "Unit.Simulator.Interface.Connections.ConnectionBase.constructor",
       "[Unit][Simulator][Interface][Connections]") {
+    EMPTY_TEST();
+
     {
       using RegistrarList = tmpl::list<>;
       using ConcreteConnection = MockConnection<RegistrarList>;

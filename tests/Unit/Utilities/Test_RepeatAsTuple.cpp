@@ -36,7 +36,7 @@ namespace {
     static_assert(cpp17::is_same_v<decltype(repeated_another_pi), std::tuple<>>,
                   "Meta-failure");
 
-    auto another_func = [x = 10]() { return x; };
+    // auto another_func = [x = 10]() { return x; };
     auto repeated_func = repeat_as_tuple<0UL>(a);
     static_assert(cpp17::is_same_v<decltype(repeated_func), std::tuple<>>,
                   "Meta-failure");

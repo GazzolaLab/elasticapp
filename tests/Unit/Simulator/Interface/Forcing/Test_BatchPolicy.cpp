@@ -31,6 +31,8 @@ namespace {
     // clang-format on
 
     SECTION("sequential") {
+      EMPTY_TEST();
+
       using MCT = MockConstraintTraits<sequential_policy>;
       MCT traits;
       using B = BatchingPolicy<MCT>;
@@ -39,6 +41,8 @@ namespace {
       Algorithm algo(traits);
     }
     SECTION("Parallel") {
+      EMPTY_TEST();
+
       using MCT = MockConstraintTraits<parallel_policy>;
       MCT traits;
       using B = BatchingPolicy<MCT>;
@@ -47,6 +51,8 @@ namespace {
       Algorithm algo(traits);
     }
     SECTION("Hybrid") {
+      EMPTY_TEST();
+
       using MCT = MockConstraintTraits<hybrid_policy>;
       MCT traits;
       using B = BatchingPolicy<MCT>;

@@ -28,11 +28,15 @@ namespace {
     using Collection = PrimitivesCollection<Primitives>;
 
     SECTION("Construction") {
+      EMPTY_TEST();
+
       Collection collection;
       // Collection another(collection);
       Collection yet_another(std::move(collection));
     }
     SECTION("Access") {
+      EMPTY_TEST();
+
       Collection collection;
       elastica::ignore_unused(collection.data());
       elastica::ignore_unused(cpp17::as_const(collection).data());

@@ -14,6 +14,8 @@ namespace {
   ELASTICA_TEST_CASE(
       "Unit.Simulator.Interface.Constraints.ConstrainerBase.constructor",
       "[Unit][Simulator][Interface][Constraints]") {
+    EMPTY_TEST();
+
     {
       using Constrainer = ::mock::Constrainer;
       Constrainer(ConstraintUUID(4, "test"));

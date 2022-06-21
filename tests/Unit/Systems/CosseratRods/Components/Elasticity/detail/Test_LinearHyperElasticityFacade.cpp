@@ -12,8 +12,8 @@
 ///
 #include "Utilities/CRTP.hpp"
 #include "Utilities/MakeArray.hpp"
-#include "Utilities/Math/Sqrt.hpp"
 #include "Utilities/Math/Rot3.hpp"
+#include "Utilities/Math/Sqrt.hpp"
 
 namespace {
   //  Test static operations first
@@ -32,12 +32,14 @@ namespace {
   using Plugin = mock::MockPlugin<Traits, TestGeometry, TestElasticity>;
   using Model = typename Plugin::Model;
 
-  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.LinearHyperElasticityBase:EBO",
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.LinearHyperElasticityBase.EBO",
                      "[Systems][Unit]") {
+    EMPTY_TEST();
+
     CHECK_EBO(Model);
   }
 
-  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.LinearHyperElasticityBase:data",
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.LinearHyperElasticityBase.data",
                      "[Systems][Unit]") {
     Model model{};
 
@@ -104,20 +106,20 @@ namespace {
     const double area = M_PI * 4.0 * 4.0;
     const double I_0 = area * area * 0.25 * M_1_PI;
     auto alpha = model.shape_factor();
-    Rot3 btrm_slice{{I_0,0,0},{0,I_0,0},{0,0,I_0*2}};
-    Rot3 ssrm_slice{{alpha*area,0,0},{0,alpha*area,0},{0,0,area}};
+    Rot3 btrm_slice{{I_0, 0, 0}, {0, I_0, 0}, {0, 0, I_0 * 2}};
+    Rot3 ssrm_slice{{alpha * area, 0, 0}, {0, alpha * area, 0}, {0, 0, area}};
 
     auto BTRM(blocks::get<elastica::tags::BendingTwistRigidityMatrix>(model));
     auto SSRM(blocks::get<elastica::tags::ShearStretchRigidityMatrix>(model));
-    CHECK(BTRM.columns() == n_initializers-1UL);
+    CHECK(BTRM.columns() == n_initializers - 1UL);
     CHECK(SSRM.columns() == n_initializers);
 
-    for( size_t i = 0UL; i < n_initializers-1; ++i) {
-      CHECK(blaze::columnslice(BTRM,i) == btrm_slice * (i+1.5));
+    for (size_t i = 0UL; i < n_initializers - 1; ++i) {
+      CHECK(blaze::columnslice(BTRM, i) == btrm_slice * (i + 1.5));
     }
 
-    for( size_t i = 0UL; i < n_initializers; ++i) {
-      CHECK(blaze::columnslice(SSRM,i) == ssrm_slice * (i+1.0));
+    for (size_t i = 0UL; i < n_initializers; ++i) {
+      CHECK(blaze::columnslice(SSRM, i) == ssrm_slice * (i + 1.0));
     }
   }
 

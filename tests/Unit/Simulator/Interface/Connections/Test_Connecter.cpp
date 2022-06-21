@@ -29,6 +29,8 @@ namespace {
       "Unit.Simulator.Interface.Connections.Connecter.DeferredToUserPolicy",
       "[Unit][Simulator][Interface][Connections]") {
     // clang-format on
+    EMPTY_TEST();
+
     DeferredToUserPolicy deferred{
         std::make_pair(elastica::defer, elastica::defer)};
     elastica::ignore_unused(deferred);

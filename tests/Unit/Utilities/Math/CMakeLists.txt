@@ -15,3 +15,5 @@ add_test_library(
         "${LIBRARY_SOURCES}"
         "Utilities;Blaze"
 )
+
+add_subdirectory(Python)

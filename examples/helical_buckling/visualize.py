@@ -1,5 +1,5 @@
 import numpy as np
-from elasticapp import Blaze  # noqa
+from elasticapp import Arrays  # noqa
 from elasticapp.CaseStudies.PyHelicalBucklingCaseStudy import HelicalBucklingCaseStudy
 
 from cli import print_description, track_simulation

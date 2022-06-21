@@ -37,7 +37,7 @@ using ::elastica::cosserat_rod::CosseratRod;
 struct RodCollisionConfiguration {
   static inline auto make_simulator_configuration() {
     auto environment_config = ec::make_environments_configuration<
-        tmpl::list<elastica::environments::tags::CollisionSystemTag>>(
+        tmpl::list<elastica::environments::tags::CollisionSystem>>(
         // iteration, currently unused
         ec::seq,
         // use default force model of a linear spring damper
@@ -125,12 +125,7 @@ conserved.
   CosseratRodRefs cosserat_rod_refs{2UL,
                                     simulator->get_invalid_ref<CosseratRod>()};
 
-  inline auto communicate_from(CosseratRodRef& ref) {
-    auto cosserat_rod = ref.get();
-    return std::make_tuple(::elastica::position(cosserat_rod),
-                           ::elastica::velocity(cosserat_rod),
-                           ::elastica::external_loads(cosserat_rod));
-  }
+  inline auto communicate_from(CosseratRodRef& ref) { return ref.get(); }
   inline auto communicate() {
     // we dont have CTAD :(
     using CT = decltype(communicate_from(cosserat_rod_refs[0UL]));
@@ -143,8 +138,9 @@ conserved.
                      return this->communicate_from(rod_ref);
                    });
     // return also the interpenetration here
-    auto& collision_system = simulator->get_environment<
-        elastica::environments::tags::CollisionSystemTag>();
+    auto& collision_system =
+        simulator
+            ->get_environment<elastica::environments::tags::CollisionSystem>();
     auto& contacts = collision_system->contacts();
     using Penetrations = std::vector<elastica::real_t>;
     Penetrations penetrations;

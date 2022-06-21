@@ -13,9 +13,12 @@ namespace {
 
 namespace {
 
+  // TODO : revisit sometime
   ELASTICA_TEST_CASE(
       "Unit.Systems.CosseratRods.Initializers.StraightCosseratRodInitializer",
       "[Systems][Unit]") {
+    EMPTY_TEST();
+
     // check if all structs are accessible
     (void)(StraightCosseratRodInitializer::NElement(20UL));
 

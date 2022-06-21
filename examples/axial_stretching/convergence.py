@@ -1,7 +1,7 @@
 from typing import NewType, List
 
 import numpy as np
-from elasticapp import Blaze  # noqa
+from elasticapp import Arrays  # noqa
 from elasticapp.CaseStudies.PyAxialStretchingCaseStudy import AxialStretchingCaseStudy
 
 from cli.progress import p_map, ProgressionStatus

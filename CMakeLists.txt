@@ -111,12 +111,14 @@ if (ELASTICA_BUILD_PYTHON_BINDINGS)
     # Set system-wide for now, correct it later on
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif ()
-include(ElasticaSetupPythonPackage)
 
+include(ElasticaSetupTesting)
 if (ELASTICA_BUILD_TESTS OR ELASTICA_BUILD_BENCHMARKS)
     include(SetupCatch)
 endif ()
 include(SetupFilesystem)
+
+include(ElasticaSetupPythonPackage)
 
 if (ELASTICA_SMP)
     set(ELASTICA_SMP 1)

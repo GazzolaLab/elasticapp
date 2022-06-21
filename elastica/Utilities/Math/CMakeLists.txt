@@ -27,3 +27,5 @@ elastica_target_headers(
         Vec3.hpp
         Zero.hpp
 )
+
+add_subdirectory(Python)

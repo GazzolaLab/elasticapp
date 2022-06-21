@@ -6,6 +6,7 @@
 
 #include "Framework/TestingFramework.hpp"
 #include "Utilities/End.hpp"
+#include "Utilities/IgnoreUnused.hpp"
 
 namespace {
 
@@ -28,17 +29,6 @@ namespace {
     // also constexpr!
     static_assert((elastica::end - 2).i == 2, "End meta-failure!");
     /// [end_indexing_example]
-  }
-
-  // [[OutputRegex, The regex that should be found in the output]]
-  ELASTICA_TEST_CASE("Unit.Utilities.End.end_indexing_assert",
-                     "[Unit][Utilities]") {
-    // Does not work in release mode, wonder why
-    // ASSERTION_TEST();
-    // TODO : after correcting output tests
-    //    ignore_unused(end - (-2));
-
-    CHECK(true);
   }
 
   ELASTICA_TEST_CASE("Unit.Utilities.End.end_indexing_equality",

@@ -809,6 +809,8 @@ namespace {
   ELASTICA_TEST_CASE(
       "Unit.Environments.FineDetection.MaxContacts.collide_sphere_cylinder",
       "[Unit][Environments]") {
+    EMPTY_TEST();
+
 #if defined(TEST_GJK_EPA_ALGORITHM)
     CV contacts;
     REQUIRE(contacts.empty());

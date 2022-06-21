@@ -87,7 +87,20 @@ namespace elastica {
               : public Traits::template CosseratRodInitializedVariable<
                     ::elastica::tags::Director,  //
                     typename Traits::DataType::Matrix,
-                    typename Traits::Place::OnElement> {};
+                    typename Traits::Place::OnElement> {
+            //**Type definitions************************************************
+            //! The element type of a ghost
+            using ghost_type = typename Traits::DataType::Matrix::ghost_type;
+            //******************************************************************
+
+            static inline auto ghost_value() noexcept -> ghost_type {
+              using Real = typename Traits::DataType::Scalar::ghost_type;
+              // Identity is too perfect, lets have something more approximate
+              return ghost_type{{Real{0.8}, Real{+0.6}, Real{0.0}},
+                                {Real{0.0}, Real{+0.0}, Real{1.0}},
+                                {Real{0.6}, Real{-0.8}, Real{0.0}}};
+            }
+          };
           //********************************************************************
 
           //@}

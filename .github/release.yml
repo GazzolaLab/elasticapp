@@ -11,22 +11,22 @@ changelog:
         - deprecated
     - title: 'New Features :tada:'
       labels:
-        - enhancement
+        - type:enhancement
     - title: 'Build System :package:'
       labels:
-        - buildsystem
+        - type:buildsystem
     - title: 'Bug fixes :beetle:'
       labels:
-        - bug
-        - bug-compile
-        - bug-runtime
-        - bug-invalid
+        - type:bug
+        - type:bug-compile
+        - type:bug-runtime
+        - type:bug-invalid
     - title: 'Performance :racehorse:'
       labels:
-        - optimization
+        - type:optimization
     - title: 'Documentation :books:'
       labels:
-        - documentation
+        - type:documentation
     - title: 'Refactor :hammer:'
       labels:
         - refactor

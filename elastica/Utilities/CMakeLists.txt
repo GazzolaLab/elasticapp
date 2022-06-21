@@ -106,3 +106,4 @@ target_link_libraries(
 #
 
 add_subdirectory(AppSupport)
+add_subdirectory(ConvertCase)

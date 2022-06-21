@@ -51,11 +51,27 @@ namespace mock {
   };
 
   struct CustomDouble {
+   private:
+    constexpr double access(double d) { return d; }
+
+    template <typename L>
+    constexpr double access(std::initializer_list<L> l) {
+      return l.size() ? access(*(l.begin())) : access(0.0);
+    }
+
+   public:
     // constexpr here for literal types like pi
-    constexpr CustomDouble() : d_(0.0){};
+    constexpr CustomDouble() : CustomDouble({{}}){};
     // explicit not marked because some operations return a real type
     constexpr /*explicit*/ CustomDouble(double d) : d_(d){};
     constexpr CustomDouble(CustomDouble const& other) : d_(other.d_){};
+
+    // Work around to allow 3D initializaiton for use in tensor ghosts
+    // constexpr /*explicit*/ CustomDouble(std::initializer_list<double> l)
+    //     : d_(l.size() ? *l.begin() : double(0.0)){};
+    constexpr /*explicit*/ CustomDouble(
+        std::initializer_list<std::initializer_list<double>> l)
+        : CustomDouble(access(l)){};
     constexpr CustomDouble& operator=(CustomDouble other) {
       d_ = other.d_;
       return *this;

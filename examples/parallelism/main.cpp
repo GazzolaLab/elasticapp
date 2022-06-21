@@ -3,8 +3,9 @@
 //
 
 // define to use TBB backend (for now)
-#define ELASTICA_USE_TBB 1
+#if ELASTICA_TBB_PARALLEL_MODE
 #include <tbb/global_control.h>
+#endif
 
 #include "Simulator/Materials.hpp"
 #include "Simulator/Materials/Materials.hpp"
@@ -21,10 +22,14 @@ int main(int argc, char* argv[]) {
   using ::elastica::cosserat_rod::CosseratRod;
 
   const int n_threads_used_by_application = 4;
-  // controls the application level parallelism
+#if ELASTICA_TBB_PARALLEL_MODE
+  // controls the application level parallelism from TBB side
+  // you can explicitly specify this if needed, else you can let the backend
+  // take care of it for you
   tbb::global_control application_limit(
       tbb::global_control::max_allowed_parallelism,
       n_threads_used_by_application);
+#endif
 
   namespace ec = elastica::configuration;
 

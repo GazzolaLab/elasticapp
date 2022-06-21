@@ -2,18 +2,18 @@
 // Created by Tejaswin Parthasarathy on 1/20/21.
 //
 #include "Framework/TestingFramework.hpp"
-#include "Simulator/Interface/MockSystems.hpp"
 #include "Simulator/Interface/Indexers/Pair.hpp"
-#include "Utilities/End.hpp"
+#include "Simulator/Interface/MockSystems.hpp"
 #include "Utilities/Defer.hpp"
+#include "Utilities/End.hpp"
 
 namespace {
 
   using namespace elastica::interface::detail;
   using namespace elastica::interface;
+  using elastica::defer;
   using elastica::end;
   using elastica::from_end;
-  using elastica::defer;
   using mock::NoThrowSystem;
   using mock::ThrowSystem;
 
@@ -78,11 +78,8 @@ namespace {
     }
   }
 
-  // [[OutputRegex, "as the number of degrees of freedom is only 100"]]
-  ELASTICA_TEST_CASE(
-      "Unit.Simulator.Interface.Indexers.Pair.to_numeric_throws",
-      "[Unit][Simulator][Interface]") {
-    ERROR_TEST();
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Indexers.Pair.to_numeric_throws",
+                     "[Unit][Simulator][Interface]") {
     auto first_sys = ThrowSystem{};
     auto second_sys = ThrowSystem{};
     {  //

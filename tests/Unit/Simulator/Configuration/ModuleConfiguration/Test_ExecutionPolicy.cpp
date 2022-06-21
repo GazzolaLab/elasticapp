@@ -30,6 +30,7 @@ namespace {
       "Unit.Simulator.Configuration.ModuleConfiguration.Execution.constants",
       "[Unit][Simulator][Configuration]") {
     // clang-format on
+    EMPTY_TEST();
 
     /// [seq_eg]
     perform_algorithm(elastica::configuration::seq);
@@ -50,7 +51,7 @@ namespace {
   struct ToBeMade<hybrid_policy, T> {
     explicit ToBeMade(std::size_t threshold_parameter)
         : param_(threshold_parameter) {}
-     std::size_t param_ IGNORE_UNUSED;
+    std::size_t param_ IGNORE_UNUSED;
   };
 
   // clang-format off
@@ -58,6 +59,8 @@ namespace {
       "Unit.Simulator.Configuration.ModuleConfiguration.Execution.make_executed",
       "[Unit][Simulator][Configuration]") {
     // clang-format on
+    EMPTY_TEST();
+
     using namespace elastica::configuration::detail;
     using T = int;
 

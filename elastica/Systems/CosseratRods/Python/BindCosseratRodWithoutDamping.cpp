@@ -1,0 +1,120 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Defines python bindings for CosseratRodWithoutDamping
+//
+//  Copyright (C) 2020-2022 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
+//******************************************************************************
+// Includes
+//******************************************************************************
+
+#include <cstddef>
+#include <string>
+#include <utility>
+//
+#include <pybind11/pybind11.h>
+//
+//
+#include "PythonBindings/BoundChecks.hpp"
+//
+#include "Systems/Block/Block.hpp"  // slice()
+#include "Systems/CosseratRods/CosseratRods.hpp"
+//
+#include "Systems/CosseratRods/Python/Generators/BindEnergyMethods.hpp"
+#include "Systems/CosseratRods/Python/Generators/BindMemberAccess.hpp"
+#include "Systems/CosseratRods/Python/Generators/BindPyElasticaInterface.hpp"
+#include "Systems/common/Python/Generators/BindVariableLocator.hpp"
+//
+#include "Utilities/Size.hpp"
+#include "Utilities/TMPL.hpp"
+
+namespace py = pybind11;
+
+namespace py_bindings {
+
+  //****************************************************************************
+  /*!\brief Helps bind a rod without damping in \elastica
+   * \ingroup python_bindings
+   */
+  void bind_cosserat_rod_without_damping(py::module& m) {  // NOLINT
+    using UnwantedVariableTags =
+        tmpl::list<::elastica::tags::_DummyElementVector,
+                   ::elastica::tags::_DummyElementVector2,
+                   ::elastica::tags::_DummyVoronoiVector,
+                   ::elastica::tags::_DummyMatrix>;
+
+    {
+      using type =
+          ::elastica::cosserat_rod::detail::CosseratRodWithoutDampingBlockSlice;
+
+      // Wrapper for basic type operations
+      auto py_cosserat_rod =
+          py::class_<type>(m, "CosseratRodWithoutDamping")
+              .def("__len__", [](const type& t) { return cpp17::size(t); })
+              .def(
+                  "__str__", +[](const type& /*meta*/) {
+                    return std::string("CosseratRodWithoutDamping");
+                  });
+      bind_member_access<UnwantedVariableTags>(py_cosserat_rod);
+      bind_variable_locator<UnwantedVariableTags>(py_cosserat_rod);
+      bind_pyelastica_interface<UnwantedVariableTags>(py_cosserat_rod);
+      bind_energy_methods(py_cosserat_rod);
+    }
+    {
+      using type =
+          ::elastica::cosserat_rod::detail::CosseratRodWithoutDampingBlock;
+      using Plugin = ::elastica::cosserat_rod::CosseratRodWithoutDamping;
+
+      // Wrapper for basic type operations
+      auto py_cosserat_rod =
+          py::class_<type>(m, "_CosseratRodWithoutDampingBlock")
+              .def(py::init([](std::size_t n_rods, std::size_t n_elems) {
+                     // initialize using stright initializer for now
+                     using StraightInit = ::elastica::cosserat_rod::
+                         StraightCosseratRodWithoutDampingInitializer;
+                     StraightInit straight_initializer{
+                         // StraightInitialization Wrapper
+                         StraightInit::NElement{n_elems},
+                         StraightInit::Material{elastica::iron},
+                         StraightInit::Radius{0.1},
+                         StraightInit::Length{1.0},
+                         StraightInit::Origin{::elastica::Vec3{0.0, 0.0, 0.0}},
+                         StraightInit::Direction{
+                             ::elastica::Vec3{1.0, 0.0, 0.0}},
+                         StraightInit::Normal{::elastica::Vec3{0.0, 1.0, 0.0}}};
+                     type result{};
+                     for (auto i = 0UL; i < n_rods; ++i) {
+                       ::elastica::Vec3 shift{0.0, ::elastica::real_t(i), 0.0};
+                       result.emplace(straight_initializer
+                                          .but_with(StraightInit::Origin{shift})
+                                          .initialize<Plugin>());
+                     }
+                     return result;
+                   }),
+                   py::arg("n_rods"), py::arg("n_elems"))
+              .def("__len__", [](const type& t) { return cpp17::size(t); })
+              .def(
+                  "__str__",
+                  +[](const type& /*meta*/) {
+                    return std::string("CosseratRodWithoutDampingBlock");
+                  })
+              .def(
+                  "__getitem__", +[](type& t, std::size_t index) {
+                    bounds_check(t, index);
+                    return ::blocks::slice(t, index);
+                  });
+      bind_member_access<UnwantedVariableTags>(py_cosserat_rod);
+      bind_variable_locator<UnwantedVariableTags>(py_cosserat_rod);
+      bind_pyelastica_interface<UnwantedVariableTags>(py_cosserat_rod);
+    }
+  }
+  //****************************************************************************
+
+}  // namespace py_bindings

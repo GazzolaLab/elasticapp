@@ -40,6 +40,8 @@ namespace {
       "Unit.Simulator.Interface.Forcing.Module",
       "[Unit][Simulator][Interface][Forcing]") {
     // clang-format on
+    EMPTY_TEST();
+
     auto sim_config =
         mock::make_simulator_configuration(DefaultForcingConfiguration{});
     // check cases without an error first.

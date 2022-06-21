@@ -23,4 +23,4 @@ add_elastica_case_study(PyTimoshenkoCaseStudy
         )
 #
 elastica_python_link_libraries(PyTimoshenkoCaseStudy PRIVATE Blaze)
-elastica_python_add_dependencies(PyTimoshenkoCaseStudy PyBlaze)
+elastica_python_add_dependencies(PyTimoshenkoCaseStudy PyArrays)

@@ -60,6 +60,7 @@ namespace {
       "Unit.Simulator.Domain.BoundaryAlong.make_unbounded_boundary",
       "[Unit][Simulator][Domain]") {
     // clang-format on
+    EMPTY_TEST();
 
     /// [unbounded_eg]
     auto&& x_boundary = elastica::boundary_along<elastica::EulerianFrame::X,

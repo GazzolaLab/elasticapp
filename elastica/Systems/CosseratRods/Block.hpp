@@ -91,9 +91,11 @@ namespace blocks {
     //! Plugin type for the slice
     using SlicePlugin = typename ThisSlice::PluginType;
 
-   protected:
+   public:
     //! List of variables
     using typename Parent::Variables;
+
+   protected:
     //! List of variables placed on the whole rod
     using VariablesOnRod =
         tmpl::filter<Variables, typename Traits::template IsOnRod<tmpl::_1>>;

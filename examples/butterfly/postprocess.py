@@ -63,7 +63,7 @@ def plot_energies(stats: Stats, save_figure: bool = False) -> plt.Figure:
 
         new_ax = new_fig.add_subplot(111)
 
-        new_ax.set_xlabel("x")
+        new_ax.set_xlabel("time")
         new_ax.set_ylabel("energies")
 
         times = np.asarray(stats.times)

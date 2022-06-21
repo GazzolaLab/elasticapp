@@ -1,15 +1,14 @@
 import numpy as np
 import pandas as pd
-from elasticapp import Blaze  # noqa
 from elasticapp.CaseStudies.PyRodPlaneCollisionCaseStudy import (
     RodPlaneCollisionCaseStudy,
 )
+from elasticapp.Systems import CosseratRods  # noqa
 from matplotlib import pyplot as plt
 
 from cli.help import print_description
 from cli.progress import track_simulation
-from post_processing.animate import animate_rods
-from post_processing.stats import Stats
+from post_processing import Stats, animate_rods, plot_energies
 
 
 def run_rod_plane_collision_case_study(
@@ -28,7 +27,7 @@ def run_rod_plane_collision_case_study(
     gravitational_acc = -9.80665
     contact_stiffness = 1e3
     contact_damping = 1e-10  # lowest value allowed for energy preservation
-    contact_detection_time_interval = 1e-5  # Set it from 0.0 and start increasing
+    contact_detection_time_interval = 5e-6  # Set it from 0.0 and start increasing, adjust based on energy conservation
     min_distance_from_ground = 5.0 * base_radius
 
     sample_interval = 1e3
@@ -54,21 +53,35 @@ def run_rod_plane_collision_case_study(
         final_sim_time=final_time,
     )
 
-    rod_collection_stats = [Stats() for _ in range(n_rods)]
+    _, rods = cs.communicate()
+    rod_collection_stats = [
+        Stats(
+            contact_stiffness=contact_stiffness,
+            gravitational_acc=gravitational_acc,
+            mass=np.array(r.get_mass()),
+        )
+        for r in rods
+    ]
 
     def collect_global_stats_from(cas):
         for rod_stats in rod_collection_stats:
             rod_stats.time.append(cas.current_time())
             rod_stats.step.append(cas.current_iteration())
 
-    def collect_rod_stats(rod_stats, p, v):
-        rod_stats.position.append(np.copy(p))
-        rod_stats.velocity.append(np.copy(v))
+    def collect_rod_stats(rod_stats, rod):
+        rod_stats.position.append(np.copy(rod.get_position()))
+        rod_stats.velocity.append(np.copy(rod.get_velocity()))
+        rod_stats.translational_energy.append(rod.compute_translational_energy())
+        rod_stats.rotational_energy.append(rod.compute_rotational_energy())
+        rod_stats.bending_energy.append(rod.compute_bending_energy())
+        rod_stats.shearing_energy.append(rod.compute_shearing_energy())
 
     def collect_stats_from(cas):
         collect_global_stats_from(cas)
-        for idx in range(n_rods):
-            collect_rod_stats(rod_collection_stats[idx], *(cas.communicate()[idx]))
+        depths, rods = cas.communicate()
+        for stat, rod in zip(rod_collection_stats, rods):
+            stat.penetration_depths.append(depths)
+            collect_rod_stats(stat, rod)
 
     # initial
     collect_stats_from(cs)
@@ -77,6 +90,9 @@ def run_rod_plane_collision_case_study(
         cs.run_for(additional_time=time_interval)
         collect_stats_from(cs)
 
+    energy_fig = plot_energies(
+        rod_group_stats=rod_collection_stats, save_figure=save_figure
+    )
     animation = animate_rods(
         rod_group_stats=rod_collection_stats,
         x_lim=(-base_length, base_length),

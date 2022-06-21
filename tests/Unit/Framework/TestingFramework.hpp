@@ -6,12 +6,12 @@
 
 #pragma once
 
-#include <iostream>
 #include <catch.hpp>
 #include <complex>
 #include <csignal>
 #include <cstddef>
 #include <iomanip>
+#include <iostream>
 #include <limits>
 #include <sstream>
 #include <stdexcept>
@@ -38,7 +38,8 @@ namespace TestHelpers_detail {
   template <typename T>
   std::string format_capture_precise(const T& t) noexcept {
     std::ostringstream os;
-    os << std::scientific << std::setprecision(18) << t;
+    os << std::scientific
+       << std::setprecision(std::numeric_limits<double>::max_digits10 + 1) << t;
     return os.str();
   }
 }  // namespace TestHelpers_detail
@@ -256,8 +257,9 @@ struct check_matrix_approx {
     // `blaze::DynamicMatrix<T, SO>::cbegin(i)` traverses either a row or a
     // column, and takes its index as argument.
 
-    //TODO: double check matrix is row-wise
-    //Better way would be flatten the matrix/tensor and use check_iterable_approx
+    // TODO: double check matrix is row-wise
+    // Better way would be flatten the matrix/tensor and use
+    // check_iterable_approx
     CHECK(a.rows() == b.rows());
     for (size_t j = 0UL; j < a.rows(); ++j) {
       CAPTURE(a);
@@ -363,7 +365,6 @@ struct check_matrix_approx {
     CHECK(true);      \
   } while (false)
 
-
 /*!
  * \ingroup EBO Test
  * \brief Test for EBO failure.
@@ -376,12 +377,32 @@ struct check_matrix_approx {
  * \example
  * \snippet
  */
-template<size_t A, size_t B>
-struct NumericAssertEqualWithEvaluateIfFail{ // TODO: Refactor name later
+template <size_t A, size_t B>
+struct NumericAssertEqualWithEvaluateIfFail {  // TODO: Refactor name later
   static_assert(A == B, "EBO failure!");
   static constexpr bool _result = (A == B);
 };
-//#define CHECK_EBO(MODEL) (void)CheckEbo<sizeof(MODEL),MODEL::size_of_block()>::_result
-#define CHECK_EBO(a) do { \
-    (void)NumericAssertEqualWithEvaluateIfFail<sizeof(a),a::size_of_block()>::_result; \
+//#define CHECK_EBO(MODEL)
+//(void)CheckEbo<sizeof(MODEL),MODEL::size_of_block()>::_result
+#define CHECK_EBO(a)                                                         \
+  do {                                                                       \
+    (void)NumericAssertEqualWithEvaluateIfFail<sizeof(a),                    \
+                                               a::size_of_block()>::_result; \
+  } while (false)
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Mark a test as having no ASSERTs
+ *
+ * \details
+ * The EMPTY_TEST() macro should be the first line in the ELASTICA_TEST_CASE.
+ * Catch requires at least one CHECK in each test to pass, so we add one in
+ * case nothing but the output is checked.
+ *
+ * \example
+ * \snippet Test_Parallel.cpp output_test_example
+ */
+#define EMPTY_TEST() \
+  do {               \
+    CHECK(true);     \
   } while (false)

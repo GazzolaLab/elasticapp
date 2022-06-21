@@ -34,6 +34,8 @@ namespace {
   }
 
   ELASTICA_TEST_CASE("Unit.Time.TimeDelta", "[Unit][Time]") {
+    EMPTY_TEST();
+
     TimeDelta td;
     elastica::ignore_unused(td);
   }

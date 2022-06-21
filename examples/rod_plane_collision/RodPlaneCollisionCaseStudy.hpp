@@ -212,11 +212,7 @@ generated due to the collision.
       simulator->get_invalid_ref<ImposedPlane>();
   ::elastica::real_t final_time;
 
-  inline auto communicate_from(RodRef& ref) {
-    auto rod = ref.get();
-    return std::make_tuple(::elastica::position(rod),
-                           ::elastica::velocity(rod));
-  }
+  inline auto communicate_from(RodRef& ref) { return ref.get(); }
   inline auto communicate() {
     // we dont have CTAD :(
     using CT = decltype(communicate_from(rod_refs[0UL]));
@@ -227,7 +223,18 @@ generated due to the collision.
                    std::back_inserter(return_list), [this](RodRef& rod_ref) {
                      return this->communicate_from(rod_ref);
                    });
-    return return_list;
+    // return also the interpenetration here
+    auto& collision_system =
+        simulator
+            ->get_environment<elastica::environments::tags::CollisionSystem>();
+    auto& contacts = collision_system->contacts();
+    using Penetrations = std::vector<elastica::real_t>;
+    Penetrations penetrations;
+    penetrations.reserve(contacts.size());
+    std::transform(std::cbegin(contacts), std::cend(contacts),
+                   std::back_inserter(penetrations),
+                   [](auto& c) { return -c.get_distance(); });
+    return std::make_tuple(std::move(penetrations), std::move(return_list));
   }
 };
 

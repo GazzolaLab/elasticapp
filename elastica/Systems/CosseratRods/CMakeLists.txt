@@ -76,3 +76,5 @@ target_link_libraries(
         CosseratRodUtility
         Utilities
 )
+
+add_subdirectory(Python)

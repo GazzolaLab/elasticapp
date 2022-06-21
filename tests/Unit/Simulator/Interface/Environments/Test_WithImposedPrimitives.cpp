@@ -164,6 +164,8 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Environment.WithImposedPrimitives.Module",
                      "[Unit][Simulator][Interface][Environments]") {
     // clang-format on
+    EMPTY_TEST();
+
     using ListOfImposedPrimitives =
         tmpl::list<MockImposedPrimitiveOne, MockImposedPrimitiveTwo>;
     auto sim = make_imposed_systems_simulator<ListOfImposedPrimitives>();
@@ -186,6 +188,8 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.WithImposedPrimitives.invalid_ref",
                      "[Unit][Simulator][Interface][Environments]") {
     // clang-format on
+    EMPTY_TEST();
+
     using ListOfImposedPrimitives =
         tmpl::list<MockImposedPrimitiveOne, MockImposedPrimitiveTwo>;
     auto sim = make_imposed_systems_simulator<ListOfImposedPrimitives>();

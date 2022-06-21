@@ -1,0 +1,40 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Defines python bindings for tags used in CosseratRods
+//
+//  Copyright (C) 2020-2022 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
+//******************************************************************************
+// Includes
+//******************************************************************************
+
+//
+#include <pybind11/pybind11.h>
+//
+#include "Systems/Systems.hpp"
+//
+#include "Systems/Python/BindTags.hpp"
+//
+#include "Utilities/TMPL.hpp"
+
+namespace py = pybind11;
+
+namespace py_bindings {
+
+  //****************************************************************************
+  /*!\brief Helps bind tags for all physical systems in \elastica
+   * \ingroup python_bindings
+   */
+  void bind_tags(py::module& m) {  // NOLINT
+    bind_tags<::elastica::PhysicalSystemPlugins>(m);
+  }
+  //****************************************************************************
+
+}  // namespace py_bindings

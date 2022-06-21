@@ -35,6 +35,8 @@ namespace {
   ELASTICA_TEST_CASE(
       "Unit.Simulator.Interface.Constraints.ConstraintBase.constructor",
       "[Unit][Simulator][Interface][Constraints]") {
+    EMPTY_TEST();
+
     {
       using RegistrarList = tmpl::list<>;
       using ConcreteConstraint = MockConstraint<RegistrarList>;

@@ -142,6 +142,7 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Environments.CollisionSystem.Contact.Contact",
                      "[Unit][Environments]") {
     SECTION("Constructor") {
+      EMPTY_TEST();
       STAMP_PRIMITIVES;
 
       Contact cb(&first, &second, Vec3{0., 0., 0.5}, Vec3{0., 0., 1.}, 0.5);

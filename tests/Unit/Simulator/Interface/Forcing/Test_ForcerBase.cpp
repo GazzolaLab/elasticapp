@@ -13,6 +13,8 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Forcing.ForcerBase.constructor",
                      "[Unit][Simulator][Interface][Forcing]") {
+    EMPTY_TEST();
+
     {
       using Forcer = ::mock::Forcer;
       Forcer(ForcingUUID(4, "test"));

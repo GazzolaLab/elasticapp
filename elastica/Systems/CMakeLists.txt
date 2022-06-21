@@ -16,6 +16,8 @@ add_library(${LIBRARY}::CosseratRods ALIAS CosseratRods)
 add_subdirectory(Customization)
 add_library(${LIBRARY}::Customization ALIAS SystemsCustomization)
 
+add_subdirectory(Python)
+
 add_subdirectory(RigidBody)
 add_library(${LIBRARY}::RigidBody ALIAS RigidBody)
 

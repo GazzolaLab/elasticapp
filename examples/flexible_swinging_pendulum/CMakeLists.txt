@@ -23,4 +23,4 @@ add_elastica_case_study(PyFlexibleSwingingPendulumCaseStudy
         )
 #
 elastica_python_link_libraries(PyFlexibleSwingingPendulumCaseStudy PRIVATE Blaze)
-elastica_python_add_dependencies(PyFlexibleSwingingPendulumCaseStudy PyBlaze)
+elastica_python_add_dependencies(PyFlexibleSwingingPendulumCaseStudy PyArrays)
