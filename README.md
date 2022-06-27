@@ -45,6 +45,10 @@ Elastica [project website](https://cosseratrods.org)
 This project uses [CMake]+[Make] to build and [vcpkg] to manage C++ libraries. Using [C++]-14 features, it successfully
 builds with AppleClang, [gcc] and [clang].
 
+### Cluster Setup
+
+To set-up the package for cluster, please refer [here](support/README.md).
+
 ### Installation<a id="sec-2-1"></a>
 
 #### Short
