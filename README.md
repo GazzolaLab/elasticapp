@@ -3,6 +3,10 @@
 [![](https://img.shields.io/badge/c%2B%2B-14-blue.svg)](https://en.wikipedia.org/wiki/CollisionConfi%2B%2B#Standardization)
 [![](https://img.shields.io/badge/license-MIT-blue.svg)]()
 
+| **Build Status** | **Memo** | **Compiler** | **OS** |
+|---|---|---|---|
+| ![Test][Git_Cmake_Action_Badge] | Build Test | `GCC` > 10.0, `Clang` > 10 | Ubuntu-latest, MacOS-latest |
+
 *Efficiently simulate soft-filaments on devices from your laptop to supercomputing clusters.*
 
 [Add project logo.]
@@ -201,3 +205,5 @@ After this, changes will be merged.
 [Doxyfile]: https://github.com/acgetchell/CDT-plusplus/blob/master/Doxyfile
 
 [Pitchfork Layout]: https://api.csswg.org/bikeshed/?force=1&url=https://raw.githubusercontent.com/vector-of-bool/pitchfork/develop/data/spec.bs#tld.docs
+
+[Git_Cmake_Action_Badge]: https://github.com/skim0119/elasticapp/actions/workflows/cmake-build.yml/badge.svg
