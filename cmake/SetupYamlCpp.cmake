@@ -5,8 +5,8 @@ log_info("Finding YamlCpp")
 
 find_package(YamlCpp REQUIRED)
 
-log_debug("YamlCpp_LIBRARIES: " ${YamlCpp_LIBRARIES})
-log_debug("YamlCpp_INCLUDE_DIRS: " ${YamlCpp_INCLUDE_DIRS})
+log_debug("YamlCpp_LIBRARIES: ${YamlCpp_LIBRARIES}")
+log_debug("YamlCpp_INCLUDE_DIRS: ${YamlCpp_INCLUDE_DIRS}")
 
 add_library(YamlCpp INTERFACE IMPORTED)
 # Have to use `set_property` before CMake version 3.11. See:
