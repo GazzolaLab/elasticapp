@@ -13,17 +13,19 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Utilities.append", "[Unit][Utilities]") {
     SECTION("POD vector types") {
+      /// [append_eg]
       std::vector<int> source{1, 2, 3, 4, 5};
       std::vector<int> destination{-1, 0};
-      append(std::move(source), destination);
+      append(destination, std::move(source));
       CHECK(destination == std::vector<int>{-1, 0, 1, 2, 3, 4, 5});
+      /// [append_eg]
     }
 
     SECTION("non-copyable vector types") {
       std::vector<NonCopyable> source(5UL);
       std::vector<NonCopyable> destination(6UL);
 
-      append(std::move(source), destination);
+      append(destination, std::move(source));
       CHECK(destination == std::vector<NonCopyable>(11UL));
     }
   }
@@ -40,10 +42,12 @@ namespace {
     SECTION("POD vector types") {
       std::vector<int> expected{1, 2, 3, 4, 5, 9, 99, 999};
       SECTION("One level") {
+        /// [flatten_eg]
         std::vector<std::vector<int>> unflattened{{1, 2, 3, 4, 5},
                                                   {9, 99, 999}};
         std::vector<int> flattened = flatten(std::move(unflattened));
         CHECK(flattened == expected);
+        /// [flatten_eg]
       }
       SECTION("Two levels") {
         std::vector<std::vector<std::vector<int>>> unflattened{
@@ -87,7 +91,6 @@ namespace {
       expected.emplace_back(999);
 
       CHECK(flattened == expected);
-
     }
   }
 
