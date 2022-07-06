@@ -547,7 +547,7 @@ namespace elastica {
           //**Info method*******************************************************
           static std::string info(
               PrimitivesModule const& module_handle) noexcept {
-            return (MakeString{} << "--Update " << module_handle.n_primitives()
+            return (MakeString{} << "Update " << module_handle.n_primitives()
                                  << " primitives by ");
           }
           //********************************************************************

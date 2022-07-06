@@ -53,13 +53,15 @@ namespace {
     using S::get_batching_algorithm;  // tested
     using S::get_timer;               // tested
     ///
-    using S::info_post_dynamic_updates;    // tested
-    using S::info_post_kinematic_updates;  // tested
-    using S::info_pre_dynamic_updates;     // tested
-    using S::info_update;                  // tested
-    using S::is_final;                     // tested
-    using S::ready;                        // tested
-    using S::S;                            // tested
+    using S::info_compute_internal_dynamics;  // tested
+    using S::info_post_dynamic_updates;       // tested
+    using S::info_post_kinematic_updates;     // tested
+    using S::info_pre_dynamic_updates;        // tested
+    using S::info_update_dynamics;            // tested
+    using S::info_update_kinematics;          // tested
+    using S::is_final;                        // tested
+    using S::ready;                           // tested
+    using S::S;                               // tested
     using S::stream_profiling_summary_to;
 
     using S::reset_modules;  // tested
@@ -278,15 +280,26 @@ namespace {
     // clang-format on
     auto& simulator = make_test_simulator<TestModule>();
 
-    SECTION("info update") {
-      std::ostringstream ss;
+    SECTION("info update kinematics") {
+      std::stringstream ss;
       ::elastica::widthstream os(80UL, ss);
-      simulator.info_update(os);
-      // we first need to flush widthstream buffer to the underlying stream
-      // which is automaticalyl done if you encounter a new line.
-      os << "\n";
+      simulator.info_update_kinematics(os);
       INFO(ss.str());
-      CHECK(ss.str().find("Update") != std::string::npos);
+      CHECK(ss.str().find("Update kinematic") != std::string::npos);
+    }
+    SECTION("info update dynamics") {
+      std::stringstream ss;
+      ::elastica::widthstream os(80UL, ss);
+      simulator.info_update_dynamics(os);
+      INFO(ss.str());
+      CHECK(ss.str().find("Update dynamic") != std::string::npos);
+    }
+    SECTION("compute internal dynamics") {
+      std::stringstream ss;
+      ::elastica::widthstream os(80UL, ss);
+      simulator.info_compute_internal_dynamics(os);
+      INFO(ss.str());
+      CHECK(ss.str().find("Compute internal dynamics") != std::string::npos);
     }
     SECTION("post kinematic updates") {
       std::stringstream ss;

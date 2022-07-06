@@ -60,10 +60,12 @@ namespace elastica {
         using std::end;
 
         // this will be in parallel over blocks
-        simulator.for_each_block([&primitives = simulator.primitives(),
-                                  &offsets =
-                                      cpp17::as_const(simulator).offsets()](
-                                     auto const& block) {
+        // This kernel gets profiled as part of environments, so use the untimed
+        // version of block
+        simulator.for_each_block_untimed([&primitives = simulator.primitives(),
+                                          &offsets = cpp17::as_const(simulator)
+                                                         .offsets()](
+                                             auto const& block) {
           using BlockType = cpp20::remove_cvref_t<decltype(block)>;
           using PrimitiveType = PrimitiveTrait_t<BlockType>;
 
@@ -134,7 +136,9 @@ namespace elastica {
         using std::cend;
 
         // this will be in parallel over blocks
-        simulator.for_each_block(
+        // This kernel gets profiled as part of environments, so use the untimed
+        // version of block
+        simulator.for_each_block_untimed(
             [&primitives = cpp17::as_const(simulator).primitives(),
              &offsets = cpp17::as_const(simulator).offsets()](auto& block) {
               using BlockType = cpp20::remove_cvref_t<decltype(block)>;

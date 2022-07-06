@@ -237,6 +237,14 @@ reorganizing your code logic.
     void for_each_block(F) const& noexcept {}
     template <typename F>
     void for_each_block(F) & noexcept {}
+    template <typename F>
+    void for_each_system_untimed(F) const& noexcept {}
+    template <typename F>
+    void for_each_system_untimed(F) & noexcept {}
+    template <typename F>
+    void for_each_block_untimed(F) const& noexcept {}
+    template <typename F>
+    void for_each_block_untimed(F) & noexcept {}
 
    public:
     bool is_final = false;

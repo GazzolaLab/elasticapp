@@ -249,9 +249,9 @@ namespace elastica {
           static std::string info(
               TotalSimulator const& module_handle) noexcept {
             return std::string(MakeString{}
-                               << "--Apply environmental forces from "
+                               << "Apply environmental forces from "
                                << module_handle.n_environments()
-                               << " environments\n");
+                               << " environments");
           }
           //********************************************************************
         };

@@ -225,7 +225,26 @@ reorganizing your code logic.
     void apply_post_dynamic_updates(TimeType) {
       order_of_steps.emplace_back("post_dynamic_update");
     }
+    template <typename F>
+    inline decltype(auto) for_each_block_update_kinematics(F func) noexcept {
+      order_of_steps.emplace_back("for_each_block_update_kinematics");
+      return P::for_each_block_update_kinematics(std::move(func));
+    }
 
+    template <typename F>
+    inline decltype(auto) for_each_block_update_dynamics(F func) noexcept {
+      order_of_steps.emplace_back("for_each_block_update_dynamics");
+      return P::for_each_block_update_dynamics(std::move(func));
+    }
+
+    template <typename F>
+    inline decltype(auto) for_each_block_compute_internal_dynamics(
+        F func) noexcept {
+      order_of_steps.emplace_back("for_each_block_compute_internal_dynamics");
+      return P::for_each_block_compute_internal_dynamics(std::move(func));
+    }
+
+    //************************************************************************
     template <typename F>
     inline decltype(auto) for_each_block(F func) noexcept {
       order_of_steps.emplace_back("for_each_block");
@@ -309,13 +328,13 @@ namespace {
     // for_each_block, (post_kinematic_update, for_each_block, pre_dynamic,
     // for_each_block, post_dynamic), for_each_block
     std::vector<std::string> expected;
-    expected.emplace_back("for_each_block");
+    expected.emplace_back("for_each_block_update_kinematics");
     expected.emplace_back("post_kinematic_update");
-    expected.emplace_back("for_each_block");
+    expected.emplace_back("for_each_block_compute_internal_dynamics");
     expected.emplace_back("pre_dynamic_update");
-    expected.emplace_back("for_each_block");
+    expected.emplace_back("for_each_block_update_dynamics");
     expected.emplace_back("post_dynamic_update");
-    expected.emplace_back("for_each_block");
+    expected.emplace_back("for_each_block_update_kinematics");
     CHECK(sim.order_of_steps == expected);
   }
 

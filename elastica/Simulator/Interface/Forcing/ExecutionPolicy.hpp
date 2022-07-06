@@ -276,9 +276,9 @@ namespace elastica {
 
           //**Info method*******************************************************
           static std::string info(ForcingModule const& module_handle) noexcept {
-            return std::string(MakeString{}
-                               << "--Apply " << module_handle.n_forcings()
-                               << " external user-defined forces\n");
+            return std::string(MakeString{} << "Apply "
+                                            << module_handle.n_forcings()
+                                            << " external user-defined forces");
           }
           //********************************************************************
         };

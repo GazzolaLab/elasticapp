@@ -149,7 +149,9 @@ namespace elastica {
        */
       template <typename Simulator>
       void resolve(Simulator& simulator, TimeType) {
-        simulator.for_each_block([this](auto& system) {
+        // This kernel gets profiled as part of environments, so use the untimed
+        // version of block
+        simulator.for_each_block_untimed([this](auto& system) {
           using LoadTag = ::elastica::tags::ExternalLoads;
           using MassTag = ::elastica::tags::Mass;
           ::elastica::get<LoadTag>(system) =

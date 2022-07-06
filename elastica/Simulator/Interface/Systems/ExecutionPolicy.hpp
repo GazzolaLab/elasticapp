@@ -524,13 +524,63 @@ namespace elastica {
         };
         //**********************************************************************
 
+        template <typename Tag>
+        struct TaggedInvoke {
+          //********************************************************************
+          /*!\brief Policy constructor.
+           */
+          explicit TaggedInvoke(SystemsModule* sim, SystemsTraits const&)
+              : module_handle(*sim) {}
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Policy constructor (copy constructed)
+           */
+          explicit TaggedInvoke(
+              std::tuple<SystemsModule*, SystemsTraits const&> args)
+              : TaggedInvoke(cpp17::make_from_tuple<TaggedInvoke<Tag>>(
+                    std::move(args))) {}
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Execute a callable over all types of systems
+           *
+           * \param func Callable to be applied over system types
+           */
+          template <typename F>
+          inline auto operator()(F func) const noexcept -> F {
+            return module_handle.for_each_block_untimed(std::move(func));
+          }
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Policy destructor.
+           */
+          ~TaggedInvoke() = default;
+          //********************************************************************
+
+          //**Member variables**************************************************
+          //! Handle to the SystemsModule
+          SystemsModule /*const*/& module_handle;
+          //********************************************************************
+        };
+
+        //@}
+        //**********************************************************************
+
+        //**Invoke tags*********************************************************
+        /*!\name Tag for invoke functors */
+        //@{
+        struct UpdateKinematicsTag;
+        struct ComputeInternalDynamicsTag;
+        struct UpdateDynamicsTag;
         //@}
         //**********************************************************************
 
        protected:
         //**Algorithms**********************************************************
         /*! \cond ELASTICA_INTERNAL */
-        /*!\name Algorithms for connections*/
+        /*!\name Algorithms for systems*/
         //@{
         struct ApplyOverSystems {
           //**Type definitions**************************************************
@@ -544,8 +594,53 @@ namespace elastica {
 
           //**Info method*******************************************************
           static std::string info(SystemsModule const& module_handle) noexcept {
-            return (MakeString{} << "--Update " << module_handle.n_systems()
+            return (MakeString{} << "Update " << module_handle.n_systems()
                                  << " systems by ");
+          }
+          //********************************************************************
+        };
+
+        struct UpdateKinematics {
+          //**Type definitions**************************************************
+          //! Type for tagged tuple
+          using type = TaggedInvoke<UpdateKinematicsTag>;
+          //********************************************************************
+
+          //**Info method*******************************************************
+          static std::string info(SystemsModule const& module_handle) noexcept {
+            return (MakeString{}
+                    << "Update kinematic (position, director) states of "
+                    << module_handle.n_systems() << " systems");
+          }
+          //********************************************************************
+        };
+
+        struct ComputeInternalDynamics {
+          //**Type definitions**************************************************
+          //! Type for tagged tuple
+          using type = TaggedInvoke<ComputeInternalDynamicsTag>;
+          //********************************************************************
+
+          //**Info method*******************************************************
+          static std::string info(SystemsModule const& module_handle) noexcept {
+            return (MakeString{}
+                    << "Compute internal dynamics (forces, torques) of "
+                    << module_handle.n_systems() << " systems");
+          }
+          //********************************************************************
+        };
+
+        struct UpdateDynamics {
+          //**Type definitions**************************************************
+          //! Type for tagged tuple
+          using type = TaggedInvoke<UpdateDynamicsTag>;
+          //********************************************************************
+
+          //**Info method*******************************************************
+          static std::string info(SystemsModule const& module_handle) noexcept {
+            return (MakeString{}
+                    << "Update dynamic (velocity, angular velocity) states of "
+                    << module_handle.n_systems() << " systems");
           }
           //********************************************************************
         };
@@ -558,7 +653,8 @@ namespace elastica {
         /*!\name Algorithmic steps within a temporal loop*/
         //@{
         //! Algorithms to be carried out as an update step
-        using UpdateSteps = tmpl::list<ApplyOverSystems>;
+        using UpdateSteps = tmpl::list<ApplyOverSystems, UpdateKinematics,
+                                       ComputeInternalDynamics, UpdateDynamics>;
         //@}
         //**********************************************************************
       };

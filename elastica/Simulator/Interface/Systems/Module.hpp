@@ -196,10 +196,9 @@ namespace elastica {
       using as_blocks = tmpl::wrap<PluginsList, as_block_wrapper>;
       //! Metafunction to check if a plugin is valid
       template <typename Plugin>
-      using an_admissible =
-          cpp17::bool_constant<
-              // brigand's bool constant does not have constexpr bool() operator
-              tmpl::list_contains<AdmissibleSystemPlugins, Plugin>::value>;
+      using an_admissible = cpp17::bool_constant<
+          // brigand's bool constant does not have constexpr bool() operator
+          tmpl::list_contains<AdmissibleSystemPlugins, Plugin>::value>;
       //@}
       //************************************************************************
 
@@ -513,24 +512,33 @@ namespace elastica {
        *
        * \details
        * Applies a callable `func` over all system blocks
-       * (across types and collections) registererd in the current simulator.
+       * (across types and collections) registered in the current simulator.
        *
        * \note
-       * 1. We need strong exception safety guarantee from `func`. In C++14 this
-       * cannot be strongly checked, so the user needs to satisfy this guarantee
-       * 2. This is meant for internal use mostly (as it applies `func` over
+       * This is meant for internal use mostly (as it applies `func` over
        * blocks instead of block slices), but is exposed to client code as it
        * can potentially improve speed.
        *
        * \param func Callable to be applied over system blocks
        */
       template <typename F>
-      inline decltype(auto) for_each_block(F func) /*const*/ noexcept {
+      inline decltype(auto) for_each_block_untimed(F func) /*const noexcept*/ {
+        using Alg = typename Algorithm::ApplyOverSystems;
+        return self().template get_algorithm<Alg>()(std::move(func));
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Apply a callable over all system blocks, with profiling enabled
+       *
+       * \copydetails for_each_block_untimed()
+       */
+      template <typename F>
+      inline decltype(auto) for_each_block(F func) /*const noexcept*/ {
         using Alg = typename Algorithm::ApplyOverSystems;
 
         ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().start(); }
-        auto const& algorithm = self().template get_algorithm<Alg>();
-        F another_func(algorithm(std::move(func)));
+        F another_func(for_each_block_untimed(std::move(func)));
         ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().stop(); }
 
         return another_func;
@@ -538,17 +546,16 @@ namespace elastica {
       //************************************************************************
 
       //************************************************************************
-      /*!\brief Apply a callable over specific system blocks
+      /*!\brief Apply a callable over specific system blocks, with profiling
+       * enabled
        *
        * \details
        * Applies a callable `func` over specific system block types given in
-       * `BlocksTypeList` (but still over the collection within this list)
-       * registererd in the current simulator.
+       * `BlocksTypeList`  registered in the current simulator. See
+       * for_each_block_untimed() for a version over all blocks
        *
        * \note
-       * 1. We need strong exception safety guarantee from `func`. In C++14 this
-       * cannot be strongly checked, so the user needs to satisfy this guarantee
-       * 2. This is meant for internal use mostly (as it applies `func` over
+       * This is meant for internal use mostly (as it applies `func` over
        * blocks instead of block slices), but is exposed to client code as it
        * can potentially improve speed.
        *
@@ -557,13 +564,37 @@ namespace elastica {
        * \param func Callable to be applied over system blocks
        */
       template <typename BlocksTypeList, typename F>
-      inline decltype(auto) for_each_block(F func) /*const*/ noexcept {
+      inline decltype(auto) for_each_block_untimed(F func) /*const noexcept*/ {
+        using Alg = typename Algorithm::ApplyOverSystems;
+        return self().template get_algorithm<Alg>().template
+        operator()<BlocksTypeList>(std::move(func));
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Apply a callable over specific system blocks, with profiling
+       * enabled
+       *
+       * \details
+       * Applies a callable `func` over specific system block types given in
+       * `BlocksTypeList`  registered in the current simulator with profiling
+       * enabled.
+       *
+       * \note
+       * This is meant for internal use mostly (as it applies `func` over
+       * blocks instead of block slices), but is exposed to client code as it
+       * can potentially improve speed.
+       *
+       * \tparam BlocksTypeList A `tmpl::list` of Block types associated with
+       * the simulator
+       * \param func Callable to be applied over system blocks
+       */
+      template <typename BlocksTypeList, typename F>
+      inline decltype(auto) for_each_block(F func) /*const noexcept*/ {
         using Alg = typename Algorithm::ApplyOverSystems;
 
         ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().start(); }
-        auto const& algorithm = self().template get_algorithm<Alg>();
-        F another_func(
-            algorithm.template operator()<BlocksTypeList>(std::move(func)));
+        F another_func(for_each_block_untimed<BlocksTypeList>(std::move(func)));
         ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().stop(); }
 
         return another_func;
@@ -578,29 +609,33 @@ namespace elastica {
        * Applies a callable `func` over all systems
        * (across types and collections) registered in the current simulator.
        *
-       * \note
-       * We need strong exception safety guarantee from `func`. In C++14 this
-       * cannot be strongly checked, so the user needs to satisfy this guarantee
-       *
        * \param func Callable to be applied over systems
        */
       template <typename F>
-      inline decltype(auto) for_each_system(F func) /*const*/ noexcept {
+      inline decltype(auto) for_each_system_untimed(F func) /*const noexcept*/ {
+        (void)for_each_block_untimed(
+            ::blocks::for_each_slice_adapter(std::ref(func)));
+        return func;
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Apply a callable over all systems, with profiling enabled
+       * \copydetails for_each_system_untimed()
+       */
+      template <typename F>
+      inline decltype(auto) for_each_system(F func) /*const noexcept*/ {
         (void)for_each_block(::blocks::for_each_slice_adapter(std::ref(func)));
         return func;
       }
       //************************************************************************
 
       //************************************************************************
-      /*!\brief Apply a callable over all systems
+      /*!\brief Apply a callable over a subset of systems
        *
        * \details
        * Applies a callable `func` over collections of the system type
        * `SystemsBlock` registered in the current simulator.
-       *
-       * \note
-       * We need strong exception safety guarantee from `func`. In C++14 this
-       * cannot be strongly checked, so the user needs to satisfy this guarantee
        *
        * \tparam PluginsTypeList A `tmpl::list` of Plugins over which to apply
        * the callable
@@ -608,10 +643,87 @@ namespace elastica {
        * `SystemsBlock`
        */
       template <typename PluginsTypeList, typename F>
-      inline decltype(auto) for_each_system(F func) /*const*/ noexcept {
+      inline decltype(auto) for_each_system_untimed(F func) /*const noexcept*/ {
+        (void)for_each_block_untimed<as_blocks<PluginsTypeList>>(
+            ::blocks::for_each_slice_adapter(std::ref(func)));
+        return func;
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Apply a callable over a subset of systems, with profiling
+       * enabled
+       *
+       * \details
+       * Applies a callable `func` over collections of the system type
+       * `SystemsBlock` registered in the current simulator.
+       *
+       * \tparam PluginsTypeList A `tmpl::list` of Plugins over which to apply
+       * the callable
+       * \param func Callable to be applied over systems of type
+       * `SystemsBlock`
+       */
+      template <typename PluginsTypeList, typename F>
+      inline decltype(auto) for_each_system(F func) /*const noexcept*/ {
         (void)for_each_block<as_blocks<PluginsTypeList>>(
             ::blocks::for_each_slice_adapter(std::ref(func)));
         return func;
+      }
+      //************************************************************************
+
+     public:
+      //************************************************************************
+      /*!\brief Update system kinematics
+       *
+       * \note
+       * This is meant for internal use only.
+       *
+       * \param func Callable to be applied over systems
+       */
+      template <typename F>
+      inline void for_each_block_update_kinematics(F func) /*const noexcept*/ {
+        using Alg = typename Algorithm::UpdateKinematics;
+
+        ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().start(); }
+        self().template get_algorithm<Alg>()(std::move(func));
+        ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().stop(); }
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Update system dynamics
+       *
+       * \note
+       * This is meant for internal use only.
+       *
+       * \param func Callable to be applied over systems
+       */
+      template <typename F>
+      inline void for_each_block_update_dynamics(F func) /*const noexcept*/ {
+        using Alg = typename Algorithm::UpdateDynamics;
+
+        ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().start(); }
+        self().template get_algorithm<Alg>()(std::move(func));
+        ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().stop(); }
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Computes internal system dynamics
+       *
+       * \note
+       * This is meant for internal use only.
+       *
+       * \param func Callable to be applied over systems
+       */
+      template <typename F>
+      inline void for_each_block_compute_internal_dynamics(
+          F func) /*const noexcept*/ {
+        using Alg = typename Algorithm::ComputeInternalDynamics;
+
+        ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().start(); }
+        self().template get_algorithm<Alg>()(std::move(func));
+        ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().stop(); }
       }
       //************************************************************************
 
@@ -741,21 +853,23 @@ the above type-list, using SystemsConfiguration.
        * \param args Arguments for the SystemCollection
        * \return Mutable reference to the system emplaced in
        */
-//      template <class SystemCollection, class... Args,
-//                Requires<not blocks::is_plugin_v<SystemCollection>> = nullptr>
-//      inline auto emplace_back_impl(Args&&... args) -> SystemCollection& {
-//        auto& system_collection_container =
-//            get_system_collection_container<SystemCollection>();
-//        system_collection_container.emplace_back(std::forward<Args>(args)...);
-//
-//        constexpr std::size_t n =
-//            tmpl::index_of<ListOfAdmissibleSystemCollections,
-//                           SystemCollection>::value;
-//        ++n_total_systems_[n];
-//
-//        // return non-owning handle to the System just pushed back
-//        return system_collection_container.back();
-//      }
+      //      template <class SystemCollection, class... Args,
+      //                Requires<not blocks::is_plugin_v<SystemCollection>> =
+      //                nullptr>
+      //      inline auto emplace_back_impl(Args&&... args) -> SystemCollection&
+      //      {
+      //        auto& system_collection_container =
+      //            get_system_collection_container<SystemCollection>();
+      //        system_collection_container.emplace_back(std::forward<Args>(args)...);
+      //
+      //        constexpr std::size_t n =
+      //            tmpl::index_of<ListOfAdmissibleSystemCollections,
+      //                           SystemCollection>::value;
+      //        ++n_total_systems_[n];
+      //
+      //        // return non-owning handle to the System just pushed back
+      //        return system_collection_container.back();
+      //      }
       //************************************************************************
 
       //**Implementation of emplace back****************************************

@@ -464,8 +464,8 @@ namespace elastica {
           static std::string info(
               ConstraintsModule const& module_handle) noexcept {
             return std::string(MakeString{}
-                               << "--Apply " << module_handle.n_constraints()
-                               << " constraints on positions and rotations\n");
+                               << "Apply " << module_handle.n_constraints()
+                               << " constraints on positions and rotations");
           }
           //********************************************************************
         };
@@ -482,8 +482,8 @@ namespace elastica {
               ConstraintsModule const& module_handle) noexcept {
             return std::string(
                 MakeString{}
-                << "--Apply " << module_handle.n_constraints()
-                << " constraints on velocities and angular velocities\n");
+                << "Apply " << module_handle.n_constraints()
+                << " constraints on velocities and angular velocities");
           }
           //********************************************************************
         };

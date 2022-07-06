@@ -132,6 +132,12 @@ Some examples provide additional file or link to published paper for a complete 
     * __Features__:
         * `blocks::display_variable_summary`
 
+* [`print_algorithm`](./print_algorithm)
+    * __Name__: Print algorithm in a human readable format
+    * __Purpose__: Prints the algorithm executed by the simulator
+    * __Features__:
+        * `simulator->print_algorithm`
+
 * [`simulation_reset`](./simulation_reset)
     * __Name__: Reset simulation
     * __Purpose__: Demonstrate a method to reset a simulation, intended for independent, distributed **elastica++**

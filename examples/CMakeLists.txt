@@ -14,6 +14,7 @@ add_subdirectory(rod_plane_collision)
 include(ElasticaAddExamples)
 add_subdirectory(parallelism)
 add_subdirectory(display_variables)
+add_subdirectory(print_algorithm)
 add_subdirectory(simulation_reset)
 
 # tutorials

@@ -209,9 +209,9 @@ namespace elastica {
           static std::string info(
               ImposedPrimitivesModule const& module_handle) noexcept {
             return std::string(
-                MakeString{}
-                << "--Update " << module_handle.n_imposed_primitives()
-                << " imposed primitives' positions and rotations\n");
+                MakeString{} << "Update "
+                             << module_handle.n_imposed_primitives()
+                             << " imposed primitives' positions and rotations");
           }
           //********************************************************************
         };
@@ -226,10 +226,10 @@ namespace elastica {
           static std::string info(
               ImposedPrimitivesModule const& module_handle) noexcept {
             return std::string(MakeString{}
-                               << "--Update "
+                               << "Update "
                                << module_handle.n_imposed_primitives()
                                << " imposed primitives' velocities and "
-                                  "angular velocities\n");
+                                  "angular velocities");
           }
           //********************************************************************
         };

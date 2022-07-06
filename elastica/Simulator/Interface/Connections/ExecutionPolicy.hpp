@@ -273,9 +273,9 @@ namespace elastica {
           //**Info method*******************************************************
           static std::string info(
               ConnectionsModule const& module_handle) noexcept {
-            return std::string(MakeString{} << "--Apply "
+            return std::string(MakeString{} << "Apply "
                                             << module_handle.n_connections()
-                                            << " connections\n");
+                                            << " connections between systems");
           }
           //********************************************************************
         };
