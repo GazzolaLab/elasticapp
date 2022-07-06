@@ -62,11 +62,17 @@ namespace elastica {
         }
       }
 
-      template <typename InArchive>
-      static inline void load_helper(InArchive& ar, type& vec,
+      static inline void load_helper(BinaryInputArchive& ar, type& vec,
                                      arithmetic_tag /* meta */) {
         ar(binary_data(vec.data(),
                        static_cast<std::size_t>(vec.size()) * sizeof(T)));
+      }
+
+      template <typename InArchive>
+      static inline void load_helper(InArchive& ar, type& vec,
+                                     arithmetic_tag /* meta */) {
+        // non-binary archives load as objects
+        load_helper(ar, vec, non_arithmetic_tag{});
       }
 
       template <typename InArchive>
@@ -94,10 +100,15 @@ namespace elastica {
         }
       }
 
+      static inline void save_helper(BinaryOutputArchive& ar, type const& vec,
+                                     arithmetic_tag /* meta */) {
+        ar(binary_data(vec.data(), vec.size() * sizeof(T)));
+      }
+
       template <typename OutArchive>
       static inline void save_helper(OutArchive& ar, type const& vec,
                                      arithmetic_tag /* meta */) {
-        ar(binary_data(vec.data(), vec.size() * sizeof(T)));
+        save_helper(ar, vec, non_arithmetic_tag{});
       }
 
       template <typename OutArchive>

@@ -51,28 +51,50 @@ namespace elastica {
           std::conditional_t<std::is_arithmetic<T>::value, arithmetic_tag,
                              non_arithmetic_tag>;
 
+      static inline void load_helper(BinaryInputArchive& ar, type& array,
+                                     arithmetic_tag /* meta */) {
+        ar(binary_data(array.data(), sizeof(type)));
+      }
+
+      static inline void save_helper(BinaryOutputArchive& ar, type const& array,
+                                     arithmetic_tag /* meta */) {
+        ar(binary_data(array.data(), sizeof(type)));
+      }
+
+      template <typename InArchive>
+      static inline void load_helper(InArchive& ar, type& array,
+                                     arithmetic_tag /* meta */) {
+        load_helper(ar, array, non_arithmetic_tag{});
+      }
+
+      template <typename InArchive>
+      static inline void save_helper(InArchive& ar, type const& array,
+                                     arithmetic_tag /* meta */) {
+        save_helper(ar, array, non_arithmetic_tag{});
+      }
+
+      template <typename InArchive>
+      static inline void load_helper(InArchive& ar, type& array,
+                                     non_arithmetic_tag /* meta */) {
+        for (auto&& v : array)
+          ar(v);
+      }
+
+      template <typename OutArchive>
+      static inline void save_helper(OutArchive& ar, type const& array,
+                                     non_arithmetic_tag /* meta */) {
+        for (auto&& v : array)
+          ar(v);
+      }
+
       template <typename InArchive>
       static inline void load(InArchive& ar, type& array) {
-        make_overloader(
-            [&](arithmetic_tag /* meta */) {
-              ar(binary_data(array.data(), sizeof(type)));
-            },
-            [&](non_arithmetic_tag /* meta */) {
-              for (auto&& v : array)
-                ar(v);
-            })(specialized_type{});
+        load_helper(ar, array, specialized_type{});
       }
 
       template <typename OutArchive>
       static inline void save(OutArchive& ar, type const& array) {
-        make_overloader(
-            [&](arithmetic_tag /* meta */) {
-              ar(binary_data(array.data(), sizeof(type)));
-            },
-            [&](non_arithmetic_tag /* meta */) {
-              for (auto&& v : array)
-                ar(v);
-            })(specialized_type{});
+        save_helper(ar, array, specialized_type{});
       }
     };
     /*! \endcond */

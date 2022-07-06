@@ -10,11 +10,14 @@
 #include "detail/Test_BlazeDynamicTensor.hpp"
 #include "detail/Test_BlazeDynamicVector.hpp"
 #include "detail/Test_CustomStructs.hpp"
+#include "detail/Test_Map.hpp"
+#include "detail/Test_NVP.hpp"
 #include "detail/Test_POD.hpp"
 #include "detail/Test_String.hpp"
 #include "detail/Test_TaggedTuple.hpp"
 #include "detail/Test_Tuple.hpp"
 #include "detail/Test_UnorderedMap.hpp"
+#include "detail/Test_Utility.hpp"
 #include "detail/Test_Vector.hpp"
 
 /// [custom_serialize]
@@ -48,16 +51,37 @@ namespace elastica {
 /// [custom_serialize]
 
 void test_custom_serialize() {
-  /// [custom_serialize_usage]
-  using namespace elastica::io;
-  std::stringstream ss;  // any stream can be used
-  MyImportantInfo o_info{2, 2.0};
-  BinaryOutputArchive oarchive(ss);  //  Create an output archive
-  oarchive(o_info);                  // Write the data to the archive
+  {
+    /// [custom_serialize_usage]
+    using namespace elastica::io;
+    std::stringstream ss;  // any stream can be used
+    MyImportantInfo o_info{2, 2.0};
+    {
+      BinaryOutputArchive oarchive(ss);  //  Create an output archive
+      oarchive(o_info);                  // Write the data to the archive
+    }
+    /// [custom_serialize_usage]
+    CAPTURE(ss.str());
+    CHECK_FALSE(ss.str().empty());
+  }
 
+#if defined(ELASTICA_USE_YAMLCPP)
   // same usage with input archives for loading
+  {
+    /// [custom_yaml_serialize_usage]
+    using namespace elastica::io;
+    std::stringstream ss;  // any stream can be used
+    MyImportantInfo o_info{2, 2.0};
+    {
+      YAMLOutputArchive oarchive(ss);  //  Create an output archive
+      oarchive(o_info);                // Write the data to the archive
+    }
+    /// [custom_yaml_serialize_usage]
 
-  /// [custom_serialize_usage]
+    CAPTURE(ss.str());
+    CHECK_FALSE(ss.str().empty());
+  }
+#endif  // defined(ELASTICA_USE_YAMLCPP)
 }
 
 namespace {
@@ -97,58 +121,113 @@ namespace {
     CHECK(i_s == o_s);
   }
 
-  using archives_list =
-      tmpl::list<tmpl::pair<BinaryInputArchive, BinaryOutputArchive>>;
+  using BinaryArchives = tmpl::pair<BinaryInputArchive, BinaryOutputArchive>;
+  using YAMLArchives =
+      tmpl::pair<YAMLInputArchive,
+                 YAMLOutputArchive>;  // symbols are available always
+  using archives_list = tmpl::list<BinaryArchives>;
+
+  template <template <typename, typename> class F, typename ArchiveType>
+  void run_for_archive(tmpl::type_<ArchiveType>) {
+    using IArchive = typename ArchiveType::first_type;
+    using OArchive = typename ArchiveType::second_type;
+    SECTION(pretty_type::short_name<IArchive>() + " & " +
+            pretty_type::short_name<OArchive>()) {
+      F<IArchive, OArchive>::run();
+    }
+  }
+
+  template <template <typename, typename> class F>
+  void run_for_archive(tmpl::type_<YAMLArchives>) {
+#if defined(ELASTICA_USE_YAMLCPP)
+    using IArchive = typename YAMLArchives::first_type;
+    using OArchive = typename YAMLArchives::second_type;
+    SECTION(pretty_type::short_name<IArchive>() + " & " +
+            pretty_type::short_name<OArchive>()) {
+      F<IArchive, OArchive>::run();
+    }
+#endif  // defined(ELASTICA_USE_YAMLCPP)
+  }
 
   template <template <typename, typename> class F>
   void run_for_archives() {
-    tmpl::for_each<archives_list>([](auto t) {
-      using ArchiveType = tmpl::type_from<decltype(t)>;
-      using IArchive = typename ArchiveType::first_type;
-      using OArchive = typename ArchiveType::second_type;
-      F<IArchive, OArchive>::run();
-    });
+    tmpl::for_each<archives_list>([](auto t) { run_for_archive<F>(t); });
+  }
+
+  ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.not_no_op",
+                     "[Unit][Simulator][IO][Serialization]") {
+    test_custom_serialize();
   }
 
   ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.pod",
                      "[Unit][Simulator][IO][Serialization]") {
     run_for_archives<Test_POD>();
+    test_custom_serialize();
+    run_for_archive<Test_POD>(tmpl::type_<YAMLArchives>{});
   }
 
   ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.string",
                      "[Unit][Simulator][IO][Serialization]") {
     run_for_archives<TestStringBasic>();
     run_for_archives<TestStringAll>();
+
+    run_for_archive<TestStringBasic>(tmpl::type_<YAMLArchives>{});
+    // TODO : archiving of basic strings with different chars do not work
+    // run_for_archive<TestStringAll>(tmpl::type_<YAMLArchives>{});
   }
 
   ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.custom_structs",
                      "[Unit][Simulator][IO][Serialization]") {
     run_for_archives<TestCustomStructs>();
+    run_for_archive<TestCustomStructs>(tmpl::type_<YAMLArchives>{});
+  }
+
+  ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.pair",
+                     "[Unit][Simulator][IO][Serialization]") {
+    run_for_archives<TestUtility>();
+    run_for_archive<TestUtility>(tmpl::type_<YAMLArchives>{});
+  }
+
+  ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.nvp",
+                     "[Unit][Simulator][IO][Serialization]") {
+    run_for_archives<TestNVP>();
+    run_for_archive<TestNVP>(tmpl::type_<YAMLArchives>{});
   }
 
   ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.vector",
                      "[Unit][Simulator][IO][Serialization]") {
     run_for_archives<TestVector>();
+    run_for_archive<TestVector>(tmpl::type_<YAMLArchives>{});
   }
 
   ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.tuple",
                      "[Unit][Simulator][IO][Serialization]") {
     run_for_archives<TestTuple>();
+    run_for_archive<TestTuple>(tmpl::type_<YAMLArchives>{});
   }
 
   ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.array",
                      "[Unit][Simulator][IO][Serialization]") {
     run_for_archives<TestArray>();
+    run_for_archive<TestArray>(tmpl::type_<YAMLArchives>{});
   }
 
   ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.unordered_map",
                      "[Unit][Simulator][IO][Serialization]") {
     run_for_archives<TestUnorderedMap>();
+    run_for_archive<TestUnorderedMap>(tmpl::type_<YAMLArchives>{});
+  }
+
+  ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.map",
+                     "[Unit][Simulator][IO][Serialization]") {
+    run_for_archives<TestMap>();
+    run_for_archive<TestMap>(tmpl::type_<YAMLArchives>{});
   }
 
   ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.tagged_tuple",
                      "[Unit][Simulator][IO][Serialization]") {
     run_for_archives<TestTaggedTuple>();
+    run_for_archive<TestTaggedTuple>(tmpl::type_<YAMLArchives>{});
   }
 
   ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.blaze_dynamic_vector",

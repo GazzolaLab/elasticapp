@@ -29,9 +29,6 @@ namespace elastica {
     struct Serialize;
 
     template <typename T>
-    struct SerializePrePost;
-
-    template <typename T>
     struct SerializeWizard;
 
     template <class ArchiveType>
@@ -39,6 +36,12 @@ namespace elastica {
 
     template <class ArchiveType>
     class OutputArchive;
+
+    template <typename, typename>
+    class MapItem;
+
+    template <typename T>
+    class NameValuePair;
 
     template <typename T>
     class SizeTag;
@@ -48,7 +51,7 @@ namespace elastica {
     /*! \endcond */
     //**************************************************************************
 
-  }
+  }  // namespace io
 
 }  // namespace elastica
 

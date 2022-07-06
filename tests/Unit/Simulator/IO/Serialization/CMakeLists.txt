@@ -11,5 +11,5 @@ add_test_library(
         ${LIBRARY}
         "Simulator/IO/Serialization"
         "${LIBRARY_SOURCES}"
-        "Utilities;ErrorHandling"
+        "Utilities;ErrorHandling;Serialization"
 )

@@ -43,12 +43,13 @@ namespace elastica {
       static inline void load(InArchive& ar, type& tagged_tuple) {
         tmpl::for_each<tmpl::list<Tags...>>([&](auto v) {
           using Tag = tmpl::type_from<decltype(v)>;
+          auto name{pretty_type::short_name<Tag>()};
           try {
-            ar(tuples::get<Tag>(tagged_tuple));
+            ar(make_nvp<InArchive>(name.c_str(),
+                                   tuples::get<Tag>(tagged_tuple)));
           } catch (const std::runtime_error& e) {
-            std::throw_with_nested(
-                std::runtime_error("Error while loading data tagged with " +
-                                   pretty_type::short_name<Tag>()));
+            std::throw_with_nested(std::runtime_error(
+                "Error while loading data tagged with " + name));
           }
         });
       }
@@ -57,12 +58,13 @@ namespace elastica {
       static inline void save(OutArchive& ar, type const& tagged_tuple) {
         tmpl::for_each<tmpl::list<Tags...>>([&](auto v) {
           using Tag = tmpl::type_from<decltype(v)>;
+          auto name{pretty_type::short_name<Tag>()};
           try {
-            ar(tuples::get<Tag>(tagged_tuple));
+            ar(make_nvp<OutArchive>(name.c_str(),
+                                    tuples::get<Tag>(tagged_tuple)));
           } catch (const std::runtime_error& e) {
-            std::throw_with_nested(
-                std::runtime_error("Error while saving data tagged with " +
-                                   pretty_type::short_name<Tag>()));
+            std::throw_with_nested(std::runtime_error(
+                "Error while saving data tagged with " + name));
           }
         });
       }

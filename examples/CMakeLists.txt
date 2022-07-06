@@ -22,3 +22,9 @@ add_subdirectory(tutorial_single_rod)
 add_subdirectory(tutorial_rod_construction)
 add_subdirectory(tutorial_blocking)
 add_subdirectory(tutorial_casestudy_setup)
+
+
+# ignore
+if (IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/local")
+    add_subdirectory(local)
+endif ()

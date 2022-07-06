@@ -30,6 +30,8 @@ namespace elastica {
     /*! \cond ELASTICA_INTERNAL */
     class BinaryOutputArchive;
     class BinaryInputArchive;
+    class YAMLOutputArchive;
+    class YAMLInputArchive;
     /*! \endcond */
     //**************************************************************************
 
@@ -40,11 +42,12 @@ namespace elastica {
       template <typename T>
       void save_internal(BinaryOutputArchive&, T const&);
       template <typename T>
-      void save_internal(BinaryOutputArchive&, BinaryData<T> const&);
-      template <typename T>
       void load_internal(BinaryInputArchive&, T&);
+
       template <typename T>
-      void load_internal(BinaryInputArchive&, BinaryData<T>&);
+      void save_internal(YAMLOutputArchive&, T const&);
+      template <typename T>
+      void load_internal(YAMLInputArchive&, T&);
       /*! \endcond */
       //************************************************************************
     }  // namespace detail

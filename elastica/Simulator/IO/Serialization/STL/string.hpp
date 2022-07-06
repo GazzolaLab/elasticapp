@@ -39,8 +39,7 @@ namespace elastica {
     struct Serialize<std::basic_string<CharT, Traits, Alloc>> {
       using type = std::basic_string<CharT, Traits, Alloc>;
 
-      template <typename InArchive>
-      static inline void load(InArchive& ar, type& str) {
+      static inline void load(BinaryInputArchive& ar, type& str) {
         std::size_t size;
         ar(make_size_tag(size));
         str.resize(static_cast<std::size_t>(size));
@@ -48,10 +47,21 @@ namespace elastica {
                        static_cast<std::size_t>(size) * sizeof(CharT)));
       }
 
-      template <typename OutArchive>
-      static inline void save(OutArchive& ar, type const& str) {
+      template <typename InArchive>
+      static inline void load(InArchive& ar, type& str) {
+        using detail::load_internal;
+        load_internal(ar, str);
+      }
+
+      static inline void save(BinaryOutputArchive& ar, type const& str) {
         ar(make_size_tag(static_cast<std::size_t>(str.size())));
         ar(binary_data(str.data(), str.size() * sizeof(CharT)));
+      }
+
+      template <typename OutArchive>
+      static inline void save(OutArchive& ar, type const& str) {
+        using detail::save_internal;
+        save_internal(ar, str);
       }
     };
     /*! \endcond */

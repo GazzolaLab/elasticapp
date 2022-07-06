@@ -151,9 +151,9 @@ namespace elastica {
       template <class T>
       inline void process(T&& data) {
         using ActualType = cpp20::remove_cvref_t<T>;
-        SerializePrePost<ActualType>::prologue(self(), data);
+        prologue(self(), data);
         SerializeWizard<ActualType>::save(self(), data);
-        SerializePrePost<ActualType>::epilogue(self(), data);
+        epilogue(self(), data);
       }
       //************************************************************************
     };
@@ -282,9 +282,9 @@ namespace elastica {
       template <class T>
       inline void process(T&& data) {
         using ActualType = cpp20::remove_cvref_t<T>;
-        SerializePrePost<ActualType>::prologue(self(), data);
+        prologue(self(), data);
         SerializeWizard<ActualType>::load(self(), data);
-        SerializePrePost<ActualType>::epilogue(self(), data);
+        epilogue(self(), data);
       }
       //************************************************************************
     };

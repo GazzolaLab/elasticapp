@@ -27,6 +27,8 @@
 #include "Simulator/IO/Serialization/Types.hpp"  // includes archive types
 ///
 #include "Simulator/IO/Serialization/Serialization.hpp"
+//
+#include "Utilities/Requires.hpp"
 
 namespace elastica {
 
@@ -80,7 +82,7 @@ namespace elastica {
       //@}
       //************************************************************************
 
-     private:
+     public:
       //**Save implementation***************************************************
       /*!\brief Writes size bytes of data to the output stream
       //
@@ -103,11 +105,11 @@ namespace elastica {
       //************************************************************************
 
       // Give friend access for accessing save functions
-      template <typename T>
-      friend void detail::save_internal(BinaryOutputArchive&, T const&);
-      template <typename T>
-      friend void detail::save_internal(BinaryOutputArchive&,
-                                        BinaryData<T> const&);
+      // template <typename T>
+      // friend void detail::save_internal(BinaryOutputArchive&, T const&);
+      // template <typename T>
+      // friend void detail::save_internal(BinaryOutputArchive&,
+      //                                   BinaryData<T> const&);
 
      private:
       //**Member variables******************************************************
@@ -155,7 +157,7 @@ namespace elastica {
       ~BinaryInputArchive() = default;
       //************************************************************************
 
-     private:
+     public:
       //**Save implementation***************************************************
       /*!\brief Reads size bytes of data from the input stream
       //
@@ -178,10 +180,10 @@ namespace elastica {
       //************************************************************************
 
       // Give friend access for accessing load functions
-      template <typename T>
-      friend void detail::load_internal(BinaryInputArchive&, T&);
-      template <typename T>
-      friend void detail::load_internal(BinaryInputArchive&, BinaryData<T>&);
+      // template <typename T>
+      // friend void detail::load_internal(BinaryInputArchive&, T&);
+      // template <typename T>
+      // friend void detail::load_internal(BinaryInputArchive&, BinaryData<T>&);
 
      private:
       //**Member variables******************************************************
@@ -208,10 +210,10 @@ namespace elastica {
       // \return void
       //
       // This method implements the Binary save operation and is intended for
-      // internal use of \elastica developers only.
+      // internal_dispatch use of \elastica developers only.
       */
-      template <class T>
-      inline void save_internal(BinaryOutputArchive& ar, T const& t) {
+      template <class T, Requires<std::is_arithmetic<T>::value> = nullptr>
+      inline void save_internal_dispatch(BinaryOutputArchive& ar, T const& t) {
         ar.save_binary(std::addressof(t), sizeof(t));
       }
       /*! \endcond */
@@ -231,12 +233,32 @@ namespace elastica {
       // \return void
       //
       // This method implements the Binary save operation and is intended for
-      // internal use of \elastica developers only.
+      // internal_dispatch use of \elastica developers only.
       */
       template <class T>
-      inline void save_internal(BinaryOutputArchive& ar,
-                                BinaryData<T> const& t) {
+      inline void save_internal_dispatch(BinaryOutputArchive& ar,
+                                         BinaryData<T> const& t) {
         ar.save_binary(t.data, static_cast<std::streamsize>(t.size));
+      }
+      /*! \endcond */
+      //************************************************************************
+
+      //************************************************************************
+      /*! \cond ELASTICA_INTERNAL */
+      template <class T>
+      inline void save_internal_dispatch(BinaryOutputArchive& ar,
+                                         SizeTag<T> const& data) {
+        save_internal_dispatch(ar, data.size);
+      }
+      /*! \endcond */
+      //************************************************************************
+
+      //************************************************************************
+      /*! \cond ELASTICA_INTERNAL */
+      template <class T>
+      inline void save_internal_dispatch(BinaryOutputArchive& ar,
+                                         NameValuePair<T> const& data) {
+        ar(data.value);
       }
       /*! \endcond */
       //************************************************************************
@@ -251,10 +273,10 @@ namespace elastica {
       // \return void
       //
       // This method implements the Binary load operation and is intended for
-      // internal use of \elastica developers only.
+      // internal_dispatch use of \elastica developers only.
       */
-      template <class T>
-      inline void load_internal(BinaryInputArchive& ar, T& t) {
+      template <class T, Requires<std::is_arithmetic<T>::value> = nullptr>
+      inline void load_internal_dispatch(BinaryInputArchive& ar, T& t) {
         ar.load_binary(std::addressof(t), sizeof(t));
       }
       /*! \endcond */
@@ -274,14 +296,45 @@ namespace elastica {
       // \return void
       //
       // This method implements the Binary load operation and is intended for
-      // internal use of \elastica developers only.
+      // internal_dispatch use of \elastica developers only.
       */
       template <class T>
-      inline void load_internal(BinaryInputArchive& ar, BinaryData<T>& t) {
+      inline void load_internal_dispatch(BinaryInputArchive& ar,
+                                         BinaryData<T>& t) {
         ar.load_binary(t.data, static_cast<std::streamsize>(t.size));
       }
       /*! \endcond */
       //************************************************************************
+
+      //************************************************************************
+      /*! \cond ELASTICA_INTERNAL */
+      template <class T>
+      inline void load_internal_dispatch(BinaryInputArchive& ar,
+                                         SizeTag<T> const& data) {
+        load_internal_dispatch(ar, data.size);
+      }
+      /*! \endcond */
+      //************************************************************************
+
+      //************************************************************************
+      /*! \cond ELASTICA_INTERNAL */
+      template <class T>
+      inline void load_internal_dispatch(BinaryInputArchive& ar,
+                                         NameValuePair<T> const& data) {
+        ar(data.value);
+      }
+      /*! \endcond */
+      //************************************************************************
+
+      template <class T>
+      inline void save_internal(BinaryOutputArchive& ar, T const& t) {
+        save_internal_dispatch(ar, t);
+      }
+
+      template <class T>
+      inline void load_internal(BinaryInputArchive& ar, T& t) {
+        load_internal_dispatch(ar, t);
+      }
 
     }  // namespace detail
 

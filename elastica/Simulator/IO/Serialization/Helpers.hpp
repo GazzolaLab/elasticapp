@@ -21,6 +21,8 @@
 // Includes
 //******************************************************************************
 
+#include <cstdint>
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -94,6 +96,56 @@ namespace elastica {
     };
     //**************************************************************************
 
+    namespace detail {
+      struct NameValuePairCore {};  //!< Traits struct for NVPs
+    }                               // namespace detail
+
+    //**************************************************************************
+    /*!\brief Holds name value pairs
+     * \ingroup serialization
+     *
+     * \details
+     * Pairs a name (some string) with some value such that an archive
+     * can potentially take advantage of the pairing.
+     */
+    template <class T>
+    class NameValuePair : detail::NameValuePairCore, NonCopyable {
+     private:
+      // If we get passed an array, keep the type as is, otherwise store
+      // a reference if we were passed an l value reference, else copy the value
+      using Type = typename std::conditional<
+          std::is_array<typename std::remove_reference<T>::type>::value,
+          typename std::remove_cv<T>::type,
+          typename std::conditional<std::is_lvalue_reference<T>::value, T,
+                                    typename std::decay<T>::type>::type>::type;
+
+      // prevent nested nvps
+      static_assert(!std::is_base_of<detail::NameValuePairCore, T>::value,
+                    "Cannot pair a name to a NameValuePair");
+
+     public:
+      //************************************************************************
+      /*!\brief Constructs a new NameValuePair
+       *
+       * \details
+       * Ideally this should be an l-value
+       * reference so that the value can be both loaded and saved to.  If you
+       * pass an r-value reference, the NameValuePair will store a copy of it
+       * instead of a reference.  Thus you should only pass r-values in cases
+       * where this makes sense, such as the result of some size() call.
+       *
+       * \param n The name of the pair
+       * \param v The value to pair.
+       */
+      NameValuePair(char const* n, T&& v)
+          : name(n), value(std::forward<T>(v)) {}
+      //************************************************************************
+
+      char const* name;
+      Type value;
+    };
+    //**************************************************************************
+
     //==========================================================================
     //
     //  GLOBAL FUNCTIONS
@@ -120,7 +172,7 @@ namespace elastica {
 
     //**************************************************************************
     /*!\brief Convenience function to create binary data for both const and non
-    const pointers
+    // const pointers
     // \ingroup serialization
     //
     // \details
@@ -131,6 +183,95 @@ namespace elastica {
     template <class T>
     inline BinaryData<T> binary_data(T&& data, size_t size) {
       return {std::forward<T>(data), size};
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Creates a name value pair
+     * \ingroup serialization
+     *
+     * \see NameValuePair
+     */
+    template <class T>
+    inline NameValuePair<T> make_nvp(std::string const& name, T&& value) {
+      return {name.c_str(), std::forward<T>(value)};
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Creates a name value pair
+     * \ingroup serialization
+     *
+     * \see NameValuePair
+     */
+    template <class T>
+    inline NameValuePair<T> make_nvp(const char* name, T&& value) {
+      return {name, std::forward<T>(value)};
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    //! A specialization of make_nvp<> that bypasses creating an nvp for
+    //! binary archives
+    template <class Archive, class T>
+    inline typename std::enable_if<
+        std::is_same<Archive, ::elastica::io::BinaryInputArchive>::value ||
+            std::is_same<Archive, ::elastica::io::BinaryOutputArchive>::value,
+        T&&>::type
+    make_nvp(const char*, T&& value) {
+      return std::forward<T>(value);
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    //! A specialization of make_nvp<> that actually creates an nvp for
+    //! non-binary archives
+    template <class Archive, class T>
+    inline typename std::enable_if<
+        !(std::is_same<Archive, ::elastica::io::BinaryInputArchive>::value ||
+          std::is_same<Archive, ::elastica::io::BinaryOutputArchive>::value),
+        NameValuePair<T> >::type
+    make_nvp(const char* name, T&& value) {
+      return {name, std::forward<T>(value)};
+    }
+    //**************************************************************************
+
+//! Creates a name value pair for the variable T with the same name as the
+//! variable
+#define MAKE_NVP(T) ::elastica::io::make_nvp(#T, T)
+
+    //**************************************************************************
+    //!\brief A wrapper around a key and value for serializing data into maps.
+    //!\see make_map_item
+    template <class Key, class Value>
+    struct MapItem : NonCopyable {
+      using KeyType =
+          typename std::conditional<std::is_lvalue_reference<Key>::value, Key,
+                                    typename std::decay<Key>::type>::type;
+
+      using ValueType =
+          typename std::conditional<std::is_lvalue_reference<Value>::value,
+                                    Value,
+                                    typename std::decay<Value>::type>::type;
+
+      //! Construct a MapItem from a key and a value
+      MapItem(Key&& key_, Value&& value_)
+          : key(std::forward<Key>(key_)), value(std::forward<Value>(value_)) {}
+
+      KeyType key;
+      ValueType value;
+    };
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Create a MapItem so that human readable archives will group keys
+     * and values together
+     * \see MapItem
+     */
+    template <class KeyType, class ValueType>
+    inline MapItem<KeyType, ValueType> make_map_item(KeyType&& key,
+                                                     ValueType&& value) {
+      return {std::forward<KeyType>(key), std::forward<ValueType>(value)};
     }
     //**************************************************************************
 

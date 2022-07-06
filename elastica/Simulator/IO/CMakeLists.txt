@@ -6,6 +6,7 @@ set(LIBRARY IO)
 add_elastica_library(${LIBRARY} INTERFACE)
 
 add_subdirectory(Serialization)
+add_library(${LIBRARY}::Serialization ALIAS Serialization)
 
 #elastica_target_sources(
 #        ${LIBRARY}
@@ -27,8 +28,7 @@ target_link_libraries(
         ${LIBRARY}
         INTERFACE
         Simulator # For Triggers and visualization
-        ErrorHandling
-        Utilities
+        Serialization
         # PRIVATE
         std::filesystem
         #        -stdlib=libc++

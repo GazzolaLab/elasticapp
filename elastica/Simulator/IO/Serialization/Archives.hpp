@@ -20,3 +20,6 @@
 #include "Simulator/IO/Serialization/Archives/Types.hpp"
 ///
 #include "Simulator/IO/Serialization/Archives/Binary.hpp"
+#if defined(ELASTICA_USE_YAMLCPP)
+#include "Simulator/IO/Serialization/Archives/YAML.hpp"
+#endif  // defined(ELASTICA_USE_YAMLCPP)

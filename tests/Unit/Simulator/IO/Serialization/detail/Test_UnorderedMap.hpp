@@ -7,9 +7,9 @@
 
 #include "CustomStructs.hpp"
 #include "SerializationTestHelpers.hpp"
+#include "Simulator/IO/Serialization/STL/unordered_map.hpp"
 #include "Simulator/IO/Serialization/Serialize.hpp"
 #include "Simulator/IO/Serialization/Types.hpp"
-#include "Simulator/IO/Serialization/STL/unordered_map.hpp"
 
 // catch wants << declared and defined, so we inlcude STD helpers
 #include "Utilities/StdHelpers.hpp"
@@ -20,7 +20,7 @@ struct TestUnorderedMap {
     std::random_device rd;
     std::mt19937 gen(rd());
 
-    for (int ii = 0; ii < 100; ++ii) {
+    for (int ii = 0; ii < 10; ++ii) {
       std::unordered_map<std::size_t, int> o_podmap;
 
       for (std::size_t idx = 0UL; idx < 100UL; ++idx)
@@ -33,7 +33,8 @@ struct TestUnorderedMap {
 
       std::unordered_map<int, TestB> o_testb;
       for (int idx = -20; idx < 20; ++idx)
-        o_testb[idx] = TestB{random_value<int>(gen), random_basic_string<char>(gen)};
+        o_testb[idx] =
+            TestB{random_value<int>(gen), random_basic_string<char>(gen)};
 
       std::ostringstream os;
       {

@@ -10,9 +10,9 @@
 
 #include "CustomStructs.hpp"
 #include "SerializationTestHelpers.hpp"
+#include "Simulator/IO/Serialization/STL/vector.hpp"
 #include "Simulator/IO/Serialization/Serialize.hpp"
 #include "Simulator/IO/Serialization/Types.hpp"
-#include "Simulator/IO/Serialization/STL/vector.hpp"
 
 // catch wants << declared and defined, so we inlcude STD helpers
 #include "Utilities/StdHelpers.hpp"
@@ -23,7 +23,7 @@ struct TestVector {
     std::random_device rd;
     std::mt19937 gen(rd());
 
-    for (int ii = 0; ii < 100; ++ii) {
+    for (int ii = 0; ii < 10; ++ii) {
       std::vector<int> o_podvector(100);
       for (auto& elem : o_podvector)
         elem = random_value<int>(gen);
