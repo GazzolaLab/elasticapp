@@ -17,11 +17,10 @@
 // Includes
 //******************************************************************************
 
-// For printing algorithmic information
-#include <ostream>
-
 ///
 #include "Simulator/Interface/TimeSteppers/Types.hpp"
+//
+#include "Simulator/Interface/TimeSteppers/Metadata.hpp"
 //
 #include "Systems/common/Access.hpp"  // to qualify elastica::torques
 /// Temporal interfaces
@@ -35,7 +34,7 @@
 #include "Utilities/Logging.hpp"
 #include "Utilities/NonCopyable.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
-#include "Utilities/WidthStream.hpp"
+#include "Utilities/StdVectorHelpers.hpp"
 
 namespace elastica {
 
@@ -238,104 +237,72 @@ mistake, consider using the following idiom when constructing the time-step :
       //************************************************************************
 
       //************************************************************************
-      /*!\brief Prints the algorithmic steps
+      /*!\brief Generates the algorithm metadata
        *
-       * \param outstream Stream for printing out
        * \return outstream
        */
-      auto stream_symplectic_algorithm_to(std::ostream& outstream) const
-          /*noexcept*/ -> std::ostream& {
-        const std::size_t line_length = 80UL;
-        using Stream = ::elastica::widthstream;
-        Stream os(line_length, outstream);
+      auto algorithm_metadata() const /*noexcept*/ -> AlgorithmMetadata {
+        ::elastica::timestepper::SymplecticStepper<
+            ::elastica::timestepper::symplectic::PositionVerlet>
+            time_stepper{};
 
-        // Adapter indent, paragraph;
-        // Indent indent(os, self().info_tab_width());
-        auto indent = [&os, this]() noexcept {
-          return Indent(os, self().info_tab_width());
-        };
-        auto paragraph = [&os]() noexcept { return Paragraph(os); };
+        using ::elastica::timestepper::apply_substeps_of;
+        using ::elastica::timestepper::dispatch_based_on;
 
-        // Mimic YAML formatting
-        auto mark_key = [=](auto const& val) {
-          paragraph()([&](Stream& stream) { stream << "- " << val << ":"; });
-        };
-        auto mark_value = [=](auto const& val) {
-          // Bad abstraction :/
-          indent()([&](Stream& s) {
-            Paragraph{s}([&](Stream& stream) { stream << val; });
-          });
-        };
+        using Metadata = decltype(self().metadata_update_kinematics());
+        std::vector<Metadata> metadata;
 
-        paragraph()([=](Stream&) {
-          mark_key("Algorithm");
+        // replicate the computation graph
+        apply_substeps_of(time_stepper, [&](auto const& substep) /*noexcept*/ {
+          dispatch_based_on(
+              substep,
+              [&](auto const& /*kinematic_update_substep*/) /* noexcept*/
+              {
+                // parallel invoke 4 available system collection
+                // parallel for each system in system collection
+                // do kinematic_update_substep
+                metadata.push_back(self().metadata_update_kinematics());
+              },
+              [&](auto const& /*dynamic_update_substep*/) /* noexcept */ {
+                // parallel pipeline here, based on strategy
 
-          indent()([=](Stream&) {
-            //
-            paragraph()([/*indent,*/ = ](Stream& os) {
-              ::elastica::timestepper::SymplecticStepper<
-                  ::elastica::timestepper::symplectic::PositionVerlet>
-                  time_stepper{};
+                // parallel for each constraint
+                // apply constraint to primitives
+                // needed here because time needs to be incremented
+                // first
+                metadata.push_back(self().metadata_post_kinematic_updates());
 
-              using ::elastica::timestepper::apply_substeps_of;
-              using ::elastica::timestepper::dispatch_based_on;
+                // parallel invoke 4 available system collection
+                // parallel for each system in system collection
+                // compute internal dynamics
+                metadata.push_back(self().metadata_compute_internal_dynamics());
 
-              // replicate the computation graph
-              apply_substeps_of(time_stepper, [&](auto const&
-                                                      substep) /*noexcept*/ {
-                dispatch_based_on(
-                    substep,
-                    [&](auto const& /*kinematic_update_substep*/) /* noexcept*/
-                    {
-                      // parallel invoke 4 available system collection
-                      // parallel for each system in system collection
-                      // do kinematic_update_substep
-                      self().info_update_kinematics(os);
-                    },
-                    [&](auto const& /*dynamic_update_substep*/) /* noexcept */ {
-                      // parallel pipeline here, based on strategy
+                // parallel for each connection
+                // apply connection to primitives
 
-                      // parallel for each constraint
-                      // apply constraint to primitives
-                      // needed here because time needs to be incremented
-                      // first
-                      self().info_post_kinematic_updates(os);
+                // parallel for each environment
+                // apply environment forces to primitives
 
-                      // parallel invoke 4 available system collection
-                      // parallel for each system in system collection
-                      // compute internal dynamics
-                      self().info_compute_internal_dynamics(os);
+                // parallel for each controls
+                // apply control forces to primitives
+                metadata.push_back(self().metadata_pre_dynamic_updates());
 
-                      // parallel for each connection
-                      // apply connection to primitives
+                // parallel invoke 4 available system collection
+                // parallel for each system in system collection
+                // do dynamic_update_substep
+                metadata.push_back(self().metadata_update_dynamics());
 
-                      // parallel for each environment
-                      // apply environment forces to primitives
-
-                      // parallel for each controls
-                      // apply control forces to primitives
-                      self().info_pre_dynamic_updates(os);
-
-                      // parallel invoke 4 available system collection
-                      // parallel for each system in system collection
-                      // do dynamic_update_substep
-                      self().info_update_dynamics(os);
-
-                      // parallel for each constraint
-                      // apply constraint to derivatives
-                      self().info_post_dynamic_updates(os);
-                    },
-                    [&](auto const& /*time_update_substep*/) noexcept {
-                      mark_key("UpdateTime");
-                      mark_value("Update simulator-wide time");
-                    });
+                // parallel for each constraint
+                // apply constraint to derivatives
+                metadata.push_back(self().metadata_post_dynamic_updates());
+              },
+              [&](auto const& /*time_update_substep*/) noexcept {
+                metadata.push_back(
+                    Metadata{{"UpdateTime", "Update simulator-wide time"}});
               });
-            });
-            //
-          });
         });
 
-        return outstream;
+        return {flatten(metadata)};
       }
       //@}
       //************************************************************************

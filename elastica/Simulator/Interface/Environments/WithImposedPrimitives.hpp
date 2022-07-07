@@ -307,7 +307,7 @@ namespace elastica {
           auto const& algorithm =
               self()
                   .template get_algorithm<
-                      typename Algorithm::UpdatePrimitives>();
+                      typename Algorithm::UpdateImposedPrimitiveKinematics>();
           algorithm(time_v);
         }
         //**********************************************************************
@@ -321,7 +321,9 @@ namespace elastica {
             -> void {
           // this is internal so a member function suffices.
           auto const& algorithm =
-              self().template get_algorithm<typename Algorithm::UpdateRates>();
+              self()
+                  .template get_algorithm<
+                      typename Algorithm::UpdateImposedPrimitiveDynamics>();
           algorithm(time_v);
         }
         //**********************************************************************

@@ -20,6 +20,7 @@
 
 ///
 #include "Simulator/Configuration/ModuleConfiguration/ExecutionPolicy.hpp"
+#include "Simulator/Configuration/ModuleConfiguration/Streams.hpp"  // string
 #include "Simulator/Interface/Affordances/detail/EmptyUpdateSteps.hpp"
 #include "Simulator/Interface/Forcing/Types.hpp"
 ///
@@ -42,8 +43,6 @@ namespace elastica {
       //  CLASS DEFINITION
       //
       //========================================================================
-
-      // TODO : should be batched if parallelized
 
       //************************************************************************
       /*!\brief Execution policy for Forcing module
@@ -73,6 +72,22 @@ namespace elastica {
         using CRTP::self;
         //! Type of simulation time
         using TimeType = typename ForcingTraits::TimeType;
+        //**********************************************************************
+
+       protected:
+        //**Static functions****************************************************
+        static std::string forcing_algorithm_desc(std::size_t n_forcings) {
+          return std::string(MakeString{} << "Apply " << n_forcings
+                                          << " external forces");
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        template <typename Policy>
+        static std::string forcing_algorithm_desc(std::size_t n_forcings) {
+          return forcing_algorithm_desc(n_forcings) + " using " +
+                 configuration::to_string(Policy{});
+        }
         //**********************************************************************
 
        protected:
@@ -138,6 +153,17 @@ namespace elastica {
           }
           //********************************************************************
 
+          //********************************************************************
+          /*!\brief Stream operator
+           */
+          friend std::ostream& operator<<(std::ostream& os,
+                                          ForceSystemsOp const& op) {
+            return os << forcing_algorithm_desc<
+                       ::elastica::configuration::sequential_policy>(
+                       op.module_handle.n_forcings());
+          }
+          //********************************************************************
+
           //**Member variables**************************************************
           //! Handle to the ForcingModule
           ForcingModule const& module_handle;
@@ -194,6 +220,17 @@ namespace elastica {
           }
           //********************************************************************
 
+          //********************************************************************
+          /*!\brief Stream operator
+           */
+          friend std::ostream& operator<<(std::ostream& os,
+                                          ForceSystemsOp const& op) {
+            return os << forcing_algorithm_desc<
+                       ::elastica::configuration::parallel_policy>(
+                       op.module_handle.n_forcings());
+          }
+          //********************************************************************
+
           //**Member variables**************************************************
           //! Handle to the ForcingModule
           ForcingModule const& module_handle;
@@ -246,6 +283,17 @@ namespace elastica {
           }
           //********************************************************************
 
+          //********************************************************************
+          /*!\brief Stream operator
+           */
+          friend std::ostream& operator<<(std::ostream& os,
+                                          ForceSystemsOp const& op) {
+            return os << forcing_algorithm_desc<
+                       ::elastica::configuration::hybrid_policy>(
+                       op.module_handle.n_forcings());
+          }
+          //********************************************************************
+
           //**Member variables**************************************************
           //! Serial forcing functor
           ForceSystemsInSequence force_systems_in_sequence_;
@@ -275,10 +323,11 @@ namespace elastica {
           //********************************************************************
 
           //**Info method*******************************************************
-          static std::string info(ForcingModule const& module_handle) noexcept {
-            return std::string(MakeString{} << "Apply "
-                                            << module_handle.n_forcings()
-                                            << " external user-defined forces");
+          static std::string metadata(
+              ForcingModule const& module_handle) noexcept {
+            return forcing_algorithm_desc<
+                typename ForcingTraits::ForcingExecutionPolicy>(
+                module_handle.n_forcings());
           }
           //********************************************************************
         };

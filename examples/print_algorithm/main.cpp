@@ -6,6 +6,18 @@
 //
 #include "Systems/CosseratRods.hpp"  // CosseratRod is a default system
 
+template <typename... Tags>
+std::ostream& display_tags(std::ostream& os,
+                           tuples::TaggedTuple<Tags...> const& tagged_tuple) {
+  auto display = [&os](auto tag) {
+    os << pretty_type::short_name<decltype(tag)>() << ", ";
+  };
+  os << "(";
+  EXPAND_PACK_LEFT_TO_RIGHT(display(Tags{}));
+  os << ")";
+  return os;
+}
+
 int main(int argc, char* argv[]) {
   /*
    *
@@ -16,5 +28,8 @@ int main(int argc, char* argv[]) {
       elastica::modules::Connections, elastica::modules::Constraints,
       elastica::modules::Environments, elastica::modules::Forcing>();
   simulator->finalize();
-  simulator->print_algorithm();
+
+  //  display_tags(std::cout, simulator->algorithms()) << std::endl;
+  std::cout << simulator->algorithms() << std::endl;
+  std::cout << simulator->algorithm_metadata() << std::endl;
 }

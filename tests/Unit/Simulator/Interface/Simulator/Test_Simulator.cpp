@@ -13,8 +13,8 @@
 #include "Simulator/Interface/Simulator.hpp"  // all of simulator
 #include "Simulator/Simulator.hpp"            // all of simulator
 #include "Utilities/AsConst.hpp"
+#include "Utilities/StdHelpers.hpp"  // needed for streaming operations
 #include "Utilities/TMPL.hpp"
-#include "Utilities/WidthStream.hpp"
 
 // confirm if friendships work
 //
@@ -53,15 +53,15 @@ namespace {
     using S::get_batching_algorithm;  // tested
     using S::get_timer;               // tested
     ///
-    using S::info_compute_internal_dynamics;  // tested
-    using S::info_post_dynamic_updates;       // tested
-    using S::info_post_kinematic_updates;     // tested
-    using S::info_pre_dynamic_updates;        // tested
-    using S::info_update_dynamics;            // tested
-    using S::info_update_kinematics;          // tested
-    using S::is_final;                        // tested
-    using S::ready;                           // tested
-    using S::S;                               // tested
+    using S::is_final;                            // tested
+    using S::metadata_compute_internal_dynamics;  // tested
+    using S::metadata_post_dynamic_updates;       // tested
+    using S::metadata_post_kinematic_updates;     // tested
+    using S::metadata_pre_dynamic_updates;        // tested
+    using S::metadata_update_dynamics;            // tested
+    using S::metadata_update_kinematics;          // tested
+    using S::ready;                               // tested
+    using S::S;                                   // tested
     using S::stream_profiling_summary_to;
 
     using S::reset_modules;  // tested
@@ -220,7 +220,7 @@ namespace {
     struct FirstPostKinematicUpdateStep {
       using type = X;
       //**Info method*******************************************************
-      static std::string info(Sim const&) noexcept {
+      static std::string metadata(Sim const&) noexcept {
         return "--Apply first post kinematic update\n";
       }
       //********************************************************************
@@ -228,7 +228,7 @@ namespace {
     struct SecondPostKinematicUpdateStep {
       using type = X;
       //**Info method*******************************************************
-      static std::string info(Sim const&) noexcept {
+      static std::string metadata(Sim const&) noexcept {
         return "--Apply second post kinematic update\n";
       }
       //********************************************************************
@@ -236,7 +236,7 @@ namespace {
     struct PreDynamicUpdateStep {
       using type = X;
       //**Info method*******************************************************
-      static std::string info(Sim const&) noexcept {
+      static std::string metadata(Sim const&) noexcept {
         return "--Apply pre dynamic update\n";
       }
       //********************************************************************
@@ -244,7 +244,7 @@ namespace {
     struct PostDynamicUpdateStep {
       using type = X;
       //**Info method*******************************************************
-      static std::string info(Sim const&) noexcept {
+      static std::string metadata(Sim const&) noexcept {
         return "--Apply post dynamic update\n";
       }
       //********************************************************************
@@ -275,63 +275,63 @@ namespace {
   };
 
   // clang-format off
-  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Simulator.info_methods",
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Simulator.metadata_methods",
                      "[Unit][Simulator][Interface]") {
     // clang-format on
     auto& simulator = make_test_simulator<TestModule>();
 
-    SECTION("info update kinematics") {
+    SECTION("metadata update kinematics") {
       std::stringstream ss;
-      ::elastica::widthstream os(80UL, ss);
-      simulator.info_update_kinematics(os);
+
+      ss << simulator.metadata_update_kinematics();
       INFO(ss.str());
       CHECK(ss.str().find("Update kinematic") != std::string::npos);
     }
-    SECTION("info update dynamics") {
+    SECTION("metadata update dynamics") {
       std::stringstream ss;
-      ::elastica::widthstream os(80UL, ss);
-      simulator.info_update_dynamics(os);
+
+      ss << simulator.metadata_update_dynamics();
       INFO(ss.str());
       CHECK(ss.str().find("Update dynamic") != std::string::npos);
     }
     SECTION("compute internal dynamics") {
       std::stringstream ss;
-      ::elastica::widthstream os(80UL, ss);
-      simulator.info_compute_internal_dynamics(os);
+
+      ss << simulator.metadata_compute_internal_dynamics();
       INFO(ss.str());
       CHECK(ss.str().find("Compute internal dynamics") != std::string::npos);
     }
     SECTION("post kinematic updates") {
       std::stringstream ss;
-      ::elastica::widthstream os(80UL, ss);
-      simulator.info_post_kinematic_updates(os);
+
+      ss << simulator.metadata_post_kinematic_updates();
       INFO(ss.str());
       CHECK(ss.str().find("first post kinematic") != std::string::npos);
       CHECK(ss.str().find("second post kinematic") != std::string::npos);
     }
     SECTION("pre dynamic updates") {
       std::stringstream ss;
-      ::elastica::widthstream os(80UL, ss);
-      simulator.info_pre_dynamic_updates(os);
+
+      ss << simulator.metadata_pre_dynamic_updates();
       INFO(ss.str());
       CHECK(ss.str().find("pre dynamic") != std::string::npos);
     }
     SECTION("post dynamic updates") {
       std::stringstream ss;
-      ::elastica::widthstream os(80UL, ss);
-      simulator.info_post_dynamic_updates(os);
+
+      ss << simulator.metadata_post_dynamic_updates();
       INFO(ss.str());
       CHECK(ss.str().find("post dynamic") != std::string::npos);
     }
   }
 
   // clang-format off
-  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Simulator.print_algorithm_to",
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Simulator.algorithm_metadata",
                      "[Unit][Simulator][Interface]") {
     // clang-format on
     auto& simulator = make_test_simulator<TestModule>();
     std::ostringstream ss;
-    simulator.stream_algorithm_to(ss);
+    ss << simulator.algorithm_metadata();
     INFO(ss.str());
     std::vector<std::string> substrings{"Update", "first post kinematic",
                                         "second post kinematic", "pre dynamic",

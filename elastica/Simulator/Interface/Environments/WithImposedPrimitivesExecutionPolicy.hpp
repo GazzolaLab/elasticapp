@@ -73,13 +73,32 @@ namespace elastica {
         //! Type of simulation time
         using TimeType = typename ImposedPrimitivesTraits::TimeType;
         //**********************************************************************
+       protected:
+        //**Static functions****************************************************
+        static std::string kinematics_algorithm_desc(
+            std::size_t n_imposed_primitives) {
+          return std::string(
+              MakeString{} << "Update kinematic (position, director) states of "
+                           << n_imposed_primitives << " imposed primitives");
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        static std::string dynamics_algorithm_desc(
+            std::size_t n_imposed_primitives) noexcept {
+          return std::string(
+              MakeString{}
+              << "Update dynamic (velocity, angular velocity) states of "
+              << n_imposed_primitives << " imposed primitives");
+        }
+        //**********************************************************************
 
        protected:
         //**Type definitions****************************************************
         //! Definition of operator for constraining primitives
-        struct UpdatePrimitivesOp;
+        struct UpdateImposedPrimitiveKinematicsOp;
         //! Definition of operator for constraining rates
-        struct UpdateRatesOp;
+        struct UpdateImposedPrimitiveDynamicsOp;
         //**********************************************************************
 
         //**Primitive classes***************************************************
@@ -90,29 +109,32 @@ namespace elastica {
         /*!\brief Sequentially constrain primitives (positions, directors) of
          * systems.
          */
-        struct UpdatePrimitivesOp {
+        struct UpdateImposedPrimitiveKinematicsOp {
           //********************************************************************
           /*!\brief Policy constructor.
            */
-          UpdatePrimitivesOp(ImposedPrimitivesModule* sim,
-                             ImposedPrimitivesTraits const& /* meta*/)
+          UpdateImposedPrimitiveKinematicsOp(
+              ImposedPrimitivesModule* sim,
+              ImposedPrimitivesTraits const& /* meta*/)
               : module_handle(*sim) {}
           //********************************************************************
 
           //********************************************************************
           /*!\brief Policy constructor (copy constructed)
            */
-          explicit UpdatePrimitivesOp(std::tuple<ImposedPrimitivesModule*,
-                                                 ImposedPrimitivesTraits const&>
-                                          args)
-              : UpdatePrimitivesOp(cpp17::make_from_tuple<UpdatePrimitivesOp>(
-                    std::move(args))) {}
+          explicit UpdateImposedPrimitiveKinematicsOp(
+              std::tuple<ImposedPrimitivesModule*,
+                         ImposedPrimitivesTraits const&>
+                  args)
+              : UpdateImposedPrimitiveKinematicsOp(
+                    cpp17::make_from_tuple<UpdateImposedPrimitiveKinematicsOp>(
+                        std::move(args))) {}
           //********************************************************************
 
           //********************************************************************
           /*!\brief Policy destructor.
            */
-          ~UpdatePrimitivesOp() = default;
+          ~UpdateImposedPrimitiveKinematicsOp() = default;
           //********************************************************************
 
           //********************************************************************
@@ -125,6 +147,16 @@ namespace elastica {
                 [=](auto& imposed_primitive) {
                   imposed_primitive.update_primitives(time_v);
                 });
+          }
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Stream operator
+           */
+          friend std::ostream& operator<<(
+              std::ostream& os, UpdateImposedPrimitiveKinematicsOp const& op) {
+            return os << kinematics_algorithm_desc(
+                       op.module_handle.n_imposed_systems());
           }
           //********************************************************************
 
@@ -146,29 +178,32 @@ namespace elastica {
         /*!\brief Sequentially constrain rates (velocities, angular velocities)
          * of systems.
          */
-        struct UpdateRatesOp {
+        struct UpdateImposedPrimitiveDynamicsOp {
           //********************************************************************
           /*!\brief Policy constructor.
            */
-          UpdateRatesOp(ImposedPrimitivesModule* sim,
-                        ImposedPrimitivesTraits const& /* meta*/)
+          UpdateImposedPrimitiveDynamicsOp(
+              ImposedPrimitivesModule* sim,
+              ImposedPrimitivesTraits const& /* meta*/)
               : module_handle(*sim) {}
           //********************************************************************
 
           //********************************************************************
           /*!\brief Policy constructor (copy constructed)
            */
-          explicit UpdateRatesOp(std::tuple<ImposedPrimitivesModule*,
-                                            ImposedPrimitivesTraits const&>
-                                     args)
-              : UpdateRatesOp(
-                    cpp17::make_from_tuple<UpdateRatesOp>(std::move(args))) {}
+          explicit UpdateImposedPrimitiveDynamicsOp(
+              std::tuple<ImposedPrimitivesModule*,
+                         ImposedPrimitivesTraits const&>
+                  args)
+              : UpdateImposedPrimitiveDynamicsOp(
+                    cpp17::make_from_tuple<UpdateImposedPrimitiveDynamicsOp>(
+                        std::move(args))) {}
           //********************************************************************
 
           //********************************************************************
           /*!\brief Policy destructor.
            */
-          ~UpdateRatesOp() = default;
+          ~UpdateImposedPrimitiveDynamicsOp() = default;
           //********************************************************************
 
           //********************************************************************
@@ -181,6 +216,16 @@ namespace elastica {
                 [=](auto& imposed_primitive) {
                   imposed_primitive.update_rates(time_v);
                 });
+          }
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Stream operator
+           */
+          friend std::ostream& operator<<(
+              std::ostream& os, UpdateImposedPrimitiveDynamicsOp const& op) {
+            return os << dynamics_algorithm_desc(
+                       op.module_handle.n_imposed_systems());
           }
           //********************************************************************
 
@@ -199,37 +244,32 @@ namespace elastica {
         /*! \cond ELASTICA_INTERNAL */
         /*!\name Algorithms for imposed primitives*/
         //@{
-        struct UpdatePrimitives {
+        struct UpdateImposedPrimitiveKinematics {
           //**Type definitions**************************************************
           //! Type for tagged tuple
-          using type = UpdatePrimitivesOp;
+          using type = UpdateImposedPrimitiveKinematicsOp;
           //********************************************************************
 
           //**Info method*******************************************************
-          static std::string info(
+          static std::string metadata(
               ImposedPrimitivesModule const& module_handle) noexcept {
-            return std::string(
-                MakeString{} << "Update "
-                             << module_handle.n_imposed_primitives()
-                             << " imposed primitives' positions and rotations");
+            return kinematics_algorithm_desc(
+                module_handle.n_imposed_primitives());
           }
           //********************************************************************
         };
 
-        struct UpdateRates {
+        struct UpdateImposedPrimitiveDynamics {
           //**Type definitions**************************************************
           //! Type for tagged tuple
-          using type = UpdateRatesOp;
+          using type = UpdateImposedPrimitiveDynamicsOp;
           //********************************************************************
 
           //**Info method*******************************************************
-          static std::string info(
+          static std::string metadata(
               ImposedPrimitivesModule const& module_handle) noexcept {
-            return std::string(MakeString{}
-                               << "Update "
-                               << module_handle.n_imposed_primitives()
-                               << " imposed primitives' velocities and "
-                                  "angular velocities");
+            return dynamics_algorithm_desc(
+                module_handle.n_imposed_primitives());
           }
           //********************************************************************
         };
@@ -242,9 +282,11 @@ namespace elastica {
         /*!\name Algorithmic order of steps within a temporal loop*/
         //@{
         //! Algorithms to be carried out after the kinematic update step
-        using PostKinematicUpdateSteps = tmpl::list<UpdatePrimitives>;
+        using PostKinematicUpdateSteps =
+            tmpl::list<UpdateImposedPrimitiveKinematics>;
         //! Algorithms to be carried out after the dynamic update step
-        using PostDynamicUpdateSteps = tmpl::list<UpdateRates>;
+        using PostDynamicUpdateSteps =
+            tmpl::list<UpdateImposedPrimitiveDynamics>;
         //@}
         //**********************************************************************
       };

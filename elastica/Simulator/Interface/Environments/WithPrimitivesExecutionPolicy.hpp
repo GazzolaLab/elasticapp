@@ -104,6 +104,24 @@ namespace elastica {
         //**********************************************************************
 
        protected:
+        //**********************************************************************
+        static std::string update_primitive_algorithm_desc(
+            std::size_t n_primitives) noexcept {
+          return (MakeString{} << "Update " << n_primitives
+                               << " primitives by ");
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        template <typename ForEachPolicy, typename AcrossPolicy>
+        static std::string update_primitive_algorithm_desc(
+            std::size_t n_primitives) {
+          return update_primitive_algorithm_desc(n_primitives) + " using " +
+                 configuration::to_string(ForEachPolicy{});
+        }
+        //**********************************************************************
+
+       protected:
         //**For each functors***************************************************
         /*!\name For each functors */
         //@{
@@ -517,6 +535,17 @@ namespace elastica {
           }
           //********************************************************************
 
+          //********************************************************************
+          /*!\brief Stream operator
+           */
+          friend std::ostream& operator<<(std::ostream& os,
+                                          InvokeOverPrimitivesOp const& op) {
+            return os << update_primitive_algorithm_desc<ForEachPrimPolicy,
+                                                         AcrossPrimPolicy>(
+                       op.module_handle.n_primitives());
+          }
+          //********************************************************************
+
           //**Member variables**************************************************
           //! Handle to the PrimitivesModule
           PrimitivesModule /*const*/& module_handle;
@@ -545,10 +574,14 @@ namespace elastica {
           //********************************************************************
 
           //**Info method*******************************************************
-          static std::string info(
+          static std::string metadata(
               PrimitivesModule const& module_handle) noexcept {
-            return (MakeString{} << "Update " << module_handle.n_primitives()
-                                 << " primitives by ");
+            return update_primitive_algorithm_desc<
+                typename PrimitivesTraits::IterationPolicy::
+                    ExecutionPolicyForEachSystemType,
+                typename PrimitivesTraits::IterationPolicy::
+                    ExecutionPolicyAcrossSystemTypes>(
+                module_handle.n_primitives());
           }
           //********************************************************************
         };

@@ -20,6 +20,7 @@
 
 ///
 #include "Simulator/Configuration/ModuleConfiguration/ExecutionPolicy.hpp"
+#include "Simulator/Configuration/ModuleConfiguration/Streams.hpp"  // string
 #include "Simulator/Interface/Affordances/detail/EmptyUpdateSteps.hpp"
 #include "Simulator/Interface/Connections/Types.hpp"
 ///
@@ -75,6 +76,35 @@ namespace elastica {
         //**********************************************************************
 
        protected:
+        //**Static functions****************************************************
+        static std::string primitives_algorithm_desc(
+            std::size_t n_constraints) {
+          return std::string(MakeString{}
+                             << "Apply " << n_constraints
+                             << " constraints on positions and rotations");
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        static std::string rates_algorithm_desc(
+            std::size_t n_constraints) noexcept {
+          return std::string(
+              MakeString{}
+              << "Apply " << n_constraints
+              << " constraints on velocities and angular velocities");
+        }
+        //**********************************************************************
+
+#define APPEND_POLICY_TO_DESC(func)                    \
+  template <typename Policy>                           \
+  static std::string func(std::size_t n_constraints) { \
+    return func(n_constraints) + " using " +           \
+           configuration::to_string(Policy{});         \
+  }
+        APPEND_POLICY_TO_DESC(primitives_algorithm_desc)
+        APPEND_POLICY_TO_DESC(rates_algorithm_desc)
+#undef APPEND_POLICY_TO_DESC
+
         //**Type definitions****************************************************
         //! Definition of operator for constraining primitives
         template <typename Policy, class Dummy = void>
@@ -149,6 +179,17 @@ namespace elastica {
           }
           //********************************************************************
 
+          //********************************************************************
+          /*!\brief Stream operator
+           */
+          friend std::ostream& operator<<(std::ostream& os,
+                                          ConstrainPrimitivesOp const& op) {
+            return os << primitives_algorithm_desc<
+                       ::elastica::configuration::sequential_policy>(
+                       op.module_handle.n_constraints());
+          }
+          //********************************************************************
+
           //**Member variables**************************************************
           //! Handle to the ConstraintsModule
           ConstraintsModule const& module_handle;
@@ -204,6 +245,17 @@ namespace elastica {
           }
           //********************************************************************
 
+          //********************************************************************
+          /*!\brief Stream operator
+           */
+          friend std::ostream& operator<<(std::ostream& os,
+                                          ConstrainPrimitivesOp const& op) {
+            return os << primitives_algorithm_desc<
+                       ::elastica::configuration::parallel_policy>(
+                       op.module_handle.n_constraints());
+          }
+          //********************************************************************
+
           //**Member variables**************************************************
           //! Handle to the ConstraintsModule
           ConstraintsModule const& module_handle;
@@ -256,6 +308,17 @@ namespace elastica {
               constrain_primitives_in_sequence_(time_v);
             else
               constrain_primitives_in_parallel_(time_v);
+          }
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Stream operator
+           */
+          friend std::ostream& operator<<(std::ostream& os,
+                                          ConstrainPrimitivesOp const& op) {
+            return os << primitives_algorithm_desc<
+                       ::elastica::configuration::hybrid_policy>(
+                       op.module_handle.n_constraints());
           }
           //********************************************************************
 
@@ -322,6 +385,17 @@ namespace elastica {
           }
           //********************************************************************
 
+          //********************************************************************
+          /*!\brief Stream operator
+           */
+          friend std::ostream& operator<<(std::ostream& os,
+                                          ConstrainRatesOp const& op) {
+            return os << rates_algorithm_desc<
+                       ::elastica::configuration::sequential_policy>(
+                       op.module_handle.n_constraints());
+          }
+          //********************************************************************
+
           //**Member variables**************************************************
           //! Handle to the ConstraintsModule
           ConstraintsModule const& module_handle;
@@ -374,6 +448,17 @@ namespace elastica {
                   for (auto const& constrainer : batch)
                     constrainer->constrain_rates(time_v);
                 });
+          }
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Stream operator
+           */
+          friend std::ostream& operator<<(std::ostream& os,
+                                          ConstrainRatesOp const& op) {
+            return os << rates_algorithm_desc<
+                       ::elastica::configuration::parallel_policy>(
+                       op.module_handle.n_constraints());
           }
           //********************************************************************
 
@@ -432,6 +517,17 @@ namespace elastica {
           }
           //********************************************************************
 
+          //********************************************************************
+          /*!\brief Stream operator
+           */
+          friend std::ostream& operator<<(std::ostream& os,
+                                          ConstrainRatesOp const& op) {
+            return os << rates_algorithm_desc<
+                       ::elastica::configuration::hybrid_policy>(
+                       op.module_handle.n_constraints());
+          }
+          //********************************************************************
+
           //**Member variables**************************************************
           //! Serial forcing functor
           ConstrainRatesInSequence constrain_rates_in_sequence_;
@@ -461,11 +557,11 @@ namespace elastica {
           //********************************************************************
 
           //**Info method*******************************************************
-          static std::string info(
+          static std::string metadata(
               ConstraintsModule const& module_handle) noexcept {
-            return std::string(MakeString{}
-                               << "Apply " << module_handle.n_constraints()
-                               << " constraints on positions and rotations");
+            return primitives_algorithm_desc<
+                typename ConstraintsTraits::ConstraintsExecutionPolicy>(
+                module_handle.n_constraints());
           }
           //********************************************************************
         };
@@ -478,12 +574,11 @@ namespace elastica {
           //********************************************************************
 
           //**Info method*******************************************************
-          static std::string info(
+          static std::string metadata(
               ConstraintsModule const& module_handle) noexcept {
-            return std::string(
-                MakeString{}
-                << "Apply " << module_handle.n_constraints()
-                << " constraints on velocities and angular velocities");
+            return rates_algorithm_desc<
+                typename ConstraintsTraits::ConstraintsExecutionPolicy>(
+                module_handle.n_constraints());
           }
           //********************************************************************
         };

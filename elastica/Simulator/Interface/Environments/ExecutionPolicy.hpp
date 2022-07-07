@@ -18,6 +18,7 @@
 //******************************************************************************
 
 #include "Simulator/Configuration/ModuleConfiguration/ExecutionPolicy.hpp"
+#include "Simulator/Configuration/ModuleConfiguration/Streams.hpp"  // string
 //
 #include "Simulator/Environments/Common.hpp"
 //
@@ -67,6 +68,22 @@ namespace elastica {
         //**Type definitions****************************************************
         //! Type of simulation time
         using TimeType = typename EnvironmentsTraits::TimeType;
+        //**********************************************************************
+
+       protected:
+        //**Static functions****************************************************
+        static std::string env_algorithm_desc(std::size_t n_environments) {
+          return std::string(MakeString{} << "Apply effects from "
+                                          << n_environments << " environments");
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        template <typename Policy>
+        static std::string env_algorithm_desc(std::size_t n_environments) {
+          return env_algorithm_desc(n_environments) + " using " +
+                 configuration::to_string(Policy{});
+        }
         //**********************************************************************
 
        protected:
@@ -153,6 +170,17 @@ namespace elastica {
           }
           //********************************************************************
 
+          //********************************************************************
+          /*!\brief Stream operator
+           */
+          friend std::ostream& operator<<(std::ostream& os,
+                                          ApplyEnvironmentForcesOp const& op) {
+            return os << env_algorithm_desc<
+                       ::elastica::configuration::sequential_policy>(
+                       op.module_handle.n_environments());
+          }
+          //********************************************************************
+
           //**Member variables**************************************************
           //! Handle to the Environments Module
           TotalSimulator& module_handle;
@@ -223,6 +251,17 @@ namespace elastica {
           }
           //********************************************************************
 
+          //********************************************************************
+          /*!\brief Stream operator
+           */
+          friend std::ostream& operator<<(std::ostream& os,
+                                          ApplyEnvironmentForcesOp const& op) {
+            return os << env_algorithm_desc<
+                       ::elastica::configuration::parallel_policy>(
+                       op.module_handle.n_environments());
+          }
+          //********************************************************************
+
           //**Member variables**************************************************
           //! Handle to the Environments Module
           TotalSimulator& module_handle;
@@ -246,12 +285,11 @@ namespace elastica {
           //********************************************************************
 
           //**Info method*******************************************************
-          static std::string info(
+          static std::string metadata(
               TotalSimulator const& module_handle) noexcept {
-            return std::string(MakeString{}
-                               << "Apply environmental forces from "
-                               << module_handle.n_environments()
-                               << " environments");
+            return env_algorithm_desc<
+                typename EnvironmentsTraits::EnvironmentsExecutionPolicy>(
+                module_handle.n_environments());
           }
           //********************************************************************
         };

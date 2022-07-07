@@ -22,6 +22,7 @@
 
 ///
 #include "Simulator/Configuration/ModuleConfiguration/ExecutionPolicy.hpp"
+#include "Simulator/Configuration/ModuleConfiguration/Streams.hpp"  // string
 #include "Simulator/Interface/Affordances/detail/EmptyUpdateSteps.hpp"
 #include "Simulator/Interface/Systems/Types.hpp"
 ///
@@ -102,6 +103,57 @@ namespace elastica {
         //! Operator for invoking a functor across system types
         template <typename ForEachSysPolicy, typename OverSysPolicy>
         struct InvokeOverSystemsOp;
+        //**********************************************************************
+
+       protected:
+        //**Static functions****************************************************
+        static std::string update_kinematics_algorithm_desc(
+            std::size_t n_systems) {
+          return std::string(
+              MakeString{} << "Update kinematic (position, director) states of "
+                           << n_systems << " systems");
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        static std::string update_dynamics_algorithm_desc(
+            std::size_t n_systems) {
+          return std::string(
+              MakeString{}
+              << "Update dynamic (velocity, angular velocity) states of "
+              << n_systems << " systems");
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        static std::string compute_internal_dynamics_algorithm_desc(
+            std::size_t n_systems) noexcept {
+          return std::string(
+              MakeString{} << "Compute internal dynamics (forces, torques) of "
+                           << n_systems << " systems");
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        static std::string update_algorithm_desc(
+            std::size_t n_systems) noexcept {
+          return std::string(MakeString{} << "Update " << n_systems
+                                          << " systems");
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+#define APPEND_POLICY_TO_DESC(func)                        \
+  template <typename ForEachPolicy, typename AcrossPolicy> \
+  static std::string func(std::size_t n_constraints) {     \
+    return func(n_constraints) + " using " +               \
+           configuration::to_string(ForEachPolicy{});      \
+  }
+        APPEND_POLICY_TO_DESC(update_kinematics_algorithm_desc)
+        APPEND_POLICY_TO_DESC(update_dynamics_algorithm_desc)
+        APPEND_POLICY_TO_DESC(compute_internal_dynamics_algorithm_desc)
+        APPEND_POLICY_TO_DESC(update_algorithm_desc)
+#undef APPEND_POLICY_TO_DESC
         //**********************************************************************
 
        protected:
@@ -515,6 +567,17 @@ namespace elastica {
           }
           //********************************************************************
 
+          //********************************************************************
+          /*!\brief Stream operator
+           */
+          friend std::ostream& operator<<(std::ostream& os,
+                                          InvokeOverSystemsOp const& op) {
+            return os
+                   << update_algorithm_desc<ForEachSysPolicy, AcrossSysPolicy>(
+                          op.module_handle.n_systems());
+          }
+          //********************************************************************
+
           //**Member variables**************************************************
           //! Handle to the SystemsModule
           SystemsModule /*const*/& module_handle;
@@ -522,6 +585,15 @@ namespace elastica {
           ForEachSystemOp<ForEachSysPolicy> const for_each_system;
           //********************************************************************
         };
+        //**********************************************************************
+
+        //**Invoke tags*********************************************************
+        /*!\name Tag for invoke functors */
+        //@{
+        struct UpdateKinematicsTag {};
+        struct ComputeInternalDynamicsTag {};
+        struct UpdateDynamicsTag {};
+        //@}
         //**********************************************************************
 
         template <typename Tag>
@@ -559,21 +631,32 @@ namespace elastica {
           ~TaggedInvoke() = default;
           //********************************************************************
 
+          //********************************************************************
+          /*!\brief Stream operator
+           */
+          friend std::ostream& operator<<(std::ostream& os,
+                                          TaggedInvoke const& op) {
+            const auto n_systems = op.module_handle.n_systems();
+            return make_overloader(
+                [=](UpdateKinematicsTag /*meta*/) -> std::ostream& {
+                  return os << update_kinematics_algorithm_desc(n_systems);
+                },
+                [=](ComputeInternalDynamicsTag /*meta*/) -> std::ostream& {
+                  return os
+                         << compute_internal_dynamics_algorithm_desc(n_systems);
+                },
+                [=](UpdateDynamicsTag /*meta*/) -> std::ostream& {
+                  return os << update_dynamics_algorithm_desc(n_systems);
+                })(Tag{});
+          }
+          //********************************************************************
+
           //**Member variables**************************************************
           //! Handle to the SystemsModule
           SystemsModule /*const*/& module_handle;
           //********************************************************************
         };
 
-        //@}
-        //**********************************************************************
-
-        //**Invoke tags*********************************************************
-        /*!\name Tag for invoke functors */
-        //@{
-        struct UpdateKinematicsTag;
-        struct ComputeInternalDynamicsTag;
-        struct UpdateDynamicsTag;
         //@}
         //**********************************************************************
 
@@ -593,9 +676,14 @@ namespace elastica {
           //********************************************************************
 
           //**Info method*******************************************************
-          static std::string info(SystemsModule const& module_handle) noexcept {
-            return (MakeString{} << "Update " << module_handle.n_systems()
-                                 << " systems by ");
+          static std::string metadata(
+              SystemsModule const& module_handle) noexcept {
+            return update_algorithm_desc<
+                typename SystemsTraits::IterationPolicy::
+                    ExecutionPolicyForEachSystemType,
+                typename SystemsTraits::IterationPolicy::
+                    ExecutionPolicyAcrossSystemTypes>(
+                module_handle.n_systems());
           }
           //********************************************************************
         };
@@ -607,10 +695,14 @@ namespace elastica {
           //********************************************************************
 
           //**Info method*******************************************************
-          static std::string info(SystemsModule const& module_handle) noexcept {
-            return (MakeString{}
-                    << "Update kinematic (position, director) states of "
-                    << module_handle.n_systems() << " systems");
+          static std::string metadata(
+              SystemsModule const& module_handle) noexcept {
+            return update_kinematics_algorithm_desc<
+                typename SystemsTraits::IterationPolicy::
+                    ExecutionPolicyForEachSystemType,
+                typename SystemsTraits::IterationPolicy::
+                    ExecutionPolicyAcrossSystemTypes>(
+                module_handle.n_systems());
           }
           //********************************************************************
         };
@@ -622,10 +714,14 @@ namespace elastica {
           //********************************************************************
 
           //**Info method*******************************************************
-          static std::string info(SystemsModule const& module_handle) noexcept {
-            return (MakeString{}
-                    << "Compute internal dynamics (forces, torques) of "
-                    << module_handle.n_systems() << " systems");
+          static std::string metadata(
+              SystemsModule const& module_handle) noexcept {
+            return compute_internal_dynamics_algorithm_desc<
+                typename SystemsTraits::IterationPolicy::
+                    ExecutionPolicyForEachSystemType,
+                typename SystemsTraits::IterationPolicy::
+                    ExecutionPolicyAcrossSystemTypes>(
+                module_handle.n_systems());
           }
           //********************************************************************
         };
@@ -637,10 +733,14 @@ namespace elastica {
           //********************************************************************
 
           //**Info method*******************************************************
-          static std::string info(SystemsModule const& module_handle) noexcept {
-            return (MakeString{}
-                    << "Update dynamic (velocity, angular velocity) states of "
-                    << module_handle.n_systems() << " systems");
+          static std::string metadata(
+              SystemsModule const& module_handle) noexcept {
+            return update_dynamics_algorithm_desc<
+                typename SystemsTraits::IterationPolicy::
+                    ExecutionPolicyForEachSystemType,
+                typename SystemsTraits::IterationPolicy::
+                    ExecutionPolicyAcrossSystemTypes>(
+                module_handle.n_systems());
           }
           //********************************************************************
         };

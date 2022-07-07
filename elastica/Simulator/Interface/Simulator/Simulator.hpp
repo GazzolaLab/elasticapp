@@ -62,7 +62,6 @@
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/ValueTraits/IsInf.hpp"
-#include "Utilities/WidthStream.hpp"
 
 // DONE : Check for mixins to simulator class should always be default
 //  constructible (not trivial, but default)
@@ -755,7 +754,7 @@ reorganizing your code logic.
       inline auto apply_post_kinematic_updates(
           TimeType time_v) /*const*/ noexcept -> void {
         tmpl::for_each<PostKinematicUpdateSteps>([this, time_v](auto update) {
-          this-> template perform<tmpl::type_from<decltype(update)>>(time_v);
+          this->template perform<tmpl::type_from<decltype(update)>>(time_v);
         });
       }
       //************************************************************************
@@ -974,196 +973,118 @@ reorganizing your code logic.
       //************************************************************************
 
      protected:
-      //**information methods***************************************************
-      /*!\name Info methods*/
+      //**metadata methods******************************************************
+      /*!\name Metadata methods*/
       //@{
 
       //************************************************************************
       /*! \cond ELASTICA_INTERNAL */
-      // needed by the time-stepper as well to format
-      int info_tab_width() const noexcept { return 4; }
-      /*! \endcond */
-      //************************************************************************
+      struct MetadataGenerator {
+        MetadataGenerator(This const& simulator) : sim_(simulator) {}
+        ~MetadataGenerator() = default;
 
-      //************************************************************************
-      /*! \cond ELASTICA_INTERNAL */
-      struct InfoPrinter {
-        InfoPrinter(This const& simulator, ::elastica::widthstream& stream)
-            : sim_(simulator), os_(stream) {}
-        ~InfoPrinter() = default;
-
-        auto stream() noexcept -> ::elastica::widthstream& { return os_; }
-
-        enum Format {
-          YAML
-        };
-
-        static auto format_key_other(::elastica::widthstream& os, std::string const&op_name)
-        -> ::elastica::widthstream& {
-          os << op_name << "\n"
-             << std::string(::elastica::size(op_name), '-') << "\n";
-          return os;
-        }
-
-        static auto format_key_yaml(::elastica::widthstream& os, std::string const& op_name)
-        -> ::elastica::widthstream& {
-          os << "- " << op_name << ":\n";
-          return os;
-        }
-
-        auto format_functor_name(::elastica::widthstream& os, std::string const& op_name) const
-        -> ::elastica::widthstream& {
-          if (format == Format::YAML){
-            return format_key_yaml(os, op_name);
-          } else{
-            return format_key_other(os, op_name);
-          }
-        }
-
-        auto format_value_yaml(::elastica::widthstream& os, std::string const& op_name) const
-        -> ::elastica::widthstream& {
-           Paragraph{os}([&](::elastica::widthstream& stream) {
-            // Indent doesn't work, so manual indentation.
-             stream << std::string(static_cast<typename std::string::size_type>(sim_.info_tab_width()), ' ') << op_name;
-           });
-          return os;
-        }
-
-        auto format_value_other(::elastica::widthstream& os, std::string const& op_name) const
-        -> ::elastica::widthstream& {
-          // clang-format off
-          Indent(os, sim_.info_tab_width())
-              // clang-format on
-              ([&](::elastica::widthstream& stream) {
-                stream << op_name;
-              });
-          return os;
-        }
-
-        auto format_description(::elastica::widthstream& os, std::string const& value) const
-        -> ::elastica::widthstream& {
-          if (format == Format::YAML){
-            return format_value_yaml(os, value);
-          } else{
-            return format_value_other(os, value);
-          }
-        }
+        using Result = typename AlgorithmMetadata::Result;
+        using Metadata = typename AlgorithmMetadata::Metadata;
 
         template <typename Update>
-        void pretty_print() const {
+        auto generate_metadata() const -> Result {
           // may not be a good idea to pretty type here as the template carries
           // with it some useful information which gets missed.
-          format_functor_name(os_, pretty_type::short_name<Update>());
-          format_description(os_, Update::info(sim_));
-         }
+          return {pretty_type::short_name<Update>(), Update::metadata(sim_)};
+        }
 
-        template <typename TagWrappedAsType>
-        void operator()(TagWrappedAsType /*meta*/) const {
-          using Update = tmpl::type_from<TagWrappedAsType>;
-          pretty_print<Update>();
+        template <typename Tags>
+        auto operator()(Tags /*metadata*/) const -> Metadata {
+          Metadata results;
+          results.reserve(tmpl::size<Tags>::value);
+
+          tmpl::for_each<Tags>([&](auto tag) {
+            using Tag = tmpl::type_from<decltype(tag)>;
+            results.push_back(generate_metadata<Tag>());
+          });
+
+          return results;
         }
 
         This const& sim_;
-        ::elastica::widthstream& os_;
-        Format format{Format::YAML};
       };
       /*! \endcond */
       //************************************************************************
 
-      //************************************************************************
-      /*!\brief Prints information of the kinematic update step
-       *
-       * \param os Stream for printing out
-       * \return void
-       */
-      auto info_update_kinematics(::elastica::widthstream& os) const noexcept
-      -> ::elastica::widthstream& {
-        return tmpl::for_each<tmpl::list<typename SystemsModule::UpdateKinematics>>(InfoPrinter(*this, os))
-            .stream();
-      }
-      //************************************************************************
-
-      //************************************************************************
-      /*!\brief Prints information of the dynamic update step
-       *
-       * \param os Stream for printing out
-       * \return void
-       */
-      auto info_update_dynamics(::elastica::widthstream& os) const noexcept
-      -> ::elastica::widthstream& {
-        return tmpl::for_each<tmpl::list<typename SystemsModule::UpdateDynamics>>(InfoPrinter(*this, os))
-            .stream();
-      }
-      //************************************************************************
-
-      //************************************************************************
-      /*!\brief Prints information of the dynamic compute step
-       *
-       * \param os Stream for printing out
-       * \return void
-       */
-      auto info_compute_internal_dynamics(::elastica::widthstream& os) const noexcept
-      -> ::elastica::widthstream& {
-        return tmpl::for_each<tmpl::list<typename SystemsModule::ComputeInternalDynamics>>(InfoPrinter(*this, os))
-            .stream();
-      }
-      //************************************************************************
-
-      //************************************************************************
-      /*!\brief Prints information of the post kinematic update steps
-       *
-       * \param os Stream for printing out
-       * \return void
-       */
-      auto info_post_kinematic_updates(::elastica::widthstream& os)
-          const noexcept -> ::elastica::widthstream& {
-        return tmpl::for_each<PostKinematicUpdateSteps>(InfoPrinter(*this, os))
-            .stream();
-      }
-      //************************************************************************
-
-      //************************************************************************
-      /*!\brief Prints information of the pre dynamic update steps
-       *
-       * \param os Stream for printing out
-       * \return void
-       */
-      auto info_pre_dynamic_updates(::elastica::widthstream& os) const noexcept
-          -> ::elastica::widthstream& {
-        return tmpl::for_each<PreDynamicUpdateSteps>(InfoPrinter(*this, os))
-            .stream();
-      }
-      //************************************************************************
-
-      //************************************************************************
-      /*!\brief Prints information of the post dynamic update steps
-       *
-       * \param os Stream for printing out
-       * \return void
-       */
-      auto info_post_dynamic_updates(::elastica::widthstream& os) const noexcept
-          -> ::elastica::widthstream& {
-        return tmpl::for_each<PostDynamicUpdateSteps>(InfoPrinter(*this, os))
-            .stream();
-      }
-      //************************************************************************
-
      public:
       //************************************************************************
-      /*!\brief Prints the algorithmic steps
+      /*!\brief Generates metadata of the kinematic update step
        *
-       * \param outstream Stream for printing out
-       * \return outstream
+       * \return vector of string pairs corresponding to algorithm and its
+       * metadata
        */
-      auto stream_algorithm_to(std::ostream& outstream) const -> std::ostream& {
-        return SymplecticInterface::stream_symplectic_algorithm_to(outstream);
+      auto metadata_update_kinematics() const noexcept ->
+          typename MetadataGenerator::Metadata {
+        return MetadataGenerator(*this)(
+            tmpl::list<typename SystemsModule::UpdateKinematics>{});
       }
       //************************************************************************
 
       //************************************************************************
-      /*!\brief Prints the algorithmic steps
+      /*!\brief Generates metadata of the dynamic update step
+       *
+       * \return vector of string pairs corresponding to algorithm and its
+       * metadata
        */
-      void print_algorithm() const { (void)(stream_algorithm_to(std::cout)); }
+      auto metadata_update_dynamics() const noexcept ->
+          typename MetadataGenerator::Metadata {
+        return MetadataGenerator(*this)(
+            tmpl::list<typename SystemsModule::UpdateDynamics>{});
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Generates metadata of the dynamic compute step
+       *
+       * \return vector of string pairs corresponding to algorithm and its
+       * metadata
+       */
+      auto metadata_compute_internal_dynamics() const noexcept ->
+          typename MetadataGenerator::Metadata {
+        return MetadataGenerator(*this)(
+            tmpl::list<typename SystemsModule::ComputeInternalDynamics>{});
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Generates metadata of the post kinematic update steps
+       *
+       * \return vector of string pairs corresponding to algorithm and its
+       * metadata
+       */
+      auto metadata_post_kinematic_updates() const noexcept ->
+          typename MetadataGenerator::Metadata {
+        return MetadataGenerator(*this)(PostKinematicUpdateSteps{});
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Generates metadata of the pre dynamic update steps
+       *
+       * \return vector of string pairs corresponding to algorithm and its
+       * metadata
+       */
+      auto metadata_pre_dynamic_updates() const noexcept ->
+          typename MetadataGenerator::Metadata {
+        return MetadataGenerator(*this)(PreDynamicUpdateSteps{});
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Generates metadata of the post dynamic update steps
+       *
+       * \return vector of string pairs corresponding to algorithm and its
+       * metadata
+       */
+      auto metadata_post_dynamic_updates() const noexcept ->
+          typename MetadataGenerator::Metadata {
+        return MetadataGenerator(*this)(PostDynamicUpdateSteps{});
+      }
       //************************************************************************
 
       //@}

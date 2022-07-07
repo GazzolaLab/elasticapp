@@ -30,6 +30,8 @@ namespace elastica {
 
     template <class SimTraits, class Sim>
     class InterfaceWithExplicitSteppers;
+
+    struct AlgorithmMetadata;
     /*! \endcond */
     //**************************************************************************
 

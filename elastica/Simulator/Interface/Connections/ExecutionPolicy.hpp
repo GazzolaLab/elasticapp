@@ -20,6 +20,7 @@
 
 ///
 #include "Simulator/Configuration/ModuleConfiguration/ExecutionPolicy.hpp"
+#include "Simulator/Configuration/ModuleConfiguration/Streams.hpp"  // string
 #include "Simulator/Interface/Affordances/detail/EmptyUpdateSteps.hpp"
 #include "Simulator/Interface/Connections/Types.hpp"
 ///
@@ -71,6 +72,22 @@ namespace elastica {
         using CRTP::self;
         //! Type of simulation time
         using TimeType = typename ConnectionsTraits::TimeType;
+        //**********************************************************************
+
+       protected:
+        //**Static functions****************************************************
+        static std::string connect_algorithm_desc(std::size_t n_connections) {
+          return std::string(MakeString{} << "Apply " << n_connections
+                                          << " connections between systems");
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        template <typename Policy>
+        static std::string connect_algorithm_desc(std::size_t n_connections) {
+          return connect_algorithm_desc(n_connections) + " using " +
+                 configuration::to_string(Policy{});
+        }
         //**********************************************************************
 
        protected:
@@ -136,6 +153,17 @@ namespace elastica {
           }
           //********************************************************************
 
+          //********************************************************************
+          /*!\brief Stream operator
+           */
+          friend std::ostream& operator<<(std::ostream& os,
+                                          ConnectSystemsOp const& op) {
+            return os << connect_algorithm_desc<
+                       ::elastica::configuration::sequential_policy>(
+                       op.module_handle.n_connections());
+          }
+          //********************************************************************
+
           //**Member variables**************************************************
           //! Handle to the ConnectionsModule
           ConnectionsModule const& module_handle;
@@ -184,6 +212,17 @@ namespace elastica {
               connecter->apply_forces(time_v);
               connecter->apply_torques(time_v);
             }
+          }
+          //********************************************************************
+
+          //********************************************************************
+          /*!\brief Stream operator
+           */
+          friend std::ostream& operator<<(std::ostream& os,
+                                          ConnectSystemsOp const& op) {
+            return os << connect_algorithm_desc<
+                       ::elastica::configuration::parallel_policy>(
+                       op.module_handle.n_connections());
           }
           //********************************************************************
 
@@ -242,6 +281,17 @@ namespace elastica {
           }
           //********************************************************************
 
+          //********************************************************************
+          /*!\brief Stream operator
+           */
+          friend std::ostream& operator<<(std::ostream& os,
+                                          ConnectSystemsOp const& op) {
+            return os << connect_algorithm_desc<
+                       ::elastica::configuration::hybrid_policy>(
+                       op.module_handle.n_connections());
+          }
+          //********************************************************************
+
           //**Member variables**************************************************
           //! Serial forcing functor
           ConnectSystemsInSequence connect_systems_in_sequence_;
@@ -271,11 +321,11 @@ namespace elastica {
           //********************************************************************
 
           //**Info method*******************************************************
-          static std::string info(
+          static std::string metadata(
               ConnectionsModule const& module_handle) noexcept {
-            return std::string(MakeString{} << "Apply "
-                                            << module_handle.n_connections()
-                                            << " connections between systems");
+            return connect_algorithm_desc<
+                typename ConnectionsTraits::ConnectionsExecutionPolicy>(
+                module_handle.n_connections());
           }
           //********************************************************************
         };

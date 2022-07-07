@@ -6,7 +6,8 @@ elastica_target_headers(
         ${LIBRARY}
         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
         HEADERS
-        SymplecticSteppers.hpp
         ExplicitSteppers.hpp
+        Metadata.hpp
+        SymplecticSteppers.hpp
         Types.hpp
 )
