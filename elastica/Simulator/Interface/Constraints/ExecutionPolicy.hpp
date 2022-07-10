@@ -38,6 +38,34 @@ namespace elastica {
 
     namespace constraints {
 
+      //************************************************************************
+      inline std::string primitives_algorithm_desc(std::size_t n_constraints) {
+        return std::string(MakeString{}
+                           << "Apply " << n_constraints
+                           << " constraints on positions and rotations");
+      }
+      //************************************************************************
+
+      //************************************************************************
+      inline std::string rates_algorithm_desc(
+          std::size_t n_constraints) noexcept {
+        return std::string(
+            MakeString{}
+            << "Apply " << n_constraints
+            << " constraints on velocities and angular velocities");
+      }
+      //************************************************************************
+
+#define APPEND_POLICY_TO_DESC(func)                    \
+  template <typename Policy>                           \
+  inline std::string func(std::size_t n_constraints) { \
+    return func(n_constraints) + " using " +           \
+           configuration::to_string(Policy{});         \
+  }
+      APPEND_POLICY_TO_DESC(primitives_algorithm_desc)
+      APPEND_POLICY_TO_DESC(rates_algorithm_desc)
+#undef APPEND_POLICY_TO_DESC
+
       //========================================================================
       //
       //  CLASS DEFINITION
@@ -76,35 +104,6 @@ namespace elastica {
         //**********************************************************************
 
        protected:
-        //**Static functions****************************************************
-        static std::string primitives_algorithm_desc(
-            std::size_t n_constraints) {
-          return std::string(MakeString{}
-                             << "Apply " << n_constraints
-                             << " constraints on positions and rotations");
-        }
-        //**********************************************************************
-
-        //**********************************************************************
-        static std::string rates_algorithm_desc(
-            std::size_t n_constraints) noexcept {
-          return std::string(
-              MakeString{}
-              << "Apply " << n_constraints
-              << " constraints on velocities and angular velocities");
-        }
-        //**********************************************************************
-
-#define APPEND_POLICY_TO_DESC(func)                    \
-  template <typename Policy>                           \
-  static std::string func(std::size_t n_constraints) { \
-    return func(n_constraints) + " using " +           \
-           configuration::to_string(Policy{});         \
-  }
-        APPEND_POLICY_TO_DESC(primitives_algorithm_desc)
-        APPEND_POLICY_TO_DESC(rates_algorithm_desc)
-#undef APPEND_POLICY_TO_DESC
-
         //**Type definitions****************************************************
         //! Definition of operator for constraining primitives
         template <typename Policy, class Dummy = void>

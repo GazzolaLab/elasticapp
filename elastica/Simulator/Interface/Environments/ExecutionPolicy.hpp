@@ -37,6 +37,21 @@ namespace elastica {
 
     namespace environments {
 
+      //************************************************************************
+      inline std::string env_algorithm_desc(std::size_t n_environments) {
+        return std::string(MakeString{} << "Apply effects from "
+                                        << n_environments << " environments");
+      }
+      //************************************************************************
+
+      //************************************************************************
+      template <typename Policy>
+      inline std::string env_algorithm_desc(std::size_t n_environments) {
+        return env_algorithm_desc(n_environments) + " using " +
+               configuration::to_string(Policy{});
+      }
+      //************************************************************************
+
       //========================================================================
       //
       //  CLASS DEFINITION
@@ -68,22 +83,6 @@ namespace elastica {
         //**Type definitions****************************************************
         //! Type of simulation time
         using TimeType = typename EnvironmentsTraits::TimeType;
-        //**********************************************************************
-
-       protected:
-        //**Static functions****************************************************
-        static std::string env_algorithm_desc(std::size_t n_environments) {
-          return std::string(MakeString{} << "Apply effects from "
-                                          << n_environments << " environments");
-        }
-        //**********************************************************************
-
-        //**********************************************************************
-        template <typename Policy>
-        static std::string env_algorithm_desc(std::size_t n_environments) {
-          return env_algorithm_desc(n_environments) + " using " +
-                 configuration::to_string(Policy{});
-        }
         //**********************************************************************
 
        protected:

@@ -68,11 +68,9 @@ ELASTICA_TEST_CASE("Unit.Utilities.TaggedTuple", "[Utilities][Unit]") {
                 "Failed to test size of TaggedTuple");
   {
     // TODO: commented out due to compilation (g++) bug
-    /*
     std::stringstream ss;
     ss << test;
     CHECK(ss.str() == "(bla, 17, bla@bla.bla, (Mom,Dad), NOT STREAMABLE)");
-     */
   }
   CHECK(test.size() == 5);
   /// [get_example]

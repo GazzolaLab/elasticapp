@@ -35,6 +35,21 @@ namespace elastica {
 
     namespace connections {
 
+      //************************************************************************
+      inline std::string connect_algorithm_desc(std::size_t n_connections) {
+        return std::string(MakeString{} << "Apply " << n_connections
+                                        << " connections between systems");
+      }
+      //************************************************************************
+
+      //************************************************************************
+      template <typename Policy>
+      inline std::string connect_algorithm_desc(std::size_t n_connections) {
+        return connect_algorithm_desc(n_connections) + " using " +
+               configuration::to_string(Policy{});
+      }
+      //************************************************************************
+
       //========================================================================
       //
       //  CLASS DEFINITION
@@ -72,22 +87,6 @@ namespace elastica {
         using CRTP::self;
         //! Type of simulation time
         using TimeType = typename ConnectionsTraits::TimeType;
-        //**********************************************************************
-
-       protected:
-        //**Static functions****************************************************
-        static std::string connect_algorithm_desc(std::size_t n_connections) {
-          return std::string(MakeString{} << "Apply " << n_connections
-                                          << " connections between systems");
-        }
-        //**********************************************************************
-
-        //**********************************************************************
-        template <typename Policy>
-        static std::string connect_algorithm_desc(std::size_t n_connections) {
-          return connect_algorithm_desc(n_connections) + " using " +
-                 configuration::to_string(Policy{});
-        }
         //**********************************************************************
 
        protected:

@@ -38,6 +38,21 @@ namespace elastica {
 
     namespace forcing {
 
+      //************************************************************************
+      inline std::string forcing_algorithm_desc(std::size_t n_forcings) {
+        return std::string(MakeString{} << "Apply " << n_forcings
+                                        << " external forces");
+      }
+      //************************************************************************
+
+      //************************************************************************
+      template <typename Policy>
+      inline std::string forcing_algorithm_desc(std::size_t n_forcings) {
+        return forcing_algorithm_desc(n_forcings) + " using " +
+               configuration::to_string(Policy{});
+      }
+      //************************************************************************
+
       //========================================================================
       //
       //  CLASS DEFINITION
@@ -72,22 +87,6 @@ namespace elastica {
         using CRTP::self;
         //! Type of simulation time
         using TimeType = typename ForcingTraits::TimeType;
-        //**********************************************************************
-
-       protected:
-        //**Static functions****************************************************
-        static std::string forcing_algorithm_desc(std::size_t n_forcings) {
-          return std::string(MakeString{} << "Apply " << n_forcings
-                                          << " external forces");
-        }
-        //**********************************************************************
-
-        //**********************************************************************
-        template <typename Policy>
-        static std::string forcing_algorithm_desc(std::size_t n_forcings) {
-          return forcing_algorithm_desc(n_forcings) + " using " +
-                 configuration::to_string(Policy{});
-        }
         //**********************************************************************
 
        protected:

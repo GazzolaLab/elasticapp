@@ -15,6 +15,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsStreamable.hpp"
+#include "Utilities/StlStreamDeclarations.hpp"
 
 namespace tuples {
 
@@ -737,6 +738,7 @@ namespace tuples {
   }
 
   /// Stream operator for TaggedTuple
+  using ::operator<<;
   template <class... Tags>
   std::ostream& operator<<(std::ostream& os,
                            const TaggedTuple<Tags...>& t) noexcept {
@@ -747,9 +749,9 @@ namespace tuples {
             const auto& element,
             const std::integral_constant<bool, true> /*meta*/) {
           // TODO why is this bugging out?
-          //using ::operator<<;
-          //os << element;
-          (void)element;
+          using ::operator<<;
+          os << element;
+          // (void)element;
           current_value++;
           if (current_value < sizeof...(Tags)) {
             os << ", ";

@@ -63,6 +63,48 @@ namespace elastica {
 #define FWD_CAPTURE(...) detail::fwd_capture(FWD(__VA_ARGS__))
 
       //************************************************************************
+      inline std::string update_kinematics_algorithm_desc(
+          std::size_t n_systems) {
+        return std::string(MakeString{}
+                           << "Update kinematic (position, director) states of "
+                           << n_systems << " systems");
+      }
+
+      inline std::string update_dynamics_algorithm_desc(std::size_t n_systems) {
+        return std::string(
+            MakeString{}
+            << "Update dynamic (velocity, angular velocity) states of "
+            << n_systems << " systems");
+      }
+
+      inline std::string compute_internal_dynamics_algorithm_desc(
+          std::size_t n_systems) noexcept {
+        return std::string(MakeString{}
+                           << "Compute internal dynamics (forces, torques) of "
+                           << n_systems << " systems");
+      }
+
+      inline std::string update_algorithm_desc(std::size_t n_systems) noexcept {
+        return std::string(MakeString{} << "Update " << n_systems
+                                        << " systems");
+      }
+      //************************************************************************
+
+      //**********************************************************************
+#define APPEND_POLICY_TO_DESC(func)                        \
+  template <typename ForEachPolicy, typename AcrossPolicy> \
+  inline std::string func(std::size_t n_constraints) {     \
+    return func(n_constraints) + " using " +               \
+           configuration::to_string(ForEachPolicy{});      \
+  }
+      APPEND_POLICY_TO_DESC(update_kinematics_algorithm_desc)
+      APPEND_POLICY_TO_DESC(update_dynamics_algorithm_desc)
+      APPEND_POLICY_TO_DESC(compute_internal_dynamics_algorithm_desc)
+      APPEND_POLICY_TO_DESC(update_algorithm_desc)
+#undef APPEND_POLICY_TO_DESC
+      //**********************************************************************
+
+      //************************************************************************
       /*!\brief Execution policy for Systems module
        * \ingroup interface
        *
@@ -103,57 +145,6 @@ namespace elastica {
         //! Operator for invoking a functor across system types
         template <typename ForEachSysPolicy, typename OverSysPolicy>
         struct InvokeOverSystemsOp;
-        //**********************************************************************
-
-       protected:
-        //**Static functions****************************************************
-        static std::string update_kinematics_algorithm_desc(
-            std::size_t n_systems) {
-          return std::string(
-              MakeString{} << "Update kinematic (position, director) states of "
-                           << n_systems << " systems");
-        }
-        //**********************************************************************
-
-        //**********************************************************************
-        static std::string update_dynamics_algorithm_desc(
-            std::size_t n_systems) {
-          return std::string(
-              MakeString{}
-              << "Update dynamic (velocity, angular velocity) states of "
-              << n_systems << " systems");
-        }
-        //**********************************************************************
-
-        //**********************************************************************
-        static std::string compute_internal_dynamics_algorithm_desc(
-            std::size_t n_systems) noexcept {
-          return std::string(
-              MakeString{} << "Compute internal dynamics (forces, torques) of "
-                           << n_systems << " systems");
-        }
-        //**********************************************************************
-
-        //**********************************************************************
-        static std::string update_algorithm_desc(
-            std::size_t n_systems) noexcept {
-          return std::string(MakeString{} << "Update " << n_systems
-                                          << " systems");
-        }
-        //**********************************************************************
-
-        //**********************************************************************
-#define APPEND_POLICY_TO_DESC(func)                        \
-  template <typename ForEachPolicy, typename AcrossPolicy> \
-  static std::string func(std::size_t n_constraints) {     \
-    return func(n_constraints) + " using " +               \
-           configuration::to_string(ForEachPolicy{});      \
-  }
-        APPEND_POLICY_TO_DESC(update_kinematics_algorithm_desc)
-        APPEND_POLICY_TO_DESC(update_dynamics_algorithm_desc)
-        APPEND_POLICY_TO_DESC(compute_internal_dynamics_algorithm_desc)
-        APPEND_POLICY_TO_DESC(update_algorithm_desc)
-#undef APPEND_POLICY_TO_DESC
         //**********************************************************************
 
        protected:
@@ -638,14 +629,14 @@ namespace elastica {
                                           TaggedInvoke const& op) {
             const auto n_systems = op.module_handle.n_systems();
             return make_overloader(
-                [=](UpdateKinematicsTag /*meta*/) -> std::ostream& {
+                [=, &os](UpdateKinematicsTag /*meta*/) -> std::ostream& {
                   return os << update_kinematics_algorithm_desc(n_systems);
                 },
-                [=](ComputeInternalDynamicsTag /*meta*/) -> std::ostream& {
+                [=, &os](ComputeInternalDynamicsTag /*meta*/) -> std::ostream& {
                   return os
                          << compute_internal_dynamics_algorithm_desc(n_systems);
                 },
-                [=](UpdateDynamicsTag /*meta*/) -> std::ostream& {
+                [=, &os](UpdateDynamicsTag /*meta*/) -> std::ostream& {
                   return os << update_dynamics_algorithm_desc(n_systems);
                 })(Tag{});
           }

@@ -36,6 +36,25 @@ namespace elastica {
 
     namespace environments {
 
+      //************************************************************************
+      inline std::string kinematics_algorithm_desc(
+          std::size_t n_imposed_primitives) {
+        return std::string(MakeString{}
+                           << "Update kinematic (position, director) states of "
+                           << n_imposed_primitives << " imposed primitives");
+      }
+      //************************************************************************
+
+      //************************************************************************
+      inline std::string dynamics_algorithm_desc(
+          std::size_t n_imposed_primitives) noexcept {
+        return std::string(
+            MakeString{}
+            << "Update dynamic (velocity, angular velocity) states of "
+            << n_imposed_primitives << " imposed primitives");
+      }
+      //************************************************************************
+
       //========================================================================
       //
       //  CLASS DEFINITION
@@ -72,25 +91,6 @@ namespace elastica {
         using CRTP::self;
         //! Type of simulation time
         using TimeType = typename ImposedPrimitivesTraits::TimeType;
-        //**********************************************************************
-       protected:
-        //**Static functions****************************************************
-        static std::string kinematics_algorithm_desc(
-            std::size_t n_imposed_primitives) {
-          return std::string(
-              MakeString{} << "Update kinematic (position, director) states of "
-                           << n_imposed_primitives << " imposed primitives");
-        }
-        //**********************************************************************
-
-        //**********************************************************************
-        static std::string dynamics_algorithm_desc(
-            std::size_t n_imposed_primitives) noexcept {
-          return std::string(
-              MakeString{}
-              << "Update dynamic (velocity, angular velocity) states of "
-              << n_imposed_primitives << " imposed primitives");
-        }
         //**********************************************************************
 
        protected:
@@ -156,7 +156,7 @@ namespace elastica {
           friend std::ostream& operator<<(
               std::ostream& os, UpdateImposedPrimitiveKinematicsOp const& op) {
             return os << kinematics_algorithm_desc(
-                       op.module_handle.n_imposed_systems());
+                       op.module_handle.n_imposed_primitives());
           }
           //********************************************************************
 
@@ -225,7 +225,7 @@ namespace elastica {
           friend std::ostream& operator<<(
               std::ostream& os, UpdateImposedPrimitiveDynamicsOp const& op) {
             return os << dynamics_algorithm_desc(
-                       op.module_handle.n_imposed_systems());
+                       op.module_handle.n_imposed_primitives());
           }
           //********************************************************************
 

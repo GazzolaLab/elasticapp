@@ -60,6 +60,22 @@ namespace elastica {
         }
       }  // namespace detail
 #define FWD_CAPTURE(...) detail::fwd_capture(FWD(__VA_ARGS__))
+     
+      //************************************************************************
+      inline std::string update_primitive_algorithm_desc(
+          std::size_t n_primitives) noexcept {
+        return (MakeString{} << "Update " << n_primitives << " primitives by ");
+      }
+      //************************************************************************
+
+      //************************************************************************
+      template <typename ForEachPolicy, typename AcrossPolicy>
+      inline std::string update_primitive_algorithm_desc(
+          std::size_t n_primitives) {
+        return update_primitive_algorithm_desc(n_primitives) + " using " +
+               configuration::to_string(ForEachPolicy{});
+      }
+      //************************************************************************
 
       //************************************************************************
       /*!\brief Execution policy for Primitives module
@@ -101,24 +117,6 @@ namespace elastica {
         //! Operator for invoking a functor across primitive types
         template <typename ForEachPrimPolicy, typename OverPrimPolicy>
         struct InvokeOverPrimitivesOp;
-        //**********************************************************************
-
-       protected:
-        //**********************************************************************
-        static std::string update_primitive_algorithm_desc(
-            std::size_t n_primitives) noexcept {
-          return (MakeString{} << "Update " << n_primitives
-                               << " primitives by ");
-        }
-        //**********************************************************************
-
-        //**********************************************************************
-        template <typename ForEachPolicy, typename AcrossPolicy>
-        static std::string update_primitive_algorithm_desc(
-            std::size_t n_primitives) {
-          return update_primitive_algorithm_desc(n_primitives) + " using " +
-                 configuration::to_string(ForEachPolicy{});
-        }
         //**********************************************************************
 
        protected:

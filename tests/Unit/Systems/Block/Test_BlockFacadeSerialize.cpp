@@ -11,6 +11,7 @@
 
 // catch wants << declared and defined while comparing equality, so we include
 // STD helpers
+#include "Utilities/AsConst.hpp"
 #include "Utilities/StdHelpers.hpp"
 
 namespace tags {
@@ -101,7 +102,8 @@ namespace {
       iarchive(as_facade(loaded_b));  // Read the data from the archive
     }
 
-    CHECK(b.data() == loaded_b.data());
+    // stringifying this requires operator << for vectors.
+    CHECK(cpp17::as_const(b).data() == cpp17::as_const(loaded_b).data());
   }
 
 }  // namespace
