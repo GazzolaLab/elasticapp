@@ -7,7 +7,7 @@ add_library(${LIBRARY}::ExecutionPolicy ALIAS CollisionExecutionPolicy)
 
 elastica_target_headers(
         ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
         # DomainPolicy.hpp
         ExecutionPolicy.hpp
 )

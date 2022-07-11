@@ -9,7 +9,7 @@
 #include <limits>
 #include <type_traits>
 
-#include "elastica/Utilities/ValueTraits/Configuration.hpp"
+#include "Utilities/ValueTraits/Configuration.hpp"
 
 namespace elastica {
 

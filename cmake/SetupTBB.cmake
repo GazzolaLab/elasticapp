@@ -6,7 +6,7 @@ log_info("Finding TBB")
 
 find_package(TBB REQUIRED COMPONENTS tbbmalloc)
 
-file(APPEND "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
+file(APPEND "${CMAKE_BINARY_DIR}/BuildInformation.txt"
         "TBB Version:  ${TBB_VERSION}\n")
 
 add_library(TBB INTERFACE IMPORTED)

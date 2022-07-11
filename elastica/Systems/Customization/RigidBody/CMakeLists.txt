@@ -9,7 +9,7 @@ add_subdirectory(Sphere)
 
 elastica_target_headers(
         ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
         common.hpp
         Sphere.hpp
 )

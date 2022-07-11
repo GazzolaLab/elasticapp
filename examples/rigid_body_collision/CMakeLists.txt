@@ -10,6 +10,8 @@ target_link_libraries(RigidBodyCollisionCaseStudy
         Materials
         ElasticaFlags
         )
+# So that I can code up as <elastica/CaseStudy> rather than "CaseStudy"
+target_include_directories(RigidBodyCollisionCaseStudy PRIVATE ${CMAKE_SOURCE_DIR})
 
 include(ElasticaCaseStudyHelpers)
 

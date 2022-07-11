@@ -10,6 +10,9 @@ target_link_libraries(HingeJointCaseStudy
         ElasticaFlags
         )
 
+# So that I can code up as <elastica/CaseStudy> rather than "CaseStudy"
+target_include_directories(HingeJointCaseStudy PRIVATE ${CMAKE_SOURCE_DIR})
+
 include(ElasticaCaseStudyHelpers)
 
 add_elastica_case_study(example_hinge_joint

@@ -32,15 +32,15 @@ string(REGEX MATCH "#define ELASTICA_PATCH_VERSION ([0-9]*)" _ELASTICA_PATCH_VER
 set(ELASTICA_PATCH_VERSION ${CMAKE_MATCH_1})
 
 # ##############################################################################
-# Project and host details
+# Project details
 # ##############################################################################
 set(ELASTICA_VERSION "${ELASTICA_MAJOR_VERSION}.${ELASTICA_MINOR_VERSION}.${ELASTICA_PATCH_VERSION}")
+set(ELASTICA_DESCRIPTION "Package to efficiently simulate soft-filaments on devices from your laptop to supercomputing clusters.")
 
 project(elastica
         LANGUAGES CXX
-        VERSION ${ELASTICA_VERSION})
-
-site_name(HOSTNAME)
+        VERSION ${ELASTICA_VERSION}
+        DESCRIPTION ${ELASTICA_DESCRIPTION})
 
 # ##############################################################################
 # Setting the directory which contains CMake modules
@@ -48,6 +48,10 @@ site_name(HOSTNAME)
 # Appends the cmake path inside the MAKE_MODULE_PATH variable which stores the
 # list of directories where to lookk for additional CMake modules.
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
+# Create a new (or overwrite existing) info file at start of configuration
+file(WRITE "${CMAKE_BINARY_DIR}/BuildInformation.txt" "")
+
 
 # ##############################################################################
 # Including cmake only modules
@@ -57,13 +61,20 @@ set_logs_on()
 set_log_level("DEBUG") # INFO  DEBUG  HEAVYDEBUG
 
 option(DOCS_ONLY "Skip all initialization not required for rendering documentation" OFF)
-option(ELASTICA_SMP "Enable/Disable the shared-memory parallelization." OFF)
-option(ELASTICA_PROFILING_MODE "Enable/Disable intrusive code profiling." ON)
-option(ELASTICA_BUILD_TESTS "Build test programs" ON)
 option(ELASTICA_BUILD_BENCHMARKS "Build microbenchmarks" ON)
 option(ELASTICA_BUILD_EXAMPLES "Build examples" OFF)
 option(ELASTICA_BUILD_DOCUMENTATION "Builds the documentation in addition to code" ON)
 option(ELASTICA_BUILD_PYTHON_BINDINGS "Build the python bindings for elastica" ON)
+
+# Define standard installation directories before since python targets utilize
+include(GNUInstallDirs)
+# Disable `make install` depending on `make all` since we want to control what
+# we install more closely. With this setting, and targets marked as `OPTIONAL`,
+# only targets that were built will be installed.
+set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY ON)
+
+include(ElasticaGetGitHash)
+include(ElasticaSetSiteName)
 
 if (ELASTICA_BUILD_DOCUMENTATION AND DOCS_ONLY)
     include(SetupDoxygen)
@@ -71,23 +82,29 @@ if (ELASTICA_BUILD_DOCUMENTATION AND DOCS_ONLY)
 endif (ELASTICA_BUILD_DOCUMENTATION AND DOCS_ONLY)
 
 include(ProhibitInSourceBuild)
-# include(AddSources) # Add function to add a set of source files.
-# include(ElasticaUtils)
 include(CheckCompilerVersion)
-include(ElasticaSetupFlagsTarget)
-include(SetGitVersion)
-include(SetOutputDirectory)
-include(SetBuildType)
-include(SetCxxStandard)
-include(SetupSafeInclude)
-include(EnableWarnings)
-include(SetupCxxFlags)
+#
 include(ElasticaAddInterfaceLibraryHeaders)
 include(ElasticaTargetHeaders)
 include(ElasticaTargetSources)
 include(ElasticaAddLibraries)
-include(CheckBrokenArray0)
+include(ElasticaSetupFlagsTarget)
+# need flags to be defined
+include(EnableWarnings)
+#
+include(SetBuildType)
+include(SetupCCache)
+include(SetupCraySupport)
+include(SetCxxStandard)
+include(SetupCxxFlags)
+include(SetupElasticaInlining)
+include(SetupMacOsx)
+include(SetOutputDirectory)
+include(SetupPic)
 # include(SetupBuildInfo) include(SetupCCache)
+
+# after setting standard
+include(CheckBrokenArray0)
 
 # In order to use certain code analysis tools like clang-tidy and cppcheck the
 # compile commands need to be accessible. CMake can write these to a
@@ -101,84 +118,49 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # include(SetupLapack) include(SetupNumPy) include(SetupOpenMP)
 # include(SetupPapi) include(SetupSciPy) include(SetupLibsharp)
 
-include(SetupSleef)
 include(SetupBlaze)
 include(SetupBlazeTensor)
 include(SetupBrigand)
-#include(SetupBoost)
-if (ELASTICA_BUILD_PYTHON_BINDINGS)
-    include(SetupPybind11)
-    # Set system-wide for now, correct it later on
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-endif ()
-
-include(ElasticaSetupTesting)
-if (ELASTICA_BUILD_TESTS OR ELASTICA_BUILD_BENCHMARKS)
-    include(SetupCatch)
-endif ()
-include(SetupFilesystem)
-
-include(ElasticaSetupPythonPackage)
-
-if (ELASTICA_SMP)
-    set(ELASTICA_SMP 1)
-    set(ELASTICA_SMP_THREADS "TBB" CACHE STRING "Specify which thread library is used for shared-memory parallelization.")
-    set_property(CACHE ELASTICA_SMP_THREADS PROPERTY STRINGS "TBB;C++11")
-    # target_compile_definitions(elastica INTERFACE ELASTICA_USE_TBB)
-else ()
-    set(ELASTICA_SMP 0)
-    unset(ELASTICA_SMP_THREADS CACHE)
-endif ()
-
-if (ELASTICA_SMP_THREADS STREQUAL "TBB")
-    include(SetupTBB)
-endif ()
-
+include(SetupProfiling)
+include(SetupSMP)
+include(SetupStl)
 include(SetupYamlCpp)
-# include(SetupVTK)
+include(SetupFilesystem)
 
 if (ELASTICA_BUILD_DOCUMENTATION)
     include(SetupDoxygen)
 endif (ELASTICA_BUILD_DOCUMENTATION)
 include(CodeCoverageDetection)
 
-# Configure files
-configure_file("${CMAKE_CURRENT_LIST_DIR}/elastica/Configuration/Parallel.hpp.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/elastica/Configuration/Parallel.hpp")
-
-if (ELASTICA_PROFILING_MODE)
-    set(ELASTICA_PROFILING_MODE 1)
-    # target_compile_definitions(elastica INTERFACE ELASTICA_USE_TBB)
-else ()
-    set(ELASTICA_PROFILING_MODE 0)
-endif ()
-configure_file("${CMAKE_CURRENT_LIST_DIR}/elastica/Configuration/Profiling.hpp.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/elastica/Configuration/Profiling.hpp")
-
-if (ELASTICA_BUILD_TESTS)
-    enable_testing(true)
+include(ElasticaSetupTesting)
+if (BUILD_TESTING)
+    include(SetupCatch)
     include(ElasticaAddTestLibs)
     include(ElasticaAddCatchTests)
 endif ()
 
-# TODO : use targets and refactor later on
-# directly call Simulator/ABC instead of elastica/Simulator/ABC
-include_directories(${PROJECT_BINARY_DIR}/elastica)
-include_directories(${CMAKE_SOURCE_DIR}/elastica)
-if (ELASTICA_BUILD_TESTS)
-    include_directories(${CMAKE_SOURCE_DIR}/tests/Unit)
+if (ELASTICA_BUILD_PYTHON_BINDINGS)
+    include(SetupPybind11)
 endif ()
-#include_directories(${CMAKE_SOURCE_DIR})
+# Don't guard the following include with ELASTICA_BUILD_PYTHON_BINDINGS to provide a uniform interface to the rest of
+# the build system.
+include(ElasticaSetupPythonPackage)
 
 add_subdirectory(elastica)
-if (ELASTICA_BUILD_TESTS)
+
+if (BUILD_TESTING)
     add_subdirectory(tests)
-endif (ELASTICA_BUILD_TESTS)
+endif (BUILD_TESTING)
 if (ELASTICA_BUILD_BENCHMARKS)
+    if (NOT BUILD_TESTING) # already included once
+        include(SetupCatch)
+    endif ()
     add_subdirectory(benchmarks)
 endif (ELASTICA_BUILD_BENCHMARKS)
+
 if (ELASTICA_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif (ELASTICA_BUILD_EXAMPLES)
 
 include(PrintUsefulCMakeInfo)
+include(ElasticaInstall)

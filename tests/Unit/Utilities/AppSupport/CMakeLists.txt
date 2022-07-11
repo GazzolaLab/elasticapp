@@ -11,7 +11,7 @@ add_test_library(
         ${LIBRARY}
         "Utilities/AppSupport"
         "${LIBRARY_SOURCES}"
-        "Utilities"
+        "_elastica_case_study;_elastica_case_study_interface"
 )
 
 add_subdirectory(Helpers)

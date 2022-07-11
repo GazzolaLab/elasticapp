@@ -28,7 +28,7 @@ find_package(pybind11 2.6.0 REQUIRED
 
 set_property(
         GLOBAL APPEND PROPERTY ELASTICA_THIRD_PARTY_LIBS
-        pybind11::headers
+        pybind11
 )
 
 log_debug("Pybind11 include: ${pybind11_INCLUDE_DIR}")

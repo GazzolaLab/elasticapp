@@ -5,7 +5,8 @@ set(LIBRARY Framework)
 
 add_subdirectory(Tests)
 
-add_elastica_library(${LIBRARY} INTERFACE)
+add_library(${LIBRARY} INTERFACE)
+# add_elastica_library(${LIBRARY} INTERFACE)
 
 set(STRING_LIBRARY StringAlgorithm)
 set(STRING_LIBRARY_SOURCES
@@ -13,6 +14,9 @@ set(STRING_LIBRARY_SOURCES
         TestNestedExceptions.cpp
         )
 add_library(${STRING_LIBRARY} ${STRING_LIBRARY_SOURCES})
+target_include_directories(${STRING_LIBRARY} PUBLIC
+        ${PROJECT_SOURCE_DIR}/elastica
+        )
 
 target_link_libraries(
         ${LIBRARY}

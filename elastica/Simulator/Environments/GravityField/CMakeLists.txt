@@ -9,7 +9,7 @@ add_library(${LIBRARY}::ModuleConfiguration ALIAS GravityFieldModuleConfiguratio
 
 elastica_target_headers(
         ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
         GravityField.hpp
         Tags.hpp
         Types.hpp

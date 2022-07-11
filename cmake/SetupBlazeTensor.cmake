@@ -8,7 +8,7 @@ find_package(BlazeTensor 0.1 REQUIRED QUIET)
 log_debug("BLAZE_TENSOR_INCLUDE_DIR: ${BLAZE_TENSOR_INCLUDE_DIR}")
 log_debug("BLAZE_TENSOR_VERSION: ${BLAZE_TENSOR_VERSION}")
 
-file(APPEND "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
+file(APPEND "${CMAKE_BINARY_DIR}/BuildInformation.txt"
         "BlazeTensor Version:  ${BLAZE_TENSOR_VERSION}\n")
 
 #elastica_include_directories("${BLAZE_INCLUDE_DIR}")
@@ -19,6 +19,13 @@ set_property(TARGET BlazeTensor PROPERTY
 add_interface_lib_headers(
         TARGET BlazeTensor
         HEADERS
+        blaze_tensor/Blaze.h
+        blaze_tensor/math/DynamicTensor.h
+        blaze_tensor/math/StaticTensor.h
+        blaze_tensor/math/SubTensor.h
+        blaze_tensor/math/views/ColumnSlice.h
+        # for the version number in CMakelists
+        blaze_tensor/system/Version.h
 )
 
 set_property(

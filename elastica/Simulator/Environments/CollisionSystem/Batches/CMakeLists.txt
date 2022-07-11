@@ -9,7 +9,7 @@ add_library(${LIBRARY}::UnionFindExecutionPolicy ALIAS UnionFindExecutionPolicy)
 
 elastica_target_headers(
         ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
         Batches.hpp
         BatchContainerTrait.hpp
         BatchGenerators.hpp

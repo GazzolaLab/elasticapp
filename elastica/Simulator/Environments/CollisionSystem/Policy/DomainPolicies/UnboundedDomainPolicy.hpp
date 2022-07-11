@@ -3,7 +3,7 @@
 /// Types first
 #include "DomainPolicy.hpp"
 #include "Simulator/Domain/Types.hpp"
-#include "elastica/Utilities/DefineTypes.h"
+#include "Utilities/DefineTypes.h"
 ///
 
 namespace elastica {

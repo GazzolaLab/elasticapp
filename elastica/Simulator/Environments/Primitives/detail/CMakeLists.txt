@@ -9,7 +9,7 @@ elastica_target_sources(
 
 elastica_target_headers(
         ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
         CapsulePrimitiveBase.hpp
         # ContiguousPrimitive.hpp
 )

@@ -114,18 +114,10 @@ function(add_test_library
     # We use a global variable to also make a list of all the libraries added so
     # far. Again, this is easier for users than needing to propagate the
     # libraries back up using PARENT_SCOPE in various calls to set().
-    get_property(
-            ELASTICA_TESTS_LIBS
-            GLOBAL
-            PROPERTY
-            ELASTICA_TESTS_LIBS_PROPERTY)
-    set(ELASTICA_TESTS_LIBS
-            "${ELASTICA_TESTS_LIBS};${LIBRARY}")
     set_property(
-            GLOBAL
-            PROPERTY
-            ELASTICA_TESTS_LIBS_PROPERTY
-            ${ELASTICA_TESTS_LIBS})
+            GLOBAL APPEND PROPERTY ELASTICA_TESTS_LIBS_PROPERTY
+            ${LIBRARY}
+    )
 endfunction()
 
 # Writes a header file with a function named FUNCTION_NAME that in turn calls

@@ -2,7 +2,7 @@
 
 elastica_target_headers(
         ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
         HEADERS
         ArraySize.hpp
         Cpp17.hpp

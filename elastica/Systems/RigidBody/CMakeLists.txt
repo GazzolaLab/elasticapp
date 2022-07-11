@@ -4,7 +4,7 @@
 
  elastica_target_headers(
          ${LIBRARY}
-         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
          Access.hpp
          Aliases.hpp
          Block.hpp

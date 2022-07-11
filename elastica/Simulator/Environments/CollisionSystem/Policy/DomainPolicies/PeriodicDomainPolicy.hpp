@@ -5,7 +5,7 @@
 /// Types first
 #include "DomainPolicy.hpp"
 #include "Simulator/Domain/Types.hpp"
-#include "elastica/Utilities/DefineTypes.h"
+#include "Utilities/DefineTypes.h"
 ///
 
 namespace elastica {
@@ -77,7 +77,7 @@ namespace elastica {
 
         // TODO logic for enlargement of hashgrids
 
-        DomainType const* domain_;     //!< Pointer to the simulation domain
+        DomainType const* domain_;  //!< Pointer to the simulation domain
         GhostPrimitives ghost_primitives_;
       };
 

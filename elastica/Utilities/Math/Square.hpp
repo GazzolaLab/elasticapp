@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include "elastica/Utilities/ForceInline.hpp"
+#include "Utilities/ForceInline.hpp"
 
 namespace elastica {
 

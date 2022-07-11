@@ -45,13 +45,10 @@ set_property(TARGET ElasticaFlags
         INTERFACE_COMPILE_OPTIONS
         $<$<COMPILE_LANGUAGE:CXX>:-ftemplate-backtrace-limit=0>)
 
-# set(CMAKE_CXX_FLAGS "-c -Wa,-alh ${CMAKE_CXX_FLAGS}") # We disable thread
-# safety of Boost::shared_ptr since it makes them faster # to use and we do not
-# share them between threads. If a thread-safe # shared_ptr is desired it must
-# be implemented to work with Charm++'s threads # anyway.
-# add_definitions(-DBOOST_SP_DISABLE_THREADS)
-
-# # Override the boost index type to match the STL for Boost.MultiArray #
-# (std::ptrdiff_t to std::size_t) # Note: This header guard hasn't changed since
-# 2002 so it seems not too insane # to rely on.
-# add_definitions(-DBOOST_MULTI_ARRAY_TYPES_RG071801_HPP)
+# By default, the LLVM optimizer assumes floating point exceptions are ignored.
+create_cxx_flag_target("-ffp-exception-behavior=maytrap" ElasticaFpExceptions)
+target_link_libraries(
+        ElasticaFlags
+        INTERFACE
+        ElasticaFpExceptions
+)

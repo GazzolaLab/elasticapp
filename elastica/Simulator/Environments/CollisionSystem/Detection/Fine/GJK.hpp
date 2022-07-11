@@ -32,13 +32,13 @@
 #include <iostream>  //for error message
 #include <vector>
 
-#include "elastica/ErrorHandling/Assert.hpp"
-#include "elastica/Utilities/DefineTypes.h"
-#include "elastica/Utilities/Math/Accuracy.hpp"
-#include "elastica/Utilities/Math/Dot.hpp"
-#include "elastica/Utilities/Math/Normalize.hpp"
-#include "elastica/Utilities/Math/SqrLength.hpp"
-#include "elastica/Utilities/Math/Vec3.hpp"
+#include "ErrorHandling/Assert.hpp"
+#include "Utilities/DefineTypes.h"
+#include "Utilities/Math/Accuracy.hpp"
+#include "Utilities/Math/Dot.hpp"
+#include "Utilities/Math/Normalize.hpp"
+#include "Utilities/Math/SqrLength.hpp"
+#include "Utilities/Math/Vec3.hpp"
 
 namespace elastica {
 

@@ -8,6 +8,8 @@ target_link_libraries(tutorial_intermediate_casestudy
         ElasticaFlags
         Blaze
         )
+# So that I can code up as <elastica/CaseStudy> rather than "CaseStudy"
+target_include_directories(tutorial_intermediate_casestudy PRIVATE ${CMAKE_SOURCE_DIR})
 
 include(ElasticaCaseStudyHelpers)
 add_elastica_case_study(StandaloneIntermediateCaseStudy

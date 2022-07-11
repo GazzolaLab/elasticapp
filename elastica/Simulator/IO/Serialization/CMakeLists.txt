@@ -23,11 +23,11 @@ set(LIBRARY_SOURCES
         SerializeWizard.hpp
         STL.hpp
         Types.hpp
-        )
+)
 
 elastica_target_headers(
         ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
         ${LIBRARY_SOURCES}
 )
 

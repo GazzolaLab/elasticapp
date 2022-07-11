@@ -43,9 +43,9 @@
  * \endcode
  *
  */
-#ifndef ELASTICA_USE_SHARED_MEMORY_PARALLELIZATION
-#define ELASTICA_USE_SHARED_MEMORY_PARALLELIZATION @ELASTICA_SMP@
-#endif
+// #ifndef ELASTICA_USE_SHARED_MEMORY_PARALLELIZATION
+// #define ELASTICA_USE_SHARED_MEMORY_PARALLELIZATION @ELASTICA_SMP@
+// #endif
 //******************************************************************************
 
 //******************************************************************************

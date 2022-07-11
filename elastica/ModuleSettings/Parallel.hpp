@@ -37,7 +37,8 @@ namespace elastica {
  * all computations are performed on a single compute core, even if the
  * configuration requests it
  */
-#if ELASTICA_USE_SHARED_MEMORY_PARALLELIZATION && defined(ELASTICA_USE_TBB)
+#if defined(ELASTICA_USE_SHARED_MEMORY_PARALLELIZATION) && \
+    defined(ELASTICA_USE_TBB)
 #define ELASTICA_TBB_PARALLEL_MODE 1
 #else
 #define ELASTICA_TBB_PARALLEL_MODE 0

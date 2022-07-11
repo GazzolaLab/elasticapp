@@ -9,6 +9,8 @@ target_link_libraries(AxialStretchingCaseStudy
         Materials
         ElasticaFlags
         )
+# So that I can code up as <elastica/CaseStudy> rather than "CaseStudy"
+target_include_directories(AxialStretchingCaseStudy PRIVATE ${CMAKE_SOURCE_DIR})
 
 include(ElasticaCaseStudyHelpers)
 

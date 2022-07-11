@@ -5,7 +5,7 @@ add_subdirectory(detail)
 
 elastica_target_headers(
         ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
         HEADERS
         Components.hpp
         ExplicitDampingAdapter.hpp

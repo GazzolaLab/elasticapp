@@ -4,7 +4,7 @@ log_info("Finding CxxOpts")
 # creating a FindCxxOpts.cmake file
 find_package(cxxopts 3.0 REQUIRED)
 
-file(APPEND "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
+file(APPEND "${CMAKE_BINARY_DIR}/BuildInformation.txt"
         "cxxopts Version:  ${cxxopts_VERSION}\n")
 
 get_target_property(INTERFACE_DIRECTORIES cxxopts::cxxopts INTERFACE_INCLUDE_DIRECTORIES)

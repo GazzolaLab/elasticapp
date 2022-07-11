@@ -15,7 +15,7 @@ elastica_target_sources(
 
 elastica_target_headers(
         ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
         AbortWithErrorMessage.hpp
         Abort.hpp
         Assert.hpp
@@ -27,4 +27,3 @@ elastica_target_headers(
         NestedExceptions.hpp
 )
 
-#add_elastica_library(${LIBRARY} ${LIBRARY_SOURCES})

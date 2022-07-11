@@ -84,4 +84,4 @@ namespace elastica {
 //******************************************************************************
 // Post-includes
 //******************************************************************************
-#include "elastica/Simulator/Environments/CollisionSystem/DEMSolver.hpp"
+#include "Simulator/Environments/CollisionSystem/DEMSolver.hpp"

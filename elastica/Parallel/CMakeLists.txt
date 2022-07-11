@@ -7,7 +7,7 @@ add_elastica_library(${LIBRARY} INTERFACE)
 
 elastica_target_headers(
         ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
         HEADERS
         blocked_range.hpp
         detail.hpp
@@ -21,20 +21,5 @@ target_link_libraries(
         INTERFACE
         Utilities
         # Make this link to TBB
-        ModuleSettings
+        ParallelBackend
 )
-
-#if (ELASTICA_SMP)
-#    target_link_libraries(
-#            ${LIBRARY}
-#            INTERFACE
-#            Utilities
-#            TBB
-#    )
-#else ()
-#    target_link_libraries(
-#            ${LIBRARY}
-#            INTERFACE
-#            Utilities
-#    )
-#endif ()

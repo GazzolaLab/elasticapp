@@ -8,8 +8,7 @@ find_package(Boost 1.72.0)
 log_debug("Boost include: ${Boost_INCLUDE_DIRS}")
 log_debug("Boost libraries: ${Boost_LIBRARIES}")
 
-file(APPEND
-        "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
+file(APPEND "${CMAKE_BINARY_DIR}/BuildInformation.txt"
         "Boost Version:  ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}\n"
         )
 

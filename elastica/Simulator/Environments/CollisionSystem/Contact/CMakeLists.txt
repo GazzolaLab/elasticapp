@@ -7,7 +7,7 @@ add_library(${LIBRARY}::ContainerPolicy ALIAS ContactContainerPolicy)
 
 elastica_target_headers(
         ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
         Contact.hpp
         ContactBase.hpp
         ContactTrait.hpp

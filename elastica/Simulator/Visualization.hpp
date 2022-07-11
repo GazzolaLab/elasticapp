@@ -2,10 +2,10 @@
 
 #include <vector>
 
-#include "elastica/ErrorHandling/Assert.hpp"
-#include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/BoundingBox.hpp"
-#include "elastica/Simulator/Trigger.hpp"
-#include "elastica/Utilities/DefineTypes.h"
+#include "ErrorHandling/Assert.hpp"
+#include "Simulator/Environments/CollisionSystem/Detection/Coarse/BoundingBox.hpp"
+#include "Simulator/Trigger.hpp"
+#include "Utilities/DefineTypes.h"
 
 namespace elastica {
 
@@ -17,7 +17,7 @@ namespace elastica {
     using Viewer =
         std::vector<Visualization*>;  //!< Container for active viewers.
     using Spheres = std::vector<SphereCollection const*>;  //!< Container for
-                                                            //!< active spheres.
+                                                           //!< active spheres.
     using AABB = ::elastica::collision::detection::coarse::BoundingBox<real_t>;
     using BoundingBoxes =
         std::vector<AABB const*>;  //!< Container for active spheres.

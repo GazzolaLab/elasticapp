@@ -28,7 +28,7 @@ add_library(Environments::Transfer ALIAS Transfer)
 
 elastica_target_headers(
         ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
         Common.hpp
         CollisionSystem.hpp
         Environments.hpp

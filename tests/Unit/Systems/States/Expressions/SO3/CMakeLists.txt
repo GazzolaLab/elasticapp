@@ -11,5 +11,4 @@ add_test_library(
         "Systems/States/Expressions/SO3"
         "${LIBRARY_SOURCES}"
         "Utilities;Systems"
-        #"Utilities;Systems;Sleef" Is sleef required?
 )

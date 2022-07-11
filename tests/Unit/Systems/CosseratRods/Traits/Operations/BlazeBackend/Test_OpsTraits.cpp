@@ -3,13 +3,13 @@
 //
 
 #include "Framework/TestingFramework.hpp"
-#include "elastica/Systems/CosseratRods/Traits/DataType/BlazeBackend/DataTypeTraits.hpp"
+#include "Systems/CosseratRods/Traits/DataType/BlazeBackend/DataTypeTraits.hpp"
 // #include "elastica/Systems/CosseratRods/Traits/Operations/Protocols.hpp"
 #include <blaze/Blaze.h>
 #include <blaze_tensor/Blaze.h>
 
-#include "elastica/Systems/CosseratRods/Traits/Operations/BlazeBackend/OpsTraits.hpp"
-#include "elastica/Systems/CosseratRods/Traits/Operations/BlazeBackend/OptimizationLevel.hpp"
+#include "Systems/CosseratRods/Traits/Operations/BlazeBackend/OpsTraits.hpp"
+#include "Systems/CosseratRods/Traits/Operations/BlazeBackend/OptimizationLevel.hpp"
 
 namespace {
 

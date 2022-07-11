@@ -26,7 +26,7 @@ add_library(${LIBRARY}::States ALIAS States)
 
 elastica_target_headers(
         ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
         Block.hpp
         CosseratRods.hpp
         Protocols.hpp

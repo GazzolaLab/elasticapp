@@ -11,5 +11,5 @@ add_test_library(
         ${LIBRARY}
         "Simulator/Environments/CollisionSystem/Policy"
         "${LIBRARY_SOURCES}"
-        "CollisionPolicy;Primitives;Utilities"
+        "CollisionPolicy;Parallel;Primitives;Utilities" # TODO : Parallel is not transitive
 )

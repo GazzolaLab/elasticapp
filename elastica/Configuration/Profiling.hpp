@@ -29,7 +29,7 @@
  *  - Activated  : \a true
  */
 constexpr bool elastica_profiling_mode() {
-#if @ELASTICA_PROFILING_MODE@
+#if defined(ELASTICA_PROFILING_MODE)
   return true;
 #else
   return false;

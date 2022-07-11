@@ -17,7 +17,7 @@ add_library(${LIBRARY}::Serialization ALIAS Serialization)
 #
 elastica_target_headers(
         ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
         #        vtk.hpp
         #        vtk/Writer.hpp
         #        csv/Writer.hpp

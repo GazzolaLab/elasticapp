@@ -21,21 +21,24 @@ get_property(
         GLOBAL
         PROPERTY
         ELASTICA_TESTS_LIBS_PROPERTY)
-#message("${ELASTICA_TESTS_LIBRARIES}")
 get_property(ELASTICA_TESTS_LIB_FUNCTIONS GLOBAL
         PROPERTY ELASTICA_TESTS_LIB_FUNCTIONS_PROPERTY)
-#message("${ELASTICA_TESTS_LIB_FUNCTIONS}")
-#message("HI")
+
+# Register header
+foreach (TEST_LIBRARY ${ELASTICA_TESTS_LIBRARIES})
+    target_include_directories(${TEST_LIBRARY} PUBLIC
+            ${PROJECT_SOURCE_DIR}/tests/Unit)
+    target_include_directories(${TEST_LIBRARY} PUBLIC
+            ${PROJECT_SOURCE_DIR}/elastica)
+endforeach (TEST_LIBRARY ${ELASTICA_TESTS_LIBRARIES})
 
 add_executable(${executable} ${executable}.cpp)
 
-target_link_libraries(${executable} ${ELASTICA_TESTS_LIBRARIES}
-        ${ELASTICA_LIBRARIES})
+target_link_libraries(${executable} ${ELASTICA_TESTS_LIBRARIES})
 
 add_dependencies(unit-tests ${executable})
 
 elastica_add_catch_tests(${executable} "${ELASTICA_TESTS_LIBRARIES}")
-
 
 # Setup code coverage for unit tests
 if (COVERAGE)

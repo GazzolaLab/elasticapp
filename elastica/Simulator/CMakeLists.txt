@@ -33,7 +33,7 @@ add_library(Simulator::Utilities ALIAS SimulatorUtilities)
 
 elastica_target_headers(
         ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
         Configuration.hpp
         Connections.hpp
         Constraints.hpp

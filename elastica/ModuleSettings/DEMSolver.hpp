@@ -4,7 +4,7 @@
 // Includes
 //******************************************************************************
 
-#include "elastica/Simulator/Environments/CollisionSystem/Response/DEMForces/LinearSpringDashpot.hpp"
+#include "Simulator/Environments/CollisionSystem/Response/DEMForces/LinearSpringDashpot.hpp"
 
 //==============================================================================
 //
@@ -16,7 +16,7 @@ namespace elastica {
 
   namespace collision {
 
-#include "elastica/Configuration/DEMSolver.hpp"
+#include "Configuration/DEMSolver.hpp"
 
   }
 

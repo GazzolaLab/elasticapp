@@ -9,7 +9,7 @@
 
 #pragma once
 
-
+#if ELASTICA_USE_ALWAYS_INLINE
 #if defined(__GNUC__)
 /// \ingroup UtilitiesGroup
 /// Always inline a function. Only use this if you benchmarked the code.
@@ -18,6 +18,7 @@
 /// \ingroup UtilitiesGroup
 /// Always inline a function. Only use this if you benchmarked the code.
 #define ELASTICA_ALWAYS_INLINE __forceinline
+#endif
 #else
 /// \ingroup UtilitiesGroup
 /// Always inline a function. Only use this if you benchmarked the code.

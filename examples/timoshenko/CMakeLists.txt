@@ -9,6 +9,8 @@ target_link_libraries(TimoshenkoCaseStudy
         Materials
         ElasticaFlags
         )
+# So that I can code up as <elastica/CaseStudy> rather than "CaseStudy"
+target_include_directories(TimoshenkoCaseStudy PRIVATE ${CMAKE_SOURCE_DIR})
 
 include(ElasticaCaseStudyHelpers)
 

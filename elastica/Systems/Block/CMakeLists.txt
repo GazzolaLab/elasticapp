@@ -12,7 +12,7 @@ add_library(${LIBRARY}::Variables ALIAS BlockVariables)
 
 elastica_target_headers(
         ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
         HEADERS
         Block.hpp
         Protocols.hpp

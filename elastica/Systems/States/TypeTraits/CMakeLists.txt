@@ -6,7 +6,7 @@ add_elastica_library(${LIBRARY} INTERFACE)
 
 elastica_target_headers(
         Systems
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
         HEADERS
         Aliases.hpp
         HasOrder.hpp

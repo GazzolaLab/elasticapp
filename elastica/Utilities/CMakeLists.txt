@@ -26,7 +26,7 @@ elastica_target_sources(
 
 elastica_target_headers(
         ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
         HEADERS
         Approx.hpp
         AsConst.hpp
@@ -95,7 +95,6 @@ target_link_libraries(
         Blaze
         Brigand
         ErrorHandling
-        # Sleef
 )
 
 #set(LIBRARY_SOURCES Utilities.cpp )

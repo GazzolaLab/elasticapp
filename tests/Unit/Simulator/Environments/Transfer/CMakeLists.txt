@@ -13,5 +13,5 @@ add_test_library(
         ${LIBRARY}
         "Simulator/Environments/Transfer"
         "${LIBRARY_SOURCES}"
-        "Transfer"
+        "Transfer;Parallel" # FIXME : Parallel is not transitive
 )

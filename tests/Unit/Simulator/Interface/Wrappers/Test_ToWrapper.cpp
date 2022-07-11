@@ -9,9 +9,9 @@
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Interface/Wrappers/ToWrapper.hpp"
 #include "Utilities/IgnoreUnused.hpp"
-#include "Utilities/TMPL.hpp"
-#include "tests/Unit/Utilities/NamedType/TraitsTesters.hpp"
 #include "Utilities/MakeString.hpp"
+#include "Utilities/NamedType/TraitsTesters.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace {
 

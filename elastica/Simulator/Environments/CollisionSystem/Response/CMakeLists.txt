@@ -12,7 +12,7 @@ add_library(${LIBRARY}::DEMExecutionPolicy ALIAS DEMExecutionPolicy)
 
 elastica_target_headers(
         ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
         ContactTrait.hpp
         DEMSolver.hpp
         Protocols.hpp

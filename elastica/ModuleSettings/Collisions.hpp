@@ -4,10 +4,10 @@
 // Includes
 //******************************************************************************
 
-#include "elastica/Simulator/Environments/CollisionSystem/Batches/Types.hpp"
-#include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/Types.hpp"
-#include "elastica/Simulator/Environments/CollisionSystem/Detection/Fine/Types.hpp"
-#include "elastica/Simulator/Environments/CollisionSystem/Response/Types.hpp"
+#include "Simulator/Environments/CollisionSystem/Batches/Types.hpp"
+#include "Simulator/Environments/CollisionSystem/Detection/Coarse/Types.hpp"
+#include "Simulator/Environments/CollisionSystem/Detection/Fine/Types.hpp"
+#include "Simulator/Environments/CollisionSystem/Response/Types.hpp"
 
 //==============================================================================
 //
@@ -15,4 +15,4 @@
 //
 //==============================================================================
 
-#include "elastica/Configuration/Collisions.hpp"
+#include "Configuration/Collisions.hpp"
