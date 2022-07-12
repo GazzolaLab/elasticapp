@@ -54,8 +54,8 @@ namespace standalone_bindings {
     void add_options(cxxopts::Options& options, Parameter /*meta*/,
                      default_detected /*meta*/) {
       using Value = tmpl::type_from<Parameter>;
-      options.add_options()(pretty_type::short_name<Parameter>(),  //
-                            Parameter::help,                       //
+      options.add_options()(pretty_type::name<Parameter>(),  //
+                            Parameter::help,                 //
                             cxxopts::value<Value>()->default_value(
                                 as_string(Parameter::default_value())));
     }
@@ -65,8 +65,8 @@ namespace standalone_bindings {
                      default_not_detected /*meta*/
     ) {
       using Value = tmpl::type_from<Parameter>;
-      options.add_options()(pretty_type::short_name<Parameter>(),  //
-                            Parameter::help,                       //
+      options.add_options()(pretty_type::name<Parameter>(),  //
+                            Parameter::help,                 //
                             cxxopts::value<Value>());
     }
 
@@ -147,7 +147,7 @@ namespace standalone_bindings {
       using Parameter = decltype(input_parameter);
       using Value = tmpl::type_from<Parameter>;
 
-      return result[pretty_type::short_name<Parameter>()].template as<Value>();
+      return result[pretty_type::name<Parameter>()].template as<Value>();
     };
 
     return cpp17::apply(

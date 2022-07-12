@@ -42,6 +42,7 @@
 #include "Utilities/TypeTraits/ArraySize.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 #include "Utilities/TypeTraits/IsStdArray.hpp"
+#include "Utilities/TypeTraits/Void.hpp"
 
 //==============================================================================
 //
@@ -644,8 +645,8 @@ namespace pretty_type {
       static std::string get() {
         std::stringstream ss;
         ss << "std::unique_ptr<"
-           << construct_name<std::decay_t<std::remove_pointer_t<decltype(
-                                 *std::declval<type>())>>,
+           << construct_name<std::decay_t<std::remove_pointer_t<
+                                 decltype(*std::declval<type>())>>,
                              M, KT>::get()
            << add_qualifiers<
                   std::remove_reference_t<decltype(*std::declval<type>())>>()
@@ -666,8 +667,8 @@ namespace pretty_type {
       static std::string get() {
         std::stringstream ss;
         ss << "std::shared_ptr<"
-           << construct_name<std::decay_t<std::remove_pointer_t<decltype(
-                                 *std::declval<type>())>>,
+           << construct_name<std::decay_t<std::remove_pointer_t<
+                                 decltype(*std::declval<type>())>>,
                              M, KT>::get()
            << add_qualifiers<
                   std::remove_reference_t<decltype(*std::declval<type>())>>()
@@ -790,8 +791,46 @@ namespace pretty_type {
    */
   template <typename T>
   std::string short_name() {
+#define SHORT_NAME_DEMANGLE_WORKAROUND
+
+    // We need a workaround to demangle the compiler generated names for
+    // short name extraction. Name demangling is expensive as it necessarily
+    // involves heap allocations.
+#ifdef SHORT_NAME_DEMANGLE_WORKAROUND
     return detail::extract_short_name(demangle(typeid(T).name()));
-//    return detail::extract_short_name(typeid(T).name());
+#else
+    //    return detail::extract_short_name(typeid(T).name());
+#endif
+
+#undef SHORT_NAME_DEMANGLE_WORKAROUND
+  }
+  //****************************************************************************
+
+  namespace detail {
+    template <typename T, typename = cpp17::void_t<>>
+    struct name_helper {
+      static std::string name() { return pretty_type::short_name<T>(); }
+    };
+
+    template <typename T>
+    struct name_helper<T, cpp17::void_t<decltype(T::name())>> {
+      static std::string name() { return T::name(); }
+    };
+  }  // namespace detail
+
+  //****************************************************************************
+  /*!\brief Return the result of the `name()` member of a class. If a class
+   * doesn't have a `name()` member, call `pretty_type::short_name<T>()`
+   * instead.
+   * \ingroup PrettyTypeGroup
+   *
+   * \warning Do not use this inside the `name()` member of struct. This
+   * can lead to recursion as `pretty_type::name<Tag>()` will call the `name()`
+   * member of the struct.
+   */
+  template <typename T>
+  std::string name() {
+    return detail::name_helper<T>::name();
   }
   //****************************************************************************
 

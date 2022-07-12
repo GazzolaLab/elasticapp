@@ -84,7 +84,7 @@ namespace py_bindings {
     static auto generate_argument_metadata() {
       auto generate_arg_metadata_for = [](auto input_parameter) -> std::string {
         using Parameter = decltype(input_parameter);
-        return pretty_type::short_name<Parameter>();
+        return pretty_type::name<Parameter>();
       };
       return cpp17::apply(
           [generate_arg_metadata_for](auto... input_parameter) {
@@ -114,13 +114,12 @@ namespace py_bindings {
           [docstring_formatter =
                format_per_sphinxdoc](auto input_parameter) -> std::string {
         using Parameter = decltype(input_parameter);
-        return docstring_formatter(pretty_type::short_name<Parameter>(),
+        return docstring_formatter(pretty_type::name<Parameter>(),
                                    std::string(Parameter::help));
       };
 
       auto generate_header = []() -> std::string {
-        return std::string("Initializes the ") +
-               pretty_type::short_name<CaseStudy>();
+        return std::string("Initializes the ") + pretty_type::name<CaseStudy>();
       };
 
       return cpp17::apply(

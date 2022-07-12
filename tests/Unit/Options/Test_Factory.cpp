@@ -10,6 +10,7 @@
 #include "Framework/TestingFramework.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -81,7 +82,7 @@ namespace {
 
   // Same as TestWithArg, except there is an TestWithArg2::Arg::name() that
   // returns something other than "Arg" to test that Arg is named in the
-  // input file using Options::name rather than pretty_type::short_name
+  // input file using pretty_type::name rather than pretty_type::short_name
   class TestWithArg2 : public OptionTest {
    public:
     struct Arg {

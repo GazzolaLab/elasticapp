@@ -43,7 +43,7 @@ namespace elastica {
       static inline void load(InArchive& ar, type& tagged_tuple) {
         tmpl::for_each<tmpl::list<Tags...>>([&](auto v) {
           using Tag = tmpl::type_from<decltype(v)>;
-          auto name{pretty_type::short_name<Tag>()};
+          auto name{pretty_type::name<Tag>()};
           try {
             ar(make_nvp<InArchive>(name.c_str(),
                                    tuples::get<Tag>(tagged_tuple)));
@@ -58,7 +58,7 @@ namespace elastica {
       static inline void save(OutArchive& ar, type const& tagged_tuple) {
         tmpl::for_each<tmpl::list<Tags...>>([&](auto v) {
           using Tag = tmpl::type_from<decltype(v)>;
-          auto name{pretty_type::short_name<Tag>()};
+          auto name{pretty_type::name<Tag>()};
           try {
             ar(make_nvp<OutArchive>(name.c_str(),
                                     tuples::get<Tag>(tagged_tuple)));

@@ -6,10 +6,11 @@
 #include <memory>
 #include <string>
 
-#include "StringAlgorithm.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
+#include "StringAlgorithm.hpp"
 #include "Utilities/NoSuchType.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/Void.hpp"
 
@@ -23,7 +24,7 @@ namespace TestHelpers {
         construction_string.insert(0, 2, ' ');
         construction_string =
             replace_all_copy(construction_string, "\n", "\n  ");
-        construction_string.insert(0, Options::name<OptionTag>() + ":\n");
+        construction_string.insert(0, pretty_type::name<OptionTag>() + ":\n");
         return construction_string;
       }
     };

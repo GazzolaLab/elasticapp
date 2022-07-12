@@ -564,7 +564,7 @@ namespace elastica {
         using ::elastica::get_meter;
 
         log<debug>([](auto const& log) {
-          log << "Performing " + ::pretty_type::short_name<Step>() + " ...\n";
+          log << "Performing " + ::pretty_type::name<Step>() + " ...\n";
         });
 
         ELASTICA_PROFILING_SECTION {
@@ -588,7 +588,7 @@ namespace elastica {
         }
 
         log<debug>([](auto const& log) {
-          log << "Finished " + ::pretty_type::short_name<Step>() + " ...\n";
+          log << "Finished " + ::pretty_type::name<Step>() + " ...\n";
         });
       };
       //************************************************************************

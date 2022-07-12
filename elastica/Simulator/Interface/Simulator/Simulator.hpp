@@ -685,7 +685,7 @@ reorganizing your code logic.
         using namespace ::elastica::logging;
 
         log<debug>([](auto const& log) {
-          log << "Performing " + ::pretty_type::short_name<Step>() + " ...\n";
+          log << "Performing " + ::pretty_type::name<Step>() + " ...\n";
         });
 
         ELASTICA_PROFILING_SECTION {
@@ -706,7 +706,7 @@ reorganizing your code logic.
         }
 
         log<debug>([](auto const& log) {
-          log << "Finished " + ::pretty_type::short_name<Step>() + " ...\n";
+          log << "Finished " + ::pretty_type::name<Step>() + " ...\n";
         });
       };
       //************************************************************************
@@ -988,9 +988,7 @@ reorganizing your code logic.
 
         template <typename Update>
         auto generate_metadata() const -> Result {
-          // may not be a good idea to pretty type here as the template carries
-          // with it some useful information which gets missed.
-          return {pretty_type::short_name<Update>(), Update::metadata(sim_)};
+          return {pretty_type::name<Update>(), Update::metadata(sim_)};
         }
 
         template <typename Tags>

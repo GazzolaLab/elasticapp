@@ -319,7 +319,7 @@ namespace Options {
       : help_text_(std::move(help_text)) {
     tmpl::for_each<tags_and_subgroups_list>([](auto t) noexcept {
       using T = typename decltype(t)::type;
-      const std::string label = name<T>();
+      const std::string label = pretty_type::name<T>();
       ELASTICA_ASSERT(label.size() <= max_label_size_,
                       "The option name " << label
                                          << " is too long for nice formatting, "
@@ -381,7 +381,7 @@ namespace Options {
     valid_names.reserve(tmpl::size<tags_and_subgroups_list>{});
     tmpl::for_each<tags_and_subgroups_list>([&valid_names](auto opt) noexcept {
       using Opt = tmpl::type_from<decltype(opt)>;
-      const std::string label = name<Opt>();
+      const std::string label = pretty_type::name<Opt>();
       ELASTICA_ASSERT(std::find(valid_names.cbegin(), valid_names.cend(),
                                 label) == std::end(valid_names),
                       "Duplicate option name: " << label);
@@ -439,7 +439,7 @@ namespace Options {
                       "Could not find requested option in the list of options "
                       "provided. Did "
                       "you forget to add the option tag to the OptionList?");
-        const std::string subgroup_label = name<Subgroup>();
+        const std::string subgroup_label = pretty_type::name<Subgroup>();
         Parser<options_in_group<OptionList, Subgroup>, Subgroup>
             subgroup_options(Subgroup::help);
         subgroup_options.context_ = opts.context_;
@@ -472,7 +472,8 @@ namespace Options {
         const auto suggested_value = LocalTag::suggested_value();
         {
           Context context;
-          context.append("Checking SUGGESTED value for " + name<LocalTag>());
+          context.append("Checking SUGGESTED value for " +
+                         pretty_type::name<LocalTag>());
           opts.template check_lower_bound_on_size<LocalTag>(suggested_value,
                                                             context);
           opts.template check_upper_bound_on_size<LocalTag>(suggested_value,
@@ -505,7 +506,7 @@ namespace Options {
                       "Could not find requested option in the list of options "
                       "provided. Did "
                       "you forget to add the option tag to the OptionList?");
-        const std::string label = name<Tag>();
+        const std::string label = pretty_type::name<Tag>();
 
         Option option(opts.parsed_options_.find(label)->second, opts.context_);
         option.append_context("While parsing option " + label);
@@ -775,7 +776,7 @@ struct YAML::convert<Options::Options_detail::CreateWrapper<T, Metavariables>> {
       Options::Options_detail::CreateWrapper<T, Metavariables>& rhs) {
     Options::Context context;
     context.top_level = false;
-    context.append("While creating a " + pretty_type::short_name<T>());
+    context.append("While creating a " + pretty_type::name<T>());
     Options::Option options(node, std::move(context));
     rhs = Options::Options_detail::CreateWrapper<T, Metavariables>{
         Options::create_from_yaml<T>::template create<Metavariables>(options)};

@@ -27,6 +27,7 @@
 
 #include "ErrorHandling/Assert.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -46,7 +47,7 @@ namespace Options {
 
         std::ostringstream ss;
         ss << std::left << std::setw(name_col) << ""
-           << std::setw(help_col - name_col - 1) << name<T>();
+           << std::setw(help_col - name_col - 1) << pretty_type::name<T>();
         if (ss.str().size() >= help_col) {
           ss << "\n" << std::setw(help_col - 1) << "";
         }
@@ -76,7 +77,7 @@ namespace Options {
       const auto& node = options.node();
       Option derived_opts(options.context());
       derived_opts.append_context("While operating factory for " +
-                                  name<BaseClass>());
+                                  pretty_type::name<BaseClass>());
       std::string id;
       if (node.IsScalar()) {
         id = node.as<std::string>();
@@ -102,7 +103,7 @@ namespace Options {
       tmpl::for_each<typename BaseClass::creatable_classes>(
           [&id, &derived_opts, &result](auto derived_v) {
             using Derived = tmpl::type_from<decltype(derived_v)>;
-            if (name<Derived>() == id) {
+            if (pretty_type::name<Derived>() == id) {
               ELASTICA_ASSERT(result == nullptr,
                               "Duplicate factory id: " << id);
               result = std::make_unique<Derived>(

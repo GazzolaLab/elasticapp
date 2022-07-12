@@ -44,15 +44,15 @@ namespace elastica {
           using ApplyTag = tmpl::type_from<decltype(v)>;
           if (std::get<ApplyTag>(cache).value() <= ApplyTag ::lower_bound()) {
             throw std::domain_error(std::string(
-                MakeString{} << pretty_type::short_name<ApplyTag>()
-                             << " requested is too small!"
-                             << "\n"
-                             // need to stringify apply help here, else
-                             // constexpr symbols are not found when launching
-                             // case-studies from python
-                             << "Help : " << std::string(ApplyTag::help) << "\n"
-                             << "Provide a value greater than : "
-                             << ApplyTag ::lower_bound() << "\n"));
+                MakeString{}
+                << pretty_type::name<ApplyTag>() << " requested is too small!"
+                << "\n"
+                // need to stringify apply help here, else
+                // constexpr symbols are not found when launching
+                // case-studies from python
+                << "Help : " << std::string(ApplyTag::help) << "\n"
+                << "Provide a value greater than : " << ApplyTag ::lower_bound()
+                << "\n"));
           }
         });
       }

@@ -85,9 +85,7 @@ namespace Options {
     // information.
     template <typename T>
     struct yaml_type {
-      static std::string value() noexcept {
-        return pretty_type::short_name<T>();
-      }
+      static std::string value() noexcept { return pretty_type::name<T>(); }
     };
 
     template <typename T>
@@ -176,7 +174,7 @@ namespace Options {
     struct print_impl {
       static std::string apply() noexcept {
         std::ostringstream ss;
-        ss << "  " << name<Group>() << ":\n"
+        ss << "  " << pretty_type::name<Group>() << ":\n"
            << wrap_text(Group::help, 77, "    ") << "\n\n";
         return ss.str();
       }
@@ -281,7 +279,7 @@ namespace Options {
 
       static std::string apply() noexcept {
         std::ostringstream ss;
-        ss << "  " << name<Tag>() << ":\n"
+        ss << "  " << pretty_type::name<Tag>() << ":\n"
            << "    "
            << "type=" << yaml_type<typename Tag::type>::value();
         std::string limits;
