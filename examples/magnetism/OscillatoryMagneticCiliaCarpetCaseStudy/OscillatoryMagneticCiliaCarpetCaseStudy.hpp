@@ -106,11 +106,19 @@ magnetic rods.
 
 )help"};
 
-  struct n_rods {
+  struct n_rods_along_x {
     // unsigned integer parameter
     using type = std::size_t;
     // documentation
-    static constexpr String help = {"Number of rods"};
+    static constexpr String help = {"Number of rods along X"};
+    static type default_value() { return 8UL; }
+  };
+
+  struct n_rods_along_y {
+    // unsigned integer parameter
+    using type = std::size_t;
+    // documentation
+    static constexpr String help = {"Number of rods along Y"};
     static type default_value() { return 8UL; }
   };
 
@@ -164,10 +172,17 @@ magnetic rods.
     static type default_value() { return 6.0; }
   };
 
-  struct carpet_magnetization_spatial_wavelength {
+  struct carpet_magnetization_spatial_wavelength_along_x {
     using type = ::elastica::real_t;
     static constexpr String help = {
-        "Wavelength of the spatial magnetization wave of the carpet"};
+        "Wavelength of the spatial magnetization wave of the carpet along X"};
+    static type default_value() { return (8 - 1) * 6.0; }
+  };
+
+  struct carpet_magnetization_spatial_wavelength_along_y {
+    using type = ::elastica::real_t;
+    static constexpr String help = {
+        "Wavelength of the spatial magnetization wave of the carpet along Y"};
     static type default_value() { return (8 - 1) * 6.0; }
   };
 
@@ -222,9 +237,10 @@ magnetic rods.
   };
 
   using Parameters = tmpl::list<
-      n_rods, n_elements, length, radius, youngs_modulus, shear_modulus,
-      damping_rate, magnetization_density, carpet_spacing,
-      carpet_magnetization_spatial_wavelength,
+      n_rods_along_x, n_rods_along_y, n_elements, length, radius,
+      youngs_modulus, shear_modulus, damping_rate, magnetization_density,
+      carpet_spacing, carpet_magnetization_spatial_wavelength_along_x,
+      carpet_magnetization_spatial_wavelength_along_y,
       carpet_magnetization_spatial_phase_difference,
       magnetic_field_in_plane_amplitude, magnetic_field_out_of_plane_amplitude,
       magnetic_field_angular_frequency, rampup_interval, dt, final_sim_time>;

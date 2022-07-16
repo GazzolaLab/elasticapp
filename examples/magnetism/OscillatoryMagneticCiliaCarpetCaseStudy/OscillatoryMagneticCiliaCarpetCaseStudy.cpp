@@ -45,29 +45,56 @@ void OscillatoryMagneticCiliaCarpetCaseStudy::setup(
   const ::elastica::real_t base_length{
       ::elastica::get<length>(input_parameters)};
   const std::size_t n_elem = ::elastica::get<n_elements>(input_parameters);
-  const std::size_t num_rods = ::elastica::get<n_rods>(input_parameters);
+  const std::size_t num_rods_along_x =
+      ::elastica::get<n_rods_along_x>(input_parameters);
+  const std::size_t num_rods_along_y =
+      ::elastica::get<n_rods_along_y>(input_parameters);
+  const std::size_t num_rods = num_rods_along_x * num_rods_along_y;
   const ::elastica::real_t cilia_carpet_spacing =
       ::elastica::get<carpet_spacing>(input_parameters);
-  const ::elastica::real_t cilia_carpet_magnetization_spatial_wavelength =
-      ::elastica::get<carpet_magnetization_spatial_wavelength>(
-          input_parameters);
+  const ::elastica::real_t
+      cilia_carpet_magnetization_spatial_wavelength_along_x =
+          ::elastica::get<carpet_magnetization_spatial_wavelength_along_x>(
+              input_parameters);
+  const ::elastica::real_t
+      cilia_carpet_magnetization_spatial_wavelength_along_y =
+          ::elastica::get<carpet_magnetization_spatial_wavelength_along_y>(
+              input_parameters);
   const ::elastica::real_t cilia_carpet_magnetization_spatial_phase_difference =
       ::elastica::get<carpet_magnetization_spatial_phase_difference>(
           input_parameters);
   constexpr auto x_axis = 0UL;
-  const ::elastica::real_t cilia_carpet_magnetization_spatial_wavenumber =
-      2 * M_PI / cilia_carpet_magnetization_spatial_wavelength;
+  constexpr auto y_axis = 1UL;
+  const ::elastica::real_t
+      cilia_carpet_magnetization_spatial_wavenumber_along_x =
+          2 * M_PI / cilia_carpet_magnetization_spatial_wavelength_along_x;
+  const ::elastica::real_t
+      cilia_carpet_magnetization_spatial_wavenumber_along_y =
+          2 * M_PI / cilia_carpet_magnetization_spatial_wavelength_along_y;
 
   for (std::size_t i = 0; i < num_rods; ++i) {
     ::elastica::Vec3 rod_origin{0.0, 0.0, 0.0};
-    rod_origin[x_axis] += i * cilia_carpet_spacing;
-    const ::elastica::real_t rod_magnetization_angle =
+    rod_origin[x_axis] += (i % num_rods_along_x) * cilia_carpet_spacing;
+    rod_origin[y_axis] += (i / num_rods_along_x) * cilia_carpet_spacing;
+    const ::elastica::real_t rod_magnetization_angle_along_x =
         cilia_carpet_magnetization_spatial_phase_difference +
-        rod_origin[x_axis] * cilia_carpet_magnetization_spatial_wavenumber;
+        rod_origin[x_axis] *
+            cilia_carpet_magnetization_spatial_wavenumber_along_x;
+    const ::elastica::real_t rod_magnetization_angle_along_y =
+        cilia_carpet_magnetization_spatial_phase_difference +
+        rod_origin[y_axis] *
+            cilia_carpet_magnetization_spatial_wavenumber_along_y;
+    const ::elastica::Vec3 magnetization_vector{
+        std::sin(rod_magnetization_angle_along_x),
+        std::sin(rod_magnetization_angle_along_y),
+        std::cos(rod_magnetization_angle_along_x) +
+            std::cos(rod_magnetization_angle_along_y)};
+    const ::elastica::Vec3 magnetization_direction =
+        blaze::normalize(magnetization_vector);
     using RodInitializer = ::elastica::cosserat_rod::
         StraightUniformMagnetizedCosseratRodInitializer;
     RodInitializer rod_initializer{
-        // RodInitializerialization Wrapper
+        // Rod Initializer Wrapper
         RodInitializer::NElement{n_elem},
         RodInitializer::Material{my_material},
         RodInitializer::Radius{::elastica::get<radius>(input_parameters)},
@@ -82,8 +109,7 @@ void OscillatoryMagneticCiliaCarpetCaseStudy::setup(
         RodInitializer::MagnetizationDensity{
             ::elastica::get<magnetization_density>(input_parameters)},
         RodInitializer::UniformMagnetizationDirectionInWorldFrame{
-            ::elastica::Vec3{std::sin(rod_magnetization_angle), 0.0,
-                             std::cos(rod_magnetization_angle)}}};
+            magnetization_direction}};
 
     // This is to store
     RodRef rod_ref = simulator->emplace_back<MagnetizedCosseratRod>(
@@ -112,9 +138,8 @@ void OscillatoryMagneticCiliaCarpetCaseStudy::setup(
         .with(constraint_generator());
   }
 
-  auto& magnetic_field =
-      simulator
-          ->get_environment<::elastica::environments::tags::MagneticFieldTag>();
+  auto& magnetic_field = simulator->get_environment<
+      ::elastica::environments::tags::MagneticFieldTag>();
 
   // The field profile was set in the hpp file, can be modified if needed here
   const auto in_plane_amplitude =
