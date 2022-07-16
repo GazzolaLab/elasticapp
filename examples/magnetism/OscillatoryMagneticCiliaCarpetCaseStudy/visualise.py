@@ -36,8 +36,10 @@ def run_oscillatory_magnetic_cilia_carpet_case_study(
     )  # Magnetization magnitude * B * Length/(EI)
 
     # setting up test params (slightly different for higher time step)
-    n_rods = 10
-    n_elem = 50
+    n_rods_along_x = 8
+    n_rods_along_y = 8
+    n_rods = n_rods_along_x * n_rods_along_y
+    n_elem = 20
     base_length = 1.5  # m
     base_radius = 0.15  # m
     base_area = np.pi * base_radius ** 2
@@ -45,8 +47,10 @@ def run_oscillatory_magnetic_cilia_carpet_case_study(
     moment_of_inertia = np.pi / 4 * base_radius ** 4
     damping_rate = 1.0
     spacing_between_rods = base_length  # following Gu2020
-    carpet_length = spacing_between_rods * (n_rods - 1)
-    spatial_magnetization_wavelength = carpet_length
+    carpet_length_along_x = spacing_between_rods * (n_rods_along_x - 1)
+    carpet_length_along_y = spacing_between_rods * (n_rods_along_y - 1)
+    spatial_magnetization_wavelength_along_x = carpet_length_along_x
+    spatial_magnetization_wavelength_along_y = spatial_magnetization_wavelength_along_x
     spatial_magnetization_phase_diff = 0 * np.pi
     angular_frequency = np.deg2rad(
         5.0
@@ -66,7 +70,8 @@ def run_oscillatory_magnetic_cilia_carpet_case_study(
     n_steps = int(final_time / time_interval)
 
     cs = OscillatoryMagneticCiliaCarpetCaseStudy(
-        n_rods=n_rods,
+        n_rods_along_x=n_rods_along_x,
+        n_rods_along_y=n_rods_along_y,
         n_elements=n_elem,
         length=base_length,
         radius=base_radius,
@@ -75,7 +80,8 @@ def run_oscillatory_magnetic_cilia_carpet_case_study(
         damping_rate=damping_rate,
         magnetization_density=magnetization_density,
         carpet_spacing=spacing_between_rods,
-        carpet_magnetization_spatial_wavelength=spatial_magnetization_wavelength,
+        carpet_magnetization_spatial_wavelength_along_x=spatial_magnetization_wavelength_along_x,
+        carpet_magnetization_spatial_wavelength_along_y=spatial_magnetization_wavelength_along_y,
         carpet_magnetization_spatial_phase_difference=spatial_magnetization_phase_diff,
         magnetic_field_in_plane_amplitude=in_plane_magnetic_field_strength,
         magnetic_field_out_of_plane_amplitude=(0.01 * in_plane_magnetic_field_strength),
@@ -110,8 +116,8 @@ def run_oscillatory_magnetic_cilia_carpet_case_study(
 
     animation = animate_rods(
         rod_group_stats=carpet_stats,
-        x_lim=(-base_length, carpet_length + base_length),
-        y_lim=(-base_length, base_length),
+        x_lim=(-base_length, carpet_length_along_x + base_length),
+        y_lim=(-base_length, carpet_length_along_y + base_length),
         z_lim=(-0.5 * base_length, 1.5 * base_length),
         save_figure=save_figure,
         frame_skip=5,
