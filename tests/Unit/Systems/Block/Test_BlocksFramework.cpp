@@ -1124,7 +1124,7 @@ namespace blocks {
       Block<FacadedIntermediateExamplePlugin> const& block) noexcept
       -> std::size_t {
     return block.size();
-  };
+  }
 
 }  // namespace blocks
 /// [fac_int_block]

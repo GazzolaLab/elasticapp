@@ -78,7 +78,7 @@ namespace elastica {
                                  collection.get_angular_velocity(index));
               ++index;
             });
-      };
+      }
     };
     /*! \endcond */
     //**************************************************************************

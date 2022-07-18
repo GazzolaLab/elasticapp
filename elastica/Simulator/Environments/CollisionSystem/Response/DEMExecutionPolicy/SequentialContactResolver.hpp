@@ -197,7 +197,7 @@ namespace elastica {
               [this](real_t running_max, auto const& contact) {
                 return std::max(running_max, force_model_(contact));
               });
-        };
+        }
         //**********************************************************************
 
         //@}

@@ -61,11 +61,11 @@ namespace {
 
   // overloaded functions
   template <typename Traits>
-  inline void reset(MockField<Traits>&, typename Traits::TimeType) noexcept {};
+  inline void reset(MockField<Traits>&, typename Traits::TimeType) noexcept {}
   template <typename Traits, typename CorrespondingEnvironmentConfiguration>
   inline void initialize_parameters(
       MockField<Traits>&,
-      CorrespondingEnvironmentConfiguration const&) noexcept {};
+      CorrespondingEnvironmentConfiguration const&) noexcept {}
 
   struct MockFieldTag {
     using requires_primitives = std::false_type;

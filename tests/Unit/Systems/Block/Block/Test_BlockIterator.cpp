@@ -114,7 +114,7 @@ namespace blocks {
       Block<BoundFacadePluginWithoutInitialization<Block>> const&
           block) noexcept -> std::size_t {
     return block.n_;
-  };
+  }
 
 }  // namespace blocks
 

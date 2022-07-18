@@ -148,7 +148,7 @@ namespace elastica {
               Requires<::tt::is_detected<detail::reset_t, U>{}> = nullptr>
     void reset_dispatch() {
       self().reset();
-    };
+    }
     //**************************************************************************
 
     //**************************************************************************
@@ -156,7 +156,7 @@ namespace elastica {
      */
     template <typename U = CaseStudy,
               Requires<not ::tt::is_detected<detail::reset_t, U>{}> = nullptr>
-    void reset_dispatch() const noexcept {};
+    void reset_dispatch() const noexcept {}
     //**************************************************************************
 
    public:

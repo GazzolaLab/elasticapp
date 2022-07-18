@@ -100,10 +100,10 @@ namespace mock {
     }
     // conformance with execution policy needing to reset forces
     template <typename F>
-    void for_each_primitive(F) const noexcept {};
+    void for_each_primitive(F) const noexcept {}
     // why?
     template <typename F>
-    void for_each_imposed_primitive(F) const noexcept {};
+    void for_each_imposed_primitive(F) const noexcept {}
 
     using Pointers = tmpl::filled_list<Pointer, n_environments()>;
     using Container = tmpl::as_tuple<Pointers>;

@@ -692,7 +692,7 @@ reorganizing your code logic.
           get_timer<Step>().start();
           get_memory_meter<Step>().start();
         }
-      };
+      }
       //************************************************************************
 
       //************************************************************************
@@ -708,7 +708,7 @@ reorganizing your code logic.
         log<debug>([](auto const& log) {
           log << "Finished " + ::pretty_type::name<Step>() + " ...\n";
         });
-      };
+      }
       //************************************************************************
 
      public:

@@ -77,10 +77,10 @@ namespace elastica {
         //        }
 
         template <typename G>
-        ImposedExpr(ImposedExpr<G> const& other) : f_(other.f_){};
+        ImposedExpr(ImposedExpr<G> const& other) : f_(other.f_){}
         template <typename G>
         ImposedExpr(ImposedExpr<G>&& other) noexcept
-            : f_(std::move(other.f_)){};
+            : f_(std::move(other.f_)){}
         template <typename G>
         ImposedExpr& operator=(ImposedExpr<G> other) {
           // using std::swap;
@@ -143,10 +143,10 @@ namespace elastica {
         template <typename OF, typename OG>
         TranslationKinematics(
             TranslationKinematics<Direction_, OF, OG> const& other)
-            : TranslationKinematics(other.p_, other.v_){};
+            : TranslationKinematics(other.p_, other.v_){}
         template <typename OF, typename OG>
         TranslationKinematics(TranslationKinematics<Direction_, OF, OG>&& other)
-            : TranslationKinematics(std::move(other.p_), std::move(other.v_)){};
+            : TranslationKinematics(std::move(other.p_), std::move(other.v_)){}
 
         // C++14 doesnt have nothrow swappable, so hold off for now
         // friend void swap(

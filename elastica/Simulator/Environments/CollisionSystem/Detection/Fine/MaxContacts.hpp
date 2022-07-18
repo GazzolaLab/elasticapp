@@ -742,7 +742,7 @@ namespace elastica {
                                             CC& contacts) noexcept {
           MaxContacts::do_collide_with_capsule(
               s, static_cast<detail::CapsulePrimitiveBase&>(p), contacts);
-        };
+        }
         //**********************************************************************
 
         //**********************************************************************
@@ -768,7 +768,7 @@ namespace elastica {
                                             CC& contacts) noexcept {
           MaxContacts::do_collide_with_capsule(
               s, static_cast<detail::CapsulePrimitiveBase&>(p), contacts);
-        };
+        }
         //**********************************************************************
 
         //**********************************************************************
@@ -1055,7 +1055,7 @@ namespace elastica {
           MaxContacts::do_collide_with_capsule(
               static_cast<detail::CapsulePrimitiveBase&>(c1),
               static_cast<detail::CapsulePrimitiveBase&>(c2), contacts);
-        };
+        }
         //**********************************************************************
 
         //**********************************************************************
@@ -1086,7 +1086,7 @@ namespace elastica {
           MaxContacts::do_collide_with_capsule(
               static_cast<detail::CapsulePrimitiveBase&>(c1),
               static_cast<detail::CapsulePrimitiveBase&>(c2), contacts);
-        };
+        }
         //**********************************************************************
 
         //**********************************************************************
@@ -1112,7 +1112,7 @@ namespace elastica {
                                             CC& contacts) noexcept {
           MaxContacts::do_collide_with_capsule(
               static_cast<detail::CapsulePrimitiveBase&>(c), p, contacts);
-        };
+        }
 
         //**********************************************************************
         /*!\brief Contact generation between two colliding capsule
@@ -1281,7 +1281,7 @@ namespace elastica {
                                             CC& contacts) noexcept {
           MaxContacts::do_collide_with_capsule(
               static_cast<detail::CapsulePrimitiveBase&>(c), p, contacts);
-        };
+        }
         //**********************************************************************
 
       }  // namespace fine

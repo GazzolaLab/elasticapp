@@ -125,7 +125,7 @@ namespace elastica {
         struct PrimitiveTraitEval<T, std::false_type>
             : public ::elastica::customization::PrimitiveTrait<T> {};
 
-      };  // namespace detail
+      }  // namespace detail
 
       //************************************************************************
       /*!\brief Get primitive type of type `T`

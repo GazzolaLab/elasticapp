@@ -44,7 +44,7 @@ namespace elastica {
         cast_along(dir) == 1 ? 1.0 : 0.0,
         cast_along(dir) == 2 ? 1.0 : 0.0,
     };
-  };
+  }
   //****************************************************************************
 
   //****************************************************************************
@@ -59,7 +59,7 @@ namespace elastica {
   template <EulerianFrame::DirectionType Dir>
   inline constexpr auto get_unit_vector_along() noexcept -> Vec3 {
     return get_unit_vector_along(Dir);
-  };
+  }
   //****************************************************************************
 
   //****************************************************************************
@@ -81,7 +81,7 @@ namespace elastica {
         cast_along(dir) == 1 ? 1.0 : 0.0,
         cast_along(dir) == 2 ? 1.0 : 0.0,
     };
-  };
+  }
   //****************************************************************************
 
   //****************************************************************************
@@ -96,7 +96,7 @@ namespace elastica {
   template <LagrangianFrame::DirectionType Dir>
   inline constexpr auto get_unit_vector_along() noexcept -> Vec3 {
     return get_unit_vector_along(Dir);
-  };
+  }
   //****************************************************************************
 
   struct Frames {

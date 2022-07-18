@@ -45,7 +45,7 @@ namespace elastica {
               primitive.transfer(collection.get_radius(index));
               ++index;
             });
-      };
+      }
 
       template <typename ConstPrimitiveIterator>
       static void do_transfer(to_t /* meta */, SystemType& collection,

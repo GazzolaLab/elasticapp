@@ -122,7 +122,7 @@ namespace elastica {
                 typename RT = decltype(collection_t<Primitive>())>
       inline constexpr auto get_collection() const& noexcept -> RT const& {
         return std::get<RT>(data());
-      };
+      }
       //@}
       //************************************************************************
 

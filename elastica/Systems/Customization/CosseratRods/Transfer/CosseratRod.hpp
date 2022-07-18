@@ -67,7 +67,7 @@ namespace elastica {
         // goes over number of elements in this case
         ::elastica::cosserat_rod::detail::transfer_cosserat_rod(
             from, collection, to, begin, end);
-      };
+      }
     };
     /*! \endcond */
     //**************************************************************************

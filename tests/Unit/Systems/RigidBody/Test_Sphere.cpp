@@ -31,7 +31,7 @@ namespace {
 
     CHECK_THROWS_WITH(model.check(0UL), Catch::Contains("Index to be "));
     CHECK_THROWS_WITH(model.check(end - 1UL), Catch::Contains("Index to be "));
-  };
+  }
 
   ELASTICA_TEST_CASE("Unit.Systems.Sphere.Block", "[Systems][Unit]") {
     using Plugin = ::elastica::rigid_body::Sphere;

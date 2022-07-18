@@ -148,11 +148,11 @@ namespace elastica {
                                   RHSVector const& rhs_vector) noexcept
         -> void {
       lhs += rhs_vector;
-    };
+    }
     template <>
     inline auto size_backend<float>(float const&) noexcept -> std::size_t {
       return 1UL;
-    };
+    }
     template <>
     inline auto resize_backend<float>(float&, std::size_t) -> void{};
 

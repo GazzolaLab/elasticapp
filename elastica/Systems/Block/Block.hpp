@@ -87,7 +87,7 @@ namespace blocks {
   template <typename Plugin>
   inline auto begin(Block<Plugin>& block) noexcept -> BlockIterator<Plugin> {
     return BlockIterator<Plugin>(&block, 0UL);
-  };
+  }
   //****************************************************************************
 
   //****************************************************************************
@@ -97,7 +97,7 @@ namespace blocks {
   template <typename Plugin>
   inline auto end(Block<Plugin>& block) noexcept -> BlockIterator<Plugin> {
     return BlockIterator<Plugin>(&block, n_units(block));
-  };
+  }
   //****************************************************************************
 
   //****************************************************************************
@@ -108,7 +108,7 @@ namespace blocks {
   inline auto cbegin(Block<Plugin> const& block) noexcept
       -> ConstBlockIterator<Plugin> {
     return ConstBlockIterator<Plugin>(&block, 0UL);
-  };
+  }
   //****************************************************************************
 
   //****************************************************************************
@@ -119,7 +119,7 @@ namespace blocks {
   inline auto cend(Block<Plugin> const& block) noexcept
       -> ConstBlockIterator<Plugin> {
     return ConstBlockIterator<Plugin>(&block, n_units(block));
-  };
+  }
   //****************************************************************************
 
   //****************************************************************************
@@ -129,7 +129,7 @@ namespace blocks {
   template <typename Plugin>
   inline auto begin(Block<Plugin> const& block) noexcept {
     return cbegin(block);
-  };
+  }
   //****************************************************************************
 
   //****************************************************************************
@@ -139,7 +139,7 @@ namespace blocks {
   template <typename Plugin>
   inline auto end(Block<Plugin> const& block) noexcept {
     return cend(block);
-  };
+  }
   //****************************************************************************
 
   //****************************************************************************
