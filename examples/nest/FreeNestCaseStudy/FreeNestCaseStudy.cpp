@@ -222,7 +222,7 @@ void FreeNestCaseStudy::run() {
       }
       std::cout << "]" << int(progress * 100.0) << "%\r";
       std::cout.flush();
-      current_progress += 1.0;
+      current_progress += 0.01;
     }
 
     step();
