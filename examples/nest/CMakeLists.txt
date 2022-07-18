@@ -1,1 +1,2 @@
 add_subdirectory(FreeNestCaseStudy)
+add_subdirectory(NestCaseWithWallStudy)

@@ -60,9 +60,13 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
 
   using StraightInit = ::elastica::cosserat_rod::StraightCosseratRodInitializer;
   const ::elastica::real_t R =
-      1 * base_length;  // controls radial extent of rod origin initialisation
+      1. * base_length;  // controls radial extent of rod origin initialisation
   const ::elastica::real_t H = ::elastica::get<packing_initial_vertical_span>(
       input_parameters);  // controls vertical extent of rod origin
+  const ::elastica::real_t side_wall_dimension(
+      ::elastica::get<packing_initial_radial_span>(  // radius (cylinder) or width (square)
+          input_parameters));
+
   // initialisation
   // Define rod ----Random rods
   std::random_device rd;
@@ -146,29 +150,27 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   auto plane_binormal_bottom = {0.0, 1.0, 0.0};
   auto plane_tangent_bottom = {1.0, 0.0, 0.0};
   // implicit convention
-  ::elastica::Rot3 Q_bottom = {plane_normal_bottom,
-                               plane_binormal_bottom,
+  ::elastica::Rot3 Q_bottom = {plane_normal_bottom, plane_binormal_bottom,
                                plane_tangent_bottom};
   using Spans = typename ImposedPlane::Spans;
   imposed_plane_ref = simulator->emplace_back<ImposedPlane>(
-      ::elastica::collision::PlanePrimitive(0UL, 0UL, true, plane_position_bottom, Q_bottom,
+      ::elastica::collision::PlanePrimitive(0UL, 0UL, true,
+                                            plane_position_bottom, Q_bottom,
                                             Spans{1e4, 1e4},  // plane extent
                                             my_material),
       std::move(translations_buffer));
-
-  const ::elastica::real_t side_wall_dimension(139.0); // radius (cylinder) or width (square)
 
   const ::elastica::Vec3 plane_position_left{-side_wall_dimension, 0.0, 0.0};
   auto plane_normal_left = {1.0, 0.0, 0.0};
   auto plane_binormal_left = {0.0, 0.0, 1.0};
   auto plane_tangent_left = {0.0, 1.0, 0.0};
   // implicit convention
-  ::elastica::Rot3 Q_left = {plane_normal_left,
-                               plane_binormal_left,
-                               plane_tangent_left};
+  ::elastica::Rot3 Q_left = {plane_normal_left, plane_binormal_left,
+                             plane_tangent_left};
   using Spans = typename ImposedPlane::Spans;
   simulator->emplace_back<ImposedPlane>(
-      ::elastica::collision::PlanePrimitive(1UL, 1UL, true, plane_position_left, Q_left,
+      ::elastica::collision::PlanePrimitive(1UL, 1UL, true, plane_position_left,
+                                            Q_left,
                                             Spans{1e4, 1e4},  // plane extent
                                             my_material),
       std::move(translations_buffer));
@@ -178,12 +180,12 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   auto plane_binormal_right = {0.0, 0.0, -1.0};
   auto plane_tangent_right = {0.0, -1.0, 0.0};
   // implicit convention
-  ::elastica::Rot3 Q_right = {plane_normal_right,
-                             plane_binormal_right,
-                             plane_tangent_right};
+  ::elastica::Rot3 Q_right = {plane_normal_right, plane_binormal_right,
+                              plane_tangent_right};
   using Spans = typename ImposedPlane::Spans;
   simulator->emplace_back<ImposedPlane>(
-      ::elastica::collision::PlanePrimitive(2UL, 2UL, true, plane_position_right, Q_right,
+      ::elastica::collision::PlanePrimitive(2UL, 2UL, true,
+                                            plane_position_right, Q_right,
                                             Spans{1e4, 1e4},  // plane extent
                                             my_material),
       std::move(translations_buffer));
@@ -193,12 +195,12 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   auto plane_binormal_top = {-1.0, 0.0, 0.0};
   auto plane_tangent_top = {0.0, 0.0, -1.0};
   // implicit convention
-  ::elastica::Rot3 Q_top = {plane_normal_top,
-                              plane_binormal_top,
-                              plane_tangent_top};
+  ::elastica::Rot3 Q_top = {plane_normal_top, plane_binormal_top,
+                            plane_tangent_top};
   using Spans = typename ImposedPlane::Spans;
   simulator->emplace_back<ImposedPlane>(
-      ::elastica::collision::PlanePrimitive(3UL, 3UL, true, plane_position_top, Q_top,
+      ::elastica::collision::PlanePrimitive(3UL, 3UL, true, plane_position_top,
+                                            Q_top,
                                             Spans{1e4, 1e4},  // plane extent
                                             my_material),
       std::move(translations_buffer));
@@ -208,21 +210,22 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   auto plane_binormal_down = {1.0, 0.0, 0.0};
   auto plane_tangent_down = {0.0, 0.0, 1.0};
   // implicit convention
-  ::elastica::Rot3 Q_down = {plane_normal_down,
-                            plane_binormal_down,
-                            plane_tangent_down};
+  ::elastica::Rot3 Q_down = {plane_normal_down, plane_binormal_down,
+                             plane_tangent_down};
   using Spans = typename ImposedPlane::Spans;
   simulator->emplace_back<ImposedPlane>(
-      ::elastica::collision::PlanePrimitive(4UL, 4UL, true, plane_position_down, Q_down,
+      ::elastica::collision::PlanePrimitive(4UL, 4UL, true, plane_position_down,
+                                            Q_down,
                                             Spans{1e4, 1e4},  // plane extent
                                             my_material),
       std::move(translations_buffer));
 
   // set near-list update time
   auto& collision_solver =
-      simulator->get_environment<elastica::environments::tags::CollisionSystem>();
-  collision_solver->time_interval_between_detection() =
-      1e-3;  // 0.02;  // anything > 0.0
+      simulator
+          ->get_environment<elastica::environments::tags::CollisionSystem>();
+  collision_solver->time_interval_between_detection() = 1e-4;
+  //      1e-3;  // 0.02;  // anything > 0.0
 
   const ::elastica::real_t gravity_acc(
       ::elastica::get<gravitational_acc>(input_parameters));
@@ -290,7 +293,7 @@ void NestCaseWithWallStudy::run() {
     }
 
     step();
-//    reset_ghost();
+    reset_ghost();
     if (not(current_iteration() % write_interval)) {  // Record energy
       for (auto const& rod_ref : rod_refs) {
         energies.emplace_back(
