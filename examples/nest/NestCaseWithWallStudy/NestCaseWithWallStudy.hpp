@@ -179,7 +179,8 @@ each other. This case forms the base setting for the nest related cases.
   using Parameters = tmpl::list<n_rods, n_elements, damping, youngs_modulus,
                                 shear_modulus, gravitational_acc, radius,
                                 length, dt, contact_stiffness, contact_damping,
-                                final_sim_time, packing_initial_vertical_span>;
+                                final_sim_time, packing_initial_vertical_span,
+                                packing_initial_radial_span>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);
