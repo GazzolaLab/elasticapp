@@ -29,7 +29,7 @@ struct NestConfiguration {
   static inline auto make_simulator_configuration() {
     auto system_config =
         ec::make_systems_configuration<tmpl::list<CosseratRod>>(
-            ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{10UL}),
+            ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{2048UL}),
             ec::make_iteration_policy(
                 ec::iterate_across_system_types_in(ec::seq),
                 ec::iterate_over_systems_in(ec::par)));
@@ -144,6 +144,12 @@ each other. This case forms the base setting for the nest related cases.
     using type = ::elastica::real_t;
     static constexpr String help = {"Vertical span of the initialised packing"};
     static type default_value() { return 75.74 * 1.5; }
+  };
+
+  struct packing_initial_radial_span {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Radial wall distance"};
+    static type default_value() { return 75.74 * 1.0; }
   };
 
   struct dt {
