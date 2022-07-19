@@ -28,8 +28,12 @@
 #include <ostream>
 #include <random>
 #include <utility>  // pair
+#include <chrono>
+#include <ctime>
 
 void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
+  const ::elastica::real_t dt(::elastica::get<dt>(input_parameters));
+
   elastica::MaterialID my_material = elastica::create_material(
       // material density
       8.94e-3,  // old elastica values
@@ -224,7 +228,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   auto& collision_solver =
       simulator
           ->get_environment<elastica::environments::tags::CollisionSystem>();
-  collision_solver->time_interval_between_detection() = 1e-4;
+  collision_solver->time_interval_between_detection() = dt * 10;
   //      1e-3;  // 0.02;  // anything > 0.0
 
   const ::elastica::real_t gravity_acc(
@@ -236,7 +240,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
 
   simulator->finalize();
   // Set the dt value
-  set_dt(::elastica::get<dt>(input_parameters));
+  set_dt(dt);
 }
 
 void NestCaseWithWallStudy::step() {
@@ -270,12 +274,14 @@ void NestCaseWithWallStudy::run() {
   rod_coordinates.reserve(n_rod * n_nodes);
   energies.reserve(n_rod * 2);
   std::ofstream temporal_file;
-
+  
+  std::cout << std::fixed << std::setprecision(1);
   float current_progress = 0.0;
+  auto stime = std::chrono::system_clock::now();
   for (std::size_t i = 0UL; i < n_steps; ++i) {
     // Progress Bar
     float progress = float(i) / float(n_steps);
-    if (current_progress <= progress) {
+    if (current_progress <= progress && progress > 0.0001) {
       int bar_width = 70;
       std::cout << "[";
       int pos = bar_width * progress;
@@ -287,9 +293,14 @@ void NestCaseWithWallStudy::run() {
         else
           std::cout << " ";
       }
-      std::cout << "]" << int(progress * 100.0) << "%\r";
+      auto etime = std::chrono::system_clock::now();
+      std::chrono::duration<int> elapsed_time = std::chrono::duration_cast<std::chrono::seconds>(etime - stime);
+      std::time_t etd = std::chrono::system_clock::to_time_t(stime + std::chrono::seconds(int(float(elapsed_time.count()) / progress)));
+      std::cout << "]" << progress * 100.0 << "%"
+          << " [elapsed: " << elapsed_time.count() << " sec]"
+          << " [etd: " << std::strtok(std::ctime(&etd), "\n") << "]\r";
       std::cout.flush();
-      current_progress += 0.01;
+      current_progress += 0.001; // update every 0.1% interval
     }
 
     step();
