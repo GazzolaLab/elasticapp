@@ -214,6 +214,126 @@ namespace blocks {
   //****************************************************************************
 
   //****************************************************************************
+  /*!\brief Check whether a given type `B` is a BlockView
+   * \ingroup block_tt
+   *
+   * \details
+   * Inherits from std::true_type if `B` is a template specialization of a
+   * blocks::BlockView, otherwise inherits from std::false_type.
+   *
+   * \usage
+   * For any type `B`,
+   * \code
+   * using result = IsBlockView<B>;
+   * \endcode
+   *
+   * \metareturns
+   * cpp17::bool_constant
+   *
+   * \semantics
+   * If the type `B` is an instantiation of elastica::BlockView, then
+   * \code
+   * typename result::type = std::true_type;
+   * \endcode
+   * otherwise
+   * \code
+   * typename result::type = std::false_type;
+   * \endcode
+   *
+   * \example
+   * \snippet Block/Test_TypeTraits.cpp is_blockview_example
+   *
+   * \tparam B : the type to check
+   *
+   * \see BlockView
+   */
+  template <typename B>
+  struct IsBlockView : ::tt::is_a<BlockView, B> {};
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Auxiliary variable template for the IsBlockView type trait.
+   * \ingroup block_tt
+   *
+   * The is_block_view_v variable template provides a convenient
+   * shortcut to access the nested \a value of the IsBlockView
+   * class template. For instance, given the type \a T the following two
+   * statements are identical:
+   * \example
+   * \code
+   *   constexpr bool value1 = IsBlockView<T>::value;
+   *   constexpr bool value2 = is_block_view_v<T>;
+   * \endcode
+   *
+   * \tparam B : the type to check
+   *
+   * \see IsBlockView
+   */
+  template <typename B>
+  constexpr bool is_block_view_v = IsBlockView<B>::value;
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Check whether a given type `B` is a ConstBlockView
+   * \ingroup block_tt
+   *
+   * \details
+   * Inherits from std::true_type if `B` is a template specialization of a
+   * blocks::ConstBlockView, otherwise inherits from std::false_type.
+   *
+   * \usage
+   * For any type `B`,
+   * \code
+   * using result = IsConstBlockView<B>;
+   * \endcode
+   *
+   * \metareturns
+   * cpp17::bool_constant
+   *
+   * \semantics
+   * If the type `B` is an instantiation of elastica::ConstBlockView, then
+   * \code
+   * typename result::type = std::true_type;
+   * \endcode
+   * otherwise
+   * \code
+   * typename result::type = std::false_type;
+   * \endcode
+   *
+   * \example
+   * \snippet Block/Test_TypeTraits.cpp is_const_blockview_example
+   *
+   * \tparam B : the type to check
+   *
+   * \see ConstBlockView
+   */
+  template <typename B>
+  struct IsConstBlockView : ::tt::is_a<ConstBlockView, B> {};
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Auxiliary variable template for the IsConstBlockView type trait.
+   * \ingroup block_tt
+   *
+   * The is_const_block_view_v variable template provides a convenient
+   * shortcut to access the nested \a value of the IsConstBlockView
+   * class template. For instance, given the type \a T the following two
+   * statements are identical:
+   * \example
+   * \code
+   *   constexpr bool value1 = IsConstBlockView<T>::value;
+   *   constexpr bool value2 = is_const_block_view_v<T>;
+   * \endcode
+   *
+   * \tparam B : the type to check
+   *
+   * \see IsBlockView
+   */
+  template <typename B>
+  constexpr bool is_const_block_view_v = IsConstBlockView<B>::value;
+  //****************************************************************************
+
+  //****************************************************************************
   /*!\brief Check whether a given type `P` is a Plugin type
    * \ingroup block_tt
    *
@@ -308,11 +428,12 @@ namespace blocks {
    *
    * \tparam B : the type to check
    *
-   * \see Block, BlockSlice, ConstBlockSlice
+   * \see Block, BlockSlice, ConstBlockSlice, BlockView
    */
   template <typename B>
-  struct ModelsBlockConcept : ::cpp17::disjunction<IsBlock<B>, IsBlockSlice<B>,
-                                                   IsConstBlockSlice<B>> {};
+  struct ModelsBlockConcept
+      : ::cpp17::disjunction<IsBlock<B>, IsBlockSlice<B>, IsConstBlockSlice<B>,
+                             IsBlockView<B>, IsConstBlockView<B>> {};
   //****************************************************************************
 
   //****************************************************************************
@@ -566,6 +687,158 @@ namespace blocks {
       class... Components>
   struct PluginTrait<
       ConstBlockSlice<Plugin<Traits, ConstBlockSlice, Tag, Components...>>> {
+    template <template <typename> class BlockLike>
+    using type = Plugin<Traits, BlockLike, Tag, Components...>;
+  };
+  /*! \endcond */
+  //****************************************************************************
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\brief Specialization of PluginTrait for a plain plugin
+   * \ingroup block_tt
+   */
+  template <typename Plugin>
+  struct PluginTrait<BlockView<Plugin>> {
+    template <template <typename> class>
+    using type = Plugin;
+  };
+  /*! \endcond */
+  //****************************************************************************
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\brief Specialization of PluginTrait for a plugin with Block, without
+   * Traits
+   * \ingroup block_tt
+   */
+  template <template <template <typename /*Plugin*/> class /*BlockLike*/,
+                      template <typename /*InstantiatedBlock*/>
+                      class... /*Components*/>
+            class Plugin,
+            template <typename /*InstantiatedBlock*/> class... Components>
+  struct PluginTrait<BlockView<Plugin<BlockView, Components...>>> {
+    template <template <typename> class BlockLike>
+    using type = Plugin<BlockLike, Components...>;
+  };
+  /*! \endcond */
+  //****************************************************************************
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\brief Specialization of PluginTrait for a plugin with Block and Traits
+   * \ingroup block_tt
+   */
+  template <
+      template <typename /*Traits*/,
+                template <typename /*Plugin*/> class /*BlockLike*/,
+                template <typename /*Traits*/, typename /*InstantiatedBlock*/>
+                class... /*Components*/>
+      class Plugin,
+      typename Traits,
+      template <typename /*Traits*/, typename /*InstantiatedBlock*/>
+      class... Components>
+  struct PluginTrait<BlockView<Plugin<Traits, BlockView, Components...>>> {
+    template <template <typename> class BlockLike>
+    using type = Plugin<Traits, BlockLike, Components...>;
+  };
+  /*! \endcond */
+  //****************************************************************************
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\brief Specialization of PluginTrait for a plugin with Traits, Tag, Block
+   * and components
+   * \ingroup block_tt
+   */
+  template <
+      template <typename /*Traits*/,
+                template <typename /*Plugin*/> class /*BlockLike*/,
+                typename /* Tag*/,
+                template <typename /*Traits*/, typename /*InstantiatedBlock*/>
+                class... /*Components*/>
+      class Plugin,
+      typename Traits, typename Tag,
+      template <typename /*Traits*/, typename /*InstantiatedBlock*/>
+      class... Components>
+  struct PluginTrait<BlockView<Plugin<Traits, BlockView, Tag, Components...>>> {
+    template <template <typename> class BlockLike>
+    using type = Plugin<Traits, BlockLike, Tag, Components...>;
+  };
+  /*! \endcond */
+  //****************************************************************************
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\brief Specialization of PluginTrait for a plain plugin
+   * \ingroup block_tt
+   */
+  template <typename Plugin>
+  struct PluginTrait<ConstBlockView<Plugin>> {
+    template <template <typename> class>
+    using type = Plugin;
+  };
+  /*! \endcond */
+  //****************************************************************************
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\brief Specialization of PluginTrait for a plugin with Block, without
+   * Traits
+   * \ingroup block_tt
+   */
+  template <template <template <typename /*Plugin*/> class /*BlockLike*/,
+                      template <typename /*InstantiatedBlock*/>
+                      class... /*Components*/>
+            class Plugin,
+            template <typename /*InstantiatedBlock*/> class... Components>
+  struct PluginTrait<ConstBlockView<Plugin<ConstBlockView, Components...>>> {
+    template <template <typename> class BlockLike>
+    using type = Plugin<BlockLike, Components...>;
+  };
+  /*! \endcond */
+  //****************************************************************************
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\brief Specialization of PluginTrait for a plugin with Block and Traits
+   * \ingroup block_tt
+   */
+  template <
+      template <typename /*Traits*/,
+                template <typename /*Plugin*/> class /*BlockLike*/,
+                template <typename /*Traits*/, typename /*InstantiatedBlock*/>
+                class... /*Components*/>
+      class Plugin,
+      typename Traits,
+      template <typename /*Traits*/, typename /*InstantiatedBlock*/>
+      class... Components>
+  struct PluginTrait<
+      ConstBlockView<Plugin<Traits, ConstBlockView, Components...>>> {
+    template <template <typename> class BlockLike>
+    using type = Plugin<Traits, BlockLike, Components...>;
+  };
+  /*! \endcond */
+  //****************************************************************************
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\brief Specialization of PluginTrait for a plugin with Traits, Tag, Block
+   * and components
+   * \ingroup block_tt
+   */
+  template <
+      template <typename /*Traits*/,
+                template <typename /*Plugin*/> class /*BlockLike*/,
+                typename /* Tag*/,
+                template <typename /*Traits*/, typename /*InstantiatedBlock*/>
+                class... /*Components*/>
+      class Plugin,
+      typename Traits, typename Tag,
+      template <typename /*Traits*/, typename /*InstantiatedBlock*/>
+      class... Components>
+  struct PluginTrait<
+      ConstBlockView<Plugin<Traits, ConstBlockView, Tag, Components...>>> {
     template <template <typename> class BlockLike>
     using type = Plugin<Traits, BlockLike, Tag, Components...>;
   };

@@ -31,6 +31,7 @@
 #include "Systems/CosseratRods/Python/Generators/BindPyElasticaInterface.hpp"
 #include "Systems/common/Python/Generators/BindVariableLocator.hpp"
 //
+#include "Utilities/Math/Python/SliceHelpers.hpp"
 #include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -64,6 +65,34 @@ namespace py_bindings {
       bind_variable_locator<UnwantedVariableTags>(py_cosserat_rod);
       bind_pyelastica_interface<UnwantedVariableTags>(py_cosserat_rod);
       bind_energy_methods(py_cosserat_rod);
+    }
+    {
+      using type = ::elastica::cosserat_rod::detail::CosseratRodBlockView;
+
+      // Wrapper for basic type operations
+      auto py_cosserat_rod =
+          py::class_<type>(m, "CosseratRodView")
+              .def("__len__", [](const type& t) { return cpp17::size(t); })
+              .def(
+                  "__str__",
+                  +[](const type& /*meta*/) {
+                    return std::string("CosseratRodView");
+                  })
+              .def(
+                  "__getitem__",
+                  +[](type& t, std::size_t index) {
+                    variable_bounds_check(::blocks::n_units(t), index);
+                    return ::blocks::slice(t, index);
+                  })
+              .def(
+                  "__getitem__", +[](type& t, const py::slice slice) {
+                    auto v = check_slice<0UL>(::blocks::n_units(t),
+                                              std::move(slice));
+                    return ::blocks::slice(t, v.start, v.start + v.slicelength);
+                  });
+      bind_member_access<UnwantedVariableTags>(py_cosserat_rod);
+      bind_variable_locator<UnwantedVariableTags>(py_cosserat_rod);
+      bind_pyelastica_interface<UnwantedVariableTags>(py_cosserat_rod);
     }
     {
       using type = ::elastica::cosserat_rod::detail::CosseratRodBlock;
@@ -105,9 +134,16 @@ namespace py_bindings {
                     return std::string("CosseratRodBlock");
                   })
               .def(
-                  "__getitem__", +[](type& t, std::size_t index) {
-                    bounds_check(t, index);
+                  "__getitem__",
+                  +[](type& t, std::size_t index) {
+                    variable_bounds_check(::blocks::n_units(t), index);
                     return ::blocks::slice(t, index);
+                  })
+              .def(
+                  "__getitem__", +[](type& t, const py::slice slice) {
+                    auto v = check_slice<0UL>(::blocks::n_units(t),
+                                              std::move(slice));
+                    return ::blocks::slice(t, v.start, v.start + v.slicelength);
                   });
       bind_member_access<UnwantedVariableTags>(py_cosserat_rod);
       bind_variable_locator<UnwantedVariableTags>(py_cosserat_rod);

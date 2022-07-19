@@ -43,7 +43,7 @@ namespace {
   };
   using CorrectConstSlices = tmpl::transform<IntegerList, ToConstInt<tmpl::_1>>;
 
-  using SliceInfo = blocks::detail::as_slices<DummyVariables>;
+  using SliceInfo = blocks::as_slices<DummyVariables>;
 
   static_assert(std::is_same<typename SliceInfo::slices, CorrectSlices>::value,
                 "as_slices Failure!");
@@ -183,11 +183,14 @@ namespace {
       auto first_array(make_array(1, 2, 3));
       auto second_array(make_array(4, 5, 6));
 
-      MyBlockSlice b{first_array[0U], first_array[1U], first_array[2U]};
-      MyBlockSlice c{second_array[0U], second_array[1U], second_array[2U]};
+      MyBlockSlice b{typename MyBlockSlice::BlockVariableSlices{
+          first_array[0U], first_array[1U], first_array[2U]}};
+      MyBlockSlice c{typename MyBlockSlice::BlockVariableSlices{
+          second_array[0U], second_array[1U], second_array[2U]}};
       CHECK(not(b == c));
 
-      MyBlockSlice d{first_array[0U], first_array[1U], first_array[2U]};
+      MyBlockSlice d{typename MyBlockSlice::BlockVariableSlices{
+          first_array[0U], first_array[1U], first_array[2U]}};
       CHECK((b == d));
     }
   }
@@ -206,8 +209,10 @@ namespace {
       auto first_array(make_array(1, 2, 3));
       auto second_array(make_array(4, 5, 6));
 
-      MyBlockSlice b{first_array[0U], first_array[1U], first_array[2U]};
-      MyBlockSlice c{second_array[0U], second_array[1U], second_array[2U]};
+      MyBlockSlice b{typename MyBlockSlice::BlockVariableSlices{
+          first_array[0U], first_array[1U], first_array[2U]}};
+      MyBlockSlice c{typename MyBlockSlice::BlockVariableSlices{
+          second_array[0U], second_array[1U], second_array[2U]}};
       CHECK(not(b == c));
 
       MyBlockSlice d(b);
@@ -230,8 +235,10 @@ namespace {
       using MyBlockSlice = TestBlockSliceFacade<TestPluginWithData>;
       auto first_array(make_array(1, 2, 3));
 
-      MyBlockSlice b{first_array[0U], first_array[1U], first_array[2U]};
-      MyBlockSlice c{first_array[0U], first_array[1U], first_array[2U]};
+      MyBlockSlice b{typename MyBlockSlice::BlockVariableSlices{
+          first_array[0U], first_array[1U], first_array[2U]}};
+      MyBlockSlice c{typename MyBlockSlice::BlockVariableSlices{
+          first_array[0U], first_array[1U], first_array[2U]}};
       MyBlockSlice d(std::move(b));
       CHECK(d == c);
     }
@@ -272,11 +279,14 @@ namespace {
       auto first_array(make_array(1, 2, 3));
       auto second_array(make_array(4, 5, 6));
 
-      MyBlockSlice b{first_array[0U], first_array[1U], first_array[2U]};
-      MyBlockSlice c{second_array[0U], second_array[1U], second_array[2U]};
+      MyBlockSlice b{typename MyBlockSlice::BlockVariableSlices{
+          first_array[0U], first_array[1U], first_array[2U]}};
+      MyBlockSlice c{typename MyBlockSlice::BlockVariableSlices{
+          second_array[0U], second_array[1U], second_array[2U]}};
       CHECK(not(b == c));
 
-      MyBlockSlice d{first_array[0U], first_array[1U], first_array[2U]};
+      MyBlockSlice d{typename MyBlockSlice::BlockVariableSlices{
+          first_array[0U], first_array[1U], first_array[2U]}};
       CHECK((b == d));
     }
   }
@@ -295,8 +305,10 @@ namespace {
       auto first_array(make_array(1, 2, 3));
       auto second_array(make_array(4, 5, 6));
 
-      MyConstBlockSlice b{first_array[0U], first_array[1U], first_array[2U]};
-      MyConstBlockSlice c{second_array[0U], second_array[1U], second_array[2U]};
+      MyConstBlockSlice b{typename MyConstBlockSlice::BlockVariableSlices{
+          first_array[0U], first_array[1U], first_array[2U]}};
+      MyConstBlockSlice c{typename MyConstBlockSlice::BlockVariableSlices{
+          second_array[0U], second_array[1U], second_array[2U]}};
       CHECK(not(b == c));
 
       MyConstBlockSlice d(b);
@@ -319,8 +331,10 @@ namespace {
       using MyConstBlockSlice = TestConstBlockSliceFacade<TestPluginWithData>;
       auto first_array(make_array(1, 2, 3));
 
-      MyConstBlockSlice b{first_array[0U], first_array[1U], first_array[2U]};
-      MyConstBlockSlice c{first_array[0U], first_array[1U], first_array[2U]};
+      MyConstBlockSlice b{typename MyConstBlockSlice::BlockVariableSlices{
+          first_array[0U], first_array[1U], first_array[2U]}};
+      MyConstBlockSlice c{typename MyConstBlockSlice::BlockVariableSlices{
+          first_array[0U], first_array[1U], first_array[2U]}};
       MyConstBlockSlice d(std::move(b));
       CHECK(d == c);
     }

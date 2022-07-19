@@ -151,6 +151,18 @@ the pandas module. Allowed tags are accessed from the context.
   //****************************************************************************
 
   //****************************************************************************
+  /*!\brief Helps bind tags to a system BlockView in \elastica
+   * \ingroup python_bindings
+   * \see bind_variable_locator
+   */
+  template <typename UnwantedVariableTags, typename Plugin>
+  void bind_variable_locator(
+      pybind11::class_<::blocks::BlockView<Plugin>>& system) {
+    BindVariableLocator<UnwantedVariableTags>::apply(system);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
   /*!\brief Helps bind tags to a system block in \elastica
    * \ingroup python_bindings
    * \see bind_variable_locator

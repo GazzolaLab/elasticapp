@@ -45,11 +45,20 @@ namespace elastica {
       using CosseratRodConstSlice = ::elastica::cosserat_rod::CosseratRodPlugin<
           ::elastica::cosserat_rod::DefaultCosseratRodTraits,
           ::blocks::ConstBlockSlice, detail::CosseratRodComponents>;
+      using CosseratRodView = ::elastica::cosserat_rod::CosseratRodPlugin<
+          ::elastica::cosserat_rod::DefaultCosseratRodTraits,
+          ::blocks::BlockView, detail::CosseratRodComponents>;
+      using CosseratRodConstView = ::elastica::cosserat_rod::CosseratRodPlugin<
+          ::elastica::cosserat_rod::DefaultCosseratRodTraits,
+          ::blocks::ConstBlockView, detail::CosseratRodComponents>;
 
       using CosseratRodBlock = ::blocks::Block<CosseratRod>;
       using CosseratRodBlockSlice = ::blocks::BlockSlice<CosseratRodSlice>;
       using CosseratRodBlockConstSlice =
           ::blocks::ConstBlockSlice<CosseratRodConstSlice>;
+      using CosseratRodBlockView = ::blocks::BlockView<CosseratRodView>;
+      using CosseratRodBlockConstView =
+          ::blocks::ConstBlockView<CosseratRodConstView>;
 
     }  // namespace detail
 

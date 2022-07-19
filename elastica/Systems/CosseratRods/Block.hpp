@@ -245,12 +245,37 @@ namespace blocks {
     //**************************************************************************
 
     //**************************************************************************
-    /*!\brief Gets starting location of new slice, based on the stagger type
+    /*!\brief Gets size of new slice, based on the stagger type
      */
     template <typename OnStaggerType>
     inline auto get_size_of_slice(
         index_type const index_to_be_sliced) const noexcept -> size_type {
       return OnStaggerType::get_dofs(n_elements(index_to_be_sliced));
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Gets size of new slice, based on the stagger type
+     */
+    template <typename OnStaggerType>
+    inline auto get_size_of_slice(index_type const start_index,
+                                  size_type const slice_size) const noexcept
+        -> size_type {
+      return OnStaggerType::get_dofs(n_elements(start_index, slice_size));
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Gets size of new slice, based on the stagger type
+     *
+     * For types on rodm the size of the slice is the size requested itself.
+     * The get_dofs() is designed to always return 1, so this is a workaround.
+     */
+    template <>
+    inline auto get_size_of_slice<OnRod>(
+        index_type const, size_type const slice_size) const noexcept
+        -> size_type {
+      return slice_size;
     }
     //**************************************************************************
 
@@ -269,6 +294,8 @@ namespace blocks {
     //**Slice functions*********************************************************
     /*!\name Slice functions */
     //@{
+
+    //**************************************************************************
     /*!\brief Takes slice of each individual variable
      */
     template <typename Var>
@@ -286,6 +313,27 @@ namespace blocks {
           blocks::get<Var>(*this),
           get_start_of_slice<typename Var::Stagger>(index_to_be_sliced),
           get_size_of_slice<typename Var::Stagger>(index_to_be_sliced));
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Takes slice of each individual variable in a range
+     */
+    template <typename Var>
+    inline constexpr typename Var::slice_type slice(index_type start_index,
+                                                    size_type slice_size) & {
+      return Var::slice(
+          blocks::get<Var>(*this),
+          get_start_of_slice<typename Var::Stagger>(start_index),
+          get_size_of_slice<typename Var::Stagger>(start_index, slice_size));
+    }
+    template <typename Var>
+    inline constexpr typename Var::const_slice_type slice(
+        index_type start_index, size_type slice_size) const& {
+      return Var::slice(
+          blocks::get<Var>(*this),
+          get_start_of_slice<typename Var::Stagger>(start_index),
+          get_size_of_slice<typename Var::Stagger>(start_index, slice_size));
     }
     //**************************************************************************
 
@@ -478,7 +526,7 @@ namespace blocks {
     //@}
     //**************************************************************************
 
-   public: // TODO : Make it protected
+   public:  // TODO : Make it protected
     //**Ghosting functions******************************************************
     /*!\name Ghosting functions */
     //@{

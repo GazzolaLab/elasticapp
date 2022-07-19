@@ -181,7 +181,23 @@ namespace py_bindings {
   //****************************************************************************
 
   //****************************************************************************
-  /*!\brief Helps bind accessors to a a block of CosseratRod in \elastica
+  /*!\brief Helps bind accessors to a BlockView of CosseratRod in \elastica
+   * \ingroup python_bindings
+   * \see bind_member_access
+   */
+  template <typename UnwantedVariableTags, typename CRT,
+            template <typename /*CRT*/, typename /*InitializedBlockView*/>
+            class... Components>
+  void bind_member_access(
+      pybind11::class_<
+          ::blocks::BlockView<::elastica::cosserat_rod::CosseratRodPlugin<
+              CRT, ::blocks::BlockView, Components...>>>& rod) {  // NOLINT
+    detail::bind_member_access<UnwantedVariableTags>(rod);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Helps bind accessors to a block of CosseratRod in \elastica
    * \ingroup python_bindings
    * \see bind_member_access
    */

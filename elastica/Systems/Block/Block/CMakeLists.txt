@@ -4,35 +4,32 @@ set(LIBRARY BlockCore)
 
 add_elastica_library(${LIBRARY} INTERFACE)
 
-elastica_target_headers(
-        ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
-        HEADERS
+set(LIBRARY_SOURCES
         Aliases.hpp
         AsVariables.hpp
         Block.hpp
         BlockFacade.hpp
         BlockIterator.hpp
         BlockSlice.hpp
+        BlockSliceFacade.hpp
+        BlockView.hpp
         DisplayVariables.hpp
         Protocols.hpp
         Types.hpp
         TypeTraits.hpp
+        )
+
+elastica_target_headers(
+        ${LIBRARY}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
+        HEADERS
+        ${LIBRARY_SOURCES}
 )
 
 elastica_target_sources(
         ${LIBRARY}
         INTERFACE
-        Aliases.hpp
-        AsVariables.hpp
-        Block.hpp
-        BlockFacade.hpp
-        BlockIterator.hpp
-        BlockSlice.hpp
-        DisplayVariables.hpp
-        Protocols.hpp
-        Types.hpp
-        TypeTraits.hpp
+        ${LIBRARY_SOURCES}
 )
 
 target_link_libraries(

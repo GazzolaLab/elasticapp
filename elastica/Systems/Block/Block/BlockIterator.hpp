@@ -31,10 +31,9 @@ namespace blocks {
   // forward declarations of the slice() function for iteraton
   // in blockFacade::slice()
   template <typename Plugin, typename Index>
-  inline constexpr decltype(auto) slice(Block<Plugin>& block_like, Index index);
+  inline decltype(auto) slice(Block<Plugin>& block_like, Index index);
   template <typename Plugin, typename Index>
-  inline constexpr decltype(auto) slice(Block<Plugin> const& block_like,
-                                        Index index);
+  inline decltype(auto) slice(Block<Plugin> const& block_like, Index index);
   /*! \endcond */
   //****************************************************************************
 
@@ -103,7 +102,7 @@ namespace blocks {
      * \param ptr Pointer to the block
      * \param idx Index of slicing
      */
-    explicit constexpr BlockIterator(ParentBlock* ptr, std::size_t idx) noexcept
+    constexpr BlockIterator(ParentBlock* ptr, std::size_t idx) noexcept
         : block_(ptr), curr_idx_(idx) {}
     BlockIterator(const BlockIterator&) = default;
     //@}
@@ -375,8 +374,8 @@ namespace blocks {
      * \param ptr Pointer to the block
      * \param idx Index of slicing
      */
-    explicit constexpr ConstBlockIterator(ParentBlock const* ptr,
-                                          std::size_t idx) noexcept
+    constexpr ConstBlockIterator(ParentBlock const* ptr,
+                                 std::size_t idx) noexcept
         : block_(ptr), curr_idx_(idx) {}
     //**************************************************************************
 

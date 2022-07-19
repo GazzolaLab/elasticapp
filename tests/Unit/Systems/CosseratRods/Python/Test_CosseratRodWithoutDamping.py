@@ -24,8 +24,29 @@ class TestCosseratRodWithoutDamping(unittest.TestCase):
     def test_length(self):
         crb = self.get_a_block()
 
+        # slices
         for i in range(4):
             rod = crb[i]
+            self.assertEqual(len(rod), 10)
+
+        # sub-slices equaling a slice
+        for i in range(4):
+            rod = crb[i: i + 1]
+            self.assertEqual(len(rod), 10)
+
+        # proper sub-slices
+        for i in range(2):
+            rod = crb[i: i + 2]
+            self.assertEqual(len(rod), 2 * 10 + 2)
+
+        # slices of sub-slices
+        for i in range(2):
+            rod = crb[i: i + 3]
+            self.assertEqual(len(rod), 3 * 10 + 2 * 2)
+            arod = rod[0:2]  # has rod 0, 1, 2
+            self.assertEqual(type(arod), type(rod))
+            self.assertEqual(len(arod), 2 * 10 + 2)
+            rod = arod[0]  # has rod 0, 1, 2
             self.assertEqual(len(rod), 10)
 
     def test_member_access(self):
@@ -208,26 +229,46 @@ class TestCosseratRodWithoutDamping(unittest.TestCase):
             with self.subTest(slice_idx=slice_idx):
                 run_test(crb[slice_idx])
 
-    def test_variable_location_settable(self):
-        def run_test(rod):
-            rod.loc[rod.Position] = Matrix(2.0 * np.ones((3, 11)))
-            rod.loc[rod.Director] = Tensor(3.0 * np.ones((3, 3, 10)))
-            rod.loc[rod.VoronoiLength] = Vector(
-                4.0
-                * np.ones(
-                    9,
-                )
-            )
+        slice_size = 2
+        for view_idx in range(0, 2):
+            with self.subTest(view_idx=view_idx):
+                run_test(crb[view_idx: view_idx + slice_size])
 
-            # The buffer should be modified after tests
-            npt.assert_allclose(np.asarray(rod.get_position()), 2.0)
-            npt.assert_allclose(np.asarray(rod.get_director()), 3.0)
-            npt.assert_allclose(np.asarray(rod.get_voronoi_length()), 4.0)
+    def test_variable_location_settable(self):
+        def setup_test(node_size=11, element_size=10, voronoi_size=9):
+            def run_test(rod):
+                rod.loc[rod.Position] = Matrix(2.0 * np.ones((3, node_size)))
+                rod.loc[rod.Director] = Tensor(3.0 * np.ones((3, 3, element_size)))
+                rod.loc[rod.VoronoiLength] = Vector(
+                    4.0
+                    * np.ones(
+                        voronoi_size,
+                    )
+                )
+
+                # The buffer should be modified after tests
+                npt.assert_allclose(np.asarray(rod.get_position()), 2.0)
+                npt.assert_allclose(np.asarray(rod.get_director()), 3.0)
+                npt.assert_allclose(np.asarray(rod.get_voronoi_length()), 4.0)
+
+            return run_test
 
         crb = self.get_a_block()
+        run_slice_test = setup_test()
         for slice_idx in range(0, 4):
             with self.subTest(slice_idx=slice_idx):
-                run_test(crb[slice_idx])
+                run_slice_test(crb[slice_idx])
+
+        slice_size = 2
+        element_size = slice_size * 10 + (slice_size - 1) * 2
+        run_view_test = setup_test(
+            node_size=element_size + 1,
+            element_size=element_size,
+            voronoi_size=element_size - 1,
+        )
+        for view_idx in range(0, 2):
+            with self.subTest(view_idx=view_idx):
+                run_view_test(crb[view_idx: view_idx + slice_size])
 
     def test_pyelastica_interface(self):
         is_well_formed = lambda x: self.assertIsInstance(x.shape, tuple)
@@ -266,6 +307,11 @@ class TestCosseratRodWithoutDamping(unittest.TestCase):
         for slice_idx in range(0, 4):
             with self.subTest(slice_idx=slice_idx):
                 run_test(crb[slice_idx])
+
+        slice_size = 2
+        for view_idx in range(0, 2):
+            with self.subTest(view_idx=view_idx):
+                run_test(crb[view_idx: view_idx + slice_size])
 
     def test_energy_methods(self):
         is_well_formed = lambda x: self.assertIsInstance(x, float)

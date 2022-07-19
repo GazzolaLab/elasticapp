@@ -362,6 +362,21 @@ namespace elastica {
           -> size_type {
         return NElement::slice(n_elements(), unit);
       }
+      inline auto n_elements(index_type const start_unit,
+                             size_type const slice_size) const& noexcept
+          -> size_type {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+
+        // may need to change based on elements() structure
+        auto const start =
+            n_elements().begin() + static_cast<std::size_t>(start_unit);
+        return OnElement::get_dofs(
+            std::accumulate(start, start + static_cast<std::size_t>(slice_size),
+                            static_cast<size_type>(n_ghosts(OnElement{}) *
+                                                   (slice_size - 1UL))));
+#pragma GCC diagnostic pop
+      }
       //@}
       //************************************************************************
 
@@ -392,7 +407,7 @@ namespace elastica {
       //@}
       //************************************************************************
 
-     protected:
+     public:
       //************************************************************************
       /*!\brief Returns number of units (unique, individual cosserat rods)
        * stored in the block
@@ -408,12 +423,8 @@ namespace elastica {
       /*!\brief Gets the total number of elements/nodes/voronois for the
        * Cosserat rod, for each placement type.
        */
-     public:
       inline auto total_n_elements() const noexcept -> size_type {
-        // may need to change based on elements() structure
-        return OnElement::get_dofs(std::accumulate(
-            n_elements().begin(), n_elements().end(),
-            static_cast<size_type>(n_ghosts(OnElement{}) * (n_units() - 1UL))));
+        return n_elements(0UL, n_units());
       }
       inline auto total_n_nodes() const noexcept -> size_type {
         return OnNode::get_dofs(total_n_elements());
@@ -424,13 +435,12 @@ namespace elastica {
       //@}
       //************************************************************************
 
-     public:
       //************************************************************************
       /*!\brief Checks if the current Block/BlockSlice is empty
        */
       inline auto empty() const noexcept -> bool {
-        return not n_elements()
-                       .size();  // n_elements().empty() doesn't work with blaze
+        // n_elements().empty() doesn't work with blaze
+        return not n_elements().size();
       }
       //************************************************************************
 

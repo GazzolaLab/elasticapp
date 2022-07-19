@@ -3,14 +3,13 @@
 set(LIBRARY CosseratRods)
 add_elastica_library(${LIBRARY} INTERFACE)
 
-elastica_target_headers(
-        ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
+set(LIBRARY_SOURCES
         Access.hpp
         Aliases.hpp
         Block.hpp
         BlockInitializer.hpp
         BlockSlice.hpp
+        BlockView.hpp
         Components.hpp
         CosseratRodPlugin.hpp
         CosseratRods.hpp
@@ -23,28 +22,18 @@ elastica_target_headers(
         Types.hpp
         TypeTraits.hpp
         Utility.hpp
+        )
+
+elastica_target_headers(
+        ${LIBRARY}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
+        ${LIBRARY_SOURCES}
 )
 
 elastica_target_sources(
         ${LIBRARY}
         INTERFACE
-        Access.hpp
-        Aliases.hpp
-        Block.hpp
-        BlockInitializer.hpp
-        BlockSlice.hpp
-        Components.hpp
-        CosseratRodPlugin.hpp
-        CosseratRods.hpp
-        CosseratRodTraits.hpp
-        Initializers.hpp
-        Protocols.hpp
-        Serialize.hpp # TODO : refactor
-        Specialize.hpp
-        Tags.hpp
-        Types.hpp
-        TypeTraits.hpp
-        Utility.hpp
+        ${LIBRARY_SOURCES}
 )
 
 add_subdirectory(Access)

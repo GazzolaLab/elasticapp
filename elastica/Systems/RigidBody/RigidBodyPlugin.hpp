@@ -280,7 +280,6 @@ namespace elastica {
       //@}
       //************************************************************************
 
-     protected:
       //************************************************************************
       /*!\brief Returns number of units (unique, individual cosserat rods)
        * stored in the block
@@ -296,7 +295,6 @@ namespace elastica {
       /*!\brief Gets the total number of elements/nodes/voronois for the
        * Rigid body, for each placement type.
        */
-     public:
       inline auto total_n_elements() const noexcept -> size_type {
         // may need to change based on elements() structure
         return std::accumulate(n_elements().begin(), n_elements().end(), 0UL);
@@ -304,7 +302,6 @@ namespace elastica {
       //@}
       //************************************************************************
 
-     public:
       //************************************************************************
       /*!\brief Checks if the current Block/BlockSlice is empty
        */

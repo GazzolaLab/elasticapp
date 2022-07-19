@@ -42,14 +42,18 @@ namespace elastica {
       }
     };
 
+    template <typename B, typename Variable>
+    using SymplecticDataView =
+        std::conditional_t<::blocks::IsBlockSlice<B>::value ||
+                               ::blocks::IsBlockView<B>::value,
+                           typename Variable::SliceType::type,
+                           typename Variable::ConstSliceType::type>;
+
     // TODO : can be optimized and refactored
     template <typename B, typename Variable>
-    using SymplecticData = std::conditional_t<
-        ::blocks::IsBlock<B>::value, typename Variable::type,
-        // can be BlockSlice or ConstBlockSlice
-        std::conditional_t<::blocks::IsBlockSlice<B>::value,
-                           typename Variable::SliceType::type,
-                           typename Variable::ConstSliceType::type>>;
+    using SymplecticData =
+        std::conditional_t<::blocks::IsBlock<B>::value, typename Variable::type,
+                           SymplecticDataView<B, Variable>>;
   }  // namespace detail
 
   //****************************************************************************

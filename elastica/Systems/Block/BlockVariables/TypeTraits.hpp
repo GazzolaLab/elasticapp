@@ -108,6 +108,52 @@ namespace blocks {
   //****************************************************************************
 
   //****************************************************************************
+  /*!\brief Metafunction to obtain slice types of a typelist of block
+   * variables
+   * \ingroup blocks
+   *
+   * \details
+   * The as_slices template type helps obtain the slice types of a typelist of
+   * declared blocks::Variable, used as shown below. The resulting type
+   * contains nested types `slices` and `const_slices` which are typelists
+   * containing the slice types and constant slice types of the
+   * blocks::Variable.
+   *
+   * \example
+   * \code
+   *  // ... Declare variables Var1, Var2, Var3
+   *
+   *  // Typelist of all variable slices
+   *  using VariablesList = tmpl::list<Var1, Var2, Var3>;
+   *
+   *  // Type containing information about slices
+   *  using VariableSlicesInformation = as_slices<VariablesList>;
+   *
+   *  // TypeList of slices of all variables
+   *  using VariableSlices = typename VariableSlicesInformation::slices;
+   *
+   *  // TypeList of constant slices of all variables
+   *  using VariableConstSlices
+   *    = typename VariableSlicesInformation::const_slices;
+   * \endcode
+   *
+   * \tparam L typelist of block::Variables
+   *
+   * \see blocks::Variables, Block
+   */
+  template <typename L>
+  struct as_slices {
+    //**Type definitions******************************************************
+    //! Typelist of slices
+    using slices = tmpl::transform<L, tmpl::bind<slice_type_t, tmpl::_1>>;
+    //! Typelist of const slices
+    using const_slices =
+        tmpl::transform<L, tmpl::bind<const_slice_type_t, tmpl::_1>>;
+    //************************************************************************
+  };
+  //****************************************************************************
+
+  //****************************************************************************
   /*!\brief Helper to form associations between a list of types `L` and the
    * result of applying metafunction `Op` to types in `L`
    * \ingroup block_tt

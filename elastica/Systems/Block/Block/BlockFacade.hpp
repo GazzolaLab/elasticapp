@@ -35,11 +35,9 @@ namespace blocks {
   // forward declarations of the slice() function for overload resolution
   // in blockFacade::slice()
   template <typename Plugin, typename Index>
-  inline constexpr decltype(auto) slice(Block<Plugin>& block_like,
-                                        Index index);
+  inline decltype(auto) slice(Block<Plugin>& block_like, Index index);
   template <typename Plugin, typename Index>
-  inline constexpr decltype(auto) slice(Block<Plugin> const& block_like,
-                                        Index index);
+  inline decltype(auto) slice(Block<Plugin> const& block_like, Index index);
   /*! \endcond */
   //****************************************************************************
 
@@ -67,7 +65,7 @@ namespace blocks {
      * guarantee.
      *
      * \tparam BlockImplementation The block that derives from BlockFacade
-    */
+     */
     template <typename BlockImplementation>
     struct Signatures {
       /// [slice_signature]
@@ -158,7 +156,7 @@ namespace blocks {
    * \tparam Plugin The computational plugin modeling a Lagrangian entity
    *
    * \see Block
-  */
+   */
   template <typename Plugin>
   class BlockFacade : public Plugin,
                       public elastica::CRTPHelper<Block<Plugin>, BlockFacade> {
@@ -291,7 +289,7 @@ namespace blocks {
     /*!\brief Access to the underlying data
      *
      * \return Mutable lvalue reference to the underlying data
-    */
+     */
     inline constexpr BlockVariables& data() & noexcept { return variables_; }
     //**************************************************************************
 
@@ -299,7 +297,7 @@ namespace blocks {
     /*!\brief Access to the underlying data
      *
      * \return Constant lvalue reference to the underlying data
-    */
+     */
     inline constexpr BlockVariables const& data() const& noexcept {
       return variables_;
     }
@@ -309,7 +307,7 @@ namespace blocks {
     /*!\brief Access to the underlying data
      *
      * \return Mutable rvalue reference to the underlying data
-    */
+     */
     inline constexpr BlockVariables&& data() && noexcept {
       return static_cast<BlockVariables&&>(variables_);
     }
@@ -320,7 +318,7 @@ namespace blocks {
     /*!\brief Access to the underlying data
      *
      * \return Const rvalue reference to the underlying data
-    */
+     */
     inline constexpr BlockVariables const&& data() const&& noexcept {
       return static_cast<BlockVariables const&&>(variables_);
     }

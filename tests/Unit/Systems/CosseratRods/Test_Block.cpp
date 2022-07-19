@@ -5,6 +5,7 @@
 #include "Systems/CosseratRods/Block.hpp"
 #include "Systems/CosseratRods/BlockInitializer.hpp"
 #include "Systems/CosseratRods/BlockSlice.hpp"
+#include "Systems/CosseratRods/BlockView.hpp"
 #include "Systems/CosseratRods/Components.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
 #include "Systems/CosseratRods/CosseratRodTraits.hpp"
@@ -217,7 +218,7 @@ namespace {
       Model model{};
       // check if members work for an empty block
       CHECK(model.n_units() == 0UL);
-      CHECK(::blocks::n_units(model) == 0UL); // free function check
+      CHECK(::blocks::n_units(model) == 0UL);  // free function check
       CHECK(model.empty());
 
       // block check
@@ -252,7 +253,7 @@ namespace {
       CHECK(model.n_elements().empty());
       model.resize_members_on_rod(1UL);
       CHECK(model.n_units() == 1UL);
-      CHECK(::blocks::n_units(model) == 1UL); // free function check
+      CHECK(::blocks::n_units(model) == 1UL);  // free function check
 
       // 2. check start and size before checking slices
       CHECK(model.get_start_of_slice<typename CRPV::NElement::Stagger>(0UL) ==
@@ -286,7 +287,7 @@ namespace {
       CHECK(model.total_n_nodes() == new_n_elements + 1UL);
       CHECK(model.total_n_voronois() == new_n_elements - 1UL);
       CHECK(model.n_units() == 1UL);
-      CHECK(::blocks::n_units(model) == 1UL); // free function check
+      CHECK(::blocks::n_units(model) == 1UL);  // free function check
 
       CHECK(model.n_elements() == ElementsVector{new_n_elements});
       CHECK(model.size() == new_n_elements);
@@ -400,10 +401,10 @@ namespace {
 
       CHECK(not model.n_elements().empty());
       CHECK(model.n_units() == 1UL);
-      CHECK(::blocks::n_units(model) == 1UL); // free function check
+      CHECK(::blocks::n_units(model) == 1UL);  // free function check
       model.resize_members_on_rod(2UL);
       CHECK(model.n_units() == 2UL);
-      CHECK(::blocks::n_units(model) == 2UL); // free function check
+      CHECK(::blocks::n_units(model) == 2UL);  // free function check
 
       // 2. check start and size before checking slices
       // its okay to call it here before the second slice as we explciitly
@@ -444,7 +445,7 @@ namespace {
       CHECK(model.total_n_voronois() ==
             first_n_elements + second_n_elements + 1UL);
       CHECK(model.n_units() == 2UL);
-      CHECK(::blocks::n_units(model) == 2UL); // free function check
+      CHECK(::blocks::n_units(model) == 2UL);  // free function check
 
       CHECK(model.n_elements() ==
             (ElementsVector{first_n_elements, second_n_elements}));
@@ -560,10 +561,10 @@ namespace {
 
       CHECK(not model.n_elements().empty());
       CHECK(model.n_units() == 2UL);
-      CHECK(::blocks::n_units(model) == 2UL); // free function check
+      CHECK(::blocks::n_units(model) == 2UL);  // free function check
       model.resize_members_on_rod(3UL);
       CHECK(model.n_units() == 3UL);
-      CHECK(::blocks::n_units(model) == 3UL); // free function check
+      CHECK(::blocks::n_units(model) == 3UL);  // free function check
 
       // no asserts for the index passed in because check should automatically
       // take care of it
@@ -609,7 +610,7 @@ namespace {
                                             (second_n_elements - 1UL) + 3UL +
                                             (third_n_elements - 1UL));
       CHECK(model.n_units() == 3UL);
-      CHECK(::blocks::n_units(model) == 3UL); // free function check
+      CHECK(::blocks::n_units(model) == 3UL);  // free function check
 
       CHECK(model.n_elements() ==
             (ElementsVector{first_n_elements, second_n_elements,
@@ -897,7 +898,7 @@ namespace {
     auto test_empty = []() {
       Model model{};
       // check if members work for an empty block
-      CHECK(::blocks::n_units(model) == 0UL); // free function check
+      CHECK(::blocks::n_units(model) == 0UL);  // free function check
       CHECK(model.n_units() == 0UL);
       CHECK(model.empty());
 
@@ -925,7 +926,7 @@ namespace {
       CHECK(model.n_elements().empty());
       model.resize_members_on_rod(1UL);
       CHECK(model.n_units() == 1UL);
-      CHECK(::blocks::n_units(model) == 1UL); // free function check
+      CHECK(::blocks::n_units(model) == 1UL);  // free function check
 
       // 2. check start and size of slices
 
@@ -1030,7 +1031,7 @@ namespace {
       CHECK(model.total_n_nodes() == new_n_elements + 1UL);
       CHECK(model.total_n_voronois() == new_n_elements - 1UL);
       CHECK(model.n_units() == 1UL);
-      CHECK(::blocks::n_units(model) == 1UL); // free function check
+      CHECK(::blocks::n_units(model) == 1UL);  // free function check
 
       CHECK(model.n_elements() == ElementsVector{new_n_elements});
       CHECK(model.size() == new_n_elements);
@@ -1219,11 +1220,11 @@ namespace {
       CHECK(total_n_elements_after_resizing == (5UL + 2UL + 10UL));
       CHECK(model.get_ghost_node_buffer() == GhostNodeIndices{5UL + 1UL});
 
-      CHECK(::blocks::n_units(model) == 1UL); // free function check
+      CHECK(::blocks::n_units(model) == 1UL);  // free function check
       CHECK(model.n_units() == 1UL);
       model.resize_members_on_rod(2UL);
       CHECK(model.n_units() == 2UL);
-      CHECK(::blocks::n_units(model) == 2UL); // free function check
+      CHECK(::blocks::n_units(model) == 2UL);  // free function check
 
       // 2. check start and size of slices
 
@@ -1445,7 +1446,7 @@ namespace {
       CHECK(model.total_n_voronois() ==
             ((first_n_elements - 1UL) + 3UL + (new_n_elements - 1UL)));
       CHECK(model.n_units() == 2UL);
-      CHECK(::blocks::n_units(model) == 2UL); // free function check
+      CHECK(::blocks::n_units(model) == 2UL);  // free function check
 
       CHECK(model.n_elements() ==
             ElementsVector{first_n_elements, new_n_elements});
@@ -1707,10 +1708,10 @@ namespace {
             });
 
       CHECK(model.n_units() == 2UL);
-      CHECK(::blocks::n_units(model) == 2UL); // free function check
+      CHECK(::blocks::n_units(model) == 2UL);  // free function check
       model.resize_members_on_rod(3UL);
       CHECK(model.n_units() == 3UL);
-      CHECK(::blocks::n_units(model) == 3UL); // free function check
+      CHECK(::blocks::n_units(model) == 3UL);  // free function check
 
       // 2. check start and size of slices
 
@@ -1981,6 +1982,10 @@ namespace {
   using GenerateTestSlicePluginDefaultTraits =
       CosseratRodPlugin<DefaultCosseratRodTraits, blocks::BlockSlice, T...>;
 
+  template <template <typename, typename> class... T>
+  using GenerateTestViewPluginDefaultTraits =
+      CosseratRodPlugin<DefaultCosseratRodTraits, blocks::BlockView, T...>;
+
   template <template <typename> class VariableDefinition>
   using DefaultVariablesIn =
       VariableCache<DefaultCosseratRodTraits>::V<VariableDefinition>;
@@ -2081,7 +2086,7 @@ namespace {
       Model model{};
       // check if members work for an empty block
       CHECK(model.n_units() == 0UL);
-      CHECK(::blocks::n_units(model) == 0UL); // free function check
+      CHECK(::blocks::n_units(model) == 0UL);  // free function check
       CHECK(model.empty());
 
       // block check
@@ -2108,7 +2113,7 @@ namespace {
       CHECK(model.empty());
       model.resize_members_on_rod(1UL);
       CHECK(model.n_units() == 1UL);
-      CHECK(::blocks::n_units(model) == 1UL); // free function check
+      CHECK(::blocks::n_units(model) == 1UL);  // free function check
 
       // 2. check start and size of slices
 
@@ -2228,7 +2233,7 @@ namespace {
       CHECK(model.total_n_nodes() == new_n_elements + 1UL);
       CHECK(model.total_n_voronois() == new_n_elements - 1UL);
       CHECK(model.n_units() == 1UL);
-      CHECK(::blocks::n_units(model) == 1UL); // free function check
+      CHECK(::blocks::n_units(model) == 1UL);  // free function check
 
       CHECK(model.n_elements() == ElementsVector{new_n_elements});
       CHECK(model.size() == new_n_elements);
@@ -2458,11 +2463,11 @@ namespace {
       CHECK(total_n_elements_after_resizing == (5UL + 2UL + 10UL));
       CHECK(model.get_ghost_node_buffer() == GhostNodeIndices{5UL + 1UL});
 
-      CHECK(::blocks::n_units(model) == 1UL); // free function check
+      CHECK(::blocks::n_units(model) == 1UL);  // free function check
       CHECK(model.n_units() == 1UL);
       model.resize_members_on_rod(2UL);
       CHECK(model.n_units() == 2UL);
-      CHECK(::blocks::n_units(model) == 2UL); // free function check
+      CHECK(::blocks::n_units(model) == 2UL);  // free function check
 
       // 2. check start and size of slices
 
@@ -2656,6 +2661,183 @@ namespace {
       }
 
     }  // end after one initializer
+  }
+
+  ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Block.view",
+                     "[Systems][Unit]") {
+    using TestPlugin = GenerateTestPluginDefaultTraits<VectorComponent>;
+    using Model = GenerateBlock<TestPlugin>;
+    using CRPV = DefaultVariablesIn<CosseratRodPluginVariables>;
+    using VCPV = VectorComponentVariables<DefaultCosseratRodTraits>;
+
+    using ExpectedViewPlugin =
+        GenerateTestViewPluginDefaultTraits<VectorComponent>;
+    using ExpectedView = blocks::BlockView<ExpectedViewPlugin>;
+    using ElementsVector =
+        typename DefaultCosseratRodTraits::DataType::Index::type;
+    using DataVectorSlice =
+        typename DefaultCosseratRodTraits::DataType::Vector::slice_type;
+
+    auto test_empty = []() {
+      Model model{};
+      // check if members work for an empty block
+      CHECK(model.n_units() == 0UL);
+      CHECK(::blocks::n_units(model) == 0UL);  // free function check
+      CHECK(model.empty());
+
+      // block check
+      CHECK_THROWS_AS(model.check(0UL), std::out_of_range);
+      CHECK_THROWS_AS(model.check(end - 1UL), std::out_of_range);
+
+      CHECK_THROWS_WITH(model.check(0UL), Catch::Contains("Index to be "));
+      CHECK_THROWS_WITH(model.check(end - 1UL),
+                        Catch::Contains("Index to be "));
+
+      return model;
+    };
+
+    auto to_vec = [](auto&& blaze_struct) -> std::vector<double> {
+      return std::vector<double>(
+          blaze_struct.data(), blaze_struct.data() + blaze::size(blaze_struct));
+    };
+
+    auto model = test_empty();
+    std::array<std::size_t, 3UL> const n_elements{5UL, 8UL, 10UL};
+    auto const new_n_elements = std::accumulate(
+        std::begin(n_elements), std::end(n_elements), std::size_t{0});
+
+    {
+      auto initializer(cosserat_rod::initialize_cosserat_rod<TestPlugin>(
+          blocks::initialize<tags::NElement>(n_elements[0]),
+          blocks::initialize<test_tags::VarOnNode>(
+              [](std::size_t i) { return static_cast<double>(i); }),
+          blocks::initialize<test_tags::VarOnElement>(
+              [](std::size_t i) { return static_cast<double>(i); }),
+          blocks::initialize<test_tags::VarOnVoronoi>(
+              [](std::size_t i) { return static_cast<double>(i); })));
+
+      model.emplace(std::move(initializer));
+    }
+    {
+      auto initializer(cosserat_rod::initialize_cosserat_rod<TestPlugin>(
+          blocks::initialize<tags::NElement>(n_elements[1]),
+          blocks::initialize<test_tags::VarOnNode>(
+              [](std::size_t i) { return 10.0 + static_cast<double>(i); }),
+          blocks::initialize<test_tags::VarOnElement>(
+              [](std::size_t i) { return 10.0 + static_cast<double>(i); }),
+          blocks::initialize<test_tags::VarOnVoronoi>(
+              [](std::size_t i) { return 10.0 + static_cast<double>(i); })));
+
+      model.emplace(std::move(initializer));
+    }
+    {
+      auto initializer(cosserat_rod::initialize_cosserat_rod<TestPlugin>(
+          blocks::initialize<tags::NElement>(n_elements[2]),
+          blocks::initialize<test_tags::VarOnNode>(
+              [](std::size_t i) { return 50.0 + static_cast<double>(i); }),
+          blocks::initialize<test_tags::VarOnElement>(
+              [](std::size_t i) { return 50.0 + static_cast<double>(i); }),
+          blocks::initialize<test_tags::VarOnVoronoi>(
+              [](std::size_t i) { return 50.0 + static_cast<double>(i); })));
+
+      model.emplace(std::move(initializer));
+    }
+    // A. Base model
+    // 1. check the sizes
+    CHECK(model.total_n_elements() == new_n_elements + 4UL);
+    CHECK(model.total_n_nodes() == new_n_elements + 5UL);
+    CHECK(model.total_n_voronois() == new_n_elements + 3UL);
+    CHECK(model.n_units() == 3UL);
+    CHECK(::blocks::n_units(model) == 3UL);  // free function check
+
+    CHECK(model.n_elements() == ElementsVector(n_elements));
+    CHECK(model.size() == new_n_elements + 4UL);
+    CHECK(not model.empty());
+
+    // 2. check the members in the base model
+    CHECK(model.tell_me_number() == 42);
+
+    CHECK(model.n_elements(0UL, 1UL) == n_elements[0UL]);
+    CHECK(model.n_elements(1UL, 1UL) == n_elements[1UL]);
+    CHECK(model.n_elements(2UL, 1UL) == n_elements[2UL]);
+
+    CHECK(model.n_elements(0UL, 2UL) ==
+          n_elements[0UL] + n_elements[1UL] + 2UL);
+    CHECK(model.n_elements(1UL, 2UL) ==
+          n_elements[1UL] + n_elements[2UL] + 2UL);
+
+    CHECK(model.get_start_of_slice<typename CRPV::NElement::Stagger>(0UL) ==
+          0UL);
+    CHECK(model.get_start_of_slice<typename CRPV::NElement::Stagger>(1UL) ==
+          1UL);
+    CHECK(model.get_start_of_slice<typename CRPV::NElement::Stagger>(2UL) ==
+          2UL);
+    // its okay to call it here before the second slice as we explciitly
+    // resize members on rod, although it will have garbage data (0)
+    CHECK(model.get_size_of_slice<typename CRPV::NElement::Stagger>(0UL, 1UL) ==
+          1UL);
+    CHECK(model.get_size_of_slice<typename CRPV::NElement::Stagger>(1UL, 1UL) ==
+          1UL);
+    CHECK(model.get_size_of_slice<typename CRPV::NElement::Stagger>(2UL, 1UL) ==
+          1UL);
+    CHECK(model.get_size_of_slice<typename CRPV::NElement::Stagger>(0UL, 2UL) ==
+          2UL);
+    CHECK(model.get_size_of_slice<typename CRPV::NElement::Stagger>(1UL, 2UL) ==
+          2UL);
+
+    CHECK(model.get_size_of_slice<typename VCPV::VarOnElement::Stagger>(
+              0UL, 1UL) == n_elements[0UL]);
+    CHECK(model.get_size_of_slice<typename VCPV::VarOnNode::Stagger>(
+              0UL, 1UL) == n_elements[0UL] + 1UL);
+    CHECK(model.get_size_of_slice<typename VCPV::VarOnVoronoi::Stagger>(
+              0UL, 1UL) == n_elements[0UL] - 1UL);
+
+    CHECK(model.get_size_of_slice<typename VCPV::VarOnElement::Stagger>(
+              1UL, 1UL) == n_elements[1UL]);
+    CHECK(model.get_size_of_slice<typename VCPV::VarOnNode::Stagger>(
+              1UL, 1UL) == n_elements[1UL] + 1UL);
+    CHECK(model.get_size_of_slice<typename VCPV::VarOnVoronoi::Stagger>(
+              1UL, 1UL) == n_elements[1UL] - 1UL);
+
+    auto const expected_view_n_elements =
+        (n_elements[0UL] + n_elements[1UL] + 2UL);
+    CHECK(model.get_size_of_slice<typename VCPV::VarOnElement::Stagger>(
+              0UL, 2UL) == expected_view_n_elements);
+    CHECK(model.get_size_of_slice<typename VCPV::VarOnNode::Stagger>(
+              0UL, 2UL) == (expected_view_n_elements + 1UL));
+    CHECK(model.get_size_of_slice<typename VCPV::VarOnVoronoi::Stagger>(
+              0UL, 2UL) == (expected_view_n_elements - 1UL));
+
+    auto model_view = blocks::slice(model, 0UL, 2UL);
+    static_assert(cpp17::is_same_v<decltype(model_view), ExpectedView>,
+                  "Block slice meta-failure");
+
+    // Extra ghosts are not included.
+    CHECK(model_view.total_n_elements() == expected_view_n_elements);
+    CHECK(model_view.total_n_nodes() == (expected_view_n_elements + 1UL));
+    CHECK(model_view.total_n_voronois() == (expected_view_n_elements - 1UL));
+    // Protected
+    // CHECK(model_view.n_units() == 2UL);
+    CHECK(::blocks::n_units(model_view) == 2UL);  // free function check
+
+    // CHECK(model_view.n_elements() == ElementsVector{5UL, 8UL});
+    CHECK(blocks::get<tags::NElement>(model_view) == ElementsVector{5UL, 8UL});
+
+    CHECK(model_view.size() == expected_view_n_elements);
+    CHECK(not model_view.empty());
+
+    CHECK_ITERABLE_APPROX(
+        to_vec(model_view.get_node_variable()),
+        to_vec(DataVectorSlice(model.get_node_variable(), 0UL, 0UL, 3UL,
+                               expected_view_n_elements + 1UL)));
+    CHECK_ITERABLE_APPROX(
+        to_vec(model_view.get_element_variable()),
+        to_vec(DataVectorSlice(model.get_element_variable(), 0UL, 0UL, 3UL,
+                               expected_view_n_elements)));
+    CHECK_ITERABLE_APPROX(
+        to_vec(model_view.get_voronoi_variable()),
+        to_vec(DataVectorSlice(model.get_voronoi_variable(), 0UL, 0UL, 3UL,
+                               expected_view_n_elements - 1UL)));
   }
 
 }  // namespace

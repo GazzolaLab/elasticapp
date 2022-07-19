@@ -348,6 +348,46 @@ namespace {
                   std::addressof(::blocks::get<Tag>(model)));
           });
         }
+
+        SECTION("BlockView") {
+          // just check if the matrix is the same for now
+          using Variables = typename Model::Variables;
+          using Tags =
+              tmpl::transform<Variables,
+                              tmpl::bind<::blocks::parameter_t, tmpl::_1>>;
+
+          auto first_view = ::blocks::slice(model, 0UL, 1UL);
+          auto second_view = ::blocks::slice(model, 1UL, 2UL);
+
+          tmpl::for_each<Tags>([&](auto tag) {
+            using Tag = tmpl::type_from<decltype(tag)>;
+            // Relies on blaze interface
+            CHECK(std::addressof(::blocks::get<Tag>(first_view).operand()) ==
+                  std::addressof(::blocks::get<Tag>(model)));
+            CHECK(std::addressof(::blocks::get<Tag>(second_view).operand()) ==
+                  std::addressof(::blocks::get<Tag>(model)));
+          });
+        }
+
+        SECTION("ConstBlockView") {
+          // just check if the matrix is the same for now
+          using Variables = typename Model::Variables;
+          using Tags =
+          tmpl::transform<Variables,
+              tmpl::bind<::blocks::parameter_t, tmpl::_1>>;
+
+          auto first_view = ::blocks::slice(cpp17::as_const(model), 0UL, 1UL);
+          auto second_view = ::blocks::slice(cpp17::as_const(model), 1UL, 2UL);
+
+          tmpl::for_each<Tags>([&](auto tag) {
+            using Tag = tmpl::type_from<decltype(tag)>;
+            // Relies on blaze interface
+            CHECK(std::addressof(::blocks::get<Tag>(first_view).operand()) ==
+                  std::addressof(::blocks::get<Tag>(model)));
+            CHECK(std::addressof(::blocks::get<Tag>(second_view).operand()) ==
+                  std::addressof(::blocks::get<Tag>(model)));
+          });
+        }
       }
 
       auto check_member_API = [](auto& sphere_like) {

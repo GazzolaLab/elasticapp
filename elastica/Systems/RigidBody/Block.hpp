@@ -148,6 +148,16 @@ namespace blocks {
     }
     //**************************************************************************
 
+    //**************************************************************************
+    /*!\brief Gets starting location of new slice, based on the stagger type
+     */
+    inline auto get_size_of_slice(index_type const,
+                                  size_type const slice_size) const noexcept
+        -> size_type {
+      return slice_size;
+    }
+    //**************************************************************************
+
    public:
     //**************************************************************************
     /*
@@ -178,6 +188,26 @@ namespace blocks {
       return Var::slice(blocks::get<Var>(*this),
                         get_start_of_slice(index_to_be_sliced),
                         get_size_of_slice(index_to_be_sliced));
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    //@{
+    /*!\brief Takes slice of each individual variable in a range
+     */
+    template <typename Var>
+    inline constexpr typename Var::slice_type slice(index_type start_index,
+                                                    size_type slice_size) & {
+      return Var::slice(blocks::get<Var>(*this),
+                        get_start_of_slice(start_index),
+                        get_size_of_slice(start_index, slice_size));
+    }
+    template <typename Var>
+    inline constexpr typename Var::const_slice_type slice(
+        index_type start_index, size_type slice_size) const& {
+      return Var::slice(blocks::get<Var>(*this),
+                        get_start_of_slice(start_index),
+                        get_size_of_slice(start_index, slice_size));
     }
     //**************************************************************************
 

@@ -7,6 +7,7 @@
 #include "Framework/TestingFramework.hpp"
 #include "Systems/Block/Block.hpp"
 #include "Utilities/End.hpp"
+#include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -152,9 +153,9 @@ namespace {
   template <typename T>
   struct Vector {
     using type = std::vector<T>;
-    using slice_type = T&;
+    using slice_type = std::vector<std::reference_wrapper<T>>;
     // in case you want to slice a const
-    using const_slice_type = T const&;
+    using const_slice_type = std::vector<std::reference_wrapper<T const>>;
   };
   using VectorInt = Vector<int>;
   using VectorFloat = Vector<float>;
@@ -178,7 +179,7 @@ namespace {
         tmpl::list<ExamplePosition, ExampleVelocity, ExampleAcceleration>;
 
     // !! New !! Helps take slices of Variables
-    using VariableSlices = blocks::detail::as_slices<Variables>;
+    using VariableSlices = blocks::as_slices<Variables>;
   };
   /// [int_plugin]
 
@@ -239,12 +240,27 @@ namespace blocks {
     // simple indexing should do
     template <typename Tag>
     inline constexpr typename Tag::slice_type slice(std::size_t index) & {
-      return blocks::get<Tag>(*this)[index];
+      return {blocks::get<Tag>(*this)[index]};
     }
     template <typename Tag>
     inline constexpr typename Tag::const_slice_type slice(
         std::size_t index) const& {
-      return blocks::get<Tag>(*this)[index];
+      return {blocks::get<Tag>(*this)[index]};
+    }
+
+    // customization point for generating a slice of a slab.
+    // Since all are vectors, simple indexing should do
+    template <typename Tag>
+    inline constexpr auto slice(std::size_t start, std::size_t size) & {
+      return typename Tag::slice_type(
+          blocks::get<Tag>(*this).begin() + static_cast<long>(start),
+          blocks::get<Tag>(*this).begin() + static_cast<long>(start + size));
+    }
+    template <typename Tag>
+    inline constexpr auto slice(std::size_t start, std::size_t size) const& {
+      return typename Tag::const_slice_type(
+          blocks::get<Tag>(*this).cbegin() + static_cast<long>(start),
+          blocks::get<Tag>(*this).cbegin() + static_cast<long>(start + size));
     }
 
     ///////////////////////////// end conformance //////////////////////////////
@@ -301,50 +317,307 @@ namespace {
     //    1UL) ==
     //          3);
 
+    auto check_slice_at_1 = [](auto const& slice, std::size_t index = 0) {
+      CHECK(blocks::get<tags::ExampleInitializedPosition>(slice).at(index) ==
+            3);
+      CHECK(blocks::get<tags::ExampleInitializedVelocity>(slice).at(index) ==
+            approx(3.5F));
+      CHECK(blocks::get<tags::ExampleAcceleration>(slice).at(index) == 1);
+    };
+
     // normal slice
-    auto block_slice = blocks::slice(block, 1UL);
-    static_assert(blocks::IsBlockSlice<decltype(block_slice)>::value,
-                  "Not a constant block slice");
-    using ExpectedSliceType = blocks::BlockSlice<IntermediateExamplePlugin>;
-    static_assert(std::is_same<ExpectedSliceType, decltype(block_slice)>::value,
-                  "Block slice logic failure!");
+    SECTION("BlockSlice") {
+      auto block_slice = blocks::slice(block, 1UL);
+      static_assert(blocks::IsBlockSlice<decltype(block_slice)>::value,
+                    "Not a constant block slice");
+      using ExpectedSliceType = blocks::BlockSlice<IntermediateExamplePlugin>;
+      static_assert(
+          std::is_same<ExpectedSliceType, decltype(block_slice)>::value,
+          "Block slice logic failure!");
 
-    CHECK(blocks::get<tags::ExampleInitializedPosition>(block_slice) == 3);
-    CHECK(blocks::get<tags::ExampleInitializedVelocity>(block_slice) ==
-          approx(3.5F));
-    CHECK(blocks::get<tags::ExampleAcceleration>(block_slice) == 1);
+      check_slice_at_1(block_slice);
 
-    // assign to a slice
-    (blocks::get<tags::ExampleAcceleration>(block_slice) = 3);
-    // to be reflected in blocks
-    CHECK(blocks::get<tags::ExampleAcceleration>(const_block_alias) ==
-          std::vector<int>{0, 3, 2});
+      auto block_slice_from_end = blocks::slice(block, ::elastica::end - 2UL);
+      static_assert(blocks::IsBlockSlice<decltype(block_slice_from_end)>::value,
+                    "Not a constant block slice");
+      static_assert(std::is_same<ExpectedSliceType,
+                                 decltype(block_slice_from_end)>::value,
+                    "Block slice logic failure!");
 
-    // const block slice
-    auto const_block_slice = blocks::slice(const_block_alias, 1UL);
-    static_assert(blocks::IsConstBlockSlice<decltype(const_block_slice)>::value,
-                  "Not a constant block slice");
-    using ExpectedConstSliceType =
-        blocks::ConstBlockSlice<IntermediateExamplePlugin>;
-    static_assert(std::is_same<ExpectedConstSliceType,
-                               decltype(const_block_slice)>::value,
-                  "Block slice logic failure!");
+      check_slice_at_1(block_slice_from_end);
 
-    CHECK(blocks::get<tags::ExampleInitializedPosition>(const_block_slice) ==
-          3);
-    CHECK(blocks::get<tags::ExampleInitializedVelocity>(const_block_slice) ==
-          approx(3.5F));
-    CHECK(blocks::get<tags::ExampleAcceleration>(const_block_slice) == 3);
+      // assign to a slice
+      (blocks::get<tags::ExampleAcceleration>(block_slice).at(0).get() = 3);
+      // to be reflected in blocks
+      CHECK(blocks::get<tags::ExampleAcceleration>(const_block_alias) ==
+            std::vector<int>{0, 3, 2});
+    }
 
-    // xvalue
-    CHECK(blocks::get<tags::ExampleInitializedPosition>(std::move(block)) ==
-          std::vector<int>{2, 3, 4});
-    CHECK_ITERABLE_APPROX(
-        blocks::get<tags::ExampleInitializedVelocity>(std::move(block)),
-        (std::vector<float>{2.5F, 3.5F, 4.5F}));
-    CHECK(blocks::get<tags::ExampleAcceleration>(std::move(block)) ==
-          std::vector<int>{0, 3, 2});
+    SECTION("ConstBlockSlice") {
+      // const block slice
+      auto const_block_slice = blocks::slice(const_block_alias, 1UL);
+      static_assert(
+          blocks::IsConstBlockSlice<decltype(const_block_slice)>::value,
+          "Not a constant block slice");
+      using ExpectedSliceType =
+          blocks::ConstBlockSlice<IntermediateExamplePlugin>;
+      static_assert(
+          std::is_same<ExpectedSliceType, decltype(const_block_slice)>::value,
+          "Block slice logic failure!");
+
+      check_slice_at_1(const_block_slice);
+
+      auto block_slice_from_end =
+          blocks::slice(const_block_alias, ::elastica::end - 2UL);
+      static_assert(
+          blocks::IsConstBlockSlice<decltype(block_slice_from_end)>::value,
+          "Not a constant block slice");
+      static_assert(std::is_same<ExpectedSliceType,
+                                 decltype(block_slice_from_end)>::value,
+                    "Block slice logic failure!");
+
+      check_slice_at_1(block_slice_from_end);
+    }
+
+    // checks the view block[0, 1]
+    auto check_first_half_view = [=](auto& view) {
+      CHECK(view.region().start == 0UL);
+      CHECK(view.region().size == 2UL);
+      CHECK(blocks::get<tags::ExampleInitializedPosition>(view).at(0) == 2);
+      CHECK(blocks::get<tags::ExampleInitializedVelocity>(view).at(0) ==
+            approx(2.5F));
+      CHECK(blocks::get<tags::ExampleAcceleration>(view).at(0) == 0);
+      check_slice_at_1(view, 1UL);
+    };
+
+    // checks the view block[1, 2]
+    auto check_second_half_view = [=](auto const& view) {
+      CHECK(view.region().start == 1UL);
+      CHECK(view.region().size == 2UL);
+      check_slice_at_1(view, 0UL);
+      CHECK(blocks::get<tags::ExampleInitializedPosition>(view).at(1) == 4);
+      CHECK(blocks::get<tags::ExampleInitializedVelocity>(view).at(1) ==
+            approx(4.5F));
+      CHECK(blocks::get<tags::ExampleAcceleration>(view).at(1) == 2);
+    };
+
+    auto check_subview_from_view_generator = [=](auto&& block_subview,
+                                                 auto evt) {
+      CHECK(block_subview.region().start == 1UL);
+      CHECK(block_subview.region().size == 1UL);
+      using ExpectedViewType = tmpl::type_from<decltype(evt)>;
+      static_assert(
+          std::is_same<ExpectedViewType,
+                       cpp20::remove_cvref_t<decltype(block_subview)>>::value,
+          "Block subview logic failure!");
+      // checking contents of block[1]
+      check_slice_at_1(block_subview);
+    };
+
+    auto check_slice_from_view_generator = [=](auto&& block_slice, auto est) {
+      using ExpectedSliceType = tmpl::type_from<decltype(est)>;
+      static_assert(
+          std::is_same<ExpectedSliceType,
+                       cpp20::remove_cvref_t<decltype(block_slice)>>::value,
+          "Block slice logic failure!");
+      check_slice_at_1(block_slice);
+    };
+
+    auto check_view_integrity = [=](auto& block_like, auto expected_view_type_,
+                                    auto expected_slice_type_) {
+      auto check_subview_from_view = [=](auto&& block_subview) {
+        check_subview_from_view_generator(
+            std::forward<decltype(block_subview)>(block_subview),
+            expected_view_type_);
+      };
+      auto check_slice_from_view = [=](auto&& block_slice) {
+        check_slice_from_view_generator(
+            std::forward<decltype(block_slice)>(block_slice),
+            expected_slice_type_);
+      };
+      auto check_subview_from_constview = [=](auto&& block_subview) {
+        check_subview_from_view_generator(
+            std::forward<decltype(block_subview)>(block_subview),
+            tmpl::type_<blocks::ConstBlockView<IntermediateExamplePlugin>>{});
+      };
+      auto check_slice_from_constview = [=](auto&& block_slice) {
+        check_slice_from_view_generator(
+            std::forward<decltype(block_slice)>(block_slice),
+            tmpl::type_<blocks::ConstBlockSlice<IntermediateExamplePlugin>>{});
+      };
+
+      auto block_view = blocks::slice(block_like, 1UL, 3UL);  // block[1, 2]
+      using ExpectedViewType = tmpl::type_from<decltype(expected_view_type_)>;
+      static_assert(std::is_same<ExpectedViewType, decltype(block_view)>::value,
+                    "Block slice logic failure!");
+      check_second_half_view(block_view);
+
+      // block[0, 1]
+      // also checks that start can be 0
+      auto block_view_1 = blocks::slice(block_like, 0UL, ::elastica::end - 1UL);
+      static_assert(
+          std::is_same<ExpectedViewType, decltype(block_view_1)>::value,
+          "Block slice logic failure!");
+      check_first_half_view(block_view_1);
+
+      // Check the ends
+      // block[0, 1]
+      auto block_view_2 = blocks::slice(block_like, ::elastica::end - 3UL,
+                                        ::elastica::end - 1UL);
+      static_assert(
+          std::is_same<ExpectedViewType, decltype(block_view_2)>::value,
+          "Block slice logic failure!");
+      check_first_half_view(block_view_2);
+
+      auto block_view_3 = blocks::slice(block_like, ::elastica::end - 2UL, 3UL);
+      static_assert(
+          std::is_same<ExpectedViewType, decltype(block_view_3)>::value,
+          "Block slice logic failure!");
+      check_second_half_view(block_view_3);
+
+      // checks that stop can be end
+      auto block_view_4 =
+          blocks::slice(block_like, ::elastica::end - 2UL, elastica::end);
+      static_assert(
+          std::is_same<ExpectedViewType, decltype(block_view_4)>::value,
+          "Block slice logic failure!");
+      check_second_half_view(block_view_4);
+
+      // Check slabbing a block view,
+      auto subview = blocks::slice(block_view, 0UL, 1UL);
+      check_subview_from_view(subview);
+      check_subview_from_view(cpp17::as_const(subview));
+
+      auto another_subview =
+          blocks::slice(cpp17::as_const(block_view), 0UL, 1UL);
+      check_subview_from_constview(another_subview);
+      check_subview_from_constview(cpp17::as_const(another_subview));
+
+      check_subview_from_view(blocks::slice(block_view, 0UL, 1UL));
+      check_subview_from_view(
+          blocks::slice(block_view, 0UL, ::elastica::end - 1UL));
+      check_subview_from_view(blocks::slice(block_view, ::elastica::end - 2UL,
+                                            ::elastica::end - 1UL));
+      check_subview_from_view(
+          blocks::slice(block_view, ::elastica::end - 2UL, 1UL));
+
+      // 2 is size, so check that edge case
+      check_subview_from_view(blocks::slice(block_view_1, 1UL, 2UL));
+      // Check end edge case
+      check_subview_from_view(
+          blocks::slice(block_view_1, ::elastica::end - 1UL, ::elastica::end));
+      check_subview_from_view(
+          blocks::slice(block_view_1, 1UL, ::elastica::end));
+      check_subview_from_view(
+          blocks::slice(block_view_1, ::elastica::end - 1UL, 2UL));
+
+      // Check if full slice can be generated again
+      check_second_half_view(blocks::slice(block_view, 0UL, ::elastica::end));
+      check_second_half_view(blocks::slice(block_view, 0UL, 2UL));
+      check_second_half_view(
+          blocks::slice(block_view, ::elastica::end - 2UL, ::elastica::end));
+      check_second_half_view(
+          blocks::slice(block_view, ::elastica::end - 2UL, 2UL));
+
+      // Check slicing a block view
+      auto subslice = blocks::slice(block_view, 0UL);
+      check_slice_from_view(subslice);
+      check_slice_from_view(cpp17::as_const(subslice));
+
+      auto another_subslice = blocks::slice(cpp17::as_const(block_view), 0UL);
+      check_slice_from_constview(another_subslice);
+      check_slice_from_constview(cpp17::as_const(another_subslice));
+
+      check_slice_from_view(blocks::slice(block_view, 0UL));
+      check_slice_from_view(blocks::slice(block_view, ::elastica::end - 2UL));
+      check_slice_from_view(blocks::slice(block_view_1, 1UL));
+      check_slice_from_view(blocks::slice(block_view_1, ::elastica::end - 1UL));
+    };
+
+    SECTION("BlockView") {
+      using ExpectedViewType = blocks::BlockView<IntermediateExamplePlugin>;
+      using ExpectedSliceType = blocks::BlockSlice<IntermediateExamplePlugin>;
+
+      check_view_integrity(block, tmpl::type_<ExpectedViewType>{},
+                           tmpl::type_<ExpectedSliceType>{});
+
+      auto block_view = blocks::slice(block, 1UL, 3UL);  // block[1, 2]
+      // assign to a view
+      (blocks::get<tags::ExampleAcceleration>(block_view).at(0).get() = 1);
+      // to be reflected in blocks
+      CHECK(blocks::get<tags::ExampleAcceleration>(const_block_alias) ==
+            std::vector<int>{0, 1, 2});
+
+      // While block view
+      auto whole_block_view = blocks::slice(block);
+      static_assert(
+          std::is_same<ExpectedViewType, decltype(whole_block_view)>::value,
+          "Block slice logic failure!");
+      // assign to a view
+      (blocks::get<tags::ExampleAcceleration>(whole_block_view).at(0).get() =
+           4);
+      (blocks::get<tags::ExampleAcceleration>(whole_block_view).at(1).get() =
+           5);
+      (blocks::get<tags::ExampleAcceleration>(whole_block_view).at(2).get() =
+           6);
+
+      // to be reflected in blocks
+      CHECK(blocks::get<tags::ExampleAcceleration>(const_block_alias) ==
+            std::vector<int>{4, 5, 6});
+    }
+
+    SECTION("ConstBlockView") {
+      using ExpectedViewType =
+          blocks::ConstBlockView<IntermediateExamplePlugin>;
+      using ExpectedSliceType =
+          blocks::ConstBlockSlice<IntermediateExamplePlugin>;
+
+      check_view_integrity(const_block_alias, tmpl::type_<ExpectedViewType>{},
+                           tmpl::type_<ExpectedSliceType>{});
+
+      // While block view
+      auto whole_block_view = blocks::slice(const_block_alias);
+      static_assert(
+          std::is_same<ExpectedViewType, decltype(whole_block_view)>::value,
+          "Block slice logic failure!");
+
+      // to be reflected in blocks
+      CHECK(blocks::get<tags::ExampleInitializedPosition>(whole_block_view)
+                .at(0) == 2);
+      CHECK(blocks::get<tags::ExampleInitializedPosition>(whole_block_view)
+                .at(1) == 3);
+      CHECK(blocks::get<tags::ExampleInitializedPosition>(whole_block_view)
+                .at(2) == 4);
+    }
+
+    SECTION("View iterator") {
+      auto const count = [](auto& block_view) {
+        auto s = 0UL;
+        for (auto slice : block_view) {
+          elastica::ignore_unused(slice);
+          ++s;
+        }
+        return s;
+      };
+      auto const iterate = [&](auto range) {
+        auto stop = range.first;
+        auto expected_size = range.second;
+
+        auto block_view = blocks::slice(block, stop - expected_size, stop);
+        CHECK(count(block_view) == expected_size);
+
+        auto const_block_view =
+            blocks::slice(const_block_alias, stop - expected_size, stop);
+        CHECK(count(const_block_view) == expected_size);
+      };
+
+      iterate(std::make_pair(2UL, 2UL));
+      iterate(std::make_pair(2UL, 1UL));
+      iterate(std::make_pair(::elastica::end, 2UL));
+      iterate(std::make_pair(::elastica::end, 1UL));
+    }
   }
+
 }  // namespace
 
 namespace {
@@ -376,7 +649,7 @@ namespace {
     using Variables = tmpl::append<InitializedVariables, ComputedVariables>;
 
     // Helps take slices of Variables
-    using VariableSlices = blocks::detail::as_slices<Variables>;
+    using VariableSlices = blocks::as_slices<Variables>;
 
     // can be made generic, but we keep it simple here for the sake of clarity
     static constexpr std::size_t n_dofs = 3UL;
@@ -476,13 +749,13 @@ namespace blocks {
     // simple indexing should do
     template <typename Tag>
     inline constexpr typename Tag::slice_type slice(std::size_t index) & {
-      return blocks::get<Tag>(*this)[index];
+      return {blocks::get<Tag>(*this)[index]};
     }
 
     template <typename Tag>
     inline constexpr typename Tag::const_slice_type slice(
         std::size_t index) const& {
-      return blocks::get<Tag>(*this)[index];
+      return {blocks::get<Tag>(*this)[index]};
     }
 
     ///////////////////////////// end conformance //////////////////////////////
@@ -565,13 +838,14 @@ namespace {
     static_assert(std::is_same<ExpectedSliceType, decltype(block_slice)>::value,
                   "Block slice type failure!");
 
-    CHECK(blocks::get<tags::ExampleInitializedPosition>(block_slice) == 2);
-    CHECK(blocks::get<tags::ExampleInitializedVelocity>(block_slice) ==
+    CHECK(blocks::get<tags::ExampleInitializedPosition>(block_slice).at(0) ==
+          2);
+    CHECK(blocks::get<tags::ExampleInitializedVelocity>(block_slice).at(0) ==
           approx(6.5F));
-    CHECK(blocks::get<tags::ExampleAcceleration>(block_slice) == 12);
+    CHECK(blocks::get<tags::ExampleAcceleration>(block_slice).at(0) == 12);
 
     // assign to a slice
-    (blocks::get<tags::ExampleAcceleration>(block_slice) = 3);
+    (blocks::get<tags::ExampleAcceleration>(block_slice).at(0).get() = 3);
     // to be reflected in blocks
     CHECK(blocks::get<tags::ExampleAcceleration>(const_block_alias) ==
           std::vector<int>{5, 3, 21});
@@ -586,11 +860,11 @@ namespace {
                                decltype(const_block_slice)>::value,
                   "Block slice type failure!");
 
-    CHECK(blocks::get<tags::ExampleInitializedPosition>(const_block_slice) ==
-          2);
-    CHECK(blocks::get<tags::ExampleInitializedVelocity>(const_block_slice) ==
-          approx(6.5F));
-    CHECK(blocks::get<tags::ExampleAcceleration>(const_block_slice) == 3);
+    CHECK(blocks::get<tags::ExampleInitializedPosition>(const_block_slice)
+              .at(0) == 2);
+    CHECK(blocks::get<tags::ExampleInitializedVelocity>(const_block_slice)
+              .at(0) == approx(6.5F));
+    CHECK(blocks::get<tags::ExampleAcceleration>(const_block_slice).at(0) == 3);
 
     // xvalue
     CHECK(blocks::get<tags::ExampleInitializedPosition>(std::move(block)) ==
@@ -782,7 +1056,7 @@ namespace {
     using Variables = tmpl::append<InitializedVariables, ComputedVariables>;
 
     // Helps take slices of Variables
-    using VariableSlices = blocks::detail::as_slices<Variables>;
+    using VariableSlices = blocks::as_slices<Variables>;
 
     // !! New !! To help initialize the block to be formed, we have an
     // initialize method
@@ -859,13 +1133,13 @@ namespace blocks {
     // simple indexing should do
     template <typename Tag>
     inline constexpr typename Tag::slice_type slice(std::size_t index) & {
-      return blocks::get<Tag>(*this)[index];
+      return {blocks::get<Tag>(*this)[index]};
     }
 
     template <typename Tag>
     inline constexpr typename Tag::const_slice_type slice(
         std::size_t index) const& {
-      return blocks::get<Tag>(*this)[index];
+      return {blocks::get<Tag>(*this)[index]};
     }
 
     ///////////////////////////// end conformance //////////////////////////////
@@ -950,13 +1224,14 @@ namespace {
     static_assert(blocks::IsBlockSlice<decltype(block_slice)>::value,
                   "Not a constant block slice");
 
-    CHECK(blocks::get<tags::ExampleInitializedPosition>(block_slice) == 2);
-    CHECK(blocks::get<tags::ExampleInitializedVelocity>(block_slice) ==
+    CHECK(blocks::get<tags::ExampleInitializedPosition>(block_slice).at(0) ==
+          2);
+    CHECK(blocks::get<tags::ExampleInitializedVelocity>(block_slice).at(0) ==
           approx(6.5F));
-    CHECK(blocks::get<tags::ExampleAcceleration>(block_slice) == 12);
+    CHECK(blocks::get<tags::ExampleAcceleration>(block_slice).at(0) == 12);
 
     // assign to a slice
-    (blocks::get<tags::ExampleAcceleration>(block_slice) = 3);
+    (blocks::get<tags::ExampleAcceleration>(block_slice).at(0).get() = 3);
     // to be reflected in blocks
     CHECK(blocks::get<tags::ExampleAcceleration>(const_block_alias) ==
           std::vector<int>{5, 3, 21});
@@ -971,11 +1246,11 @@ namespace {
                                decltype(const_block_slice)>::value,
                   "Block slice type failure!");
 
-    CHECK(blocks::get<tags::ExampleInitializedPosition>(const_block_slice) ==
-          2);
-    CHECK(blocks::get<tags::ExampleInitializedVelocity>(const_block_slice) ==
-          approx(6.5F));
-    CHECK(blocks::get<tags::ExampleAcceleration>(const_block_slice) == 3);
+    CHECK(blocks::get<tags::ExampleInitializedPosition>(const_block_slice)
+              .at(0) == 2);
+    CHECK(blocks::get<tags::ExampleInitializedVelocity>(const_block_slice)
+              .at(0) == approx(6.5F));
+    CHECK(blocks::get<tags::ExampleAcceleration>(const_block_slice).at(0) == 3);
 
     // check the member functions
     CHECK(velocities == block.get_velocity());
@@ -1072,7 +1347,7 @@ struct FacadedIntermediateExamplePlugin {
       tmpl::list<ExamplePosition, ExampleVelocity, ExampleAcceleration>;
 
   // !! New !! Helps take slices of Variables
-  using VariableSlices = blocks::detail::as_slices<Variables>;
+  using VariableSlices = blocks::as_slices<Variables>;
 
   int do_it_or_else() { return 1; }
 };
@@ -1105,12 +1380,27 @@ namespace blocks {
     // simple indexing should do
     template <typename Tag>
     inline constexpr typename Tag::slice_type slice(std::size_t index) & {
-      return blocks::get<Tag>(*this)[index];
+      return {blocks::get<Tag>(*this)[index]};
     }
     template <typename Tag>
     inline constexpr typename Tag::const_slice_type slice(
         std::size_t index) const& {
-      return blocks::get<Tag>(*this)[index];
+      return {blocks::get<Tag>(*this)[index]};
+    }
+
+    // customization point for generating a slice of a slab.
+    // Since all are vectors, simple indexing should do
+    template <typename Tag>
+    inline constexpr auto slice(std::size_t start, std::size_t size) & {
+      return typename Tag::slice_type(
+          blocks::get<Tag>(*this).begin() + static_cast<long>(start),
+          blocks::get<Tag>(*this).begin() + static_cast<long>(start + size));
+    }
+    template <typename Tag>
+    inline constexpr auto slice(std::size_t start, std::size_t size) const& {
+      return typename Tag::const_slice_type(
+          blocks::get<Tag>(*this).cbegin() + static_cast<long>(start),
+          blocks::get<Tag>(*this).cbegin() + static_cast<long>(start + size));
     }
 
     ///////////////////////////// end conformance //////////////////////////////
@@ -1174,13 +1464,14 @@ namespace {
     static_assert(std::is_same<ExpectedSliceType, decltype(block_slice)>::value,
                   "Block slice type failure!");
 
-    CHECK(blocks::get<tags::ExampleInitializedPosition>(block_slice) == 3);
-    CHECK(blocks::get<tags::ExampleInitializedVelocity>(block_slice) ==
+    CHECK(blocks::get<tags::ExampleInitializedPosition>(block_slice).at(0) ==
+          3);
+    CHECK(blocks::get<tags::ExampleInitializedVelocity>(block_slice).at(0) ==
           approx(3.5F));
-    CHECK(blocks::get<tags::ExampleAcceleration>(block_slice) == 1);
+    CHECK(blocks::get<tags::ExampleAcceleration>(block_slice).at(0) == 1);
 
     // assign to a slice
-    (blocks::get<tags::ExampleAcceleration>(block_slice) = 3);
+    (blocks::get<tags::ExampleAcceleration>(block_slice).at(0).get() = 3);
     // to be reflected in blocks
     CHECK(blocks::get<tags::ExampleAcceleration>(const_block_alias) ==
           std::vector<int>{0, 3, 2});
@@ -1195,19 +1486,22 @@ namespace {
                                decltype(const_block_slice)>::value,
                   "Block slice type failure!");
 
-    CHECK(blocks::get<tags::ExampleInitializedPosition>(const_block_slice) ==
-          3);
-    CHECK(blocks::get<tags::ExampleInitializedVelocity>(const_block_slice) ==
-          approx(3.5F));
-    CHECK(blocks::get<tags::ExampleAcceleration>(const_block_slice) == 3);
+    CHECK(blocks::get<tags::ExampleInitializedPosition>(const_block_slice)
+              .at(0) == 3);
+    CHECK(blocks::get<tags::ExampleInitializedVelocity>(const_block_slice)
+              .at(0) == approx(3.5F));
+    CHECK(blocks::get<tags::ExampleAcceleration>(const_block_slice).at(0) == 3);
 
     // subscript the main block
     auto new_block_slice = block[elastica::end - 1UL];
 
-    CHECK(blocks::get<tags::ExampleInitializedPosition>(new_block_slice) == 4);
-    CHECK(blocks::get<tags::ExampleInitializedVelocity>(new_block_slice) ==
-          approx(4.5F));
-    CHECK(blocks::get<tags::ExampleAcceleration>(new_block_slice) == 2);
+    CHECK(
+        blocks::get<tags::ExampleInitializedPosition>(new_block_slice).at(0) ==
+        4);
+    CHECK(
+        blocks::get<tags::ExampleInitializedVelocity>(new_block_slice).at(0) ==
+        approx(4.5F));
+    CHECK(blocks::get<tags::ExampleAcceleration>(new_block_slice).at(0) == 2);
 
     // check if member functions are imported
     CHECK(new_block_slice.do_it_or_else() == 1);
@@ -1247,13 +1541,22 @@ namespace {
     (void)count_slices(block);
     CHECK(n_slices == 3UL);
 
+    auto old_n_slices = n_slices;
+    auto view = blocks::slice(block, 0UL, 2UL);
+    (void)count_slices(view);  // cannot be used with a rvalue ref.
+    CHECK(n_slices == old_n_slices + 2UL);
+
     int accum_position = 0;
     auto accumulate_position_over =
         blocks::for_each_slice_adapter([&accum_position](auto slice) {
           accum_position +=
-              blocks::get<tags::ExampleInitializedPosition>(slice);
+              blocks::get<tags::ExampleInitializedPosition>(slice).at(0);
         });
     (void)accumulate_position_over(block);
     CHECK(accum_position == (2 + 3 + 4));
+
+    auto old_accum_position = accum_position;
+    (void)accumulate_position_over(view);
+    CHECK(accum_position == old_accum_position + (2 + 3));
   }
 }  // namespace

@@ -26,6 +26,7 @@
 #include "Systems/Block/Block/BlockFacade.hpp"
 #include "Systems/Block/Block/BlockIterator.hpp"
 #include "Systems/Block/Block/BlockSlice.hpp"
+#include "Systems/Block/Block/BlockView.hpp"
 #include "Systems/Block/Block/DisplayVariables.hpp"
 // Variable implementations
 #include "BlockVariables/BlockInitializer.hpp"
@@ -81,12 +82,44 @@ namespace blocks {
   //****************************************************************************
 
   //****************************************************************************
+  //@{
+  /*!\brief Get number of units from a BlockView
+   * \ingroup blocks
+   *
+   * \details
+   * Get number of units from a BlockView. By 'units' we mean the number of
+   * individual BlockSlice(s) composing the BlockView.
+   *
+   * \usage
+   * \code
+   * BlockView<...> b;
+   * std::size_t n_units = blocks::n_units(b);
+   * \endcode
+   *
+   * \param block_like The block whose number of units is to be extracted.
+   *
+   * \note
+   * These need to be customized for your block type.
+   */
+  template <typename Plugin>
+  inline auto n_units(BlockView<Plugin> const& block) noexcept -> std::size_t;
+  template <typename Plugin>
+  inline auto n_units(ConstBlockView<Plugin> const& block) noexcept
+      -> std::size_t;
+  // @}
+  //****************************************************************************
+
+  //**Iterator support**********************************************************
+  /*!\name Block iterators */
+  //@{
+
+  //****************************************************************************
   /*!\brief Get a random access iterator to the start of the block
    * \ingroup blocks
    */
   template <typename Plugin>
   inline auto begin(Block<Plugin>& block) noexcept -> BlockIterator<Plugin> {
-    return BlockIterator<Plugin>(&block, 0UL);
+    return {&block, 0UL};
   }
   //****************************************************************************
 
@@ -96,7 +129,7 @@ namespace blocks {
    */
   template <typename Plugin>
   inline auto end(Block<Plugin>& block) noexcept -> BlockIterator<Plugin> {
-    return BlockIterator<Plugin>(&block, n_units(block));
+    return {&block, n_units(block)};
   }
   //****************************************************************************
 
@@ -107,7 +140,7 @@ namespace blocks {
   template <typename Plugin>
   inline auto cbegin(Block<Plugin> const& block) noexcept
       -> ConstBlockIterator<Plugin> {
-    return ConstBlockIterator<Plugin>(&block, 0UL);
+    return {&block, 0UL};
   }
   //****************************************************************************
 
@@ -118,7 +151,7 @@ namespace blocks {
   template <typename Plugin>
   inline auto cend(Block<Plugin> const& block) noexcept
       -> ConstBlockIterator<Plugin> {
-    return ConstBlockIterator<Plugin>(&block, n_units(block));
+    return {&block, n_units(block)};
   }
   //****************************************************************************
 
@@ -140,6 +173,156 @@ namespace blocks {
   inline auto end(Block<Plugin> const& block) noexcept {
     return cend(block);
   }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Get a random access iterator to the start of the block
+   * \ingroup blocks
+   */
+  template <typename Plugin>
+  inline auto begin(BlockView<Plugin>& block_view) noexcept
+      -> BlockIterator<Plugin> {
+    return {&block_view.parent(), block_view.region().start};
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Get a random access iterator to the end of the block
+   * \ingroup blocks
+   */
+  template <typename Plugin>
+  inline auto end(BlockView<Plugin>& block_view) noexcept
+      -> BlockIterator<Plugin> {
+    return {&block_view.parent(),
+            block_view.region().start + block_view.region().size};
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Get a random access const iterator to the start of the block
+   * \ingroup blocks
+   */
+  template <typename Plugin>
+  inline auto cbegin(BlockView<Plugin> const& block_view) noexcept
+      -> ConstBlockIterator<Plugin> {
+    return {&cpp17::as_const(block_view.parent()), block_view.region().start};
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Get a random access const iterator to the end of the block
+   * \ingroup blocks
+   */
+  template <typename Plugin>
+  inline auto cend(BlockView<Plugin> const& block_view) noexcept
+      -> ConstBlockIterator<Plugin> {
+    return {&cpp17::as_const(block_view.parent()),
+            block_view.region().start + block_view.region().size};
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Get a random access const iterator to the start of the block
+   * \ingroup blocks
+   */
+  template <typename Plugin>
+  inline auto begin(BlockView<Plugin> const& block) noexcept {
+    return cbegin(block);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Get a random access const iterator to the end of the block
+   * \ingroup blocks
+   */
+  template <typename Plugin>
+  inline auto end(BlockView<Plugin> const& block) noexcept {
+    return cend(block);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Get a random access iterator to the start of the block
+   * \ingroup blocks
+   */
+  template <typename Plugin>
+  inline auto cbegin(ConstBlockView<Plugin> const& block_view) noexcept
+      -> ConstBlockIterator<Plugin> {
+    return {&block_view.parent(), block_view.region().start};
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Get a random access iterator to the end of the block
+   * \ingroup blocks
+   */
+  template <typename Plugin>
+  inline auto cend(ConstBlockView<Plugin> const& block_view) noexcept
+      -> ConstBlockIterator<Plugin> {
+    return {&block_view.parent(),
+            block_view.region().start + block_view.region().size};
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Get a random access iterator to the start of the block
+   * \ingroup blocks
+   */
+  template <typename Plugin>
+  inline auto begin(ConstBlockView<Plugin> const& block_view) noexcept {
+    return cbegin(block_view);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Get a random access iterator to the end of the block
+   * \ingroup blocks
+   */
+  template <typename Plugin>
+  inline auto end(ConstBlockView<Plugin> const& block_view) noexcept {
+    return cend(block_view);
+  }
+  //****************************************************************************
+
+  // @}
+  //****************************************************************************
+
+  //**Slice support*************************************************************
+  /*!\name Whole block slice */
+  //@{
+
+  //****************************************************************************
+  /*!\brief Slice operator for an entire block
+   * \ingroup blocks
+   *
+   * \details
+   * Gets a view into the entire block
+   *
+   * \param block_like Data-structure modeling the block concept
+   *
+   * \example
+   * Given a block `b`, we can slice it using
+   * \code
+   * auto b_slice = block::slice(b); // Generates a view into the block
+   * \endcode
+   *
+   * \note
+   * not marked noexcept because we can have out of range indices
+   */
+  template <typename Plugin>
+  inline constexpr decltype(auto) slice(Block<Plugin>& block_like) {
+    return slice(block_like, 0UL, ::elastica::end);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  template <typename Plugin>
+  inline constexpr decltype(auto) slice(Block<Plugin> const& block_like) {
+    return slice(block_like, 0UL, ::elastica::end);
+  }
+  //****************************************************************************
+
+  // @}
   //****************************************************************************
 
   //****************************************************************************
@@ -406,6 +589,86 @@ namespace blocks {
   //@}
   //****************************************************************************
 
+  //**Get functions*************************************************************
+  /*!\name Get functions for BlockView */
+  //@{
+
+  //****************************************************************************
+  /*!\brief Extract element from a BlockView
+   * \ingroup blocks
+   *
+   * \details
+   * Extracts the element of the BlockView `block_like` whose tag type is
+   `Tag`.
+   * Fails to compile unless the block has the `Tag` being extracted.
+   *
+   * \usage
+   * The usage is similar to std::get(), shown below
+   * \code
+     BlockView<...> b;
+     auto my_tag_data = blocks::get<tags::MyTag>(b);
+   * \endcode
+   *
+   * \tparam Tag Tag to extract
+   *
+   * \param block_like The block to extract the tag from
+   */
+  template <typename Tag, typename Plugin>
+  inline constexpr decltype(auto) get(BlockView<Plugin>& block_like) noexcept;
+  template <typename Tag, typename Plugin>
+  inline constexpr decltype(auto) get(
+      BlockView<Plugin> const& block_like) noexcept;
+  template <typename Tag, typename Plugin>
+  inline constexpr decltype(auto) get(BlockView<Plugin>&& block_like) noexcept;
+  template <typename Tag, typename Plugin>
+  inline constexpr decltype(auto) get(
+      BlockView<Plugin> const&& block_like) noexcept;
+  //****************************************************************************
+
+  //@}
+  //****************************************************************************
+
+  //**Get functions*************************************************************
+  /*!\name Get functions for ConstBlockView */
+  //@{
+
+  //****************************************************************************
+  /*!\brief Extract element from a ConstBlockView
+   * \ingroup blocks
+   *
+   * \details
+   * Extracts the element of the ConstBlockView `block_like` whose tag type is
+   `Tag`.
+   * Fails to compile unless the block has the `Tag` being extracted.
+   *
+   * \usage
+   * The usage is similar to std::get(), shown below
+   * \code
+     ConstBlockView<...> b;
+     auto my_tag_data = blocks::get<tags::MyTag>(b);
+   * \endcode
+   *
+   * \tparam Tag Tag to extract
+   *
+   * \param block_like The block to extract the tag from
+   */
+  template <typename Tag, typename Plugin>
+  inline constexpr decltype(auto) get(
+      ConstBlockView<Plugin>& block_like) noexcept;
+  template <typename Tag, typename Plugin>
+  inline constexpr decltype(auto) get(
+      ConstBlockView<Plugin> const& block_like) noexcept;
+  template <typename Tag, typename Plugin>
+  inline constexpr decltype(auto) get(
+      ConstBlockView<Plugin>&& block_like) noexcept;
+  template <typename Tag, typename Plugin>
+  inline constexpr decltype(auto) get(
+      ConstBlockView<Plugin> const&& block_like) noexcept;
+  //****************************************************************************
+
+  //@}
+  //****************************************************************************
+
   //****************************************************************************
   /*! \cond ELASTICA_INTERNAL */
   /*!\brief Define getter for block types
@@ -447,6 +710,8 @@ namespace blocks {
   DEFINE_GETTERS_FOR(Block)
   DEFINE_GETTERS_FOR(BlockSlice)
   DEFINE_GETTERS_FOR(ConstBlockSlice)
+  DEFINE_GETTERS_FOR(BlockView)
+  DEFINE_GETTERS_FOR(ConstBlockView)
 
 #undef DEFINE_GETTERS_FOR
 

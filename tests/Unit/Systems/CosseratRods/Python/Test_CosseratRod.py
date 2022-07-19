@@ -24,149 +24,191 @@ class TestCosseratRod(unittest.TestCase):
     def test_length(self):
         crb = self.get_a_block()
 
+        # slices
         for i in range(4):
             rod = crb[i]
             self.assertEqual(len(rod), 10)
 
+        # sub-slices equaling a slice
+        for i in range(4):
+            rod = crb[i: i + 1]
+            self.assertEqual(len(rod), 10)
+
+        # proper sub-slices
+        for i in range(2):
+            rod = crb[i: i + 2]
+            self.assertEqual(len(rod), 2 * 10 + 2)
+
+        # slices of sub-slices
+        for i in range(2):
+            rod = crb[i: i + 3]
+            self.assertEqual(len(rod), 3 * 10 + 2 * 2)
+            arod = rod[0:2]  # has rod 0, 1, 2
+            self.assertEqual(type(arod), type(rod))
+            self.assertEqual(len(arod), 2 * 10 + 2)
+            rod = arod[0]  # has rod 0, 1, 2
+            self.assertEqual(len(rod), 10)
+
     def test_member_access(self):
-        def assert_is_nodal(x):
-            self.assertEqual(x.shape[-1], 11)
-            return True
+        def setup_test(node_size=11, element_size=10, voronoi_size=9):
+            def assert_is_nodal(x):
+                self.assertEqual(x.shape[-1], node_size)
+                return True
 
-        def assert_is_elemental(x):
-            self.assertEqual(x.shape[-1], 10)
-            return True
+            def assert_is_elemental(x):
+                self.assertEqual(x.shape[-1], element_size)
+                return True
 
-        def assert_is_voronoi(x):
-            self.assertEqual(x.shape[-1], 9)
-            return True
+            def assert_is_voronoi(x):
+                self.assertEqual(x.shape[-1], voronoi_size)
+                return True
 
-        def assert_is_scalar(x):
-            self.assertEqual(len(x.shape), 1)
-            return True
+            def assert_is_scalar(x):
+                self.assertEqual(len(x.shape), 1)
+                return True
 
-        def assert_is_vector(x):
-            self.assertEqual(len(x.shape), 2)
-            self.assertEqual(x.shape[0], 3)
-            return True
+            def assert_is_vector(x):
+                self.assertEqual(len(x.shape), 2)
+                self.assertEqual(x.shape[0], 3)
+                return True
 
-        def assert_is_matrix(x):
-            self.assertEqual(len(x.shape), 3)
-            self.assertTupleEqual(x.shape[:2], (3, 3))
-            return True
+            def assert_is_matrix(x):
+                self.assertEqual(len(x.shape), 3)
+                self.assertTupleEqual(x.shape[:2], (3, 3))
+                return True
 
-        def run_test(rod):
-            # rod variables
-            assert_is_scalar(rod.get_n_element())
-            self.assertTupleEqual(rod.get_n_element().shape, (1,))
-            self.assertEqual(rod.get_n_element()[0], 10)
+            def run_test(rod):
+                # rod variables
+                assert_is_scalar(rod.get_n_element())
+                # Turned off because we also test views now
+                # self.assertTupleEqual(rod.get_n_element().shape, (1,))
+                self.assertEqual(rod.get_n_element()[0], 10)
 
-            # geometrical variables
-            assert_is_nodal(rod.get_position()) and assert_is_vector(rod.get_position())
-            assert_is_elemental(rod.get_director()) and assert_is_matrix(
-                rod.get_director()
-            )
-            assert_is_elemental(rod.get_element_dilatation()) and assert_is_scalar(
-                rod.get_element_dilatation()
-            )
-            assert_is_elemental(rod.get_element_dimension()) and assert_is_scalar(
-                rod.get_element_dimension()
-            )
-            assert_is_elemental(rod.get_element_length()) and assert_is_scalar(
-                rod.get_element_length()
-            )
-            assert_is_elemental(rod.get_element_volume()) and assert_is_scalar(
-                rod.get_element_volume()
-            )
-            assert_is_elemental(
-                rod.get_reference_element_length()
-            ) and assert_is_scalar(rod.get_reference_element_length())
-            assert_is_elemental(
-                rod.get_reference_shear_stretch_strain()
-            ) and assert_is_vector(rod.get_reference_shear_stretch_strain())
-            assert_is_elemental(rod.get_shear_stretch_strain()) and assert_is_vector(
-                rod.get_shear_stretch_strain()
-            )
-            assert_is_elemental(rod.get_tangent()) and assert_is_vector(
-                rod.get_tangent()
-            )
-            assert_is_voronoi(rod.get_curvature()) and assert_is_vector(
-                rod.get_curvature()
-            )
-            assert_is_voronoi(rod.get_reference_curvature()) and assert_is_vector(
-                rod.get_reference_curvature()
-            )
-            assert_is_voronoi(rod.get_reference_voronoi_length()) and assert_is_scalar(
-                rod.get_reference_voronoi_length()
-            )
-            assert_is_voronoi(rod.get_voronoi_dilatation()) and assert_is_scalar(
-                rod.get_voronoi_dilatation()
-            )
-            assert_is_voronoi(rod.get_voronoi_length()) and assert_is_scalar(
-                rod.get_voronoi_length()
-            )
+                # geometrical variables
+                assert_is_nodal(rod.get_position()) and assert_is_vector(
+                    rod.get_position()
+                )
+                assert_is_elemental(rod.get_director()) and assert_is_matrix(
+                    rod.get_director()
+                )
+                assert_is_elemental(rod.get_element_dilatation()) and assert_is_scalar(
+                    rod.get_element_dilatation()
+                )
+                assert_is_elemental(rod.get_element_dimension()) and assert_is_scalar(
+                    rod.get_element_dimension()
+                )
+                assert_is_elemental(rod.get_element_length()) and assert_is_scalar(
+                    rod.get_element_length()
+                )
+                assert_is_elemental(rod.get_element_volume()) and assert_is_scalar(
+                    rod.get_element_volume()
+                )
+                assert_is_elemental(
+                    rod.get_reference_element_length()
+                ) and assert_is_scalar(rod.get_reference_element_length())
+                assert_is_elemental(
+                    rod.get_reference_shear_stretch_strain()
+                ) and assert_is_vector(rod.get_reference_shear_stretch_strain())
+                assert_is_elemental(
+                    rod.get_shear_stretch_strain()
+                ) and assert_is_vector(rod.get_shear_stretch_strain())
+                assert_is_elemental(rod.get_tangent()) and assert_is_vector(
+                    rod.get_tangent()
+                )
+                assert_is_voronoi(rod.get_curvature()) and assert_is_vector(
+                    rod.get_curvature()
+                )
+                assert_is_voronoi(rod.get_reference_curvature()) and assert_is_vector(
+                    rod.get_reference_curvature()
+                )
+                assert_is_voronoi(
+                    rod.get_reference_voronoi_length()
+                ) and assert_is_scalar(rod.get_reference_voronoi_length())
+                assert_is_voronoi(rod.get_voronoi_dilatation()) and assert_is_scalar(
+                    rod.get_voronoi_dilatation()
+                )
+                assert_is_voronoi(rod.get_voronoi_length()) and assert_is_scalar(
+                    rod.get_voronoi_length()
+                )
 
-            # elasticity variables
-            assert_is_nodal(rod.get_force_damping_rate()) and assert_is_scalar(
-                rod.get_force_damping_rate()
-            )
-            assert_is_nodal(rod.get_internal_loads()) and assert_is_vector(
-                rod.get_internal_loads()
-            )
-            assert_is_elemental(rod.get_internal_torques()) and assert_is_vector(
-                rod.get_internal_torques()
-            )
-            assert_is_elemental(rod.get_internal_stress()) and assert_is_vector(
-                rod.get_internal_stress()
-            )
-            assert_is_elemental(
-                rod.get_shear_stretch_rigidity_matrix()
-            ) and assert_is_matrix(rod.get_shear_stretch_rigidity_matrix())
-            assert_is_elemental(rod.get_torque_damping_rate()) and assert_is_scalar(
-                rod.get_torque_damping_rate()
-            )
-            assert_is_voronoi(rod.get_internal_couple()) and assert_is_vector(
-                rod.get_internal_couple()
-            )
-            assert_is_voronoi(
-                rod.get_bending_twist_rigidity_matrix()
-            ) and assert_is_matrix(rod.get_bending_twist_rigidity_matrix())
+                # elasticity variables
+                assert_is_nodal(rod.get_force_damping_rate()) and assert_is_scalar(
+                    rod.get_force_damping_rate()
+                )
+                assert_is_nodal(rod.get_internal_loads()) and assert_is_vector(
+                    rod.get_internal_loads()
+                )
+                assert_is_elemental(rod.get_internal_torques()) and assert_is_vector(
+                    rod.get_internal_torques()
+                )
+                assert_is_elemental(rod.get_internal_stress()) and assert_is_vector(
+                    rod.get_internal_stress()
+                )
+                assert_is_elemental(
+                    rod.get_shear_stretch_rigidity_matrix()
+                ) and assert_is_matrix(rod.get_shear_stretch_rigidity_matrix())
+                assert_is_elemental(rod.get_torque_damping_rate()) and assert_is_scalar(
+                    rod.get_torque_damping_rate()
+                )
+                assert_is_voronoi(rod.get_internal_couple()) and assert_is_vector(
+                    rod.get_internal_couple()
+                )
+                assert_is_voronoi(
+                    rod.get_bending_twist_rigidity_matrix()
+                ) and assert_is_matrix(rod.get_bending_twist_rigidity_matrix())
 
-            # dynamic variables
-            assert_is_nodal(rod.get_acceleration()) and assert_is_vector(
-                rod.get_acceleration()
-            )
-            assert_is_nodal(rod.get_external_loads()) and assert_is_vector(
-                rod.get_external_loads()
-            )
-            assert_is_nodal(rod.get_mass()) and assert_is_scalar(rod.get_mass())
-            assert_is_nodal(rod.get_velocity()) and assert_is_vector(rod.get_velocity())
-            assert_is_elemental(rod.get_angular_velocity()) and assert_is_vector(
-                rod.get_angular_velocity()
-            )
-            assert_is_elemental(rod.get_angular_acceleration()) and assert_is_vector(
-                rod.get_angular_acceleration()
-            )
-            assert_is_elemental(rod.get_external_torques()) and assert_is_vector(
-                rod.get_external_torques()
-            )
-            assert_is_elemental(
-                rod.get_mass_second_moment_of_inertia()
-            ) and assert_is_matrix(rod.get_mass_second_moment_of_inertia())
+                # dynamic variables
+                assert_is_nodal(rod.get_acceleration()) and assert_is_vector(
+                    rod.get_acceleration()
+                )
+                assert_is_nodal(rod.get_external_loads()) and assert_is_vector(
+                    rod.get_external_loads()
+                )
+                assert_is_nodal(rod.get_mass()) and assert_is_scalar(rod.get_mass())
+                assert_is_nodal(rod.get_velocity()) and assert_is_vector(
+                    rod.get_velocity()
+                )
+                assert_is_elemental(rod.get_angular_velocity()) and assert_is_vector(
+                    rod.get_angular_velocity()
+                )
+                assert_is_elemental(
+                    rod.get_angular_acceleration()
+                ) and assert_is_vector(rod.get_angular_acceleration())
+                assert_is_elemental(rod.get_external_torques()) and assert_is_vector(
+                    rod.get_external_torques()
+                )
+                assert_is_elemental(
+                    rod.get_mass_second_moment_of_inertia()
+                ) and assert_is_matrix(rod.get_mass_second_moment_of_inertia())
 
-            assert_is_elemental(rod.get_material()) and assert_is_scalar(
-                rod.get_material()
-            )
+                assert_is_elemental(rod.get_material()) and assert_is_scalar(
+                    rod.get_material()
+                )
 
-            assert_is_elemental(
-                rod.get_inv_mass_second_moment_of_inertia()
-            ) and assert_is_matrix(rod.get_inv_mass_second_moment_of_inertia())
+                assert_is_elemental(
+                    rod.get_inv_mass_second_moment_of_inertia()
+                ) and assert_is_matrix(rod.get_inv_mass_second_moment_of_inertia())
+
+            return run_test
 
         crb = self.get_a_block()
 
+        run_slice_test = setup_test()
         for slice_idx in range(0, 4):
             with self.subTest(slice_idx=slice_idx):
-                run_test(crb[slice_idx])
+                run_slice_test(crb[slice_idx])
+
+        slice_size = 2
+        element_size = slice_size * 10 + (slice_size - 1) * 2
+        run_view_test = setup_test(
+            node_size=element_size + 1,
+            element_size=element_size,
+            voronoi_size=element_size - 1,
+        )
+        for view_idx in range(0, 2):
+            with self.subTest(view_idx=view_idx):
+                view = crb[view_idx: view_idx + slice_size]  # 0, 1, 2 & # 1, 2, 3
+                run_view_test(view)
 
     def test_variable_locator(self):
         is_well_formed = lambda x: self.assertIsInstance(x.shape, tuple)
@@ -216,26 +258,46 @@ class TestCosseratRod(unittest.TestCase):
             with self.subTest(slice_idx=slice_idx):
                 run_test(crb[slice_idx])
 
-    def test_variable_location_settable(self):
-        def run_test(rod):
-            rod.loc[rod.Position] = Matrix(2.0 * np.ones((3, 11)))
-            rod.loc[rod.Director] = Tensor(3.0 * np.ones((3, 3, 10)))
-            rod.loc[rod.VoronoiLength] = Vector(
-                4.0
-                * np.ones(
-                    9,
-                )
-            )
+        slice_size = 2
+        for view_idx in range(0, 2):
+            with self.subTest(view_idx=view_idx):
+                run_test(crb[view_idx: view_idx + slice_size])
 
-            # The buffer should be modified after tests
-            npt.assert_allclose(np.asarray(rod.get_position()), 2.0)
-            npt.assert_allclose(np.asarray(rod.get_director()), 3.0)
-            npt.assert_allclose(np.asarray(rod.get_voronoi_length()), 4.0)
+    def test_variable_location_settable(self):
+        def setup_test(node_size=11, element_size=10, voronoi_size=9):
+            def run_test(rod):
+                rod.loc[rod.Position] = Matrix(2.0 * np.ones((3, node_size)))
+                rod.loc[rod.Director] = Tensor(3.0 * np.ones((3, 3, element_size)))
+                rod.loc[rod.VoronoiLength] = Vector(
+                    4.0
+                    * np.ones(
+                        voronoi_size,
+                    )
+                )
+
+                # The buffer should be modified after tests
+                npt.assert_allclose(np.asarray(rod.get_position()), 2.0)
+                npt.assert_allclose(np.asarray(rod.get_director()), 3.0)
+                npt.assert_allclose(np.asarray(rod.get_voronoi_length()), 4.0)
+
+            return run_test
 
         crb = self.get_a_block()
+        run_slice_test = setup_test()
         for slice_idx in range(0, 4):
             with self.subTest(slice_idx=slice_idx):
-                run_test(crb[slice_idx])
+                run_slice_test(crb[slice_idx])
+
+        slice_size = 2
+        element_size = slice_size * 10 + (slice_size - 1) * 2
+        run_view_test = setup_test(
+            node_size=element_size + 1,
+            element_size=element_size,
+            voronoi_size=element_size - 1,
+        )
+        for view_idx in range(0, 2):
+            with self.subTest(view_idx=view_idx):
+                run_view_test(crb[view_idx: view_idx + slice_size])
 
     def test_pyelastica_interface(self):
         is_well_formed = lambda x: self.assertIsInstance(x.shape, tuple)
@@ -276,6 +338,11 @@ class TestCosseratRod(unittest.TestCase):
         for slice_idx in range(0, 4):
             with self.subTest(slice_idx=slice_idx):
                 run_test(crb[slice_idx])
+
+        slice_size = 2
+        for view_idx in range(0, 2):
+            with self.subTest(view_idx=view_idx):
+                run_test(crb[view_idx: view_idx + slice_size])
 
     def test_energy_methods(self):
         is_well_formed = lambda x: self.assertIsInstance(x, float)

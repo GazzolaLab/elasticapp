@@ -38,6 +38,12 @@ namespace blocks {
   template <typename /*Plugin*/>
   class BlockFacade;
 
+  template <typename /* Plugin */>
+  class BlockView;
+
+  template <typename /* Plugin */>
+  class ConstBlockView;
+
   template <typename /*Plugin*/>
   class BlockIterator;
 
