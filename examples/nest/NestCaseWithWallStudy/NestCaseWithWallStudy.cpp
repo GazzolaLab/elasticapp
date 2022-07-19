@@ -158,7 +158,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
                                             plane_position_bottom, Q_bottom,
                                             Spans{1e4, 1e4},  // plane extent
                                             my_material),
-      std::move(translations_buffer));
+      translations_buffer);
 
   const ::elastica::Vec3 plane_position_left{-side_wall_dimension, 0.0, 0.0};
   auto plane_normal_left = {1.0, 0.0, 0.0};
@@ -173,7 +173,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
                                             Q_left,
                                             Spans{1e4, 1e4},  // plane extent
                                             my_material),
-      std::move(translations_buffer));
+      translations_buffer);
 
   const ::elastica::Vec3 plane_position_right{side_wall_dimension, 0.0, 0.0};
   auto plane_normal_right = {-1.0, 0.0, 0.0};
@@ -188,7 +188,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
                                             plane_position_right, Q_right,
                                             Spans{1e4, 1e4},  // plane extent
                                             my_material),
-      std::move(translations_buffer));
+      translations_buffer);
 
   const ::elastica::Vec3 plane_position_top{0.0, side_wall_dimension, 0.0};
   auto plane_normal_top = {0.0, -1.0, 0.0};
@@ -203,7 +203,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
                                             Q_top,
                                             Spans{1e4, 1e4},  // plane extent
                                             my_material),
-      std::move(translations_buffer));
+      translations_buffer);
 
   const ::elastica::Vec3 plane_position_down{0.0, -side_wall_dimension, 0.0};
   auto plane_normal_down = {0.0, 1.0, 0.0};
@@ -218,7 +218,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
                                             Q_down,
                                             Spans{1e4, 1e4},  // plane extent
                                             my_material),
-      std::move(translations_buffer));
+      translations_buffer);
 
   // set near-list update time
   auto& collision_solver =
