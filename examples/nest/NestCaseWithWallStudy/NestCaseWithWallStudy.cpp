@@ -229,8 +229,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   auto& collision_solver =
       simulator
           ->get_environment<elastica::environments::tags::CollisionSystem>();
-  collision_solver->time_interval_between_detection() = 1e-4;
-  //      1e-3;  // 0.02;  // anything > 0.0
+  collision_solver->time_interval_between_detection() = 20 * dt; // anything > 0.0
 
   const ::elastica::real_t gravity_acc(
       ::elastica::get<gravitational_acc>(input_parameters));
