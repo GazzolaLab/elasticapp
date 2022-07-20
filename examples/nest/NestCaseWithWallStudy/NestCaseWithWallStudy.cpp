@@ -19,6 +19,8 @@
 #include <tbb/global_control.h>
 #endif
 
+#include <chrono>
+#include <ctime>
 #include <elastica/ErrorHandling/FloatingPointExceptions.hpp>
 #include <elastica/Simulator/Materials.hpp>
 #include <elastica/Utilities/Get.hpp>
@@ -28,8 +30,6 @@
 #include <ostream>
 #include <random>
 #include <utility>  // pair
-#include <chrono>
-#include <ctime>
 
 void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   const ::elastica::real_t dt(::elastica::get<dt>(input_parameters));
@@ -68,7 +68,8 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   const ::elastica::real_t H = ::elastica::get<packing_initial_vertical_span>(
       input_parameters);  // controls vertical extent of rod origin
   const ::elastica::real_t side_wall_dimension(
-      ::elastica::get<packing_initial_radial_span>(  // radius (cylinder) or width (square)
+      ::elastica::get<packing_initial_radial_span>(  // radius (cylinder) or
+                                                     // width (square)
           input_parameters));
 
   // initialisation
@@ -136,19 +137,10 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   final_time = ::elastica::get<final_sim_time>(input_parameters);
 
   namespace ek = elastica::kinematics;
-  auto always_zero_ = [](::elastica::real_t) noexcept -> ::elastica::real_t {
-    return 0.0;
-  };
-  auto translations_buffer = ek::make_translations(
-      ek::translate_along<elastica::EulerianFrame::X>(
-          ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
-      ek::translate_along<elastica::EulerianFrame::Y>(
-          ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
-      ek::translate_along<elastica::EulerianFrame::Z>(
-          ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)));
+
+  using Spans = typename ImposedPlane::Spans;
 
   // Set the bottom plane at (0, 0, 0) and with normal along Z+
-
   const ::elastica::Vec3 plane_position_bottom{0.0, 0.0, 0.0};
   auto plane_normal_bottom = {0.0, 0.0, 1.0};
   auto plane_binormal_bottom = {0.0, 1.0, 0.0};
@@ -156,85 +148,82 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   // implicit convention
   ::elastica::Rot3 Q_bottom = {plane_normal_bottom, plane_binormal_bottom,
                                plane_tangent_bottom};
-  using Spans = typename ImposedPlane::Spans;
   imposed_plane_ref = simulator->emplace_back<ImposedPlane>(
       ::elastica::collision::PlanePrimitive(0UL, 0UL, true,
                                             plane_position_bottom, Q_bottom,
                                             Spans{1e4, 1e4},  // plane extent
+                                            my_material));
+
+  // Set the top plane at (0, 0, original_top_height) and with normal along Z-
+  const ::elastica::real_t original_top_height(140.0);
+  const ::elastica::Vec3 plane_position_top{0.0, 0.0, original_top_height};
+  auto plane_normal_top = {0.0, 0.0, -1.0};
+  auto plane_binormal_top = {0.0, -1.0, 0.0};
+  auto plane_tangent_top = {1.0, 0.0, 0.0};
+  ::elastica::Rot3 Q_top = {plane_normal_top, plane_binormal_top,
+                            plane_tangent_top};
+  auto top_moving_wall =
+      [original_top_height](::elastica::real_t) noexcept -> ::elastica::real_t {
+    return original_top_height;
+  };
+  auto always_zero_ = [](::elastica::real_t) noexcept -> ::elastica::real_t {
+    return 0.0;
+  };
+  auto top_translations_buffer = ek::make_translations(
+      ek::translate_along<elastica::EulerianFrame::X>(
+          ek::mark_position(top_moving_wall), ek::mark_velocity(always_zero_)),
+      ek::translate_along<elastica::EulerianFrame::Y>(
+          ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
+      ek::translate_along<elastica::EulerianFrame::Z>(
+          ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)));
+  simulator->emplace_back<ImposedPlane>(
+      ::elastica::collision::PlanePrimitive(1UL, 1UL, true, plane_position_top,
+                                            Q_top,
+                                            Spans{1e4, 1e4},  // plane extent
                                             my_material),
-      std::move(translations_buffer));
+      std::move(top_translations_buffer));
 
   const ::elastica::Vec3 plane_position_left{-side_wall_dimension, 0.0, 0.0};
   auto plane_normal_left = {1.0, 0.0, 0.0};
   auto plane_binormal_left = {0.0, 0.0, 1.0};
   auto plane_tangent_left = {0.0, -1.0, 0.0};
-  // implicit convention
   ::elastica::Rot3 Q_left = {plane_normal_left, plane_binormal_left,
                              plane_tangent_left};
+  simulator->emplace_back<ImposedPlane>(::elastica::collision::PlanePrimitive(
+      2UL, 2UL, true, plane_position_left, Q_left,
+      Spans{1e4, 1e4},  // plane extent
+      my_material));
 
-  auto sidewall_x = [side_wall_dimension](::elastica::real_t) noexcept -> ::elastica::real_t {
-    return -side_wall_dimension;
-  };
-  auto another_translations_buffer = ek::make_translations(
-      ek::translate_along<elastica::EulerianFrame::X>(
-          ek::mark_position(sidewall_x), ek::mark_velocity(always_zero_)),
-      ek::translate_along<elastica::EulerianFrame::Y>(
-          ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
-      ek::translate_along<elastica::EulerianFrame::Z>(
-          ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)));
-  using Spans = typename ImposedPlane::Spans;
-  simulator->emplace_back<ImposedPlane>(
-      ::elastica::collision::PlanePrimitive(1UL, 1UL, true, plane_position_left,
-                                            Q_left,
-                                            Spans{1e4, 1e4},  // plane extent
-                                            my_material),
-      std::move(another_translations_buffer));
+  const ::elastica::Vec3 plane_position_right{side_wall_dimension, 0.0, 0.0};
+  auto plane_normal_right = {-1.0, 0.0, 0.0};
+  auto plane_binormal_right = {0.0, 0.0, -1.0};
+  auto plane_tangent_right = {0.0, 1.0, 0.0};
+  ::elastica::Rot3 Q_right = {plane_normal_right, plane_binormal_right,
+                              plane_tangent_right};
+  simulator->emplace_back<ImposedPlane>(::elastica::collision::PlanePrimitive(
+      3UL, 3UL, true, plane_position_right, Q_right,
+      Spans{1e4, 1e4},  // plane extent
+      my_material));
 
-  //  const ::elastica::Vec3 plane_position_right{side_wall_dimension, 0.0,
-  //  0.0}; auto plane_normal_right = {-1.0, 0.0, 0.0}; auto
-  //  plane_binormal_right = {0.0, 0.0, -1.0}; auto plane_tangent_right = {0.0,
-  //  -1.0, 0.0};
-  //  // implicit convention
-  //  ::elastica::Rot3 Q_right = {plane_normal_right, plane_binormal_right,
-  //                              plane_tangent_right};
-  //  using Spans = typename ImposedPlane::Spans;
-  //  simulator->emplace_back<ImposedPlane>(
-  //      ::elastica::collision::PlanePrimitive(2UL, 2UL, true,
-  //                                            plane_position_right, Q_right,
-  //                                            Spans{1e4, 1e4},  // plane
-  //                                            extent my_material),
-  //      translations_buffer);
-  //
-  //  const ::elastica::Vec3 plane_position_top{0.0, side_wall_dimension, 0.0};
-  //  auto plane_normal_top = {0.0, -1.0, 0.0};
-  //  auto plane_binormal_top = {-1.0, 0.0, 0.0};
-  //  auto plane_tangent_top = {0.0, 0.0, -1.0};
-  //  // implicit convention
-  //  ::elastica::Rot3 Q_top = {plane_normal_top, plane_binormal_top,
-  //                            plane_tangent_top};
-  //  using Spans = typename ImposedPlane::Spans;
-  //  simulator->emplace_back<ImposedPlane>(
-  //      ::elastica::collision::PlanePrimitive(3UL, 3UL, true,
-  //      plane_position_top,
-  //                                            Q_top,
-  //                                            Spans{1e4, 1e4},  // plane
-  //                                            extent my_material),
-  //      translations_buffer);
-  //
-  //  const ::elastica::Vec3 plane_position_down{0.0, -side_wall_dimension,
-  //  0.0}; auto plane_normal_down = {0.0, 1.0, 0.0}; auto plane_binormal_down =
-  //  {1.0, 0.0, 0.0}; auto plane_tangent_down = {0.0, 0.0, 1.0};
-  //  // implicit convention
-  //  ::elastica::Rot3 Q_down = {plane_normal_down, plane_binormal_down,
-  //                             plane_tangent_down};
-  //  using Spans = typename ImposedPlane::Spans;
-  //  simulator->emplace_back<ImposedPlane>(
-  //      ::elastica::collision::PlanePrimitive(4UL, 4UL, true,
-  //      plane_position_down,
-  //                                            Q_down,
-  //                                            Spans{1e4, 1e4},  // plane
-  //                                            extent my_material),
-  //      translations_buffer);
+  const ::elastica::Vec3 plane_position_back{0.0, side_wall_dimension, 0.0};
+  auto plane_normal_back = {0.0, -1.0, 0.0};
+  auto plane_binormal_back = {-1.0, 0.0, 0.0};
+  auto plane_tangent_back = {0.0, 0.0, 1.0};
+  ::elastica::Rot3 Q_back = {plane_normal_back, plane_binormal_back,
+                             plane_tangent_back};
+  simulator->emplace_back<ImposedPlane>(::elastica::collision::PlanePrimitive(
+      4UL, 4UL, true, plane_position_back, Q_back, Spans{1e4, 1e4},
+      my_material));
+
+  const ::elastica::Vec3 plane_position_front{0.0, -side_wall_dimension, 0.0};
+  auto plane_normal_front = {0.0, 1.0, 0.0};
+  auto plane_binormal_front = {1.0, 0.0, 0.0};
+  auto plane_tangent_front = {0.0, 0.0, -1.0};
+  ::elastica::Rot3 Q_front = {plane_normal_front, plane_binormal_front,
+                              plane_tangent_front};
+  simulator->emplace_back<ImposedPlane>(::elastica::collision::PlanePrimitive(
+      5UL, 5UL, true, plane_position_front, Q_front, Spans{1e4, 1e4},
+      my_material));
 
   // set near-list update time
   auto& collision_solver =
@@ -306,13 +295,16 @@ void NestCaseWithWallStudy::run() {
           std::cout << " ";
       }
       auto etime = std::chrono::system_clock::now();
-      std::chrono::duration<int> elapsed_time = std::chrono::duration_cast<std::chrono::seconds>(etime - stime);
-      std::time_t etd = std::chrono::system_clock::to_time_t(stime + std::chrono::seconds(int(float(elapsed_time.count()) / progress)));
+      std::chrono::duration<int> elapsed_time =
+          std::chrono::duration_cast<std::chrono::seconds>(etime - stime);
+      std::time_t etd = std::chrono::system_clock::to_time_t(
+          stime +
+          std::chrono::seconds(int(float(elapsed_time.count()) / progress)));
       std::cout << "]" << progress * 100.0 << "%"
-          << " [elapsed: " << elapsed_time.count() << " sec]"
-          << " [etd: " << std::strtok(std::ctime(&etd), "\n") << "]\r";
+                << " [elapsed: " << elapsed_time.count() << " sec]"
+                << " [etd: " << std::strtok(std::ctime(&etd), "\n") << "]\r";
       std::cout.flush();
-      current_progress += 0.001; // update every 0.1% interval
+      current_progress += 0.01;
     }
 
     step();
