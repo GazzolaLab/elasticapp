@@ -152,7 +152,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   const ::elastica::Vec3 plane_position_bottom{0.0, 0.0, 0.0};
   auto plane_normal_bottom = {0.0, 0.0, 1.0};
   auto plane_binormal_bottom = {0.0, 1.0, 0.0};
-  auto plane_tangent_bottom = {1.0, 0.0, 0.0};
+  auto plane_tangent_bottom = {-1.0, 0.0, 0.0};
   // implicit convention
   ::elastica::Rot3 Q_bottom = {plane_normal_bottom, plane_binormal_bottom,
                                plane_tangent_bottom};
@@ -162,73 +162,85 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
                                             plane_position_bottom, Q_bottom,
                                             Spans{1e4, 1e4},  // plane extent
                                             my_material),
-      translations_buffer);
+      std::move(translations_buffer));
 
   const ::elastica::Vec3 plane_position_left{-side_wall_dimension, 0.0, 0.0};
   auto plane_normal_left = {1.0, 0.0, 0.0};
   auto plane_binormal_left = {0.0, 0.0, 1.0};
-  auto plane_tangent_left = {0.0, 1.0, 0.0};
+  auto plane_tangent_left = {0.0, -1.0, 0.0};
   // implicit convention
   ::elastica::Rot3 Q_left = {plane_normal_left, plane_binormal_left,
                              plane_tangent_left};
+
+  auto sidewall_x = [side_wall_dimension](::elastica::real_t) noexcept -> ::elastica::real_t {
+    return -side_wall_dimension;
+  };
+  auto another_translations_buffer = ek::make_translations(
+      ek::translate_along<elastica::EulerianFrame::X>(
+          ek::mark_position(sidewall_x), ek::mark_velocity(always_zero_)),
+      ek::translate_along<elastica::EulerianFrame::Y>(
+          ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
+      ek::translate_along<elastica::EulerianFrame::Z>(
+          ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)));
   using Spans = typename ImposedPlane::Spans;
   simulator->emplace_back<ImposedPlane>(
       ::elastica::collision::PlanePrimitive(1UL, 1UL, true, plane_position_left,
                                             Q_left,
                                             Spans{1e4, 1e4},  // plane extent
                                             my_material),
-      translations_buffer);
+      std::move(another_translations_buffer));
 
-  const ::elastica::Vec3 plane_position_right{side_wall_dimension, 0.0, 0.0};
-  auto plane_normal_right = {-1.0, 0.0, 0.0};
-  auto plane_binormal_right = {0.0, 0.0, -1.0};
-  auto plane_tangent_right = {0.0, -1.0, 0.0};
-  // implicit convention
-  ::elastica::Rot3 Q_right = {plane_normal_right, plane_binormal_right,
-                              plane_tangent_right};
-  using Spans = typename ImposedPlane::Spans;
-  simulator->emplace_back<ImposedPlane>(
-      ::elastica::collision::PlanePrimitive(2UL, 2UL, true,
-                                            plane_position_right, Q_right,
-                                            Spans{1e4, 1e4},  // plane extent
-                                            my_material),
-      translations_buffer);
-
-  const ::elastica::Vec3 plane_position_top{0.0, side_wall_dimension, 0.0};
-  auto plane_normal_top = {0.0, -1.0, 0.0};
-  auto plane_binormal_top = {-1.0, 0.0, 0.0};
-  auto plane_tangent_top = {0.0, 0.0, -1.0};
-  // implicit convention
-  ::elastica::Rot3 Q_top = {plane_normal_top, plane_binormal_top,
-                            plane_tangent_top};
-  using Spans = typename ImposedPlane::Spans;
-  simulator->emplace_back<ImposedPlane>(
-      ::elastica::collision::PlanePrimitive(3UL, 3UL, true, plane_position_top,
-                                            Q_top,
-                                            Spans{1e4, 1e4},  // plane extent
-                                            my_material),
-      translations_buffer);
-
-  const ::elastica::Vec3 plane_position_down{0.0, -side_wall_dimension, 0.0};
-  auto plane_normal_down = {0.0, 1.0, 0.0};
-  auto plane_binormal_down = {1.0, 0.0, 0.0};
-  auto plane_tangent_down = {0.0, 0.0, 1.0};
-  // implicit convention
-  ::elastica::Rot3 Q_down = {plane_normal_down, plane_binormal_down,
-                             plane_tangent_down};
-  using Spans = typename ImposedPlane::Spans;
-  simulator->emplace_back<ImposedPlane>(
-      ::elastica::collision::PlanePrimitive(4UL, 4UL, true, plane_position_down,
-                                            Q_down,
-                                            Spans{1e4, 1e4},  // plane extent
-                                            my_material),
-      translations_buffer);
+  //  const ::elastica::Vec3 plane_position_right{side_wall_dimension, 0.0,
+  //  0.0}; auto plane_normal_right = {-1.0, 0.0, 0.0}; auto
+  //  plane_binormal_right = {0.0, 0.0, -1.0}; auto plane_tangent_right = {0.0,
+  //  -1.0, 0.0};
+  //  // implicit convention
+  //  ::elastica::Rot3 Q_right = {plane_normal_right, plane_binormal_right,
+  //                              plane_tangent_right};
+  //  using Spans = typename ImposedPlane::Spans;
+  //  simulator->emplace_back<ImposedPlane>(
+  //      ::elastica::collision::PlanePrimitive(2UL, 2UL, true,
+  //                                            plane_position_right, Q_right,
+  //                                            Spans{1e4, 1e4},  // plane
+  //                                            extent my_material),
+  //      translations_buffer);
+  //
+  //  const ::elastica::Vec3 plane_position_top{0.0, side_wall_dimension, 0.0};
+  //  auto plane_normal_top = {0.0, -1.0, 0.0};
+  //  auto plane_binormal_top = {-1.0, 0.0, 0.0};
+  //  auto plane_tangent_top = {0.0, 0.0, -1.0};
+  //  // implicit convention
+  //  ::elastica::Rot3 Q_top = {plane_normal_top, plane_binormal_top,
+  //                            plane_tangent_top};
+  //  using Spans = typename ImposedPlane::Spans;
+  //  simulator->emplace_back<ImposedPlane>(
+  //      ::elastica::collision::PlanePrimitive(3UL, 3UL, true,
+  //      plane_position_top,
+  //                                            Q_top,
+  //                                            Spans{1e4, 1e4},  // plane
+  //                                            extent my_material),
+  //      translations_buffer);
+  //
+  //  const ::elastica::Vec3 plane_position_down{0.0, -side_wall_dimension,
+  //  0.0}; auto plane_normal_down = {0.0, 1.0, 0.0}; auto plane_binormal_down =
+  //  {1.0, 0.0, 0.0}; auto plane_tangent_down = {0.0, 0.0, 1.0};
+  //  // implicit convention
+  //  ::elastica::Rot3 Q_down = {plane_normal_down, plane_binormal_down,
+  //                             plane_tangent_down};
+  //  using Spans = typename ImposedPlane::Spans;
+  //  simulator->emplace_back<ImposedPlane>(
+  //      ::elastica::collision::PlanePrimitive(4UL, 4UL, true,
+  //      plane_position_down,
+  //                                            Q_down,
+  //                                            Spans{1e4, 1e4},  // plane
+  //                                            extent my_material),
+  //      translations_buffer);
 
   // set near-list update time
   auto& collision_solver =
       simulator
           ->get_environment<elastica::environments::tags::CollisionSystem>();
-  collision_solver->time_interval_between_detection() = dt * 10;
+  collision_solver->time_interval_between_detection() = 1e-4;
   //      1e-3;  // 0.02;  // anything > 0.0
 
   const ::elastica::real_t gravity_acc(
@@ -274,7 +286,7 @@ void NestCaseWithWallStudy::run() {
   rod_coordinates.reserve(n_rod * n_nodes);
   energies.reserve(n_rod * 2);
   std::ofstream temporal_file;
-  
+
   std::cout << std::fixed << std::setprecision(1);
   float current_progress = 0.0;
   auto stime = std::chrono::system_clock::now();
