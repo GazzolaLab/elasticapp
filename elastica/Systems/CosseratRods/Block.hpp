@@ -253,14 +253,17 @@ namespace blocks {
       return OnStaggerType::get_dofs(n_elements(index_to_be_sliced));
     }
     //**************************************************************************
+   private:
+    //**************************************************************************
 
     //**************************************************************************
     /*!\brief Gets size of new slice, based on the stagger type
+     * Non-rod specialization
      */
     template <typename OnStaggerType>
-    inline auto get_size_of_slice(index_type const start_index,
-                                  size_type const slice_size) const noexcept
-        -> size_type {
+    inline auto get_size_of_slice_helper(
+        index_type const start_index, size_type const slice_size,
+        identity<OnStaggerType> /*meta*/) const noexcept -> size_type {
       return OnStaggerType::get_dofs(n_elements(start_index, slice_size));
     }
     //**************************************************************************
@@ -268,14 +271,26 @@ namespace blocks {
     //**************************************************************************
     /*!\brief Gets size of new slice, based on the stagger type
      *
-     * For types on rodm the size of the slice is the size requested itself.
+     * For types on rod the size of the slice is the size requested itself.
      * The get_dofs() is designed to always return 1, so this is a workaround.
      */
-    template <>
-    inline auto get_size_of_slice<OnRod>(
-        index_type const, size_type const slice_size) const noexcept
-        -> size_type {
+    inline auto get_size_of_slice_helper(
+        index_type const, size_type const slice_size,
+        identity<OnRod> /*meta*/) const noexcept -> size_type {
       return slice_size;
+    }
+    //**************************************************************************
+
+   public:
+    //**************************************************************************
+    /*!\brief Gets size of new slice, based on the stagger type
+     */
+    template <typename OnStaggerType>
+    inline auto get_size_of_slice(index_type const start_index,
+                                  size_type const slice_size) const noexcept
+        -> size_type {
+      return get_size_of_slice_helper(start_index, slice_size,
+                                      identity<OnStaggerType>{});
     }
     //**************************************************************************
 
