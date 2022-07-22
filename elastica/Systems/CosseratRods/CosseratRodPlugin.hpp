@@ -17,9 +17,6 @@
 // Includes
 //******************************************************************************
 
-#include <numeric>    // for std::accumulate
-#include <stdexcept>  // for out of range errors
-
 #include "ErrorHandling/Assert.hpp"
 
 /// Forward declarations
@@ -30,6 +27,12 @@
 #include "Systems/CosseratRods/Tags.hpp"
 #include "Utilities/End.hpp"
 #include "Utilities/TMPL.hpp"
+///
+#include <numeric>    // for std::accumulate
+#include <stdexcept>  // for out of range errors
+#include <string>
+#include <utility>
+#include <vector>
 
 /*
  * Checklist
@@ -484,7 +487,7 @@ namespace blocks {
 
   //****************************************************************************
   /*! \cond ELASTICA_INTERNAL */
-  /*!\brief Specialization of DisplayVariables for a
+  /*!\brief Specialization of Metadata for a
    * elastica::cosserat_rod::CosseratRodPlugin
    * \ingroup cosserat_rod
    *
@@ -496,51 +499,18 @@ namespace blocks {
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
-  struct DisplayVariables<elastica::cosserat_rod::CosseratRodPlugin<
+  struct Metadata<elastica::cosserat_rod::CosseratRodPlugin<
       CRT, ComputationalBlock, Components...>> {
-    // customize for cosserat variables
     template <typename Var>
-    static inline auto apply(std::ostream& out) noexcept -> void {
-      out << "Staggering : " << pretty_type::get_name<typename Var::Stagger>()
-          << "\n";
+    static inline auto apply() noexcept
+        -> std::vector<std::pair<std::string, std::string>> {
+      return {{"Staggering", pretty_type::get_name<typename Var::Stagger>()}};
     }
   };
   /*! \endcond */
   //****************************************************************************
 
 }  // namespace blocks
-
-//==============================================================================
-//
-//  GLOBAL OPERATORS
-//
-//==============================================================================
-
-//******************************************************************************
-/*!\brief Streaming operator for elastica::cosserat_rod::CosseratRodPlugin
- * \ingroup cosserat_rod
- *
- * \tparam CRT A valid Cosserat Rod Traits class
- * \tparam ComputationalBlock A template type modeling the
- * `ComputationalBlock` concept
- * \tparam Components Variadic components for customizing behavior
- */
-template <typename CRT,  // Cosserat Rod Traits
-          template <typename>
-          class ComputationalBlock,  // Block with implementation
-          template <typename /*CRT*/, typename /* ComputationalBlock */>
-          class... Components>  // Skills
-inline std::ostream& operator<<(
-    std::ostream& os,
-    elastica::cosserat_rod::CosseratRodPlugin<CRT, ComputationalBlock,
-                                              Components...> const&) noexcept {
-  using Plugin =
-      elastica::cosserat_rod::CosseratRodPlugin<CRT, ComputationalBlock,
-                                                Components...>;
-  blocks::display_variable_summary<Plugin>(os);
-  return os;
-}
-//******************************************************************************
 
 namespace elastica {
 

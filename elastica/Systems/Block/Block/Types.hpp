@@ -49,6 +49,9 @@ namespace blocks {
 
   template <typename /*Plugin*/>
   class ConstBlockIterator;
+
+  template <typename /*Plugin*/>
+  struct Metadata;
   /*! \endcond */
   //****************************************************************************
 

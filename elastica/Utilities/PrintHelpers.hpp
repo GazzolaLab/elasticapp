@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "Utilities/StlStreamDeclarations.hpp"
+
 template <typename ForwardIt, typename Func>
 void sequence_print_helper(std::ostream& out, ForwardIt&& begin,
                            ForwardIt&& end, Func f) noexcept {
@@ -32,9 +34,12 @@ void sequence_print_helper(std::ostream& out, ForwardIt&& begin,
 template <typename ForwardIt>
 void sequence_print_helper(std::ostream& out, ForwardIt&& begin,
                            ForwardIt&& end) noexcept {
-  sequence_print_helper(
-      out, std::forward<ForwardIt>(begin), std::forward<ForwardIt>(end),
-      [](std::ostream & os, const ForwardIt& it) noexcept { os << *it; });
+  sequence_print_helper(out, std::forward<ForwardIt>(begin),
+                        std::forward<ForwardIt>(end),
+                        [](std::ostream& os, const ForwardIt& it) noexcept {
+                          using ::operator<<;
+                          os << *it;
+                        });
 }
 
 //@{
@@ -58,7 +63,10 @@ void unordered_print_helper(std::ostream& out, ForwardIt&& begin,
 template <typename ForwardIt>
 void unordered_print_helper(std::ostream& out, ForwardIt&& begin,
                             ForwardIt&& end) noexcept {
-  unordered_print_helper(
-      out, std::forward<ForwardIt>(begin), std::forward<ForwardIt>(end),
-      [](std::ostream & os, const ForwardIt& it) noexcept { os << *it; });
+  unordered_print_helper(out, std::forward<ForwardIt>(begin),
+                         std::forward<ForwardIt>(end),
+                         [](std::ostream& os, const ForwardIt& it) noexcept {
+                           using ::operator<<;
+                           os << *it;
+                         });
 }

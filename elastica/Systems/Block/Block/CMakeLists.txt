@@ -13,7 +13,7 @@ set(LIBRARY_SOURCES
         BlockSlice.hpp
         BlockSliceFacade.hpp
         BlockView.hpp
-        DisplayVariables.hpp
+        Metadata.hpp
         Protocols.hpp
         Types.hpp
         TypeTraits.hpp

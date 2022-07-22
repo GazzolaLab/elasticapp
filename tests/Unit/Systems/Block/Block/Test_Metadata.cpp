@@ -7,15 +7,16 @@
 #include <type_traits>
 
 #include "Framework/TestingFramework.hpp"
-#include "Systems/Block/Block/DisplayVariables.hpp"
+#include "Systems/Block/Block/Metadata.hpp"
 #include "Systems/Block/Block/Protocols.hpp"
 #include "Systems/Block/Block/Types.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 
 namespace {
 
   struct Checker {
-    Checker(std::stringstream const& os) : stream(os), found(true) {}
+    explicit Checker(std::stringstream const& os) : stream(os), found(true) {}
     void operator()(std::string const& expected) const {
       found &= (stream.str().find(expected) != std::string::npos);
     }
@@ -23,27 +24,6 @@ namespace {
     std::stringstream const& stream;
     mutable bool found;
   };
-
-  /// [not_a_plugin]
-  struct NotAPlugin {
-    using Variables = tmpl::list<>;
-  };
-  /// [not_a_plugin]
-
-  ELASTICA_TEST_CASE("Unit.Systems.Block.DisplayVariables.not_a_plugin",
-                     "[Systems][Unit]") {
-    using Plugin = NotAPlugin;
-
-    std::stringstream os;
-    blocks::display_variable_summary<Plugin>(os);
-
-    std::vector<std::string> expected_strings{"Name : NotAPlugin",
-                                              "Not a plugin!"};
-
-    auto checked = std::for_each(expected_strings.begin(),
-                                 expected_strings.end(), Checker{os});
-    CHECK(checked);
-  }
 
 }  // namespace
 
@@ -55,14 +35,13 @@ namespace {
   };
   /// [empty_plugin]
 
-  ELASTICA_TEST_CASE("Unit.Systems.Block.DisplayVariables.empty",
-                     "[Systems][Unit]") {
+  ELASTICA_TEST_CASE("Unit.Systems.Block.Metadata.empty", "[Systems][Unit]") {
     using Plugin = EmptyPlugin;
 
     std::stringstream os;
-    blocks::display_variable_summary<Plugin>(os);
+    os << blocks::metadata<Plugin>();
 
-    std::vector<std::string> expected_strings{"Plugin name : EmptyPlugin",
+    std::vector<std::string> expected_strings{"Plugin: EmptyPlugin",
                                               "No variables!"};
     auto checked = std::for_each(expected_strings.begin(),
                                  expected_strings.end(), Checker{os});
@@ -106,16 +85,15 @@ namespace {
   };
   /// [no_init_plugin]
 
-  ELASTICA_TEST_CASE(
-      "Unit.Systems.Block.DisplayVariables.without_initialization",
-      "[Systems][Unit]") {
+  ELASTICA_TEST_CASE("Unit.Systems.Block.Metadata.without_initialization",
+                     "[Systems][Unit]") {
     using Plugin = PluginWithoutInitialization;
 
     std::stringstream os;
-    blocks::display_variable_summary<Plugin>(os);
+    os << blocks::metadata<Plugin>();
 
     std::vector<std::string> expected_strings{
-        "Initialized? : false", "Plugin name : PluginWithoutInitialization"};
+        "Initialized: \"false\"", "Plugin: PluginWithoutInitialization"};
 
     auto checked = std::for_each(expected_strings.begin(),
                                  expected_strings.end(), Checker{os});
@@ -157,15 +135,15 @@ namespace {
   };
   /// [init_plugin]
 
-  ELASTICA_TEST_CASE("Unit.Systems.Block.DisplayVariables.with_initialization",
+  ELASTICA_TEST_CASE("Unit.Systems.Block.Metadata.with_initialization",
                      "[Systems][Unit]") {
     using Plugin = PluginWithInitialization;
 
     std::stringstream os;
-    blocks::display_variable_summary<Plugin>(os);
+    os << blocks::metadata<Plugin>();
 
     std::vector<std::string> expected_strings{
-        "Initialized? : true", "Plugin name : PluginWithInitialization"};
+        "Initialized: \"true\"", "Plugin: PluginWithInitialization"};
 
     auto checked = std::for_each(expected_strings.begin(),
                                  expected_strings.end(), Checker{os});
@@ -196,11 +174,11 @@ namespace {
 namespace blocks {
 
   template <>
-  struct DisplayVariables<PluginWithCustomization> {
+  struct Metadata<PluginWithCustomization> {
     template <typename Var>
-    static void apply(std::ostream& out) {
-      out << "ConstSliceType : "
-          << pretty_type::get_name<typename Var::ConstSliceType>() << "\n";
+    static auto apply() -> std::vector<std::pair<std::string, std::string>> {
+      return {{"ConstSliceType",
+               pretty_type::get_name<typename Var::ConstSliceType>()}};
     }
   };
 
@@ -209,19 +187,43 @@ namespace blocks {
 
 namespace {
 
-  ELASTICA_TEST_CASE("Unit.Systems.Block.DisplayVariables.with_customization",
+  ELASTICA_TEST_CASE("Unit.Systems.Block.Metadata.with_customization",
                      "[Systems][Unit]") {
     using Plugin = PluginWithCustomization;
 
     std::stringstream os;
-    blocks::display_variable_summary<Plugin>(os);
+    os << blocks::metadata<Plugin>();
 
     std::vector<std::string> expected_strings{
-        "ConstSliceType :", "Plugin name : PluginWithCustomization"};
+        "ConstSliceType: ", "Plugin: PluginWithCustomization"};
 
     auto checked = std::for_each(expected_strings.begin(),
                                  expected_strings.end(), Checker{os});
     CHECK(checked);
+  }
+
+  ELASTICA_TEST_CASE("Unit.Systems.Block.Metadata.form_map",
+                     "[Systems][Unit]") {
+    using Plugin = PluginWithCustomization;
+
+    std::stringstream os;
+    auto m = blocks::detail::form_map(blocks::metadata<Plugin>());
+    CHECK_FALSE(m.empty());
+
+    auto check_map = [](auto const& mapped) {
+      CHECK_FALSE(mapped.empty());
+      CHECK(mapped.count("Type"));
+      CHECK(mapped.count("Initialized"));
+      CHECK(mapped.count("Parameter"));
+      CHECK(mapped.count("Rank"));
+      CHECK(mapped.count("ConstSliceType"));
+    };
+
+    for (auto const& k :
+         {"ExamplePosition", "ExampleVelocity", "ExampleAcceleration"}) {
+      INFO(k);
+      check_map(m[k]);
+    }
   }
 
 }  // namespace

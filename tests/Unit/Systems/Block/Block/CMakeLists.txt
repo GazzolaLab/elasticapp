@@ -6,7 +6,7 @@ set(LIBRARY_SOURCES
         Test_BlockSlice.cpp
         Test_Protocols.cpp
         Test_TypeTraits.cpp
-        Test_DisplayVariables.cpp
+        Test_Metadata.cpp
         )
 
 add_test_library(

@@ -27,7 +27,7 @@
 #include "Systems/Block/Block/BlockIterator.hpp"
 #include "Systems/Block/Block/BlockSlice.hpp"
 #include "Systems/Block/Block/BlockView.hpp"
-#include "Systems/Block/Block/DisplayVariables.hpp"
+#include "Systems/Block/Block/Metadata.hpp"
 // Variable implementations
 #include "BlockVariables/BlockInitializer.hpp"
 #include "BlockVariables/BlockVariables.hpp"

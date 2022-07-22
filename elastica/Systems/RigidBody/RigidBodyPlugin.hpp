@@ -326,37 +326,6 @@ namespace elastica {
 
 }  // namespace elastica
 
-//==============================================================================
-//
-//  GLOBAL OPERATORS
-//
-//==============================================================================
-
-//******************************************************************************
-/*!\brief Streaming operator for elastica::rigid_body::RigidBodyPlugin
- * \ingroup rigid_body
- *
- * \tparam RBT A valid Cosserat Rod Traits class
- * \tparam ComputationalBlock A template type modeling the
- * `ComputationalBlock` concept
- * \tparam Components Variadic components for customizing behavior
- */
-template <typename RBT,  // Cosserat Rod Traits
-          template <typename>
-          class ComputationalBlock,  // Block with implementation
-          template <typename /*RBT*/, typename /* ComputationalBlock */>
-          class... Components>  // Skills
-inline std::ostream& operator<<(
-    std::ostream& os,
-    elastica::rigid_body::RigidBodyPlugin<RBT, ComputationalBlock,
-                                          Components...> const&) noexcept {
-  using Plugin = elastica::rigid_body::RigidBodyPlugin<RBT, ComputationalBlock,
-                                                       Components...>;
-  blocks::display_variable_summary<Plugin>(os);
-  return os;
-}
-//******************************************************************************
-
 namespace elastica {
 
   namespace rigid_body {

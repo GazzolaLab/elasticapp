@@ -19,9 +19,9 @@ namespace {
 
   /// [beg_tags]
   namespace tags {
-    struct ExampleInitializedPosition;
-    struct ExampleInitializedVelocity;
-    struct ExampleAcceleration;
+    struct ExampleInitializedPosition {};
+    struct ExampleInitializedVelocity {};
+    struct ExampleAcceleration {};
   }  // namespace tags
   /// [beg_tags]
 
@@ -1330,7 +1330,8 @@ namespace blocks {
 }  // namespace blocks
 */
 
-struct FacadedIntermediateExamplePlugin {
+struct FacadedIntermediateExamplePlugin
+    : public ::tt::ConformsTo<blocks::protocols::Plugin> {
   // Declare the variables
   // !! New !! Everything is a vector now!
   struct ExamplePosition
@@ -1514,6 +1515,44 @@ namespace {
         (std::vector<float>{2.5F, 3.5F, 4.5F}));
     CHECK(blocks::get<tags::ExampleAcceleration>(std::move(block)) ==
           std::vector<int>{0, 3, 2});
+  }
+
+  ELASTICA_TEST_CASE("Unit.Systems.Blocks.metadata", "[Systems][Unit]") {
+    using MyBlock = blocks::Block<FacadedIntermediateExamplePlugin>;
+    MyBlock block;
+
+    blocks::get<tags::ExampleInitializedPosition>(block).push_back(2);
+    blocks::get<tags::ExampleInitializedPosition>(block).push_back(3);
+    blocks::get<tags::ExampleInitializedPosition>(block).push_back(4);
+
+    blocks::get<tags::ExampleInitializedVelocity>(block).push_back(2.5F);
+    blocks::get<tags::ExampleInitializedVelocity>(block).push_back(3.5F);
+    blocks::get<tags::ExampleInitializedVelocity>(block).push_back(4.5F);
+
+    blocks::get<tags::ExampleAcceleration>(block).push_back(0);
+    blocks::get<tags::ExampleAcceleration>(block).push_back(1);
+    blocks::get<tags::ExampleAcceleration>(block).push_back(2);
+
+    auto const check_integrity = [](std::string const& str) {
+      using namespace std::string_literals;
+      for (auto const& substr :
+           {"ExamplePosition"s, "ExampleVelocity"s, "ExampleAcceleration"s}) {
+        INFO(substr);
+        CHECK(str.find(substr) != std::string::npos);
+      }
+    };
+
+    auto const run_test = [=](auto const& b) {
+      std::stringstream ss;
+      ss << blocks::metadata(b);
+      check_integrity(ss.str());
+    };
+
+    run_test(block);
+    run_test(blocks::slice(block, 0UL));
+    run_test(blocks::slice(block, 0UL, 2UL));
+    run_test(blocks::slice(cpp17::as_const(block), 0UL));
+    run_test(blocks::slice(cpp17::as_const(block), 0UL, 2UL));
   }
 
 }  // namespace

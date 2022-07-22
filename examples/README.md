@@ -126,13 +126,13 @@ Some examples provide additional file or link to published paper for a complete 
         * `make_parallel_configuration`
         * `seq`, `par`
 
-* [`display_variables`](./display_variables)
-    * __Name__: Display Variable Names
-    * __Purpose__: Demonstrate introspection of variables within different Plugins
+* [`block_metadata`](./block_metadata)
+    * __Name__: Generate metadata from Blocks
+    * __Purpose__: Introspect variable metadata used by different Blocks/Plugins
     * __Features__:
-        * `blocks::display_variable_summary`
+        * `blocks::metadata`
 
-* [`print_algorithm`](./print_algorithm)
+* [`algorithm_metadata`](./algorithm_metadata)
     * __Name__: Print algorithm in a human readable format
     * __Purpose__: Prints the algorithm executed by the simulator
     * __Features__:
