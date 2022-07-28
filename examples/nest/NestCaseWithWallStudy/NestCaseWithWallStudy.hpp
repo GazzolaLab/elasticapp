@@ -3,7 +3,8 @@
 //  \file
 //  \brief Nest with wall case study
 //
-//  Copyright (C) 2020-2022 Tejaswin Parthasarathy, Yashraj Bhosale, Seung Hyun Kim
+//  Copyright (C) 2020-2022 Tejaswin Parthasarathy, Yashraj Bhosale, Seung Hyun
+Kim
 //  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
 //
 //  Distributed under the MIT License.
@@ -81,9 +82,10 @@ Nest with sidewall case study
 --------------------------
 
 This case considers a random packing of sticks initialised in a region
-specified by the user. The sticks once initialised fall on the ground due
-to the influence of gravity, while undergoing collisions with the ground and
-each other. This case forms the base setting for the nest related cases.
+specified by the user. The sticks once initialised fall on the ground in a
+walled container due to the influence of gravity, while undergoing collisions
+with the ground, the walls and each other.
+TODO: Check stress strain curves!
 
 )help"};
 
@@ -106,7 +108,7 @@ each other. This case forms the base setting for the nest related cases.
   struct damping {
     using type = ::elastica::real_t;
     static constexpr String help = {"Internal damping in the rod"};
-    static type default_value() { return 1.0; }
+    static type default_value() { return 50.0; }
   };
 
   struct youngs_modulus {
@@ -118,7 +120,7 @@ each other. This case forms the base setting for the nest related cases.
   struct shear_modulus {
     using type = ::elastica::real_t;
     static constexpr String help = {"Shear modulus of the rod"};
-    static type default_value() { return (12e9 / 2.5); }
+    static type default_value() { return (12e9 / 1.5); }
   };
 
   // replace by gravity
@@ -148,8 +150,8 @@ each other. This case forms the base setting for the nest related cases.
 
   struct packing_initial_radial_span {
     using type = ::elastica::real_t;
-    static constexpr String help = {"Radial wall distance"};
-    static type default_value() { return 75.74 * 1.0; }
+    static constexpr String help = {"Radial span of the initialised packing"};
+    static type default_value() { return 69.85; }
   };
 
   struct dt {
@@ -161,13 +163,13 @@ each other. This case forms the base setting for the nest related cases.
   struct contact_stiffness {
     using type = ::elastica::real_t;
     static constexpr String help = {"Contact stiffness"};
-    static type default_value() { return 1e5; }
+    static type default_value() { return 1e6; }
   };
 
   struct contact_damping {
     using type = ::elastica::real_t;
     static constexpr String help = {"Contact damping"};
-    static type default_value() { return 0.1; }
+    static type default_value() { return 1e1; }
   };
 
   struct final_sim_time {
@@ -176,11 +178,11 @@ each other. This case forms the base setting for the nest related cases.
     static type default_value() { return 1.0; }
   };
 
-  using Parameters = tmpl::list<n_rods, n_elements, damping, youngs_modulus,
-                                shear_modulus, gravitational_acc, radius,
-                                length, dt, contact_stiffness, contact_damping,
-                                final_sim_time, packing_initial_vertical_span,
-                                packing_initial_radial_span>;
+  using Parameters =
+      tmpl::list<n_rods, n_elements, damping, youngs_modulus, shear_modulus,
+                 gravitational_acc, radius, length, dt, contact_stiffness,
+                 contact_damping, final_sim_time, packing_initial_vertical_span,
+                 packing_initial_radial_span>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);
