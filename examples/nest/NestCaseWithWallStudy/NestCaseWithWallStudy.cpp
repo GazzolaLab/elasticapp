@@ -63,8 +63,8 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   const std::size_t n_rod = ::elastica::get<n_rods>(input_parameters);
 
   using StraightInit = ::elastica::cosserat_rod::StraightCosseratRodInitializer;
-  const ::elastica::real_t R =
-      1. * base_length;  // controls radial extent of rod origin initialisation
+  const ::elastica::real_t R = ::elastica::get<packing_initial_radial_span>(
+      input_parameters);  // controls radial extent of rod origin initialisation
   const ::elastica::real_t H = ::elastica::get<packing_initial_vertical_span>(
       input_parameters);  // controls vertical extent of rod origin
   const ::elastica::real_t side_wall_dimension(
@@ -99,7 +99,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
     ::elastica::Vec3 end_point = origin + relative_endpoint;
     while ((end_point[x_axis] * end_point[x_axis] +
             end_point[y_axis] * end_point[y_axis]) > R * R ||
-           end_point[z_axis] < base_radius) {
+           end_point[z_axis] < base_radius || end_point[z_axis] > H) {
       alpha = dist_ang(mt);
       beta = dist_ang(mt);
       relative_endpoint =
@@ -155,7 +155,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
                                             my_material));
 
   // Set the top plane at (0, 0, original_top_height) and with normal along Z-
-  const ::elastica::real_t original_top_height(140.0);
+  const ::elastica::real_t original_top_height(H);
   const ::elastica::Vec3 plane_position_top{0.0, 0.0, original_top_height};
   auto plane_normal_top = {0.0, 0.0, -1.0};
   auto plane_binormal_top = {0.0, -1.0, 0.0};
@@ -171,11 +171,11 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   };
   auto top_translations_buffer = ek::make_translations(
       ek::translate_along<elastica::EulerianFrame::X>(
-          ek::mark_position(top_moving_wall), ek::mark_velocity(always_zero_)),
+          ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
       ek::translate_along<elastica::EulerianFrame::Y>(
           ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
       ek::translate_along<elastica::EulerianFrame::Z>(
-          ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)));
+          ek::mark_position(top_moving_wall), ek::mark_velocity(always_zero_)));
   simulator->emplace_back<ImposedPlane>(
       ::elastica::collision::PlanePrimitive(1UL, 1UL, true, plane_position_top,
                                             Q_top,
@@ -183,6 +183,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
                                             my_material),
       std::move(top_translations_buffer));
 
+  // Set the left plane at (-side_wall_dimension, 0, 0) and with normal along X
   const ::elastica::Vec3 plane_position_left{-side_wall_dimension, 0.0, 0.0};
   auto plane_normal_left = {1.0, 0.0, 0.0};
   auto plane_binormal_left = {0.0, 0.0, 1.0};
@@ -194,6 +195,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
       Spans{1e4, 1e4},  // plane extent
       my_material));
 
+  // Set the right plane at (side_wall_dimension, 0, 0) and with normal along X-
   const ::elastica::Vec3 plane_position_right{side_wall_dimension, 0.0, 0.0};
   auto plane_normal_right = {-1.0, 0.0, 0.0};
   auto plane_binormal_right = {0.0, 0.0, -1.0};
@@ -205,6 +207,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
       Spans{1e4, 1e4},  // plane extent
       my_material));
 
+  // Set the back plane at (0, side_wall_dimension, 0) and with normal along Y-
   const ::elastica::Vec3 plane_position_back{0.0, side_wall_dimension, 0.0};
   auto plane_normal_back = {0.0, -1.0, 0.0};
   auto plane_binormal_back = {-1.0, 0.0, 0.0};
@@ -215,6 +218,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
       4UL, 4UL, true, plane_position_back, Q_back, Spans{1e4, 1e4},
       my_material));
 
+  // Set the front plane at (0, -side_wall_dimension, 0) and with normal along Y
   const ::elastica::Vec3 plane_position_front{0.0, -side_wall_dimension, 0.0};
   auto plane_normal_front = {0.0, 1.0, 0.0};
   auto plane_binormal_front = {1.0, 0.0, 0.0};
@@ -229,7 +233,8 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   auto& collision_solver =
       simulator
           ->get_environment<elastica::environments::tags::CollisionSystem>();
-  collision_solver->time_interval_between_detection() = 20 * dt; // anything > 0.0
+  collision_solver->time_interval_between_detection() =
+      1000 * dt;  // anything > 0.0
 
   const ::elastica::real_t gravity_acc(
       ::elastica::get<gravitational_acc>(input_parameters));
