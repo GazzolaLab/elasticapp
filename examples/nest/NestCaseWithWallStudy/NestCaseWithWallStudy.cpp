@@ -15,9 +15,6 @@
 #include "NestCaseWithWallStudy.hpp"
 
 // define to use TBB backend (for now)
-#if ELASTICA_TBB_PARALLEL_MODE
-#include <tbb/global_control.h>
-#endif
 
 #include <chrono>
 #include <ctime>
@@ -32,9 +29,30 @@
 #include <utility>  // pair
 
 void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
+
   const ::elastica::real_t dt(::elastica::get<dt>(input_parameters));
 
-  elastica::MaterialID my_material = elastica::create_material(
+  soft_material = elastica::create_material(
+      // material density
+      8.94e-3,  // old elastica values
+      // coefficient of restitution
+      0.24,
+      // Young's modulus
+      ::elastica::get<youngs_modulus>(input_parameters),
+      // Shear modulus
+      ::elastica::get<shear_modulus>(input_parameters),
+      // Properties below don't matter
+      // Contact stiffness
+      ::elastica::get<contact_stiffness>(input_parameters) / 1e2,
+      // normal contact damping
+      ::elastica::get<contact_damping>(input_parameters) / 10,
+      // tangent contact damping
+      ::elastica::get<contact_damping>(input_parameters) / 10,
+      // coefficient of static friction
+      0.4,
+      // coefficient of dynamic friction
+      0.2);
+  wall_material = elastica::create_material(
       // material density
       8.94e-3,  // old elastica values
       // coefficient of restitution
@@ -119,7 +137,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
     StraightInit straight_initializer{
         // StraightInitialization Wrapper
         StraightInit::NElement{n_elem},
-        StraightInit::Material{my_material},
+        StraightInit::Material{soft_material},
         StraightInit::Radius{::elastica::get<radius>(input_parameters)},
         StraightInit::Length{base_length},
         StraightInit::Origin{origin},
@@ -152,7 +170,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
       ::elastica::collision::PlanePrimitive(0UL, 0UL, true,
                                             plane_position_bottom, Q_bottom,
                                             Spans{1e4, 1e4},  // plane extent
-                                            my_material));
+                                            wall_material));
 
   // Set the top plane at (0, 0, original_top_height) and with normal along Z-
   const ::elastica::real_t original_top_height(H);
@@ -180,61 +198,81 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
       ::elastica::collision::PlanePrimitive(1UL, 1UL, true, plane_position_top,
                                             Q_top,
                                             Spans{1e4, 1e4},  // plane extent
-                                            my_material),
+                                            wall_material),
       std::move(top_translations_buffer));
 
-  // Set the left plane at (-side_wall_dimension, 0, 0) and with normal along X
-  const ::elastica::Vec3 plane_position_left{-side_wall_dimension, 0.0, 0.0};
-  auto plane_normal_left = {1.0, 0.0, 0.0};
-  auto plane_binormal_left = {0.0, 0.0, 1.0};
-  auto plane_tangent_left = {0.0, -1.0, 0.0};
-  ::elastica::Rot3 Q_left = {plane_normal_left, plane_binormal_left,
-                             plane_tangent_left};
-  simulator->emplace_back<ImposedPlane>(::elastica::collision::PlanePrimitive(
-      2UL, 2UL, true, plane_position_left, Q_left,
-      Spans{1e4, 1e4},  // plane extent
-      my_material));
+  // STATIC WALLS
+  const std::size_t n_stack = 16UL;
+  const ::elastica::real_t gap = 0.3;
+  for (std::size_t i(0UL); i < n_stack; ++i){
+    // BOTTOM WALLS
+    const ::elastica::Vec3 plane_position_bottom{0.0, 0.0, -gap * (i+1)};
+    auto plane_normal_bottom = {0.0, 0.0, 1.0};
+    auto plane_binormal_bottom = {0.0, 1.0, 0.0};
+    auto plane_tangent_bottom = {-1.0, 0.0, 0.0};
+    ::elastica::Rot3 Q_bottom = {plane_normal_bottom, plane_binormal_bottom,
+                                 plane_tangent_bottom};
+    simulator->emplace_back<ImposedPlane>(
+        ::elastica::collision::PlanePrimitive(0UL, 0UL, true,
+                                              plane_position_bottom, Q_bottom,
+                                              Spans{1e4, 1e4},  // plane extent
+                                              wall_material));
 
-  // Set the right plane at (side_wall_dimension, 0, 0) and with normal along X-
-  const ::elastica::Vec3 plane_position_right{side_wall_dimension, 0.0, 0.0};
-  auto plane_normal_right = {-1.0, 0.0, 0.0};
-  auto plane_binormal_right = {0.0, 0.0, -1.0};
-  auto plane_tangent_right = {0.0, 1.0, 0.0};
-  ::elastica::Rot3 Q_right = {plane_normal_right, plane_binormal_right,
-                              plane_tangent_right};
-  simulator->emplace_back<ImposedPlane>(::elastica::collision::PlanePrimitive(
-      3UL, 3UL, true, plane_position_right, Q_right,
-      Spans{1e4, 1e4},  // plane extent
-      my_material));
-
-  // Set the back plane at (0, side_wall_dimension, 0) and with normal along Y-
-  const ::elastica::Vec3 plane_position_back{0.0, side_wall_dimension, 0.0};
-  auto plane_normal_back = {0.0, -1.0, 0.0};
-  auto plane_binormal_back = {-1.0, 0.0, 0.0};
-  auto plane_tangent_back = {0.0, 0.0, 1.0};
-  ::elastica::Rot3 Q_back = {plane_normal_back, plane_binormal_back,
-                             plane_tangent_back};
-  simulator->emplace_back<ImposedPlane>(::elastica::collision::PlanePrimitive(
-      4UL, 4UL, true, plane_position_back, Q_back, Spans{1e4, 1e4},
-      my_material));
-
-  // Set the front plane at (0, -side_wall_dimension, 0) and with normal along Y
-  const ::elastica::Vec3 plane_position_front{0.0, -side_wall_dimension, 0.0};
-  auto plane_normal_front = {0.0, 1.0, 0.0};
-  auto plane_binormal_front = {1.0, 0.0, 0.0};
-  auto plane_tangent_front = {0.0, 0.0, -1.0};
-  ::elastica::Rot3 Q_front = {plane_normal_front, plane_binormal_front,
-                              plane_tangent_front};
-  simulator->emplace_back<ImposedPlane>(::elastica::collision::PlanePrimitive(
-      5UL, 5UL, true, plane_position_front, Q_front, Spans{1e4, 1e4},
-      my_material));
+    // SIDE WALLS
+    const ::elastica::real_t side_wall_dimension_with_gap = side_wall_dimension + gap * i;
+    // Set the left plane at (-side_wall_dimension_with_gap, 0, 0) and with normal along X
+    const ::elastica::Vec3 plane_position_left{-side_wall_dimension_with_gap, 0.0, 0.0};
+    auto plane_normal_left = {1.0, 0.0, 0.0};
+    auto plane_binormal_left = {0.0, 0.0, 1.0};
+    auto plane_tangent_left = {0.0, -1.0, 0.0};
+    ::elastica::Rot3 Q_left = {plane_normal_left, plane_binormal_left,
+                               plane_tangent_left};
+    simulator->emplace_back<ImposedPlane>(::elastica::collision::PlanePrimitive(
+        2UL + (i*4UL), 2UL + (i*4UL), true, plane_position_left, Q_left,
+        Spans{1e4, 1e4},  // plane extent
+        wall_material));
+  
+    // Set the right plane at (side_wall_dimension_with_gap, 0, 0) and with normal along X-
+    const ::elastica::Vec3 plane_position_right{side_wall_dimension_with_gap, 0.0, 0.0};
+    auto plane_normal_right = {-1.0, 0.0, 0.0};
+    auto plane_binormal_right = {0.0, 0.0, -1.0};
+    auto plane_tangent_right = {0.0, 1.0, 0.0};
+    ::elastica::Rot3 Q_right = {plane_normal_right, plane_binormal_right,
+                                plane_tangent_right};
+    simulator->emplace_back<ImposedPlane>(::elastica::collision::PlanePrimitive(
+        3UL + (i*4UL), 3UL + (i*4UL), true, plane_position_right, Q_right,
+        Spans{1e4, 1e4},  // plane extent
+        wall_material));
+  
+    // Set the back plane at (0, side_wall_dimension_with_gap, 0) and with normal along Y-
+    const ::elastica::Vec3 plane_position_back{0.0, side_wall_dimension_with_gap, 0.0};
+    auto plane_normal_back = {0.0, -1.0, 0.0};
+    auto plane_binormal_back = {-1.0, 0.0, 0.0};
+    auto plane_tangent_back = {0.0, 0.0, 1.0};
+    ::elastica::Rot3 Q_back = {plane_normal_back, plane_binormal_back,
+                               plane_tangent_back};
+    simulator->emplace_back<ImposedPlane>(::elastica::collision::PlanePrimitive(
+        4UL + (i*4UL), 4UL + (i*4UL), true, plane_position_back, Q_back, Spans{1e4, 1e4},
+        wall_material));
+  
+    // Set the front plane at (0, -side_wall_dimension_with_gap, 0) and with normal along Y
+    const ::elastica::Vec3 plane_position_front{0.0, -side_wall_dimension_with_gap, 0.0};
+    auto plane_normal_front = {0.0, 1.0, 0.0};
+    auto plane_binormal_front = {1.0, 0.0, 0.0};
+    auto plane_tangent_front = {0.0, 0.0, -1.0};
+    ::elastica::Rot3 Q_front = {plane_normal_front, plane_binormal_front,
+                                plane_tangent_front};
+    simulator->emplace_back<ImposedPlane>(::elastica::collision::PlanePrimitive(
+        5UL + (i*4UL), 5UL + (i*4UL), true, plane_position_front, Q_front, Spans{1e4, 1e4},
+        wall_material));
+  }
 
   // set near-list update time
   auto& collision_solver =
       simulator
           ->get_environment<elastica::environments::tags::CollisionSystem>();
   collision_solver->time_interval_between_detection() =
-      1000 * dt;  // anything > 0.0
+      20.0 * dt;  // anything > 0.0
 
   const ::elastica::real_t gravity_acc(
       ::elastica::get<gravitational_acc>(input_parameters));
@@ -246,11 +284,33 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   simulator->finalize();
   // Set the dt value
   set_dt(dt);
+  std::size_t block_count(0UL);
+  simulator->for_each_block([&block_count](auto& block){ block_count++; });
+  std::cout << "Block Count: " << block_count << '\n';
 }
 
 void NestCaseWithWallStudy::step() {
+  const std::uint64_t flag_iteration(10.0 / current_dt());
+  if (get_current_iteration().step() == flag_iteration) {
+    auto& collision_solver =
+        simulator
+            ->get_environment<elastica::environments::tags::CollisionSystem>();
+    collision_solver->time_interval_between_detection() =
+        1000.0 * current_dt();  // anything > 0.0
+      //set_dt(1.0e-6);
+  }
+
+  const std::uint64_t flag_iteration2(1.2 / current_dt());
+  if (get_current_iteration().step() == flag_iteration2) {
+      for(auto& rod_ref : rod_refs){
+        auto id(::elastica::get<::elastica::tags::Material>(rod_ref.get()));
+        id = wall_material;
+      }
+  }
+
   simulator->step(time_stepper, get_current_time(), get_dt(),
                   get_current_iteration());
+
 }
 
 void NestCaseWithWallStudy::run() {
@@ -261,7 +321,7 @@ void NestCaseWithWallStudy::run() {
   enable_floating_point_exceptions();
   using RodCoordinates =
       std::tuple<::elastica::real_t, ::elastica::real_t, ::elastica::real_t>;
-  using Energies = std::tuple<::elastica::real_t, ::elastica::real_t>;
+  using Energies = std::tuple<::elastica::real_t, ::elastica::real_t, ::elastica::real_t, ::elastica::real_t>;
   std::vector<RodCoordinates> rod_coordinates;
   std::vector<Energies> energies;
   using TimesAndForces = std::tuple<::elastica::real_t, ::elastica::Vec3>;
@@ -274,10 +334,11 @@ void NestCaseWithWallStudy::run() {
   constexpr auto y_axis = 1UL;
   constexpr auto z_axis = 2UL;
 
+  const ::elastica::real_t fps = 60;
   const std::size_t n_steps = (final_time / current_dt());
-  const std::size_t write_interval = n_steps / 100;  // 1000000UL;
+  const std::size_t write_interval = n_steps / (final_time * fps);  // 1000000UL;
   rod_coordinates.reserve(n_rod * n_nodes);
-  energies.reserve(n_rod * 2);
+  energies.reserve(n_rod * 4UL);
   std::ofstream temporal_file;
 
   std::cout << std::fixed << std::setprecision(1);
@@ -308,33 +369,36 @@ void NestCaseWithWallStudy::run() {
                 << " [elapsed: " << elapsed_time.count() << " sec]"
                 << " [etd: " << std::strtok(std::ctime(&etd), "\n") << "]\r";
       std::cout.flush();
-      current_progress += 0.01;
+      current_progress += 0.001;
     }
 
-    step();
-    reset_ghost();
-    if (not(current_iteration() % write_interval)) {  // Record energy
+    // Logging
+    if (not(current_iteration() % write_interval)) {
+      // Record energy
       for (auto const& rod_ref : rod_refs) {
         energies.emplace_back(
             ::elastica::compute_translational_energy(rod_ref.get()),
-            ::elastica::compute_rotational_energy(rod_ref.get()));
+            ::elastica::compute_rotational_energy(rod_ref.get()),
+            ::elastica::compute_bend_energy(rod_ref.get()),
+            ::elastica::compute_shear_energy(rod_ref.get())
+        );
       }
-      // TODO : replace with a csv writer
+      
       char file_name[100];
       sprintf(file_name, "data/rod_energies_%08d.csv", i);
       temporal_file.open(file_name);
       for (auto const& energy : energies) {
-        temporal_file << std::setprecision(16) << std::get<0UL>(energy) << ","
-                      << std::get<1UL>(energy) << "\n";
+        temporal_file << std::setprecision(16)
+                      << std::get<0UL>(energy) << ","
+                      << std::get<1UL>(energy) << ","
+                      << std::get<2UL>(energy) << ","
+                      << std::get<3UL>(energy) << "\n";
       }
       temporal_file << std::endl;
       temporal_file.close();
       energies.clear();
-    }
-    if (not(current_iteration() % write_interval)) {
+
       //       record position
-      auto& imposed_plane = imposed_plane_ref.get();
-      times_and_forces.emplace_back(current_time(), imposed_plane.get_force());
       for (auto const& rod_ref : rod_refs) {
         for (std::size_t k = 0; k < n_nodes; ++k) {
           rod_coordinates.emplace_back(
@@ -342,12 +406,8 @@ void NestCaseWithWallStudy::run() {
               ::elastica::position(rod_ref.get(), k)[y_axis],
               ::elastica::position(rod_ref.get(), k)[z_axis]);
         }
-        energies.emplace_back(
-            ::elastica::compute_translational_energy(rod_ref.get()),
-            ::elastica::compute_rotational_energy(rod_ref.get()));
       }
       // TODO : replace with a csv writer
-      char file_name[100];
       sprintf(file_name, "data/rod_coordinates_%08d.csv", i);
       temporal_file.open(file_name);
       for (auto const& rod_coord : rod_coordinates) {
@@ -358,22 +418,30 @@ void NestCaseWithWallStudy::run() {
       temporal_file << std::endl;
       temporal_file.close();
       rod_coordinates.clear();
+
+      // TODO : replace with a csv writer
+      auto& imposed_plane = imposed_plane_ref.get();
+      times_and_forces.emplace_back(current_time(), imposed_plane.get_force());
+      sprintf(file_name, "data/imposed_plane_%08d.csv", i);
+      std::ofstream nest_diagnostics_file;
+      nest_diagnostics_file.open(file_name);
+      constexpr auto Time = 0UL;
+      constexpr auto ForceVector = 1UL;
+      for (auto const& tf : times_and_forces) {
+        nest_diagnostics_file << std::setprecision(16) << std::get<Time>(tf) << ","
+                              << std::get<ForceVector>(tf)[x_axis] << ","
+                              << std::get<ForceVector>(tf)[y_axis] << ","
+                              << std::get<ForceVector>(tf)[z_axis] << "\n";
+      }
+      nest_diagnostics_file << std::endl;
+      nest_diagnostics_file.close();
+      times_and_forces.clear();
     }
+
+    // Actual STEP!!
+    step();
+    reset_ghost(); // MUST!!!!!
   }
-  // TODO : replace with a csv writer
-  std::ofstream nest_diagnostics_file;
-  nest_diagnostics_file.open("data/nest_diagnostics.csv");
-  constexpr auto Time = 0UL;
-  constexpr auto ForceVector = 1UL;
-  for (auto const& tf : times_and_forces) {
-    nest_diagnostics_file << std::setprecision(16) << std::get<Time>(tf) << ","
-                          << std::get<ForceVector>(tf)[x_axis] << ","
-                          << std::get<ForceVector>(tf)[y_axis] << ","
-                          << std::get<ForceVector>(tf)[z_axis] << "\n";
-  }
-  nest_diagnostics_file << std::endl;
-  nest_diagnostics_file.close();
-  times_and_forces.clear();
 }
 
 void NestCaseWithWallStudy::reset_ghost() {

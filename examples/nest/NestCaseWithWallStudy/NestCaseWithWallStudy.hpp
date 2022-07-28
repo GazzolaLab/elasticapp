@@ -12,6 +12,10 @@ Kim
 */
 //==============================================================================
 
+#if ELASTICA_TBB_PARALLEL_MODE
+#include <tbb/global_control.h>
+#endif
+
 #include <elastica/CaseStudy.hpp>
 #include <elastica/Simulator/Environments.hpp>
 #include <elastica/Simulator/Forcing.hpp>
@@ -30,7 +34,7 @@ struct NestConfiguration {
   static inline auto make_simulator_configuration() {
     auto system_config =
         ec::make_systems_configuration<tmpl::list<CosseratRod>>(
-            ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{2048UL}),
+            ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{500}),
             ec::make_iteration_policy(
                 ec::iterate_across_system_types_in(ec::seq),
                 ec::iterate_over_systems_in(ec::par)));
@@ -151,7 +155,7 @@ TODO: Check stress strain curves!
   struct packing_initial_radial_span {
     using type = ::elastica::real_t;
     static constexpr String help = {"Radial span of the initialised packing"};
-    static type default_value() { return 69.85; }
+    static type default_value() { return 75.0; }
   };
 
   struct dt {
@@ -192,6 +196,9 @@ TODO: Check stress strain curves!
 
   NestCaseWithWallStudy() = default;
   NestCaseWithWallStudy(NestCaseWithWallStudy&&) noexcept = default;
+
+  elastica::MaterialID soft_material;
+  elastica::MaterialID wall_material;
 
   decltype(Configuration::make_time_stepper()) time_stepper =
       Configuration::make_time_stepper();
