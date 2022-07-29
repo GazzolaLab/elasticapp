@@ -62,7 +62,6 @@ namespace {
     using S::metadata_update_kinematics;          // tested
     using S::ready;                               // tested
     using S::S;                                   // tested
-    using S::stream_profiling_summary_to;
 
     using S::reset_modules;  // tested
   };
@@ -333,10 +332,10 @@ namespace {
     std::ostringstream ss;
     ss << simulator.algorithm_metadata();
     INFO(ss.str());
-    std::vector<std::string> substrings{"Update", "first post kinematic",
-                                        "second post kinematic", "pre dynamic",
-                                        "post dynamic"};
-    for (auto const& substr : substrings) {
+    using namespace std::string_literals;
+    for (auto const& substr :
+         {"Update"s, "first post kinematic"s, "second post kinematic"s,
+          "pre dynamic"s, "post dynamic"s}) {
       INFO(substr);
       CHECK(ss.str().find(substr) != std::string::npos);
     }
@@ -415,18 +414,17 @@ namespace {
       });
     }
     std::ostringstream ss;
-    simulator.stream_profiling_summary_to(ss);
+    ss << simulator.timers();
     INFO(ss.str());
-    std::vector<std::string> substrings{
-        "ApplyOverSystems", "FirstPostKinematicUpdateStep",
-        "SecondPostKinematicUpdateStep", "PreDynamicUpdateStep",
-        "PostDynamicUpdateStep"};
-#ifdef ELASTICA_PROFILING
-    for (auto const& substr : substrings) {
+
+    using namespace std::string_literals;
+    for (auto const& substr :
+         {"ApplyOverSystems"s, "FirstPostKinematicUpdateStep"s,
+          "SecondPostKinematicUpdateStep"s, "PreDynamicUpdateStep"s,
+          "PostDynamicUpdateStep"s}) {
       INFO(substr);
       CHECK(ss.str().find(substr) != std::string::npos);
     }
-#endif
   }
 
   template <class SimTraits, class Sim>

@@ -14,5 +14,5 @@ add_test_library(
         ${LIBRARY}
         "Time"
         "${LIBRARY_SOURCES}"
-        "ErrorHandling;Utilities;Time"
+        "ErrorHandling;Utilities;Time;Serialization"
 )

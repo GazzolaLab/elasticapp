@@ -27,13 +27,9 @@ target_link_libraries(
         ${LIBRARY}
         INTERFACE
         Utilities
-        # Stl
+        Stl
 )
 
-# Do customization based on compile-time options here
 if (YamlCpp_FOUND)
-    target_compile_definitions(${LIBRARY} INTERFACE ELASTICA_USE_YAMLCPP)
     target_link_libraries(${LIBRARY} INTERFACE YamlCpp)
-else ()
-    message(WARNING "YamlCpp not found. All YAML related functionalities are turned off.")
 endif ()

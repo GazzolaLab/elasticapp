@@ -42,6 +42,7 @@
  add_subdirectory(Traits)
  add_library(${LIBRARY}::Traits ALIAS RigidBodyTraits)
 
+ # FIXME refactor serialization
  target_link_libraries(
          ${LIBRARY}
          INTERFACE
@@ -49,4 +50,5 @@
          RigidBodyComponents
          RigidBodySphereComponents
          RigidBodyTraits
+         Serialization
  )

@@ -814,7 +814,7 @@ reorganizing your code logic.
       //@}
       //************************************************************************
 
-     public:  // For access to modules such as with primitives
+     public:
       //**Profiling methods*****************************************************
       /*!\name Profiling methods*/
       //@{
@@ -823,6 +823,10 @@ reorganizing your code logic.
       /*!\name Timer functions */
       //@{
       /*!\brief Gets the registered timers.
+       *
+       * \note
+       * If elastica_profiling_mode() is disabled, the values within the timer
+       * may not be what is expected.
        */
       inline constexpr auto timers() & noexcept -> Timers& { return timers_; }
       inline constexpr auto timers() const& noexcept -> Timers const& {
@@ -888,87 +892,6 @@ reorganizing your code logic.
       //@}
       //************************************************************************
 
-     public:
-      //************************************************************************
-      /*!\brief Logs the profiling information into a stream
-       *
-       * \param os Output stream for streaming into
-       * \return os
-       */
-      inline void stream_profiling_summary_to(std::ostream& os) const {
-        /*
-        ELASTICA_PROFILING_SECTION {
-          constexpr std::size_t n_timers = tmpl::size<Timers>::value;
-          std::array<double, n_timers> minValues, maxValues, totalValues;
-          std::array<std::size_t, n_timers> numValues;
-
-          auto populate_timers = [this, &minValues, &maxValues, &totalValues,
-                                  &numValues](auto Is) {
-            auto const& timer =
-                this->get_timer<tmpl::at_c<AlgorithmSteps, Is>>();
-            minValues[Is] = timer.min();
-            maxValues[Is] = timer.max();
-            totalValues[Is] = timer.total();
-            numValues[Is] = timer.getCounter();
-          };
-
-          // Compile time for-each, don't like brigands' type_ ID
-          index_apply<n_timers>([populate_timers](auto... Is) {
-            EXPAND_PACK_LEFT_TO_RIGHT(populate_timers(Is));
-          });
-
-          const std::size_t named_width = 30UL;
-          const std::size_t field_width = 10UL;
-          const auto delimiter = ",";  // ?
-          const std::string header_indicator = "#";
-          // os << std::setw(name_width) << TimerTag::log_name() << delimiter;
-
-          std::ostringstream ss;
-          ss << std::left  //
-             << std::setw(named_width) << header_indicator + " code_part"
-             << delimiter << std::right  //
-             << std::setw(field_width) << "min_time" << delimiter
-             << std::setw(field_width) << "max_time" << delimiter
-             << std::setw(field_width) << "avg_time" << delimiter
-             << std::setw(field_width) << "tot_time" << delimiter
-             << std::setw(field_width) << "n_samples";
-          std::string header = ss.str();
-          std::string horizontal_line =
-              std::string(::elastica::size(header), '-');
-          os << horizontal_line << "\n";
-          os << header << "\n";
-
-          auto pretty_printer = [this, &os, &minValues, &maxValues,
-                                 &totalValues, &numValues,
-                                 delimiter = ","](auto Is) {
-            using TimerTag = tmpl::at_c<Timers, Is>;
-            const double average_time = totalValues[Is] / numValues[Is];
-            os << std::left  //
-               << std::setw(named_width) << TimerTag::log_name() << delimiter
-               << std::right  //
-               << std::setw(field_width) << minValues[Is] << delimiter
-               << std::setw(field_width) << maxValues[Is] << delimiter
-               << std::setw(field_width) << average_time << delimiter
-               << std::setw(field_width) << totalValues[Is] << delimiter
-               << std::setw(field_width) << numValues[Is] << "\n";
-          };
-          // Compile time for-each, don't like brigands' type_ ID
-          index_apply<n_timers>([pretty_printer](auto... Is) {
-            EXPAND_PACK_LEFT_TO_RIGHT(pretty_printer(Is));
-          });
-        }
-         */
-      }
-      //************************************************************************
-
-      //************************************************************************
-      /*!\brief Prints the profiling information to standard output
-       */
-      inline void print_profiling_summary() const {
-        (void)stream_profiling_summary_to(std::cout);
-      }
-      //************************************************************************
-
       //@}
       //************************************************************************
 
@@ -980,7 +903,7 @@ reorganizing your code logic.
       //************************************************************************
       /*! \cond ELASTICA_INTERNAL */
       struct MetadataGenerator {
-        MetadataGenerator(This const& simulator) : sim_(simulator) {}
+        explicit MetadataGenerator(This const& simulator) : sim_(simulator) {}
         ~MetadataGenerator() = default;
 
         using Result = typename AlgorithmMetadata::Result;

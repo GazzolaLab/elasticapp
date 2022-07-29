@@ -10,5 +10,4 @@ elastica_target_headers(
         WcTimer.h
         Timing.h
         Timer.h
-        Tags.hpp
 )

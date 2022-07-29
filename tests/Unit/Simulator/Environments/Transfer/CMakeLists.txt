@@ -9,9 +9,11 @@ set(LIBRARY_SOURCES
         Test_Transferer.cpp
         )
 
+# FIXME : Parallel is not transitive
+# FIXME refactor serialization
 add_test_library(
         ${LIBRARY}
         "Simulator/Environments/Transfer"
         "${LIBRARY_SOURCES}"
-        "Transfer;Parallel" # FIXME : Parallel is not transitive
+        "Transfer;Parallel;Serialization"
 )

@@ -51,6 +51,7 @@ elastica_target_headers(
         Visualization.hpp
 )
 
+# FIXME refactor serialization
 target_link_libraries(
         ${LIBRARY}
         PUBLIC
@@ -62,6 +63,7 @@ target_link_libraries(
         Parallel
         SimulatorUtilities
         Materials
+        IO # This is a code smell. As our simulator imports systems/Block which in turn imports serialization, we need to include this at the moment
 )
 #set(LIBRARY_SOURCES Trigger.cpp Visualization.cpp Materials.cpp)
 

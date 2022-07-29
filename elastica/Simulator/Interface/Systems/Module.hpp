@@ -38,7 +38,7 @@
 #include "Systems/Types.hpp"
 ///
 /// Systems interface
-#include "Systems/Block.hpp"  // needed?
+#include "Systems/Block/Block.hpp"
 #include "Systems/Block/Block/TypeTraits.hpp"
 /// Interface methods
 #include "Simulator/Interface/Systems/ExecutionPolicy.hpp"

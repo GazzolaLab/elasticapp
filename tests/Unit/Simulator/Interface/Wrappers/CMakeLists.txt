@@ -17,5 +17,5 @@ add_test_library(
         ${LIBRARY}
         "Simulator/Interface/Wrappers"
         "${LIBRARY_SOURCES}"
-        "Utilities"
+        "Utilities;Serialization"
 )

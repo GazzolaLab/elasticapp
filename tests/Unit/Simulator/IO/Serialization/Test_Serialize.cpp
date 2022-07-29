@@ -15,6 +15,7 @@
 #include "detail/Test_POD.hpp"
 #include "detail/Test_String.hpp"
 #include "detail/Test_TaggedTuple.hpp"
+#include "detail/Test_Timer.hpp"
 #include "detail/Test_Tuple.hpp"
 #include "detail/Test_UnorderedMap.hpp"
 #include "detail/Test_Utility.hpp"
@@ -198,6 +199,12 @@ namespace {
                      "[Unit][Simulator][IO][Serialization]") {
     run_for_archives<TestVector>();
     run_for_archive<TestVector>(tmpl::type_<YAMLArchives>{});
+  }
+
+  ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.timer",
+                     "[Unit][Simulator][IO][Serialization]") {
+    run_for_archives<TestTimer>();
+    run_for_archive<TestTimer>(tmpl::type_<YAMLArchives>{});
   }
 
   ELASTICA_TEST_CASE("Unit.Simulator.IO.Serialize.tuple",

@@ -6,9 +6,10 @@ set(LIBRARY_SOURCES
         Test_SymplecticStepperAdapter.cpp
         )
 
+# FIXME refactor serialization
 add_test_library(
         ${LIBRARY}
         "Systems/common"
         "${LIBRARY_SOURCES}"
-        "SystemsCommon"
+        "SystemsCommon;Serialization"
 )

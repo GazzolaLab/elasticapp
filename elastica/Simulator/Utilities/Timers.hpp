@@ -16,13 +16,18 @@
 //******************************************************************************
 // Includes
 //******************************************************************************
-#include <string>
-
+//
 #include "Utilities/AsTaggedTuple.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/Timing.h"
+//
+#include <algorithm>
+#include <array>
+#include <numeric>
+#include <string>
 
 namespace elastica {
 
@@ -42,9 +47,7 @@ namespace elastica {
     template <typename Tag>
     struct Store {
       using type = Timer;
-      // static std::string name() {
-      //   return "Time of " + pretty_type::get_name<>();
-      // }
+      static std::string name() { return pretty_type::name<Tag>(); }
     };
     //! Type of timers
     using Timers_ = tmpl::as_tagged_tuple<
@@ -133,6 +136,57 @@ namespace elastica {
   }
   //@}
   //****************************************************************************
+
+  //**************************************************************************
+  /*!\brief Stream operator for timers
+   */
+  template <typename Tags, typename TP>
+  std::ostream& operator<<(std::ostream& os, Timers<Tags, TP> const& timers) {
+    std::array<std::string, Timers<Tags, TP>::size()> names;
+
+    tmpl::for_each<Tags>([&, idx = 0UL](auto tag) mutable {
+      using Tag = tmpl::type_from<decltype(tag)>;
+      names[idx++] = pretty_type::name<Tag>();
+    });
+
+    const int named_width = std::max(
+        30UL, std::accumulate(std::cbegin(names), std::cend(names), 0UL,
+                              [](std::size_t accum, std::string const& name) {
+                                return std::max(accum, cpp17::size(name));
+                              }));
+    constexpr auto field_width = 10;
+    auto const delimiter = ",";  // ?
+    std::string const header_indicator = "#";
+
+    std::ostringstream ss;
+    ss << std::left                                                         //
+       << std::setw(named_width) << "code_part" << delimiter << std::right  //
+       << std::setw(field_width) << "min" << delimiter                      //
+       << std::setw(field_width) << "max" << delimiter                      //
+       << std::setw(field_width) << "average" << delimiter                  //
+       << std::setw(field_width) << "total" << delimiter                    //
+       << std::setw(field_width) << "counter";
+    std::string const header = ss.str();
+    auto const horizontal_line =
+        header_indicator + " " + std::string(::elastica::size(header) - 2, '-');
+    os << horizontal_line << "\n";
+    os << header << "\n";
+
+    // can be expanded at compile-time if needed
+    for_each(timers, [&, idx = 0UL](auto const& timer) mutable {
+      os << std::left  //
+         << std::setw(named_width) << names[idx++] << delimiter
+         << std::right  //
+         << std::setw(field_width) << timer.min() << delimiter
+         << std::setw(field_width) << timer.max() << delimiter
+         << std::setw(field_width) << timer.average() << delimiter
+         << std::setw(field_width) << timer.total() << delimiter
+         << std::setw(field_width) << timer.counter() << "\n";
+    });
+
+    return os;
+  }
+  //**************************************************************************
 
   /*! \endcond */
   //****************************************************************************

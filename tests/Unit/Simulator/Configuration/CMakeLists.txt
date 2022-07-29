@@ -12,5 +12,5 @@ add_test_library(
         ${LIBRARY}
         "Simulator/Configuration"
         "${LIBRARY_SOURCES}"
-        "ErrorHandling;Utilities;Simulator"
+        "ErrorHandling;Utilities;Simulator;Serialization" # FIXME refactor serialization
 )

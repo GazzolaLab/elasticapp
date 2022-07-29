@@ -12,5 +12,5 @@ add_test_library(
         ${LIBRARY}
         "Systems/Block"
         "${LIBRARY_SOURCES}"
-        "Utilities"
+        "Utilities;Serialization"
 )

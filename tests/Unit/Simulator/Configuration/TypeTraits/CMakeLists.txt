@@ -12,9 +12,10 @@ set(LIBRARY_SOURCES
         Test_Systems.cpp
         )
 
+# FIXME refactor serialization
 add_test_library(
         ${LIBRARY}
         "Simulator/Configuration/TypeTraits"
         "${LIBRARY_SOURCES}"
-        "ErrorHandling;Utilities;Simulator"
+        "ErrorHandling;Utilities;Simulator;Serialization"
 )

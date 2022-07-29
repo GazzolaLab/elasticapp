@@ -15,9 +15,10 @@ set(LIBRARY_SOURCES
         Test_DEMSolver.cpp
         )
 
+# FIXME refactor serialization
 add_test_library(
         ${LIBRARY}
         "Simulator/Environments/CollisionSystem"
         "${LIBRARY_SOURCES}"
-        "CollisionSystem"
+        "CollisionSystem;Serialization"
 )

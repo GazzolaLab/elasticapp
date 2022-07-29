@@ -15,9 +15,10 @@ set(LIBRARY_SOURCES
         Test_Module.cpp
         )
 
+# FIXME refactor serialization
 add_test_library(
         ${LIBRARY}
         "Simulator/Interface/Forcing"
         "${LIBRARY_SOURCES}"
-        "ErrorHandling;Utilities;Simulator"
+        "ErrorHandling;Utilities;Simulator;Serialization"
 )

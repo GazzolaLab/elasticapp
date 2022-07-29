@@ -26,3 +26,22 @@ set_property(
         GLOBAL APPEND PROPERTY ELASTICA_THIRD_PARTY_LIBS
         YamlCpp
 )
+
+add_library(_ElasticaUseYAMLCpp INTERFACE)
+
+if (YamlCpp_FOUND)
+    set_property(
+            TARGET _ElasticaUseYAMLCpp
+            APPEND PROPERTY
+            INTERFACE_COMPILE_DEFINITIONS
+            $<$<COMPILE_LANGUAGE:CXX>:ELASTICA_USE_YAMLCPP>
+    )
+else ()
+    message(WARNING "YamlCpp not found. All YAML related functionalities are turned off.")
+endif ()
+
+target_link_libraries(
+        ElasticaFlags
+        INTERFACE
+        _ElasticaUseYAMLCpp
+)

@@ -7,6 +7,7 @@ add_elastica_library(${LIBRARY} INTERFACE)
 set(LIBRARY_SOURCES
         blaze.hpp
         TaggedTuple.hpp
+        Timer.hpp
         )
 
 elastica_target_headers(

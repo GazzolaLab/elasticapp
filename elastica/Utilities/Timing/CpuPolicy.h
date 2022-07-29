@@ -1,31 +1,21 @@
-//=================================================================================================
+//==============================================================================
 /*!
- *  \file pe/util/timing/CpuPolicy.h
- *  \brief CPU timing policy for the Timer class.
- *
- *  Copyright (C) 2009 Klaus Iglberger
- *
- *  This file is part of pe.
- *
- *  pe is free software: you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- *
- *  pe is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with
- * pe. If not, see <http://www.gnu.org/licenses/>.
- */
-//=================================================================================================
+//  \file
+//  \brief CPU-clock policies
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
 
 #pragma once
 
-//*************************************************************************************************
+//******************************************************************************
 // Includes
-//*************************************************************************************************
+//******************************************************************************
 
 #include "Utilities/TimeStamps.h"
 
@@ -33,13 +23,13 @@ namespace elastica {
 
   namespace timing {
 
-    //=================================================================================================
+    //==========================================================================
     //
     //  CLASS DEFINITION
     //
-    //=================================================================================================
+    //==========================================================================
 
-    //*************************************************************************************************
+    //**************************************************************************
     /*!\brief Timing policy for the measurement of the CPU time.
      * \ingroup timing
      *
@@ -49,29 +39,39 @@ namespace elastica {
      */
     struct CpuPolicy {
      public:
-      //**Timing
-      // functions****************************************************************************
+      //**Type definitions******************************************************
+      //! TimeStamp type
+      using TimeStamp = decltype(get_cpu_time());
+      using Duration =
+          decltype(std::declval<TimeStamp>() - std::declval<TimeStamp>());
+      //************************************************************************
+
+      //**Timing functions******************************************************
       /*!\name Timing functions */
       //@{
-      static inline double get_time_stamp();
+
+      //************************************************************************
+      /*!\brief Returns a timestamp of the current CPU time in seconds.
+       *
+       * \return CPU timestamp in seconds.
+       */
+      static inline auto get_time_stamp() -> TimeStamp {
+        return get_cpu_time();
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Converts a duration into seconds
+       */
+      static inline auto to_seconds(Duration duration) -> double {
+        return duration / static_cast<double>(CLOCKS_PER_SEC);
+      }
+      //************************************************************************
+
       //@}
-      //**********************************************************************************************
+      //************************************************************************
     };
-    //*************************************************************************************************
-
-    //=================================================================================================
-    //
-    //  TIMING FUNCTIONS
-    //
-    //=================================================================================================
-
-    //*************************************************************************************************
-    /*!\brief Returns a timestamp of the current CPU time in seconds.
-     *
-     * \return CPU timestamp in seconds.
-     */
-    inline double CpuPolicy::get_time_stamp() { return get_cpu_time(); }
-    //*************************************************************************************************
+    //**************************************************************************
 
   }  // namespace timing
 
