@@ -132,10 +132,6 @@ Some examples provide additional file or link to published paper for a complete 
     * __Features__:
         * `blocks::metadata`
 
-* [`print_algorithm`](./print_algorithm)
-    * __Name__: Print algorithm
-    * __Purpose__: Prints the algorithm executed by the simulator in a human readable format
-
 * [`algorithm_metadata`](./algorithm_metadata)
     * __Name__: Print algorithm in a human readable format
     * __Purpose__: Prints the algorithm executed by the simulator
