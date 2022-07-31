@@ -56,7 +56,11 @@ namespace {
             blaze::row<2UL>(::elastica::identity3()));
       CHECK(p.get_velocity() == ::elastica::Vec3{0., 0., 0.});
       CHECK(p.get_angular_velocity() == ::elastica::Vec3{0., 0., 0.});
+      // update material too
+      CHECK(p.get_material() == ::elastica::iron);
     };
+
+    ::blocks::get<::elastica::tags::Material>(model) = ::elastica::iron;
 
     std::for_each(elastica::make_counting_iterator(0UL),
                   elastica::make_counting_iterator(n_slices),

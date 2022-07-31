@@ -67,7 +67,8 @@ namespace elastica {
       //**Get functions*********************************************************
       /*!\name Get functions */
       //@{
-      inline MaterialID get_material() const;
+      inline void set_material(MaterialID m) noexcept;
+      inline MaterialID get_material() const noexcept;
       //@}
       //************************************************************************
 
@@ -107,7 +108,18 @@ namespace elastica {
      *
      * \return The coefficient of restitution of the rigid body.
      */
-    inline MaterialID GeomPrimitive::get_material() const { return material_; }
+    inline MaterialID GeomPrimitive::get_material() const noexcept {
+      return material_;
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Set the material of the geometric primitive.
+     *
+     */
+    inline void GeomPrimitive::set_material(MaterialID m) noexcept {
+      material_ = m;
+    }
     //**************************************************************************
 
   }  // namespace collision

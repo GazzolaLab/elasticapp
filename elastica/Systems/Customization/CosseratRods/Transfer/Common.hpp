@@ -88,6 +88,7 @@ namespace elastica {
                                    (collection.get_mass(index) +
                                     collection.get_mass(index + 1UL))},
                   ::elastica::Vec3{collection.get_angular_velocity(index)});
+              primitive.set_material(collection.get_material(index));
               ++index;
             });
       }
