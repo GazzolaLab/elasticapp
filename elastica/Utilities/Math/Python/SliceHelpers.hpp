@@ -21,10 +21,10 @@
 //
 #include <blaze/math/DynamicMatrix.h>
 #include <blaze/math/DynamicVector.h>
-#include <blaze/math/SubMatrix.h>
-#include <blaze/math/SubVector.h>
+#include <blaze/math/Submatrix.h>
+#include <blaze/math/Subvector.h>
 #include <blaze_tensor/math/DynamicTensor.h>
-#include <blaze_tensor/math/SubTensor.h>
+#include <blaze_tensor/math/Subtensor.h>
 //
 #include <pybind11/pybind11.h>
 //

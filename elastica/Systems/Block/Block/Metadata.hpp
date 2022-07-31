@@ -26,6 +26,8 @@
 //
 #include <ostream>
 #include <string>
+#include <algorithm> // transform
+#include <iterator> // move iterator
 #include <utility>  // move, pair
 #include <vector>
 
