@@ -270,7 +270,7 @@ namespace elastica {
             rot_axis_vector.columns() == normalize_vector.size(),
             "Invariance in number of dofs in voronoi-regions violated");
 
-        using Op = detail::InvRotateDivideOp<detail::InvRotateDivideKind::simd>;
+        using Op = detail::InvRotateDivideOp<detail::InvRotateDivideKind::scalar>;
         Op::apply(rot_axis_vector, rot_matrix, normalize_vector);
       }
 
