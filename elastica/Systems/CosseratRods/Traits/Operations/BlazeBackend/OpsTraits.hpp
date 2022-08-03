@@ -135,6 +135,21 @@ namespace elastica {
               blaze::sum<blaze::columnwise>(val % vector_batch);
         }
       }
+      template <typename MT1,  // blaze Matrix expression type 1
+          typename TT,   // blaze Tensor expression type
+          typename MT2,  // blaze Matrix expression type 2
+          typename VT>
+      static inline void batch_matvec_scale(MT1& matvec_batch,
+                                            const TT& matrix_batch,
+                                            const MT2& vector_batch,
+                                            const VT& scale_batch) {
+        constexpr std::size_t dimension(3UL);
+        for (std::size_t i(0UL); i < dimension; ++i) {
+          blaze::row(matvec_batch, i) =
+              blaze::sum<blaze::columnwise>(blaze::pageslice(matrix_batch, i) %
+                                            vector_batch) * blaze::trans(scale_batch);
+        }
+      }
 
       template <typename M1, typename M2, typename M3>
       static inline void batch_matmul(M1& matmul_batch,

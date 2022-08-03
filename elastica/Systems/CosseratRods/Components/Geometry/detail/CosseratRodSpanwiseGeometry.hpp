@@ -482,13 +482,9 @@ namespace elastica {
                 blocks::get<::elastica::tags::ElementDilatation>(bl));
             auto& director(blocks::get<::elastica::tags::Director>(bl));
             auto& tangent(blocks::get<::elastica::tags::Tangent>(bl));
-            auto expanded_transposed_EDC =
-                Traits::Operations::expand_for_broadcast(
-                    Traits::Operations::transpose(element_dilatation));
-            Traits::Operations::batch_matvec(
-                shear_stretch_strains, director,
-                tangent % expanded_transposed_EDC  // matvecexpr
-            );
+
+            Traits::Operations::batch_matvec_scale(
+                shear_stretch_strains, director, tangent, element_dilatation);
             Traits::Operations::batch_subtract_z_unit(shear_stretch_strains);
           }
 
