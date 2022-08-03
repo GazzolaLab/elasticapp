@@ -136,7 +136,7 @@ namespace elastica {
              * and prefactor
              * 0.5 * sin(theta) / theta / d_i
              */
-            constexpr T acos_constant(T(0.5) + T(1e-11));
+            constexpr T acos_constant(T(0.5) + T(1e-10));
 #if BLAZE_SVML_MODE || BLAZE_SLEEF_MODE
 
             SIMDType const theta = ::blaze::acos(half_rot_matrix_trace -
