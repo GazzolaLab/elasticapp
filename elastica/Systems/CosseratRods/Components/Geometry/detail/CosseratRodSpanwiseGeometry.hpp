@@ -396,6 +396,8 @@ namespace elastica {
               // position difference
               auto& position(
                   blocks::get<::elastica::tags::Position>(downstream_block));
+              auto& dilatation(blocks::get<::elastica::tags::ElementDilatation>(
+                  downstream_block));
               auto position_diff =
                   Traits::Operations::difference_kernel(position);
 
@@ -414,7 +416,7 @@ namespace elastica {
               // reference_length_collection =
               // Traits::Operations::batch_norm(position_diff);
               reference_length_collection =
-                  Traits::Operations::batch_norm(position_diff);
+                  Traits::Operations::batch_norm(position_diff) / dilatation;
 
               // reference_voronoi_length_collection
               auto& reference_voronoi_length_collection(
@@ -425,8 +427,6 @@ namespace elastica {
                       reference_length_collection);
 
               // element_dilatation
-              auto& dilatation(blocks::get<::elastica::tags::ElementDilatation>(
-                  downstream_block));
               dilatation =
                   element_length_collection / reference_length_collection;
 
