@@ -12,32 +12,38 @@ find_path(BLAZE_TENSOR_INCLUDE_DIR
         DOC "Blaze Tensor include directory. Used BLAZE_TENSOR_ROOT to set a search dir.")
 
 set(BLAZE_TENSOR_INCLUDE_DIRS ${BLAZE_TENSOR_INCLUDE_DIR})
+set(BLAZE_TENSOR_VERSION "")
 
-# Extract version info from header
-file(READ "${BLAZE_TENSOR_INCLUDE_DIRS}/blaze_tensor/system/Version.h"
-        BLAZE_TENSOR_FIND_HEADER_CONTENTS)
+if (EXISTS "${BLAZE_TENSOR_INCLUDE_DIRS}/blaze_tensor/system/Version.h")
+    # Extract version info from header
+    file(READ "${BLAZE_TENSOR_INCLUDE_DIRS}/blaze_tensor/system/Version.h"
+            BLAZE_TENSOR_FIND_HEADER_CONTENTS)
 
-string(REGEX MATCH
-        "#define BLAZE_TENSOR_MAJOR_VERSION [0-9]+"
-        BLAZE_TENSOR_MAJOR_VERSION
-        "${BLAZE_TENSOR_FIND_HEADER_CONTENTS}")
-string(REPLACE "#define BLAZE_TENSOR_MAJOR_VERSION "
-        ""
-        BLAZE_TENSOR_MAJOR_VERSION
-        ${BLAZE_TENSOR_MAJOR_VERSION})
+    string(REGEX MATCH
+            "#define BLAZE_TENSOR_MAJOR_VERSION [0-9]+"
+            BLAZE_TENSOR_MAJOR_VERSION
+            "${BLAZE_TENSOR_FIND_HEADER_CONTENTS}")
+    string(REPLACE "#define BLAZE_TENSOR_MAJOR_VERSION "
+            ""
+            BLAZE_TENSOR_MAJOR_VERSION
+            ${BLAZE_TENSOR_MAJOR_VERSION})
 
-string(REGEX MATCH
-        "#define BLAZE_TENSOR_MINOR_VERSION [0-9]+"
-        BLAZE_TENSOR_MINOR_VERSION
-        "${BLAZE_TENSOR_FIND_HEADER_CONTENTS}")
-string(REPLACE "#define BLAZE_TENSOR_MINOR_VERSION "
-        ""
-        BLAZE_TENSOR_MINOR_VERSION
-        ${BLAZE_TENSOR_MINOR_VERSION})
+    string(REGEX MATCH
+            "#define BLAZE_TENSOR_MINOR_VERSION [0-9]+"
+            BLAZE_TENSOR_MINOR_VERSION
+            "${BLAZE_TENSOR_FIND_HEADER_CONTENTS}")
+    string(REPLACE "#define BLAZE_TENSOR_MINOR_VERSION "
+            ""
+            BLAZE_TENSOR_MINOR_VERSION
+            ${BLAZE_TENSOR_MINOR_VERSION})
 
-set(BLAZE_TENSOR_VERSION "${BLAZE_TENSOR_MAJOR_VERSION}.${BLAZE_TENSOR_MINOR_VERSION}")
+    set(BLAZE_TENSOR_VERSION "${BLAZE_TENSOR_MAJOR_VERSION}.${BLAZE_TENSOR_MINOR_VERSION}")
 
-set(Blaze_TENSOR_VERSION "${BLAZE_TENSOR_MAJOR_VERSION}.${BLAZE_TENSOR_MINOR_VERSION}")
+else ()
+    message(WARNING "Failed to find file "
+            "'${BLAZE_TENSOR_INCLUDE_DIRS}/blaze_tensor/system/Version.h' "
+            "while detecting the BlazeTensor version.")
+endif ()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(BlazeTensor
