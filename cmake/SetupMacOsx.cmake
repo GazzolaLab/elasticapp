@@ -4,6 +4,11 @@
 
 # https://stackoverflow.com/a/19819591
 if (APPLE)
+	  # The -fvisibility=hidden flag is necessary to eliminate warnings
+	   # when building on Apple Silicon
+	   if("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64")
+	     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
+	   endif()
     set(ELASTICA_MACOSX_MIN "10.9")
     if (DEFINED MACOSX_MIN)
         set(ELASTICA_MACOSX_MIN "${MACOSX_MIN}")

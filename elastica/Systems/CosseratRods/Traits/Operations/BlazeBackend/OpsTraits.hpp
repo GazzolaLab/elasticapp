@@ -1,3 +1,4 @@
+
 #pragma once
 
 //******************************************************************************
@@ -255,7 +256,15 @@ namespace elastica {
             rot_axis_vector.columns() == normalize_vector.size(),
             "Invariance in number of dofs in voronoi-regions violated");
 
-        using Op = detail::InvRotateDivideOp<detail::InvRotateDivideKind::simd>;
+#if defined(__APPLE__) && defined(__arm64__)
+        // SIMD instructions are not available in Apple silicon, so fall
+        // back to scalar instructions
+        constexpr auto backend = detail::InvRotateDivideKind::scalar;
+#else
+        constexpr auto backend = detail::InvRotateDivideKind::simd;
+#endif 
+
+        using Op = detail::InvRotateDivideOp<backend>;
         Op::apply(rot_axis_vector, rot_matrix, normalize_vector);
       }
 

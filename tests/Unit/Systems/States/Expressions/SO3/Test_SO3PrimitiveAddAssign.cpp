@@ -74,25 +74,32 @@ namespace {
     }
 
     SECTION("Add assign scalar version") {
+      constexpr auto backend = detail::SO3AddAssignKind::scalar;
+      
       auto input(temp_to_synch);
-      detail::SO3AddAssign<detail::SO3AddAssignKind::scalar>::apply(input,
-                                                                    rhs_vector);
+      detail::SO3AddAssign<backend>::apply(input, rhs_vector);
       CHECK_ITERABLE_APPROX(to_vec(input), to_vec(expected_result1));
 
-      detail::SO3AddAssign<detail::SO3AddAssignKind::scalar>::apply(input,
-                                                                    rhs_vector);
+      detail::SO3AddAssign<backend>::apply(input, rhs_vector);
       CHECK_ITERABLE_APPROX(to_vec(input), to_vec(expected_result2));
     }
 
     // TODO : Fix issue #7, #37
     SECTION("Add assign SIMD version") {
       auto input(temp_to_synch);
-      detail::SO3AddAssign<detail::SO3AddAssignKind::simd>::apply(input,
-                                                                  rhs_vector);
+#if defined(__APPLE__) && defined(__arm64__)
+        // SIMD instructions are not available in Apple silicon, so fall
+        // back to scalar instructions
+        constexpr auto backend = detail::SO3AddAssignKind::scalar;
+#else
+        constexpr auto backend = detail::SO3AddAssignKind::simd;
+#endif 
+
+
+      detail::SO3AddAssign<backend>::apply(input, rhs_vector);
       CHECK_ITERABLE_APPROX(to_vec(input), to_vec(expected_result1));
 
-      detail::SO3AddAssign<detail::SO3AddAssignKind::simd>::apply(input,
-                                                                  rhs_vector);
+      detail::SO3AddAssign<backend>::apply(input, rhs_vector);
       CHECK_ITERABLE_APPROX(to_vec(input), to_vec(expected_result2));
     }
   }

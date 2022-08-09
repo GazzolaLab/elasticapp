@@ -40,8 +40,16 @@ namespace elastica {
       SO3_primitive_assign(lhs_matrix_batch, temp_to_synch, rhs_vector);
       */
 
-      detail::SO3AddAssign<detail::SO3AddAssignKind::scalar>::apply(
-          lhs_matrix_batch, rhs_vector);
+#if defined(__APPLE__) && defined(__arm64__)
+        // SIMD instructions are not available in Apple silicon, so fall
+        // back to scalar instructions
+        constexpr auto backend = detail::SO3AddAssignKind::scalar;
+#else
+        // Scalar chosen because it seems the fastest, for now
+        constexpr auto backend = detail::SO3AddAssignKind::scalar;
+#endif 
+
+      detail::SO3AddAssign<backend>::apply(lhs_matrix_batch, rhs_vector);
     }
 
   }  // namespace states
