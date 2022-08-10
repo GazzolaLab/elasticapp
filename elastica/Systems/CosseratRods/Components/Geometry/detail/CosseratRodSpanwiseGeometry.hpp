@@ -391,66 +391,28 @@ namespace elastica {
                   }
                 });
 
-            // 3. Finally do the computed variables (Initialization)
+            // 3. Computed reference variables
+            //  - ReferenceElementLength
+            //  - ReferenceVoronoiLength
             {
-              // position difference
-              auto& position(
-                  blocks::get<::elastica::tags::Position>(downstream_block));
-              auto& dilatation(blocks::get<::elastica::tags::ElementDilatation>(
-                  downstream_block));
-              auto position_diff =
-                  Traits::Operations::difference_kernel(position);
+              using ::elastica::tags::Position;
+              using ::elastica::tags::ElementDilatation;
+              using ::elastica::tags::ReferenceElementLength;
+              using ::elastica::tags::ReferenceVoronoiLength;
+              auto& position(blocks::get<Position>(downstream_block));
+              auto& dilatation(
+                  blocks::get<ElementDilatation>(downstream_block));
+              auto& reference_length(
+                  blocks::get<ReferenceElementLength>(downstream_block));
+              auto& reference_voronoi_length(
+                  blocks::get<ReferenceVoronoiLength>(downstream_block));
 
-              // element_length_collection
-              auto& element_length_collection(
-                  blocks::get<::elastica::tags::ElementLength>(
-                      downstream_block));
-              element_length_collection =
-                  Traits::Operations::batch_norm(position_diff) +
-                  1e-14;  // To match pyelastica
-
-              // reference_length_collection
-              auto& reference_length_collection(
-                  blocks::get<::elastica::tags::ReferenceElementLength>(
-                      downstream_block));
-              // reference_length_collection =
-              // Traits::Operations::batch_norm(position_diff);
-              reference_length_collection =
+              auto position_diff(
+                  Traits::Operations::difference_kernel(position));
+              reference_length =
                   Traits::Operations::batch_norm(position_diff) / dilatation;
-
-              // reference_voronoi_length_collection
-              auto& reference_voronoi_length_collection(
-                  blocks::get<::elastica::tags::ReferenceVoronoiLength>(
-                      downstream_block));
-              reference_voronoi_length_collection =
-                  Traits::Operations::average_kernel(
-                      reference_length_collection);
-
-              // element_dilatation
-              dilatation =
-                  element_length_collection / reference_length_collection;
-
-              // voronoi_length_collection
-              auto& voronoi_length_collection(
-                  blocks::get<::elastica::tags::VoronoiLength>(
-                      downstream_block));
-              voronoi_length_collection =
-                  Traits::Operations::average_kernel(element_length_collection);
-
-              // voronoi_dilatation
-              auto& voronoi_dilatation(
-                  blocks::get<::elastica::tags::VoronoiDilatation>(
-                      downstream_block));
-              voronoi_dilatation = voronoi_length_collection /
-                                   reference_voronoi_length_collection;
-
-              // tangent_collection
-              auto& tangent_collection(
-                  blocks::get<::elastica::tags::Tangent>(downstream_block));
-              // tangent_collection = position_diff /
-              // reference_length_collection;
-              Traits::Operations::batch_division_matvec(
-                  tangent_collection, position_diff, element_length_collection);
+              reference_voronoi_length =
+                  Traits::Operations::average_kernel(reference_length);
             }
           }
           //********************************************************************

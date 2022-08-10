@@ -309,7 +309,7 @@ namespace elastica {
                   }
                 });
 
-            // 3. Computed tags
+            // 3. Computed tags (<conserved> volumes)
             {
               auto& volumes(blocks::get<::elastica::tags::ElementVolume>(
                   downstream_block));
@@ -322,6 +322,7 @@ namespace elastica {
               volumes = compute_cross_section_area(dimensions) * ref_lengths;
             }
 
+            // 4. Update rest of the tags
             {
               downstream_block.compute_shear_strains();
               downstream_block.compute_curvature();
@@ -521,61 +522,50 @@ namespace elastica {
           // \return void/None
           //
           */
+
           void
-          compute_translation_diagnostics() noexcept {  // TODO: maybe rewriting
-                                                        // code is not a good
-                                                        // idea. try to collapse
-                                                        // with the code in
-                                                        // spanwise geometry.
+          compute_translation_diagnostics() noexcept {
             // Compute eq (3.3) from 2018 RSOS paper
             // 0. Create reference variables
             auto& position(blocks::get<::elastica::tags::Position>(self()));
-            // auto& director(blocks::get<::elastica::tags::Director>(self()));
+            auto& element_length(blocks::get<tags::ElementLength>(self()));
+            auto& dilatation(blocks::get<tags::ElementDilatation>(self()));
+            auto& reference_length(
+                blocks::get<tags::ReferenceElementLength>(self()));
+            auto& tangent(blocks::get<tags::Tangent>(self()));
+            auto& voronoi_length(
+                blocks::get<::elastica::tags::VoronoiLength>(self()));
+            auto& voronoi_dilatation(
+                blocks::get<tags::VoronoiDilatation>(self()));
+            auto& reference_voronoi_length(
+                blocks::get<tags::ReferenceVoronoiLength>(self()));
+            auto& volume(blocks::get<tags::ElementVolume>(self()));
+            auto& dimensions(blocks::get<tags::ElementDimension>(self()));
 
             // 1. Compute new lengths
             auto position_diff(Traits::Operations::difference_kernel(position));
-            auto& element_length_collection(
-                blocks::get<tags::ElementLength>(self()));
-            element_length_collection =
+            element_length =
                 Traits::Operations::batch_norm(position_diff) + 1e-14;
 
             // 2. Update tangents
-            auto& tangent_collection(blocks::get<tags::Tangent>(self()));
-            auto& reference_length_collection(
-                blocks::get<tags::ReferenceElementLength>(self()));
             // before division by element_length, I fill ghosts so that
             // enable_floating_point exceptions do not throw a raise by 0 error
             self().template fill_ghosts_for<tags::ElementLength>();
-            Traits::Operations::batch_division_matvec(
-                tangent_collection, position_diff,
-                element_length_collection);  // TODO should be length_collection
+            Traits::Operations::batch_division_matvec(tangent, position_diff,
+                                                      element_length);
 
             // 3. Compute new radius based on above lengths
             // volume conservation
-            auto& volume_collection(blocks::get<tags::ElementVolume>(self()));
-            auto& dimensions_collection(
-                blocks::get<tags::ElementDimension>(self()));
-            dimensions_collection = CrossSection::update_dimension(
-                volume_collection, element_length_collection);
+            dimensions = CrossSection::update_dimension(volume, element_length);
 
             // 4. Compute dilatation of elements
-            auto& element_dilatation_collection(
-                blocks::get<tags::ElementDilatation>(self()));
-            element_dilatation_collection =
-                element_length_collection / reference_length_collection;
+            dilatation = element_length / reference_length;
 
             // 5. Compute voronoi length
-            auto& voronoi_length_collection(
-                blocks::get<::elastica::tags::VoronoiLength>(self()));
-            voronoi_length_collection =
-                Traits::Operations::average_kernel(element_length_collection);
+            voronoi_length = Traits::Operations::average_kernel(element_length);
 
             // 6. Compute dilatation of voronoi regions
-            auto& voronoi_dilatation(
-                blocks::get<tags::VoronoiDilatation>(self()));
-            voronoi_dilatation =
-                blocks::get<tags::VoronoiLength>(self()) /
-                blocks::get<tags::ReferenceVoronoiLength>(self());
+            voronoi_dilatation = voronoi_length / reference_voronoi_length;
           }
 
          public:
