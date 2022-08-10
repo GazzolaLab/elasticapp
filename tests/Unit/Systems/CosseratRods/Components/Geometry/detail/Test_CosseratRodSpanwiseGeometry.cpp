@@ -115,8 +115,8 @@ namespace {
     auto expected_call_count = make_array(11U, 10U, 9U, 10U, 10U, 0U);
     CHECK_ITERABLE_APPROX(n_times_called, expected_call_count);
 
-    CHECK(model.get_element_length() == blaze::sqrt(3.0));
-    CHECK(model.get_reference_element_length() == blaze::sqrt(3.0));
+    CHECK(model.get_element_length() == sqrt(3.0));
+    CHECK(model.get_reference_element_length() == sqrt(3.0));
     CHECK(model.get_reference_curvature() == 1.0);
     CHECK(model.get_reference_shear_stretch_strain() == 1.0);
   }
