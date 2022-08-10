@@ -310,7 +310,6 @@ namespace elastica {
                 });
 
             // 3. Computed tags
-
             {
               auto& volumes(blocks::get<::elastica::tags::ElementVolume>(
                   downstream_block));
@@ -321,6 +320,11 @@ namespace elastica {
                       downstream_block));
 
               volumes = compute_cross_section_area(dimensions) * ref_lengths;
+            }
+
+            {
+              downstream_block.compute_shear_strains();
+              downstream_block.compute_curvature();
             }
           }
           //********************************************************************

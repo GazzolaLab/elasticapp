@@ -451,13 +451,6 @@ namespace elastica {
               // reference_length_collection;
               Traits::Operations::batch_division_matvec(
                   tangent_collection, position_diff, element_length_collection);
-
-              // curvature_collection (kappa)
-              This::update_curvature(downstream_block);
-
-              // shear_stretch_strains_collection (sigma)
-              // eqt-z
-              This::update_shear_stretch_strain(downstream_block);
             }
           }
           //********************************************************************
