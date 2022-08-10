@@ -276,7 +276,7 @@ namespace elastica {
         // back to scalar instructions
         constexpr auto backend = detail::InvRotateDivideKind::scalar;
 #else
-        constexpr auto backend = detail::InvRotateDivideKind::simd;
+        constexpr auto backend = detail::InvRotateDivideKind::scalar;
 #endif
 
         using Op = detail::InvRotateDivideOp<backend>;
