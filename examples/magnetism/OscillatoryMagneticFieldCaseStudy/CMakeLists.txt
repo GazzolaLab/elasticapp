@@ -30,4 +30,4 @@ add_elastica_case_study(PyOscillatoryMagneticFieldCaseStudy
         )
 #
 elastica_python_link_libraries(PyOscillatoryMagneticFieldCaseStudy PRIVATE Blaze)
-elastica_python_add_dependencies(PyOscillatoryMagneticFieldCaseStudy PyBlaze)
+elastica_python_add_dependencies(PyOscillatoryMagneticFieldCaseStudy PyArrays)
