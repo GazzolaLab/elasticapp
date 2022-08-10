@@ -322,19 +322,6 @@ namespace elastica {
 
               volumes = compute_cross_section_area(dimensions) * ref_lengths;
             }
-
-            {
-              // element dimenaion
-              auto& volume_collection(
-                  blocks::get<tags::ElementVolume>(downstream_block));
-              auto& dimensions_collection(
-                  blocks::get<tags::ElementDimension>(downstream_block));
-              auto& element_length_collection(
-                  blocks::get<::elastica::tags::ElementLength>(
-                      downstream_block));
-              dimensions_collection = This::update_dimension(
-                  volume_collection, element_length_collection);
-            }
           }
           //********************************************************************
 
