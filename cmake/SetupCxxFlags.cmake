@@ -32,10 +32,13 @@ if (NOT "${OVERRIDE_ARCH}" STREQUAL "OFF")
             INTERFACE_COMPILE_OPTIONS
             $<$<COMPILE_LANGUAGE:CXX>:-march=${OVERRIDE_ARCH}>)
 else ()
-    set_property(TARGET ElasticaFlags
-            APPEND PROPERTY
-            INTERFACE_COMPILE_OPTIONS
-            $<$<COMPILE_LANGUAGE:CXX>:-march=native>)
+	# Apple silicon does not support the march native flag in all compilers.
+    if(NOT APPLE OR NOT "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64")
+	    set_property(TARGET ElasticaFlags
+		    APPEND PROPERTY
+		    INTERFACE_COMPILE_OPTIONS
+		    $<$<COMPILE_LANGUAGE:CXX>:-march=native>)
+    endif()
 endif ()
 
 # We always want a detailed backtrace of template errors to make debugging them

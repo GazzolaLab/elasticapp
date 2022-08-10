@@ -94,8 +94,16 @@ namespace {
     }
 
     SECTION("SIMD version") {
+#if defined(__APPLE__) && defined(__arm64__)
+        // SIMD instructions are not available in Apple silicon, so fall
+        // back to scalar instructions
+        constexpr auto backend = detail::InvRotateDivideKind::scalar;
+#else
+        constexpr auto backend = detail::InvRotateDivideKind::simd;
+#endif 
+
       using TestOp =
-          detail::InvRotateDivideOp<detail::InvRotateDivideKind::simd>;
+          detail::InvRotateDivideOp<backend>;
 
       Vector::data_type test_rot_axis_vector_batch(dimension, n_elems - 1UL);
 
