@@ -63,7 +63,7 @@ namespace {
   }
   ELASTICA_TEST_CASE(
       // clang-format: off
-      "Unit.Systems.CosseratRods.Traits.Operations.inv_rotate_divide.scalar.circle_in_two_dimensions.anti_clockwise",
+      "Unit.Systems.CosseratRods.Traits.Operations.inv_rotate_divide.scalar.circle_in_two_dimensions",
       "[Systems][Unit]") {
     // https://github.com/GazzolaLab/PyElastica/blob/583c4aec28573d1c88442812a6cea92416d38939/tests/test_math/test_rotations.py#L256
     // clang-format: on
@@ -78,73 +78,25 @@ namespace {
     constexpr std::size_t dimension(3UL);
     constexpr std::size_t n_elem(512UL);
 
-    // Anti-Clockwise
-    Scalar::data_type theta = blaze::linspace(n_elem, 0.0, 2.0*M_PI);
-    Vec3 axis_of_rotation{{0.0}, {0.0}, {-1.0}};
+    Scalar::data_type theta;
+    Vec3 axis_of_rotation;
 
-    const real_t dtheta_di(
-        blaze::abs(theta[1UL] - theta[0UL]));
-
-    Matrix::data_type director(dimension, dimension, n_elem);
-
-    // Normal Direction
-    blaze::row(blaze::pageslice(director, 0UL), 0UL) =
-        -blaze::trans(blaze::cos(theta));
-    blaze::row(blaze::pageslice(director, 0UL), 1UL) =
-        -blaze::trans(blaze::sin(theta));
-
-    // Tangent Direction
-    blaze::row(blaze::pageslice(director, 1UL), 0UL) =
-        -blaze::trans(blaze::sin(theta));
-    blaze::row(blaze::pageslice(director, 1UL), 1UL) =
-        blaze::trans(blaze::cos(theta));
-
-    // D3 Direction
-    blaze::row(blaze::pageslice(director, 2UL), 2UL) = -1.0;
-
-    const elastica::real_t ratio = 1.00;
-    Scalar::data_type normalize_vector(n_elem-1);
-    normalize_vector = ratio;
-
-    Vector::data_type test_axis_collection(dimension, n_elem-1);
-    Op::apply(test_axis_collection, director, normalize_vector);
-
-    CHECK(test_axis_collection.columns() == n_elem-1);
-    CHECK(test_axis_collection.rows() == dimension);
-
-    for (std::size_t i(0UL); i < n_elem-1UL; ++i){
-      auto test_axis = Vector::slice(test_axis_collection, i);
-      const elastica::real_t test_scaling = blaze::l2Norm(test_axis);
-      CHECK_ITERABLE_CUSTOM_APPROX(test_axis / test_scaling, axis_of_rotation,
-                                   approx);
-      CHECK(test_scaling == approx(dtheta_di));
+    SECTION("Anti-Clockwise") {
+      // Anti-Clockwise
+      theta = blaze::linspace(n_elem, 0.0, 2.0 * M_PI);
+      axis_of_rotation = {{0.0}, {0.0}, {-1.0}};
     }
-  }
-  ELASTICA_TEST_CASE(
-      // clang-format: off
-      "Unit.Systems.CosseratRods.Traits.Operations.inv_rotate_divide.scalar.circle_in_two_dimensions.clockwise",
-      "[Systems][Unit]") {
-    // https://github.com/GazzolaLab/PyElastica/blob/583c4aec28573d1c88442812a6cea92416d38939/tests/test_math/test_rotations.py#L256
-    // clang-format: on
-    using namespace ::elastica::cosserat_rod;
-    using ::elastica::real_t;
-    using ::elastica::Vec3;
-    using Op = detail::InvRotateDivideOp<detail::InvRotateDivideKind::scalar>;
-
-    Approx approx = Approx::custom();
-    approx.margin(1.0e-16);
-
-    constexpr std::size_t dimension(3UL);
-    constexpr std::size_t n_elem(512UL);
-
-    // Clockwise
-    Scalar::data_type theta = blaze::linspace(n_elem, 2.0*M_PI, 0.0);
-    Vec3 axis_of_rotation{{0.0}, {0.0}, {1.0}};
+    SECTION("Clockwise") {
+      // Anti-Clockwise
+      theta = blaze::linspace(n_elem, 2.0 * M_PI, 0.0);
+      axis_of_rotation = {{0.0}, {0.0}, {1.0}};
+    }
 
     const real_t dtheta_di(
         blaze::abs(theta[1UL] - theta[0UL]));
 
     Matrix::data_type director(dimension, dimension, n_elem);
+    director = 0.0;
 
     // Normal Direction
     blaze::row(blaze::pageslice(director, 0UL), 0UL) =
