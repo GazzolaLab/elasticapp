@@ -77,11 +77,11 @@ namespace elastica {
              */
             // can be reduced but whatever
             T const rot_matrix_trace =
-                Q_curr[0] * Q_next[0] + Q_curr[1] * Q_next[1] +
-                Q_curr[2] * Q_next[2] + Q_curr[3] * Q_next[3] +
-                Q_curr[4] * Q_next[4] + Q_curr[5] * Q_next[5] +
-                Q_curr[6] * Q_next[6] + Q_curr[7] * Q_next[7] +
-                Q_curr[8] * Q_next[8];
+                (Q_curr[0] * Q_next[0] + Q_curr[1] * Q_next[1] +
+                Q_curr[2] * Q_next[2]) + (Q_curr[3] * Q_next[3] +
+                Q_curr[4] * Q_next[4] + Q_curr[5] * Q_next[5]) +
+                (Q_curr[6] * Q_next[6] + Q_curr[7] * Q_next[7] +
+                Q_curr[8] * Q_next[8]);
 
             constexpr T rest(T(0.5) + T(1e-10));
             T const theta = std::acos(T(0.5) * rot_matrix_trace - rest);
