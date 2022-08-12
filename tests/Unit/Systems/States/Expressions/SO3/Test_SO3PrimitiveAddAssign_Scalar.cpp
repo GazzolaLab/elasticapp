@@ -34,8 +34,9 @@ namespace {
     // https://github.com/GazzolaLab/PyElastica/blob/583c4aec28573d1c88442812a6cea92416d38939/tests/test_math/test_rotations.py#L184
     using namespace elastica::states;
 
-    Approx approx = Approx::custom().epsilon(
-        std::numeric_limits<double>::epsilon() * 10).margin(1e-16);
+    Approx approx = Approx::custom()
+                        .epsilon(1.2e-12)
+                        .margin(1e-17);
 
     const std::size_t n_elem(1UL);
     const std::size_t dimension(3UL);
@@ -50,18 +51,21 @@ namespace {
     const real_t sint = std::sin(test_theta);
 
     SECTION("z-axis") {
+      vector_collection = 0.0;
       blaze::row(vector_collection, 2UL) = test_theta;
       correct_rot_mat = {{{cost}, {sint}, {0.0}},
                          {{-sint}, {cost}, {0.0}},
                          {{0.0}, {0.0}, {1.0}}};
     }
     SECTION("y-axis") {
+      vector_collection = 0.0;
       blaze::row(vector_collection, 1UL) = test_theta;
       correct_rot_mat = {{{cost}, {0.0}, {-sint}},
                          {{0.0}, {1.0}, {0.0}},
                          {{sint}, {0.0}, {cost}}};
     }
     SECTION("x-axis") {
+      vector_collection = 0.0;
       blaze::row(vector_collection, 0UL) = test_theta;
       correct_rot_mat = {{{1.0}, {0.0}, {0.0}},
                          {{0.0}, {cost}, {sint}},
@@ -75,16 +79,18 @@ namespace {
     // Operation
     constexpr auto backend = detail::SO3AddAssignKind::scalar;
     detail::SO3AddAssign<backend>::apply(test_rot_mat,
-                                         vector_collection * test_theta);
+                                         vector_collection);
 
-    //    CHECK_ITERABLE_CUSTOM_APPROX(test_rot_mat, correct_rot_mat, approx);
     for (std::size_t i(0UL); i < dimension; ++i) {
-      auto test_row = blaze::row(blaze::pageslice(test_rot_mat, 0UL), i);
-      auto correct_row = blaze::row(blaze::pageslice(correct_rot_mat, 0UL), i);
+      auto test_row = blaze::row(blaze::columnslice(test_rot_mat, 0UL), i);
+      auto correct_row =
+          blaze::row(blaze::columnslice(correct_rot_mat, 0UL), i);
+
       CHECK_ITERABLE_CUSTOM_APPROX(test_row, correct_row, approx);
     }
-  }
 
-}  // namespace
+  }  // namespace
+}
 
 #endif  // ELASTICA_USE_BLAZE
+
