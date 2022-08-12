@@ -45,7 +45,7 @@ namespace {
     Vector::data_type vector_collection(dimension, n_elem);
     Matrix::data_type correct_rot_mat(dimension, dimension, n_elem);
 
-    auto test_theta_deg = GENERATE( range( -5.0, 5.0, 0.1) );
+    auto test_theta_deg = GENERATE(range(-89.0, 89.0, 0.5));
     test_theta = test_theta_deg * M_PI / 180.0;
     const real_t cost = std::cos(test_theta);
     const real_t sint = std::sin(test_theta);
