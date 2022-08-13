@@ -22,6 +22,7 @@
 
 #include "PythonBindingHelpers.hpp"
 #include "Utilities/Invoke.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TypeTraits/IsDetected.hpp"
 
@@ -60,9 +61,10 @@ namespace py_bindings {
         // class name
         pretty_type::short_name<CaseStudy>().c_str(),
         // docstring
+        // This hack is necessary to delay the symbols to python runtime
         std::string(CaseStudy::help).c_str());
 
-    // Only one initialize method as an entry point
+    // init taking POD arguments
     cpp17::apply(
         [&py_bound_case_study](auto... arg_name) {
           py_bound_case_study.def(
@@ -71,6 +73,23 @@ namespace py_bindings {
               py::arg(std::move(arg_name).c_str()).noconvert()...);
         },
         Initializer::generate_argument_metadata());
+
+    // init taking Params argument
+    py_bound_case_study.def(py::init([](Params<CaseStudy> const& params) {
+                              CaseStudy caseStudy;
+                              caseStudy.setup(params.data);
+                              return caseStudy;
+                            }),
+                            "Initializes case-study with its parameters",
+                            py::arg("params").noconvert());
+
+    // access params via class property
+    py_bound_case_study.def_property_readonly_static(
+        "params",
+        +[](const py::object& /* self */) {
+          return py::type::of<Params<CaseStudy>>();
+        },
+        "Case-study parameters");
 
     // Register the methods here, we need to know the interface here apriori
     // (see CaseStudyInterface)
@@ -105,6 +124,84 @@ namespace py_bindings {
              "Gets the current iteration of the simulation")
         .def("reset", &CaseStudy::reset_case_study,
              "Resets the current case study");
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  // Constructs parameters of a case-study from pod types
+  template <typename P>
+  static auto from_parameters() {
+    return cpp17::apply(
+        [](auto... parameters) {
+          // This is the actual function with compile-time fixed signature.
+          return [](tmpl::type_from<decltype(parameters)> const&... t) -> P {
+            return P::from_tuple(std::make_tuple(t...));
+          };
+        },
+        // tuple of tags
+        typename P::Parameters{});
+  };
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Binds the parameters for a case-study into a python module
+   * \ingroup python_bindings
+   *
+   * \tparam CaseStudy A user defined case-study whose parameters have to be
+   * parsed
+   */
+  template <typename CaseStudy>
+  void bind_case_study_parameters(pybind11::module& m) {
+    namespace py = pybind11;
+
+    // Define a case-study as a class
+    using Initializer = Initializer<CaseStudy>;
+    using Params = Params<CaseStudy>;
+
+    // This is just a tagged tuple
+    using type = Params;
+    using Parameters = typename type::tags_list;
+
+    py::class_<type> py_bound_case_study_parameters(
+        m,
+        // class name
+        (pretty_type::short_name<CaseStudy>() + "Parameters").c_str(),
+        // docstring
+        Initializer::generate_docstring().c_str());
+
+    // Default initializer
+    py_bound_case_study_parameters.def(py::init<>());
+    // Initializer for all types
+    {
+      cpp17::apply(
+          [&](auto... arg_name) {
+            py_bound_case_study_parameters.def(
+                pybind11::init(from_parameters<type>()),
+                py::arg(std::move(arg_name).c_str()).noconvert()...);
+          },
+          Initializer::generate_argument_metadata());
+    }
+
+    py_bound_case_study_parameters
+        // Print out the parameters as a formatted string
+        .def(
+            "__str__", +[](type const& self) {
+              // update
+              return std::string(MakeString{} << self);
+            });
+
+    // Register each variable as a property
+    tmpl::for_each<Parameters>([&py_bound_case_study_parameters](auto p) {
+      using Parameter = tmpl::type_from<decltype(p)>;
+      py_bound_case_study_parameters.def_property(
+          pretty_type::name<Parameter>().c_str(),
+          +[](type& self) { return ::tuples::get<Parameter>(self.data); },
+          +[](type& self, typename Parameter::type value) {
+            ::tuples::get<Parameter>(self.data) = value;
+          },
+          // This hack is necessary to delay the symbols to python runtime
+          std::string(Parameter::help).c_str());
+    });
   }
   //****************************************************************************
 

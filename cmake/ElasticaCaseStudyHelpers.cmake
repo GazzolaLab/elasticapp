@@ -129,8 +129,10 @@ PYBIND11_MODULE(_@CASE_STUDY_APPLICATION_NAME@, m) {  // NOLINT
     Classes
     -------
     @CASE_STUDY@
+    @CASE_STUDY@Parameters
     )pbdoc";
   py_bindings::bind_case_study<@CASE_STUDY@>(m);
+  py_bindings::bind_case_study_parameters<@CASE_STUDY@>(m);
 }
     ]] code @ONLY)
 

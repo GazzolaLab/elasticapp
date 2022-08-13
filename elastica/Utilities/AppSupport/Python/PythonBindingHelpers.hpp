@@ -16,14 +16,15 @@
 //******************************************************************************
 // Includes
 //******************************************************************************
-#include <string>
-#include <tuple>
-
 #include "Utilities/AsTaggedTuple.hpp"
 #include "Utilities/Invoke.hpp"
 #include "Utilities/NonCreatable.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
+//
+#include <ostream>
+#include <string>
+#include <tuple>
 
 namespace py_bindings {
 
@@ -154,6 +155,62 @@ namespace py_bindings {
     }
     //**************************************************************************
   };
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Helper that marks the parameters of a case-study in Python
+   * \ingroup python_bindings
+   *
+   * \tparam CaseStudy A user defined case-study
+   */
+  template <typename CaseStudy>
+  struct Params {
+    //**Type definitions********************************************************
+    //! Type of input to the Case study
+    using InputTypes = typename Initializer<CaseStudy>::InputTypes;
+    //! List of tags
+    using tags_list = typename InputTypes::tags_list;
+    //! Value types
+    using ValueTypes = typename Initializer<CaseStudy>::ValueTypes;
+    //! Parameter (tags) of the case study
+    using Parameters = typename Initializer<CaseStudy>::Parameters;
+    //**************************************************************************
+
+    //**************************************************************************
+    //! Default constructor
+    Params() : data(){};
+    //! Parameter constructor
+    explicit Params(InputTypes inputs) : data(std::move(inputs)){};
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Construction from tuple
+     */
+    static auto from_tuple(ValueTypes inputs) -> Params {
+      return Params(cpp17::apply(
+          [](auto... args) { return InputTypes(std::move(args)...); },
+          std::move(inputs)));
+    };
+    //**************************************************************************
+
+    //! parameter data
+    InputTypes data;
+  };
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Stream operator for Params
+   */
+  template <typename CaseStudy>
+  std::ostream& operator<<(std::ostream& os, Params<CaseStudy> const& params) {
+    os << "(";
+    tmpl::for_each<typename Params<CaseStudy>::tags_list>([&](auto t) {
+      using T = tmpl::type_from<decltype(t)>;
+      os << pretty_type::name<T>() << ":" << tuples::get<T>(params.data);
+      os << ",";
+    });
+    return os << ")";
+  }
   //****************************************************************************
 
 }  // namespace py_bindings
