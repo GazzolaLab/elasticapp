@@ -22,6 +22,7 @@
 #include "Systems/CosseratRods/Components/Elasticity.hpp"
 #include "Systems/CosseratRods/Components/Geometry.hpp"
 #include "Systems/CosseratRods/Components/Kinematics.hpp"
+#include "Systems/CosseratRods/Components/Names.hpp"
 #include "Systems/CosseratRods/Components/Tags.hpp"
 #include "Systems/CosseratRods/Components/helpers.hpp"
 

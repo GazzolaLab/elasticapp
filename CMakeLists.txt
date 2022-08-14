@@ -37,8 +37,9 @@ set(ELASTICA_PATCH_VERSION ${CMAKE_MATCH_1})
 set(ELASTICA_VERSION "${ELASTICA_MAJOR_VERSION}.${ELASTICA_MINOR_VERSION}.${ELASTICA_PATCH_VERSION}")
 set(ELASTICA_DESCRIPTION "Package to efficiently simulate soft-filaments on devices from your laptop to supercomputing clusters.")
 
+# C is added for the HDF5 dependency. HighFive also relies on C headers.
 project(elastica
-        LANGUAGES CXX
+        LANGUAGES CXX C
         VERSION ${ELASTICA_VERSION}
         DESCRIPTION ${ELASTICA_DESCRIPTION})
 
@@ -122,6 +123,7 @@ include(SetupBlaze)
 include(SetupBlazeTensor)
 include(SetupBrigand)
 include(SetupProfiling)
+include(SetupHighFive)
 include(SetupSMP)
 include(SetupStl)
 include(SetupYamlCpp)

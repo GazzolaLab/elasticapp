@@ -679,6 +679,26 @@ namespace elastica {
           //********************************************************************
         };
 
+        struct ApplyOverSystemsSeq {
+          //**Type definitions**************************************************
+          //! Type for tagged tuple
+          using type =
+              InvokeOverSystemsOp<::elastica::configuration::sequential_policy,
+                                  ::elastica::configuration::sequential_policy>;
+          //********************************************************************
+
+          //**Info method*******************************************************
+          static std::string metadata(
+              SystemsModule const& module_handle) noexcept {
+            return "Sequential fallback algorithm to " +
+                   update_algorithm_desc<
+                       ::elastica::configuration::sequential_policy,
+                       ::elastica::configuration::sequential_policy>(
+                       module_handle.n_systems());
+          }
+          //********************************************************************
+        };
+
         struct UpdateKinematics {
           //**Type definitions**************************************************
           //! Type for tagged tuple
@@ -744,8 +764,9 @@ namespace elastica {
         /*!\name Algorithmic steps within a temporal loop*/
         //@{
         //! Algorithms to be carried out as an update step
-        using UpdateSteps = tmpl::list<ApplyOverSystems, UpdateKinematics,
-                                       ComputeInternalDynamics, UpdateDynamics>;
+        using UpdateSteps =
+            tmpl::list<ApplyOverSystems, ApplyOverSystemsSeq, UpdateKinematics,
+                       ComputeInternalDynamics, UpdateDynamics>;
         //@}
         //**********************************************************************
       };

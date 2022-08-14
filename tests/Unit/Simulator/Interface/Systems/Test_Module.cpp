@@ -739,6 +739,26 @@ namespace {
     // size(unit) = n_elements
     CHECK(n_elements_in_ec_named_block == 64UL);
     CHECK(n_elements_in_another_ec_block == 64UL);
+
+    std::size_t ec_seq_block_counter(0UL), ec_named_seq_block_counter(0UL),
+        another_ec_seq_block_counter(0UL);
+    sim.for_each_block_sequential(make_overloader(
+        [&](ECBlock const&) { ++ec_seq_block_counter; },
+        [&](ECNamedBlock const&) { ++ec_named_seq_block_counter; },
+        [&](AnotherECBlock const&) { ++another_ec_seq_block_counter; }));
+
+    CHECK(ec_seq_block_counter == expected_n_ec_blocks);
+    CHECK(ec_named_seq_block_counter == expected_n_ec_named_blocks);
+    CHECK(another_ec_seq_block_counter == expected_another_ec_blocks);
+
+    sim.for_each_block_sequential_untimed(make_overloader(
+        [&](ECBlock const&) { ++ec_seq_block_counter; },
+        [&](ECNamedBlock const&) { ++ec_named_seq_block_counter; },
+        [&](AnotherECBlock const&) { ++another_ec_seq_block_counter; }));
+
+    CHECK(ec_seq_block_counter == 2 * expected_n_ec_blocks);
+    CHECK(ec_named_seq_block_counter == 2 * expected_n_ec_named_blocks);
+    CHECK(another_ec_seq_block_counter == 2 * expected_another_ec_blocks);
   }
 
   // clang-format off
@@ -810,6 +830,29 @@ namespace {
     sim.for_each_system<tmpl::list<ECNamedPlugin, AnotherECPlugin>>(
         [&](auto const&) { ++subset_counter; });
     CHECK(subset_counter == (8UL + 6UL));
+
+    std::size_t ec_slice_seq_counter(0UL), ec_named_slice_seq_counter(0UL),
+        another_ec_slice_seq_counter(0UL);
+    sim.for_each_system_sequential(make_overloader(
+        [&](decltype(ec_sliced) const&) { ++ec_slice_seq_counter; },
+        [&](decltype(ec_named_sliced) const&) { ++ec_named_slice_seq_counter; },
+        [&](decltype(another_ec_sliced) const&) {
+          ++another_ec_slice_seq_counter;
+        }));
+
+    CHECK(ec_slice_seq_counter == 5UL);
+    CHECK(ec_named_slice_seq_counter == 8UL);
+    CHECK(another_ec_slice_seq_counter == 6UL);
+
+    sim.for_each_system_sequential_untimed(make_overloader(
+        [&](decltype(ec_sliced) const&) { ++ec_slice_seq_counter; },
+        [&](decltype(ec_named_sliced) const&) { ++ec_named_slice_seq_counter; },
+        [&](decltype(another_ec_sliced) const&) {
+          ++another_ec_slice_seq_counter;
+        }));
+    CHECK(ec_slice_seq_counter == 5UL * 2UL);
+    CHECK(ec_named_slice_seq_counter == 8UL * 2UL);
+    CHECK(another_ec_slice_seq_counter == 6UL * 2UL);
   }
 
   // TODO : test serialization

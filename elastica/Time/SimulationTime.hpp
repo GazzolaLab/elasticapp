@@ -21,8 +21,6 @@
 #include <ostream>
 
 #include "Time/Types.hpp"
-/// Serialization support
-#include "Simulator/IO/Serialization/Types.hpp"
 //
 #include "Utilities/Approx.hpp"
 
@@ -112,6 +110,12 @@ namespace elastica {
       //************************************************************************
 
       //************************************************************************
+      /*!\brief Access to the time value.
+       */
+      inline constexpr auto value() & noexcept -> Real& { return value_; };
+      //************************************************************************
+
+      //************************************************************************
       /*!\brief Explicit conversion operator to the underlying time
        */
       /*explicit*/ inline constexpr operator Real() const noexcept {
@@ -133,8 +137,6 @@ namespace elastica {
       //**Friendships***********************************************************
       //! Friendship with increments
       friend TimeDelta;
-      //! Friendship with Serialize
-      friend ::elastica::io::Serialize<This>;
       // to gain access to approx?
       template <typename U>
       friend bool operator==(SimulationTime<U> const&,
@@ -143,9 +145,6 @@ namespace elastica {
       friend bool operator==(SimulationTimeDelta<U> const&,
                              SimulationTimeDelta<U> const&) noexcept;
       //************************************************************************
-
-      // for serialization purposes
-      inline constexpr auto value() & noexcept -> Real& { return value_; };
 
       //**Member variables******************************************************
       /*!\name Member variables */
@@ -230,6 +229,12 @@ namespace elastica {
       //************************************************************************
 
       //************************************************************************
+      /*!\brief Access to the time value.
+       */
+      inline constexpr auto value() & noexcept -> Real& { return value_; };
+      //************************************************************************
+
+      //************************************************************************
       /*!\brief Explicit conversion operator to the underlying time
        */
       explicit inline constexpr operator Real() const noexcept {
@@ -298,12 +303,7 @@ namespace elastica {
       //**Friendships***********************************************************
       //! Friendship with time
       friend Time;
-      //! Friendship with serialize
-      friend ::elastica::io::Serialize<This>;
       //************************************************************************
-
-      // for serialization purposes
-      inline constexpr auto value() & noexcept -> Real& { return value_; };
 
       //**Member variables******************************************************
       /*!\name Member variables */
@@ -532,12 +532,16 @@ namespace elastica {
     //**************************************************************************
     /*!\name Stream operators */
     //@{
+    //! Stream operator for SimulationTime
+    //! \ingroup time
     template <typename Real>
     std::ostream& operator<<(std::ostream& os,
                              const SimulationTime<Real>& t) noexcept {
       return os << t.value();
     }
 
+    //! Stream operator for SimulationTimeDelta
+    //! \ingroup time
     template <typename Real>
     std::ostream& operator<<(std::ostream& os,
                              const SimulationTimeDelta<Real>& dt) noexcept {

@@ -34,7 +34,9 @@ namespace elastica {
           T, B, ::elastica::cosserat_rod::component::WithCircularCosseratRod,
           ::elastica::cosserat_rod::component::
               WithDiagonalLinearHyperElasticModel,
-          ::elastica::cosserat_rod::component::WithRodKinematics>;
+          ::elastica::cosserat_rod::component::WithRodKinematics,
+          ::elastica::cosserat_rod::component::
+              CosseratRodWithoutDampingNameAdapted>;
 
       using CosseratRodWithoutDamping =
           ::elastica::cosserat_rod::CosseratRodPlugin<

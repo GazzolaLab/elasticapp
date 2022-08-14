@@ -21,8 +21,6 @@
 #include <iosfwd>
 
 #include "Time/Types.hpp"
-/// Serialization support
-#include "Simulator/IO/Serialization/Types.hpp"
 
 namespace elastica {
 
@@ -86,22 +84,56 @@ namespace elastica {
     /*!\name Access operators */
     //@{
 
+    //************************************************************************
+    /*!\brief Access to the time value.
+     */
+    inline constexpr auto value() const& noexcept -> Step { return step_; };
+    //************************************************************************
+
+    //************************************************************************
+    /*!\brief Access to the time value.
+     */
+    inline constexpr auto value() & noexcept -> Step& { return step_; };
+    //************************************************************************
+
     //**************************************************************************
     /*!\brief Access to the time-step.
      */
-    Step step() const noexcept { return step_; }
+    constexpr auto step() const& noexcept -> Step { return step_; }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Access to the time-step.
+     */
+    constexpr auto step() & noexcept -> Step& { return step_; }
     //**************************************************************************
 
     //**************************************************************************
     /*!\brief Access to the time sub-step.
      */
-    SubStep substep() const noexcept { return substep_; }
+    constexpr auto substep() const& noexcept -> SubStep { return substep_; }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Access to the time sub-step.
+     */
+    constexpr auto substep() & noexcept -> SubStep& { return substep_; }
     //**************************************************************************
 
     //**************************************************************************
     /*!\brief Access to the step threshold
      */
-    SubStep step_threshold() const noexcept { return to_step_threshold; }
+    constexpr auto step_threshold() const& noexcept -> SubStep {
+      return to_step_threshold;
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Access to the step threshold
+     */
+    constexpr auto step_threshold() & noexcept -> SubStep& {
+      return to_step_threshold;
+    }
     //**************************************************************************
 
     //@}
@@ -173,19 +205,6 @@ namespace elastica {
     //**************************************************************************
 
    private:
-    //**Friendships*************************************************************
-    //! Friendship with Serialize
-    friend ::elastica::io::Serialize<TimeStepID>;
-    //**************************************************************************
-
-    //**************************************************************************
-    // for serialization purposes
-    inline constexpr auto load_step() noexcept -> Step& { return step_; };
-    inline constexpr auto load_substep() noexcept -> SubStep& {
-      return substep_;
-    };
-    //**************************************************************************
-
     //**Member variables********************************************************
     /*!\name Member variables */
     //@{
@@ -221,6 +240,8 @@ namespace elastica {
   //****************************************************************************
   /*!\name Stream operators */
   //@{
+  //! Stream operator for TimeStepID
+  //! \ingroup time
   std::ostream& operator<<(std::ostream& s, const TimeStepID& id) noexcept;
   //@}
   //****************************************************************************

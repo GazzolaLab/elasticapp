@@ -5,23 +5,27 @@ set(LIBRARY IO)
 
 add_elastica_library(${LIBRARY} INTERFACE)
 
+add_subdirectory(Interface)
+add_library(${LIBRARY}::Interface ALIAS IO_Interface)
+
 add_subdirectory(Serialization)
 add_library(${LIBRARY}::Serialization ALIAS Serialization)
 
-#elastica_target_sources(
-#        ${LIBRARY}
-#        PRIVATE
-#        vtk/Writer.cpp
-#        csv/Writer.cpp
-#)
-#
+set(LIBRARY_SOURCES
+        Serialization.hpp
+        Types.hpp
+        )
+
+add_subdirectory(H5)
+if (TARGET H5)
+    add_library(${LIBRARY}::H5 ALIAS H5)
+    LIST(APPEND LIBRARY_SOURCES "H5.hpp")
+endif ()
+
 elastica_target_headers(
         ${LIBRARY}
         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
-        #        vtk.hpp
-        #        vtk/Writer.hpp
-        #        csv/Writer.hpp
-        Serialization.hpp
+        ${LIBRARY_SOURCES}
 )
 
 target_link_libraries(
@@ -30,7 +34,7 @@ target_link_libraries(
         Simulator # For Triggers and visualization
         Serialization
         # PRIVATE
-        std::filesystem
+        # std::filesystem
         #        -stdlib=libc++
         #        stdc++fs
 )

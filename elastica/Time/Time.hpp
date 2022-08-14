@@ -24,6 +24,8 @@
 #include "Time/Protocols.hpp"
 #include "Time/SimulationTime.hpp"
 #include "Time/SymplecticSteppers.hpp"
+#include "Time/TimeMetadata.hpp"
+#include "Time/TimeStepID.hpp"
 #include "Time/TypeTraits.hpp"
 
 //==============================================================================
@@ -46,8 +48,8 @@ namespace elastica {
 
   //****************************************************************************
   /*!\brief Numerical algorithms for time-stepping
-  * \ingroup time
-  */
+   * \ingroup time
+   */
   namespace timestepper {}
   //****************************************************************************
 

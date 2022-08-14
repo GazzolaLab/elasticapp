@@ -146,6 +146,13 @@ Some examples provide additional file or link to published paper for a complete 
         * `Timers`
         * YAML serialization
 
+* [`hdf5`](./hdf5)
+    * __Name__: Data export
+    * __Purpose__: Write **elastica++** simulation data into HDF5 format
+    * __Features__:
+        * H5Metadata
+        * H5Writer
+
 * [`simulation_reset`](./simulation_reset)
     * __Name__: Reset simulation
     * __Purpose__: Demonstrate a method to reset a simulation, intended for independent, distributed **elastica++**

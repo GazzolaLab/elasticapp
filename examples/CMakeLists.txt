@@ -13,9 +13,10 @@ add_subdirectory(rod_plane_collision)
 # examples
 include(ElasticaAddExamples)
 add_subdirectory(algorithm_metadata)
+add_subdirectory(block_metadata)
+add_subdirectory(hdf5)
 add_subdirectory(parallelism)
 add_subdirectory(profiling)
-add_subdirectory(block_metadata)
 add_subdirectory(simulation_reset)
 
 # tutorials

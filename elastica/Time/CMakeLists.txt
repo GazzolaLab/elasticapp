@@ -14,6 +14,7 @@ elastica_target_sources(
         ${LIBRARY}
         PRIVATE
         SimulationTime.cpp
+        TimeMetadata.cpp
         TimeStepID.cpp
 )
 
@@ -29,6 +30,7 @@ elastica_target_headers(
         StepperTags.hpp
         SymplecticSteppers.hpp
         Tags.hpp
+        TimeMetadata.hpp
         TimeStepID.hpp
         Types.hpp
         TypeTraits.hpp

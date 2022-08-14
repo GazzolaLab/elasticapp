@@ -1,7 +1,6 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 # Obtained with thanks from https://github.com/sxs-collaboration/spectre
-
 # Add header files for CMake to track for a given library
 # or executable.
 #

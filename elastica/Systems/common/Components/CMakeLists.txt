@@ -10,6 +10,8 @@ elastica_target_headers(
         Component.hpp
         GeometryComponent.hpp
         KinematicsComponent.hpp
+        NameComponent.hpp
+        NameAdapter.hpp
         Types.hpp
         TypeTraits.hpp
 )
@@ -20,6 +22,8 @@ elastica_target_sources(
         Component.hpp
         GeometryComponent.hpp
         KinematicsComponent.hpp
+        NameComponent.hpp
+        NameAdapter.hpp
         Types.hpp
         TypeTraits.hpp
 )

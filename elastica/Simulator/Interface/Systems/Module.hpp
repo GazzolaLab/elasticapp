@@ -673,6 +673,75 @@ namespace elastica {
 
      public:
       //************************************************************************
+      /*!\brief Apply a callable over all system blocks sequentially
+       *
+       * \details
+       * Applies a callable `func` over all system blocks
+       * (across types and collections) registered in the current simulator, but
+       * sequentially
+       *
+       * \param func Callable to be applied over system blocks
+       */
+      template <typename F>
+      inline decltype(auto) for_each_block_sequential_untimed(
+          F func) /*const noexcept*/ {
+        using Alg = typename Algorithm::ApplyOverSystemsSeq;
+        return self().template get_algorithm<Alg>()(std::move(func));
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Apply a callable over all system blocks sequentially, with
+       * profiling enabled
+       *
+       * \copydetails for_each_block_untimed()
+       */
+      template <typename F>
+      inline decltype(auto) for_each_block_sequential(
+          F func) /*const noexcept*/ {
+        using Alg = typename Algorithm::ApplyOverSystemsSeq;
+
+        ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().start(); }
+        F another_func(for_each_block_untimed(std::move(func)));
+        ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().stop(); }
+
+        return another_func;
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Apply a callable over all systems sequentially
+       *
+       * \details
+       * Applies a callable `func` over all systems
+       * (across types and collections) registered in the current simulator.
+       *
+       * \param func Callable to be applied over systems
+       */
+      template <typename F>
+      inline decltype(auto) for_each_system_sequential_untimed(
+          F func) /*const noexcept*/ {
+        (void)for_each_block_sequential_untimed(
+            ::blocks::for_each_slice_adapter(std::ref(func)));
+        return func;
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Apply a callable over all systems sequentially, with profiling
+       * enabled \copydetails for_each_system_untimed()
+       */
+      template <typename F>
+      inline decltype(auto) for_each_system_sequential(
+          F func) /*const noexcept*/ {
+        (void)for_each_block_sequential(
+            ::blocks::for_each_slice_adapter(std::ref(func)));
+        return func;
+      }
+      //************************************************************************
+
+     public:
+      //************************************************************************
       /*!\brief Update system kinematics
        *
        * \note

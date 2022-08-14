@@ -15,9 +15,9 @@
 #include "Utilities/StdHelpers.hpp"
 
 namespace tags {
-  struct ExamplePosition;
-  struct ExampleVelocity;
-  struct ExampleAcceleration;
+  struct ExamplePosition {};
+  struct ExampleVelocity {};
+  struct ExampleAcceleration {};
 }  // namespace tags
 
 namespace {
