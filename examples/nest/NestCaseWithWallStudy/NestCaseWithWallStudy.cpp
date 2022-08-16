@@ -135,7 +135,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
     StraightInit straight_initializer{
         // StraightInitialization Wrapper
         StraightInit::NElement{n_elem},
-        StraightInit::Material{soft_material},
+        StraightInit::Material{wall_material},
         StraightInit::Radius{::elastica::get<radius>(input_parameters)},
         StraightInit::Length{base_length},
         StraightInit::Origin{origin},
