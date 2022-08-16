@@ -165,7 +165,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   ::elastica::Rot3 Q_bottom = {plane_normal_bottom, plane_binormal_bottom,
                                plane_tangent_bottom};
   imposed_half_space_ref = simulator->emplace_back<ImposedHalfSpace>(
-      ::elastica::collision::PlanePrimitive(
+      ::elastica::collision::HalfSpacePrimitive(
           0UL, 0UL, true, plane_position_bottom, Q_bottom, wall_material));
 
   // Set the top plane at (0, 0, original_top_height) and with normal along Z-
@@ -190,8 +190,8 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
           ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
       ek::translate_along<elastica::EulerianFrame::Z>(
           ek::mark_position(top_moving_wall), ek::mark_velocity(always_zero_)));
-  simulator->emplace_back<ImposedPlane>(
-      ::elastica::collision::PlanePrimitive(1UL, 1UL, true, plane_position_top,
+  simulator->emplace_back<ImposedHalfSpace>(
+      ::elastica::collision::HalfSpacePrimitive(1UL, 1UL, true, plane_position_top,
                                             Q_top, wall_material),
       std::move(top_translations_buffer));
 
@@ -211,7 +211,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
     auto plane_tangent_left = {0.0, -1.0, 0.0};
     ::elastica::Rot3 Q_left = {plane_normal_left, plane_binormal_left,
                                plane_tangent_left};
-    simulator->emplace_back<ImposedPlane>(::elastica::collision::PlanePrimitive(
+    simulator->emplace_back<ImposedHalfSpace>(::elastica::collision::HalfSpacePrimitive(
         2UL + (i * 4UL), 2UL + (i * 4UL), true, plane_position_left, Q_left,
         wall_material));
 
@@ -224,7 +224,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
     auto plane_tangent_right = {0.0, 1.0, 0.0};
     ::elastica::Rot3 Q_right = {plane_normal_right, plane_binormal_right,
                                 plane_tangent_right};
-    simulator->emplace_back<ImposedPlane>(::elastica::collision::PlanePrimitive(
+    simulator->emplace_back<ImposedHalfSpace>(::elastica::collision::HalfSpacePrimitive(
         3UL + (i * 4UL), 3UL + (i * 4UL), true, plane_position_right, Q_right,
         wall_material));
 
@@ -237,7 +237,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
     auto plane_tangent_back = {0.0, 0.0, 1.0};
     ::elastica::Rot3 Q_back = {plane_normal_back, plane_binormal_back,
                                plane_tangent_back};
-    simulator->emplace_back<ImposedPlane>(::elastica::collision::PlanePrimitive(
+    simulator->emplace_back<ImposedHalfSpace>(::elastica::collision::HalfSpacePrimitive(
         4UL + (i * 4UL), 4UL + (i * 4UL), true, plane_position_back, Q_back,
         wall_material));
 
@@ -250,7 +250,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
     auto plane_tangent_front = {0.0, 0.0, -1.0};
     ::elastica::Rot3 Q_front = {plane_normal_front, plane_binormal_front,
                                 plane_tangent_front};
-    simulator->emplace_back<ImposedPlane>(::elastica::collision::PlanePrimitive(
+    simulator->emplace_back<ImposedHalfSpace>(::elastica::collision::HalfSpacePrimitive(
         5UL + (i * 4UL), 5UL + (i * 4UL), true, plane_position_front, Q_front,
         wall_material));
   }
@@ -278,7 +278,8 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
 }
 
 void NestCaseWithWallStudy::step() {
-  const std::uint64_t flag_iteration(10.0 / current_dt());
+  // Reduce contact detection interval
+  const std::uint64_t flag_iteration(5.0 / current_dt());
   if (get_current_iteration().step() == flag_iteration) {
     auto& collision_solver =
         simulator
@@ -288,7 +289,8 @@ void NestCaseWithWallStudy::step() {
                                 // set_dt(1.0e-6);
   }
 
-  const std::uint64_t flag_iteration2(1.2 / current_dt());
+  // Increase contact stiffness 
+  const std::uint64_t flag_iteration2(0.3 / current_dt());
   if (get_current_iteration().step() == flag_iteration2) {
     for (auto& rod_ref : rod_refs) {
       auto id(::elastica::get<::elastica::tags::Material>(rod_ref.get()));
