@@ -1536,7 +1536,8 @@ namespace {
     auto const check_integrity = [](std::string const& str) {
       using namespace std::string_literals;
       for (auto const& substr :
-           {"ExamplePosition"s, "ExampleVelocity"s, "ExampleAcceleration"s}) {
+           {"ExampleInitializedPosition"s, "ExampleInitializedVelocity"s,
+            "ExampleAcceleration"s}) {
         INFO(substr);
         CHECK(str.find(substr) != std::string::npos);
       }
