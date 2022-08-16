@@ -536,7 +536,7 @@ namespace {
     using namespace elastica::io;
     // NOTHROW case
     {
-      auto sim = setup_sim_with_state(20UL);
+      auto sim = setup_sim_with_state(4UL);
       std::stringstream ss;  // any stream can be used
       // std::size_t n_elements(16UL);
 
@@ -548,7 +548,7 @@ namespace {
 
       {
         // from sim
-        auto another_sim = setup_sim_with_state(20UL);
+        auto another_sim = setup_sim_with_state(4UL);
         BinaryInputArchive iarchive(ss);  //  Create an output archive
 
         CHECK_NOTHROW(another_sim.finalize());
