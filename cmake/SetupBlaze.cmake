@@ -5,7 +5,7 @@ option(USE_SLEEF "Use Sleef to add more vectorized instructions." OFF)
 
 log_info("Finding Blaze")
 
-find_package(Blaze 3.8 REQUIRED QUIET)
+find_package(Blaze 3.9 REQUIRED QUIET)
 
 log_debug("BLAZE_INCLUDE_DIR: ${BLAZE_INCLUDE_DIR}")
 log_debug("BLAZE_VERSION: ${BLAZE_VERSION}")
