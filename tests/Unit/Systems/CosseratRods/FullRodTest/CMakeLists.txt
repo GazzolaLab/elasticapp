@@ -11,5 +11,8 @@ add_test_library(
         ${LIBRARY}
         "Systems/CosseratRods/FullRodTest"
         "${LIBRARY_SOURCES}"
-        "Utilities;Systems"
+        # Simulator is required for integrated tests.
+        # FIXME : https://github.com/tp5uiuc/elasticapp/issues/228
+        # Sanitize
+        "Utilities;Systems;Simulator"
 )

@@ -29,3 +29,9 @@ elastica_target_headers(
 )
 
 add_subdirectory(Python)
+
+target_link_libraries(
+        ${LIBRARY}
+        PRIVATE
+        Blaze
+)

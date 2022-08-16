@@ -4,7 +4,9 @@
 
 log_info("Finding TBB")
 
-find_package(TBB REQUIRED COMPONENTS tbbmalloc)
+# TBB >= 2021 required because variadic support was added in this version
+# for parallel invoke, which is needed by some of RunTests.
+find_package(TBB 2021.0 REQUIRED)
 
 file(APPEND "${CMAKE_BINARY_DIR}/BuildInformation.txt"
         "TBB Version:  ${TBB_VERSION}\n")

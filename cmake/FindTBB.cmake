@@ -385,12 +385,34 @@ if(NOT TBB_VERSION)
                    TBB_VERSION_MINOR
                    "${TBB_VERSION_CONTENTS}")
 
-    string(REGEX
-           REPLACE ".*#define TBB_INTERFACE_VERSION ([0-9]+).*"
-                   "\\1"
-                   TBB_INTERFACE_VERSION
-                   "${TBB_VERSION_CONTENTS}")
+    ## Don't rely on the patch version, as old tbb libraries don't provide one
+    # string(REGEX
+    #        REPLACE ".*#define TBB_INTERFACE_VERSION ([0-9]+).*"
+    #                "\\1"
+    #                TBB_INTERFACE_VERSION
+    #                "${TBB_VERSION_CONTENTS}")
+    # math(EXPR TBB_VERSION_MAJOR "${TBB_INTERFACE_VERSION}/1000")
+    # math(EXPR TBB_VERSION_MINOR "(${TBB_INTERFACE_VERSION}%1000)/10")
 
     set(TBB_VERSION
-        ${TBB_VERSION_MAJOR}${TBB_VERSION_MINOR}${TBB_INTERFACE_VERSION})
+        ${TBB_VERSION_MAJOR}.${TBB_VERSION_MINOR})
+
 endif()
+
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(TBB
+        FOUND_VAR
+        TBB_FOUND
+        REQUIRED_VARS
+        TBB_INCLUDE_DIR
+        TBB_INCLUDE_DIRS
+        VERSION_VAR
+        TBB_VERSION)
+mark_as_advanced(TBB_INCLUDE_DIR
+        TBB_INCLUDE_DIRS
+        TBB_MALLOC_INCLUDE_DIRS
+        TBB_VERSION
+        TBB_VERSION_MAJOR
+        TBB_VERSION_MINOR)
+

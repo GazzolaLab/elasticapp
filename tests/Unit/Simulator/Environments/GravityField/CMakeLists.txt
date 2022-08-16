@@ -12,5 +12,8 @@ add_test_library(
         ${LIBRARY}
         "Simulator/Environments/GravityField"
         "${LIBRARY_SOURCES}"
-        "GravityField"
+        # Simulator is required for integrated tests.
+        # FIXME : https://github.com/tp5uiuc/elasticapp/issues/228
+        # Sanitize
+        "GravityField;Simulator" 
 )
