@@ -5,6 +5,7 @@
 
 #include "Framework/TestNestedExceptions.hpp"
 #include "Framework/TestingFramework.hpp"
+#include "Simulator/IO/Serialization/Archives.hpp"
 #include "Simulator/Interface/Wrappers/Serialize.hpp"
 
 namespace {

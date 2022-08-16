@@ -24,10 +24,12 @@
 #include "Simulator/IO/Serialization/Serialize.hpp"
 #include "Simulator/IO/Serialization/SerializeWizard.hpp"
 ///
-#include "Simulator/IO/Serialization/Archives.hpp"
+// Other archives are to be included on a case-by-case-basis
+#include "Simulator/IO/Serialization/Archives/Binary.hpp"
 ///
-#include "Simulator/IO/Serialization/STL.hpp"
 #include "Simulator/IO/Serialization/Custom.hpp"
+#include "Simulator/IO/Serialization/STL.hpp"
+///
 
 //==============================================================================
 //

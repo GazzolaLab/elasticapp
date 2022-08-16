@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "Framework/TestingFramework.hpp"
+#include "Simulator/IO/Serialization/Archives.hpp"
 #include "Systems/Block/Block.hpp"
 #include "Systems/Block/Serialize.hpp"
 

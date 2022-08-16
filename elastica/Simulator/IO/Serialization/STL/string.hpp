@@ -25,6 +25,8 @@
 
 #include "Simulator/IO/Serialization/Helpers.hpp"
 #include "Simulator/IO/Serialization/Serialize.hpp"
+// customization for binary archie
+#include "Simulator/IO/Serialization/Archives/Binary.hpp"
 
 namespace elastica {
 

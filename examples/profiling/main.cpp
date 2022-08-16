@@ -18,6 +18,7 @@
 #include "Systems/CosseratRods.hpp"
 //
 #include "Simulator/IO/Serialization.hpp"
+#include "Simulator/IO/Serialization/Archives.hpp"  // all archives
 //
 #include <chrono>
 #include <thread>
