@@ -10,6 +10,7 @@ elastica_target_headers(
         EPA.hpp
         FineDetectionInterface.hpp
         GJK.hpp
+        Kernels.hpp
         MaxContacts.hpp
         RigidBodyPrimitiveTrait.hpp
         Types.hpp
@@ -23,10 +24,13 @@ elastica_target_sources(
         EPA.hpp
         FineDetectionInterface.hpp
         GJK.hpp
+        Kernels.hpp
         MaxContacts.hpp
         RigidBodyPrimitiveTrait.hpp
         Types.hpp
 )
+
+add_subdirectory(Kernels)
 
 target_link_libraries(
         ${LIBRARY}
@@ -35,4 +39,5 @@ target_link_libraries(
         Primitives
         ErrorHandling
         Utilities
+        FineCollisionDetectionKernels
 )

@@ -1,7 +1,7 @@
 //==============================================================================
 /*!
 //  \file
-//  \brief Source file for CylinderPrimitive
+//  \brief Source file for PlanePrimitive
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved

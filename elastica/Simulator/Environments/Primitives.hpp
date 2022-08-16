@@ -28,6 +28,7 @@
 #include "Simulator/Environments/Primitives/CapsuleFromRodPrimitive.hpp"
 #include "Simulator/Environments/Primitives/CapsulePrimitive.hpp"
 #include "Simulator/Environments/Primitives/CylinderPrimitive.hpp"
+#include "Simulator/Environments/Primitives/HalfSpacePrimitive.hpp"
 #include "Simulator/Environments/Primitives/ImposedPrimitiveAdapter.hpp"
 #include "Simulator/Environments/Primitives/PlanePrimitive.hpp"
 #include "Simulator/Environments/Primitives/SpherePrimitive.hpp"

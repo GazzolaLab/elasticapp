@@ -14,15 +14,15 @@
 
 #pragma once
 //
-#include <elastica/CaseStudy.hpp>
+#include "CaseStudy.hpp"
 //
-#include <elastica/Simulator/Environments.hpp>
-#include <elastica/Simulator/Forcing.hpp>
-#include <elastica/Simulator/Simulator.hpp>
-#include <elastica/Systems/CosseratRods.hpp>
-#include <elastica/Utilities/DefineTypes.h>
-#include <elastica/Utilities/Math/Vec3.hpp>
-#include <elastica/Utilities/TMPL.hpp>
+#include "Simulator/Environments.hpp"
+#include "Simulator/Forcing.hpp"
+#include "Simulator/Simulator.hpp"
+#include "Systems/CosseratRods.hpp"
+#include "Utilities/DefineTypes.h"
+#include "Utilities/Math/Vec3.hpp"
+#include "Utilities/TMPL.hpp"
 //
 #include <algorithm>
 #include <tuple>

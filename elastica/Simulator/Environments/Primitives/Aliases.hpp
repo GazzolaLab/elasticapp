@@ -27,10 +27,13 @@ namespace elastica {
     using ImposedSpherePrimitive = ImposedPrimitiveAdapter<SpherePrimitive>;
     //! Type of imposed capsule
     using ImposedCapsulePrimitive = ImposedPrimitiveAdapter<CapsulePrimitive>;
-    //! Type of imposed plane
-    using ImposedPlanePrimitive = ImposedPrimitiveAdapter<PlanePrimitive>;
     //! Type of imposed cylinder
     using ImposedCylinderPrimitive = ImposedPrimitiveAdapter<CylinderPrimitive>;
+    //! Type of imposed plane
+    using ImposedHalfSpacePrimitive =
+        ImposedPrimitiveAdapter<HalfSpacePrimitive>;
+    //! Type of imposed plane
+    using ImposedPlanePrimitive = ImposedPrimitiveAdapter<PlanePrimitive>;
     //**************************************************************************
 
   }  // namespace collision

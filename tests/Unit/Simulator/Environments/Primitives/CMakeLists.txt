@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
         Test_CapsulePrimitive.cpp
         Test_CapsuleFromRodPrimitive.cpp
         Test_CylinderPrimitive.cpp
+        Test_HalfSpacePrimitive.cpp
         Test_ImposedPrimitiveAdapter.cpp
         Test_PlanePrimitive.cpp
         Test_PrimitivesCollection.cpp

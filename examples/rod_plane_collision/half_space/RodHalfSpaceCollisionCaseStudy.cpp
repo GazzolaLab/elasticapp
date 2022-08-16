@@ -1,7 +1,7 @@
 //==============================================================================
 /*!
 //  \file
-//  \brief Rod-Plane collision case study
+//  \brief Rod-HalfSpace collision case study
 //
 //  Copyright (C) 2020-2022 Tejaswin Parthasarathy, Yashraj Bhosale - All Rights
 //  Reserved
@@ -12,19 +12,19 @@
 */
 //==============================================================================
 
-#include "RodPlaneCollisionCaseStudy.hpp"
+#include "RodHalfSpaceCollisionCaseStudy.hpp"
 
-#include <elastica/ErrorHandling/FloatingPointExceptions.hpp>
-#include <elastica/Simulator/Environments/Kinematics.hpp>
-#include <elastica/Simulator/Frames.hpp>
-#include <elastica/Simulator/Materials.hpp>
-#include <elastica/Utilities/Get.hpp>
-#include <elastica/Utilities/Math/Rot3.hpp>
-#include <elastica/Utilities/Math/Vec3.hpp>
+#include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Simulator/Environments/Kinematics.hpp"
+#include "Simulator/Frames.hpp"
+#include "Simulator/Materials.hpp"
+#include "Utilities/Get.hpp"
+#include "Utilities/Math/Rot3.hpp"
+#include "Utilities/Math/Vec3.hpp"
 //
 #include <utility>  // move
 
-void RodPlaneCollisionCaseStudy::setup(
+void RodHalfSpaceCollisionCaseStudy::setup(
     InputTypes<This> const& input_parameters) {
   elastica::MaterialID my_material = elastica::create_material(
       // material density
@@ -76,7 +76,18 @@ void RodPlaneCollisionCaseStudy::setup(
       straight_initializer.initialize<CosseratRod>());
   rod_refs.push_back(rod_ref);
 
+  // Setup the half-space
+  // Set the bottom plane at (0, 0, 0) and with normal along Z
+  const ::elastica::Vec3 half_space_anchor{0.0, 0.0, 0.0};
+  auto half_space_normal = {0.0, 0.0, 1.0};
+  auto half_space_binormal = {0.0, 1.0, 0.0};
+  auto half_space_tangent = {1.0, 0.0, 0.0};
+  // implicit convention
+  ::elastica::Rot3 Q = {half_space_normal, half_space_binormal,
+                        half_space_tangent};
+
   namespace ek = elastica::kinematics;
+
   auto always_zero_ = [](::elastica::real_t) noexcept -> ::elastica::real_t {
     return 0.0;
   };
@@ -87,23 +98,17 @@ void RodPlaneCollisionCaseStudy::setup(
       ek::translate_along<elastica::EulerianFrame::Y>(
           ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
       ek::translate_along<elastica::EulerianFrame::Z>(
-          ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)));
+          // The COM along z axis is not at 0 (the anchor position), but rather
+          // inside the halfspace, so we displace it by anchor_to_com.
+          ek::mark_position(ImposedHalfSpace::anchor_to_com_n(always_zero_)),
+          ek::mark_velocity(always_zero_)));
 
-  // Set the bottom plane at (0, 0, 0) and with normal along Z
-  const ::elastica::Vec3 plane_position{0.0, 0.0, 0.0};
-  auto plane_normal = {0.0, 0.0, 1.0};
-  auto plane_binormal = {0.0, 1.0, 0.0};
-  auto plane_tangent = {1.0, 0.0, 0.0};
-  // implicit convention
-  ::elastica::Rot3 Q = {plane_normal, plane_binormal, plane_tangent};
-  using Spans = typename ImposedPlane::Spans;
-  imposed_plane_ref = simulator->emplace_back<ImposedPlane>(
-      ::elastica::collision::PlanePrimitive(0UL, 0UL, true, plane_position, Q,
-                                            Spans{1e4, 1e4},  // plane extent
-                                            my_material),
+  imposed_half_space_ref = simulator->emplace_back<ImposedHalfSpace>(
+      ::elastica::collision::HalfSpacePrimitive(
+          0UL, 0UL, true, half_space_anchor, Q, my_material),
       std::move(translations_buffer));
 
-  // set near-list update time
+  // set near-list update time.
   auto& collision_solver =
       simulator
           ->get_environment<elastica::environments::tags::CollisionSystem>();
@@ -123,12 +128,12 @@ void RodPlaneCollisionCaseStudy::setup(
   set_dt(::elastica::get<dt>(input_parameters));
 }
 
-void RodPlaneCollisionCaseStudy::step() {
+void RodHalfSpaceCollisionCaseStudy::step() {
   simulator->step(time_stepper, get_current_time(), get_dt(),
                   get_current_iteration());
 }
 
-void RodPlaneCollisionCaseStudy::run() {
+void RodHalfSpaceCollisionCaseStudy::run() {
   /* After a call to this function, the code will terminate with a floating
    point exception on overflow, divide-by-zero, and invalid operations.
    NOTE : This won't get called if used from the python side!

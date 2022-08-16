@@ -36,6 +36,7 @@ namespace elastica {
     class GeomPrimitive;
     class SpherePrimitive;
     class PlanePrimitive;
+    class HalfSpacePrimitive;
     // class ApproximateCylinderPrimitive;
     class CylinderPrimitive;
     class CapsulePrimitive;

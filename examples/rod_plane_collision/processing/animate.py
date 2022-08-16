@@ -10,14 +10,14 @@ from .stats import Stats, PositiveInt
 
 
 def animate_rods(
-    rod_group_stats: List[Stats],
-    x_lim: Tuple[float, float],
-    y_lim: Tuple[float, float],
-    z_lim: Tuple[float, float],
-    video_name: str = "rod_simulation.mp4",
-    fps: PositiveInt = 15,
-    frame_skip: PositiveInt = 1,
-    save_figure: bool = False,
+        rod_group_stats: List[Stats],
+        x_lim: Tuple[float, float],
+        y_lim: Tuple[float, float],
+        z_lim: Tuple[float, float],
+        video_name: str = "rod_simulation.mp4",
+        fps: PositiveInt = 15,
+        frame_skip: PositiveInt = 1,
+        save_figure: bool = False,
 ) -> FuncAnimation:  # (time step, x/y/z, node)
     time = np.asarray(rod_group_stats[0].time)
     num_rods = len(rod_group_stats)
@@ -97,7 +97,7 @@ def animate_rods(
 
 
 def plot_energies(
-    rod_group_stats: List[Stats], save_figure: bool = False
+        rod_group_stats: List[Stats], save_figure: bool = False
 ) -> plt.Figure:
     with plt.style.context("ggplot"):
         new_fig = plt.figure(figsize=(5, 4), dpi=150)
@@ -155,6 +155,6 @@ def plot_energies(
         new_fig.show()
 
     if save_figure:
-        new_fig.savefig("energies.pdf")
+        new_fig.savefig("energies.png")
 
     return new_fig

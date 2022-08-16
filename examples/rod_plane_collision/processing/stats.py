@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import NewType, List
+from typing import NewType, List, Sequence
 
 import numpy as np
 
@@ -20,3 +20,6 @@ class Stats:
     shearing_energy: List[float] = field(default_factory=list)
     bending_energy: List[float] = field(default_factory=list)
     penetration_depths: List[List[float]] = field(default_factory=list)
+
+
+SimulationStats = Sequence[Stats]

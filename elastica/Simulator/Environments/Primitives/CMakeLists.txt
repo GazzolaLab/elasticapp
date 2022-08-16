@@ -11,6 +11,7 @@ elastica_target_sources(
         CapsulePrimitive.cpp
         CylinderPrimitive.cpp
         GeomPrimitive.cpp
+        HalfSpacePrimitive.cpp
         ImposedPrimitiveAdapter.hpp
         PlanePrimitive.cpp
         PrimitivesCollection.hpp
@@ -28,6 +29,7 @@ elastica_target_headers(
         CapsulePrimitive.hpp
         CylinderPrimitive.hpp
         GeomPrimitive.hpp
+        HalfSpacePrimitive.hpp
         ImposedPrimitiveAdapter.hpp
         PlanePrimitive.hpp
         PrimitivesCollection.hpp
