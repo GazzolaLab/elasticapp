@@ -29,7 +29,7 @@ Kim
 using String = const char* const;
 namespace ec = elastica::configuration;
 using CosseratRod = ::elastica::cosserat_rod::CosseratRod;
-using ImposedHalfSpace = ::elastica::collision::ImposedHalfSpacePrimitives;
+using ImposedHalfSpace = ::elastica::collision::ImposedHalfSpacePrimitive;
 
 struct NestConfiguration {
   static inline auto make_simulator_configuration() {
