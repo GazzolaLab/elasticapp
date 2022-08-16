@@ -29,6 +29,7 @@ Kim
 using String = const char* const;
 namespace ec = elastica::configuration;
 using CosseratRod = ::elastica::cosserat_rod::CosseratRod;
+using ImposedHalfSpace = ::elastica::collision::ImposedHalfSpacePrimitives;
 
 struct NestConfiguration {
   static inline auto make_simulator_configuration() {
@@ -47,9 +48,7 @@ struct NestConfiguration {
                    ::elastica::environments::tags::CollisionSystem>;
 
     //     Tag for bottom plane
-    using ImposedPrimitives =
-        tmpl::list<::elastica::collision::ImposedPrimitiveAdapter<
-            ::elastica::collision::PlanePrimitive>>;
+    using ImposedPrimitives = tmpl::list<ImposedHalfSpace>;
     auto collision_config =
         ec::make_collision_configuration(ec::par,   // between each type
                                          ec::seq);  // across each type
@@ -78,8 +77,8 @@ struct NestCaseWithWallStudy
     : public ::elastica::CaseStudyInterface<NestCaseWithWallStudy> {
   using Configuration = NestConfiguration;
   using This = NestCaseWithWallStudy;
-  using ImposedPlane = ::elastica::collision::ImposedPrimitiveAdapter<
-      ::elastica::collision::PlanePrimitive>;
+  using ImposedHalfSpace = ::elastica::collision::ImposedPrimitiveAdapter<
+      ::elastica::collision::HalfSpacePrimitive>;
 
   static constexpr String help = {R"help(
 Nest with sidewall case study
@@ -204,22 +203,21 @@ TODO: Check stress strain curves!
       Configuration::make_time_stepper();
   decltype(Configuration::make_simulator()) simulator =
       Configuration::make_simulator();
+
+  // Rod
   using RodRef = decltype(simulator->get_invalid_ref<CosseratRod>());
   using RodRefs = std::vector<RodRef>;
   RodRefs rod_refs;
-  using ImposedPlaneRef = decltype(simulator->get_invalid_ref<ImposedPlane>());
-  ImposedPlaneRef imposed_plane_ref =
-      simulator->get_invalid_ref<ImposedPlane>();
+
+  // Plane (Bottom)
+  using ImposedHalfPlaneRef =
+      decltype(simulator->get_invalid_ref<ImposedHalfSpace>());
+  ImposedHalfPlaneRef imposed_half_space_ref =
+      simulator->get_invalid_ref<ImposedHalfSpace>();
+
   ::elastica::real_t final_time;
 
-  inline auto communicate_from(RodRef& ref) {
-    auto rod = ref.get();
-    /*
-    return std::make_tuple(::elastica::position(rod),
-                           ::elastica::velocity(rod));
-    */
-    return ::elastica::position(rod);
-  }
+  inline auto communicate_from(RodRef& ref) { return ref.get(); }
   inline auto communicate() {
     // we dont have CTAD :(
     using CT = decltype(communicate_from(rod_refs[0UL]));
