@@ -16,12 +16,6 @@
 //******************************************************************************
 // Includes
 //******************************************************************************
-
-#include <iostream>
-#include <string>
-
-// external dependency : needed at example build time
-#include "cxxopts.hpp"
 //
 #include "Utilities/AsTaggedTuple.hpp"
 #include "Utilities/Invoke.hpp"
@@ -32,6 +26,14 @@
 #include "Utilities/TypeTraits/IsDetected.hpp"
 //
 #include "Utilities/AppSupport/CaseStudy.hpp"
+#include "Utilities/AppSupport/Helpers/SplashMessage.hpp"
+//
+// external dependency : needed at example build time
+#include "cxxopts.hpp"
+//
+#include <cstdlib>
+#include <iostream>
+#include <string>
 
 namespace standalone_bindings {
 
@@ -134,7 +136,8 @@ namespace standalone_bindings {
       std::exit(EXIT_SUCCESS);
     }
 
-    if (not ::elastica::size(result.arguments())) {
+    if (::elastica::detail::splash_message_enabled() and
+        not ::elastica::size(result.arguments())) {
       auto change_color_to_yellow = "\033[33m";
       auto reset_color = "\033[0m";
       std::cout << change_color_to_yellow << options.help() << reset_color
