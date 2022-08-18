@@ -119,6 +119,7 @@ namespace elastica {
             translations_(make_translations_(::elastica::position(*this),
                                              ::elastica::velocity(*this))) {
         fill_rates_();
+        // Removing results in a floating point exception
         translations_ = make_translations_(::elastica::position(*this),
                                            ::elastica::velocity(*this));
       }

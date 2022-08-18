@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 //
 #include "Simulator/Environments/Kinematics.hpp"
+#include "Simulator/Environments/Primitives/HalfSpacePrimitive.hpp"
 #include "Simulator/Environments/Primitives/ImposedPrimitiveAdapter.hpp"
 #include "Simulator/Environments/Primitives/SpherePrimitive.hpp"
 #include "Simulator/Frames.hpp"
@@ -12,6 +13,7 @@
 #include "Time/SimulationTime.hpp"
 //
 #include "Utilities/AsConst.hpp"
+#include "Utilities/Math/Rot3.hpp"
 //
 #include "Simulator/Environments/Primitives/Test_AccessAPI.hpp"
 
@@ -20,7 +22,9 @@ namespace {
   using namespace elastica;
   using namespace elastica::collision;
   using ImposedSpherePrimitive = ImposedPrimitiveAdapter<SpherePrimitive>;
+  using ImposedHalfSpacePrimitive = ImposedPrimitiveAdapter<HalfSpacePrimitive>;
   using ISP = ImposedSpherePrimitive;
+  using IHP = ImposedHalfSpacePrimitive;
 
   // clang-format off
   ELASTICA_TEST_CASE(
@@ -145,6 +149,42 @@ namespace {
       another_imposed_sphere.update_rates(time_v);
       post_update_rates_check(another_imposed_sphere);
     }
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE(
+      "Unit.Environments.Primitives.ImposedPrimitiveAdapter.infinite",
+      "[Unit][Simulator][Environments]") {
+    // clang-format on
+    const Vec3 half_space_anchor{0.0, 0.0, 0.0};
+    auto half_space_normal = {0.0, 0.0, 1.0};
+    auto half_space_binormal = {0.0, 1.0, 0.0};
+    auto half_space_tangent = {1.0, 0.0, 0.0};
+    // implicit convention
+    ::elastica::Rot3 Q = {half_space_normal, half_space_binormal,
+                          half_space_tangent};
+
+    auto const pre_update_primitive_check = [=](auto& p) {
+      CHECK(p.get_position()[0] == approx(0.0));
+      CHECK(p.get_position()[1] == approx(0.0));
+      CHECK(p.get_position()[2] == (-0.5 * HalfSpacePrimitive::get_span()));
+    };
+    auto const pre_update_rate_check = [=](auto& p) {
+      CHECK(p.get_velocity()[0] == approx(0.0));
+      CHECK(p.get_velocity()[1] == approx(0.0));
+      CHECK(p.get_velocity()[2] == approx(0.0));
+    };
+    auto const& post_update_primitive_check = pre_update_primitive_check;
+    auto const& post_update_rate_check = pre_update_rate_check;
+
+    IHP imposed_halfspace(
+        HalfSpacePrimitive(0UL, 0UL, true, half_space_anchor, Q, iron));
+    Time time_v{0.0};
+    pre_update_primitive_check(imposed_halfspace);
+    pre_update_rate_check(imposed_halfspace);
+    imposed_halfspace.update_primitives(time_v);
+    post_update_primitive_check(imposed_halfspace);
+    post_update_rate_check(imposed_halfspace);
   }
 
 }  // namespace
