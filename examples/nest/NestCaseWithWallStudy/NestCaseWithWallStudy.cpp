@@ -261,7 +261,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
       simulator
           ->get_environment<elastica::environments::tags::CollisionSystem>();
   collision_solver->time_interval_between_detection() =
-      20.0 * dt;  // anything > 0.0
+      1000.0 * dt;  // anything > 0.0
 
   const ::elastica::real_t gravity_acc(
       ::elastica::get<gravitational_acc>(input_parameters));
@@ -366,6 +366,7 @@ void NestCaseWithWallStudy::run() {
 
     // Logging
     if (not(current_iteration() % write_interval)) {
+
       // Record energy
       for (auto const& rod_ref : rod_refs) {
         energies.emplace_back(
@@ -408,7 +409,6 @@ void NestCaseWithWallStudy::run() {
       temporal_file.close();
       rod_coordinates.clear();
 
-      // TODO : replace with a csv writer
       auto& imposed_plane = imposed_half_space_ref.get();
       times_and_forces.emplace_back(current_time(), imposed_plane.get_force());
       sprintf(file_name, "data/imposed_plane_%08d.csv", i);
@@ -425,6 +425,25 @@ void NestCaseWithWallStudy::run() {
       nest_diagnostics_file << std::endl;
       nest_diagnostics_file.close();
       times_and_forces.clear();
+
+      // Record Interpenetration
+      auto& collision_system =
+          simulator
+              ->get_environment<elastica::environments::tags::CollisionSystem>();
+      auto& contacts = collision_system->contacts();
+      using Penetrations = std::vector<elastica::real_t>;
+      Penetrations penetrations;
+      penetrations.reserve(contacts.size());
+      std::transform(std::cbegin(contacts), std::cend(contacts),
+                     std::back_inserter(penetrations),
+                     [](auto& c) { return -c.get_distance(); });
+      sprintf(file_name, "data/penetrations_%08d.csv", i);
+      temporal_file.open(file_name);
+      for (auto const& depth : penetrations){
+        temporal_file << std::set_precision(16) << depth << '\n';
+      }
+      temporal_file.close();
+      penetrations.clear();
     }
 
     // Actual STEP!!

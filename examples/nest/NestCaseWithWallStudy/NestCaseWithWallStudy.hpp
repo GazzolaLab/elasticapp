@@ -228,7 +228,20 @@ TODO: Check stress strain curves!
                    std::back_inserter(return_list), [this](RodRef& rod_ref) {
                      return this->communicate_from(rod_ref);
                    });
-    return return_list;
+
+    // return also the interpenetration here
+    auto& collision_system =
+        simulator
+            ->get_environment<elastica::environments::tags::CollisionSystem>();
+    auto& contacts = collision_system->contacts();
+    using Penetrations = std::vector<elastica::real_t>;
+    Penetrations penetrations;
+    penetrations.reserve(contacts.size());
+    std::transform(std::cbegin(contacts), std::cend(contacts),
+                   std::back_inserter(penetrations),
+                   [](auto& c) { return -c.get_distance(); });
+
+    return std::make_tuple(return_list, std::move(penetration));
   }
 };
 
