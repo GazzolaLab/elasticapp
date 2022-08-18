@@ -42,11 +42,11 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
       ::elastica::get<shear_modulus>(input_parameters),
       // Properties below don't matter
       // Contact stiffness
-      ::elastica::get<contact_stiffness>(input_parameters) / 1e2,
+      ::elastica::get<contact_stiffness>(input_parameters) / 1e3,
       // normal contact damping
-      ::elastica::get<contact_damping>(input_parameters) / 10,
+      ::elastica::get<contact_damping_normal>(input_parameters) / 10,
       // tangent contact damping
-      ::elastica::get<contact_damping>(input_parameters) / 10,
+      ::elastica::get<contact_damping_tangential>(input_parameters) / 10,
       // coefficient of static friction
       0.4,
       // coefficient of dynamic friction
@@ -64,9 +64,9 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
       // Contact stiffness
       ::elastica::get<contact_stiffness>(input_parameters),
       // normal contact damping
-      ::elastica::get<contact_damping>(input_parameters),
+      ::elastica::get<contact_damping_normal>(input_parameters),
       // tangent contact damping
-      ::elastica::get<contact_damping>(input_parameters),
+      ::elastica::get<contact_damping_tangential>(input_parameters),
       // coefficient of static friction
       0.4,
       // coefficient of dynamic friction
@@ -91,8 +91,8 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   // initialisation
   // Define rod ----Random rods
   std::random_device rd;
-  //  std::mt19937 mt(rd());
-  std::mt19937 mt(0);  // fixed seed
+  std::mt19937 mt(rd()); // Varying seed
+  //std::mt19937 mt(0);  // fixed seed
   std::uniform_real_distribution<::elastica::real_t> dist_r(0.0, R);
   std::uniform_real_distribution<::elastica::real_t> dist_h(base_radius, H);
   std::uniform_real_distribution<::elastica::real_t> dist_ang(0.0, 2 * M_PI);
@@ -177,8 +177,12 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   ::elastica::Rot3 Q_top = {plane_normal_top, plane_binormal_top,
                             plane_tangent_top};
   auto top_moving_wall =
-      [original_top_height](::elastica::real_t) noexcept -> ::elastica::real_t {
-    return original_top_height;
+      [original_top_height](::elastica::real_t time) noexcept -> ::elastica::real_t {
+    const ::elastica::real_t final_height(50);
+    const ::elastica::real_t rectified_time(3.0); // wait til
+    const ::elastica::real_t move_duration(4.0);
+    const ::elastica::real_t m = (original_top_height - final_height) / (-move_duration);
+    return original_top_height; // * (time < rectified_time) + (m * (time - rectified_time) + original_top_height) * (time >= rectified_time && time < rectified_time+move_duration) + final_height * (time >= rectified_time+move_duration);
   };
   auto always_zero_ = [](::elastica::real_t) noexcept -> ::elastica::real_t {
     return 0.0;
@@ -280,6 +284,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
 
 void NestCaseWithWallStudy::step() {
   // Reduce contact detection interval
+  /*
   const std::uint64_t flag_iteration(5.0 / current_dt());
   if (get_current_iteration().step() == flag_iteration) {
     auto& collision_solver =
@@ -291,13 +296,14 @@ void NestCaseWithWallStudy::step() {
   }
 
   // Increase contact stiffness
-  const std::uint64_t flag_iteration2(0.3 / current_dt());
+  const std::uint64_t flag_iteration2(2.0 / current_dt());
   if (get_current_iteration().step() == flag_iteration2) {
     for (auto& rod_ref : rod_refs) {
       auto id(::elastica::get<::elastica::tags::Material>(rod_ref.get()));
       id = wall_material;
     }
   }
+  */
 
   simulator->step(time_stepper, get_current_time(), get_dt(),
                   get_current_iteration());
@@ -366,6 +372,7 @@ void NestCaseWithWallStudy::run() {
 
     // Logging
     if (not(current_iteration() % write_interval)) {
+    //if (1) {
 
       // Record energy
       for (auto const& rod_ref : rod_refs) {
@@ -377,7 +384,7 @@ void NestCaseWithWallStudy::run() {
       }
 
       char file_name[100];
-      sprintf(file_name, "data/rod_energies_%08d.csv", i);
+      sprintf(file_name, "data/rod_energies_%010d.csv", i);
       temporal_file.open(file_name);
       for (auto const& energy : energies) {
         temporal_file << std::setprecision(16) << std::get<0UL>(energy) << ","
@@ -398,7 +405,7 @@ void NestCaseWithWallStudy::run() {
         }
       }
       // TODO : replace with a csv writer
-      sprintf(file_name, "data/rod_coordinates_%08d.csv", i);
+      sprintf(file_name, "data/rod_coordinates_%010d.csv", i);
       temporal_file.open(file_name);
       for (auto const& rod_coord : rod_coordinates) {
         temporal_file << std::setprecision(16) << std::get<x_axis>(rod_coord)
@@ -411,7 +418,7 @@ void NestCaseWithWallStudy::run() {
 
       auto& imposed_plane = imposed_half_space_ref.get();
       times_and_forces.emplace_back(current_time(), imposed_plane.get_force());
-      sprintf(file_name, "data/imposed_plane_%08d.csv", i);
+      sprintf(file_name, "data/imposed_plane_%010d.csv", i);
       std::ofstream nest_diagnostics_file;
       nest_diagnostics_file.open(file_name);
       constexpr auto Time = 0UL;
@@ -437,10 +444,10 @@ void NestCaseWithWallStudy::run() {
       std::transform(std::cbegin(contacts), std::cend(contacts),
                      std::back_inserter(penetrations),
                      [](auto& c) { return -c.get_distance(); });
-      sprintf(file_name, "data/penetrations_%08d.csv", i);
+      sprintf(file_name, "data/penetrations_%010d.csv", i);
       temporal_file.open(file_name);
       for (auto const& depth : penetrations){
-        temporal_file << std::set_precision(16) << depth << '\n';
+        temporal_file << std::setprecision(16) << depth << '\n';
       }
       temporal_file.close();
       penetrations.clear();

@@ -35,7 +35,7 @@ struct NestConfiguration {
   static inline auto make_simulator_configuration() {
     auto system_config =
         ec::make_systems_configuration<tmpl::list<CosseratRod>>(
-            ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{500}),
+            ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{128UL}),
             ec::make_iteration_policy(
                 ec::iterate_across_system_types_in(ec::seq),
                 ec::iterate_over_systems_in(ec::par)));
@@ -169,9 +169,15 @@ TODO: Check stress strain curves!
     static type default_value() { return 1e6; }
   };
 
-  struct contact_damping {
+  struct contact_damping_normal {
     using type = ::elastica::real_t;
-    static constexpr String help = {"Contact damping"};
+    static constexpr String help = {"Contact damping in normal direction"};
+    static type default_value() { return 1e1; }
+  };
+
+  struct contact_damping_tangential {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Contact damping in tangential direction"};
     static type default_value() { return 1e1; }
   };
 
@@ -184,7 +190,7 @@ TODO: Check stress strain curves!
   using Parameters =
       tmpl::list<n_rods, n_elements, damping, youngs_modulus, shear_modulus,
                  gravitational_acc, radius, length, dt, contact_stiffness,
-                 contact_damping, final_sim_time, packing_initial_vertical_span,
+                 contact_damping_normal, contact_damping_tangential, final_sim_time, packing_initial_vertical_span,
                  packing_initial_radial_span>;
 
   /* Required functions */
@@ -241,7 +247,7 @@ TODO: Check stress strain curves!
                    std::back_inserter(penetrations),
                    [](auto& c) { return -c.get_distance(); });
 
-    return std::make_tuple(return_list, std::move(penetration));
+    return std::make_tuple(return_list, std::move(penetrations));
   }
 };
 
