@@ -189,7 +189,8 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
       ek::translate_along<elastica::EulerianFrame::Y>(
           ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
       ek::translate_along<elastica::EulerianFrame::Z>(
-          ek::mark_position(top_moving_wall), ek::mark_velocity(always_zero_)));
+          ek::mark_position(ImposedHalfSpace::anchor_to_com_p(top_moving_wall)),
+          ek::mark_velocity(always_zero_)));
   simulator->emplace_back<ImposedHalfSpace>(
       ::elastica::collision::HalfSpacePrimitive(1UL, 1UL, true, plane_position_top,
                                             Q_top, wall_material),
@@ -289,7 +290,7 @@ void NestCaseWithWallStudy::step() {
                                 // set_dt(1.0e-6);
   }
 
-  // Increase contact stiffness 
+  // Increase contact stiffness
   const std::uint64_t flag_iteration2(0.3 / current_dt());
   if (get_current_iteration().step() == flag_iteration2) {
     for (auto& rod_ref : rod_refs) {
