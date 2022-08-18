@@ -23,6 +23,6 @@ add_elastica_case_study(PyRodPlaneCollisionCaseStudy
         AS elastica::python_object
         )
 #
-elastica_python_link_libraries(PyRodPlaneCollisionCaseStudy PRIVATE Blaze YamlCpp)
-elastica_python_add_dependencies(PyRodPlaneCollisionCaseStudy PyArrays)
+elastica_python_link_libraries(PyRodPlaneCollisionCaseStudy PRIVATE Blaze)
+elastica_python_add_dependencies(PyRodPlaneCollisionCaseStudy PyCosseratRods)
 

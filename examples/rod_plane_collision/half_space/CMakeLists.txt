@@ -21,5 +21,5 @@ add_elastica_case_study(PyRodHalfSpaceCollisionCaseStudy
         AS elastica::python_object
         )
 #
-elastica_python_link_libraries(PyRodHalfSpaceCollisionCaseStudy PRIVATE Blaze YamlCpp)
-elastica_python_add_dependencies(PyRodHalfSpaceCollisionCaseStudy PyArrays)
+elastica_python_link_libraries(PyRodHalfSpaceCollisionCaseStudy PRIVATE Blaze)
+elastica_python_add_dependencies(PyRodHalfSpaceCollisionCaseStudy PyCosseratRods)
