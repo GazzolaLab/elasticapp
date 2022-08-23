@@ -8,18 +8,10 @@ from .run import run_simulation, CaseStudy, CaseStudyParameters
 
 
 def run_study(
-        cs: CaseStudy,
-        params: CaseStudyParameters,
-        save_to_csv: bool,
-        save_figure: bool,
+    cs: CaseStudy,
+    params: CaseStudyParameters,
+    save_to_csv: bool,
+    save_figure: bool,
 ):
     stats = run_simulation(cs, params)
     return post_process_and_block(params, stats, save_to_csv, save_figure)
-
-
-def replace_docstring(doc):
-    def dec(obj):
-        obj.__doc__ = doc
-        return obj
-
-    return dec

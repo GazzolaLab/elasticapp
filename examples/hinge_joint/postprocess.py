@@ -18,11 +18,20 @@ class Stats:
     velocity: List[np.ndarray] = field(default_factory=list)
 
 
+@dataclass
+class VisualizationParams:
+    save_figure: bool = False
+    file_name: str = "hinge_joint.mp4"
+    frame_skip: PositiveInt = PositiveInt(1)
+    fps: PositiveInt = PositiveInt(15)
+
+
 def plot_position(
     rod1_stats: Stats,
     rod2_stats: Stats,
-    save_figure: bool = False,
-    filename: str = "spherical_joint_test.png",
+    viz_params: VisualizationParams = VisualizationParams(
+        False, "spherical_joint_test.png"
+    ),
 ) -> plt.Figure:
     position_of_rod1 = np.asarray(rod1_stats.position)
     position_of_rod2 = np.asarray(rod2_stats.position)
@@ -45,8 +54,8 @@ def plot_position(
 
         fig.show()
 
-    if save_figure:
-        fig.savefig(filename)
+    if viz_params.save_figure:
+        fig.savefig(viz_params.file_name)
 
     return fig
 
@@ -54,10 +63,9 @@ def plot_position(
 def animate_scenario(
     rod1_stats: Stats,
     rod2_stats: Stats,
-    video_name: str = "hinge_joint.mp4",
-    fps: PositiveInt = 15,
-    frame_skip: PositiveInt = 1,
-    save_figure: bool = False,
+    *,
+    viz_params: VisualizationParams = VisualizationParams(),
+    **kwargs,
 ) -> FuncAnimation:  # (time step, x/y/z, node)
 
     time = np.asarray(rod1_stats.time)
@@ -135,17 +143,18 @@ def animate_scenario(
             return text_time, text_step, rod1_line, rod2_line
 
         ani = FuncAnimation(
-            fig, update, frames=range(0, n_frames, frame_skip), blit=True
+            fig, update, frames=range(0, n_frames, viz_params.frame_skip), blit=True
         )
-        if save_figure:
+        if viz_params.save_figure:
             progress.console.print(
                 "[red]Rendering animation to file. It will be displayed on-screen once completed."
             )
             progress.update(animation_task, visible=True)
+            kwargs.update({"fps": kwargs.get("fps", viz_params.fps)})
             ani.save(
-                video_name,
-                fps=fps,
+                viz_params.file_name,
                 extra_args=["-vcodec", "h264", "-pix_fmt", "yuv420p"],
+                **kwargs,
             )
 
     return ani

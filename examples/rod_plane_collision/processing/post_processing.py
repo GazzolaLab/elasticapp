@@ -6,10 +6,10 @@ from matplotlib import pyplot as plt
 
 
 def post_process_and_block(
-        params,
-        rod_collection_stats: SimulationStats,
-        save_to_csv: bool,
-        save_figure: bool,
+    params,
+    rod_collection_stats: SimulationStats,
+    save_to_csv: bool,
+    save_figure: bool,
 ):
     energy_fig = plot_energies(
         rod_group_stats=rod_collection_stats, save_figure=save_figure
@@ -25,7 +25,9 @@ def post_process_and_block(
 
     if save_to_csv:
         import pandas as pd
-        for idx, rod_stats in rod_collection_stats:
+
+        for idx, rod_stats in enumerate(rod_collection_stats):
+            # FIXME : DataFrame constructor not called properly
             pd.DataFrame(rod_stats).to_csv(f"rod_{idx}_states.csv")
 
     run_on_debug_mode = True

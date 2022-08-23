@@ -52,7 +52,7 @@ def plot_trajectory(stats: Stats, save_figure: bool = False) -> plt.Figure:
         fig.show()
 
     if save_figure:
-        fig.savefig("butterfly.pdf")
+        fig.savefig("butterfly.png")
 
     return fig
 
@@ -86,6 +86,6 @@ def plot_energies(stats: Stats, save_figure: bool = False) -> plt.Figure:
         new_fig.show()
 
     if save_figure:
-        new_fig.savefig("energies.pdf")
+        new_fig.savefig("energies.png")
 
     return new_fig

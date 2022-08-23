@@ -16,19 +16,19 @@ import numpy as np
 
 # 2. Import the Python-binded case study bindings as modules. Please note
 # the following:
-# 2.1 Blaze needs to be imported first before any case study can be
+# 2.1 CosseratRods needs to be imported first before any case study can be
 # imported.
 # 2.2 All case studies registered with the CMake case-study helper sit in
 # elasticapp.CaseStudies.
-from elasticapp import Arrays  # noqa
+from elasticapp.Systems import CosseratRods  # noqa
 from elasticapp.CaseStudies.PyAxialStretchingCaseStudy import AxialStretchingCaseStudy
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
 
-from cli import print_description, track_simulation
+from cli import track_simulation, replace_docstring, clickify
 
 
-def run_example(
+def run_study(
     pyelastica_file: os.PathLike = "",
     save_to_csv: bool = False,
     save_figure: bool = False,
@@ -45,9 +45,9 @@ def run_example(
     base_length = 1.0
     """
     We set this value higher than usual because it accelerates convergence
-    to the quasi-steady state, where forces balance out each other. We are only 
+    to the quasi-steady state, where forces balance out each other. We are only
     interested in this state, to enable comparison with theory. It is worth noting
-    that in this state, rates (v and omega) are zero : hence the damping contribution 
+    that in this state, rates (v and omega) are zero : hence the damping contribution
     to force is zero---so this coefficient does not really matter.
     """
     damping_rate = 1.0
@@ -66,7 +66,7 @@ def run_example(
     # AxialStretchingCaseStudy.help().
     # For C++ implementation details refer to:
     # elastica/examples/axial_stretching/AxialStretchingCaseStudy.cpp
-    cs = AxialStretchingCaseStudy(
+    params = AxialStretchingCaseStudy.params(
         n_elements=n_elem,
         damping_rate=damping_rate,
         youngs_modulus=youngs_modulus,
@@ -77,6 +77,7 @@ def run_example(
         rampup_profile=rampup_profile,
         dt=dt,
     )
+    cs = AxialStretchingCaseStudy(params)
 
     times = []
     iterations = []
@@ -105,15 +106,16 @@ def run_example(
 
         # 5.8 `cs.communicate()` : Gets the system properties marked in the
         # function of the same name, defined in AxialStretchingCaseStudy.hpp
-        curr_positions, curr_velocities = cs.communicate()
+        # In this case, we get the CosseratRod
+        curr_rod = cs.communicate()
         times.append(curr_time)
         iterations.append(curr_iteration)
 
         # 6. To use your numpy-skills, just use np.asarray()! Memory is not
         # allocated, rather it uses the memory in the C++ buffer. So changes
         # are reflected on the C++ side too!
-        tip_displacements.append(np.asarray(curr_positions)[0, -1])
-        velocity_norms.append(np.linalg.norm(np.asarray(curr_velocities)))
+        tip_displacements.append(np.asarray(curr_rod.get_position())[0, -1])
+        velocity_norms.append(np.linalg.norm(np.asarray(curr_rod.get_velocity())))
 
     # 7. Postprocess and visualize the results.
     # First-order theory with base-length
@@ -175,11 +177,21 @@ def run_example(
         )
 
     if save_figure:
-        fig.savefig("axial_stretching.pdf")
+        fig.savefig("axial_stretching.png")
 
     plt.show()
 
+    return fig
+
+
+@clickify()
+@replace_docstring(AxialStretchingCaseStudy.__doc__)
+def run(
+    data: bool,
+    fig: bool,
+):
+    run_study("", data, fig)
+
 
 if __name__ == "__main__":
-    print_description(AxialStretchingCaseStudy)
-    run_example(save_to_csv=False)
+    run()

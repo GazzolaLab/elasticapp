@@ -1,19 +1,17 @@
+import click
 from elasticapp.CaseStudies.PyRodHalfSpaceCollisionCaseStudy import (
     RodHalfSpaceCollisionCaseStudy,
 )
 from elasticapp.Systems import CosseratRods  # noqa
+import numpy as np
 
-from cli.help import print_description
-from processing import run_study, replace_docstring
-from processing.cli import clickify
+from cli import replace_docstring, clickify
+from processing import run_study
 
 case = RodHalfSpaceCollisionCaseStudy
 
 
-def setup(
-        inclination_angle: float
-):
-    print_description(case)
+def setup(inclination_angle: float):
     # Parameters below are one-to-one from PRL nest
     base_radius = 1.21e-3  # m
     case_params = case.params(
@@ -36,14 +34,18 @@ def setup(
     return case(case_params), case_params
 
 
-@clickify()
-@replace_docstring(case.__doc__)
+@clickify(
+    click.option(
+        "--inclination", default=np.deg2rad(45.0), type=float, help="Inclination angle"
+    )
+)
+@replace_docstring(case)
 def run(
-        inclination: float,
-        csv: bool,
-        fig: bool,
+    inclination: float,
+    data: bool,
+    fig: bool,
 ):
-    stats = run_study(*setup(inclination), csv, fig)
+    return run_study(*setup(inclination), data, fig)
 
 
 if __name__ == "__main__":

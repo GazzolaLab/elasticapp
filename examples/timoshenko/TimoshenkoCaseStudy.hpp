@@ -152,11 +152,7 @@ Section 3.4.3.
   void step();
   void run();
   inline auto communicate() {
-    // TODO : inefficiency : slices at runtime, slice can be stored instead
-    // slices at runtime, slice can be eliminated
-    auto slice = rod_ref.get();
-    return std::make_tuple(::elastica::position(slice),
-                           ::elastica::velocity(slice));
+    return rod_ref.get();
   }
 
   TimoshenkoCaseStudy() = default;

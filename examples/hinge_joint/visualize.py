@@ -1,11 +1,10 @@
 import numpy as np
-import pandas as pd
-from elasticapp import Arrays  # noqa
+from elasticapp.Systems import CosseratRods  # noqa
 from elasticapp.CaseStudies.PyHingeJointCaseStudy import HingeJointCaseStudy
 from matplotlib import pyplot as plt
 
-from cli import print_description, track_simulation
-from postprocess import plot_position, animate_scenario, Stats
+from cli import track_simulation, replace_docstring, clickify
+from postprocess import plot_position, animate_scenario, Stats, VisualizationParams
 
 
 def run_example(
@@ -22,12 +21,13 @@ def run_example(
     time_interval = sample_interval * dt
     n_steps = int(final_time / time_interval)
 
-    cs = HingeJointCaseStudy(
+    params = HingeJointCaseStudy.params(
         n_elements=n_elem,
         radius=base_radius,
         length=base_length,
         dt=dt,
     )
+    cs = HingeJointCaseStudy(params)
 
     first_rod_stats = Stats()
     second_rod_stats = Stats()
@@ -38,13 +38,13 @@ def run_example(
             stats.time.append(cas.current_time())
             stats.step.append(cas.current_iteration())
 
-    def add_to(s, p, v):
-        s.position.append(np.copy(p))
-        s.velocity.append(np.copy(v))
+    def add_to(s, r):
+        s.position.append(np.copy(r.get_position()))
+        s.velocity.append(np.copy(r.get_velocity()))
 
-    def collect_more(*pvs):
-        for stat, pv in zip(rod_stats, pvs):
-            add_to(stat, *pv)
+    def collect_more(*rods):
+        for stat, r in zip(rod_stats, rods):
+            add_to(stat, r)
 
     def collect_stats_from(cas):
         collect(cas)
@@ -57,18 +57,35 @@ def run_example(
         cs.run_for(additional_time=time_interval)
         collect_stats_from(cs)
 
-    plot_position(first_rod_stats, second_rod_stats, save_figure=save_figure)
+    position_fig = plot_position(
+        first_rod_stats,
+        second_rod_stats,
+        viz_params=VisualizationParams(save_figure, "spherical_joint_test.png"),
+    )
     animation = animate_scenario(
-        first_rod_stats, second_rod_stats, save_figure=save_figure, frame_skip=5
+        first_rod_stats,
+        second_rod_stats,
+        viz_params=VisualizationParams(save_figure=save_figure, frame_skip=5),
     )
 
     if save_to_csv:
+        import pandas as pd
+
+        # FIXME : DataFrame constructor not called properly
         pd.DataFrame(first_rod_stats).to_csv("hinge_joint_first.csv")
         pd.DataFrame(second_rod_stats).to_csv("hinge_joint_second.csv")
 
     plt.show()
 
 
+@clickify()
+@replace_docstring(HingeJointCaseStudy)
+def run_case(
+    data: bool,
+    fig: bool,
+):
+    run_example(data, fig)
+
+
 if __name__ == "__main__":
-    print_description(HingeJointCaseStudy)
-    run_example()
+    run_case()

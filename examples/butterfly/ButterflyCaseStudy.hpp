@@ -142,8 +142,7 @@ implemented correctly.
   }
 
   inline auto communicate() {
-    return std::tuple_cat(std::make_tuple(::elastica::position(rod_ref.get())),
-                          compute_elastic_energy(), compute_kinetic_energy());
+    return rod_ref.get();
   }
 
   ButterflyCaseStudy() = default;

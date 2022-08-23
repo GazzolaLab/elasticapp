@@ -3,18 +3,15 @@ from elasticapp.CaseStudies.PyRodPlaneCollisionCaseStudy import (
     RodPlaneCollisionCaseStudy,
 )
 from elasticapp.Systems import CosseratRods  # noqa
+import numpy as np
 
-from cli.help import print_description
-from processing import run_study, replace_docstring
-from processing.cli import clickify
+from cli import replace_docstring, clickify
+from processing import run_study
 
 case = RodPlaneCollisionCaseStudy
 
 
-def setup(
-        inclination_angle: float
-):
-    print_description(case)
+def setup(inclination_angle: float):
     # Parameters below are one-to-one from PRL nest
     base_radius = 1.21e-3  # m
     case_params = case.params(
@@ -25,7 +22,7 @@ def setup(
         shear_modulus=8e9,  # Pa
         damping_rate=1e-10,  # lowest value allowed for energy preservation
         gravitational_acc=-9.80665,
-        contact_stiffness=1e-1,
+        contact_stiffness=1e3,
         contact_damping=1e-10,  # lowest value allowed for energy preservation
         contact_detection_time_interval=5e-6,
         # Set it from 0.0 and start increasing, adjust based on energy conservation
@@ -37,14 +34,18 @@ def setup(
     return case(case_params), case_params
 
 
-@clickify()
-@replace_docstring(case.__doc__)
+@clickify(
+    click.option(
+        "--inclination", default=np.deg2rad(45.0), type=float, help="Inclination angle"
+    )
+)
+@replace_docstring(case)
 def run(
-        inclination: float,
-        csv: bool,
-        fig: bool,
+    inclination: float,
+    data: bool,
+    fig: bool,
 ):
-    run_study(*setup(inclination), csv, fig)
+    return run_study(*setup(inclination), data, fig)
 
 
 if __name__ == "__main__":

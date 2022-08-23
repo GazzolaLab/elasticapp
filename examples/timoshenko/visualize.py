@@ -1,9 +1,11 @@
 import numpy as np
-from elasticapp import Arrays  # noqa
+import click
+from elasticapp.Systems import CosseratRods  # noqa
 from elasticapp.CaseStudies.PyTimoshenkoCaseStudy import TimoshenkoCaseStudy
 from matplotlib import pyplot as plt
+import os
 
-from cli import print_description, track_simulation
+from cli import track_simulation, replace_docstring, clickify
 from helpers.analytical import analytical_shearable, analytical_unshearable
 from helpers.postprocess import plot_beam, plot_velocity
 
@@ -24,9 +26,9 @@ def run_example(
 
     """
     We set this value higher than usual because it accelerates convergence
-    to the quasi-steady state, where forces balance out each other. We are only 
+    to the quasi-steady state, where forces balance out each other. We are only
     interested in this state, to enable comparison with theory. It is worth noting
-    that in this state, rates (v and omega) are zero : hence the damping contribution 
+    that in this state, rates (v and omega) are zero : hence the damping contribution
     to force is zero---so this coefficient does not really matter.
     """
     damping_rate = 5e-4
@@ -45,7 +47,7 @@ def run_example(
     time_interval = sample_interval * dt
     n_steps = int(final_time / time_interval)
 
-    cs = TimoshenkoCaseStudy(
+    params = TimoshenkoCaseStudy.params(
         n_elements=n_elem,
         damping_rate=damping_rate,
         youngs_modulus=youngs_modulus,
@@ -57,14 +59,18 @@ def run_example(
         rampup_profile=rampup_profile,
         dt=dt,
     )
+    # These set of parmeters are too well resolved and lead to a system warning.
+    # The following line explicitly disables this.
+    os.environ["ELASTICA_NO_SYSTEM_WARN"] = "1"
+    cs = TimoshenkoCaseStudy(params)
 
     times = []
     velocity_norms = []
 
     def collect_statistics(cas):
         times.append(cas.current_time())
-        _, curr_velocity_norms = cs.communicate()
-        velocity_norms.append(np.linalg.norm(np.asarray(curr_velocity_norms)))
+        r = cs.communicate()
+        velocity_norms.append(np.linalg.norm(np.asarray(r.get_velocity())))
 
     collect_statistics(cs)
 
@@ -72,8 +78,8 @@ def run_example(
         cs.run_for(additional_time=time_interval)
         collect_statistics(cs)
 
-    final_positions, _ = cs.communicate()
-    final_positions = np.copy(final_positions)
+    r = cs.communicate()
+    final_positions = np.copy(r.get_position())
     plot_beam(
         n_elem,
         final_positions,
@@ -108,6 +114,19 @@ def run_example(
     plt.show()
 
 
+@clickify(
+    click.option(
+        "--shearable",
+        is_flag=True,
+        show_default=True,
+        default=True,
+        help="Enable shearable rod",
+    )
+)
+@replace_docstring(TimoshenkoCaseStudy)
+def run_case(shearable, data, fig):
+    return run_example(shearable, data, fig)
+
+
 if __name__ == "__main__":
-    print_description(TimoshenkoCaseStudy)
-    run_example(save_to_csv=False)
+    run_case()

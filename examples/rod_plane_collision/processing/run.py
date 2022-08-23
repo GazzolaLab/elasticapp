@@ -9,8 +9,8 @@ from cli.progress import track_simulation
 #     RodPlaneCollisionCaseStudyParameters, RodHalfSpaceCollisionCaseStudyParameters
 # ]
 # TODO : define interface for case-studies
-CaseStudy = TypeVar('CaseStudy')
-CaseStudyParameters = TypeVar('CaseStudyParameters')
+CaseStudy = TypeVar("CaseStudy")
+CaseStudyParameters = TypeVar("CaseStudyParameters")
 
 
 def setup_stats(cs: CaseStudy, params: CaseStudyParameters) -> SimulationStats:

@@ -89,11 +89,7 @@ Gazzola et. al. R. Soc. 2018  section 3.4.1
   void run();
 
   inline auto communicate() {
-    auto rod_slice = rod_ref.get();
-    return std::make_tuple(::elastica::position(rod_slice),
-                           ::elastica::director(rod_slice),
-                           ::elastica::velocity(rod_slice),
-                           ::elastica::angular_velocity(rod_slice));
+    return rod_ref.get();
   }
 
   HelicalBucklingCaseStudy() = default;

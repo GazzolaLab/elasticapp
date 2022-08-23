@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 from cli import track_simulation
 from elasticapp.CaseStudies.PyRodCollisionCaseStudy import (
     RodCollisionCaseStudy,
@@ -16,7 +15,9 @@ def run_rod_collision_case_study(
     save_to_csv: bool = False,
     save_figure: bool = False,
 ):
-    """This is purely for debugging alone, and can be accessed if ELASTICA_DEBUG
+    """Run rod collison study"""
+
+    """This varaible is purely for debugging alone, and can be accessed if ELASTICA_DEBUG
     is set to true. This is left behind for testing purposes"""
     run_on_debug_mode = False
     if run_on_debug_mode:
@@ -30,13 +31,14 @@ def run_rod_collision_case_study(
     final_time = 15.0
     time_interval = sample_interval * dt
     n_steps = int(final_time / time_interval)
-
-    cs = RodCollisionCaseStudy(
+    params = RodCollisionCaseStudy.params(
         angle_of_inclination=angle_of_inclination,
         contact_stiffness=contact_stiffness,
         contact_damping=contact_damping,
         dt=dt,
     )
+
+    cs = RodCollisionCaseStudy(params)
 
     def setup_stats(cas):
         if run_on_debug_mode:
@@ -190,6 +192,9 @@ def run_rod_collision_case_study(
                 print(np.asarray(primitive_lengths)[idx, 1])
 
     if save_to_csv:
+        import pandas as pd
+
+        # FIXME : DataFrame constructor not called properly
         pd.DataFrame(first_cosserat_rod_stats).to_csv("first_cosserat_rod_states.csv")
         pd.DataFrame(second_cosserat_rod_stats).to_csv("second_cosserat_rod_states.csv")
 

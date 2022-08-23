@@ -154,9 +154,7 @@ oscillations enables comparison with theory.
   void step();
   void run();
   inline auto communicate() {
-    // TODO : inefficiency : slices at runtime, slice can be stored instead
-    return std::make_tuple(::elastica::position(rod_ref.get()),
-                           ::elastica::velocity(rod_ref.get()));
+    return rod_ref.get();
   }
 
   AxialStretchingCaseStudy() = default;

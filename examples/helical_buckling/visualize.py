@@ -1,8 +1,8 @@
 import numpy as np
-from elasticapp import Arrays  # noqa
+from elasticapp.Systems import CosseratRods  # noqa
 from elasticapp.CaseStudies.PyHelicalBucklingCaseStudy import HelicalBucklingCaseStudy
 
-from cli import print_description, track_simulation
+from cli import track_simulation, replace_docstring, clickify
 from postprocess import plot_helicalbuckling_results as plot_results
 
 
@@ -24,17 +24,18 @@ def run_example(
     # measure_index = (n_elem // 2) + 5
     # measure_index = 55
 
-    cs = HelicalBucklingCaseStudy(
+    params = HelicalBucklingCaseStudy.params(
         n_elements=n_elem,
         dt=dt,
         damping_rate=damping_rate,
     )
+    cs = HelicalBucklingCaseStudy(params)
 
     position_histories = []
 
     def collect_stats_from(cas):
-        p, _, _, _ = cas.communicate()
-        position_histories.append(np.copy(np.asarray(p)))
+        r = cas.communicate()
+        position_histories.append(np.copy(r.get_position()))
 
     for _ in track_simulation(range(n_steps)):
         cs.run_for(additional_time=time_interval)
@@ -42,6 +43,7 @@ def run_example(
     collect_stats_from(cs)
 
     if save_to_csv:
+        # FIXME : Expected 1D or 2D array, got 3D array
         np.savetxt(
             "final_position_histories.csv",
             np.asarray(position_histories),
@@ -51,6 +53,14 @@ def run_example(
     plot_results(n_elem, base_length, position_histories.pop(), save_figure=save_figure)
 
 
+@clickify()
+@replace_docstring(HelicalBucklingCaseStudy)
+def run_case(
+    data: bool,
+    fig: bool,
+):
+    run_example(data, fig)
+
+
 if __name__ == "__main__":
-    print_description(HelicalBucklingCaseStudy)
-    run_example()
+    run_case()

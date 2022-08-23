@@ -1,14 +1,14 @@
 import os
 
 import numpy as np
-from elasticapp import Arrays  # noqa
+from elasticapp.Systems import CosseratRods  # noqa
 from elasticapp.CaseStudies.PyFlexibleSwingingPendulumCaseStudy import (
     FlexibleSwingingPendulumCaseStudy,
 )
 from matplotlib import pyplot as plt
 from matplotlib.colors import to_rgb
 
-from cli import print_description, track_simulation
+from cli import track_simulation, replace_docstring, clickify
 
 
 def run_example(
@@ -33,7 +33,7 @@ def run_example(
     n_iterations = 200
     time_interval = final_time / n_iterations
 
-    cs = FlexibleSwingingPendulumCaseStudy(
+    params = FlexibleSwingingPendulumCaseStudy.params(
         n_elements=n_elem,
         damping_rate=damping_rate,
         youngs_modulus=youngs_modulus,
@@ -43,23 +43,23 @@ def run_example(
         length=base_length,
         dt=dt,
     )
+    cs = FlexibleSwingingPendulumCaseStudy(params)
 
     times = []
     tip_displacements_x = []
     tip_displacements_z = []
-    curr_time = cs.current_time()
-    times.append(curr_time)
-    curr_positions = cs.communicate()
-    tip_displacements_x.append(np.asarray(curr_positions)[0, -1])
-    tip_displacements_z.append(np.asarray(curr_positions)[2, -1])
+
+    def collect_stats(cs):
+        times.append(cs.current_time())
+        r = cs.communicate()
+        tip_displacements_x.append(np.asarray(r.get_position())[0, -1])
+        tip_displacements_z.append(np.asarray(r.get_position())[2, -1])
+
+    collect_stats(cs)
 
     for _ in track_simulation(range(n_iterations)):
         cs.run_for(additional_time=time_interval)
-        curr_time = cs.current_time()
-        curr_positions = cs.communicate()
-        times.append(curr_time)
-        tip_displacements_x.append(np.asarray(curr_positions)[0, -1])
-        tip_displacements_z.append(np.asarray(curr_positions)[2, -1])
+        collect_stats(cs)
 
     times = np.asarray(times)
     tip_displacements_x = np.asarray(tip_displacements_x)
@@ -135,6 +135,11 @@ def run_example(
                     shadow=True,
                     ncol=2,
                 )
+                if plot_cpp_py_deviation:
+                    fig2.savefig(
+                        "flexible_swinging_pendulum_tip_position_cpp_py_deviation.png"
+                    )
+
         ax.legend(
             loc="upper center",
             bbox_to_anchor=(0.5, 1.1),
@@ -154,14 +159,18 @@ def run_example(
             delimiter=",",
         )
     if save_figure:
-        fig.savefig("flexible_swinging_pendulum_tip_position.pdf")
-        fig2.savefig("flexible_swinging_pendulum_tip_position_cpp_py_deviation.pdf")
+        fig.savefig("flexible_swinging_pendulum_tip_position.png")
 
     plt.show()
 
+@clickify()
+@replace_docstring(FlexibleSwingingPendulumCaseStudy.__doc__)
+def run_case(
+    data: bool,
+    fig: bool,
+):
+    run_example("", data, fig, True)
+
 
 if __name__ == "__main__":
-    print_description(FlexibleSwingingPendulumCaseStudy)
-    reference_values_file = ""
-    # run_example(reference_file=eg_reference_file)
-    run_example(reference_file=reference_values_file, plot_cpp_py_deviation=True)
+    run_case()

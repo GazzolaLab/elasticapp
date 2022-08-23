@@ -144,20 +144,15 @@ axis).
   RodRefs rod_refs{2 * n_rod_pairs(),
                    simulator->get_invalid_ref<CosseratRod>()};
 
-  inline auto communicate_from(RodRef& ref) {
-    auto rod = ref.get();
-    return std::make_tuple(::elastica::position(rod),
-                           ::elastica::velocity(rod));
-  }
   inline auto communicate() {
     // we dont have CTAD :(
-    using CT = decltype(communicate_from(rod_refs[0UL]));
+    using CT = decltype(rod_refs[0UL].get());
     using RT = std::vector<CT>;
     RT return_list;
     return_list.reserve(rod_refs.size());
     std::transform(std::begin(rod_refs), std::end(rod_refs),
                    std::back_inserter(return_list), [this](RodRef& rod_ref) {
-                     return this->communicate_from(rod_ref);
+                     return rod_ref.get();
                    });
     return return_list;
   }

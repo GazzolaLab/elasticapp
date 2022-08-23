@@ -144,7 +144,7 @@ geometrically exact Cosserat rods. Multibody System Dynamics, 25(3), 285-312)
   void run();
   inline auto communicate() {
     // TODO : inefficiency : slices at runtime, slice can be stored instead
-    return ::elastica::position(rod_ref.get());
+    return rod_ref.get();
   }
 
   FlexibleSwingingPendulumCaseStudy() = default;

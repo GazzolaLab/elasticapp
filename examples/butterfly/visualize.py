@@ -1,18 +1,26 @@
 import numpy as np
-import pandas as pd
-from elasticapp import Arrays  # noqa
+from elasticapp.Systems import CosseratRods  # noqa
 from elasticapp.CaseStudies.PyButterflyCaseStudy import ButterflyCaseStudy
 from matplotlib import pyplot as plt
 
-from cli import print_description, track_simulation
+from cli import track_simulation, replace_docstring, clickify
 from postprocess import Stats, plot_trajectory, plot_energies
+import click
 
 
+@clickify(
+    click.option(
+        "--inclination", default=np.deg2rad(45.0), type=float, help="Inclination angle"
+    )
+)
+@replace_docstring(ButterflyCaseStudy.__doc__)
 def run_example(
-    save_to_csv: bool = False,
-    save_figure: bool = False,
+    inclination: float,
+    data: bool,
+    fig: bool,
 ):
-    sample_interval = 200
+    np.set_printoptions(floatmode="unique")
+    sample_interval = 20
 
     n_elem = 2
     base_length = 3.0
@@ -21,28 +29,29 @@ def run_example(
     time_interval = sample_interval * dt
     n_steps = int(final_time / time_interval)
 
-    cs = ButterflyCaseStudy(
+    params = ButterflyCaseStudy.params(
         n_elements=n_elem,
+        angle_of_inclination=inclination,
         length=base_length,
         dt=dt,
-        angle_of_inclination=np.deg2rad(45.0),
     )
+    cs = ButterflyCaseStudy(params)
 
     stats = Stats()
 
     def collect(t):
         stats.times.append(t)
 
-    def collect_more(p, be, se, te, re):
-        stats.positions.append(np.copy(p))
-        stats.bend_e.append(be)
-        stats.shear_e.append(se)
-        stats.translation_e.append(te)
-        stats.rotation_e.append(re)
+    def collect_more(r: CosseratRods.CosseratRod):
+        stats.positions.append(np.copy(r.get_position()))
+        stats.bend_e.append(r.compute_bending_energy())
+        stats.shear_e.append(r.compute_shearing_energy())
+        stats.translation_e.append(r.compute_translational_energy())
+        stats.rotation_e.append(r.compute_rotational_energy())
 
     def collect_stats_from(cas):
         collect(cas.current_time())
-        collect_more(*cas.communicate())
+        collect_more(cas.communicate())
 
     # initial
     collect_stats_from(cs)
@@ -52,15 +61,17 @@ def run_example(
 
         collect_stats_from(cs)
 
-    plot_trajectory(stats, save_figure=save_figure)
-    plot_energies(stats, save_figure=save_figure)
+    plot_trajectory(stats, save_figure=fig)
+    plot_energies(stats, save_figure=fig)
 
-    if save_to_csv:
+    if data:
+        import pandas as pd
+
+        # FIXME : DataFrame constructor not called properly
         pd.DataFrame(stats).to_csv("butterfly.csv")
 
     plt.show()
 
 
 if __name__ == "__main__":
-    print_description(ButterflyCaseStudy)
     run_example()
