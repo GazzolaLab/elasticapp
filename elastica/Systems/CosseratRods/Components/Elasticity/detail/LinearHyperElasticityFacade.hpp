@@ -275,7 +275,8 @@ namespace elastica {
               for (std::size_t idx = 0U; idx < dofs; ++idx) {
                 // (E, E, G) * (I_1, I_2, I_3)
                 auto prev_stiffness = stiffness;
-                stiffness = stiffness_along_principal_directions_initializer(idx + 1);
+                stiffness =
+                    stiffness_along_principal_directions_initializer(idx + 1);
                 Variable::slice(variable, idx) = real_type(0.0);
                 Variable::diagonal_assign(
                     variable, idx,

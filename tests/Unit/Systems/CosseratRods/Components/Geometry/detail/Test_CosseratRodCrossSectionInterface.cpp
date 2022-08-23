@@ -140,37 +140,45 @@ namespace {
 
     Model::initialize(model, std::move(initializer));
 
-    CHECK(model.get_element_dimension() == approx(4.0));
-    CHECK(model.get_element_volume() ==
-          approx(4.0 * blaze::sqrt(3) / 2.0));  // area * length / dilatation
+    // After compute geometry, dimension should be updated to 50.0
+    // get_second_moment_of_area return r*r (MockCrossSectionOperations)
+    // get_area is set to return r (MockCrossSectionOperations)
+    // volume = area * (initial_length / dilatation)
+    constexpr elastica::real_t r(50.0);
+    constexpr elastica::real_t area(r);
+    constexpr elastica::real_t rr(r*r);
+    constexpr elastica::real_t sf(1.6);
+    const elastica::real_t volume(4.0 * sqrt(3) / 2.0);
+    CHECK(model.get_element_dimension() == approx(r));
+    CHECK(model.get_element_volume() == approx(volume));
 
     // check if initialization is done as expected
     auto expected_call_count = make_array(11U, 10U, 10U, 9U, 10U, 10U);
     CHECK_ITERABLE_APPROX(n_times_called, expected_call_count);
 
-    CHECK(model.get_area() == approx(4.0));
-    CHECK(model.shape_factor() == approx(1.6));
+    CHECK(model.get_area() == approx(area));
+    CHECK(model.shape_factor() == approx(sf));
 
     //    using LocalFrame = typename TestGeometry<Model>::Frame;
     using LocalFrame = typename Model::Frame;
-    CHECK(model.get_second_moment_of_area<LocalFrame::D1>(0UL) == approx(16.0));
-    CHECK(model.get_second_moment_of_area<LocalFrame::D2>(0UL) == approx(16.0));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D1>(0UL) == approx(rr));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D2>(0UL) == approx(rr));
     // CustomDouble has trouble with Catch for unknown reasons
-    CHECK(model.get_second_moment_of_area<LocalFrame::D1>(0UL) == approx(16.0));
-    CHECK(model.get_second_moment_of_area<LocalFrame::D2>(0UL) == approx(16.0));
-    CHECK(model.get_second_moment_of_area<LocalFrame::D1>(5UL) == approx(16.0));
-    CHECK(model.get_second_moment_of_area<LocalFrame::D2>(5UL) == approx(16.0));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D1>(0UL) == approx(rr));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D2>(0UL) == approx(rr));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D1>(5UL) == approx(rr));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D2>(5UL) == approx(rr));
     // symmetric
-    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(0UL) == approx(32.0));
-    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(0UL) == approx(32.0));
-    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(5UL) == approx(32.0));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(0UL) == approx(2*rr));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(0UL) == approx(2*rr));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(5UL) == approx(2*rr));
 
     // This is not a good test case to have, or even a good API. So we ignore
     // this for now.
     const auto smoa = model.get_second_moment_of_area(0UL);
-    CHECK(smoa[0] == approx(16.0));
-    CHECK(smoa[1] == approx(16.0));
-    CHECK(smoa[2] == approx(32.0));
+    CHECK(smoa[0] == approx(rr));
+    CHECK(smoa[1] == approx(rr));
+    CHECK(smoa[2] == approx(2*rr));
   }
 
 }  // namespace

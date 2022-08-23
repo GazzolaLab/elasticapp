@@ -391,79 +391,24 @@ namespace elastica {
                   }
                 });
 
-            // 3. Finally do the computed variables (Initialization)
+            // 3. Computed reference variables
+            //  - ReferenceElementLength
+            //  - ReferenceVoronoiLength
             {
-              // position difference
-              auto& position(
-                  blocks::get<::elastica::tags::Position>(downstream_block));
-              // auto&
-              // director(blocks::get<::elastica::tags::Director>(downstream_block));
-              auto& dilatation(blocks::get<::elastica::tags::ElementDilatation>(
-                  downstream_block));
-              auto position_diff =
-                  Traits::Operations::difference_kernel(position);
-
-              // element_length_collection
-              auto& element_length_collection(
-                  blocks::get<::elastica::tags::ElementLength>(
-                      downstream_block));
-              element_length_collection =
-                  Traits::Operations::batch_norm(position_diff);
-
-              // reference_length_collection
-              auto& reference_length_collection(
-                  blocks::get<::elastica::tags::ReferenceElementLength>(
-                      downstream_block));
-              // reference_length_collection =
-              // Traits::Operations::batch_norm(position_diff);
-              reference_length_collection =
-                  element_length_collection / dilatation;
-
-              // reference_voronoi_length_collection
-              auto& reference_voronoi_length_collection(
-                  blocks::get<::elastica::tags::ReferenceVoronoiLength>(
-                      downstream_block));
-              reference_voronoi_length_collection =
-                  Traits::Operations::average_kernel(
-                      reference_length_collection);
-
-              // element_dilatation
-              dilatation =
-                  element_length_collection / reference_length_collection;
-
-              // voronoi_length_collection
-              auto& voronoi_length_collection(
-                  blocks::get<::elastica::tags::VoronoiLength>(
-                      downstream_block));
-              voronoi_length_collection =
-                  Traits::Operations::average_kernel(element_length_collection);
-
-              // voronoi_dilatation
-              auto& voronoi_dilatation(
-                  blocks::get<::elastica::tags::VoronoiDilatation>(
-                      downstream_block));
-              voronoi_dilatation = voronoi_length_collection /
-                                   reference_voronoi_length_collection;
-
-              // tangent_collection
-              auto& tangent_collection(
-                  blocks::get<::elastica::tags::Tangent>(downstream_block));
-              // tangent_collection = position_diff /
-              // reference_length_collection;
-              Traits::Operations::batch_division_matvec(
-                  tangent_collection, position_diff, element_length_collection);
-
-              // curvature_collection (kappa)
-              This::update_curvature(downstream_block);
-
-              // shear_stretch_strains_collection (sigma)
-              // eqt-z
-              This::update_shear_stretch_strain(downstream_block);
+              downstream_block
+                  .compute_reference_geometry_from_initial_parameters();
             }
+
+            {
+              downstream_block.update_spanwise_variables(downstream_block);
+              downstream_block.update_shear_stretch_strain(downstream_block);
+              downstream_block.update_curvature(downstream_block);
+            }
+
           }
           //********************************************************************
 
-         protected:
+         public:
           template <typename Block>
           static inline void update_curvature(Block& bl) noexcept {
             auto& curvature(blocks::get<::elastica::tags::Curvature>(bl));
@@ -482,13 +427,9 @@ namespace elastica {
                 blocks::get<::elastica::tags::ElementDilatation>(bl));
             auto& director(blocks::get<::elastica::tags::Director>(bl));
             auto& tangent(blocks::get<::elastica::tags::Tangent>(bl));
-            auto expanded_transposed_EDC =
-                Traits::Operations::expand_for_broadcast(
-                    Traits::Operations::transpose(element_dilatation));
-            Traits::Operations::batch_matvec(
-                shear_stretch_strains, director,
-                tangent % expanded_transposed_EDC  // matvecexpr
-            );
+
+            Traits::Operations::batch_matvec_scale(
+                shear_stretch_strains, director, tangent, element_dilatation);
             Traits::Operations::batch_subtract_z_unit(shear_stretch_strains);
           }
 
@@ -620,6 +561,98 @@ namespace elastica {
             return Tangent::slice(get_tangent(), idx);
           }
           //@}
+          //********************************************************************
+
+         public: // TODO: Probably need to protect this
+          //********************************************************************
+          // TODO : documentation
+          void compute_reference_geometry_from_initial_parameters() noexcept {
+            using ::elastica::tags::ElementDilatation;
+            using ::elastica::tags::Position;
+            using ::elastica::tags::ReferenceElementLength;
+            using ::elastica::tags::ReferenceVoronoiLength;
+            auto& position(blocks::get<Position>(self()));
+            auto& dilatation(blocks::get<ElementDilatation>(self()));
+            auto& reference_length(blocks::get<ReferenceElementLength>(self()));
+            auto& reference_voronoi_length(
+                blocks::get<ReferenceVoronoiLength>(self()));
+
+            auto position_diff(Traits::Operations::difference_kernel(position));
+            reference_length =
+                Traits::Operations::batch_norm(position_diff) / dilatation;
+            reference_voronoi_length =
+                Traits::Operations::average_kernel(reference_length);
+          }
+          //********************************************************************
+
+         public: // TODO: Probably make it protected depending on the scope
+          //********************************************************************
+          /*!\brief Updates rod spanwise geometric properties given state.
+          //
+          // \details
+          // Translational functions
+          // Updates rod spanwise geometric properties (elemental lengths,
+          // tangents and radii) from given nodal positions (state).
+          // Ref: eq (3.3) from \cite gazzola2018forward. \n
+          // length{i} = || position{i+1} - position{i} || \n
+          // tangent{i} = (position{i+1} - position{i}) / length{i} \n
+          //
+          // The following members are modified:
+          //  - length_batch(n_elems)
+          //  - tangent_batch(3, n_elems)
+          //  - radius_batch(n_elems)
+          //
+          // with the following inputs:
+          //  - position_batch(3, n_nodes)
+          //  - volume_batch(n_elems)
+          //
+          // \example
+          // The following shows a typical use of the
+          compute_geometry_from_state()
+          // function with the expected (correct) result also shown.
+          //
+          // \return void/None
+          //
+          */
+          template <typename Block>
+          static void update_spanwise_variables(Block& bl) noexcept {
+            // Compute eq (3.3) from 2018 RSOS paper
+            // 0. Create reference variables
+            auto& position(blocks::get<::elastica::tags::Position>(bl));
+            auto& element_length(blocks::get<tags::ElementLength>(bl));
+            auto& dilatation(blocks::get<tags::ElementDilatation>(bl));
+            auto& reference_length(
+                blocks::get<tags::ReferenceElementLength>(bl));
+            auto& tangent(blocks::get<tags::Tangent>(bl));
+            auto& voronoi_length(
+                blocks::get<::elastica::tags::VoronoiLength>(bl));
+            auto& voronoi_dilatation(
+                blocks::get<tags::VoronoiDilatation>(bl));
+            auto& reference_voronoi_length(
+                blocks::get<tags::ReferenceVoronoiLength>(bl));
+
+            // 1. Compute new lengths
+            auto position_diff(Traits::Operations::difference_kernel(position));
+            element_length =
+                Traits::Operations::batch_norm(position_diff);
+            // +1e-14; if want to match pyelastica
+            bl.template fill_ghosts_for<tags::ElementLength>();
+
+            // 2. Update tangents
+            // before division by element_length, I fill ghosts so that
+            // enable_floating_point exceptions do not throw a raise by 0 error
+            Traits::Operations::batch_division_matvec(tangent, position_diff,
+                                                      element_length);
+
+            // 3. Compute dilatation of elements
+            dilatation = element_length / reference_length;
+
+            // 4. Compute voronoi length
+            voronoi_length = Traits::Operations::average_kernel(element_length);
+
+            // 5. Compute dilatation of voronoi regions
+            voronoi_dilatation = voronoi_length / reference_voronoi_length;
+          }
           //********************************************************************
 
           //@}

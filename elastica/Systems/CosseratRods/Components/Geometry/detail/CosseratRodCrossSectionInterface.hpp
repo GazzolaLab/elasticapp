@@ -247,8 +247,6 @@ namespace elastica {
           using CrossSection::compute_cross_section_area;
           using CrossSection::compute_second_moment_of_area;
           using CrossSection::update_dimension;
-          using Parent::update_curvature;
-          using Parent::update_shear_stretch_strain;
 
          public:
           using CrossSection::shape_factor;
@@ -309,8 +307,7 @@ namespace elastica {
                   }
                 });
 
-            // 3. Computed tags
-
+            // 3. Computed tags (<conserved> volumes)
             {
               auto& volumes(blocks::get<::elastica::tags::ElementVolume>(
                   downstream_block));
@@ -321,6 +318,11 @@ namespace elastica {
                       downstream_block));
 
               volumes = compute_cross_section_area(dimensions) * ref_lengths;
+            }
+
+            // 4. Update cross-sectional variables (dimension)
+            {
+              downstream_block.compute_cross_sectional_variables();
             }
           }
           //********************************************************************
@@ -434,144 +436,36 @@ namespace elastica {
           //@}
           //********************************************************************
 
-          //@}
-          //********************************************************************
-
-          /*
-          inline constexpr auto get_volumes(std::size_t i) const noexcept
-          -> float_type {
-            return This::get<VolumeCollectionTag>()[i];
-          }
-
-          inline constexpr auto get_area(std::size_t i) const noexcept
-              -> float_type {
-            return self().area_impl(This::get_dimension(i));
-          }
-
-          template <DirectorType Dim, Requires<(Dim < This::D3)> = nullptr>
-          inline constexpr auto get_second_moment_of_area(
-              std::size_t i) const noexcept -> float_type {
-            return self().second_moment_of_area_impl(This::get_dimension(i));
-          }
-
-          template <DirectorType Dim, Requires<(Dim == This::D3)> = nullptr>
-          inline constexpr auto get_second_moment_of_area(
-              std::size_t i) const noexcept -> float_type {
-            // Perpendicular axis theorem
-            return float_type(2.0) *
-                   self().second_moment_of_area_impl(This::get_dimension(i));
-          }
-          inline constexpr auto get_second_moment_of_area(
-              std::size_t i) const noexcept {
-            return Vec3{get_second_moment_of_area<D1>(i),
-                        get_second_moment_of_area<D2>(i),
-                        get_second_moment_of_area<D3>(i)};
-          }
-
-          */
-
-          //      inline constexpr auto get_second_moment_of_area() const
-          //      noexcept
-          //      {
-          //        return Vec3{get_second_moment_of_area<D1>(),
-          //                    get_second_moment_of_area<D2>(),
-          //                    get_second_moment_of_area<D3>()};
-          //      }
-          //
-
-          // Technically these can be put in an interface class that has
-          // the ability to compute curvature/shear etc., but we can leave
-          // it aside for now.
-
-         private:
+         public:
           //**Computation methods***********************************************
           /*!\name Computation methods*/
           //@{
 
           //**************************************************************************
-          /*!\brief Updates rod geometric properties given state.
+          /*!\brief Update rod cross-sectional geometric properties given state.
           //
           // \details
-          // Translational functions
-          // Updates rod elemental geometric properties (elemental lengths,
-          // tangents and radii) from given nodal positions (state).
           // Ref: eq (3.3) from \cite gazzola2018forward. \n
-          // length{i} = || position{i+1} - position{i} || \n
-          // tangent{i} = (position{i+1} - position{i}) / length{i} \n
           // radius{i} = (volume{i} / M_PI / length{i})^0.5
           //
           // The following members are modified:
-          //  - length_batch(n_elems)
-          //  - tangent_batch(3, n_elems)
-          //  - radius_batch(n_elems)
+          //  - radius(n_elems) (tag: ElementDimension)
           //
           // with the following inputs:
-          //  - position_batch(3, n_nodes)
           //  - volume_batch(n_elems)
-          //
-          // \example
-          // The following shows a typical use of the
-          compute_geometry_from_state()
-          // function with the expected (correct) result also shown.
+          //  - element_length (3, n_nodes)
           //
           // \return void/None
           //
           */
-          void
-          compute_translation_diagnostics() noexcept {  // TODO: maybe rewriting
-                                                        // code is not a good
-                                                        // idea. try to collapse
-                                                        // with the code in
-                                                        // spanwise geometry.
-            // Compute eq (3.3) from 2018 RSOS paper
-            // 0. Create reference variables
-            auto& position(blocks::get<::elastica::tags::Position>(self()));
-            // auto& director(blocks::get<::elastica::tags::Director>(self()));
 
-            // 1. Compute new lengths
-            auto position_diff(Traits::Operations::difference_kernel(position));
-            auto& element_length_collection(
-                blocks::get<tags::ElementLength>(self()));
-            element_length_collection =
-                Traits::Operations::batch_norm(position_diff);
-
-            // 2. Update tangents
-            auto& tangent_collection(blocks::get<tags::Tangent>(self()));
-            auto& reference_length_collection(
-                blocks::get<tags::ReferenceElementLength>(self()));
-            // before division by element_length, I fill ghosts so that
-            // enable_floating_point exceptions do not throw a raise by 0 error
-            self().template fill_ghosts_for<tags::ElementLength>();
-            Traits::Operations::batch_division_matvec(
-                tangent_collection, position_diff,
-                element_length_collection);  // TODO should be length_collection
-
-            // 3. Compute new radius based on above lengths
+          void compute_cross_sectional_variables() noexcept {
+            // Compute new radius based on above lengths
             // volume conservation
-            auto& volume_collection(blocks::get<tags::ElementVolume>(self()));
-            auto& dimensions_collection(
-                blocks::get<tags::ElementDimension>(self()));
-            dimensions_collection = CrossSection::update_dimension(
-                volume_collection, element_length_collection);
-
-            // 4. Compute dilatation of elements
-            auto& element_dilatation_collection(
-                blocks::get<tags::ElementDilatation>(self()));
-            element_dilatation_collection =
-                element_length_collection / reference_length_collection;
-
-            // 5. Compute voronoi length
-            auto& voronoi_length_collection(
-                blocks::get<::elastica::tags::VoronoiLength>(self()));
-            voronoi_length_collection =
-                Traits::Operations::average_kernel(element_length_collection);
-
-            // 6. Compute dilatation of voronoi regions
-            auto& voronoi_dilatation(
-                blocks::get<tags::VoronoiDilatation>(self()));
-            voronoi_dilatation =
-                blocks::get<tags::VoronoiLength>(self()) /
-                blocks::get<tags::ReferenceVoronoiLength>(self());
+            auto& volume(blocks::get<tags::ElementVolume>(self()));
+            auto& element_length(blocks::get<tags::ElementLength>(self()));
+            auto& dimensions(blocks::get<tags::ElementDimension>(self()));
+            dimensions = CrossSection::update_dimension(volume, element_length);
           }
 
          public:
@@ -608,8 +502,9 @@ namespace elastica {
           void compute_shear_strains() noexcept {
             // Q (et - d_3)
             // Q is always latest, only e and t need to be computed
-            compute_translation_diagnostics();  // Dilatation updated here!
-            update_shear_stretch_strain(self());
+            Parent::update_spanwise_variables(self()); // Dilatation updated here!
+            compute_cross_sectional_variables();
+            Parent::update_shear_stretch_strain(self());
           }
           //********************************************************************
 
@@ -618,7 +513,7 @@ namespace elastica {
           void compute_curvature() noexcept {
             // kappa is the only rotational diagnostic, so we direcelty compute
             // that here
-            update_curvature(self());  // TODO : refactor
+            Parent::update_curvature(self());
           }
           //********************************************************************
 

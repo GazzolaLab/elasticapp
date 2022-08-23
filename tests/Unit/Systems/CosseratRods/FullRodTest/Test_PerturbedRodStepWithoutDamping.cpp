@@ -277,7 +277,7 @@ namespace {
       simulator->reset();
     };
     SECTION("OneStep") {
-      approx.epsilon(3e-14);
+      approx.epsilon(5e-14);
 
       std::size_t step = 1;
       while (step--)
