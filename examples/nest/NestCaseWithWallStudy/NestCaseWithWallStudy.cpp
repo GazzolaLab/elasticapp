@@ -141,11 +141,13 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
         StraightInit::Origin{origin},
         StraightInit::Direction{direction},
         StraightInit::Normal{normal},
+        //        StraightInit::ForceDampingRate{
+        //            ::elastica::get<damping>(input_parameters)},
+        //        StraightInit::TorqueDampingRate{
+        //            ::elastica::get<damping>(input_parameters)},
         // TODO later refactor to use Cosserat rod without damping
-        StraightInit::ForceDampingRate{
-            ::elastica::get<damping>(input_parameters)},
-        StraightInit::TorqueDampingRate{
-            ::elastica::get<damping>(input_parameters)},
+        StraightInit::ForceDampingRate{1e-10},
+        StraightInit::TorqueDampingRate{1e-10},
     };
     RodRef rod_ref = simulator->emplace_back<CosseratRod>(
         straight_initializer.initialize<CosseratRod>());
@@ -192,17 +194,12 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
       eco::make_rate_constraint(
           [translational_mode_damping_coeff, rotational_mode_damping_coeff](
               auto /*time*/, auto& rod_system, std::size_t index) {
-            //            ::elastica::velocity(rod_system) =
-            //                ::elastica::velocity(rod_system) *
-            //                translational_mode_damping_coeff;
-            //            ::elastica::angular_velocity(rod_system) =
-            //                ::elastica::angular_velocity(rod_system) %
-            //                rotational_mode_damping_coeff;
-            std::cout << std::setprecision(8);
-            std::cout << "translational prefactor inside lambda: "
-                      << translational_mode_damping_coeff << std::endl;
-            std::cout << "rotational prefactor inside lambda: "
-                      << rotational_mode_damping_coeff(0UL, 0UL) << std::endl;
+            ::elastica::velocity(rod_system) =
+                ::elastica::velocity(rod_system) *
+                translational_mode_damping_coeff;
+            ::elastica::angular_velocity(rod_system) =
+                ::elastica::angular_velocity(rod_system) %
+                rotational_mode_damping_coeff;
           }));
   // ===========ANALYTICAL DAMPING CODE END============================
   for (auto& rod_ref : rod_refs) {
