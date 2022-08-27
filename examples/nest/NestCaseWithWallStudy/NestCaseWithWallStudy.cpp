@@ -29,7 +29,7 @@
 #include <utility>  // pair
 
 void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
-  const ::elastica::real_t dt(::elastica::get<dt>(input_parameters));
+  const ::elastica::real_t time_step(::elastica::get<dt>(input_parameters));
 
   soft_material = elastica::create_material(
       // material density
@@ -141,66 +141,72 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
         StraightInit::Origin{origin},
         StraightInit::Direction{direction},
         StraightInit::Normal{normal},
-        //        StraightInit::ForceDampingRate{
-        //            ::elastica::get<damping>(input_parameters)},
-        //        StraightInit::TorqueDampingRate{
-        //            ::elastica::get<damping>(input_parameters)},
         // TODO later refactor to use Cosserat rod without damping
-        StraightInit::ForceDampingRate{1e-10},
-        StraightInit::TorqueDampingRate{1e-10},
+        StraightInit::ForceDampingRate{
+            ::elastica::get<damping>(input_parameters)},
+        StraightInit::TorqueDampingRate{
+            ::elastica::get<damping>(input_parameters)},
     };
     RodRef rod_ref = simulator->emplace_back<CosseratRod>(
         straight_initializer.initialize<CosseratRod>());
     rod_refs.push_back(rod_ref);
+  }
 
-    // ===========ANALYTICAL DAMPING CODE START============================
-    using Traits = ::elastica::cosserat_rod::DefaultCosseratRodTraits;
-    const ::elastica::real_t damping_coeff =
-        ::elastica::get<damping>(input_parameters);
-    const auto translational_mode_damping_coeff = std::exp(-damping_coeff * dt);
+  // Since all rods are same we create this once and reuse for all rods
+  // ===========ANALYTICAL DAMPING CODE START============================
+  using Traits = ::elastica::cosserat_rod::DefaultCosseratRodTraits;
+  const ::elastica::real_t damping_coeff =
+      ::elastica::get<damping>(input_parameters);
+  const ::elastica::real_t translational_mode_damping_coeff =
+      blaze::exp(-damping_coeff * time_step);
 
-    auto rod = rod_ref.get();
-    auto& mass = ::elastica::get<elastica::tags::Mass>(rod);
-    blaze::DynamicVector<::elastica::real_t> elemental_mass =
-        Traits::Operations::average_kernel(mass);
-    // correct elemental mass at ends
-    elemental_mass[0UL] += 0.5 * mass[0UL];
-    elemental_mass[::elastica::cosserat_rod::get_batch_elems(elemental_mass) -
-                   1UL] +=
-        0.5 * mass[::elastica::cosserat_rod::get_batch_elems(mass) - 1UL];
-    blaze::DynamicMatrix<::elastica::real_t> rotational_mode_damping_coeff =
-        blaze::exp(Traits::Operations::transpose(
-            Traits::Operations::expand_for_broadcast(elemental_mass *
-                                                     -damping_coeff * dt)));
-    constexpr std::size_t dim{3UL};
-    for (std::size_t row_idx = 0; row_idx < dim; row_idx++) {
-      for (std::size_t column_idx = 0;
-           column_idx <
-           ::elastica::cosserat_rod::get_batch_elems(elemental_mass);
-           column_idx++) {
-        rotational_mode_damping_coeff(row_idx, column_idx) = std::pow(
-            rotational_mode_damping_coeff(row_idx, column_idx),
-            ::elastica::get<::elastica::tags::InvMassSecondMomentOfInertia>(
-                rod)(row_idx, row_idx, column_idx));
-      }
+  auto rod = rod_refs[0UL].get();
+  auto& mass = ::elastica::get<elastica::tags::Mass>(rod);
+  blaze::DynamicVector<::elastica::real_t> elemental_mass =
+      Traits::Operations::average_kernel(mass);
+  // correct elemental mass at ends
+  elemental_mass[0UL] += 0.5 * mass[0UL];
+  elemental_mass[::elastica::cosserat_rod::get_batch_elems(elemental_mass) -
+                 1UL] +=
+      0.5 * mass[::elastica::cosserat_rod::get_batch_elems(mass) - 1UL];
+  blaze::DynamicMatrix<::elastica::real_t> rotational_mode_damping_coeff =
+      blaze::exp(Traits::Operations::transpose(
+          Traits::Operations::expand_for_broadcast(
+              elemental_mass * -damping_coeff * time_step)));
+  constexpr std::size_t dim{3UL};
+  for (std::size_t row_idx = 0; row_idx < dim; row_idx++) {
+    for (std::size_t column_idx = 0;
+         column_idx < ::elastica::cosserat_rod::get_batch_elems(elemental_mass);
+         column_idx++) {
+      rotational_mode_damping_coeff(row_idx, column_idx) = std::pow(
+          rotational_mode_damping_coeff(row_idx, column_idx),
+          ::elastica::get<::elastica::tags::InvMassSecondMomentOfInertia>(rod)(
+              row_idx, row_idx, column_idx));
     }
-    // setting analytical damper via constraint
-    namespace eco = ::elastica::constraints;
-    auto analytical_linear_damper = eco::make_constraint(
-        eco::make_value_constraint(
-            [](auto /*time*/, auto& rod_system, std::size_t index) {}),
-        eco::make_rate_constraint(
-            [translational_mode_damping_coeff, rotational_mode_damping_coeff](
-                auto /*time*/, auto& rod_system, std::size_t index) {
-              ::elastica::velocity(rod_system) =
-                  ::elastica::velocity(rod_system) *
-                  translational_mode_damping_coeff;
-              ::elastica::angular_velocity(rod_system) =
-                  ::elastica::angular_velocity(rod_system) %
-                  rotational_mode_damping_coeff;
-            }));
+  }
+  // setting analytical damper via constraint
+  namespace eco = ::elastica::constraints;
+  auto analytical_linear_damper = eco::make_constraint(
+      eco::make_value_constraint(
+          [](auto /*time*/, auto& rod_system, std::size_t index) {}),
+      eco::make_rate_constraint(
+          [translational_mode_damping_coeff, rotational_mode_damping_coeff](
+              auto /*time*/, auto& rod_system, std::size_t index) {
+            //            ::elastica::velocity(rod_system) =
+            //                ::elastica::velocity(rod_system) *
+            //                translational_mode_damping_coeff;
+            //            ::elastica::angular_velocity(rod_system) =
+            //                ::elastica::angular_velocity(rod_system) %
+            //                rotational_mode_damping_coeff;
+            std::cout << std::setprecision(8);
+            std::cout << "translational prefactor inside lambda: "
+                      << translational_mode_damping_coeff << std::endl;
+            std::cout << "rotational prefactor inside lambda: "
+                      << rotational_mode_damping_coeff(0UL, 0UL) << std::endl;
+          }));
+  // ===========ANALYTICAL DAMPING CODE END============================
+  for (auto& rod_ref : rod_refs) {
     simulator->constrain(rod_ref).at(0UL).with(analytical_linear_damper());
-    // ===========ANALYTICAL DAMPING CODE END============================
   }
   final_time = ::elastica::get<final_sim_time>(input_parameters);
 
@@ -327,7 +333,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
       simulator
           ->get_environment<elastica::environments::tags::CollisionSystem>();
   collision_solver->time_interval_between_detection() =
-      1000.0 * dt;  // anything > 0.0
+      1000.0 * time_step;  // anything > 0.0
 
   const ::elastica::real_t gravity_acc(
       ::elastica::get<gravitational_acc>(input_parameters));
@@ -338,7 +344,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
 
   simulator->finalize();
   // Set the dt value
-  set_dt(dt);
+  set_dt(time_step);
   std::size_t block_count(0UL);
   simulator->for_each_block([&block_count](auto& block) { block_count++; });
   std::cout << "Block Count: " << block_count << '\n';
