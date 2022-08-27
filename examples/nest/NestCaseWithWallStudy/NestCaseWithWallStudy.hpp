@@ -17,6 +17,7 @@ Kim
 #endif
 
 #include <elastica/CaseStudy.hpp>
+#include <elastica/Simulator/Constraints.hpp>
 #include <elastica/Simulator/Environments.hpp>
 #include <elastica/Simulator/Forcing.hpp>
 #include <elastica/Simulator/Simulator.hpp>
@@ -59,11 +60,13 @@ struct NestConfiguration {
 
     return ec::make_simulator_configuration(
         ec::DefaultDomainConfiguration{}, system_config,
-        ec::DefaultParallelConfiguration{}, env_config);
+        ec::DefaultParallelConfiguration{},
+        ec::DefaultConstraintsConfiguration{}, env_config);
   }
 
   static inline auto make_simulator() {
-    return elastica::make_simulator<::elastica::modules::Environments>(
+    return elastica::make_simulator<::elastica::modules::Constraints,
+                                    ::elastica::modules::Environments>(
         make_simulator_configuration());
   }
 
@@ -190,7 +193,8 @@ TODO: Check stress strain curves!
   using Parameters =
       tmpl::list<n_rods, n_elements, damping, youngs_modulus, shear_modulus,
                  gravitational_acc, radius, length, dt, contact_stiffness,
-                 contact_damping_normal, contact_damping_tangential, final_sim_time, packing_initial_vertical_span,
+                 contact_damping_normal, contact_damping_tangential,
+                 final_sim_time, packing_initial_vertical_span,
                  packing_initial_radial_span>;
 
   /* Required functions */
