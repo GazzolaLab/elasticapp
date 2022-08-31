@@ -1,4 +1,5 @@
 rm -rf data
 mkdir data
-./example_nest_with_wall --n_rods=450 --final_sim_time=300.00 --dt=6e-7 --contact_stiffness=2e6 --packing_initial_vertical_span=300.0 --damping=85 --contact_damping_normal=1e1 --contact_damping_tangential=1e1
+export RUNSCRIPT="../../../cmake-release-gcc/bin/example_nest_with_wall"
+${RUNSCRIPT} --n_rods=450 --final_sim_time=10.00 --dt=2e-6 --contact_stiffness=2e6 --packing_initial_vertical_span=250.0 --damping=50 --contact_damping_normal=1e1 --contact_damping_tangential=1e1
 python plot_nest.py

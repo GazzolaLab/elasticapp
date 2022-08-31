@@ -7,12 +7,16 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.colors import to_rgb
 import matplotlib.patches as patches
 import os
-from datetime import datetime
 
 import glob
 
 base_paths = glob.glob("data/rod_coordinates_*.csv")
 base_paths.sort()
+
+def get_first_file_hash():
+    data = np.genfromtxt(base_paths[0], delimiter=",", )
+    return hash(data)
+
 num_files = len(base_paths)
 
 # Get number of rods
@@ -45,7 +49,7 @@ total_mass = g * rho * n_rods * (np.pi * dimension ** 2) * length
 energy_scale = E * I / length
 
 # RMSE windows
-rmse_windows = [10, 100, 1000]
+rmse_windows = [10]#, 100, 1000]
 
 def get_force_history():
     paths = glob.glob("data/imposed_plane_*.csv")
@@ -286,8 +290,8 @@ def plot_X(i, forces, rmses):
     plt.close('all')
 
 if __name__ == "__main__":
-    now = datetime.now()
-    datetimestr = now.strftime("%m-%d-%Y_%H-%M-%S")
+    unique_hash = get_first_file_hash()
+
     # Precompute
     forces = get_force_history()
     rmses = []
@@ -303,6 +307,6 @@ if __name__ == "__main__":
     #for i in tqdm(range(num_files)):
     #    plot_X(i)
     os.system(
-            f"ffmpeg -r 60 -y -s 3840x2160 -f image2 -pattern_type glob -i 'snap*.png' -vcodec libx264 -crf 15 -pix_fmt yuv420p -vf 'crop=trunc(iw/2)*2:trunc(ih/2)*2' nest_{datetimestr}.mp4"
+            f"ffmpeg -r 60 -y -s 3840x2160 -f image2 -pattern_type glob -i 'snap*.png' -vcodec libx264 -crf 15 -pix_fmt yuv420p -vf 'crop=trunc(iw/2)*2:trunc(ih/2)*2' nest_{unique_hash}.mp4"
     )
     os.system("rm -f snap*.png")
