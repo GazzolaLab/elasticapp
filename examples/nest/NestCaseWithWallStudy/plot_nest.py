@@ -15,7 +15,7 @@ base_paths.sort()
 
 def get_first_file_hash():
     data = np.genfromtxt(base_paths[0], delimiter=",", )
-    return hash(data)
+    return hash(str(data))
 
 num_files = len(base_paths)
 
@@ -36,7 +36,6 @@ Hf = 50
 rect_time = 3.0
 move_duration = 4.0
 m = (Hi - Hf) / (-move_duration);
-current_top_height = lambda time: Hi #* (time < rect_time) + (m * (time - rect_time) + Hi) * (time >= rect_time and time < rect_time+move_duration) + Hf * (time >= rect_time+move_duration);
 
 # For scaling
 g = -981.0
@@ -49,7 +48,7 @@ total_mass = g * rho * n_rods * (np.pi * dimension ** 2) * length
 energy_scale = E * I / length
 
 # RMSE windows
-rmse_windows = [10]#, 100, 1000]
+rmse_windows = [2]#, 10]#, 100, 1000]
 
 def get_force_history():
     paths = glob.glob("data/imposed_plane_*.csv")
@@ -60,7 +59,7 @@ def get_force_history():
         data = np.genfromtxt(path, delimiter=",", )
         data_col.append(data)
     data_col = np.array(data_col)
-    assert data_col.shape[1] == 4, f"{data_col.shape=}"
+    assert data_col.shape[1] == 5, f"{data_col.shape=}"
     assert data_col.shape[0] == num_files, f"{data_col.shape=}"
     return data_col
 
@@ -76,8 +75,10 @@ def get_rmse(x, target, window):
 def plot_X(i, forces, rmses):
     if i == 0:
         time = 0
+        zheight = None
     else:
         time = forces[-1,0]
+        zheight = forces[-1,4] - 5000000
     base_path = base_paths[i]
     data = np.genfromtxt(base_path, delimiter=",", )
     X, Y, Z = np.transpose(data)
@@ -176,7 +177,8 @@ def plot_X(i, forces, rmses):
     ax = fig.add_subplot(2,4,6)
     for j in range(0, n_rods):
         ax.axhline(y=0.0)
-        ax.axhline(y=current_top_height(time))
+        if zheight is not None:
+            ax.axhline(y=zheight)
         ax.plot(
             X[j * N_nodes: (j + 1) * N_nodes],
             Z[j * N_nodes: (j + 1) * N_nodes],
