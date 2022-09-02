@@ -123,6 +123,8 @@ namespace {
     Model model{};
 
     auto initializer = mock::initialize_block<Plugin>(
+        // FIXME : Remove 10UL taken from mock::initialize_block
+        blocks::initialize<tags::NElement>([]() { return 10UL; }),
         // Geometry Variables
         blocks::initialize<tags::Position>(
             [](std::size_t index) { return index * 1.0; }),
@@ -146,6 +148,8 @@ namespace {
         blocks::initialize<tags::Acceleration>([](...) { return 0.0; }),
         blocks::initialize<tags::AngularAcceleration>([](...) { return 0.0; }));
 
+    // FIXME : https://github.com/tp5uiuc/elasticapp/issues/460
+    // Don't use initialize on model
     Model::initialize(model, std::move(initializer));
 
     CHECK(model.compute_internal_forces() == 3.14);
@@ -160,6 +164,8 @@ namespace {
     DampedModel model{};
 
     auto initializer = mock::initialize_block<DampedPlugin>(
+        // FIXME : Remove 10UL taken from mock::initialize_block
+        blocks::initialize<tags::NElement>([]() { return 10UL; }),
         // Geometry Variables
         blocks::initialize<tags::Position>(
             [](std::size_t index) { return index * 1.0; }),
@@ -185,6 +191,8 @@ namespace {
         blocks::initialize<tags::Acceleration>([](...) { return 0.0; }),
         blocks::initialize<tags::AngularAcceleration>([](...) { return 0.0; }));
 
+    // FIXME : https://github.com/tp5uiuc/elasticapp/issues/460
+    // Don't use initialize on model
     DampedModel::initialize(model, std::move(initializer));
 
     // TODO: Need to initialize velocity(at least) to resolve

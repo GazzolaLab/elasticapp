@@ -79,6 +79,8 @@ namespace {
     constexpr auto n_initializers = 6UL;
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
+        // FIXME : Remove 10UL taken from mock::initialize_block
+        blocks::initialize<elastica::tags::NElement>([]() { return 10UL; }),
         blocks::initialize<tags::Position>(
             [&i = n_times_called[0]](std::size_t index) {
               ++i;
@@ -109,6 +111,8 @@ namespace {
               return 1.0;
             }));
 
+    // FIXME : https://github.com/tp5uiuc/elasticapp/issues/460
+    // Don't use initialize on model
     Model::initialize(model, std::move(initializer));
 
     // check if initialization is done as expected

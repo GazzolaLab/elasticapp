@@ -25,6 +25,7 @@
 #include "Systems/Block/Block.hpp"  // for plugin, get
 ///
 #include "Systems/CosseratRods/Tags.hpp"
+#include "Systems/common/Cardinality.hpp"
 #include "Utilities/End.hpp"
 #include "Utilities/TMPL.hpp"
 ///
@@ -202,6 +203,8 @@ namespace elastica {
               class... Components>
     class CosseratRodPlugin
         : public detail::CosseratRodPluginVariables<CRT>,
+          public HasMultipleCardinality<
+              CosseratRodPlugin<CRT, ComputationalBlock, Components...>>,
           public Components<
               CRT, ComputationalBlock<CosseratRodPlugin<CRT, ComputationalBlock,
                                                         Components...>>>...,

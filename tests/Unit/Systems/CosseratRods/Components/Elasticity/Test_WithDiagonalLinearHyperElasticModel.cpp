@@ -72,6 +72,8 @@ namespace {
     constexpr auto n_initializers = 7UL;
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
+        // FIXME : Remove 10UL taken from mock::initialize_block
+        blocks::initialize<tags::NElement>([]() { return 10UL; }),
         // Geometry Variables
         blocks::initialize<tags::Position>(
             [&i = n_times_called[0]](std::size_t index) {
@@ -116,9 +118,10 @@ namespace {
         blocks::initialize<tags::AngularVelocity>(
             [=](...) { return angular_velocity_component; }),
         blocks::initialize<tags::Acceleration>([](...) { return 3.0; }),
-        blocks::initialize<tags::AngularAcceleration>(
-            [](...) { return 1.0; }));
+        blocks::initialize<tags::AngularAcceleration>([](...) { return 1.0; }));
 
+    // FIXME : https://github.com/tp5uiuc/elasticapp/issues/460
+    // Don't use initialize on model
     Model::initialize(model, std::move(initializer));
 
     /* Check the function compute_internal_forces() */

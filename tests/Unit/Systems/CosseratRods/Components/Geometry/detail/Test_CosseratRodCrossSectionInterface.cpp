@@ -103,6 +103,8 @@ namespace {
     constexpr auto n_initializers = 6UL;
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
+        // FIXME : Remove 10UL taken from mock::initialize_block
+        blocks::initialize<elastica::tags::NElement>([]() { return 10UL; }),
         // from before
         blocks::initialize<tags::Position>(
             [&i = n_times_called[0]](std::size_t index) {
@@ -138,6 +140,8 @@ namespace {
         // n_times_called[5]](...) { ++i; return 1.0; })
     );
 
+    // FIXME : https://github.com/tp5uiuc/elasticapp/issues/460
+    // Don't use initialize on model
     Model::initialize(model, std::move(initializer));
 
     // After compute geometry, dimension should be updated to 50.0
@@ -146,7 +150,7 @@ namespace {
     // volume = area * (initial_length / dilatation)
     constexpr elastica::real_t r(50.0);
     constexpr elastica::real_t area(r);
-    constexpr elastica::real_t rr(r*r);
+    constexpr elastica::real_t rr(r * r);
     constexpr elastica::real_t sf(1.6);
     const elastica::real_t volume(4.0 * sqrt(3) / 2.0);
     CHECK(model.get_element_dimension() == approx(r));
@@ -169,16 +173,19 @@ namespace {
     CHECK(model.get_second_moment_of_area<LocalFrame::D1>(5UL) == approx(rr));
     CHECK(model.get_second_moment_of_area<LocalFrame::D2>(5UL) == approx(rr));
     // symmetric
-    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(0UL) == approx(2*rr));
-    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(0UL) == approx(2*rr));
-    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(5UL) == approx(2*rr));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(0UL) ==
+          approx(2 * rr));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(0UL) ==
+          approx(2 * rr));
+    CHECK(model.get_second_moment_of_area<LocalFrame::D3>(5UL) ==
+          approx(2 * rr));
 
     // This is not a good test case to have, or even a good API. So we ignore
     // this for now.
     const auto smoa = model.get_second_moment_of_area(0UL);
     CHECK(smoa[0] == approx(rr));
     CHECK(smoa[1] == approx(rr));
-    CHECK(smoa[2] == approx(2*rr));
+    CHECK(smoa[2] == approx(2 * rr));
   }
 
 }  // namespace
