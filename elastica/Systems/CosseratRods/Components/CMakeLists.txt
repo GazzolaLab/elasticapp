@@ -6,9 +6,10 @@ add_elastica_library(${LIBRARY} INTERFACE)
 set(LIBRARY_SOURCES
         Elasticity.hpp
         Geometry.hpp
+        helpers.hpp
+        Initialization.hpp
         Kinematics.hpp
         Names.hpp
-        helpers.hpp
         Protocols.hpp
         Tags.hpp
         Types.hpp

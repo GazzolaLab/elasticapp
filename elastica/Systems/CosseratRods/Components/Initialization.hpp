@@ -1,0 +1,82 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Helpers to initialize CosseratRod components
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
+#pragma once
+
+//******************************************************************************
+// Includes
+//******************************************************************************
+
+#include "Systems/common/Initialization.hpp"
+//
+#include "Systems/CosseratRods/CosseratRodPlugin.hpp"
+
+namespace elastica {
+
+  namespace cosserat_rod {
+
+    //**************************************************************************
+    /*!\brief Component initializer for a Cosserat-rod component
+     * \ingroup cosserat_rods
+     *
+     * \tparam Variables Typelist of `BlockVariables` to initialize.
+     * \param block_like Cosserat-rod block-slice.
+     * \param initializer Cosserat-rod block-initializer.
+     */
+    template <typename Variables, typename CRT,
+              template <typename /*CRT*/, typename /* ComputationalBlock */>
+              class... Components,
+              // typename Initializer>
+              typename... Initializers>
+    inline void initialize_component(
+        ::blocks::BlockSlice<cosserat_rod::CosseratRodPlugin<
+            CRT, ::blocks::BlockSlice, Components...>>& block_like,
+        ::blocks::BlockInitializer<cosserat_rod::CosseratRodPlugin<
+                                       CRT, ::blocks::Block, Components...>,
+                                   Initializers...>
+            initializers) {
+      ::elastica::detail::initialize_component<Variables>(
+          block_like, std::move(initializers));
+    }
+    //**************************************************************************
+
+    // FIXME : https://github.com/tp5uiuc/elasticapp/issues/460
+    // Don't use initialize on model directly, so remove this function.
+    //**************************************************************************
+    /*!\brief Component initializer for a Cosserat-rod component
+     * \ingroup cosserat_rods
+     *
+     * \tparam Variables Typelist of `BlockVariables` to initialize.
+     * \param block_like Cosserat-rod block.
+     * \param initializer Cosserat-rod block-initializer.
+     */
+    template <typename Variables, typename CRT,
+              template <typename /*CRT*/, typename /* ComputationalBlock */>
+              class... Components,
+              // typename Initializer>
+              typename... Initializers>
+    void initialize_component(
+        ::blocks::Block<cosserat_rod::CosseratRodPlugin<
+            CRT, ::blocks::Block, Components...>>& block_like,
+        ::blocks::BlockInitializer<cosserat_rod::CosseratRodPlugin<
+                                       CRT, ::blocks::Block, Components...>,
+                                   Initializers...>
+            initializers) {
+      ::elastica::detail::initialize_component<Variables>(
+          block_like, std::move(initializers));
+    }
+    //**************************************************************************
+
+  }  // namespace cosserat_rod
+
+}  // namespace elastica
