@@ -222,7 +222,9 @@ TODO: Check stress strain curves!
   // Plane (Bottom)
   using ImposedHalfPlaneRef =
       decltype(simulator->get_invalid_ref<ImposedHalfSpace>());
-  ImposedHalfPlaneRef imposed_half_space_ref =
+  ImposedHalfPlaneRef imposed_half_space_bottom_ref =
+      simulator->get_invalid_ref<ImposedHalfSpace>();
+  ImposedHalfPlaneRef imposed_half_space_top_ref =
       simulator->get_invalid_ref<ImposedHalfSpace>();
 
   ::elastica::real_t final_time;

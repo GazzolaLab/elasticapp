@@ -219,7 +219,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   // implicit convention
   ::elastica::Rot3 Q_bottom = {plane_normal_bottom, plane_binormal_bottom,
                                plane_tangent_bottom};
-  imposed_half_space_ref = simulator->emplace_back<ImposedHalfSpace>(
+  imposed_half_space_bottom_ref = simulator->emplace_back<ImposedHalfSpace>(
       ::elastica::collision::HalfSpacePrimitive(
           0UL, 0UL, true, plane_position_bottom, Q_bottom, wall_material));
 
@@ -231,20 +231,32 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   auto plane_tangent_top = {1.0, 0.0, 0.0};
   ::elastica::Rot3 Q_top = {plane_normal_top, plane_binormal_top,
                             plane_tangent_top};
-  auto top_moving_wall =
-      [original_top_height](
-          ::elastica::real_t time) noexcept -> ::elastica::real_t {
-    const ::elastica::real_t final_height(50);
-    const ::elastica::real_t rectified_time(3.0);  // wait til
-    const ::elastica::real_t move_duration(4.0);
-    const ::elastica::real_t m =
-        (original_top_height - final_height) / (-move_duration);
-    return original_top_height;  // * (time < rectified_time) + (m * (time -
-                                 // rectified_time) + original_top_height) *
-                                 // (time >= rectified_time && time <
-                                 // rectified_time+move_duration) + final_height
-                                 // * (time >= rectified_time+move_duration);
+
+  // Moving Wall Configuration
+  const ::elastica::real_t top_wall_speed(5.0);
+  const ::elastica::real_t final_height_high(80);
+  const ::elastica::real_t final_height_low(60);
+  const ::elastica::real_t rectified_time(10.0);  // wait til
+  const ::elastica::real_t duration((final_height_high - final_height_low) / top_wall_speed);
+  auto top_moving_wall_position =
+      [=](::elastica::real_t time) noexcept -> ::elastica::real_t {
+    bool rectified(time < rectified_time);
+    std::size_t oscillation_count = (time - rectified_time) / duration;
+    bool direction(oscillation_count % 2); // False: moving downward, True: moving upward
+
+    ::elastica::real_t loc = (time - rectified_time - (duration * oscillation_count)) / duration;
+    loc = !direction * loc + direction * (1.0-loc); // Reverse direction
+
+    return rectified * original_top_height + (!rectified) * (final_height_high - ((final_height_high - final_height_low) * loc));
   };
+  auto top_moving_wall_velocity =
+      [=](::elastica::real_t time) noexcept -> ::elastica::real_t{
+    bool rectified(time < rectified_time);
+    std::size_t oscillation_count = (time - rectified_time) / duration;
+    bool direction(oscillation_count % 2); // False: moving downward, True: moving upward
+    return (direction + (-1 * !direction)) * top_wall_speed;
+  };
+
   auto always_zero_ = [](::elastica::real_t) noexcept -> ::elastica::real_t {
     return 0.0;
   };
@@ -254,9 +266,9 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
       ek::translate_along<elastica::EulerianFrame::Y>(
           ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
       ek::translate_along<elastica::EulerianFrame::Z>(
-          ek::mark_position(ImposedHalfSpace::anchor_to_com_p(top_moving_wall)),
-          ek::mark_velocity(always_zero_)));
-  simulator->emplace_back<ImposedHalfSpace>(
+          ek::mark_position(ImposedHalfSpace::anchor_to_com_p(top_moving_wall_position)),
+          ek::mark_velocity(top_moving_wall_velocity)));
+  imposed_half_space_top_ref = simulator->emplace_back<ImposedHalfSpace>(
       ::elastica::collision::HalfSpacePrimitive(
           1UL, 1UL, true, plane_position_top, Q_top, wall_material),
       std::move(top_translations_buffer));
@@ -386,7 +398,7 @@ void NestCaseWithWallStudy::run() {
                               ::elastica::real_t, ::elastica::real_t>;
   std::vector<RodCoordinates> rod_coordinates;
   std::vector<Energies> energies;
-  using TimesAndForces = std::tuple<::elastica::real_t, ::elastica::Vec3>;
+  using TimesAndForces = std::tuple<::elastica::real_t, ::elastica::Vec3, ::elastica::real_t>;
   std::vector<TimesAndForces> times_and_forces;
 
   //  explicitly get the system
@@ -460,7 +472,7 @@ void NestCaseWithWallStudy::run() {
       temporal_file.close();
       energies.clear();
 
-      //       record position
+      // record rod position
       for (auto const& rod_ref : rod_refs) {
         for (std::size_t k = 0; k < n_nodes; ++k) {
           rod_coordinates.emplace_back(
@@ -481,8 +493,9 @@ void NestCaseWithWallStudy::run() {
       temporal_file.close();
       rod_coordinates.clear();
 
-      auto& imposed_plane = imposed_half_space_ref.get();
-      times_and_forces.emplace_back(current_time(), imposed_plane.get_force());
+      // record plane
+      auto& imposed_plane = imposed_half_space_bottom_ref.get();
+      times_and_forces.emplace_back(current_time(), imposed_plane.get_force(), imposed_half_space_top_ref.get().get_position()[2UL]);
       sprintf(file_name, "data/imposed_plane_%010d.csv", i);
       std::ofstream nest_diagnostics_file;
       nest_diagnostics_file.open(file_name);
@@ -492,7 +505,8 @@ void NestCaseWithWallStudy::run() {
         nest_diagnostics_file << std::setprecision(16) << std::get<Time>(tf)
                               << "," << std::get<ForceVector>(tf)[x_axis] << ","
                               << std::get<ForceVector>(tf)[y_axis] << ","
-                              << std::get<ForceVector>(tf)[z_axis] << "\n";
+                              << std::get<ForceVector>(tf)[z_axis] << ","
+                              << std::get<2UL>(tf) << "\n"; // Z-Position
       }
       nest_diagnostics_file << std::endl;
       nest_diagnostics_file.close();
