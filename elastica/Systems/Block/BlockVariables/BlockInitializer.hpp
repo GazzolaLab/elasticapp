@@ -330,11 +330,76 @@ Please see the list of tags not needed for initialization in the instantiation o
 
   //****************************************************************************
   /* We declare own get function, rather than using the global get, because:
-   *  1. we only want it from rvalue types, so the & and const& overloads of get
-   *  2. additionally, it doesn't model block concept (inability to slice,
-   *  no actionable data members) and hence ModelsBlockConcept<BlockInitializer>
-   *  is false, which raise a static_assert in the global get function
+   * BlockInitializer doesn't model block concept (no actionable data members)
+   * and hence ModelsBlockConcept<BlockInitializer> is false, which raise a
+   * static_assert in the global get function
    */
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Extract element from a BlockInitializer
+   * \ingroup blocks
+   *
+   * \details
+   * Extracts the element of the BlockInitializer `block_initializer` whose Tag
+   * type is `Tag`. Fails to compile unless the initializer has the `Tag` being
+   * extracted.
+   *
+   * \usage
+   * The usage is similar to std::get(), shown below
+   * \code
+     BlockInitializer<...> b;
+     auto my_tag_initializer = blocks::get<tags::MyTag>(std::move(b));
+   * \endcode
+   *
+   * \tparam Tag Tag to extract
+   * \param block_initializer A BlockInitializer type
+   */
+  template <typename Tag, typename Plugin, typename... InitializerVariables>
+  inline constexpr decltype(auto) get(
+      BlockInitializer<Plugin, InitializerVariables...>&
+          block_initializer) noexcept {
+    using Block_t = BlockInitializer<Plugin, InitializerVariables...>;
+    // here we need to make sure that all blocks give a templated type trait
+    // to recover block variables from a given "outside" Tag
+    using BlockVariableTag =
+        typename Block_t::VariableMap::template variable_from<Tag>;
+    //    using BlockVariableTag = typename Block_t::template var_from<Tag>;
+    return tuples::get<BlockVariableTag>(block_initializer.data());
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Extract element from a BlockInitializer
+   * \ingroup blocks
+   *
+   * \details
+   * Extracts the element of the BlockInitializer `block_initializer` whose Tag
+   * type is `Tag`. Fails to compile unless the initializer has the `Tag` being
+   * extracted.
+   *
+   * \usage
+   * The usage is similar to std::get(), shown below
+   * \code
+     BlockInitializer<...> b;
+     auto my_tag_initializer = blocks::get<tags::MyTag>(std::move(b));
+   * \endcode
+   *
+   * \tparam Tag Tag to extract
+   * \param block_initializer A BlockInitializer type
+   */
+  template <typename Tag, typename Plugin, typename... InitializerVariables>
+  inline constexpr decltype(auto) get(
+      BlockInitializer<Plugin, InitializerVariables...> const&
+          block_initializer) noexcept {
+    using Block_t = BlockInitializer<Plugin, InitializerVariables...>;
+    // here we need to make sure that all blocks give a templated type trait
+    // to recover block variables from a given "outside" Tag
+    using BlockVariableTag =
+        typename Block_t::VariableMap::template variable_from<Tag>;
+    //    using BlockVariableTag = typename Block_t::template var_from<Tag>;
+    return tuples::get<BlockVariableTag>(block_initializer.data());
+  }
   //****************************************************************************
 
   //****************************************************************************
