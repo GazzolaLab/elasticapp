@@ -174,22 +174,7 @@ namespace elastica {
           //********************************************************************
 
           //********************************************************************
-          /*!\brief Initialize method for the current component
-           *
-           * \details
-           * initialize() is responsible for initializing the variables present
-           * in the current component in the final block of data. For
-           * InitializedVariables, it fetches the corresponding initializer from
-           * the set of `initializers` to fill in the data. For
-           * ComputedVariables the default value is usually set. In this way,
-           * each component is responsible for initializing its own data in a
-           * manner that does not intrude with initialization from other
-           * components.
-           *
-           * \tparam DownstreamBlock The final block-like object which is
-           * derived from the current component
-           * \tparam CosseratInitializer An Initializer corresponding to the
-           * Cosserat rod hierarchy
+          /*!\copydoc ComponentInitializationDocStub
            */
           template <typename BlockLike, typename CosseratInitializer>
           static void initialize(

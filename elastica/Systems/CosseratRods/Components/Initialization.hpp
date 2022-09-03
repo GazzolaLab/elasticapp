@@ -77,6 +77,25 @@ namespace elastica {
     }
     //**************************************************************************
 
+    //**************************************************************************
+    /*!\brief Initialize method for the current component
+     *
+     * \details
+     * initialize() is responsible for initializing the variables present
+     * in the current component (in the final block of data). For
+     * `InitializedVariables`, it fetches the corresponding initializer from
+     * the set of `initializers` to fill in the data. For
+     * `ComputedVariables` the default value is usually set. In this way,
+     * each component is responsible for initializing its own data in a
+     * manner that does not intrude with initialization from other
+     * components.
+     *
+     * \param this_component The current component to be initialized
+     * \param initializer Object with parameters to initialize `InitializedVar`
+     */
+    struct ComponentInitializationDocStub {};
+    //**************************************************************************
+
   }  // namespace cosserat_rod
 
 }  // namespace elastica
