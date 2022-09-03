@@ -116,7 +116,7 @@ namespace elastica {
                 blocks::get<tags::ElementDilatation>(self()));
             auto& director(blocks::get<tags::Director>(self()));
 
-            self().compute_shear_strains();
+            compute_shear_strains(self());
 
             Traits::Operations::batch_matvec(internal_stress, shear_matrix,
                                              strain - reference_strain);
@@ -174,7 +174,7 @@ namespace elastica {
                 blocks::get<tags::_DummyVoronoiVector>(self()));
 
             /* Compute Curvature */
-            self().compute_curvature();
+            compute_curvature(self());
             self().template fill_ghosts_for<tags::Curvature>();
 
             Traits::Operations::batch_matvec(internal_couple, bend_matrix,
