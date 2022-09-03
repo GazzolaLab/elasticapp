@@ -422,104 +422,104 @@ namespace elastica {
         };
         //**********************************************************************
 
-        //**********************************************************************
-        /*!\brief Update rod cross-sectional geometric properties given state.
-         * \ingroup cosserat_rod_component
-         *
-         * \details
-         * Ref: eq (3.3) from \cite gazzola2018forward. \n
-         * radius{i} = (volume{i} / M_PI / length{i})^0.5
-         *
-         * The following members are modified:
-         *  - radius(n_elems) (tag: ElementDimension)
-         *
-         * with the following inputs:
-         *  - volume_batch(n_elems)
-         *  - element_length (3, n_nodes)
-         *
-         * \return void/None
-         */
-        template <typename Traits, typename ComputationalBlock,
-                  typename CrossSection>
-        void compute_cross_sectional_variables(
-            CosseratRodCrossSectionInterface<Traits, ComputationalBlock,
-                                             CrossSection>&
-                block_like) /*noexcept*/ {
-          auto&& volume(blocks::get<tags::ElementVolume>(block_like.self()));
-          auto&& element_length(
-              blocks::get<tags::ElementLength>(block_like.self()));
-          auto&& dimensions(
-              blocks::get<tags::ElementDimension>(block_like.self()));
-          dimensions = CrossSection::update_dimension(volume, element_length);
-        }
-        //**********************************************************************
-
-        //**********************************************************************
-        /*!\brief Compute elemental shear and stretch mode strains
-         * \ingroup cosserat_rod_component
-         *
-         * \details
-         * Computes elemental shear and stretch modes strains given the rod
-         * positions and directors (state), calls compute_all_dilatations()
-         * inside. Ref: eq (2.9) from \cite gazzola2018forward.
-         *
-         * strain_batch{i} =
-         * dilatation_batch{i} * director_collection_batch{i} *
-         * tangent_batch{i} - {0.0, 0.0, 1.0}
-         *
-         * The following members are modified:
-         * - strain_batch(3, n_elems)
-         *
-         * with the following inputs:
-         * - director_collection_batch(3, 3, n_elems)
-         * - temp container of (3, n_elems) for intermediate storage
-         *
-         * given inputs of compute_all_dilatations() are set.
-         *
-         * \example
-         * The following shows a typical use of the
-         * compute_shear_stretch_strains()
-         * function with the expected (correct) result also shown.
-         * \snippet test_gov_eqns.cpp compute_shear_stretch_strains_example
-         *
-         * \return void/None
-         *
-         * \see fill later?
-         */
-        template <typename Traits, typename ComputationalBlock,
-                  typename CrossSection>
-        void compute_shear_strains(CosseratRodCrossSectionInterface<
-                                   Traits, ComputationalBlock, CrossSection>&
-                                       block_like) /*noexcept*/ {
-          // Q (et - d_3)
-          // Q is always latest, only e and t need to be computed
-          // Dilatation updated here!
-          update_spanwise_variables(block_like.self());
-          compute_cross_sectional_variables(block_like.self());
-          update_shear_stretch_strain(block_like.self());
-        }
-        //**********************************************************************
-
-        //**********************************************************************
-        /*!\brief Compute curvature
-         * \ingroup cosserat_rod_component
-         *
-         * \note
-         * kappa is the only rotational diagnostic, so we direcetly compute
-         * that here
-         */
-        template <typename Traits, typename ComputationalBlock,
-                  typename CrossSection>
-        void compute_curvature(CosseratRodCrossSectionInterface<
-                               Traits, ComputationalBlock, CrossSection>&
-                                   block_like) /*noexcept*/ {
-          update_curvature(block_like.self());
-        }
-        //********************************************************************
-
       }  // namespace detail
 
     }  // namespace component
+
+    //**************************************************************************
+    /*!\brief Update rod cross-sectional geometric properties given state.
+     * \ingroup cosserat_rod_component
+     *
+     * \details
+     * Ref: eq (3.3) from \cite gazzola2018forward. \n
+     * radius{i} = (volume{i} / M_PI / length{i})^0.5
+     *
+     * The following members are modified:
+     *  - radius(n_elems) (tag: ElementDimension)
+     *
+     * with the following inputs:
+     *  - volume_batch(n_elems)
+     *  - element_length (3, n_nodes)
+     *
+     * \return void/None
+     */
+    template <typename Traits, typename ComputationalBlock,
+              typename CrossSection>
+    void compute_cross_sectional_variables(
+        component::detail::CosseratRodCrossSectionInterface<
+            Traits, ComputationalBlock, CrossSection>&
+            block_like) /*noexcept*/ {
+      auto&& volume(blocks::get<tags::ElementVolume>(block_like.self()));
+      auto&& element_length(
+          blocks::get<tags::ElementLength>(block_like.self()));
+      auto&& dimensions(blocks::get<tags::ElementDimension>(block_like.self()));
+      dimensions = CrossSection::update_dimension(volume, element_length);
+    }
+    //**********************************************************************
+
+    //**************************************************************************
+    /*!\brief Compute elemental shear and stretch mode strains
+     * \ingroup cosserat_rod_component
+     *
+     * \details
+     * Computes elemental shear and stretch modes strains given the rod
+     * positions and directors (state), calls compute_all_dilatations()
+     * inside. Ref: eq (2.9) from \cite gazzola2018forward.
+     *
+     * strain_batch{i} =
+     * dilatation_batch{i} * director_collection_batch{i} *
+     * tangent_batch{i} - {0.0, 0.0, 1.0}
+     *
+     * The following members are modified:
+     * - strain_batch(3, n_elems)
+     *
+     * with the following inputs:
+     * - director_collection_batch(3, 3, n_elems)
+     * - temp container of (3, n_elems) for intermediate storage
+     *
+     * given inputs of compute_all_dilatations() are set.
+     *
+     * \example
+     * The following shows a typical use of the
+     * compute_shear_stretch_strains()
+     * function with the expected (correct) result also shown.
+     * \snippet test_gov_eqns.cpp compute_shear_stretch_strains_example
+     *
+     * \return void/None
+     *
+     * \see fill later?
+     */
+    template <typename Traits, typename ComputationalBlock,
+              typename CrossSection>
+    void compute_shear_strains(
+        component::detail::CosseratRodCrossSectionInterface<
+            Traits, ComputationalBlock, CrossSection>&
+            block_like) /*noexcept*/ {
+      // Q (et - d_3)
+      // Q is always latest, only e and t need to be computed
+      // Dilatation updated here!
+      update_spanwise_variables(block_like.self());
+      compute_cross_sectional_variables(block_like.self());
+      update_shear_stretch_strain(block_like.self());
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Compute curvature
+     * \ingroup cosserat_rod_component
+     *
+     * \note
+     * kappa is the only rotational diagnostic, so we direcetly compute
+     * that here
+     */
+    template <typename Traits, typename ComputationalBlock,
+              typename CrossSection>
+    void compute_curvature(component::detail::CosseratRodCrossSectionInterface<
+                           Traits, ComputationalBlock, CrossSection>&
+                               block_like) /*noexcept*/ {
+      update_curvature(block_like.self());
+    }
+    //**************************************************************************
 
   }  // namespace cosserat_rod
 
