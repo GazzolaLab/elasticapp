@@ -17,6 +17,8 @@
 // Includes
 //******************************************************************************
 #include "Systems/CosseratRods/Components/Elasticity/detail/Tags.hpp"
+//
+#include "Utilities/Math/Vec3.hpp"
 
 namespace elastica {
 
@@ -61,6 +63,22 @@ namespace elastica {
       }  // namespace detail
 
     }  // namespace component
+
+    ////////////////////////////////////////////////////////////////////////////
+    //
+    // Forward declarations of functions
+    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <typename Traits, typename ComputationalBlock>
+    auto compute_effective_area_along_principal_directions(
+        component::detail::LinearHyperElasticityFacade<
+            Traits, ComputationalBlock>& block_like,
+        std::size_t i) noexcept -> Vec3;
+    /*! \endcond */
+    //**************************************************************************
 
   }  // namespace cosserat_rod
 
