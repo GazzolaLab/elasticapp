@@ -321,9 +321,7 @@ namespace elastica {
             }
 
             // 4. Update cross-sectional variables (dimension)
-            {
-              downstream_block.compute_cross_sectional_variables();
-            }
+            { downstream_block.compute_cross_sectional_variables(); }
           }
           //********************************************************************
 
@@ -502,9 +500,9 @@ namespace elastica {
           void compute_shear_strains() noexcept {
             // Q (et - d_3)
             // Q is always latest, only e and t need to be computed
-            Parent::update_spanwise_variables(self()); // Dilatation updated here!
+            update_spanwise_variables(self());  // Dilatation updated here!
             compute_cross_sectional_variables();
-            Parent::update_shear_stretch_strain(self());
+            update_shear_stretch_strain(self());
           }
           //********************************************************************
 
@@ -513,7 +511,7 @@ namespace elastica {
           void compute_curvature() noexcept {
             // kappa is the only rotational diagnostic, so we direcelty compute
             // that here
-            Parent::update_curvature(self());
+            update_curvature(self());
           }
           //********************************************************************
 

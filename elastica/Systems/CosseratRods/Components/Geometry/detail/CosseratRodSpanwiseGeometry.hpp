@@ -31,6 +31,7 @@
 ///
 #include "Systems/CosseratRods/Components/Geometry/detail/RodSpanwiseGeometry.hpp"
 #include "Systems/CosseratRods/Components/Geometry/detail/Tags/CosseratRodSpanwiseGeometryTags.hpp"
+#include "Systems/CosseratRods/Components/Initialization.hpp"
 
 namespace elastica {
 
@@ -265,6 +266,26 @@ namespace elastica {
         };
         //**********************************************************************
 
+        template <typename CRT, typename ComputationalBlock>
+        void compute_reference_geometry(
+            CosseratRodSpanwiseGeometry<CRT, ComputationalBlock>&
+                block_like) /*noexcept*/;
+
+        template <typename CRT, typename ComputationalBlock>
+        void update_spanwise_variables(
+            CosseratRodSpanwiseGeometry<CRT, ComputationalBlock>&
+                block_like) /*noexcept*/;
+
+        template <typename Traits, typename ComputationalBlock>
+        void update_shear_stretch_strain(
+            CosseratRodSpanwiseGeometry<Traits, ComputationalBlock>&
+                block_like) /*noexcept*/;
+
+        template <typename Traits, typename ComputationalBlock>
+        void update_curvature(
+            CosseratRodSpanwiseGeometry<Traits, ComputationalBlock>&
+                block_like) /*noexcept*/;
+
         // TODO Check for EBO
         //======================================================================
         //
@@ -309,8 +330,6 @@ namespace elastica {
           //! CRTP Type
           using CRTP =
               CRTPHelper<ComputationalBlock, CosseratRodSpanwiseGeometry>;
-          //! CRTP methods
-          using CRTP::self;
           //! Index type
           using index_type = typename Traits::index_type;
           //********************************************************************
@@ -345,96 +364,42 @@ namespace elastica {
           //********************************************************************
 
           //********************************************************************
-          /*!\brief Initialize method for the current component
-           *
-           * \details
-           * initialize() is responsible for initializing the variables present
-           * in the current component in the final block of data. For
-           * InitializedVariables, it fetches the corresponding initializer from
-           * the set of `initializers` to fill in the data. For
-           * ComputedVariables the default value is usually set. In this way,
-           * each component is responsible for initializing its own data in a
-           * manner that does not intrude with initialization from other
-           * components.
-           *
-           * \tparam DownstreamBlock The final block-like object which is
-           * derived from the current component
-           * \tparam CosseratInitializer An Initializer corresponding to the
-           * Cosserat rod hierarchy
+          /*!\copydoc ComponentInitializationDocStub
            */
-          template <typename DownstreamBlock, typename CosseratInitializer>
-          static void initialize(DownstreamBlock& downstream_block,
-                                 CosseratInitializer&& initializers) {
+          template <typename BlockLike, typename CosseratInitializer>
+          static void initialize(
+              CosseratRodSpanwiseGeometry<Traits, BlockLike>& this_component,
+              CosseratInitializer&& initializer) {
             // 1. Initialize parent
-            Parent::initialize(downstream_block,
-                               std::forward<CosseratInitializer>(initializers));
+            Parent::initialize(this_component,
+                               std::forward<CosseratInitializer>(initializer));
 
-            // 2. Initialize generated variables first
-            struct {
-              CosseratInitializer value;
-            } cap{std::forward<CosseratInitializer>(initializers)};
-            tmpl::for_each<typename VariableDefinitions::InitializedVariables>(
-                [&downstream_block, &cap
-                 // cap = std::move(cap)
-            ](auto v) mutable -> void {
-                  using Variable = tmpl::type_from<decltype(v)>;
-                  using Tag = blocks::initializer_t<Variable>;
-
-                  auto& variable(blocks::get<Tag>(downstream_block));
-                  auto&& initializer(blocks::get<Tag>(std::move(cap.value)));
-
-                  const auto dofs = Variable::get_dofs(cap.value.n_elems());
-                  for (std::size_t i = 0; i < dofs; ++i) {
-                    // TODO : This doesn't work on slices, consider having the
-                    // slice member in the initializer itself
-                    Variable::slice(variable, i) = initializer(i);
-                  }
-                });
+            // 2. Initialize required variables
+            initialize_component<
+                typename VariableDefinitions::InitializedVariables>(
+                this_component.self(),
+                std::forward<CosseratInitializer>(initializer));
 
             // 3. Computed reference variables
             //  - ReferenceElementLength
             //  - ReferenceVoronoiLength
-            {
-              downstream_block
-                  .compute_reference_geometry_from_initial_parameters();
-            }
+            { compute_reference_geometry(this_component.self()); }
 
             {
-              downstream_block.update_spanwise_variables(downstream_block);
-              downstream_block.update_shear_stretch_strain(downstream_block);
-              downstream_block.update_curvature(downstream_block);
+              update_spanwise_variables(this_component.self());
+              update_shear_stretch_strain(this_component.self());
+              update_curvature(this_component.self());
             }
-
           }
           //********************************************************************
 
          public:
-          template <typename Block>
-          static inline void update_curvature(Block& bl) noexcept {
-            auto& curvature(blocks::get<::elastica::tags::Curvature>(bl));
-            auto& director(blocks::get<::elastica::tags::Director>(bl));
-            auto& reference_voronoi_length(
-                blocks::get<::elastica::tags::ReferenceVoronoiLength>(bl));
-            Traits::Operations::spanwise_inv_rotate_and_divide(
-                curvature, director, reference_voronoi_length);
-          }
-
-          template <typename Block>
-          static inline void update_shear_stretch_strain(Block& bl) noexcept {
-            auto& shear_stretch_strains(
-                blocks::get<::elastica::tags::ShearStretchStrain>(bl));
-            auto& element_dilatation(
-                blocks::get<::elastica::tags::ElementDilatation>(bl));
-            auto& director(blocks::get<::elastica::tags::Director>(bl));
-            auto& tangent(blocks::get<::elastica::tags::Tangent>(bl));
-
-            Traits::Operations::batch_matvec_scale(
-                shear_stretch_strains, director, tangent, element_dilatation);
-            Traits::Operations::batch_subtract_z_unit(shear_stretch_strains);
-          }
-
-         public:
-          // decide the API bro
+          //**CRTP method*******************************************************
+          /*!\name CRTP method*/
+          //@{
+          using CRTP::self;
+          //@}
+          //********************************************************************
 
           //**Get methods*******************************************************
           /*!\name Get methods*/
@@ -563,101 +528,157 @@ namespace elastica {
           //@}
           //********************************************************************
 
-         public: // TODO: Probably need to protect this
-          //********************************************************************
-          // TODO : documentation
-          void compute_reference_geometry_from_initial_parameters() noexcept {
-            using ::elastica::tags::ElementDilatation;
-            using ::elastica::tags::Position;
-            using ::elastica::tags::ReferenceElementLength;
-            using ::elastica::tags::ReferenceVoronoiLength;
-            auto& position(blocks::get<Position>(self()));
-            auto& dilatation(blocks::get<ElementDilatation>(self()));
-            auto& reference_length(blocks::get<ReferenceElementLength>(self()));
-            auto& reference_voronoi_length(
-                blocks::get<ReferenceVoronoiLength>(self()));
-
-            auto position_diff(Traits::Operations::difference_kernel(position));
-            reference_length =
-                Traits::Operations::batch_norm(position_diff) / dilatation;
-            reference_voronoi_length =
-                Traits::Operations::average_kernel(reference_length);
-          }
-          //********************************************************************
-
-         public: // TODO: Probably make it protected depending on the scope
-          //********************************************************************
-          /*!\brief Updates rod spanwise geometric properties given state.
-          //
-          // \details
-          // Translational functions
-          // Updates rod spanwise geometric properties (elemental lengths,
-          // tangents and radii) from given nodal positions (state).
-          // Ref: eq (3.3) from \cite gazzola2018forward. \n
-          // length{i} = || position{i+1} - position{i} || \n
-          // tangent{i} = (position{i+1} - position{i}) / length{i} \n
-          //
-          // The following members are modified:
-          //  - length_batch(n_elems)
-          //  - tangent_batch(3, n_elems)
-          //  - radius_batch(n_elems)
-          //
-          // with the following inputs:
-          //  - position_batch(3, n_nodes)
-          //  - volume_batch(n_elems)
-          //
-          // \example
-          // The following shows a typical use of the
-          compute_geometry_from_state()
-          // function with the expected (correct) result also shown.
-          //
-          // \return void/None
-          //
-          */
-          template <typename Block>
-          static void update_spanwise_variables(Block& bl) noexcept {
-            // Compute eq (3.3) from 2018 RSOS paper
-            // 0. Create reference variables
-            auto& position(blocks::get<::elastica::tags::Position>(bl));
-            auto& element_length(blocks::get<tags::ElementLength>(bl));
-            auto& dilatation(blocks::get<tags::ElementDilatation>(bl));
-            auto& reference_length(
-                blocks::get<tags::ReferenceElementLength>(bl));
-            auto& tangent(blocks::get<tags::Tangent>(bl));
-            auto& voronoi_length(
-                blocks::get<::elastica::tags::VoronoiLength>(bl));
-            auto& voronoi_dilatation(
-                blocks::get<tags::VoronoiDilatation>(bl));
-            auto& reference_voronoi_length(
-                blocks::get<tags::ReferenceVoronoiLength>(bl));
-
-            // 1. Compute new lengths
-            auto position_diff(Traits::Operations::difference_kernel(position));
-            element_length =
-                Traits::Operations::batch_norm(position_diff);
-            // +1e-14; if want to match pyelastica
-            bl.template fill_ghosts_for<tags::ElementLength>();
-
-            // 2. Update tangents
-            // before division by element_length, I fill ghosts so that
-            // enable_floating_point exceptions do not throw a raise by 0 error
-            Traits::Operations::batch_division_matvec(tangent, position_diff,
-                                                      element_length);
-
-            // 3. Compute dilatation of elements
-            dilatation = element_length / reference_length;
-
-            // 4. Compute voronoi length
-            voronoi_length = Traits::Operations::average_kernel(element_length);
-
-            // 5. Compute dilatation of voronoi regions
-            voronoi_dilatation = voronoi_length / reference_voronoi_length;
-          }
-          //********************************************************************
-
           //@}
           //********************************************************************
         };
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Compute reference geometry
+         * \ingroup cosserat_rod_component
+         */
+        template <typename Traits, typename ComputationalBlock>
+        void compute_reference_geometry(
+            CosseratRodSpanwiseGeometry<Traits, ComputationalBlock>&
+                block_like) /*noexcept*/ {
+          using ::elastica::tags::ElementDilatation;
+          using ::elastica::tags::Position;
+          using ::elastica::tags::ReferenceElementLength;
+          using ::elastica::tags::ReferenceVoronoiLength;
+          auto&& position(blocks::get<Position>(block_like.self()));
+          auto&& dilatation(blocks::get<ElementDilatation>(block_like.self()));
+          auto&& reference_length(
+              blocks::get<ReferenceElementLength>(block_like.self()));
+          auto&& reference_voronoi_length(
+              blocks::get<ReferenceVoronoiLength>(block_like.self()));
+
+          auto&& position_diff(Traits::Operations::difference_kernel(position));
+          reference_length =
+              Traits::Operations::batch_norm(position_diff) / dilatation;
+          reference_voronoi_length =
+              Traits::Operations::average_kernel(reference_length);
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Updates rod spanwise geometric properties given state.
+         * \ingroup cosserat_rod_component
+         *
+         * \details
+         * Translational functions
+         * Updates rod spanwise geometric properties (elemental lengths,
+         * tangents and radii) from given nodal positions (state).
+         * Ref: eq (3.3) from \cite gazzola2018forward. \n
+         * length{i} = || position{i+1} - position{i} || \n
+         * tangent{i} = (position{i+1} - position{i}) / length{i} \n
+         *
+         * The following members are modified:
+         *  - length_batch(n_elems)
+         *  - tangent_batch(3, n_elems)
+         *  - radius_batch(n_elems)
+         *
+         * with the following inputs:
+         *  - position_batch(3, n_nodes)
+         *  - volume_batch(n_elems)
+         *
+         * \example
+         * The following shows a typical use of the
+         * compute_geometry_from_state()
+         *
+         * function with the expected (correct) result also shown.
+         *
+         * \return void/None
+         *
+         */
+        template <typename Traits, typename ComputationalBlock>
+        void update_spanwise_variables(
+            CosseratRodSpanwiseGeometry<Traits, ComputationalBlock>&
+                block_like) /*noexcept*/ {
+          // Compute eq (3.3) from 2018 RSOS paper
+          // 0. Create reference variables
+          auto&& position(
+              blocks::get<::elastica::tags::Position>(block_like.self()));
+          auto&& element_length(
+              blocks::get<tags::ElementLength>(block_like.self()));
+          auto&& dilatation(
+              blocks::get<tags::ElementDilatation>(block_like.self()));
+          auto&& reference_length(
+              blocks::get<tags::ReferenceElementLength>(block_like.self()));
+          auto&& tangent(blocks::get<tags::Tangent>(block_like.self()));
+          auto&& voronoi_length(
+              blocks::get<::elastica::tags::VoronoiLength>(block_like.self()));
+          auto&& voronoi_dilatation(
+              blocks::get<tags::VoronoiDilatation>(block_like.self()));
+          auto&& reference_voronoi_length(
+              blocks::get<tags::ReferenceVoronoiLength>(block_like.self()));
+
+          // 1. Compute new lengths
+          auto position_diff(Traits::Operations::difference_kernel(position));
+          element_length = Traits::Operations::batch_norm(position_diff);
+          // +1e-14; if want to match pyelastica
+          // TODO : Refactor fill_ghosts_for to a free function
+          block_like.self().template fill_ghosts_for<tags::ElementLength>();
+
+          // 2. Update tangents
+          // before division by element_length, I fill ghosts so that
+          // enable_floating_point exceptions do not throw a raise by 0 error
+          Traits::Operations::batch_division_matvec(tangent, position_diff,
+                                                    element_length);
+
+          // 3. Compute dilatation of elements
+          dilatation = element_length / reference_length;
+
+          // 4. Compute voronoi length
+          voronoi_length = Traits::Operations::average_kernel(element_length);
+
+          // 5. Compute dilatation of voronoi regions
+          voronoi_dilatation = voronoi_length / reference_voronoi_length;
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Update strains
+         * \ingroup cosserat_rod_component
+         */
+        template <typename Traits, typename ComputationalBlock>
+        void update_shear_stretch_strain(
+            CosseratRodSpanwiseGeometry<Traits, ComputationalBlock>&
+                block_like) /*noexcept*/ {
+          auto&& shear_stretch_strains(
+              blocks::get<::elastica::tags::ShearStretchStrain>(
+                  block_like.self()));
+          auto&& element_dilatation(
+              blocks::get<::elastica::tags::ElementDilatation>(
+                  block_like.self()));
+          auto&& director(
+              blocks::get<::elastica::tags::Director>(block_like.self()));
+          auto&& tangent(
+              blocks::get<::elastica::tags::Tangent>(block_like.self()));
+
+          Traits::Operations::batch_matvec_scale(
+              shear_stretch_strains, director, tangent, element_dilatation);
+          Traits::Operations::batch_subtract_z_unit(shear_stretch_strains);
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Update curvature
+         * \ingroup cosserat_rod_component
+         */
+        template <typename Traits, typename ComputationalBlock>
+        void update_curvature(
+            CosseratRodSpanwiseGeometry<Traits, ComputationalBlock>&
+                block_like) /*noexcept*/ {
+          auto&& curvature(
+              blocks::get<::elastica::tags::Curvature>(block_like.self()));
+          auto&& director(
+              blocks::get<::elastica::tags::Director>(block_like.self()));
+          auto&& reference_voronoi_length(
+              blocks::get<::elastica::tags::ReferenceVoronoiLength>(
+                  block_like.self()));
+          Traits::Operations::spanwise_inv_rotate_and_divide(
+              curvature, director, reference_voronoi_length);
+        }
         //**********************************************************************
 
       }  // namespace detail
