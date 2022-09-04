@@ -18,7 +18,7 @@
 //******************************************************************************
 #include "Systems/CosseratRods/Components/Elasticity/detail/Tags.hpp"
 //
-#include "Utilities/Math/Vec3.hpp"
+#include "Utilities/Math/Types.hpp"
 
 namespace elastica {
 
@@ -77,6 +77,20 @@ namespace elastica {
         component::detail::LinearHyperElasticityFacade<
             Traits, ComputationalBlock>& block_like,
         std::size_t i) noexcept -> Vec3;
+
+    template <typename Traits, typename ComputationalBlock,
+              class ElasticityModel>
+    void fix_compute_internal_forces(
+        component::detail::ElasticityInterface<Traits, ComputationalBlock,
+                                               ElasticityModel>&
+            block_like) /*noexcept*/;
+
+    template <typename Traits, typename ComputationalBlock,
+              class ElasticityModel>
+    void fix_compute_internal_torques(
+        component::detail::ElasticityInterface<Traits, ComputationalBlock,
+                                               ElasticityModel>&
+            block_like) /*noexcept*/;
     /*! \endcond */
     //**************************************************************************
 
