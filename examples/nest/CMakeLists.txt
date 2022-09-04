@@ -1,2 +1,3 @@
 add_subdirectory(FreeNestCaseStudy)
 add_subdirectory(NestCaseWithWallStudy)
+add_subdirectory(MovingWallStudy)
