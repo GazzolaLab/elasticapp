@@ -342,7 +342,7 @@ namespace elastica {
 
     //**************************************************************************
     /*!\name Area along principal direction methods
-     * \ingroup cosserat_rod_component
+     * \ingroup cosserat_rod_custom_entries
      *
      *!\brief Gets effective area along principal directions of the
      * current rod
