@@ -519,7 +519,7 @@ namespace elastica {
 
     //**********************************************************************
     /*!\brief Compute reference geometry
-     * \ingroup cosserat_rod_component
+     * \ingroup cosserat_rod_custom_entries
      */
     template <typename Traits, typename ComputationalBlock>
     void compute_reference_geometry(
@@ -546,7 +546,7 @@ namespace elastica {
 
     //**********************************************************************
     /*!\brief Updates rod spanwise geometric properties given state.
-     * \ingroup cosserat_rod_component
+     * \ingroup cosserat_rod_custom_entries
      *
      * \details
      * Translational functions
@@ -622,7 +622,7 @@ namespace elastica {
 
     //**********************************************************************
     /*!\brief Update strains
-     * \ingroup cosserat_rod_component
+     * \ingroup cosserat_rod_custom_entries
      */
     template <typename Traits, typename ComputationalBlock>
     void update_shear_stretch_strain(
@@ -644,7 +644,7 @@ namespace elastica {
 
     //**********************************************************************
     /*!\brief Update curvature
-     * \ingroup cosserat_rod_component
+     * \ingroup cosserat_rod_custom_entries
      */
     template <typename Traits, typename ComputationalBlock>
     void update_curvature(

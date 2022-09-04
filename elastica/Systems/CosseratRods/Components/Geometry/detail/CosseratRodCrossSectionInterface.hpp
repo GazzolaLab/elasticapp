@@ -428,7 +428,7 @@ namespace elastica {
 
     //**************************************************************************
     /*!\brief Update rod cross-sectional geometric properties given state.
-     * \ingroup cosserat_rod_component
+     * \ingroup cosserat_rod_custom_entries
      *
      * \details
      * Ref: eq (3.3) from \cite gazzola2018forward. \n
@@ -459,7 +459,7 @@ namespace elastica {
 
     //**************************************************************************
     /*!\brief Compute elemental shear and stretch mode strains
-     * \ingroup cosserat_rod_component
+     * \ingroup cosserat_rod_custom_entries
      *
      * \details
      * Computes elemental shear and stretch modes strains given the rod
@@ -506,8 +506,7 @@ namespace elastica {
 
     //**************************************************************************
     /*!\brief Compute curvature
-     * \ingroup cosserat_rod_component
-     *
+     * \ingroup cosserat_rod_custom_entries
      * \note
      * kappa is the only rotational diagnostic, so we direcetly compute
      * that here
