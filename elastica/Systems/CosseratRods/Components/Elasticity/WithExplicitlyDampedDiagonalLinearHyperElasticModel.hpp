@@ -94,7 +94,7 @@ namespace elastica {
        */
       template <typename CRT, typename ComputationalBlock>
       class WithExplicitlyDampedDiagonalLinearHyperElasticModel
-          : public Adapt<detail::WithDiagonalLinearHyperElasticModel<
+          : public Adapt<detail::WithDiagonalLinearHyperElasticModelImpl<
                 CRT, ComputationalBlock>>::
                 template with<detail::ElasticityInterface,
                               detail::ExplicitDampingAdapter> {};

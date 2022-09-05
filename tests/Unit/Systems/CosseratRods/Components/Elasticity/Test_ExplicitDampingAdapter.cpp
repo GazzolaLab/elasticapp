@@ -31,7 +31,6 @@ namespace {
       : public elastica::CRTPHelper<B, TestElasticityModel>,
         public ElasticityComponent<TestElasticityModel<CRT, B>> {
     using CRTP = elastica::CRTPHelper<B, TestElasticityModel>;
-    using CRTP::self;
 
    protected:
     using InitializedVariables = tmpl::list<>;
@@ -42,18 +41,25 @@ namespace {
     static void initialize(DownstreamBlock& downstream_block,
                            CosseratInitializer&& initializers) {}
 
-    void compute_internal_modeled_loads_impl() {
-      auto& internal_load = blocks::get<elastica::tags::InternalLoads>(self());
-      internal_load = 3.14;
-    }
-
-    void compute_internal_modeled_torques_impl() {
-      auto& internal_torque =
-          blocks::get<elastica::tags::InternalTorques>(self());
-      internal_torque = 42.0;
-    }
+   public:
+    using CRTP::self;
   };
 
+  template <typename CRT, typename B>
+  void compute_internal_modeled_loads_impl(
+      TestElasticityModel<CRT, B>& block_like) {
+    auto& internal_load =
+        blocks::get<elastica::tags::InternalLoads>(block_like.self());
+    internal_load = 3.14;
+  }
+
+  template <typename CRT, typename B>
+  void compute_internal_modeled_torques_impl(
+      TestElasticityModel<CRT, B>& block_like) {
+    auto& internal_torque =
+        blocks::get<elastica::tags::InternalTorques>(block_like.self());
+    internal_torque = 42.0;
+  }
   template <typename CRT,                 // Cosserat Rod Traits
             typename ComputationalBlock>  // Block
   class TestElasticityModelWithInterfaceOnly

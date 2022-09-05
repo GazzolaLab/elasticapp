@@ -32,6 +32,23 @@ namespace elastica {
       //
       //////////////////////////////////////////////////////////////////////////
 
+      namespace detail {
+
+        ////////////////////////////////////////////////////////////////////////
+        //
+        // Forward declarations of helper elasticity components
+        //
+        ////////////////////////////////////////////////////////////////////////
+
+        //**********************************************************************
+        /*! \cond ELASTICA_INTERNAL */
+        template <typename /* Cosserat Rod Traits */, typename /* Block */>
+        class WithDiagonalLinearHyperElasticModelImpl;
+        /*! \endcond */
+        //**********************************************************************
+
+      }  // namespace detail
+
       //************************************************************************
       /*! \cond ELASTICA_INTERNAL */
       template <typename /* Cosserat Rod Traits */, typename /* Block */>
@@ -47,6 +64,8 @@ namespace elastica {
       //************************************************************************
 
     }  // namespace component
+
+    // More functions
 
   }  // namespace cosserat_rod
 

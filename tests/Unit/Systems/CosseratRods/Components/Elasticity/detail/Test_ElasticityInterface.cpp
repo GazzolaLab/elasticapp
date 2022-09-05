@@ -3,9 +3,9 @@
 //
 
 #include "Framework/TestingFramework.hpp"
-#include "Systems/CosseratRods/CosseratRodTraits.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/detail/ElasticityInterface.hpp"
 #include "Systems/CosseratRods/Components/helpers.hpp"
+#include "Systems/CosseratRods/CosseratRodTraits.hpp"
 ///
 #include "Systems/CosseratRods/Mocks.hpp"
 ///
@@ -93,10 +93,9 @@ namespace {
   class TestNoDataElasticityModel
       : public Adapt<TestNoDataElasticityImplementation<C, B>>::template with<
             TestElasticityInterface> {
-      //TypeDisplayer<> rd{};
-    };
+    // TypeDisplayer<> rd{};
+  };
 }  // namespace
-
 
 namespace {
 
@@ -110,13 +109,13 @@ namespace {
     using Traits = C;
     using CRTP =
         ::elastica::CRTPHelper<B, TestWithDataElasticityImplementation>;
-    using CRTP::self;
 
    public:
     struct TestVar : public Traits::template CosseratRodVariable<
                          TestVar,                            //
                          typename Traits::DataType::Vector,  //
                          typename Traits::Place::OnElement> {};
+    using CRTP::self;
 
    protected:
     using InitializedVariables = tmpl::list<>;
@@ -124,16 +123,6 @@ namespace {
     using Variables = ComputedVariables;
 
    protected:
-    void compute_internal_modeled_loads_impl() {
-      blocks::get<elastica::tags::InternalLoads>(self()) = 3.14;
-      //return 3.14;
-    }
-
-    void compute_internal_modeled_torques_impl() {
-      blocks::get<elastica::tags::InternalTorques>(self()) = 42.0;
-      //return 42.0;
-    }
-
     template <typename DownstreamBlock, typename CosseratInitializer>
     static void initialize(DownstreamBlock& downstream_block,
                            CosseratInitializer&&) {
@@ -141,12 +130,25 @@ namespace {
     }
   };
 
+  template <typename C, typename B>
+  void compute_internal_modeled_loads_impl(
+      TestWithDataElasticityImplementation<C, B>& block_like) {
+    blocks::get<elastica::tags::InternalLoads>(block_like.self()) = 3.14;
+    // return 3.14;
+  }
+
+  template <typename C, typename B>
+  void compute_internal_modeled_torques_impl(
+      TestWithDataElasticityImplementation<C, B>& block_like) {
+    blocks::get<elastica::tags::InternalTorques>(block_like.self()) = 42.0;
+    // return 42.0;
+  }
+
   // no data
   template <typename B>
   class TestDataElasticityModel
       : public elastica::cosserat_rod::component::Adapt<
-            TestWithDataElasticityImplementation<Traits,
-                                                 B>>::
+            TestWithDataElasticityImplementation<Traits, B>>::
             template with<TestElasticityInterface> {};
 
 }  // namespace
@@ -169,11 +171,12 @@ namespace {
 
     auto initializer = mock::initialize_block<Plugin>(
         // from before
-//        blocks::initialize<elastica::tags::Position>([&i = n_times_called[0]](std::size_t index) {
-//          ++i;
-//          return index * 1.0;
-//          return 2.0;
-//        })
+        //        blocks::initialize<elastica::tags::Position>([&i =
+        //        n_times_called[0]](std::size_t index) {
+        //          ++i;
+        //          return index * 1.0;
+        //          return 2.0;
+        //        })
     );
     Model::initialize(model, std::move(initializer));
 
@@ -227,4 +230,4 @@ namespace {
     }
   };
 
-} // namespace
+}  // namespace

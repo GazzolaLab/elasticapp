@@ -91,6 +91,22 @@ namespace elastica {
         component::detail::ElasticityInterface<Traits, ComputationalBlock,
                                                ElasticityModel>&
             block_like) /*noexcept*/;
+
+    template <typename CRT, typename ComputationalBlock,
+              class ElasticityModelWithBlock,
+              template <typename /* CRT */> class VariableInfo>
+    void compute_internal_modeled_loads_impl(
+        component::detail::ExplicitDampingAdapterFacade<
+            CRT, ComputationalBlock, ElasticityModelWithBlock, VariableInfo>&
+            block_like) /*noexcept*/;
+
+    template <typename CRT, typename ComputationalBlock,
+              class ElasticityModelWithBlock,
+              template <typename /* CRT */> class VariableInfo>
+    void compute_internal_modeled_torques_impl(
+        component::detail::ExplicitDampingAdapterFacade<
+            CRT, ComputationalBlock, ElasticityModelWithBlock, VariableInfo>&
+            block_like) /*noexcept*/;
     /*! \endcond */
     //**************************************************************************
 
