@@ -157,8 +157,8 @@ namespace {
     blocks::get<elastica::tags::AngularVelocity>(slicedrod_00000) = ROD000_AngularVelocity_REPLACED;
     blocks::get<elastica::tags::AngularAcceleration>(slicedrod_00000) = ROD000_AngularAcceleration_REPLACED;
 
-    slicedrod_00000.compute_internal_forces();
-    slicedrod_00000.compute_internal_torques();
+    compute_internal_forces(slicedrod_00000);
+    compute_internal_torques(slicedrod_00000);
     slicedrod_00000.update_acceleration();
 
     /*

@@ -123,10 +123,11 @@ namespace {
     using Variables = ComputedVariables;
 
    protected:
-    template <typename DownstreamBlock, typename CosseratInitializer>
-    static void initialize(DownstreamBlock& downstream_block,
-                           CosseratInitializer&&) {
-      blocks::get<TestVar>(downstream_block) = 0.0;
+    template <typename Bl, typename CosseratInitializer>
+    static void initialize(
+        TestWithDataElasticityImplementation<C, Bl>& downstream_block,
+        CosseratInitializer&&) {
+      blocks::get<TestVar>(downstream_block.self()) = 0.0;
     }
   };
 
@@ -166,8 +167,14 @@ namespace {
     // static_assert(ElasiticityModel::parent_need_not_be_initialized(),
     //               "Initialization logic error!");
 
-    CHECK(model.compute_internal_forces() == 3.14);
-    CHECK(model.compute_internal_torques() == 42.0);
+    CHECK(blocks::get<::elastica::tags::InternalLoads>(model) == 0.0);
+    compute_internal_forces(model);
+    CHECK(blocks::get<::elastica::tags::InternalLoads>(model) == approx(3.14));
+
+    CHECK(blocks::get<::elastica::tags::InternalTorques>(model) == 0.0);
+    compute_internal_torques(model);
+    CHECK(blocks::get<::elastica::tags::InternalTorques>(model) ==
+          approx(42.0));
 
     auto initializer = mock::initialize_block<Plugin>(
         // from before

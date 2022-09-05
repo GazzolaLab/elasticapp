@@ -217,8 +217,8 @@ namespace elastica {
           using VariableDefinitions = ElasticityInterfaceVariables<CRT>;
           //! CRTP type
           using CRTP = CRTPHelper<ComputationalBlock, ElasticityInterface>;
-          //! CRTP methods
-          using CRTP::self;
+          //! Index type
+          using index_type = typename Traits::index_type;
           //********************************************************************
 
          public:
@@ -246,40 +246,99 @@ namespace elastica {
           using typename VariableDefinitions::InternalLoads;
           using typename VariableDefinitions::InternalStress;
           using typename VariableDefinitions::InternalTorques;
-
           //********************************************************************
-          /*!\brief Initialize method for the current component
-           *
-           * \details
-           * initialize() is responsible for initializing the variables present
-           * in the current component in the final block of data. For
-           * InitializedVariables, it fetches the corresponding initializer from
-           * the set of `initializers` to fill in the data. For
-           * ComputedVariables the default value is usually set. In this way,
-           * each component is responsible for initializing its own data in a
-           * manner that does not intrude with initialization from other
-           * components.
-           *
-           * \tparam DownstreamBlock The final block-like object which is
-           * derived from the current component
-           * \tparam CosseratInitializer An Initializer corresponding to the
-           * Cosserat rod hierarchy
+
+         protected:
+          //********************************************************************
+          /*!\copydoc ComponentInitializationDocStub
            */
-          template <typename DownstreamBlock, typename CosseratInitializer>
-          static void initialize(DownstreamBlock& downstream_block,
-                                 CosseratInitializer&& initializers) {
+          // Model params may have a block-slice inside, so to be safe
+          // we add another template parameter here instead of using
+          // ElasticityModelParam<Traits, BlockLike,
+          //                      ElasticityModelMetaArgs...>
+          template <typename BlockLike, typename CosseratInitializer,
+                    typename ElasticityModel>
+          static void initialize(
+              ElasticityInterface<Traits, BlockLike, ElasticityModel>&
+                  this_component,
+              CosseratInitializer&& initializer) {
             // 1. Initialize parent
-            Parent::initialize(downstream_block,
-                               std::forward<CosseratInitializer>(initializers));
+            Parent::initialize(this_component,
+                               std::forward<CosseratInitializer>(initializer));
 
             // 2. Only computed variables here
             tmpl::for_each<typename VariableDefinitions::ComputedVariables>(
-                [&downstream_block](auto v) {
+                [&this_component](auto v) {
                   using Var = tmpl::type_from<decltype(v)>;
                   using Tag = blocks::parameter_t<Var>;
-                  blocks::get<Tag>(downstream_block) = 0.0;
+                  blocks::get<Tag>(this_component.self()) = 0.0;
                 });
           }
+          //********************************************************************
+
+         public:
+          //**CRTP method*******************************************************
+          /*!\name CRTP method*/
+          //@{
+          using CRTP::self;
+          //@}
+          //********************************************************************
+
+          //**Get methods*******************************************************
+          /*!\name Get methods*/
+          //@{
+
+#define STAMP_GETTERS(Var, func)                                         \
+  inline constexpr decltype(auto) func()& noexcept {                     \
+    return blocks::get<::elastica::tags::Var>(self());                   \
+  }                                                                      \
+  inline constexpr decltype(auto) func() const& noexcept {               \
+    return blocks::get<::elastica::tags::Var>(self());                   \
+  }                                                                      \
+  inline constexpr decltype(auto) func(index_type idx)& noexcept {       \
+    return Var::slice(func(), idx);                                      \
+  }                                                                      \
+  inline constexpr decltype(auto) func(index_type idx) const& noexcept { \
+    return Var::slice(func(), idx);                                      \
+  }                                                                      \
+          //********************************************************************
+          /*!\name internal couple methods*/
+          //@{
+          /*!\brief Gets internal couples of the rod
+           */
+          STAMP_GETTERS(InternalCouple, get_internal_couple)
+          //@}
+          //********************************************************************
+
+          //********************************************************************
+          /*!\name internal load methods*/
+          //@{
+          /*!\brief Gets internal loads of the rod
+           */
+          STAMP_GETTERS(InternalLoads, get_internal_loads)
+          //@}
+          //********************************************************************
+
+          //********************************************************************
+          /*!\name internal stress methods*/
+          //@{
+          /*!\brief Gets internal stress of the rod
+           */
+          STAMP_GETTERS(InternalStress, get_internal_stress)
+          //@}
+          //********************************************************************
+
+          //********************************************************************
+          /*!\name internal stress methods*/
+          //@{
+          /*!\brief Gets internal stress of the rod
+           */
+          STAMP_GETTERS(InternalTorques, get_internal_torques)
+          //@}
+          //********************************************************************
+#undef STAMP_GETTERS
+
+          //@}
           //********************************************************************
 
          public:
@@ -288,53 +347,18 @@ namespace elastica {
           //@{
 
           //********************************************************************
-          /*!\brief Computers internal force from the model
+          /*!\brief Compute internal dynamics of the model
            *
            * \details
-           * Computes internal forces (shear force + damping force) by calling
-           * compute_shear_strain() and compute_internal_modeled_loads_impl()
-           *
-           * Ref: eq (3.8) from RSOS
-           *
-           *
-           * \return void/None
-           *
-           * \see fill later?
-           */
-          inline auto compute_internal_forces() {
-            ElasticityModel::compute_internal_modeled_loads_impl();
-            return blocks::get<tags::InternalLoads>(self());
-          }
-          //********************************************************************
-
-          //********************************************************************
-          /*!\brief Computers internal couple from the model
-           *
-           * \details
-           * Computes internal couple by calling
-           * compute_curvature() and compute_internal_modeled_torques_impl()
+           * Interface function for use by simulator.
            *
            * \return void/None
            *
            */
-          inline auto compute_internal_torques() {
-            ElasticityModel::compute_internal_modeled_torques_impl();
-            return blocks::get<tags::InternalTorques>(self());
-          }
-          //********************************************************************
-
-          //********************************************************************
-          /*!\brief Compute internal dynamic from the model
-           *
-           * \details
-           *
-           * \return void/None
-           *
-           */
-          inline void compute_internal_dynamics(::elastica::Time time_v) {
+          void compute_internal_dynamics(::elastica::Time time_v) & {
             (void)time_v;
-            compute_internal_forces();
-            compute_internal_torques();
+            compute_internal_forces(self());
+            compute_internal_torques(self());
           }
           //********************************************************************
 
@@ -346,6 +370,52 @@ namespace elastica {
       }  // namespace detail
 
     }  // namespace component
+
+    //**************************************************************************
+    /*!\brief Computers internal force from the elasticity model
+     * \ingroup cosserat_rod_custom_entries
+     *
+     * \details
+     * Computes internal forces (shear force + damping force) by calling
+     * compute_shear_strain() and compute_internal_modeled_loads_impl()
+     *
+     * Ref: eq (3.8) from RSOS
+     *
+     * \return void/None
+     *
+     * \see fill later?
+     */
+    template <typename Traits, typename ComputationalBlock,
+              class ElasticityModel>
+    inline void compute_internal_forces(
+        component::detail::ElasticityInterface<Traits, ComputationalBlock,
+                                               ElasticityModel>&
+            block_like) /*noexcept*/ {
+      // TODO : Refactor after Model is fixed.
+      compute_internal_modeled_loads_impl(block_like.self());
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Computers internal couple from the model
+     * \ingroup cosserat_rod_custom_entries
+     *
+     * \details
+     * Computes internal couple by calling
+     * compute_curvature() and compute_internal_modeled_torques_impl()
+     *
+     * \return void/None
+     */
+    // FIXME : remove
+    template <typename Traits, typename ComputationalBlock,
+              class ElasticityModel>
+    inline void compute_internal_torques(
+        component::detail::ElasticityInterface<Traits, ComputationalBlock,
+                                               ElasticityModel>&
+            block_like) /*noexcept*/ {
+      compute_internal_modeled_torques_impl(block_like.self());
+    }
+    //**************************************************************************
 
   }  // namespace cosserat_rod
 

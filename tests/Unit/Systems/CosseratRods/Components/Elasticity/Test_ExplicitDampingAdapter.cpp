@@ -158,8 +158,15 @@ namespace {
     // Don't use initialize on model
     Model::initialize(model, std::move(initializer));
 
-    CHECK(model.compute_internal_forces() == 3.14);
-    CHECK(model.compute_internal_torques() == 42.0);
+    CHECK(blocks::get<::elastica::tags::InternalLoads>(model) != approx(3.14));
+    compute_internal_forces(model);
+    CHECK(blocks::get<::elastica::tags::InternalLoads>(model) == approx(3.14));
+
+    CHECK(blocks::get<::elastica::tags::InternalTorques>(model) !=
+          approx(42.0));
+    compute_internal_torques(model);
+    CHECK(blocks::get<::elastica::tags::InternalTorques>(model) ==
+          approx(42.0));
   }
 
   // clang-format off
@@ -202,8 +209,15 @@ namespace {
     DampedModel::initialize(model, std::move(initializer));
 
     // TODO: Need to initialize velocity(at least) to resolve
-    CHECK(model.compute_internal_forces() == 3.14);
-    CHECK(model.compute_internal_torques() == 42.0);
+    CHECK(blocks::get<::elastica::tags::InternalLoads>(model) != approx(3.14));
+    compute_internal_forces(model);
+    CHECK(blocks::get<::elastica::tags::InternalLoads>(model) == approx(3.14));
+
+    CHECK(blocks::get<::elastica::tags::InternalTorques>(model) !=
+          approx(42.0));
+    compute_internal_torques(model);
+    CHECK(blocks::get<::elastica::tags::InternalTorques>(model) ==
+          approx(42.0));
   }
 
 }  // namespace

@@ -149,7 +149,9 @@ namespace {
     // clang-format on
     const Vec3 internal_stress =
         shear_stretch_rigidity_matrix * (shear_solution - reference_strain);
-    auto compute_internal_forces_result = model.compute_internal_forces();
+    compute_internal_forces(model);
+    auto compute_internal_forces_result =
+        blocks::get<::elastica::tags::InternalLoads>(model);
     const Vec3 edge_force =
         Traits::DataType::Vector::slice(compute_internal_forces_result, 0UL);
     const Vec3 mid_force =
@@ -184,8 +186,9 @@ namespace {
     const Vec3 lagrangian_transport(j_omega_upon_e % omega_vector);
     // clang-format on
 
+    compute_internal_torques(model);
     const auto compute_internal_torques_result =
-        model.compute_internal_torques();
+        blocks::get<::elastica::tags::InternalTorques>(model);
     const Vec3 edge_torque =
         Traits::DataType::Vector::slice(compute_internal_torques_result, 0UL);
     const Vec3 mid_torque =
