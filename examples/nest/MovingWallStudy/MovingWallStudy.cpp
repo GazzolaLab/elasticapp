@@ -123,8 +123,8 @@ void MovingWallStudy::setup(InputTypes<This> const& input_parameters) {
       //        StraightInit::TorqueDampingRate{
       //            ::elastica::get<damping>(input_parameters)},
       // TODO later refactor to use Cosserat rod without damping
-      //StraightInit::ForceDampingRate{1e-10},
-      //StraightInit::TorqueDampingRate{1e-10},
+      // StraightInit::ForceDampingRate{1e-10},
+      // StraightInit::TorqueDampingRate{1e-10},
   };
   RodRef rod_ref = simulator->emplace_back<CosseratRod>(
       straight_initializer.initialize<CosseratRod>());
@@ -213,25 +213,45 @@ void MovingWallStudy::setup(InputTypes<This> const& input_parameters) {
   const ::elastica::real_t final_height_high(80);
   const ::elastica::real_t final_height_low(60);
   const ::elastica::real_t rectified_time(5.0);  // wait til
-  const ::elastica::real_t duration((final_height_high - final_height_low) / top_wall_speed);
+  const ::elastica::real_t duration((final_height_high - final_height_low) /
+                                    top_wall_speed);
+
+  auto get_phase = [=](::elastica::real_t time_v) -> ::elastica::real_t {
+    auto const shifted_time = (time_v - rectified_time);
+    // duration is half-cycle : two durations is one cycle
+    auto const oscillation_count = static_cast<int>(shifted_time / duration);
+
+    bool const moving_upward(oscillation_count % 2);
+    bool const moving_downward = !moving_upward;
+
+    // 0.0 < phase < 1.0, phase within duration
+    auto const phase =
+        (shifted_time - (duration * ::elastica::real_t(oscillation_count))) /
+        duration;
+    // if moving downward return phase, else return 1.0 - phase
+    return ::elastica::real_t(moving_downward) * phase +
+           ::elastica::real_t(moving_upward) * (1.0 - phase);
+  };
+
   auto top_moving_wall_position =
-      [=](::elastica::real_t time) noexcept -> ::elastica::real_t {
-        bool rectified(time < rectified_time);
-        int oscillation_count = (time - rectified_time) / duration;
-        bool direction(oscillation_count % 2); // False: moving downward, True: moving upward
-
-        ::elastica::real_t loc = (time - rectified_time - (duration * oscillation_count)) / duration;
-        loc = !direction * loc + direction * (1.0-loc); // Reverse direction
-
-        return rectified * original_top_height + (!rectified) * (final_height_high - ((final_height_high - final_height_low) * loc));
-      };
+      [=](::elastica::real_t time_v) noexcept -> ::elastica::real_t {
+    bool const is_static(time_v < rectified_time);
+    // Discontinuity at time t = rectified_time
+    return is_static
+               ? original_top_height
+               : (final_height_high -
+                  ((final_height_high - final_height_low) * get_phase(time_v)));
+  };
   auto top_moving_wall_velocity =
-      [=](::elastica::real_t time) noexcept -> ::elastica::real_t{
-        bool rectified(time < rectified_time);
-        int oscillation_count = (time - rectified_time) / duration;
-        bool direction(oscillation_count % 2); // False: moving downward, True: moving upward
-        return (direction + (-1 * !direction)) * top_wall_speed;
-      };
+      [=](::elastica::real_t time_v) noexcept -> ::elastica::real_t {
+    bool const is_static(time_v < rectified_time);
+    auto const shifted_time = (time_v - rectified_time);
+    // duration is half-cycle : two durations is one cycle
+    auto const oscillation_count = static_cast<int>(shifted_time / duration);
+    bool const moving_upward(oscillation_count % 2);
+
+    return is_static ? 0.0 : (moving_upward ? top_wall_speed : -top_wall_speed);
+  };
 
   auto always_zero_ = [](::elastica::real_t) noexcept -> ::elastica::real_t {
     return 0.0;
@@ -242,7 +262,8 @@ void MovingWallStudy::setup(InputTypes<This> const& input_parameters) {
       ek::translate_along<elastica::EulerianFrame::Y>(
           ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
       ek::translate_along<elastica::EulerianFrame::Z>(
-          ek::mark_position(ImposedHalfSpace::anchor_to_com_p(top_moving_wall_position)),
+          ek::mark_position(
+              ImposedHalfSpace::anchor_to_com_p(top_moving_wall_position)),
           ek::mark_velocity(top_moving_wall_velocity)));
   imposed_half_space_top_ref = simulator->emplace_back<ImposedHalfSpace>(
       ::elastica::collision::HalfSpacePrimitive(
@@ -253,8 +274,8 @@ void MovingWallStudy::setup(InputTypes<This> const& input_parameters) {
   const ::elastica::real_t side_wall_dimension_with_gap = side_wall_dimension;
   // Set the left plane at (-side_wall_dimension_with_gap, 0, 0) and with
   // normal along X
-  const ::elastica::Vec3 plane_position_left{-side_wall_dimension_with_gap,
-                                             0.0, 0.0};
+  const ::elastica::Vec3 plane_position_left{-side_wall_dimension_with_gap, 0.0,
+                                             0.0};
   auto plane_normal_left = {1.0, 0.0, 0.0};
   auto plane_binormal_left = {0.0, 0.0, 1.0};
   auto plane_tangent_left = {0.0, -1.0, 0.0};
@@ -266,8 +287,8 @@ void MovingWallStudy::setup(InputTypes<This> const& input_parameters) {
 
   // Set the right plane at (side_wall_dimension_with_gap, 0, 0) and with
   // normal along X-
-  const ::elastica::Vec3 plane_position_right{side_wall_dimension_with_gap,
-                                              0.0, 0.0};
+  const ::elastica::Vec3 plane_position_right{side_wall_dimension_with_gap, 0.0,
+                                              0.0};
   auto plane_normal_right = {-1.0, 0.0, 0.0};
   auto plane_binormal_right = {0.0, 0.0, -1.0};
   auto plane_tangent_right = {0.0, 1.0, 0.0};
@@ -279,8 +300,8 @@ void MovingWallStudy::setup(InputTypes<This> const& input_parameters) {
 
   // Set the back plane at (0, side_wall_dimension_with_gap, 0) and with
   // normal along Y-
-  const ::elastica::Vec3 plane_position_back{
-      0.0, side_wall_dimension_with_gap, 0.0};
+  const ::elastica::Vec3 plane_position_back{0.0, side_wall_dimension_with_gap,
+                                             0.0};
   auto plane_normal_back = {0.0, -1.0, 0.0};
   auto plane_binormal_back = {-1.0, 0.0, 0.0};
   auto plane_tangent_back = {0.0, 0.0, 1.0};
@@ -331,7 +352,7 @@ void MovingWallStudy::step() {
             ->get_environment<elastica::environments::tags::CollisionSystem>();
     collision_solver->time_interval_between_detection() =
         10.0 * current_dt();  // anything > 0.0
-                                // set_dt(1.0e-6);
+                              // set_dt(1.0e-6);
   }
 
   simulator->step(time_stepper, get_current_time(), get_dt(),
@@ -345,12 +366,13 @@ void MovingWallStudy::run() {
   */
   enable_floating_point_exceptions();
   using RodCoordinates =
-  std::tuple<::elastica::real_t, ::elastica::real_t, ::elastica::real_t>;
+      std::tuple<::elastica::real_t, ::elastica::real_t, ::elastica::real_t>;
   using Energies = std::tuple<::elastica::real_t, ::elastica::real_t,
-      ::elastica::real_t, ::elastica::real_t>;
+                              ::elastica::real_t, ::elastica::real_t>;
   std::vector<RodCoordinates> rod_coordinates;
   std::vector<Energies> energies;
-  using TimesAndForces = std::tuple<::elastica::real_t, ::elastica::Vec3, ::elastica::real_t>;
+  using TimesAndForces =
+      std::tuple<::elastica::real_t, ::elastica::Vec3, ::elastica::real_t>;
   std::vector<TimesAndForces> times_and_forces;
 
   //  explicitly get the system
@@ -447,7 +469,9 @@ void MovingWallStudy::run() {
 
       // record plane
       auto& imposed_plane = imposed_half_space_bottom_ref.get();
-      times_and_forces.emplace_back(current_time(), imposed_plane.get_force(), imposed_half_space_top_ref.get().get_position()[2UL]);
+      times_and_forces.emplace_back(
+          current_time(), imposed_plane.get_force(),
+          imposed_half_space_top_ref.get().get_position()[2UL]);
       sprintf(file_name, "data/imposed_plane_%010d.csv", i);
       std::ofstream nest_diagnostics_file;
       nest_diagnostics_file.open(file_name);
@@ -458,7 +482,7 @@ void MovingWallStudy::run() {
                               << "," << std::get<ForceVector>(tf)[x_axis] << ","
                               << std::get<ForceVector>(tf)[y_axis] << ","
                               << std::get<ForceVector>(tf)[z_axis] << ","
-                              << std::get<2UL>(tf) << "\n"; // Z-Position
+                              << std::get<2UL>(tf) << "\n";  // Z-Position
       }
       nest_diagnostics_file << std::endl;
       nest_diagnostics_file.close();
