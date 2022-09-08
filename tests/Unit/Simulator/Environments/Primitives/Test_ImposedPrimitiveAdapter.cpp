@@ -18,6 +18,7 @@
 #include "Simulator/Environments/Primitives/Test_AccessAPI.hpp"
 
 namespace {
+  using App = Approx;
 
   using namespace elastica;
   using namespace elastica::collision;
@@ -110,6 +111,14 @@ namespace {
         CHECK(p.get_position()[0] == approx(5.0));
         CHECK(p.get_position()[1] == approx(3.0));
         CHECK(p.get_position()[2] == approx(6.0));
+
+        // CHECK AABB positions as well
+        CHECK(p.get_AABB()[0] == approx(1.0 - contact_threshold));
+        CHECK(p.get_AABB()[1] == approx(-1.0 - contact_threshold));
+        CHECK(p.get_AABB()[2] == approx(2.0 - contact_threshold));
+        CHECK(p.get_AABB()[3] == approx(9.0 + contact_threshold));
+        CHECK(p.get_AABB()[4] == approx(7.0 + contact_threshold));
+        CHECK(p.get_AABB()[5] == approx(10.0 + contact_threshold));
       };
 
       Time time_v{0.0};
@@ -122,6 +131,13 @@ namespace {
         CHECK(p.get_position()[0] == approx(1.0));
         CHECK(p.get_position()[1] == approx(2.0));
         CHECK(p.get_position()[2] == approx(3.0));
+
+        CHECK(p.get_AABB()[0] == approx(-3.0 - contact_threshold));
+        CHECK(p.get_AABB()[1] == approx(-2.0 - contact_threshold));
+        CHECK(p.get_AABB()[2] == approx(-1.0 - contact_threshold));
+        CHECK(p.get_AABB()[3] == approx(5.0 + contact_threshold));
+        CHECK(p.get_AABB()[4] == approx(6.0 + contact_threshold));
+        CHECK(p.get_AABB()[5] == approx(7.0 + contact_threshold));
       };
 
       pre_update_primitive_check(another_imposed_sphere);
@@ -168,6 +184,26 @@ namespace {
       CHECK(p.get_position()[0] == approx(0.0));
       CHECK(p.get_position()[1] == approx(0.0));
       CHECK(p.get_position()[2] == (-0.5 * HalfSpacePrimitive::get_span()));
+
+      // plane is infinite, so only guarantee precision till contact_threshold
+      auto contact_approx = App::custom().epsilon(0.1 * contact_threshold);
+
+      CHECK(p.get_AABB()[0] ==
+            contact_approx(-0.5 * HalfSpacePrimitive::get_span() -
+                           contact_threshold));
+      CHECK(p.get_AABB()[1] ==
+            contact_approx(-0.5 * HalfSpacePrimitive::get_span() -
+                           contact_threshold));
+      CHECK(p.get_AABB()[2] == contact_approx(-HalfSpacePrimitive::get_span() -
+                                              contact_threshold));
+      CHECK(p.get_AABB()[3] ==
+            contact_approx(0.5 * HalfSpacePrimitive::get_span() +
+                           contact_threshold));
+      CHECK(p.get_AABB()[4] ==
+            contact_approx(0.5 * HalfSpacePrimitive::get_span() +
+                           contact_threshold));
+      // can only guarantee precision till contact threshold
+      // CHECK(p.get_AABB()[5] == contact_approx(contact_threshold));
     };
     auto const pre_update_rate_check = [=](auto& p) {
       CHECK(p.get_velocity()[0] == approx(0.0));

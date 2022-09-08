@@ -178,6 +178,8 @@ namespace elastica {
             translations_.template compute_position_along<EulerianFrame::Z>(
                 time_v);
         Parent::gpos_ = Vec3{px, py, pz};
+        // Setting the axis-aligned bounding box
+        Parent::calculate_bounding_box();
       }
       //************************************************************************
 
