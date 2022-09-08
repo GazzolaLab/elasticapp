@@ -80,17 +80,15 @@ namespace elastica {
 
     template <typename Traits, typename ComputationalBlock,
               class ElasticityModel>
-    void fix_compute_internal_forces(
-        component::detail::ElasticityInterface<Traits, ComputationalBlock,
-                                               ElasticityModel>&
-            block_like) /*noexcept*/;
+    void compute_internal_forces(component::detail::ElasticityInterface<
+                                 Traits, ComputationalBlock, ElasticityModel>&
+                                     block_like) /*noexcept*/;
 
     template <typename Traits, typename ComputationalBlock,
               class ElasticityModel>
-    void fix_compute_internal_torques(
-        component::detail::ElasticityInterface<Traits, ComputationalBlock,
-                                               ElasticityModel>&
-            block_like) /*noexcept*/;
+    void compute_internal_torques(component::detail::ElasticityInterface<
+                                  Traits, ComputationalBlock, ElasticityModel>&
+                                      block_like) /*noexcept*/;
 
     template <typename CRT, typename ComputationalBlock,
               class ElasticityModelWithBlock,
