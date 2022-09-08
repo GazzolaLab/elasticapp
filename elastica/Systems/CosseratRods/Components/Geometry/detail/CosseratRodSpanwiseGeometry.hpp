@@ -32,6 +32,7 @@
 #include "Systems/CosseratRods/Components/Geometry/detail/RodSpanwiseGeometry.hpp"
 #include "Systems/CosseratRods/Components/Geometry/detail/Tags/CosseratRodSpanwiseGeometryTags.hpp"
 #include "Systems/CosseratRods/Components/Initialization.hpp"
+#include "Systems/CosseratRods/Components/Noexcept.hpp"
 
 namespace elastica {
 
@@ -524,7 +525,7 @@ namespace elastica {
     template <typename Traits, typename ComputationalBlock>
     void compute_reference_geometry(
         component::detail::CosseratRodSpanwiseGeometry<
-            Traits, ComputationalBlock>& block_like) /*noexcept*/ {
+            Traits, ComputationalBlock>& block_like) COSSERATROD_LIB_NOEXCEPT {
       using ::elastica::tags::ElementDilatation;
       using ::elastica::tags::Position;
       using ::elastica::tags::ReferenceElementLength;
@@ -577,7 +578,7 @@ namespace elastica {
     template <typename Traits, typename ComputationalBlock>
     void update_spanwise_variables(
         component::detail::CosseratRodSpanwiseGeometry<
-            Traits, ComputationalBlock>& block_like) /*noexcept*/ {
+            Traits, ComputationalBlock>& block_like) COSSERATROD_LIB_NOEXCEPT {
       // Compute eq (3.3) from 2018 RSOS paper
       // 0. Create reference variables
       auto&& position(
@@ -627,7 +628,7 @@ namespace elastica {
     template <typename Traits, typename ComputationalBlock>
     void update_shear_stretch_strain(
         component::detail::CosseratRodSpanwiseGeometry<
-            Traits, ComputationalBlock>& block_like) /*noexcept*/ {
+            Traits, ComputationalBlock>& block_like) COSSERATROD_LIB_NOEXCEPT {
       auto&& shear_stretch_strains(
           blocks::get<::elastica::tags::ShearStretchStrain>(block_like.self()));
       auto&& element_dilatation(
@@ -647,9 +648,9 @@ namespace elastica {
      * \ingroup cosserat_rod_custom_entries
      */
     template <typename Traits, typename ComputationalBlock>
-    void update_curvature(
-        component::detail::CosseratRodSpanwiseGeometry<
-            Traits, ComputationalBlock>& block_like) /*noexcept*/ {
+    void update_curvature(component::detail::CosseratRodSpanwiseGeometry<
+                          Traits, ComputationalBlock>& block_like)
+        COSSERATROD_LIB_NOEXCEPT {
       auto&& curvature(
           blocks::get<::elastica::tags::Curvature>(block_like.self()));
       auto&& director(

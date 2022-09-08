@@ -31,6 +31,7 @@
 /////
 #include "Systems/CosseratRods/Components/Geometry/detail/CosseratRodSpanwiseGeometry.hpp"
 #include "Systems/CosseratRods/Components/Geometry/detail/Tags/CosseratRodCrossSectionInterfaceTags.hpp"
+#include "Systems/CosseratRods/Components/Noexcept.hpp"
 
 namespace elastica {
 
@@ -369,12 +370,13 @@ namespace elastica {
           //@{
           /*!\brief Gets area of the current rod
            */
-          inline constexpr auto get_area() const& /*noexcept*/ {
+          inline constexpr auto get_area() const& COSSERATROD_LIB_NOEXCEPT {
             // Should give out a VecVecExpr rather than Dimensions object
             // for expression template mechanisms
             return compute_cross_section_area(This::get_element_dimension());
           }
-          inline constexpr auto get_area(index_type idx) const& /*noexcept*/ {
+          inline constexpr auto get_area(
+              index_type idx) const& COSSERATROD_LIB_NOEXCEPT {
             // Should give out a VecVecExpr rather than Dimensions object
             // for expression template mechanisms
             return compute_cross_section_area(This::get_element_dimension(idx));
@@ -389,8 +391,7 @@ namespace elastica {
            */
           template <DirectionType Dim, Requires<(Dim < Frame::D3)> = nullptr>
           inline constexpr decltype(auto) get_second_moment_of_area(
-              index_type idx) const
-          /*noexcept*/ {
+              index_type idx) const COSSERATROD_LIB_NOEXCEPT {
             // Should give out a VecVecExpr rather than Dimensions object
             // for expression template mechanisms
             return compute_second_moment_of_area(
@@ -398,8 +399,7 @@ namespace elastica {
           }
           template <DirectionType Dim, Requires<(Dim == Frame::D3)> = nullptr>
           inline constexpr decltype(auto) get_second_moment_of_area(
-              index_type idx) const
-          /*noexcept*/ {
+              index_type idx) const COSSERATROD_LIB_NOEXCEPT {
             // Should give out a VecVecExpr rather than Dimensions object
             // for expression template mechanisms
             return real_t(2.0) * compute_second_moment_of_area(
@@ -408,7 +408,7 @@ namespace elastica {
           // do not have APIs return vec3, seems to reduce customizability and
           // promotes bad code
           inline constexpr auto get_second_moment_of_area(index_type idx) const
-          /*noexcept*/ {
+              COSSERATROD_LIB_NOEXCEPT {
             return Vec3{real_t(This::get_second_moment_of_area<D1>(idx)),
                         real_t(This::get_second_moment_of_area<D2>(idx)),
                         real_t(This::get_second_moment_of_area<D3>(idx))};
@@ -447,8 +447,8 @@ namespace elastica {
               typename CrossSection>
     void compute_cross_sectional_variables(
         component::detail::CosseratRodCrossSectionInterface<
-            Traits, ComputationalBlock, CrossSection>&
-            block_like) /*noexcept*/ {
+            Traits, ComputationalBlock, CrossSection>& block_like)
+        COSSERATROD_LIB_NOEXCEPT {
       auto&& volume(blocks::get<tags::ElementVolume>(block_like.self()));
       auto&& element_length(
           blocks::get<tags::ElementLength>(block_like.self()));
@@ -493,8 +493,8 @@ namespace elastica {
               typename CrossSection>
     void compute_shear_strains(
         component::detail::CosseratRodCrossSectionInterface<
-            Traits, ComputationalBlock, CrossSection>&
-            block_like) /*noexcept*/ {
+            Traits, ComputationalBlock, CrossSection>& block_like)
+        COSSERATROD_LIB_NOEXCEPT {
       // Q (et - d_3)
       // Q is always latest, only e and t need to be computed
       // Dilatation updated here!
@@ -515,7 +515,7 @@ namespace elastica {
               typename CrossSection>
     void compute_curvature(component::detail::CosseratRodCrossSectionInterface<
                            Traits, ComputationalBlock, CrossSection>&
-                               block_like) /*noexcept*/ {
+                               block_like) COSSERATROD_LIB_NOEXCEPT {
       update_curvature(block_like.self());
     }
     //**************************************************************************
