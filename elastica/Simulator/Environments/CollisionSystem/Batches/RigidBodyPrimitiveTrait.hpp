@@ -181,9 +181,7 @@ namespace elastica {
         //**********************************************************************
         /*!\brief Get rank of current node.
          */
-        auto rank() const noexcept -> typename ThreadSafeInt::value_type {
-          return rank_;
-        }
+        auto rank() const noexcept -> std::size_t { return rank_; }
         //**********************************************************************
 
         //**********************************************************************
