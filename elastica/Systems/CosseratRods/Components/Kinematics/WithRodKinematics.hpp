@@ -440,25 +440,26 @@ namespace elastica {
         /*!\name Get methods*/
         //@{
 
+#define STAMP_GETTERS(Var, func)                                         \
+  inline constexpr decltype(auto) func()& noexcept {                     \
+    return blocks::get<::elastica::tags::Var>(self());                   \
+  }                                                                      \
+  inline constexpr decltype(auto) func() const& noexcept {               \
+    return blocks::get<::elastica::tags::Var>(self());                   \
+  }                                                                      \
+  inline constexpr decltype(auto) func(index_type idx)& noexcept {       \
+    return Var::slice(func(), idx);                                      \
+  }                                                                      \
+  inline constexpr decltype(auto) func(index_type idx) const& noexcept { \
+    return Var::slice(func(), idx);                                      \
+  }
+
         //**********************************************************************
         /*!\name Velocity methods*/
         //@{
         /*!\brief Gets velocity of the current rod
          */
-        inline constexpr decltype(auto) get_velocity() & noexcept {
-          return blocks::get<tags::Velocity>(self());
-        }
-        inline constexpr decltype(auto) get_velocity() const& noexcept {
-          return blocks::get<tags::Velocity>(self());
-        }
-        inline constexpr decltype(auto) get_velocity(
-            index_type idx) & noexcept {
-          return Velocity::slice(get_velocity(), idx);
-        }
-        inline constexpr decltype(auto) get_velocity(
-            index_type idx) const& noexcept {
-          return Velocity::slice(get_velocity(), idx);
-        }
+        STAMP_GETTERS(Velocity, get_velocity)
         //@}
         //**********************************************************************
 
@@ -467,20 +468,7 @@ namespace elastica {
         //@{
         /*!\brief Gets angular velocity of the current rod
          */
-        inline constexpr decltype(auto) get_angular_velocity() & noexcept {
-          return blocks::get<tags::AngularVelocity>(self());
-        }
-        inline constexpr decltype(auto) get_angular_velocity() const& noexcept {
-          return blocks::get<tags::AngularVelocity>(self());
-        }
-        inline constexpr decltype(auto) get_angular_velocity(
-            index_type idx) & noexcept {
-          return AngularVelocity::slice(get_angular_velocity(), idx);
-        }
-        inline constexpr decltype(auto) get_angular_velocity(
-            index_type idx) const& noexcept {
-          return AngularVelocity::slice(get_angular_velocity(), idx);
-        }
+        STAMP_GETTERS(AngularVelocity, get_angular_velocity)
         //@}
         //**********************************************************************
 
@@ -489,12 +477,7 @@ namespace elastica {
         //@{
         /*!\brief Gets acceleration of the current rod
          */
-        inline constexpr decltype(auto) get_acceleration() & noexcept {
-          return blocks::get<tags::Acceleration>(self());
-        }
-        inline constexpr decltype(auto) get_acceleration() const& noexcept {
-          return blocks::get<tags::Acceleration>(self());
-        }
+        STAMP_GETTERS(Acceleration, get_acceleration)
         //@}
         //**********************************************************************
 
@@ -503,13 +486,7 @@ namespace elastica {
         //@{
         /*!\brief Gets angular acceleration of the current rod
          */
-        inline constexpr decltype(auto) get_angular_acceleration() & noexcept {
-          return blocks::get<tags::AngularAcceleration>(self());
-        }
-        inline constexpr decltype(auto) get_angular_acceleration()
-            const& noexcept {
-          return blocks::get<tags::AngularAcceleration>(self());
-        }
+        STAMP_GETTERS(AngularAcceleration, get_angular_acceleration)
         //@}
         //**********************************************************************
 
@@ -518,20 +495,7 @@ namespace elastica {
         //@{
         /*!\brief Gets material of the current rod
          */
-        inline constexpr decltype(auto) get_material() & noexcept {
-          return blocks::get<tags::Material>(self());
-        }
-        inline constexpr decltype(auto) get_material() const& noexcept {
-          return blocks::get<tags::Material>(self());
-        }
-        inline constexpr decltype(auto) get_material(
-            std::size_t idx) & noexcept {
-          return Material::slice(get_material(), idx);
-        }
-        inline constexpr decltype(auto) get_material(
-            std::size_t idx) const& noexcept {
-          return Material::slice(get_material(), idx);
-        }
+        STAMP_GETTERS(Material, get_material)
         //@}
         //**********************************************************************
 
@@ -540,19 +504,7 @@ namespace elastica {
         //@{
         /*!\brief Gets mass of the current rod
          */
-        inline constexpr decltype(auto) get_mass() & noexcept {
-          return blocks::get<tags::Mass>(self());
-        }
-        inline constexpr decltype(auto) get_mass() const& noexcept {
-          return blocks::get<tags::Mass>(self());
-        }
-        inline constexpr decltype(auto) get_mass(std::size_t idx) & noexcept {
-          return Mass::slice(get_mass(), idx);
-        }
-        inline constexpr decltype(auto) get_mass(
-            std::size_t idx) const& noexcept {
-          return Mass::slice(get_mass(), idx);
-        }
+        STAMP_GETTERS(Mass, get_mass)
         //@}
         //**********************************************************************
 
@@ -561,20 +513,7 @@ namespace elastica {
         //@{
         /*!\brief Gets external loads of the current rod
          */
-        inline constexpr decltype(auto) get_external_loads() & noexcept {
-          return blocks::get<tags::ExternalLoads>(self());
-        }
-        inline constexpr decltype(auto) get_external_loads() const& noexcept {
-          return blocks::get<tags::ExternalLoads>(self());
-        }
-        inline constexpr decltype(auto) get_external_loads(
-            index_type idx) & noexcept {
-          return ExternalLoads::slice(get_external_loads(), idx);
-        }
-        inline constexpr decltype(auto) get_external_loads(
-            index_type idx) const& noexcept {
-          return ExternalLoads::slice(get_external_loads(), idx);
-        }
+        STAMP_GETTERS(ExternalLoads, get_external_loads)
         //@}
         //**********************************************************************
 
@@ -583,20 +522,28 @@ namespace elastica {
         //@{
         /*!\brief Gets external torques of the current rod
          */
-        inline constexpr decltype(auto) get_external_torques() & noexcept {
-          return blocks::get<tags::ExternalTorques>(self());
-        }
-        inline constexpr decltype(auto) get_external_torques() const& noexcept {
-          return blocks::get<tags::ExternalTorques>(self());
-        }
-        inline constexpr decltype(auto) get_external_torques(
-            index_type idx) & noexcept {
-          return ExternalTorques::slice(get_external_torques(), idx);
-        }
-        inline constexpr decltype(auto) get_external_torques(
-            index_type idx) const& noexcept {
-          return ExternalTorques::slice(get_external_torques(), idx);
-        }
+        STAMP_GETTERS(ExternalTorques, get_external_torques)
+        //@}
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\name Mass SMOI methods*/
+        //@{
+        /*!\brief Gets mass second moment of inertia of the current rod
+         */
+        STAMP_GETTERS(MassSecondMomentOfInertia,
+                      get_mass_second_moment_of_inertia)
+        //@}
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\name Inverse Mass SMOI methods*/
+        //@{
+        /*!\brief Gets inverse fo mass second moment of inertia of the current
+         * rod
+         */
+        STAMP_GETTERS(InvMassSecondMomentOfInertia,
+                      get_inverse_mass_second_moment_of_inertia)
         //@}
         //**********************************************************************
 
