@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
         Initialization.hpp
         Kinematics.hpp
         Names.hpp
+        Noexcept.hpp
         Protocols.hpp
         Tags.hpp
         Types.hpp
