@@ -81,14 +81,24 @@ void RodPlaneCollisionCaseStudy::setup(
     return 0.0;
   };
 
-  auto translations_buffer = ek::make_translations(
-      ek::translate_along<elastica::EulerianFrame::X>(
-          ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
-      ek::translate_along<elastica::EulerianFrame::Y>(
-          ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
-      ek::translate_along<elastica::EulerianFrame::Z>(
-          ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)));
+  auto sinusoidal_p = [r = ::elastica::get<radius>(input_parameters)](
+      ::elastica::real_t t) noexcept -> ::elastica::real_t {
+    return 2.0 * r * std::sin(5.0 * M_PI * t);
+  };
 
+  auto sinusoidal_v = [r = ::elastica::get<radius>(input_parameters)](
+      ::elastica::real_t t) noexcept -> ::elastica::real_t {
+    return 5.0 * M_PI * 2.0 * r * std::cos(5.0 * M_PI * t);
+  };
+
+  auto iequals = [](std::string const& a, std::string const& b) -> bool {
+    return std::equal(a.begin(), a.end(), b.begin(), b.end(),
+                      [](unsigned char a, unsigned char b) {
+                        return std::tolower(a) == std::tolower(b);
+                      });
+  };
+
+  // Set plane geometry
   // Set the bottom plane at (0, 0, 0) and with normal along Z
   const ::elastica::Vec3 plane_position{0.0, 0.0, 0.0};
   auto plane_normal = {0.0, 0.0, 1.0};
@@ -97,11 +107,42 @@ void RodPlaneCollisionCaseStudy::setup(
   // implicit convention
   ::elastica::Rot3 Q = {plane_normal, plane_binormal, plane_tangent};
   using Spans = typename ImposedPlane::Spans;
-  imposed_plane_ref = simulator->emplace_back<ImposedPlane>(
-      ::elastica::collision::PlanePrimitive(0UL, 0UL, true, plane_position, Q,
-                                            Spans{1e4, 1e4},  // plane extent
-                                            my_material),
-      std::move(translations_buffer));
+
+  // Setup motion
+  if (iequals(::elastica::get<imposed_motion>(input_parameters),
+              imposed_motion::default_value())) {
+    auto translations_buffer = ek::make_translations(
+        ek::translate_along<elastica::EulerianFrame::X>(
+            ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
+        ek::translate_along<elastica::EulerianFrame::Y>(
+            ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
+        ek::translate_along<elastica::EulerianFrame::Z>(
+            ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)));
+
+    imposed_plane_ref = simulator->emplace_back<ImposedPlane>(
+        ::elastica::collision::PlanePrimitive(0UL, 0UL, true, plane_position, Q,
+                                              Spans{1e4, 1e4},  // plane extent
+                                              my_material),
+        std::move(translations_buffer));
+  } else {
+    // Oscillatory case.
+    auto translations_buffer = ek::make_translations(
+        ek::translate_along<elastica::EulerianFrame::X>(
+            ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
+        ek::translate_along<elastica::EulerianFrame::Y>(
+            ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
+        ek::translate_along<elastica::EulerianFrame::Z>(
+            // The COM along z axis is not at 0 (the anchor position), but rather
+            // inside the halfspace, so we displace it by anchor_to_com.
+            ek::mark_position(sinusoidal_p),
+            ek::mark_velocity(sinusoidal_v)));
+
+    imposed_plane_ref = simulator->emplace_back<ImposedPlane>(
+        ::elastica::collision::PlanePrimitive(0UL, 0UL, true, plane_position, Q,
+                                              Spans{1e4, 1e4},  // plane extent
+                                              my_material),
+        std::move(translations_buffer));
+  }
 
   // set near-list update time
   auto& collision_solver =

@@ -178,6 +178,15 @@ generated due to the collision.
     static type default_value() { return 1e-5; }
   };
 
+  struct imposed_motion {
+    // This should ideally be an enum, but we stick with strings for now
+    using type = std::string;
+    static constexpr String help = {
+        "Motion profile of the imposed primitive, "
+        "can be either static or oscillating."};
+    static type default_value() { return "static"; }
+  };
+
   struct final_sim_time {
     using type = ::elastica::real_t;
     static constexpr String help = {"Final simulation time"};
@@ -189,6 +198,7 @@ generated due to the collision.
                  gravitational_acc, radius, length, dt, contact_stiffness,
                  contact_damping, final_sim_time,
                  initial_min_distance_from_plane, angle_of_inclination,
+                 imposed_motion,
                  contact_detection_time_interval>;
 
   /* Required functions */
@@ -234,7 +244,12 @@ generated due to the collision.
     std::transform(std::cbegin(contacts), std::cend(contacts),
                    std::back_inserter(penetrations),
                    [](auto& c) { return -c.get_distance(); });
-    return std::make_tuple(std::move(penetrations), std::move(return_list));
+
+    auto plane_stats = std::make_tuple(
+        ::elastica::position(imposed_plane_ref.get())[2UL],
+        ::elastica::velocity(imposed_plane_ref.get())[2UL]);
+
+    return std::make_tuple(std::move(penetrations), std::move(return_list), std::move(plane_stats));
   }
 };
 

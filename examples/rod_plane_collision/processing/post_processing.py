@@ -38,7 +38,19 @@ def post_process_and_block(
         centroid_height = np.mean(np.asarray(rod_collection_stats[0].position), axis=2)[
             ..., 2
         ]
+        plane_height = np.asarray(rod_collection_stats[0].plane_position)
+
+        # at every instant there may actually be no or multiple penetrations
+        def compute_penetration(depths):
+            return np.average(np.asarray(depths))  # there may be multiple penetrations
+
+        penetrations = np.fromiter(
+            map(compute_penetration, rod_collection_stats[0].penetration_depths),
+            dtype=float,
+        )
         ax.plot(time, centroid_height / params.radius)
+        ax.plot(time, plane_height / params.radius)
+        ax.plot(time, penetrations / params.radius)
         ax.set_xlabel("Time")
         ax.set_ylabel("Centroid height / Rod radius")
         if save_figure:

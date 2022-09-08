@@ -14,7 +14,7 @@ CaseStudyParameters = TypeVar("CaseStudyParameters")
 
 
 def setup_stats(cs: CaseStudy, params: CaseStudyParameters) -> SimulationStats:
-    _, rods = cs.communicate()
+    _, rods, _ = cs.communicate()
     return [
         Stats(
             contact_stiffness=params.contact_stiffness,
@@ -48,9 +48,12 @@ def run_simulation(cs: CaseStudy, params: CaseStudyParameters) -> SimulationStat
 
     def collect_stats_from(cas):
         collect_global_stats_from(cas)
-        depths, rods = cas.communicate()
+        depths, rods, plane_stats = cas.communicate()
         for stat, rod in zip(rod_collection_stats, rods):
             stat.penetration_depths.append(depths)
+            plane_p, plane_v = plane_stats
+            stat.plane_position.append(plane_p)
+            stat.plane_velocity.append(plane_v)
             collect_rod_stats(stat, rod)
 
     # initial statistics

@@ -92,21 +92,60 @@ void RodHalfSpaceCollisionCaseStudy::setup(
     return 0.0;
   };
 
-  auto translations_buffer = ek::make_translations(
-      ek::translate_along<elastica::EulerianFrame::X>(
-          ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
-      ek::translate_along<elastica::EulerianFrame::Y>(
-          ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
-      ek::translate_along<elastica::EulerianFrame::Z>(
-          // The COM along z axis is not at 0 (the anchor position), but rather
-          // inside the halfspace, so we displace it by anchor_to_com.
-          ek::mark_position(ImposedHalfSpace::anchor_to_com_n(always_zero_)),
-          ek::mark_velocity(always_zero_)));
+  auto sinusoidal_p = [r = ::elastica::get<radius>(input_parameters)](
+                          ::elastica::real_t t) noexcept -> ::elastica::real_t {
+    return 2.0 * r * std::sin(5.0 * M_PI * t);
+  };
 
-  imposed_half_space_ref = simulator->emplace_back<ImposedHalfSpace>(
-      ::elastica::collision::HalfSpacePrimitive(
-          0UL, 0UL, true, half_space_anchor, Q, my_material),
-      std::move(translations_buffer));
+  auto sinusoidal_v = [r = ::elastica::get<radius>(input_parameters)](
+                          ::elastica::real_t t) noexcept -> ::elastica::real_t {
+    return 5.0 * M_PI * 2.0 * r * std::cos(5.0 * M_PI * t);
+  };
+
+  auto iequals = [](std::string const& a, std::string const& b) -> bool {
+    return std::equal(a.begin(), a.end(), b.begin(), b.end(),
+                      [](unsigned char a, unsigned char b) {
+                        return std::tolower(a) == std::tolower(b);
+                      });
+  };
+
+  // setup motion
+  if (iequals(::elastica::get<imposed_motion>(input_parameters),
+              imposed_motion::default_value())){
+    // Static case.
+    auto translations_buffer = ek::make_translations(
+        ek::translate_along<elastica::EulerianFrame::X>(
+            ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
+        ek::translate_along<elastica::EulerianFrame::Y>(
+            ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
+        ek::translate_along<elastica::EulerianFrame::Z>(
+            // The COM along z axis is not at 0 (the anchor position), but rather
+            // inside the halfspace, so we displace it by anchor_to_com.
+            ek::mark_position(ImposedHalfSpace::anchor_to_com_n(always_zero_)),
+            ek::mark_velocity(always_zero_)));
+
+    imposed_half_space_ref = simulator->emplace_back<ImposedHalfSpace>(
+        ::elastica::collision::HalfSpacePrimitive(
+            0UL, 0UL, true, half_space_anchor, Q, my_material),
+        std::move(translations_buffer));
+  } else {
+    // Oscillatory case.
+    auto translations_buffer = ek::make_translations(
+        ek::translate_along<elastica::EulerianFrame::X>(
+            ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
+        ek::translate_along<elastica::EulerianFrame::Y>(
+            ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
+        ek::translate_along<elastica::EulerianFrame::Z>(
+            // The COM along z axis is not at 0 (the anchor position), but rather
+            // inside the halfspace, so we displace it by anchor_to_com.
+            ek::mark_position(ImposedHalfSpace::anchor_to_com_n(sinusoidal_p)),
+            ek::mark_velocity(sinusoidal_v)));
+
+    imposed_half_space_ref = simulator->emplace_back<ImposedHalfSpace>(
+        ::elastica::collision::HalfSpacePrimitive(
+            0UL, 0UL, true, half_space_anchor, Q, my_material),
+        std::move(translations_buffer));
+  }
 
   // set near-list update time.
   auto& collision_solver =
