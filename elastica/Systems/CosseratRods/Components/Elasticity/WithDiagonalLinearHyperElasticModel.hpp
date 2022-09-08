@@ -284,7 +284,7 @@ namespace elastica {
                                        curvature - reference_curvature);
 
       /* Compute dilatation rate */
-      auto&& dilatation_rate = block_like.self().get_dilatation_rate();
+      auto&& dilatation_rate = get_dilatation_rate(block_like.self());
 
       auto&& voronoi_dilatation_inv_cube =
           Traits::Operations::inverse_cube(voronoi_dilatation);
