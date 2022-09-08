@@ -13,17 +13,18 @@
 
 #pragma once
 
-#include <algorithm>
+//
+#include "Systems/common/Cardinality.hpp"
 /// Forward declarations
 #include "Systems/RigidBody/Types.hpp"
 ///
-///
 #include "Systems/RigidBody/RigidBodyTraits.hpp"
-///
 ///
 #include "Systems/RigidBody/Tags.hpp"
 ///
 #include "Utilities/TMPL.hpp"
+//
+#include <algorithm>
 
 namespace elastica {
 
@@ -129,6 +130,8 @@ namespace elastica {
               class... Components>
     class RigidBodyPlugin
         : public detail::RigidBodyPluginVariables<RBT>,
+          public HasUnitCardinality<
+              RigidBodyPlugin<RBT, ComputationalBlock, Components...>>,
           public Components<
               RBT, ComputationalBlock<RigidBodyPlugin<RBT, ComputationalBlock,
                                                       Components...>>>...,
