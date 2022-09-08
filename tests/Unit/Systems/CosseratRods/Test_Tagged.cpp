@@ -68,7 +68,7 @@ namespace {
 
     for (auto element : n_elements) {
       model.emplace(cosserat_rod::initialize_cosserat_rod<TestPlugin>(
-          blocks::initialize<tags::NElement>(element)));
+          blocks::initialize<tags::NElement>([=](...) { return element; })));
     }
 
     // 1. check the sizes
