@@ -35,6 +35,7 @@
 #include "Systems/CosseratRods/Components/Initialization.hpp"
 #include "Systems/CosseratRods/Components/Kinematics/Protocols.hpp"
 #include "Systems/CosseratRods/Components/Kinematics/Tags.hpp"  // there is only one tags here
+#include "Systems/CosseratRods/Components/Noexcept.hpp"
 #include "Systems/CosseratRods/Components/helpers.hpp"
 
 namespace elastica {
@@ -551,7 +552,7 @@ namespace elastica {
          *
          * \see fill later?
          */
-        inline void update_acceleration() noexcept {
+        inline void update_acceleration() COSSERATROD_LIB_NOEXCEPT {
           free_update_acceleration(self());
         }
         //**********************************************************************
@@ -596,7 +597,7 @@ namespace elastica {
     template <typename Traits, typename ComputationalBlock>
     decltype(auto) get_dilatation_rate(
         component::WithRodKinematics<Traits, ComputationalBlock> const&
-            block_like) {
+            block_like) COSSERATROD_LIB_NOEXCEPT {
       auto&& position(blocks::get<tags::Position>(block_like.self()));
       auto&& length(blocks::get<tags::ElementLength>(block_like.self()));
       auto&& reference_length(
@@ -619,7 +620,7 @@ namespace elastica {
     template <typename Traits, typename ComputationalBlock>
     decltype(auto) get_curvature_rate(
         component::WithRodKinematics<Traits, ComputationalBlock> const&
-            block_like) noexcept {
+            block_like) COSSERATROD_LIB_NOEXCEPT {
       auto&& curvature(blocks::get<tags::Curvature>(block_like.self()));
       auto&& omega(blocks::get<tags::AngularAcceleration>(block_like.self()));
       auto&& averaged_omega = Traits::Operations::average_kernel(omega);
@@ -637,7 +638,7 @@ namespace elastica {
     template <typename Traits, typename ComputationalBlock>
     decltype(auto) get_shear_stretch_strain_rate(
         component::WithRodKinematics<Traits, ComputationalBlock> const&
-            block_like) noexcept {
+            block_like) COSSERATROD_LIB_NOEXCEPT {
       auto&& director(blocks::get<tags::Director>(block_like.self()));
       auto&& velocity(blocks::get<tags::Velocity>(block_like.self()));
       auto&& reference_length(
@@ -680,8 +681,8 @@ namespace elastica {
      */
     template <typename Traits, typename ComputationalBlock>
     void free_update_acceleration(
-        component::WithRodKinematics<Traits, ComputationalBlock>&
-            block_like) noexcept {
+        component::WithRodKinematics<Traits, ComputationalBlock>& block_like)
+        COSSERATROD_LIB_NOEXCEPT {
       auto&& mass(blocks::get<tags::Mass>(block_like.self()));
       auto&& dilatation(
           blocks::get<tags::ElementDilatation>(block_like.self()));
