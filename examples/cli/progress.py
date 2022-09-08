@@ -120,7 +120,7 @@ def p_map(
     func: Callable[[Any, Dict[TaskID, ProgressionStatus], TaskID], Any],
     *iterables: Union[Sequence[Any], Iterable[Any]],
     max_workers: int = mp.cpu_count(),
-):
+) -> List[Any]:
     """Performs a parallel ordered map with nested progress bars."""
     from concurrent.futures import ProcessPoolExecutor
 

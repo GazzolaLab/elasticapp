@@ -202,6 +202,26 @@ namespace py_bindings {
           // This hack is necessary to delay the symbols to python runtime
           std::string(Parameter::help).c_str());
     });
+
+    py_bound_case_study_parameters.def(py::pickle(
+        [](type const& t) {  // __getstate__
+          /* Return a tuple that fully encodes the state of the object */
+          return tuples::apply(
+              [](auto const&... args) { return py::make_tuple(args...); },
+              t.data);
+        },
+        [](py::tuple t) {
+          static constexpr std::size_t tags_size = type::InputTypes::size();
+          if (t.size() != tags_size)
+            throw std::runtime_error("Invalid state!");
+
+          return index_apply<tags_size>([=](auto... Is) {
+            return type{typename type::InputTypes{
+                t[Is]
+                    .template cast<
+                        tmpl::type_from<tmpl::at_c<Parameters, Is>>>()...}};
+          });
+        }));
   }
   //****************************************************************************
 

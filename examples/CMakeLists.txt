@@ -1,6 +1,7 @@
 # case-studies
 add_subdirectory(axial_stretching)
 add_subdirectory(butterfly)
+add_subdirectory(dynamic_cantilever)
 add_subdirectory(timoshenko)
 add_subdirectory(helical_buckling)
 add_subdirectory(flexible_swinging_pendulum)
