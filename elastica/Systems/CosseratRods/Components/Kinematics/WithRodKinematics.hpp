@@ -528,11 +528,6 @@ namespace elastica {
         //@}
         //**********************************************************************
 
-        //**Computation methods*************************************************
-        /*!\name Compute methods*/
-        //@{
-
-       public:  // TODO: temporary change from protected
         //**********************************************************************
         /*!\brief Update acceleration based on the current state
          *
@@ -556,39 +551,9 @@ namespace elastica {
          *
          * \see fill later?
          */
-
-        // TODO: double check how external force and external torque comes into
-        // play
         inline void update_acceleration() noexcept {
-          auto& mass(blocks::get<tags::Mass>(self()));
-          auto& dilatation(blocks::get<tags::ElementDilatation>(self()));
-          auto& inv_mass_SMOI(
-              blocks::get<tags::InvMassSecondMomentOfInertia>(self()));
-          auto& acceleration(blocks::get<tags::Acceleration>(self()));
-          auto& angular_acceleration(
-              blocks::get<tags::AngularAcceleration>(self()));
-          auto& internal_loads(blocks::get<tags::InternalLoads>(self()));
-          auto& internal_torques(blocks::get<tags::InternalTorques>(self()));
-          auto& external_loads(blocks::get<tags::ExternalLoads>(self()));
-          auto& external_torques(blocks::get<tags::ExternalTorques>(self()));
-
-          auto total_loads = internal_loads + external_loads;
-          // TODO: Revisit division vs power+multiplication
-          // TODO: remove transpose if possible
-          // acceleration = total_loads /
-          // Traits::Operations::expand_for_broadcast(mass);
-          Traits::Operations::batch_division_matvec(acceleration, total_loads,
-                                                    mass);
-
-          auto total_torque = internal_torques + external_torques;
-          Traits::Operations::batch_matvec(
-              angular_acceleration, inv_mass_SMOI,
-              total_torque % Traits::Operations::expand_for_broadcast(
-                                 Traits::Operations::transpose(dilatation)));
+          free_update_acceleration(self());
         }
-        //*********************************************************************
-
-        //@}
         //**********************************************************************
       };
       //************************************************************************
@@ -643,9 +608,9 @@ namespace elastica {
                  Traits::Operations::difference_kernel(velocity)) /
              (length * reference_length);
     }
-    //**********************************************************************
+    //**************************************************************************
 
-    //**********************************************************************
+    //**************************************************************************
     /*!\brief Gets temporal rate of curvature based on the current state
      * of the current rod
      *
@@ -662,9 +627,9 @@ namespace elastica {
       return Traits::Operations::difference_kernel(omega) +
              Traits::Operations::batch_cross(curvature, averaged_omega);
     }
-    //**********************************************************************
+    //**************************************************************************
 
-    //**********************************************************************
+    //**************************************************************************
     /*!\brief Gets temporal rate of curvature based on the current state
      * of the current rod
      * TODO get shear stretch strain rate
@@ -680,7 +645,6 @@ namespace elastica {
       auto&& sigma(blocks::get<tags::ShearStretchStrain>(block_like.self()));
       auto&& omega(blocks::get<tags::AngularAcceleration>(block_like.self()));
 
-
       auto& sigma_rate(sigma);
       auto&& diff_velocity = Traits::Operations::difference_kernel(velocity);
       Traits::Operations::batch_add_z_unit(sigma_rate);
@@ -689,7 +653,67 @@ namespace elastica {
              Traits::Operations::batch_matvec(director, diff_velocity) /
                  reference_length;
     }
-    //**********************************************************************
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Update acceleration based on the current state
+     *
+     * \details
+     * Updates accelerations of the system (translational and angular) given
+     * the state of the system. \n
+     * acceleration_batch{i} =
+     * (internal_force_batch{i} + external_force_batch{i})
+     * / mass_batch{i} \n
+     * alpha_batch{i} = inv_mass_second_moment_of_inertia_batch{i} *
+     * (internal_torque_batch{i} + external_torque_batch{i}) *
+     * dilatation_batch{i} \n
+     * Also resets external_force_batch and external_torque_batch = 0.0
+     *
+     * \example
+     * The following shows a typical use of the update_acceleration()
+     * function with the expected (correct) result also shown.
+     * \snippet test_gov_eqns.cpp update_acceleration_example
+     *
+     * \return void/None
+     *
+     * \see fill later?
+     */
+    template <typename Traits, typename ComputationalBlock>
+    void free_update_acceleration(
+        component::WithRodKinematics<Traits, ComputationalBlock>&
+            block_like) noexcept {
+      auto&& mass(blocks::get<tags::Mass>(block_like.self()));
+      auto&& dilatation(
+          blocks::get<tags::ElementDilatation>(block_like.self()));
+      auto&& inv_mass_SMOI(
+          blocks::get<tags::InvMassSecondMomentOfInertia>(block_like.self()));
+      auto&& acceleration(blocks::get<tags::Acceleration>(block_like.self()));
+      auto&& angular_acceleration(
+          blocks::get<tags::AngularAcceleration>(block_like.self()));
+      auto&& internal_loads(
+          blocks::get<tags::InternalLoads>(block_like.self()));
+      auto&& internal_torques(
+          blocks::get<tags::InternalTorques>(block_like.self()));
+      auto&& external_loads(
+          blocks::get<tags::ExternalLoads>(block_like.self()));
+      auto&& external_torques(
+          blocks::get<tags::ExternalTorques>(block_like.self()));
+
+      auto&& total_loads = internal_loads + external_loads;
+      // TODO: Revisit division vs power+multiplication
+      // TODO: remove transpose if possible
+      // acceleration = total_loads /
+      // Traits::Operations::expand_for_broadcast(mass);
+      Traits::Operations::batch_division_matvec(acceleration, total_loads,
+                                                mass);
+
+      auto&& total_torque = internal_torques + external_torques;
+      Traits::Operations::batch_matvec(
+          angular_acceleration, inv_mass_SMOI,
+          total_torque % Traits::Operations::expand_for_broadcast(
+                             Traits::Operations::transpose(dilatation)));
+    }
+    //**************************************************************************
 
   }  // namespace cosserat_rod
 
