@@ -55,7 +55,7 @@ namespace {
 
     // half-space plane is infinite, so only guarantee precision till
     // contact_threshold
-    auto contact_approx = App::custom().epsilon(0.1 * contact_threshold);
+    auto contact_approx = App::custom().margin(0.1 * contact_threshold);
 
     SECTION("Bodies do not contact") {
       SECTION("when placed far away") {

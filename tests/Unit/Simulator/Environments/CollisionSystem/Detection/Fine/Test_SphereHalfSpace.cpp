@@ -44,7 +44,7 @@ namespace {
     first_sphere.transfer(position, velocity, omega);
 
     // plane is infinite, so only guarantee precision till contact_threshold
-    auto contact_approx = App::custom().epsilon(0.1 * contact_threshold);
+    auto contact_approx = App::custom().margin(0.1 * contact_threshold);
 
     SECTION("Bodies do not contact") {
       SECTION("When placed far away") {
