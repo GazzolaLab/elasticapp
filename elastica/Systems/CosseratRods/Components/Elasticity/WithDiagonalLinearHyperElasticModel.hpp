@@ -26,7 +26,9 @@
 #include "Systems/CosseratRods/Components/Elasticity/Protocols.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/detail/ElasticityInterface.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/detail/LinearHyperElasticityFacade.hpp"
+#include "Systems/CosseratRods/Components/Noexcept.hpp"
 #include "Systems/CosseratRods/Components/helpers.hpp"
+//
 #include "Utilities/CRTP.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -194,7 +196,7 @@ namespace elastica {
     template <typename Traits, typename ComputationalBlock>
     void compute_internal_modeled_loads_impl(
         component::detail::WithDiagonalLinearHyperElasticModelImpl<
-            Traits, ComputationalBlock>& block_like) /*noexcept*/ {
+            Traits, ComputationalBlock>& block_like) COSSERATROD_LIB_NOEXCEPT {
       auto&& strain(blocks::get<tags::ShearStretchStrain>(block_like.self()));
       auto&& reference_strain(
           blocks::get<tags::ReferenceShearStretchStrain>(block_like.self()));
@@ -241,7 +243,7 @@ namespace elastica {
     template <typename Traits, typename ComputationalBlock>
     void compute_internal_modeled_torques_impl(
         component::detail::WithDiagonalLinearHyperElasticModelImpl<
-            Traits, ComputationalBlock>& block_like) /*noexcept*/ {
+            Traits, ComputationalBlock>& block_like) COSSERATROD_LIB_NOEXCEPT {
       auto&& director(blocks::get<tags::Director>(block_like.self()));
       auto&& omega(blocks::get<tags::AngularVelocity>(block_like.self()));
       auto&& curvature(blocks::get<tags::Curvature>(block_like.self()));

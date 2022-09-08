@@ -25,6 +25,7 @@
 //
 #include "Systems/CosseratRods/Components/Elasticity/detail/Tags/ExplicitDampingAdapterFacadeTags.hpp"
 #include "Systems/CosseratRods/Components/Initialization.hpp"
+#include "Systems/CosseratRods/Components/Noexcept.hpp"
 #include "Systems/CosseratRods/Components/Tags.hpp"
 //
 #include "Utilities/CRTP.hpp"
@@ -183,7 +184,7 @@ namespace elastica {
     void compute_internal_modeled_loads_impl(
         component::detail::ExplicitDampingAdapterFacade<
             Traits, ComputationalBlock, ElasticityModelWithBlock, VariableInfo>&
-            block_like) /*noexcept*/ {
+            block_like) COSSERATROD_LIB_NOEXCEPT {
       auto&& internal_force(
           blocks::get<tags::InternalLoads>(block_like.self()));
       auto&& dissipation_constant(
@@ -212,7 +213,7 @@ namespace elastica {
     void compute_internal_modeled_torques_impl(
         component::detail::ExplicitDampingAdapterFacade<
             Traits, ComputationalBlock, ElasticityModelWithBlock, VariableInfo>&
-            block_like) /*noexcept*/ {
+            block_like) COSSERATROD_LIB_NOEXCEPT {
       auto&& internal_torque(
           blocks::get<tags::InternalTorques>(block_like.self()));
       auto&& dissipation_constant(

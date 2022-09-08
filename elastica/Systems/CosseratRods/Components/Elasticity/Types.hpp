@@ -19,6 +19,7 @@
 //******************************************************************************
 #include "Systems/CosseratRods/Components/Elasticity/Tags.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/detail/Types.hpp"
+#include "Systems/CosseratRods/Components/Noexcept.hpp"
 
 namespace elastica {
 
@@ -65,7 +66,24 @@ namespace elastica {
 
     }  // namespace component
 
-    // More functions
+    ////////////////////////////////////////////////////////////////////////////
+    //
+    // Forward declarations of functions
+    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <typename Traits, typename ComputationalBlock>
+    void compute_internal_modeled_loads_impl(
+        component::detail::WithDiagonalLinearHyperElasticModelImpl<
+            Traits, ComputationalBlock>& block_like) COSSERATROD_LIB_NOEXCEPT;
+    template <typename Traits, typename ComputationalBlock>
+    void compute_internal_modeled_torques_impl(
+        component::detail::WithDiagonalLinearHyperElasticModelImpl<
+            Traits, ComputationalBlock>& block_like) COSSERATROD_LIB_NOEXCEPT;
+    /*! \endcond */
+    //**************************************************************************
 
   }  // namespace cosserat_rod
 

@@ -18,6 +18,7 @@
 //******************************************************************************
 #include "Systems/CosseratRods/Components/Elasticity/detail/Tags.hpp"
 //
+#include "Systems/CosseratRods/Components/Noexcept.hpp"
 #include "Utilities/Math/Types.hpp"
 
 namespace elastica {
@@ -76,19 +77,21 @@ namespace elastica {
     auto compute_effective_area_along_principal_directions(
         component::detail::LinearHyperElasticityFacade<
             Traits, ComputationalBlock>& block_like,
-        std::size_t i) noexcept -> Vec3;
+        std::size_t i) COSSERATROD_LIB_NOEXCEPT -> Vec3;
 
     template <typename Traits, typename ComputationalBlock,
               class ElasticityModel>
-    void compute_internal_forces(component::detail::ElasticityInterface<
-                                 Traits, ComputationalBlock, ElasticityModel>&
-                                     block_like) /*noexcept*/;
+    void compute_internal_forces(
+        component::detail::ElasticityInterface<Traits, ComputationalBlock,
+                                               ElasticityModel>& block_like)
+        COSSERATROD_LIB_NOEXCEPT;
 
     template <typename Traits, typename ComputationalBlock,
               class ElasticityModel>
-    void compute_internal_torques(component::detail::ElasticityInterface<
-                                  Traits, ComputationalBlock, ElasticityModel>&
-                                      block_like) /*noexcept*/;
+    void compute_internal_torques(
+        component::detail::ElasticityInterface<Traits, ComputationalBlock,
+                                               ElasticityModel>& block_like)
+        COSSERATROD_LIB_NOEXCEPT;
 
     template <typename CRT, typename ComputationalBlock,
               class ElasticityModelWithBlock,
@@ -96,7 +99,7 @@ namespace elastica {
     void compute_internal_modeled_loads_impl(
         component::detail::ExplicitDampingAdapterFacade<
             CRT, ComputationalBlock, ElasticityModelWithBlock, VariableInfo>&
-            block_like) /*noexcept*/;
+            block_like) COSSERATROD_LIB_NOEXCEPT;
 
     template <typename CRT, typename ComputationalBlock,
               class ElasticityModelWithBlock,
@@ -104,7 +107,7 @@ namespace elastica {
     void compute_internal_modeled_torques_impl(
         component::detail::ExplicitDampingAdapterFacade<
             CRT, ComputationalBlock, ElasticityModelWithBlock, VariableInfo>&
-            block_like) /*noexcept*/;
+            block_like) COSSERATROD_LIB_NOEXCEPT;
     /*! \endcond */
     //**************************************************************************
 

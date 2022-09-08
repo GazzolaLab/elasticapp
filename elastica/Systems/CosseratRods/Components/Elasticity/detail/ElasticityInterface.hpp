@@ -24,7 +24,10 @@
 /////
 #include "Systems/Block.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/detail/Tags/ElasticityInterfaceTags.hpp"
+#include "Systems/CosseratRods/Components/Noexcept.hpp"
+//
 #include "Time/SimulationTime.hpp"
+//
 #include "Utilities/CRTP.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsDetected.hpp"
@@ -355,7 +358,8 @@ namespace elastica {
            * \return void/None
            *
            */
-          void compute_internal_dynamics(::elastica::Time time_v) & {
+          void compute_internal_dynamics(::elastica::Time time_v) &
+              COSSERATROD_LIB_NOEXCEPT {
             (void)time_v;
             compute_internal_forces(self());
             compute_internal_torques(self());
@@ -389,8 +393,8 @@ namespace elastica {
               class ElasticityModel>
     inline void compute_internal_forces(
         component::detail::ElasticityInterface<Traits, ComputationalBlock,
-                                               ElasticityModel>&
-            block_like) /*noexcept*/ {
+                                               ElasticityModel>& block_like)
+        COSSERATROD_LIB_NOEXCEPT {
       // TODO : Refactor after Model is fixed.
       compute_internal_modeled_loads_impl(block_like.self());
     }
@@ -411,8 +415,8 @@ namespace elastica {
               class ElasticityModel>
     inline void compute_internal_torques(
         component::detail::ElasticityInterface<Traits, ComputationalBlock,
-                                               ElasticityModel>&
-            block_like) /*noexcept*/ {
+                                               ElasticityModel>& block_like)
+        COSSERATROD_LIB_NOEXCEPT {
       compute_internal_modeled_torques_impl(block_like.self());
     }
     //**************************************************************************

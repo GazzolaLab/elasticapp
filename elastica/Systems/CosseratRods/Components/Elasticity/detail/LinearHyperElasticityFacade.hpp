@@ -21,9 +21,13 @@
 #include "Systems/CosseratRods/Components/Elasticity/detail/Types.hpp"
 ///
 #include "Systems/Block.hpp"
+//
+#include "Systems/common/Tags.hpp"
+//
 #include "Systems/CosseratRods/Components/Elasticity/detail/Tags/LinearHyperElasticityFacadeTags.hpp"
 #include "Systems/CosseratRods/Components/Geometry/detail/Tags/CosseratRodSpanwiseGeometryTags.hpp"
-#include "Systems/common/Tags.hpp"
+#include "Systems/CosseratRods/Components/Noexcept.hpp"
+//
 #include "Utilities/Math/Vec3.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -184,7 +188,7 @@ namespace elastica {
           /*!\brief Gets get_bending_twist_rigidity_matrix of the current rod
            */
           inline constexpr decltype(auto)
-          get_bending_twist_rigidity_matrix() & /*noexcept*/ {
+          get_bending_twist_rigidity_matrix() & noexcept {
             return blocks::get<::elastica::tags::BendingTwistRigidityMatrix>(
                 self());
           }
@@ -212,7 +216,7 @@ namespace elastica {
           /*!\brief Gets get_shear_stretch_rigidity_matrix of the current rod
            */
           inline constexpr decltype(auto)
-          get_shear_stretch_rigidity_matrix() & /*noexcept*/ {
+          get_shear_stretch_rigidity_matrix() & noexcept {
             return blocks::get<::elastica::tags::ShearStretchRigidityMatrix>(
                 self());
           }
@@ -348,7 +352,7 @@ namespace elastica {
     auto compute_effective_area_along_principal_directions(
         component::detail::LinearHyperElasticityFacade<
             Traits, ComputationalBlock>& block_like,
-        std::size_t i) noexcept -> Vec3 {
+        std::size_t i) COSSERATROD_LIB_NOEXCEPT -> Vec3 {
       return Vec3{real_t(block_like.self().get_area(i) *
                          block_like.self().shape_factor()),
                   real_t(block_like.self().get_area(i) *
