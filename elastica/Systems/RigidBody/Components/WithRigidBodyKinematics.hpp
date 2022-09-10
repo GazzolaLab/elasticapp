@@ -403,16 +403,6 @@ namespace elastica {
 
      public:
       //************************************************************************
-      /*!\brief Update acceleration based on the current state
-       *
-       * FIXME : remove
-       */
-      inline void update_acceleration() noexcept {
-        free_update_acceleration(self());
-      }
-      //************************************************************************
-
-      //************************************************************************
       /*!\brief Compute internal dynamics
        *
        * \details
@@ -453,7 +443,7 @@ namespace elastica {
      * \see fill later?
      */
     template <typename Traits, typename ComputationalBlock>
-    void free_update_acceleration(
+    void update_acceleration(
         WithRigidBodyKinematics<Traits, ComputationalBlock>&
             block_like) noexcept {
       auto&& mass(blocks::get<tags::Mass>(block_like.self()));

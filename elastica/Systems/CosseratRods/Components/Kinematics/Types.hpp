@@ -59,7 +59,7 @@ namespace elastica {
             block_like) COSSERATROD_LIB_NOEXCEPT;
 
     template <typename Traits, typename ComputationalBlock>
-    void free_update_acceleration(
+    void update_acceleration(
         component::WithRodKinematics<Traits, ComputationalBlock>& block_like)
         COSSERATROD_LIB_NOEXCEPT;
     /*! \endcond */

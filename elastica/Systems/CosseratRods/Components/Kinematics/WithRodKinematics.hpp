@@ -528,34 +528,6 @@ namespace elastica {
 
         //@}
         //**********************************************************************
-
-        //**********************************************************************
-        /*!\brief Update acceleration based on the current state
-         *
-         * \details
-         * Updates accelerations of the system (translational and angular) given
-         * the state of the system. \n
-         * acceleration_batch{i} =
-         * (internal_force_batch{i} + external_force_batch{i})
-         * / mass_batch{i} \n
-         * alpha_batch{i} = inv_mass_second_moment_of_inertia_batch{i} *
-         * (internal_torque_batch{i} + external_torque_batch{i}) *
-         * dilatation_batch{i} \n
-         * Also resets external_force_batch and external_torque_batch = 0.0
-         *
-         * \example
-         * The following shows a typical use of the update_acceleration()
-         * function with the expected (correct) result also shown.
-         * \snippet test_gov_eqns.cpp update_acceleration_example
-         *
-         * \return void/None
-         *
-         * \see fill later?
-         */
-        inline void update_acceleration() COSSERATROD_LIB_NOEXCEPT {
-          free_update_acceleration(self());
-        }
-        //**********************************************************************
       };
       //************************************************************************
 
@@ -680,7 +652,7 @@ namespace elastica {
      * \see fill later?
      */
     template <typename Traits, typename ComputationalBlock>
-    void free_update_acceleration(
+    void update_acceleration(
         component::WithRodKinematics<Traits, ComputationalBlock>& block_like)
         COSSERATROD_LIB_NOEXCEPT {
       auto&& mass(blocks::get<tags::Mass>(block_like.self()));

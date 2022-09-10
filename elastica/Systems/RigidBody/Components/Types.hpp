@@ -35,7 +35,7 @@ namespace elastica {
     /*! \cond ELASTICA_INTERNAL */
 
     template <typename Traits, typename ComputationalBlock>
-    void free_update_acceleration(
+    void update_acceleration(
         WithRigidBodyKinematics<Traits, ComputationalBlock>&
             block_like) noexcept;
     /*! \endcond */

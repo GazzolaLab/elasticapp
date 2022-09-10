@@ -159,7 +159,7 @@ namespace {
 
     compute_internal_forces(slicedrod_00000);
     compute_internal_torques(slicedrod_00000);
-    slicedrod_00000.update_acceleration();
+    update_acceleration(slicedrod_00000);
 
     /*
     auto ROD000_ElementDimension(blocks::get<elastica::tags::ElementDimension>(slicedrod_00000));
