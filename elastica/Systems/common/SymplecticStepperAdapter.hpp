@@ -159,7 +159,7 @@ namespace elastica {
     //! Collection of all dynamic rates
     using DynamicRate =
         ::elastica::states::States<AccelerationState, AngularAccelerationState>;
-   
+
     //@}
     //**************************************************************************
 
@@ -258,7 +258,7 @@ namespace elastica {
     //**************************************************************************
     /*!\brief Access to dynamic rates
      */
-    inline auto dynamic_rates(::elastica::Time /*time_v*/) /*const*/ noexcept
+    inline auto dynamic_rates(::elastica::Time /*time_v*/) /*const*/ noexcept(noexcept(update_acceleration(self())))
         -> DynamicRate const& {
       /* To be truly lazy, one should only compute acceleration
        * data and internal dynamics here.
