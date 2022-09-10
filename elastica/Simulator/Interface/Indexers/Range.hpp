@@ -171,7 +171,7 @@ namespace elastica {
     // \param sys A valid \elastica system that affords index checking with
     // the types `end_from` and `int` using the syntax
     // \code
-        sys.check(end_from or int) -> int;
+        index_check(sys, end_from or int) -> int;
        \endcode
     // \exception std::out_of_range if any index within the system is out of sys
     // range
@@ -186,7 +186,7 @@ namespace elastica {
       auto check = make_overloader(
           [&failed, &s_stream, &sys](std::size_t src_idx) -> std::size_t {
             try {
-              return sys.check(src_idx);
+              return index_check(sys, src_idx);
             } catch (const std::out_of_range& exc) {
               s_stream << src_idx;
               failed = true;
@@ -195,7 +195,7 @@ namespace elastica {
           },
           [&failed, &s_stream, &sys](from_end src_idx) -> std::size_t {
             try {
-              return sys.check(src_idx);
+              return index_check(sys, src_idx);
             } catch (const std::out_of_range& exc) {
               s_stream << src_idx.i;
               failed = true;

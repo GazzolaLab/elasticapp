@@ -228,14 +228,6 @@ namespace blocks {
       return blocks::get<Parent::ExamplePosition>(*this).size();
     }
 
-    // check to see if within the range, throw error otherwise usually
-    // similar to at() of vector
-    inline std::size_t check(std::size_t index) const noexcept { return index; }
-    inline std::size_t check(elastica::from_end f) const noexcept {
-      assert(size() >= f.i);
-      return size() - f.i;
-    };
-
     // customization point for generating a slice. Since all are vectors, a
     // simple indexing should do
     template <typename Tag>
@@ -273,6 +265,18 @@ namespace blocks {
       -> std::size_t {
     return block.size();
   }
+
+  // check to see if within the range, throw error otherwise usually
+  // similar to at() of vector
+  inline std::size_t index_check(Block<IntermediateExamplePlugin> const&,
+                                 std::size_t index) noexcept {
+    return index;
+  }
+  inline std::size_t index_check(Block<IntermediateExamplePlugin> const& block,
+                                 elastica::from_end f) noexcept {
+    assert(block.size() >= f.i);
+    return block.size() - f.i;
+  };
 
 }  // namespace blocks
 /// [int_block]
@@ -791,6 +795,18 @@ namespace blocks {
       -> std::size_t {
     return block.size();
   }
+
+  // check to see if within the range, throw error otherwise usually
+  // similar to at() of vector
+  inline std::size_t index_check(Block<AdvancedExamplePlugin> const&,
+                                 std::size_t index) noexcept {
+    return index;
+  }
+  inline std::size_t index_check(Block<AdvancedExamplePlugin> const& block,
+                                 elastica::from_end f) noexcept {
+    assert(block.size() >= f.i);
+    return block.size() - f.i;
+  };
 
 }  // namespace blocks
 /// [adv_block]
@@ -1378,14 +1394,6 @@ namespace blocks {
       return blocks::get<Parent::ExamplePosition>(*this).size();
     }
 
-    // check to see if within the range, throw error otherwise usually
-    // similar to at() of vector
-    inline std::size_t check(std::size_t index) const noexcept { return index; }
-    inline std::size_t check(elastica::from_end f) const noexcept {
-      assert(size() >= f.i);
-      return size() - f.i;
-    };
-
     // customization point for generating a slice. Since all are vectors, a
     // simple indexing should do
     template <typename Tag>
@@ -1425,6 +1433,19 @@ namespace blocks {
       -> std::size_t {
     return block.size();
   }
+  // check to see if within the range, throw error otherwise usually
+  // similar to at() of vector
+  inline std::size_t index_check(Block<FacadedIntermediateExamplePlugin> const&,
+                                 std::size_t index) noexcept {
+    return index;
+  }
+  inline std::size_t index_check(
+      Block<FacadedIntermediateExamplePlugin> const& block,
+      elastica::from_end f) noexcept {
+    assert(block.size() >= f.i);
+    return block.size() - f.i;
+  };
+
 }  // namespace blocks
 /// [fac_int_block]
 

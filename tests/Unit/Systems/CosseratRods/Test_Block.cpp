@@ -53,7 +53,6 @@ namespace {
     using typename Parent::GhostNodeIndices;
 
     // functions
-    using Parent::check;
     using Parent::get_size_of_slice;
     using Parent::get_start_of_slice;
     using Parent::initialize_elements_buffer;
@@ -190,11 +189,12 @@ namespace {
     // CHECK(model.total_n_elements() == 0UL);
 
     // block check
-    CHECK_THROWS_AS(model.check(0UL), std::out_of_range);
-    CHECK_THROWS_AS(model.check(end - 1UL), std::out_of_range);
+    CHECK_THROWS_AS(units_check(model, 0UL), std::out_of_range);
+    CHECK_THROWS_AS(units_check(model, end - 1UL), std::out_of_range);
 
-    CHECK_THROWS_WITH(model.check(0UL), Catch::Contains("Index to be "));
-    CHECK_THROWS_WITH(model.check(end - 1UL), Catch::Contains("Index to be "));
+    CHECK_THROWS_WITH(units_check(model, 0UL), Catch::Contains("Index to be "));
+    CHECK_THROWS_WITH(units_check(model, end - 1UL),
+                      Catch::Contains("Index to be "));
   }
 
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Block.empty_initialization",
@@ -222,11 +222,12 @@ namespace {
       CHECK(model.empty());
 
       // block check
-      CHECK_THROWS_AS(model.check(0UL), std::out_of_range);
-      CHECK_THROWS_AS(model.check(end - 1UL), std::out_of_range);
+      CHECK_THROWS_AS(units_check(model, 0UL), std::out_of_range);
+      CHECK_THROWS_AS(units_check(model, end - 1UL), std::out_of_range);
 
-      CHECK_THROWS_WITH(model.check(0UL), Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(model.check(end - 1UL),
+      CHECK_THROWS_WITH(units_check(model, 0UL),
+                        Catch::Contains("Index to be "));
+      CHECK_THROWS_WITH(units_check(model, end - 1UL),
                         Catch::Contains("Index to be "));
 
       return model;
@@ -300,14 +301,15 @@ namespace {
       CHECK(model.get_size_of_slice<typename CRPV::NElement::Stagger>(0UL) ==
             1UL);
 
-      CHECK(model.check(0UL) == 0UL);
-      CHECK(model.check(end - 1UL) == 0UL);
+      CHECK(units_check(model, 0UL) == 0UL);
+      CHECK(units_check(model, end - 1UL) == 0UL);
 
-      CHECK_THROWS_AS(model.check(1UL), std::out_of_range);
-      CHECK_THROWS_AS(model.check(end - 2UL), std::out_of_range);
+      CHECK_THROWS_AS(units_check(model, 1UL), std::out_of_range);
+      CHECK_THROWS_AS(units_check(model, end - 2UL), std::out_of_range);
 
-      CHECK_THROWS_WITH(model.check(1UL), Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(model.check(end - 2UL),
+      CHECK_THROWS_WITH(units_check(model, 1UL),
+                        Catch::Contains("Index to be "));
+      CHECK_THROWS_WITH(units_check(model, end - 2UL),
                         Catch::Contains("Index to be "));
 
       // check the sliced model
@@ -322,16 +324,17 @@ namespace {
       CHECK(sliced_model.total_n_voronois() == new_n_elements - 1UL);
       CHECK(sliced_model.size() == new_n_elements);
       CHECK(not sliced_model.empty());
-      CHECK(sliced_model.check(0UL) == 0UL);
-      CHECK(sliced_model.check(end - 1UL) == new_n_elements - 1UL);
+      CHECK(index_check(sliced_model, 0UL) == 0UL);
+      CHECK(index_check(sliced_model, end - 1UL) == new_n_elements - 1UL);
 
-      CHECK_THROWS_AS(sliced_model.check(new_n_elements), std::out_of_range);
-      CHECK_THROWS_AS(sliced_model.check(end - new_n_elements - 1UL),
+      CHECK_THROWS_AS(index_check(sliced_model, new_n_elements),
+                      std::out_of_range);
+      CHECK_THROWS_AS(index_check(sliced_model, end - new_n_elements - 1UL),
                       std::out_of_range);
 
-      CHECK_THROWS_WITH(sliced_model.check(new_n_elements),
+      CHECK_THROWS_WITH(index_check(sliced_model, new_n_elements),
                         Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(sliced_model.check(end - new_n_elements - 1UL),
+      CHECK_THROWS_WITH(index_check(sliced_model, end - new_n_elements - 1UL),
                         Catch::Contains("Index to be "));
 
       // CHECK(sliced_model.size() == new_n_elements);
@@ -364,18 +367,20 @@ namespace {
       CHECK(const_sliced_model.total_n_voronois() == new_n_elements - 1UL);
       CHECK(const_sliced_model.size() == new_n_elements);
       CHECK(not const_sliced_model.empty());
-      CHECK(const_sliced_model.check(0UL) == 0UL);
-      CHECK(const_sliced_model.check(end - 1UL) == new_n_elements - 1UL);
+      CHECK(index_check(const_sliced_model, 0UL) == 0UL);
+      CHECK(index_check(const_sliced_model, end - 1UL) == new_n_elements - 1UL);
 
-      CHECK_THROWS_AS(const_sliced_model.check(new_n_elements),
+      CHECK_THROWS_AS(index_check(const_sliced_model, new_n_elements),
                       std::out_of_range);
-      CHECK_THROWS_AS(const_sliced_model.check(end - new_n_elements - 1UL),
-                      std::out_of_range);
+      CHECK_THROWS_AS(
+          index_check(const_sliced_model, end - new_n_elements - 1UL),
+          std::out_of_range);
 
-      CHECK_THROWS_WITH(const_sliced_model.check(new_n_elements),
+      CHECK_THROWS_WITH(index_check(const_sliced_model, new_n_elements),
                         Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(const_sliced_model.check(end - new_n_elements - 1UL),
-                        Catch::Contains("Index to be "));
+      CHECK_THROWS_WITH(
+          index_check(const_sliced_model, end - new_n_elements - 1UL),
+          Catch::Contains("Index to be "));
 
       return model;
     };
@@ -463,16 +468,17 @@ namespace {
       CHECK(model.get_size_of_slice<typename CRPV::NElement::Stagger>(1UL) ==
             1UL);
 
-      CHECK(model.check(0UL) == 0UL);
-      CHECK(model.check(1UL) == 1UL);
-      CHECK(model.check(end - 1UL) == 1UL);
-      CHECK(model.check(end - 2UL) == 0UL);
+      CHECK(units_check(model, 0UL) == 0UL);
+      CHECK(units_check(model, 1UL) == 1UL);
+      CHECK(units_check(model, end - 1UL) == 1UL);
+      CHECK(units_check(model, end - 2UL) == 0UL);
 
-      CHECK_THROWS_AS(model.check(2UL), std::out_of_range);
-      CHECK_THROWS_AS(model.check(end - 3UL), std::out_of_range);
+      CHECK_THROWS_AS(units_check(model, 2UL), std::out_of_range);
+      CHECK_THROWS_AS(units_check(model, end - 3UL), std::out_of_range);
 
-      CHECK_THROWS_WITH(model.check(2UL), Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(model.check(end - 3UL),
+      CHECK_THROWS_WITH(units_check(model, 2UL),
+                        Catch::Contains("Index to be "));
+      CHECK_THROWS_WITH(units_check(model, end - 3UL),
                         Catch::Contains("Index to be "));
 
       // 1 extra because it is a NODE
@@ -501,17 +507,19 @@ namespace {
       CHECK(sliced_model.total_n_voronois() == second_n_elements - 1UL);
       CHECK(sliced_model.size() == second_n_elements);
       CHECK(not sliced_model.empty());
-      CHECK(sliced_model.check(0UL) == 0UL);
-      CHECK(sliced_model.check(end - 1UL) == second_n_elements - 1UL);
+      CHECK(index_check(sliced_model, 0UL) == 0UL);
+      CHECK(index_check(sliced_model, end - 1UL) == second_n_elements - 1UL);
 
-      CHECK_THROWS_AS(sliced_model.check(second_n_elements), std::out_of_range);
-      CHECK_THROWS_AS(sliced_model.check(end - second_n_elements - 1UL),
+      CHECK_THROWS_AS(index_check(sliced_model, second_n_elements),
+                      std::out_of_range);
+      CHECK_THROWS_AS(index_check(sliced_model, end - second_n_elements - 1UL),
                       std::out_of_range);
 
-      CHECK_THROWS_WITH(sliced_model.check(second_n_elements),
+      CHECK_THROWS_WITH(index_check(sliced_model, second_n_elements),
                         Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(sliced_model.check(end - second_n_elements - 1UL),
-                        Catch::Contains("Index to be "));
+      CHECK_THROWS_WITH(
+          index_check(sliced_model, end - second_n_elements - 1UL),
+          Catch::Contains("Index to be "));
 
       // check for a new slice of type const
       const auto const_sliced_model(
@@ -523,18 +531,21 @@ namespace {
       CHECK(const_sliced_model.total_n_voronois() == second_n_elements - 1UL);
       CHECK(const_sliced_model.size() == second_n_elements);
       CHECK(not const_sliced_model.empty());
-      CHECK(const_sliced_model.check(0UL) == 0UL);
-      CHECK(const_sliced_model.check(end - 1UL) == second_n_elements - 1UL);
+      CHECK(index_check(const_sliced_model, 0UL) == 0UL);
+      CHECK(index_check(const_sliced_model, end - 1UL) ==
+            second_n_elements - 1UL);
 
-      CHECK_THROWS_AS(const_sliced_model.check(second_n_elements),
+      CHECK_THROWS_AS(index_check(const_sliced_model, second_n_elements),
                       std::out_of_range);
-      CHECK_THROWS_AS(const_sliced_model.check(end - second_n_elements - 1UL),
-                      std::out_of_range);
+      CHECK_THROWS_AS(
+          index_check(const_sliced_model, end - second_n_elements - 1UL),
+          std::out_of_range);
 
-      CHECK_THROWS_WITH(const_sliced_model.check(second_n_elements),
+      CHECK_THROWS_WITH(index_check(const_sliced_model, second_n_elements),
                         Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(const_sliced_model.check(end - second_n_elements - 1UL),
-                        Catch::Contains("Index to be "));
+      CHECK_THROWS_WITH(
+          index_check(const_sliced_model, end - second_n_elements - 1UL),
+          Catch::Contains("Index to be "));
 
       return model;
     };
@@ -634,18 +645,19 @@ namespace {
       CHECK(model.get_size_of_slice<typename CRPV::NElement::Stagger>(2UL) ==
             1UL);
 
-      CHECK(model.check(0UL) == 0UL);
-      CHECK(model.check(1UL) == 1UL);
-      CHECK(model.check(2UL) == 2UL);
-      CHECK(model.check(end - 1UL) == 2UL);
-      CHECK(model.check(end - 2UL) == 1UL);
-      CHECK(model.check(end - 3UL) == 0UL);
+      CHECK(units_check(model, 0UL) == 0UL);
+      CHECK(units_check(model, 1UL) == 1UL);
+      CHECK(units_check(model, 2UL) == 2UL);
+      CHECK(units_check(model, end - 1UL) == 2UL);
+      CHECK(units_check(model, end - 2UL) == 1UL);
+      CHECK(units_check(model, end - 3UL) == 0UL);
 
-      CHECK_THROWS_AS(model.check(3UL), std::out_of_range);
-      CHECK_THROWS_AS(model.check(end - 4UL), std::out_of_range);
+      CHECK_THROWS_AS(units_check(model, 3UL), std::out_of_range);
+      CHECK_THROWS_AS(units_check(model, end - 4UL), std::out_of_range);
 
-      CHECK_THROWS_WITH(model.check(3UL), Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(model.check(end - 4UL),
+      CHECK_THROWS_WITH(units_check(model, 3UL),
+                        Catch::Contains("Index to be "));
+      CHECK_THROWS_WITH(units_check(model, end - 4UL),
                         Catch::Contains("Index to be "));
 
       // 1 extra because it is a NODE
@@ -686,16 +698,17 @@ namespace {
       CHECK(sliced_model.size() == third_n_elements);
       CHECK(not sliced_model.empty());
 
-      CHECK(sliced_model.check(0UL) == 0UL);
-      CHECK(sliced_model.check(end - 1UL) == third_n_elements - 1UL);
+      CHECK(index_check(sliced_model, 0UL) == 0UL);
+      CHECK(index_check(sliced_model, end - 1UL) == third_n_elements - 1UL);
 
-      CHECK_THROWS_AS(sliced_model.check(third_n_elements), std::out_of_range);
-      CHECK_THROWS_AS(sliced_model.check(end - third_n_elements - 1UL),
+      CHECK_THROWS_AS(index_check(sliced_model, third_n_elements),
+                      std::out_of_range);
+      CHECK_THROWS_AS(index_check(sliced_model, end - third_n_elements - 1UL),
                       std::out_of_range);
 
-      CHECK_THROWS_WITH(sliced_model.check(third_n_elements),
+      CHECK_THROWS_WITH(index_check(sliced_model, third_n_elements),
                         Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(sliced_model.check(end - third_n_elements - 1UL),
+      CHECK_THROWS_WITH(index_check(sliced_model, end - third_n_elements - 1UL),
                         Catch::Contains("Index to be "));
 
       // check for a new slice of type const
@@ -707,18 +720,21 @@ namespace {
       CHECK(const_sliced_model.total_n_voronois() == third_n_elements - 1UL);
       CHECK(const_sliced_model.size() == third_n_elements);
       CHECK(not const_sliced_model.empty());
-      CHECK(const_sliced_model.check(0UL) == 0UL);
-      CHECK(const_sliced_model.check(end - 1UL) == third_n_elements - 1UL);
+      CHECK(index_check(const_sliced_model, 0UL) == 0UL);
+      CHECK(index_check(const_sliced_model, end - 1UL) ==
+            third_n_elements - 1UL);
 
-      CHECK_THROWS_AS(const_sliced_model.check(third_n_elements),
+      CHECK_THROWS_AS(index_check(const_sliced_model, third_n_elements),
                       std::out_of_range);
-      CHECK_THROWS_AS(const_sliced_model.check(end - third_n_elements - 1UL),
-                      std::out_of_range);
+      CHECK_THROWS_AS(
+          index_check(const_sliced_model, end - third_n_elements - 1UL),
+          std::out_of_range);
 
-      CHECK_THROWS_WITH(const_sliced_model.check(third_n_elements),
+      CHECK_THROWS_WITH(index_check(const_sliced_model, third_n_elements),
                         Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(const_sliced_model.check(end - third_n_elements - 1UL),
-                        Catch::Contains("Index to be "));
+      CHECK_THROWS_WITH(
+          index_check(const_sliced_model, end - third_n_elements - 1UL),
+          Catch::Contains("Index to be "));
     }
   }
 
@@ -863,11 +879,12 @@ namespace {
     // CHECK(model.total_n_elements() == 0UL);
 
     // block check
-    CHECK_THROWS_AS(model.check(0UL), std::out_of_range);
-    CHECK_THROWS_AS(model.check(end - 1UL), std::out_of_range);
+    CHECK_THROWS_AS(units_check(model, 0UL), std::out_of_range);
+    CHECK_THROWS_AS(units_check(model, end - 1UL), std::out_of_range);
 
-    CHECK_THROWS_WITH(model.check(0UL), Catch::Contains("Index to be "));
-    CHECK_THROWS_WITH(model.check(end - 1UL), Catch::Contains("Index to be "));
+    CHECK_THROWS_WITH(units_check(model, 0UL), Catch::Contains("Index to be "));
+    CHECK_THROWS_WITH(units_check(model, end - 1UL),
+                      Catch::Contains("Index to be "));
   }
 
   ELASTICA_TEST_CASE(
@@ -903,11 +920,12 @@ namespace {
       CHECK(model.empty());
 
       // block check
-      CHECK_THROWS_AS(model.check(0UL), std::out_of_range);
-      CHECK_THROWS_AS(model.check(end - 1UL), std::out_of_range);
+      CHECK_THROWS_AS(units_check(model, 0UL), std::out_of_range);
+      CHECK_THROWS_AS(units_check(model, end - 1UL), std::out_of_range);
 
-      CHECK_THROWS_WITH(model.check(0UL), Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(model.check(end - 1UL),
+      CHECK_THROWS_WITH(units_check(model, 0UL),
+                        Catch::Contains("Index to be "));
+      CHECK_THROWS_WITH(units_check(model, end - 1UL),
                         Catch::Contains("Index to be "));
 
       return model;
@@ -1122,14 +1140,15 @@ namespace {
                                                  voronoi_variable.end()));
 
       // 5. check for out of range throws
-      CHECK(model.check(0UL) == 0UL);
-      CHECK(model.check(end - 1UL) == 0UL);
+      CHECK(units_check(model, 0UL) == 0UL);
+      CHECK(units_check(model, end - 1UL) == 0UL);
 
-      CHECK_THROWS_AS(model.check(1UL), std::out_of_range);
-      CHECK_THROWS_AS(model.check(end - 2UL), std::out_of_range);
+      CHECK_THROWS_AS(units_check(model, 1UL), std::out_of_range);
+      CHECK_THROWS_AS(units_check(model, end - 2UL), std::out_of_range);
 
-      CHECK_THROWS_WITH(model.check(1UL), Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(model.check(end - 2UL),
+      CHECK_THROWS_WITH(units_check(model, 1UL),
+                        Catch::Contains("Index to be "));
+      CHECK_THROWS_WITH(units_check(model, end - 2UL),
                         Catch::Contains("Index to be "));
 
       // B. check the sliced model
@@ -1141,16 +1160,17 @@ namespace {
       CHECK(not sliced_model.empty());
 
       // 2. check dofs
-      CHECK(sliced_model.check(0UL) == 0UL);
-      CHECK(sliced_model.check(end - 1UL) == new_n_elements - 1UL);
+      CHECK(index_check(sliced_model, 0UL) == 0UL);
+      CHECK(index_check(sliced_model, end - 1UL) == new_n_elements - 1UL);
 
-      CHECK_THROWS_AS(sliced_model.check(new_n_elements), std::out_of_range);
-      CHECK_THROWS_AS(sliced_model.check(end - new_n_elements - 1UL),
+      CHECK_THROWS_AS(index_check(sliced_model, new_n_elements),
+                      std::out_of_range);
+      CHECK_THROWS_AS(index_check(sliced_model, end - new_n_elements - 1UL),
                       std::out_of_range);
 
-      CHECK_THROWS_WITH(sliced_model.check(new_n_elements),
+      CHECK_THROWS_WITH(index_check(sliced_model, new_n_elements),
                         Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(sliced_model.check(end - new_n_elements - 1UL),
+      CHECK_THROWS_WITH(index_check(sliced_model, end - new_n_elements - 1UL),
                         Catch::Contains("Index to be "));
 
       // 3. check the new members
@@ -1176,18 +1196,20 @@ namespace {
       CHECK(not const_sliced_model.empty());
 
       // 2. check dofs
-      CHECK(const_sliced_model.check(0UL) == 0UL);
-      CHECK(const_sliced_model.check(end - 1UL) == new_n_elements - 1UL);
+      CHECK(index_check(const_sliced_model, 0UL) == 0UL);
+      CHECK(index_check(const_sliced_model, end - 1UL) == new_n_elements - 1UL);
 
-      CHECK_THROWS_AS(const_sliced_model.check(new_n_elements),
+      CHECK_THROWS_AS(index_check(const_sliced_model, new_n_elements),
                       std::out_of_range);
-      CHECK_THROWS_AS(const_sliced_model.check(end - new_n_elements - 1UL),
-                      std::out_of_range);
+      CHECK_THROWS_AS(
+          index_check(const_sliced_model, end - new_n_elements - 1UL),
+          std::out_of_range);
 
-      CHECK_THROWS_WITH(const_sliced_model.check(new_n_elements),
+      CHECK_THROWS_WITH(index_check(const_sliced_model, new_n_elements),
                         Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(const_sliced_model.check(end - new_n_elements - 1UL),
-                        Catch::Contains("Index to be "));
+      CHECK_THROWS_WITH(
+          index_check(const_sliced_model, end - new_n_elements - 1UL),
+          Catch::Contains("Index to be "));
 
       // 3. check the new members
       CHECK(const_sliced_model.tell_me_number() == 42);
@@ -1588,16 +1610,17 @@ namespace {
       }
 
       // 5. check for out of range throws
-      CHECK(model.check(0UL) == 0UL);
-      CHECK(model.check(1UL) == 1UL);
-      CHECK(model.check(end - 1UL) == 1UL);
-      CHECK(model.check(end - 2UL) == 0UL);
+      CHECK(units_check(model, 0UL) == 0UL);
+      CHECK(units_check(model, 1UL) == 1UL);
+      CHECK(units_check(model, end - 1UL) == 1UL);
+      CHECK(units_check(model, end - 2UL) == 0UL);
 
-      CHECK_THROWS_AS(model.check(2UL), std::out_of_range);
-      CHECK_THROWS_AS(model.check(end - 3UL), std::out_of_range);
+      CHECK_THROWS_AS(units_check(model, 2UL), std::out_of_range);
+      CHECK_THROWS_AS(units_check(model, end - 3UL), std::out_of_range);
 
-      CHECK_THROWS_WITH(model.check(2UL), Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(model.check(end - 3UL),
+      CHECK_THROWS_WITH(units_check(model, 2UL),
+                        Catch::Contains("Index to be "));
+      CHECK_THROWS_WITH(units_check(model, end - 3UL),
                         Catch::Contains("Index to be "));
 
       // B. check the sliced model
@@ -1610,16 +1633,17 @@ namespace {
         CHECK(not sliced_model.empty());
 
         // 2. check dofs for out of range
-        CHECK(sliced_model.check(0UL) == 0UL);
-        CHECK(sliced_model.check(end - 1UL) == new_n_elements - 1UL);
+        CHECK(index_check(sliced_model, 0UL) == 0UL);
+        CHECK(index_check(sliced_model, end - 1UL) == new_n_elements - 1UL);
 
-        CHECK_THROWS_AS(sliced_model.check(new_n_elements), std::out_of_range);
-        CHECK_THROWS_AS(sliced_model.check(end - new_n_elements - 1UL),
+        CHECK_THROWS_AS(index_check(sliced_model, new_n_elements),
+                        std::out_of_range);
+        CHECK_THROWS_AS(index_check(sliced_model, end - new_n_elements - 1UL),
                         std::out_of_range);
 
-        CHECK_THROWS_WITH(sliced_model.check(new_n_elements),
+        CHECK_THROWS_WITH(index_check(sliced_model, new_n_elements),
                           Catch::Contains("Index to be "));
-        CHECK_THROWS_WITH(sliced_model.check(end - new_n_elements - 1UL),
+        CHECK_THROWS_WITH(index_check(sliced_model, end - new_n_elements - 1UL),
                           Catch::Contains("Index to be "));
 
         // 3. check the new members
@@ -1655,18 +1679,21 @@ namespace {
         CHECK(not const_sliced_model.empty());
 
         // 2. check dofs for out of range
-        CHECK(const_sliced_model.check(0UL) == 0UL);
-        CHECK(const_sliced_model.check(end - 1UL) == new_n_elements - 1UL);
+        CHECK(index_check(const_sliced_model, 0UL) == 0UL);
+        CHECK(index_check(const_sliced_model, end - 1UL) ==
+              new_n_elements - 1UL);
 
-        CHECK_THROWS_AS(const_sliced_model.check(new_n_elements),
+        CHECK_THROWS_AS(index_check(const_sliced_model, new_n_elements),
                         std::out_of_range);
-        CHECK_THROWS_AS(const_sliced_model.check(end - new_n_elements - 1UL),
-                        std::out_of_range);
+        CHECK_THROWS_AS(
+            index_check(const_sliced_model, end - new_n_elements - 1UL),
+            std::out_of_range);
 
-        CHECK_THROWS_WITH(const_sliced_model.check(new_n_elements),
+        CHECK_THROWS_WITH(index_check(const_sliced_model, new_n_elements),
                           Catch::Contains("Index to be "));
-        CHECK_THROWS_WITH(const_sliced_model.check(end - new_n_elements - 1UL),
-                          Catch::Contains("Index to be "));
+        CHECK_THROWS_WITH(
+            index_check(const_sliced_model, end - new_n_elements - 1UL),
+            Catch::Contains("Index to be "));
 
         // 3. check the new members
         CHECK(const_sliced_model.tell_me_number() == 42);
@@ -2044,11 +2071,12 @@ namespace {
     // CHECK(model.total_n_elements() == 0UL);
 
     // block check
-    CHECK_THROWS_AS(model.check(0UL), std::out_of_range);
-    CHECK_THROWS_AS(model.check(end - 1UL), std::out_of_range);
+    CHECK_THROWS_AS(units_check(model, 0UL), std::out_of_range);
+    CHECK_THROWS_AS(units_check(model, end - 1UL), std::out_of_range);
 
-    CHECK_THROWS_WITH(model.check(0UL), Catch::Contains("Index to be "));
-    CHECK_THROWS_WITH(model.check(end - 1UL), Catch::Contains("Index to be "));
+    CHECK_THROWS_WITH(units_check(model, 0UL), Catch::Contains("Index to be "));
+    CHECK_THROWS_WITH(units_check(model, end - 1UL),
+                      Catch::Contains("Index to be "));
   }
 
   ELASTICA_TEST_CASE(
@@ -2090,11 +2118,12 @@ namespace {
       CHECK(model.empty());
 
       // block check
-      CHECK_THROWS_AS(model.check(0UL), std::out_of_range);
-      CHECK_THROWS_AS(model.check(end - 1UL), std::out_of_range);
+      CHECK_THROWS_AS(units_check(model, 0UL), std::out_of_range);
+      CHECK_THROWS_AS(units_check(model, end - 1UL), std::out_of_range);
 
-      CHECK_THROWS_WITH(model.check(0UL), Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(model.check(end - 1UL),
+      CHECK_THROWS_WITH(units_check(model, 0UL),
+                        Catch::Contains("Index to be "));
+      CHECK_THROWS_WITH(units_check(model, end - 1UL),
                         Catch::Contains("Index to be "));
 
       return model;
@@ -2343,14 +2372,15 @@ namespace {
                                       voronoi_variable.columns())));
 
       // 5. check for out of range throws
-      CHECK(model.check(0UL) == 0UL);
-      CHECK(model.check(end - 1UL) == 0UL);
+      CHECK(units_check(model, 0UL) == 0UL);
+      CHECK(units_check(model, end - 1UL) == 0UL);
 
-      CHECK_THROWS_AS(model.check(1UL), std::out_of_range);
-      CHECK_THROWS_AS(model.check(end - 2UL), std::out_of_range);
+      CHECK_THROWS_AS(units_check(model, 1UL), std::out_of_range);
+      CHECK_THROWS_AS(units_check(model, end - 2UL), std::out_of_range);
 
-      CHECK_THROWS_WITH(model.check(1UL), Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(model.check(end - 2UL),
+      CHECK_THROWS_WITH(units_check(model, 1UL),
+                        Catch::Contains("Index to be "));
+      CHECK_THROWS_WITH(units_check(model, end - 2UL),
                         Catch::Contains("Index to be "));
 
       // B. check the sliced model
@@ -2362,16 +2392,17 @@ namespace {
       CHECK(not sliced_model.empty());
 
       // 2. check dofs
-      CHECK(sliced_model.check(0UL) == 0UL);
-      CHECK(sliced_model.check(end - 1UL) == new_n_elements - 1UL);
+      CHECK(index_check(sliced_model, 0UL) == 0UL);
+      CHECK(index_check(sliced_model, end - 1UL) == new_n_elements - 1UL);
 
-      CHECK_THROWS_AS(sliced_model.check(new_n_elements), std::out_of_range);
-      CHECK_THROWS_AS(sliced_model.check(end - new_n_elements - 1UL),
+      CHECK_THROWS_AS(index_check(sliced_model, new_n_elements),
+                      std::out_of_range);
+      CHECK_THROWS_AS(index_check(sliced_model, end - new_n_elements - 1UL),
                       std::out_of_range);
 
-      CHECK_THROWS_WITH(sliced_model.check(new_n_elements),
+      CHECK_THROWS_WITH(index_check(sliced_model, new_n_elements),
                         Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(sliced_model.check(end - new_n_elements - 1UL),
+      CHECK_THROWS_WITH(index_check(sliced_model, end - new_n_elements - 1UL),
                         Catch::Contains("Index to be "));
 
       // 3. check the new members
@@ -2403,18 +2434,20 @@ namespace {
       CHECK(not const_sliced_model.empty());
 
       // 2. check dofs
-      CHECK(const_sliced_model.check(0UL) == 0UL);
-      CHECK(const_sliced_model.check(end - 1UL) == new_n_elements - 1UL);
+      CHECK(index_check(const_sliced_model, 0UL) == 0UL);
+      CHECK(index_check(const_sliced_model, end - 1UL) == new_n_elements - 1UL);
 
-      CHECK_THROWS_AS(const_sliced_model.check(new_n_elements),
+      CHECK_THROWS_AS(index_check(const_sliced_model, new_n_elements),
                       std::out_of_range);
-      CHECK_THROWS_AS(const_sliced_model.check(end - new_n_elements - 1UL),
-                      std::out_of_range);
+      CHECK_THROWS_AS(
+          index_check(const_sliced_model, end - new_n_elements - 1UL),
+          std::out_of_range);
 
-      CHECK_THROWS_WITH(const_sliced_model.check(new_n_elements),
+      CHECK_THROWS_WITH(index_check(const_sliced_model, new_n_elements),
                         Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(const_sliced_model.check(end - new_n_elements - 1UL),
-                        Catch::Contains("Index to be "));
+      CHECK_THROWS_WITH(
+          index_check(const_sliced_model, end - new_n_elements - 1UL),
+          Catch::Contains("Index to be "));
 
       // 3. check the new members
       CHECK(const_sliced_model.tell_me_number() == 42);
@@ -2686,11 +2719,12 @@ namespace {
       CHECK(model.empty());
 
       // block check
-      CHECK_THROWS_AS(model.check(0UL), std::out_of_range);
-      CHECK_THROWS_AS(model.check(end - 1UL), std::out_of_range);
+      CHECK_THROWS_AS(units_check(model, 0UL), std::out_of_range);
+      CHECK_THROWS_AS(units_check(model, end - 1UL), std::out_of_range);
 
-      CHECK_THROWS_WITH(model.check(0UL), Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(model.check(end - 1UL),
+      CHECK_THROWS_WITH(units_check(model, 0UL),
+                        Catch::Contains("Index to be "));
+      CHECK_THROWS_WITH(units_check(model, end - 1UL),
                         Catch::Contains("Index to be "));
 
       return model;

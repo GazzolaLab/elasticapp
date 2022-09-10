@@ -34,7 +34,6 @@
 #include "Utilities/Requires.hpp"
 //#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TMPLDebugging.hpp"
 
 // serialization support, feels strange coming from simulator
 #include "Simulator/IO/Serialization/Serialize.hpp"
@@ -350,37 +349,6 @@ namespace blocks {
           get_start_of_slice<typename Var::Stagger>(start_index),
           get_size_of_slice<typename Var::Stagger>(start_index, slice_size));
     }
-    //**************************************************************************
-
-    //@}
-    //**************************************************************************
-
-    //**Check functions*********************************************************
-    /*!\name Check functions */
-    //@{
-    /*!\brief Checks whether indices are within range of accessible values
-     */
-    inline auto check(std::size_t index_to_be_sliced) const -> std::size_t {
-      if (index_to_be_sliced < n_units()) {
-        return index_to_be_sliced;
-      } else {
-        throw std::out_of_range(
-            "Index to be sliced exceeds the number of rods inside a Cosserat "
-            "rod block!");
-      }
-    }
-    inline auto check(elastica::from_end index_to_be_sliced) const
-        -> std::size_t {
-      // cannot be 0
-      const auto fe = index_to_be_sliced.i;
-      if (fe <= n_units()) {
-        return n_units() - fe;
-      } else {
-        throw std::out_of_range(
-            "Index to be sliced from the end exceeds the number of rods inside "
-            "a Cosserat rod block!");
-      }
-    };
     //**************************************************************************
 
     //@}

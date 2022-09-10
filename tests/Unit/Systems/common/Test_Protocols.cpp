@@ -17,35 +17,35 @@ namespace elastica {
     // for example, we have a 20 dof system
     static constexpr std::size_t n_dofs = 20UL;
     MySystem() = default;
-
-    //**Check functions*********************************************************
-    /*!\name Check functions */
-    //@{
-    /*!\brief Checks whether indices are within range of accessible values
-     */
-    inline auto check(std::size_t index_to_be_sliced) const -> std::size_t {
-      if (index_to_be_sliced < n_dofs) {
-        return index_to_be_sliced;
-      } else {
-        throw std::out_of_range(
-            "Index to be sliced exceeds the number of dofs!");
-      }
-    }
-    inline auto check(elastica::from_end index_to_be_sliced) const
-        -> std::size_t {
-      // cannot be 0
-      const auto fe = index_to_be_sliced.i;
-      if (fe <= n_dofs) {
-        return n_dofs - fe;
-      } else {
-        throw std::out_of_range(
-            "Index to be sliced exceeds the number of dofs!");
-      }
-    };
-    //**************************************************************************
-    //@}
-    //**************************************************************************
   };
+
+  //**Check functions*********************************************************
+  /*!\name Check functions */
+  //@{
+  /*!\brief Checks whether indices are within range of accessible values
+   */
+  inline auto index_check(MySystem const& ms, std::size_t index_to_be_sliced)
+      -> std::size_t {
+    if (index_to_be_sliced < ms.n_dofs) {
+      return index_to_be_sliced;
+    } else {
+      throw std::out_of_range("Index to be sliced exceeds the number of dofs!");
+    }
+  }
+  inline auto index_check(MySystem const& ms,
+                          elastica::from_end index_to_be_sliced)
+      -> std::size_t {
+    // cannot be 0
+    const auto fe = index_to_be_sliced.i;
+    if (fe <= ms.n_dofs) {
+      return ms.n_dofs - fe;
+    } else {
+      throw std::out_of_range("Index to be sliced exceeds the number of dofs!");
+    }
+  };
+  //**************************************************************************
+  //@}
+  //**************************************************************************
 
   // these are illustrative examples, the actual system returns a meaningful
   // position, director etc.
