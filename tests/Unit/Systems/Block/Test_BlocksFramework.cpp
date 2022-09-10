@@ -269,6 +269,11 @@ namespace blocks {
     ~Block() = default;
   };
 
+  inline auto n_units(Block<IntermediateExamplePlugin> const& block) noexcept
+      -> std::size_t {
+    return block.size();
+  }
+
 }  // namespace blocks
 /// [int_block]
 
@@ -782,6 +787,11 @@ namespace blocks {
     ~Block() = default;
   };
 
+  inline auto n_units(Block<AdvancedExamplePlugin> const& block) noexcept
+      -> std::size_t {
+    return block.size();
+  }
+
 }  // namespace blocks
 /// [adv_block]
 
@@ -1121,14 +1131,6 @@ namespace blocks {
       return blocks::get<Parent::ExamplePosition>(*this).size();
     }
 
-    // check to see if within the range, throw error otherwise usually
-    // similar to at() of vector
-    inline std::size_t check(std::size_t index) const noexcept { return index; }
-    inline std::size_t check(elastica::from_end f) const noexcept {
-      assert(size() >= f.i);
-      return size() - f.i;
-    };
-
     // customization point for generating a slice. Since all are vectors, a
     // simple indexing should do
     template <typename Tag>
@@ -1166,6 +1168,13 @@ namespace blocks {
 
     ~Block() = default;
   };
+
+  // Compliance with slicing
+  inline auto n_units(
+      Block<CompositionExamplePlugin<Block>> const& block) noexcept
+      -> std::size_t {
+    return block.size();
+  }
 
 }  // namespace blocks
 /// [com_block]
@@ -1416,7 +1425,6 @@ namespace blocks {
       -> std::size_t {
     return block.size();
   }
-
 }  // namespace blocks
 /// [fac_int_block]
 

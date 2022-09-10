@@ -899,6 +899,51 @@ namespace blocks {
   }
   //****************************************************************************
 
+  //****************************************************************************
+  /*!\brief Returns the size of the Cosserat Rod.
+   * \ingroup cosserat_rod
+   *
+   * \param cosserat_rod The current cosserat rod.
+   * \return The number of elements in the cosserat rod.
+   */
+  template <typename CRT, typename Tag,
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  inline constexpr auto size(
+      Block<::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+          CRT, Block, Tag, Components...>> const& cosserat_rod) noexcept {
+    // it might be not the best idea to have a size() member in the first place
+    return cosserat_rod.size();
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Get number of units within a CosseratRod
+   * \ingroup cosserat_rod blocks
+   *
+   * \details
+   * Get number of units from a Block. By 'units' we mean the number of
+   * individual BlockSlice(s) composing the Block.
+   *
+   * \usage
+   * \code
+     Block<...> b;
+     std::size_t n_units = blocks::n_units(b);
+   * \endcode
+   *
+   * \param cosserat_rod The cosserat rod whose n_units is to be extracted
+   */
+  template <typename CRT, typename Tag,
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  inline auto n_units(
+      Block<::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+          CRT, Block, Tag, Components...>> const& cosserat_rod) noexcept
+      -> std::size_t {
+    return cosserat_rod.n_units();
+  }
+  //****************************************************************************
+
 }  // namespace blocks
 
 //    template <typename CRT,                 // Cosserat Rod Traits

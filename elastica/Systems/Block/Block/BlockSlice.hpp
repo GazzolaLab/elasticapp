@@ -484,7 +484,7 @@ namespace blocks {
   template <typename Plugin, typename Index>
   inline decltype(auto) slice(Block<Plugin>& block_like,
                               Index index) /*noexcept*/ {
-    return detail::slice_impl(block_like, block_like.check(index),
+    return detail::slice_impl(block_like, units_check(block_like, index),
                               typename Plugin::Variables{});
   }
   //****************************************************************************
@@ -494,7 +494,7 @@ namespace blocks {
   inline decltype(auto) slice(Block<Plugin> const& block_like,
                               Index index) /*noexcept*/ {
     return detail::slice_impl(static_cast<Block<Plugin> const&>(block_like),
-                              block_like.check(index),
+                              units_check(block_like, index),
                               typename Plugin::Variables{});
   }
   //****************************************************************************
