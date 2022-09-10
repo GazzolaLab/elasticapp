@@ -13,6 +13,10 @@
 
 #pragma once
 
+//******************************************************************************
+// Includes
+//******************************************************************************
+
 #include <cstddef>  // size_t
 
 #include "Systems/common/Access.hpp"
@@ -39,17 +43,17 @@ namespace elastica {
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) position(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>>& rigid_body) noexcept {
+      ::elastica::rigid_body::RigidBodyPlugin<
+          CRT, ComputationalBlock, Components...>& rigid_body) noexcept {
     // get_position() wraps around a free function, so the API is still not bad
-    return rigid_body.get_position();
+    return rigid_body.self().get_position();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) position(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>>& rigid_body,
+      ::elastica::rigid_body::RigidBodyPlugin<CRT, ComputationalBlock,
+                                              Components...>& rigid_body,
       std::size_t index) noexcept {
     // tentative, can change
     // ideally should be position(blocks::slice(rigid_body, index));
@@ -61,25 +65,25 @@ namespace elastica {
     // which is very close to what we have below. The problem here is that
     // position(rigid_body) is not a block anymore, so the semantics are not
     // well formed.
-    return rigid_body.get_position(index);
+    return rigid_body.self().get_position(index);
   }
 
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) position(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>> const& rigid_body) noexcept {
-    return rigid_body.get_position();
+      ::elastica::rigid_body::RigidBodyPlugin<
+          CRT, ComputationalBlock, Components...> const& rigid_body) noexcept {
+    return rigid_body.self().get_position();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) position(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>> const& rigid_body,
+      ::elastica::rigid_body::RigidBodyPlugin<CRT, ComputationalBlock,
+                                              Components...> const& rigid_body,
       std::size_t index) noexcept {
-    return rigid_body.get_position(index);
+    return rigid_body.self().get_position(index);
   }
   //@}
   //****************************************************************************
@@ -94,36 +98,36 @@ namespace elastica {
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) director(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>>& rigid_body) noexcept {
-    return rigid_body.get_director();
+      ::elastica::rigid_body::RigidBodyPlugin<
+          CRT, ComputationalBlock, Components...>& rigid_body) noexcept {
+    return rigid_body.self().get_director();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) director(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>>& rigid_body,
+      ::elastica::rigid_body::RigidBodyPlugin<CRT, ComputationalBlock,
+                                              Components...>& rigid_body,
       std::size_t index) noexcept {
-    return rigid_body.get_director(index);
+    return rigid_body.self().get_director(index);
   }
 
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) director(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>> const& rigid_body) noexcept {
-    return rigid_body.get_director();
+      ::elastica::rigid_body::RigidBodyPlugin<
+          CRT, ComputationalBlock, Components...> const& rigid_body) noexcept {
+    return rigid_body.self().get_director();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) director(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>> const& rigid_body,
+      ::elastica::rigid_body::RigidBodyPlugin<CRT, ComputationalBlock,
+                                              Components...> const& rigid_body,
       std::size_t index) noexcept {
-    return rigid_body.get_director(index);
+    return rigid_body.self().get_director(index);
   }
   //@}
   //****************************************************************************
@@ -138,36 +142,36 @@ namespace elastica {
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) velocity(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>>& rigid_body) noexcept {
-    return rigid_body.get_velocity();
+      ::elastica::rigid_body::RigidBodyPlugin<
+          CRT, ComputationalBlock, Components...>& rigid_body) noexcept {
+    return rigid_body.self().get_velocity();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) velocity(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>>& rigid_body,
+      ::elastica::rigid_body::RigidBodyPlugin<CRT, ComputationalBlock,
+                                              Components...>& rigid_body,
       std::size_t index) noexcept {
-    return rigid_body.get_velocity(index);
+    return rigid_body.self().get_velocity(index);
   }
 
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) velocity(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>> const& rigid_body) noexcept {
-    return rigid_body.get_velocity();
+      ::elastica::rigid_body::RigidBodyPlugin<
+          CRT, ComputationalBlock, Components...> const& rigid_body) noexcept {
+    return rigid_body.self().get_velocity();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) velocity(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>> const& rigid_body,
+      ::elastica::rigid_body::RigidBodyPlugin<CRT, ComputationalBlock,
+                                              Components...> const& rigid_body,
       std::size_t index) noexcept {
-    return rigid_body.get_velocity(index);
+    return rigid_body.self().get_velocity(index);
   }
   //@}
   //****************************************************************************
@@ -182,36 +186,36 @@ namespace elastica {
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) angular_velocity(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>>& rigid_body) noexcept {
-    return rigid_body.get_angular_velocity();
+      ::elastica::rigid_body::RigidBodyPlugin<
+          CRT, ComputationalBlock, Components...>& rigid_body) noexcept {
+    return rigid_body.self().get_angular_velocity();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) angular_velocity(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>>& rigid_body,
+      ::elastica::rigid_body::RigidBodyPlugin<CRT, ComputationalBlock,
+                                              Components...>& rigid_body,
       std::size_t index) noexcept {
-    return rigid_body.get_angular_velocity(index);
+    return rigid_body.self().get_angular_velocity(index);
   }
 
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) angular_velocity(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>> const& rigid_body) noexcept {
-    return rigid_body.get_angular_velocity();
+      ::elastica::rigid_body::RigidBodyPlugin<
+          CRT, ComputationalBlock, Components...> const& rigid_body) noexcept {
+    return rigid_body.self().get_angular_velocity();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) angular_velocity(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>> const& rigid_body,
+      ::elastica::rigid_body::RigidBodyPlugin<CRT, ComputationalBlock,
+                                              Components...> const& rigid_body,
       std::size_t index) noexcept {
-    return rigid_body.get_angular_velocity(index);
+    return rigid_body.self().get_angular_velocity(index);
   }
   //@}
   //****************************************************************************
@@ -226,35 +230,35 @@ namespace elastica {
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) external_loads(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>>& rigid_body) noexcept {
-    return rigid_body.get_external_loads();
+      ::elastica::rigid_body::RigidBodyPlugin<
+          CRT, ComputationalBlock, Components...>& rigid_body) noexcept {
+    return rigid_body.self().get_external_loads();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) external_loads(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>>& rigid_body,
+      ::elastica::rigid_body::RigidBodyPlugin<CRT, ComputationalBlock,
+                                              Components...>& rigid_body,
       std::size_t index) noexcept {
-    return rigid_body.get_external_loads(index);
+    return rigid_body.self().get_external_loads(index);
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) external_loads(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>> const& rigid_body) noexcept {
-    return rigid_body.get_external_loads();
+      ::elastica::rigid_body::RigidBodyPlugin<
+          CRT, ComputationalBlock, Components...> const& rigid_body) noexcept {
+    return rigid_body.self().get_external_loads();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) external_loads(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>> const& rigid_body,
+      ::elastica::rigid_body::RigidBodyPlugin<CRT, ComputationalBlock,
+                                              Components...> const& rigid_body,
       std::size_t index) noexcept {
-    return rigid_body.get_external_loads(index);
+    return rigid_body.self().get_external_loads(index);
   }
   //@}
   //****************************************************************************
@@ -269,35 +273,35 @@ namespace elastica {
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) external_torques(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>>& rigid_body) noexcept {
-    return rigid_body.get_external_torques();
+      ::elastica::rigid_body::RigidBodyPlugin<
+          CRT, ComputationalBlock, Components...>& rigid_body) noexcept {
+    return rigid_body.self().get_external_torques();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) external_torques(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>>& rigid_body,
+      ::elastica::rigid_body::RigidBodyPlugin<CRT, ComputationalBlock,
+                                              Components...>& rigid_body,
       std::size_t index) noexcept {
-    return rigid_body.get_external_torques(index);
+    return rigid_body.self().get_external_torques(index);
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) external_torques(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>> const& rigid_body) noexcept {
-    return rigid_body.get_external_torques();
+      ::elastica::rigid_body::RigidBodyPlugin<
+          CRT, ComputationalBlock, Components...> const& rigid_body) noexcept {
+    return rigid_body.self().get_external_torques();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) external_torques(
-      ComputationalBlock<::elastica::rigid_body::RigidBodyPlugin<
-          CRT, ComputationalBlock, Components...>> const& rigid_body,
+      ::elastica::rigid_body::RigidBodyPlugin<CRT, ComputationalBlock,
+                                              Components...> const& rigid_body,
       std::size_t index) noexcept {
-    return rigid_body.get_external_torques(index);
+    return rigid_body.self().get_external_torques(index);
   }
   //@}
   //****************************************************************************

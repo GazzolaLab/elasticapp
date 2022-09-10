@@ -15,6 +15,7 @@
 
 //
 #include "Systems/common/Cardinality.hpp"
+//#include "Systems/common/IndexCheck.hpp"
 /// Forward declarations
 #include "Systems/RigidBody/Types.hpp"
 ///
@@ -164,6 +165,7 @@ namespace elastica {
       using ConstReference = Self const&;
       //************************************************************************
 
+     public:
       //**Self method***********************************************************
       /*!\brief Access to the underlying derived
       //
@@ -237,18 +239,21 @@ namespace elastica {
        * \tparam CosseratInitializer An Initializer corresponding to the
        * Rigid body hierarchy
        */
-      template <class DownstreamBlock, class CosseratInitializer>
-      static void initialize(DownstreamBlock& downstream_block,
-                             CosseratInitializer&& initializers) {
+      template <template <typename> class BlockLike, class CosseratInitializer>
+      static void initialize(
+          RigidBodyPlugin<Traits, BlockLike, Components...>& this_component,
+          CosseratInitializer&& initializers) {
         // initialize the elements boi
         {
-          auto& variable(blocks::get<tags::NElement>(downstream_block));
+          auto& variable(blocks::get<tags::NElement>(this_component.self()));
           // this automatically is deduced to 1
           variable = 1UL;
         }
 
+        // Pass self here to make minimal changes to the tests.
         EXPAND_PACK_LEFT_TO_RIGHT(Components<RBT, Self>::initialize(
-            downstream_block, std::forward<CosseratInitializer>(initializers)));
+            this_component.self(),
+            std::forward<CosseratInitializer>(initializers)));
       }
       //************************************************************************
 
@@ -326,6 +331,25 @@ namespace elastica {
     //**************************************************************************
 
   }  // namespace rigid_body
+
+  //  //**Check
+  //  functions*********************************************************
+  //  /*!\name Index check functions
+  //   * \ingroup rigid_body
+  //   * \brief Checks whether indices are within range of accessible values
+  //   * */
+  //  template <typename RBT, template <typename> class ComputationalBlock,
+  //            template <typename /*RBT*/, typename /*InitializedBlock*/>
+  //            class... Components,
+  //            typename IndexType>
+  //  inline auto index_check(
+  //      ::elastica::rigid_body::RigidBodyPlugin<RBT, ComputationalBlock,
+  //                                              Components...> const&
+  //                                              block_like,
+  //      IndexType index_to_be_sliced) -> std::size_t {
+  //    return index_check_helper(size(block_like.self()),
+  //                              std::move(index_to_be_sliced));
+  //  }
 
 }  // namespace elastica
 
