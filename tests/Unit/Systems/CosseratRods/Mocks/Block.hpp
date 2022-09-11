@@ -32,7 +32,7 @@ namespace blocks {
     using Parent::initialize;
   };
 
-  template <typename Tr, template <typename> class ... T>
+  template <typename Tr, template <typename> class... T>
   class Block<mock::MultiComponentPlugin<Tr, Block, T...>>
       : public BlockFacade<mock::MultiComponentPlugin<Tr, Block, T...>> {
     using Parent = BlockFacade<mock::MultiComponentPlugin<Tr, Block, T...>>;
@@ -50,10 +50,11 @@ namespace blocks {
 
    public:
     using Parent::initialize;
-
-    // we need a ghosts function here :(
-    template <typename Tag>
-    void fill_ghosts_for() const noexcept{}
   };
+
+  // we need a ghosts function here :(
+  template <typename Tag, typename Tr, template <typename> class... T>
+  void fill_ghosts_for(
+      Block<mock::MultiComponentPlugin<Tr, Block, T...>>&) noexcept {}
 
 }  // namespace blocks

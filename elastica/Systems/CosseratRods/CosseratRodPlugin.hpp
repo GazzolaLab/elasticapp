@@ -271,6 +271,11 @@ namespace elastica {
 
      private:
       //**Useful aliases********************************************************
+      //! Variable for marking number of elements
+      using NElement = typename VariableDefinitions::NElement;
+
+     public:
+      //************************************************************************
       //! Tag to place on nodes
       using OnNode = typename Traits::Place::OnNode;
       //! Tag to place on elements
@@ -279,8 +284,6 @@ namespace elastica {
       using OnVoronoi = typename Traits::Place::OnVoronoi;
       //! Tag to place on the whole rod rather than at discrete points
       using OnRod = typename Traits::Place::OnRod;
-      //! Variable for marking number of elements
-      using NElement = typename VariableDefinitions::NElement;
       //************************************************************************
 
      public:

@@ -60,9 +60,6 @@ namespace {
     using Parent::total_n_nodes;
     using Parent::total_n_voronois;
 
-    using Parent::fill_ghosts;
-    using Parent::fill_ghosts_placed;
-
     // variable function
     using Parent::get_ghost_node_buffer;
   };

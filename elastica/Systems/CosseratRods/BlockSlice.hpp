@@ -161,21 +161,6 @@ namespace blocks {
     using index_type = typename Traits::index_type;
     //**************************************************************************
 
-   public:
-    //**Ghosting functions******************************************************
-    /*!\name Ghosting functions */
-    //@{
-
-    //**************************************************************************
-    /*!\brief Fills ghosts for a variable of tag `Tag` in the current Block
-     * Needed because some of the kernels use it
-     */
-    template <typename Tag>
-    void fill_ghosts_for() const noexcept {}
-    //**************************************************************************
-    //@}
-    //**************************************************************************
-
    private:
     //**Member variables********************************************************
     /*!\name Member variables */
@@ -306,21 +291,6 @@ namespace blocks {
     }
     //**************************************************************************
 
-    //@}
-    //**************************************************************************
-
-   public:
-    //**Ghosting functions******************************************************
-    /*!\name Ghosting functions */
-    //@{
-
-    //**************************************************************************
-    /*!\brief Fills ghosts for a variable of tag `Tag` in the current Block
-     * Needed because some of the kernels use it
-     */
-    template <typename Tag>
-    void fill_ghosts_for() const noexcept {}
-    //**************************************************************************
     //@}
     //**************************************************************************
 
@@ -474,6 +444,65 @@ namespace blocks {
     // it might be not the best idea to have a size() member
     return cosserat_rod.size();
   }
+  //****************************************************************************
+
+  //**Ghosting functions********************************************************
+  /*!\name Ghosting functions
+   * \ingroup cosserat_rod */
+  //@{
+
+  //****************************************************************************
+  /*!\brief Fills ghosts for a variable of tag `Tag` in the current Block
+   * Needed because some of the kernels use it
+   */
+  template <typename Tag,
+            typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  inline void fill_ghosts_for(
+      BlockSlice<elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, BlockSlice, Components...>>&) noexcept {}
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Fills ghosts for all variables in the current Block
+   *
+   * \param block_like Block to fill ghosts
+   */
+  template <typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  inline void fill_ghosts(BlockSlice<elastica::cosserat_rod::CosseratRodPlugin<
+                              CRT, BlockSlice, Components...>>&) noexcept {}
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Fills ghosts for a variable of tag `Tag` in the current Block
+   * Needed because some of the kernels use it
+   */
+  template <typename Tag,
+            typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  inline void fill_ghosts_for(
+      ConstBlockSlice<elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, ConstBlockSlice, Components...>>&) noexcept {}
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Fills ghosts for all variables in the current Block
+   *
+   * \param block_like Block to fill ghosts
+   */
+  template <typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  inline void fill_ghosts(
+      ConstBlockSlice<elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, ConstBlockSlice, Components...>>&) noexcept {}
+  //****************************************************************************
+
+  //@}
   //****************************************************************************
 
 }  // namespace blocks

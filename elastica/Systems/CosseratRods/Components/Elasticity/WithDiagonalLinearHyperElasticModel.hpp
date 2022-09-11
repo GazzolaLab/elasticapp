@@ -21,12 +21,16 @@
 #include <utility>
 
 ///// Types always first
+#include "Systems/CosseratRods/Components/Elasticity/Types.hpp"
 #include "Systems/CosseratRods/Components/Tags.hpp"
+#include "Systems/CosseratRods/_Types.hpp"  // for ghosts lookup
 /////
 #include "Systems/CosseratRods/Components/Elasticity/Protocols.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/detail/ElasticityInterface.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/detail/LinearHyperElasticityFacade.hpp"
+#include "Systems/CosseratRods/Components/Noexcept.hpp"
 #include "Systems/CosseratRods/Components/helpers.hpp"
+//
 #include "Utilities/CRTP.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -58,12 +62,13 @@ namespace elastica {
          */
         template <typename CRT,                 // Cosserat Rod Traits
                   typename ComputationalBlock>  // Block
-        class WithDiagonalLinearHyperElasticModel
+        class WithDiagonalLinearHyperElasticModelImpl
             : public CRTPHelper<ComputationalBlock,
-                                WithDiagonalLinearHyperElasticModel>,
+                                WithDiagonalLinearHyperElasticModelImpl>,
               public LinearHyperElasticityFacade<CRT, ComputationalBlock>,
               public ElasticityComponent<
-                  WithDiagonalLinearHyperElasticModel<CRT, ComputationalBlock>>,
+                  WithDiagonalLinearHyperElasticModelImpl<CRT,
+                                                          ComputationalBlock>>,
               public ::tt::ConformsTo<
                   ::elastica::cosserat_rod::protocols::Elastic1D> {
          private:
@@ -72,15 +77,14 @@ namespace elastica {
           using Traits = CRT;
           //! This type
           using This =
-              WithDiagonalLinearHyperElasticModel<Traits, ComputationalBlock>;
+              WithDiagonalLinearHyperElasticModelImpl<Traits,
+                                                      ComputationalBlock>;
           //! Parent type
           using Parent =
               detail::LinearHyperElasticityFacade<Traits, ComputationalBlock>;
           //! CRTP Type
           using CRTP = CRTPHelper<ComputationalBlock,
-                                  WithDiagonalLinearHyperElasticModel>;
-          //! CRTP methods
-          using CRTP::self;
+                                  WithDiagonalLinearHyperElasticModelImpl>;
           //********************************************************************
 
          protected:
@@ -95,168 +99,11 @@ namespace elastica {
           using typename Parent::Variables;
           //********************************************************************
 
-         protected:
-          //**Computation methods***********************************************
-          /*!\name Compute methods*/
+         public:
+          //**CRTP method*******************************************************
+          /*!\name CRTP method*/
           //@{
-
-          //********************************************************************
-          /*!\brief Computes the modeled internal loads from the elasticity
-           * model
-           */
-          inline void compute_internal_modeled_loads_impl() noexcept {
-            auto& strain(blocks::get<tags::ShearStretchStrain>(self()));
-            auto& reference_strain(
-                blocks::get<tags::ReferenceShearStretchStrain>(self()));
-            auto& shear_matrix(
-                blocks::get<tags::ShearStretchRigidityMatrix>(self()));
-            auto& internal_stress(blocks::get<tags::InternalStress>(self()));
-            auto& internal_load(blocks::get<tags::InternalLoads>(self()));
-            auto& element_dilatation(
-                blocks::get<tags::ElementDilatation>(self()));
-            auto& director(blocks::get<tags::Director>(self()));
-
-            self().compute_shear_strains();
-
-            Traits::Operations::batch_matvec(internal_stress, shear_matrix,
-                                             strain - reference_strain);
-
-            // allocating temp container (3, n_elems) for temporary storage
-            auto& cosserat_internal_stress(
-                blocks::get<tags::_DummyElementVector>(self()));
-            auto& temp_vec(blocks::get<tags::_DummyElementVector2>(self()));
-            Traits::Operations::batch_mattranspvec(temp_vec, director,
-                                                   internal_stress);
-            Traits::Operations::batch_division_matvec(
-                cosserat_internal_stress, temp_vec, element_dilatation);
-
-            // before doing difference, fill it to 0.0
-            self().template fill_ghosts_for<tags::_DummyElementVector>();
-
-            Traits::Operations::two_point_difference_kernel(
-                internal_load, cosserat_internal_stress);
-
-            // return internal_load;
-          }
-          //********************************************************************
-
-          //********************************************************************
-          /*!\brief Computes the modeled internal torques from the elasticity
-           * model
-           */
-          inline void compute_internal_modeled_torques_impl() noexcept {
-            auto& director(blocks::get<tags::Director>(self()));
-            auto& omega(blocks::get<tags::AngularVelocity>(self()));
-            auto& curvature(blocks::get<tags::Curvature>(self()));
-            auto& tangent(blocks::get<tags::Tangent>(self()));
-            auto& dilatation(blocks::get<tags::ElementDilatation>(self()));
-            auto& voronoi_dilatation(
-                blocks::get<tags::VoronoiDilatation>(self()));
-            auto& internal_stress(blocks::get<tags::InternalStress>(self()));
-            auto& internal_couple(blocks::get<tags::InternalCouple>(self()));
-            auto& internal_torques(blocks::get<tags::InternalTorques>(self()));
-            auto& bend_matrix(
-                blocks::get<tags::BendingTwistRigidityMatrix>(self()));
-            auto& reference_curvature(
-                blocks::get<tags::ReferenceCurvature>(self()));
-            auto& reference_voronoi_length(
-                blocks::get<tags::ReferenceVoronoiLength>(self()));
-            auto& reference_element_length(
-                blocks::get<tags::ReferenceElementLength>(self()));
-            auto& mass_SMOI(
-                blocks::get<tags::MassSecondMomentOfInertia>(self()));
-
-            auto& dummy_elem_vector(
-                blocks::get<tags::_DummyElementVector>(self()));
-            auto& dummy_elem_vector2(
-                blocks::get<tags::_DummyElementVector2>(self()));
-            auto& dummy_voro_vector(
-                blocks::get<tags::_DummyVoronoiVector>(self()));
-
-            /* Compute Curvature */
-            self().compute_curvature();
-            self().template fill_ghosts_for<tags::Curvature>();
-
-            Traits::Operations::batch_matvec(internal_couple, bend_matrix,
-                                             curvature - reference_curvature);
-
-            /* Compute dilatation rate */
-            auto dilatation_rate = self().get_dilatation_rate();
-
-            auto voronoi_dilatation_inv_cube =
-                Traits::Operations::inverse_cube(voronoi_dilatation);
-
-            /* Reset internal torque */
-            // Caution: Make sure the dummy variable scope does not overlap
-            // internal couple should have 0.0
-            Traits::Operations::two_point_difference_kernel(
-                internal_torques,  // bend_twist_couple_2D_batch,
-                internal_couple % Traits::Operations::transpose(
-                                      Traits::Operations::expand_for_broadcast(
-                                          voronoi_dilatation_inv_cube)));
-
-            // allocating temp container (3, n_voronoi) for temporary storage
-            auto& curvature_cross_internal_couple_batch(dummy_voro_vector);
-            Traits::Operations::batch_cross(
-                curvature_cross_internal_couple_batch, curvature,
-                internal_couple);
-
-            // allocating temp container (3, n_elems) for temporary storage
-            auto& bend_twist_couple_3D_batch(dummy_elem_vector);
-            Traits::Operations::quadrature_kernel(
-                bend_twist_couple_3D_batch,
-                curvature_cross_internal_couple_batch %
-                    Traits::Operations::transpose(
-                        Traits::Operations::expand_for_broadcast(
-                            reference_voronoi_length *
-                            voronoi_dilatation_inv_cube)));
-            internal_torques += bend_twist_couple_3D_batch;
-
-            // allocating temp container (3, n_elems) for temporary storage
-            auto& Q_into_t_batch(dummy_elem_vector);
-            Traits::Operations::batch_matvec(Q_into_t_batch, director, tangent);
-
-            // allocating temp container (3, n_elems) for temporary storage
-            auto& Q_into_t_cross_internal_stress_batch(dummy_elem_vector2);
-            Traits::Operations::batch_cross(
-                Q_into_t_cross_internal_stress_batch, Q_into_t_batch,
-                internal_stress);
-            auto shear_stretch_couple_batch =
-                Q_into_t_cross_internal_stress_batch %
-                Traits::Operations::transpose(
-                    Traits::Operations::expand_for_broadcast(
-                        reference_element_length));
-            internal_torques += shear_stretch_couple_batch;
-
-            /* common sub expression elimination here, as J w / e is used in
-             * both */
-            /* the lagrangian transport and dilatation terms */
-            // allocating temp container (3, n_elems) for temporary storage
-            auto& J_omega_upon_e_batch(dummy_elem_vector);
-            auto& temp_vec(dummy_elem_vector2);
-            Traits::Operations::batch_matvec(temp_vec, mass_SMOI, omega);
-            Traits::Operations::batch_division_matvec(J_omega_upon_e_batch,
-                                                      temp_vec, dilatation);
-
-            // allocating temp container (3, n_elems) for temporary storage
-            auto& lagrangian_transport_batch(temp_vec);
-            Traits::Operations::batch_cross(lagrangian_transport_batch,
-                                            J_omega_upon_e_batch, omega);
-            internal_torques += lagrangian_transport_batch;
-
-            // unsteady_dilatation_batch
-            // auto dilatation_ratio = dilatation_rate /
-            // Traits::Operations::transpose(dilatation);
-            auto dilatation_ratio = dilatation_rate / dilatation;
-            auto dilatation_ratio_expanded =
-                Traits::Operations::expand_for_broadcast(
-                    Traits::Operations::transpose(dilatation_ratio));
-            auto unsteady_dilatation_batch =
-                J_omega_upon_e_batch % dilatation_ratio_expanded;
-            internal_torques += unsteady_dilatation_batch;
-          }
-          //********************************************************************
-
+          using CRTP::self;
           //@}
           //********************************************************************
         };
@@ -319,7 +166,7 @@ namespace elastica {
        */
       template <typename CRT, typename ComputationalBlock>
       class WithDiagonalLinearHyperElasticModel
-          : public Adapt<detail::WithDiagonalLinearHyperElasticModel<
+          : public Adapt<detail::WithDiagonalLinearHyperElasticModelImpl<
                 CRT, ComputationalBlock>>::
                 template with<detail::ElasticityInterface> {};
       //************************************************************************
@@ -343,6 +190,179 @@ namespace elastica {
       // clang-format on
 
     }  // namespace component
+
+    //**************************************************************************
+    /*!\brief Computes the modeled internal loads from the elasticity
+     * model
+     */
+    template <typename Traits, typename ComputationalBlock>
+    void compute_internal_modeled_loads_impl(
+        component::detail::WithDiagonalLinearHyperElasticModelImpl<
+            Traits, ComputationalBlock>& block_like) COSSERATROD_LIB_NOEXCEPT {
+      auto&& strain(blocks::get<tags::ShearStretchStrain>(block_like.self()));
+      auto&& reference_strain(
+          blocks::get<tags::ReferenceShearStretchStrain>(block_like.self()));
+      auto&& shear_matrix(
+          blocks::get<tags::ShearStretchRigidityMatrix>(block_like.self()));
+      auto&& internal_stress(
+          blocks::get<tags::InternalStress>(block_like.self()));
+      auto&& internal_load(blocks::get<tags::InternalLoads>(block_like.self()));
+      auto&& element_dilatation(
+          blocks::get<tags::ElementDilatation>(block_like.self()));
+      auto&& director(blocks::get<tags::Director>(block_like.self()));
+
+      // FIXME : all geometrical computations can be moved into another function
+      // for DRY.
+      compute_shear_strains(block_like.self());
+
+      Traits::Operations::batch_matvec(internal_stress, shear_matrix,
+                                       strain - reference_strain);
+
+      // allocating temp container (3, n_elems) for temporary storage
+      auto&& cosserat_internal_stress(
+          blocks::get<tags::_DummyElementVector>(block_like.self()));
+      auto&& temp_vec(
+          blocks::get<tags::_DummyElementVector2>(block_like.self()));
+
+      Traits::Operations::batch_mattranspvec(temp_vec, director,
+                                             internal_stress);
+      Traits::Operations::batch_division_matvec(cosserat_internal_stress,
+                                                temp_vec, element_dilatation);
+
+      // before doing difference, fill it to 0.0
+      using ::blocks::fill_ghosts_for;
+      fill_ghosts_for<tags::_DummyElementVector>(block_like.self());
+
+      Traits::Operations::two_point_difference_kernel(internal_load,
+                                                      cosserat_internal_stress);
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Computes the modeled internal torques from the elasticity
+     * model
+     * \ingroup cosserat_rod_custom_entries
+     */
+    template <typename Traits, typename ComputationalBlock>
+    void compute_internal_modeled_torques_impl(
+        component::detail::WithDiagonalLinearHyperElasticModelImpl<
+            Traits, ComputationalBlock>& block_like) COSSERATROD_LIB_NOEXCEPT {
+      auto&& director(blocks::get<tags::Director>(block_like.self()));
+      auto&& omega(blocks::get<tags::AngularVelocity>(block_like.self()));
+      auto&& curvature(blocks::get<tags::Curvature>(block_like.self()));
+      auto&& tangent(blocks::get<tags::Tangent>(block_like.self()));
+      auto&& dilatation(
+          blocks::get<tags::ElementDilatation>(block_like.self()));
+      auto&& voronoi_dilatation(
+          blocks::get<tags::VoronoiDilatation>(block_like.self()));
+      auto&& internal_stress(
+          blocks::get<tags::InternalStress>(block_like.self()));
+      auto&& internal_couple(
+          blocks::get<tags::InternalCouple>(block_like.self()));
+      auto&& internal_torques(
+          blocks::get<tags::InternalTorques>(block_like.self()));
+      auto&& bend_matrix(
+          blocks::get<tags::BendingTwistRigidityMatrix>(block_like.self()));
+      auto&& reference_curvature(
+          blocks::get<tags::ReferenceCurvature>(block_like.self()));
+      auto&& reference_voronoi_length(
+          blocks::get<tags::ReferenceVoronoiLength>(block_like.self()));
+      auto&& reference_element_length(
+          blocks::get<tags::ReferenceElementLength>(block_like.self()));
+      auto&& mass_SMOI(
+          blocks::get<tags::MassSecondMomentOfInertia>(block_like.self()));
+
+      auto&& dummy_elem_vector(
+          blocks::get<tags::_DummyElementVector>(block_like.self()));
+      auto&& dummy_elem_vector2(
+          blocks::get<tags::_DummyElementVector2>(block_like.self()));
+      auto&& dummy_voro_vector(
+          blocks::get<tags::_DummyVoronoiVector>(block_like.self()));
+
+      /* Compute Curvature */
+      // FIXME : all geometrical computations can be moved into another function
+      // for DRY.
+      compute_curvature(block_like.self());
+
+      using ::blocks::fill_ghosts_for;
+      fill_ghosts_for<tags::Curvature>(block_like.self());
+
+      Traits::Operations::batch_matvec(internal_couple, bend_matrix,
+                                       curvature - reference_curvature);
+
+      /* Compute dilatation rate */
+      auto&& dilatation_rate = get_dilatation_rate(block_like.self());
+
+      auto&& voronoi_dilatation_inv_cube =
+          Traits::Operations::inverse_cube(voronoi_dilatation);
+
+      /* Reset internal torque */
+      // Caution: Make sure the dummy variable scope does not overlap
+      // internal couple should have 0.0
+      Traits::Operations::two_point_difference_kernel(
+          internal_torques,  // bend_twist_couple_2D_batch,
+          internal_couple % Traits::Operations::transpose(
+                                Traits::Operations::expand_for_broadcast(
+                                    voronoi_dilatation_inv_cube)));
+
+      // allocating temp container (3, n_voronoi) for temporary storage
+      auto& curvature_cross_internal_couple_batch(dummy_voro_vector);
+      Traits::Operations::batch_cross(curvature_cross_internal_couple_batch,
+                                      curvature, internal_couple);
+
+      // allocating temp container (3, n_elems) for temporary storage
+      auto& bend_twist_couple_3D_batch(dummy_elem_vector);
+      Traits::Operations::quadrature_kernel(
+          bend_twist_couple_3D_batch,
+          curvature_cross_internal_couple_batch %
+              Traits::Operations::transpose(
+                  Traits::Operations::expand_for_broadcast(
+                      reference_voronoi_length * voronoi_dilatation_inv_cube)));
+      internal_torques += bend_twist_couple_3D_batch;
+
+      // allocating temp container (3, n_elems) for temporary storage
+      auto& Q_into_t_batch(dummy_elem_vector);
+      Traits::Operations::batch_matvec(Q_into_t_batch, director, tangent);
+
+      // allocating temp container (3, n_elems) for temporary storage
+      auto& Q_into_t_cross_internal_stress_batch(dummy_elem_vector2);
+      Traits::Operations::batch_cross(Q_into_t_cross_internal_stress_batch,
+                                      Q_into_t_batch, internal_stress);
+      auto&& shear_stretch_couple_batch =
+          Q_into_t_cross_internal_stress_batch %
+          Traits::Operations::transpose(
+              Traits::Operations::expand_for_broadcast(
+                  reference_element_length));
+      internal_torques += shear_stretch_couple_batch;
+
+      /* common sub expression elimination here, as J w / e is used in
+       * both */
+      /* the lagrangian transport and dilatation terms */
+      // allocating temp container (3, n_elems) for temporary storage
+      auto& J_omega_upon_e_batch(dummy_elem_vector);
+      auto& temp_vec(dummy_elem_vector2);
+      Traits::Operations::batch_matvec(temp_vec, mass_SMOI, omega);
+      Traits::Operations::batch_division_matvec(J_omega_upon_e_batch, temp_vec,
+                                                dilatation);
+
+      // allocating temp container (3, n_elems) for temporary storage
+      auto& lagrangian_transport_batch(temp_vec);
+      Traits::Operations::batch_cross(lagrangian_transport_batch,
+                                      J_omega_upon_e_batch, omega);
+      internal_torques += lagrangian_transport_batch;
+
+      // unsteady_dilatation_batch
+      // auto dilatation_ratio = dilatation_rate /
+      // Traits::Operations::transpose(dilatation);
+      auto&& dilatation_ratio = dilatation_rate / dilatation;
+      auto&& dilatation_ratio_expanded =
+          Traits::Operations::expand_for_broadcast(
+              Traits::Operations::transpose(dilatation_ratio));
+      auto&& unsteady_dilatation_batch =
+          J_omega_upon_e_batch % dilatation_ratio_expanded;
+      internal_torques += unsteady_dilatation_batch;
+    }
+    //**************************************************************************
 
   }  // namespace cosserat_rod
 

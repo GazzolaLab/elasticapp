@@ -68,13 +68,12 @@ namespace {
     using Parent::total_n_nodes;
     using Parent::total_n_voronois;
 
-    using Parent::fill_ghosts;
-    using Parent::fill_ghosts_for;
-    using Parent::fill_ghosts_placed;
-
     // variable function
     using Parent::get_ghost_node_buffer;
   };
+
+  using ::blocks::fill_ghosts_for;
+  using ::blocks::fill_ghosts_placed;
 
 }  // namespace
 
@@ -1356,7 +1355,7 @@ namespace {
                                  &node_variable[node_variable.size()]));
 
         CHECK(node_variable[end_idx] != approx(3.14159));
-        model.fill_ghosts_placed<typename Model::OnNode>();
+        fill_ghosts_placed<typename Model::OnNode>(model);
         // the part between rod 1 and 2 should be zerod
         // in this case we explicitly request the node to be non-default, say
         //
@@ -1364,7 +1363,7 @@ namespace {
 
         // check fill_ghosts_for
         node_variable[end_idx] = 2.0;
-        model.fill_ghosts_for<test_tags::VarOnNode>();
+        fill_ghosts_for<test_tags::VarOnNode>(model);
         CHECK(node_variable[end_idx] == approx(3.14159));
       }
 
@@ -1390,13 +1389,13 @@ namespace {
 
         CHECK(element_variable[end_idx] != approx(3.14159));
         CHECK(element_variable[end_idx + 1UL] != approx(3.14159));
-        model.fill_ghosts_placed<typename Model::OnElement>();
+        fill_ghosts_placed<typename Model::OnElement>(model);
         CHECK(element_variable[end_idx] == approx(3.14159));
         CHECK(element_variable[end_idx + 1UL] == approx(3.14159));
 
         element_variable[end_idx] = 2.0;
         element_variable[end_idx + 1UL] = 2.0;
-        model.fill_ghosts_for<test_tags::VarOnElement>();
+        fill_ghosts_for<test_tags::VarOnElement>(model);
         CHECK(element_variable[end_idx] == approx(3.14159));
         CHECK(element_variable[end_idx + 1UL] == approx(3.14159));
       }
@@ -1425,7 +1424,7 @@ namespace {
         CHECK(voronoi_variable[end_idx] != approx(3.14159));
         CHECK(voronoi_variable[end_idx + 1UL] != approx(3.14159));
         CHECK(voronoi_variable[end_idx + 2UL] != approx(3.14159));
-        model.fill_ghosts_placed<typename Model::OnVoronoi>();
+        fill_ghosts_placed<typename Model::OnVoronoi>(model);
         CHECK(voronoi_variable[end_idx] == approx(3.14159));
         CHECK(voronoi_variable[end_idx + 1UL] == approx(3.14159));
         CHECK(voronoi_variable[end_idx + 2UL] == approx(3.14159));
@@ -1433,7 +1432,7 @@ namespace {
         voronoi_variable[end_idx] = 2.0;
         voronoi_variable[end_idx + 1UL] = 2.0;
         voronoi_variable[end_idx + 2UL] = 2.0;
-        model.fill_ghosts_for<test_tags::VarOnVoronoi>();
+        fill_ghosts_for<test_tags::VarOnVoronoi>(model);
         CHECK(voronoi_variable[end_idx] == approx(3.14159));
         CHECK(voronoi_variable[end_idx + 1UL] == approx(3.14159));
         CHECK(voronoi_variable[end_idx + 2UL] == approx(3.14159));
@@ -1892,7 +1891,7 @@ namespace {
         CHECK(node_variable[first_end_idx] == approx(3.14159));
         CHECK(node_variable[second_end_idx] != approx(3.14159));
 
-        model.fill_ghosts_placed<typename Model::OnNode>();
+        fill_ghosts_placed<typename Model::OnNode>(model);
         // the part between rod 1 and 2 should be zerod
         // in this case we explicitly request the node to be non-default, say
         //
@@ -1937,7 +1936,7 @@ namespace {
         CHECK(element_variable[first_end_idx + 1UL] == approx(3.14159));
         CHECK(element_variable[second_end_idx] != approx(3.14159));
         CHECK(element_variable[second_end_idx + 1UL] != approx(3.14159));
-        model.fill_ghosts_placed<typename Model::OnElement>();
+        fill_ghosts_placed<typename Model::OnElement>(model);
         CHECK(element_variable[first_end_idx] == approx(3.14159));
         CHECK(element_variable[first_end_idx + 1UL] == approx(3.14159));
         CHECK(element_variable[second_end_idx] == approx(3.14159));
@@ -1983,7 +1982,7 @@ namespace {
         CHECK(voronoi_variable[second_end_idx] != approx(3.14159));
         CHECK(voronoi_variable[second_end_idx + 1UL] != approx(3.14159));
         CHECK(voronoi_variable[second_end_idx + 2UL] != approx(3.14159));
-        model.fill_ghosts_placed<typename Model::OnVoronoi>();
+        fill_ghosts_placed<typename Model::OnVoronoi>(model);
         CHECK(voronoi_variable[first_end_idx] == approx(3.14159));
         CHECK(voronoi_variable[first_end_idx + 1UL] == approx(3.14159));
         CHECK(voronoi_variable[first_end_idx + 2UL] == approx(3.14159));
@@ -2616,7 +2615,7 @@ namespace {
         CHECK(node_variable(0UL, end_idx) != approx(3.14159));
         CHECK(node_variable(1UL, end_idx) != approx(3.14159));
         CHECK(node_variable(2UL, end_idx) != approx(3.14159));
-        model.fill_ghosts_placed<typename Model::OnNode>();
+        fill_ghosts_placed<typename Model::OnNode>(model);
         // the part between rod 1 and 2 should be zerod
         // in this case we explicitly request the node to be non-default, say
         //
@@ -2651,7 +2650,7 @@ namespace {
           CHECK(element_variable(row_idx, end_idx) != approx(3.14159));
           CHECK(element_variable(row_idx, end_idx + 1UL) != approx(3.14159));
         }
-        model.fill_ghosts_placed<typename Model::OnElement>();
+        fill_ghosts_placed<typename Model::OnElement>(model);
         for (auto row_idx : {0UL, 1UL, 2UL}) {
           CHECK(element_variable(row_idx, end_idx) == approx(0.0));
           CHECK(element_variable(row_idx, end_idx + 1UL) == approx(0.0));
@@ -2685,7 +2684,7 @@ namespace {
           CHECK(voronoi_variable(row_idx, end_idx + 1UL) != approx(3.14159));
           CHECK(voronoi_variable(row_idx, end_idx + 2UL) != approx(3.14159));
         }
-        model.fill_ghosts_placed<typename Model::OnVoronoi>();
+        fill_ghosts_placed<typename Model::OnVoronoi>(model);
         for (auto row_idx : {0UL, 1UL, 2UL}) {
           CHECK(voronoi_variable(row_idx, end_idx) == approx(0.0));
           CHECK(voronoi_variable(row_idx, end_idx + 1UL) == approx(0.0));
@@ -2872,6 +2871,105 @@ namespace {
         to_vec(model_view.get_voronoi_variable()),
         to_vec(DataVectorSlice(model.get_voronoi_variable(), 0UL, 0UL, 3UL,
                                expected_view_n_elements - 1UL)));
+
+    // Check ghost filling logic.
+    auto ghost_node_index = model.get_ghost_node_buffer()[0UL];
+    auto other_ghost_node_index = model.get_ghost_node_buffer()[1UL];
+
+    for (auto dim : {0UL, 1UL, 2UL}) {
+      model.get_node_variable()(dim, ghost_node_index) = 43.0;
+      model.get_element_variable()(dim, ghost_node_index) = 43.0;
+      model.get_voronoi_variable()(dim, ghost_node_index) = 43.0;
+
+      model.get_node_variable()(dim, other_ghost_node_index) = 86.0;
+      model.get_element_variable()(dim, other_ghost_node_index) = 86.0;
+      model.get_voronoi_variable()(dim, other_ghost_node_index) = 86.0;
+    }
+
+    // Nodes
+    fill_ghosts_for<test_tags::VarOnNode>(model_view);
+
+    for (auto dim : {0UL, 1UL, 2UL}) {
+      CHECK(model.get_node_variable()(dim, ghost_node_index) == approx(0.0));
+      CHECK(model.get_element_variable()(dim, ghost_node_index) ==
+            approx(43.0));
+      CHECK(model.get_voronoi_variable()(dim, ghost_node_index) ==
+            approx(43.0));
+
+      CHECK(model.get_node_variable()(dim, other_ghost_node_index) ==
+            approx(86.0));
+      CHECK(model.get_element_variable()(dim, other_ghost_node_index) ==
+            approx(86.0));
+      CHECK(model.get_voronoi_variable()(dim, other_ghost_node_index) ==
+            approx(86.0));
+    }
+
+    fill_ghosts_for<test_tags::VarOnElement>(model_view);
+
+    for (auto dim : {0UL, 1UL, 2UL}) {
+      CHECK(model.get_node_variable()(dim, ghost_node_index) == approx(0.0));
+      CHECK(model.get_element_variable()(dim, ghost_node_index) == approx(0.0));
+      CHECK(model.get_voronoi_variable()(dim, ghost_node_index) ==
+            approx(43.0));
+
+      CHECK(model.get_node_variable()(dim, other_ghost_node_index) ==
+            approx(86.0));
+      CHECK(model.get_element_variable()(dim, other_ghost_node_index) ==
+            approx(86.0));
+      CHECK(model.get_voronoi_variable()(dim, other_ghost_node_index) ==
+            approx(86.0));
+    }
+
+    fill_ghosts_for<test_tags::VarOnVoronoi>(model_view);
+
+    for (auto dim : {0UL, 1UL, 2UL}) {
+      CHECK(model.get_node_variable()(dim, ghost_node_index) == approx(0.0));
+      CHECK(model.get_element_variable()(dim, ghost_node_index) == approx(0.0));
+      CHECK(model.get_voronoi_variable()(dim, ghost_node_index) == approx(0.0));
+
+      CHECK(model.get_node_variable()(dim, other_ghost_node_index) ==
+            approx(86.0));
+      CHECK(model.get_element_variable()(dim, other_ghost_node_index) ==
+            approx(86.0));
+      CHECK(model.get_voronoi_variable()(dim, other_ghost_node_index) ==
+            approx(86.0));
+    }
+
+    for (auto dim : {0UL, 1UL, 2UL}) {
+      model.get_node_variable()(dim, ghost_node_index) = 43.0;
+      model.get_element_variable()(dim, ghost_node_index) = 43.0;
+      model.get_voronoi_variable()(dim, ghost_node_index) = 43.0;
+    }
+
+    fill_ghosts(model_view);
+
+    for (auto dim : {0UL, 1UL, 2UL}) {
+      CHECK(model.get_node_variable()(dim, ghost_node_index) == approx(0.0));
+      CHECK(model.get_element_variable()(dim, ghost_node_index) == approx(0.0));
+      CHECK(model.get_voronoi_variable()(dim, ghost_node_index) == approx(0.0));
+
+      CHECK(model.get_node_variable()(dim, other_ghost_node_index) ==
+            approx(86.0));
+      CHECK(model.get_element_variable()(dim, other_ghost_node_index) ==
+            approx(86.0));
+      CHECK(model.get_voronoi_variable()(dim, other_ghost_node_index) ==
+            approx(86.0));
+    }
+
+    fill_ghosts(model);
+
+    for (auto dim : {0UL, 1UL, 2UL}) {
+      CHECK(model.get_node_variable()(dim, ghost_node_index) == approx(0.0));
+      CHECK(model.get_element_variable()(dim, ghost_node_index) == approx(0.0));
+      CHECK(model.get_voronoi_variable()(dim, ghost_node_index) == approx(0.0));
+
+      CHECK(model.get_node_variable()(dim, other_ghost_node_index) ==
+            approx(0.0));
+      CHECK(model.get_element_variable()(dim, other_ghost_node_index) ==
+            approx(0.0));
+      CHECK(model.get_voronoi_variable()(dim, other_ghost_node_index) ==
+            approx(0.0));
+    }
   }
 
 }  // namespace

@@ -115,14 +115,6 @@ namespace blocks {
         // note : here it is not templated on the slice of the plugin but rather
         // the plugin itself
         ::elastica::cosserat_rod::CosseratInitializer<Plugin, Initializers...>;
-    //! Tag to place on nodes
-    using OnNode = typename Traits::Place::OnNode;
-    //! Tag to place on elements
-    using OnElement = typename Traits::Place::OnElement;
-    //! Tag to place on voronois
-    using OnVoronoi = typename Traits::Place::OnVoronoi;
-    //! Tag to place on the whole rod rather than at discrete points
-    using OnRod = typename Traits::Place::OnRod;
     //! Type of index
     using index_type = typename Traits::index_type;
     // Same as typename Traits::DataType::Index::type::ElementType;
@@ -133,6 +125,18 @@ namespace blocks {
     using TotalElementCount = size_type;
     //! Type of ghost node indices
     using GhostNodeIndices = std::vector<index_type>;
+    //**************************************************************************
+
+   public:
+    //**************************************************************************
+    //! Tag to place on nodes
+    using typename Plugin::OnNode;
+    //! Tag to place on elements
+    using typename Plugin::OnElement;
+    //! Tag to place on voronois
+    using typename Plugin::OnVoronoi;
+    //! Tag to place on the whole rod rather than at discrete points
+    using typename Plugin::OnRod;
     //**************************************************************************
 
    private:
@@ -151,10 +155,8 @@ namespace blocks {
     using Plugin::total_n_nodes;
     using Plugin::total_n_voronois;
     // for n_units() free function
-    using Parent::n_units;
-
-   protected:
     using Parent::n_ghosts;
+    using Parent::n_units;
     //**************************************************************************
 
     /* Not really needed?
@@ -176,7 +178,7 @@ namespace blocks {
     //@{
     /*!\brief Helper to get the list of variables based on the stagger type
      */
-   private:
+   public:  // FIXME : Does not work since get_variables instantiates it
     static constexpr inline auto GetVariablesHelper(OnRod) noexcept ->
         typename This::VariablesOnRod;
     static constexpr inline auto GetVariablesHelper(OnNode) noexcept ->
@@ -188,7 +190,7 @@ namespace blocks {
     //@}
     //**************************************************************************
 
-   protected:
+   public:
     //**Type definitions********************************************************
     //! Template type for getting the list of variables based on
     //! the stagger type
@@ -509,95 +511,7 @@ namespace blocks {
     //@}
     //**************************************************************************
 
-   public:  // TODO : Make it protected
-    //**Ghosting functions******************************************************
-    /*!\name Ghosting functions */
-    //@{
-
-    //**************************************************************************
-    /*!\brief Fills ghosts for a variable of tag `Tag` in the current Block
-     */
-    template <typename Tag,
-              typename Variable =
-                  typename Parent::VariableMap::template variable_from<Tag>>
-    void fill_ghosts_for(const size_type deficit = This::n_ghosts(
-                             typename Variable::Stagger{})) noexcept {
-      auto& var = blocks::get<Variable>(*this);
-      const auto ghost_value = Variable::ghost_value();
-
-      // TODO : cleanup, don't repeat code
-      for (size_type ghost_node_idx : ghost_node_indices_) {
-        const auto ghost_stop_idx = ghost_node_idx;
-        ELASTICA_ASSERT(ghost_stop_idx > deficit, "Ghost invariant violated!");
-        const auto ghost_start_idx = ghost_stop_idx - deficit;
-
-        for (size_type ghost_idx = ghost_stop_idx; ghost_idx > ghost_start_idx;
-             --ghost_idx) {
-          Variable::slice(var, ghost_idx) = ghost_value;
-        }
-        // rewrite the loop above using positive indices
-        // for (auto ghost_idx = ghost_start_idx + 1;
-        //      ghost_idx <= ghost_stop_idx; ++ghost_idx) {
-        //   Variable::slice(var, ghost_idx) = ghost_value;
-        // }
-      }
-    }
-    //**************************************************************************
-
-    //**************************************************************************
-    /*!\brief Fills ghosts on variables placed `OnStaggerType`
-     *
-     * \param deficit The number of ghosts to be filled, from the ghost node
-     * index location. Defaulted, should not be overriden, unless for testing
-     * purposes
-     *
-     * \tparam OnStaggerType The staggering/placement type
-     */
-    template <typename OnStaggerType>
-    void fill_ghosts_placed(
-        const size_type deficit = This::n_ghosts(OnStaggerType{})) {
-      using VariablesPlacedOnStaggeredType =
-          get_variables_placed<OnStaggerType>;
-
-      tmpl::for_each<VariablesPlacedOnStaggeredType>([this, deficit](auto v) {
-        using Variable = tmpl::type_from<decltype(v)>;
-        auto& var = blocks::get<Variable>(*this);
-        const auto ghost_value = Variable::ghost_value();
-
-        // Here we initialize ALL ghosts, whether or not the elements are
-        // preserved before and after reordering
-        // TODO : Policy class
-        for (size_type ghost_node_idx : ghost_node_indices_) {
-          const auto ghost_stop_idx = ghost_node_idx;
-          ELASTICA_ASSERT(ghost_stop_idx > deficit,
-                          "Ghost invariant violated!");
-          const auto ghost_start_idx = ghost_stop_idx - deficit;
-
-          for (size_type ghost_idx = ghost_stop_idx;
-               ghost_idx > ghost_start_idx; --ghost_idx) {
-            Variable::slice(var, ghost_idx) = ghost_value;
-          }
-          // rewrite the loop above using positive indices
-          // for (auto ghost_idx = ghost_start_idx + 1;
-          //      ghost_idx <= ghost_stop_idx; ++ghost_idx) {
-          //   Variable::slice(var, ghost_idx) = ghost_value;
-          // }
-        }
-      });
-    }
-
-    //**************************************************************************
-    /*!\brief Fills ghosts for all variables in the current Block
-     */
-    void fill_ghosts() {
-      // fill ghosts for members not on rod, others don't need it
-      fill_ghosts_placed<OnNode>();
-      fill_ghosts_placed<OnElement>();
-      fill_ghosts_placed<OnVoronoi>();
-    }
-    //**************************************************************************
-
-   protected:
+   public:
     //**************************************************************************
     /*!\brief Gets the ghost nodes buffer
      *
@@ -625,7 +539,8 @@ namespace blocks {
     //@}
     //**************************************************************************
 
-    //**Element buffer function************************************************
+   protected:
+    //**Element buffer function*************************************************
     /*!\brief Initialize the element buffer at a given location
      *
      * \param n_elems Number of elements in the new rod
@@ -682,7 +597,7 @@ namespace blocks {
                       "Invariant violation, contact the developers");
 
       // 4. fill ghosts
-      fill_ghosts();
+      fill_ghosts(*this);
 
       // after this step, we should have enough capacity for the n'th rod
 
@@ -723,6 +638,219 @@ namespace blocks {
     //**************************************************************************
   };
   /*! \endcond */
+  //****************************************************************************
+
+  //**Ghosting functions********************************************************
+  /*!\name Ghosting functions
+   * \ingroup cosserat_rod */
+  //@{
+
+  //****************************************************************************
+  /*!\brief Fills ghosts for a `Variable` in the current Block over a
+   * certain region
+   *
+   * \tparam Variable
+   * \param block_like Block to fill ghosts
+   * \param region_start Start of region
+   * \param region_size Size of region
+   * \param deficit The number of ghosts to be filled, from the ghost node
+   * index location.
+   */
+  template <typename Variable,
+            typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void fill_ghosts_for(Block<elastica::cosserat_rod::CosseratRodPlugin<
+                           CRT, Block, Components...>>& block_like,
+                       std::size_t region_start, std::size_t region_size,
+                       std::size_t deficit) noexcept {
+    // kernel
+    auto& var = blocks::get<Variable>(block_like);
+    const auto ghost_value = Variable::ghost_value();
+
+    using signedt = std::make_signed_t<decltype(region_start)>;
+    auto const it =
+        std::cbegin(block_like.get_ghost_node_buffer()) + signedt(region_start);
+    std::for_each(it, it + signedt(region_size),
+                  [&](std::size_t const ghost_node_idx) {
+                    const auto ghost_stop_idx = ghost_node_idx;
+                    ELASTICA_ASSERT(ghost_stop_idx > deficit,
+                                    "Ghost invariant violated!");
+                    const auto ghost_start_idx = ghost_stop_idx - deficit;
+
+                    for (auto ghost_idx = ghost_stop_idx;
+                         ghost_idx > ghost_start_idx; --ghost_idx) {
+                      Variable::slice(var, ghost_idx) = ghost_value;
+                    }
+                    // rewrite the loop above using positive indices
+                    // for (auto ghost_idx = ghost_start_idx + 1;
+                    //      ghost_idx <= ghost_stop_idx; ++ghost_idx) {
+                    //   Variable::slice(var, ghost_idx) = ghost_value;
+                    // }
+                  });
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Fills ghosts for a variable of tag `Tag` in the current Block
+   *
+   * \tparam Tag Tag of the variable
+   * \param block_like Block to fill ghosts
+   * \param region_start Start of region
+   * \param region_size Size of region
+   */
+  template <typename Tag,
+            typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void fill_ghosts_for(Block<elastica::cosserat_rod::CosseratRodPlugin<
+                           CRT, Block, Components...>>& block_like,
+                       std::size_t region_start,
+                       std::size_t region_size) noexcept {
+    using Variable = typename std::remove_reference_t<
+        decltype(block_like)>::VariableMap::template variable_from<Tag>;
+    const auto deficit = block_like.n_ghosts(typename Variable::Stagger{});
+    fill_ghosts_for<Variable>(block_like, region_start, region_size, deficit);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Fills ghosts for a variable of tag `Tag` in the current Block
+   *
+   * \tparam Tag Tag of the variable
+   * \param block_like Block to fill ghosts
+   */
+  template <typename Tag,
+            typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  inline void fill_ghosts_for(
+      Block<
+          elastica::cosserat_rod::CosseratRodPlugin<CRT, Block, Components...>>&
+          block_like) noexcept {
+    fill_ghosts_for<Tag>(block_like, 0UL,
+                         block_like.get_ghost_node_buffer().size());
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Fills ghosts on variables placed `OnStaggerType`
+   *
+   * \param block_like Block to fill ghosts
+   * \param region_start Start of region
+   * \param region_size Size of region
+   * \param deficit The number of ghosts to be filled, from the ghost node
+   * index location.
+   *
+   * \tparam OnStaggerType The staggering/placement type
+   */
+  template <typename OnStaggerType,
+            typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void fill_ghosts_placed(Block<elastica::cosserat_rod::CosseratRodPlugin<
+                              CRT, Block, Components...>>& block_like,
+                          std::size_t region_start, std::size_t region_size,
+                          const std::size_t deficit) noexcept {
+    using B = std::remove_reference_t<decltype(block_like)>;
+    using VariablesPlacedOnStaggeredType =
+        typename B::template get_variables_placed<OnStaggerType>;
+
+    tmpl::for_each<VariablesPlacedOnStaggeredType>([=, &block_like](auto v) {
+      using Variable = tmpl::type_from<decltype(v)>;
+      fill_ghosts_for<Variable>(block_like, region_start, region_size, deficit);
+    });
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Fills ghosts on variables placed `OnStaggerType`
+   *
+   * \param block_like Block to fill ghosts
+   * \param region_start Start of region
+   * \param region_size Size of region
+   *
+   * \tparam OnStaggerType The staggering/placement type
+   */
+  template <typename OnStaggerType,
+            typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  inline void fill_ghosts_placed(
+      Block<elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, Block, Components...>>& block_like,
+      std::size_t region_start, std::size_t region_size) noexcept {
+    auto const deficit = block_like.n_ghosts(OnStaggerType{});
+    fill_ghosts_placed<OnStaggerType>(block_like, region_start, region_size,
+                                      deficit);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Fills ghosts on variables placed `OnStaggerType`
+   *
+   * \param block_like Block to fill ghosts
+   *
+   * \tparam OnStaggerType The staggering/placement type
+   */
+  template <typename OnStaggerType,
+            typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  inline void fill_ghosts_placed(
+      Block<
+          elastica::cosserat_rod::CosseratRodPlugin<CRT, Block, Components...>>&
+          block_like) noexcept {
+    auto const gs = block_like.get_ghost_node_buffer().size();
+    fill_ghosts_placed<OnStaggerType>(block_like, 0UL, gs);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Fills ghosts for all variables in the current Block
+   *
+   * \param block_like Block to fill ghosts
+   * \param region_start Start of region
+   * \param region_size Size of region
+   */
+  template <typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void fill_ghosts(Block<elastica::cosserat_rod::CosseratRodPlugin<
+                       CRT, Block, Components...>>& block_like,
+                   std::size_t region_start, std::size_t region_size) noexcept {
+    using B = std::remove_reference_t<decltype(block_like)>;
+
+    // fill ghosts for members not on rod, others don't need it
+    fill_ghosts_placed<typename B::OnNode>(block_like, region_start,
+                                           region_size);
+    fill_ghosts_placed<typename B::OnElement>(block_like, region_start,
+                                              region_size);
+    fill_ghosts_placed<typename B::OnVoronoi>(block_like, region_start,
+                                              region_size);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Fills ghosts for all variables in the current Block
+   *
+   * \param block_like Block to fill ghosts
+   */
+  template <typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void fill_ghosts(Block<elastica::cosserat_rod::CosseratRodPlugin<
+                       CRT, Block, Components...>>& block_like) noexcept {
+    using B = std::remove_reference_t<decltype(block_like)>;
+
+    // fill ghosts for members not on rod, others don't need it
+    fill_ghosts_placed<typename B::OnNode>(block_like);
+    fill_ghosts_placed<typename B::OnElement>(block_like);
+    fill_ghosts_placed<typename B::OnVoronoi>(block_like);
+  }
+  //****************************************************************************
+
+  //@}
   //****************************************************************************
 
 }  // namespace blocks
