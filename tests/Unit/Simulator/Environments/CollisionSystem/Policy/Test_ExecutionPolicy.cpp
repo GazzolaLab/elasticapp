@@ -1,6 +1,7 @@
 //
 // Created by Tejaswin Parthasarathy on 3/24/22.
 //
+#include <atomic>
 #include <vector>
 
 #include "Framework/TestingFramework.hpp"
@@ -19,9 +20,10 @@ namespace {
     using value_type = int;
 
     struct Accumulator {
+      Accumulator(value_type v) : val{v} {}
       void operator()(value_type in) { val += in; }
       explicit operator value_type() const { return val; }
-      value_type val{0};
+      std::atomic<value_type> val{0};
     };
 
     std::size_t n_values = 50UL;
