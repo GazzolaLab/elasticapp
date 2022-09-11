@@ -522,9 +522,9 @@ namespace elastica {
        * \param func Callable to be applied over system blocks
        */
       template <typename F>
-      inline decltype(auto) for_each_block_untimed(F func) /*const noexcept*/ {
+      inline void for_each_block_untimed(F func) /*const noexcept*/ {
         using Alg = typename Algorithm::ApplyOverSystems;
-        return self().template get_algorithm<Alg>()(std::move(func));
+        self().template get_algorithm<Alg>()(std::move(func));
       }
       //************************************************************************
 
@@ -534,14 +534,12 @@ namespace elastica {
        * \copydetails for_each_block_untimed()
        */
       template <typename F>
-      inline decltype(auto) for_each_block(F func) /*const noexcept*/ {
+      inline void for_each_block(F func) /*const noexcept*/ {
         using Alg = typename Algorithm::ApplyOverSystems;
 
         ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().start(); }
-        F another_func(for_each_block_untimed(std::move(func)));
+        for_each_block_untimed(std::move(func));
         ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().stop(); }
-
-        return another_func;
       }
       //************************************************************************
 
@@ -564,9 +562,9 @@ namespace elastica {
        * \param func Callable to be applied over system blocks
        */
       template <typename BlocksTypeList, typename F>
-      inline decltype(auto) for_each_block_untimed(F func) /*const noexcept*/ {
+      inline void for_each_block_untimed(F func) /*const noexcept*/ {
         using Alg = typename Algorithm::ApplyOverSystems;
-        return self().template get_algorithm<Alg>().template
+        self().template get_algorithm<Alg>().template
         operator()<BlocksTypeList>(std::move(func));
       }
       //************************************************************************
@@ -590,14 +588,12 @@ namespace elastica {
        * \param func Callable to be applied over system blocks
        */
       template <typename BlocksTypeList, typename F>
-      inline decltype(auto) for_each_block(F func) /*const noexcept*/ {
+      inline void for_each_block(F func) /*const noexcept*/ {
         using Alg = typename Algorithm::ApplyOverSystems;
 
         ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().start(); }
-        F another_func(for_each_block_untimed<BlocksTypeList>(std::move(func)));
+        for_each_block_untimed<BlocksTypeList>(std::move(func));
         ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().stop(); }
-
-        return another_func;
       }
       //************************************************************************
 
@@ -612,10 +608,9 @@ namespace elastica {
        * \param func Callable to be applied over systems
        */
       template <typename F>
-      inline decltype(auto) for_each_system_untimed(F func) /*const noexcept*/ {
-        (void)for_each_block_untimed(
-            ::blocks::for_each_slice_adapter(std::ref(func)));
-        return func;
+      inline void for_each_system_untimed(F func) /*const noexcept*/ {
+        for_each_block_untimed(
+            ::blocks::for_each_slice_adapter(std::move(func)));
       }
       //************************************************************************
 
@@ -624,9 +619,8 @@ namespace elastica {
        * \copydetails for_each_system_untimed()
        */
       template <typename F>
-      inline decltype(auto) for_each_system(F func) /*const noexcept*/ {
-        (void)for_each_block(::blocks::for_each_slice_adapter(std::ref(func)));
-        return func;
+      inline void for_each_system(F func) /*const noexcept*/ {
+        for_each_block(::blocks::for_each_slice_adapter(std::move(func)));
       }
       //************************************************************************
 
@@ -643,10 +637,9 @@ namespace elastica {
        * `SystemsBlock`
        */
       template <typename PluginsTypeList, typename F>
-      inline decltype(auto) for_each_system_untimed(F func) /*const noexcept*/ {
-        (void)for_each_block_untimed<as_blocks<PluginsTypeList>>(
-            ::blocks::for_each_slice_adapter(std::ref(func)));
-        return func;
+      inline void for_each_system_untimed(F func) /*const noexcept*/ {
+        for_each_block_untimed<as_blocks<PluginsTypeList>>(
+            ::blocks::for_each_slice_adapter(std::move(func)));
       }
       //************************************************************************
 
@@ -664,10 +657,9 @@ namespace elastica {
        * `SystemsBlock`
        */
       template <typename PluginsTypeList, typename F>
-      inline decltype(auto) for_each_system(F func) /*const noexcept*/ {
-        (void)for_each_block<as_blocks<PluginsTypeList>>(
-            ::blocks::for_each_slice_adapter(std::ref(func)));
-        return func;
+      inline void for_each_system(F func) /*const noexcept*/ {
+        for_each_block<as_blocks<PluginsTypeList>>(
+            ::blocks::for_each_slice_adapter(std::move(func)));
       }
       //************************************************************************
 
@@ -683,10 +675,11 @@ namespace elastica {
        * \param func Callable to be applied over system blocks
        */
       template <typename F>
-      inline decltype(auto) for_each_block_sequential_untimed(
-          F func) /*const noexcept*/ {
+      inline void for_each_block_sequential_untimed(F func) /*const noexcept*/ {
         using Alg = typename Algorithm::ApplyOverSystemsSeq;
-        return self().template get_algorithm<Alg>()(std::move(func));
+        // As we constrain our execution model to be  purely sequential , we
+        // allow for non-const lambda execution via references.
+        self().template get_algorithm<Alg>()(std::ref(func));
       }
       //************************************************************************
 
@@ -697,15 +690,12 @@ namespace elastica {
        * \copydetails for_each_block_untimed()
        */
       template <typename F>
-      inline decltype(auto) for_each_block_sequential(
-          F func) /*const noexcept*/ {
+      inline void for_each_block_sequential(F func) /*const noexcept*/ {
         using Alg = typename Algorithm::ApplyOverSystemsSeq;
 
         ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().start(); }
-        F another_func(for_each_block_untimed(std::move(func)));
+        for_each_block_sequential_untimed(std::move(func));
         ELASTICA_PROFILING_SECTION { self().template get_timer<Alg>().stop(); }
-
-        return another_func;
       }
       //************************************************************************
 
@@ -719,11 +709,12 @@ namespace elastica {
        * \param func Callable to be applied over systems
        */
       template <typename F>
-      inline decltype(auto) for_each_system_sequential_untimed(
+      inline void for_each_system_sequential_untimed(
           F func) /*const noexcept*/ {
-        (void)for_each_block_sequential_untimed(
+        // For_each adapter copies the func inside in an unmutable context
+        // To allow for mutable functions, add a ref() here.
+        for_each_block_sequential_untimed(
             ::blocks::for_each_slice_adapter(std::ref(func)));
-        return func;
       }
       //************************************************************************
 
@@ -732,11 +723,11 @@ namespace elastica {
        * enabled \copydetails for_each_system_untimed()
        */
       template <typename F>
-      inline decltype(auto) for_each_system_sequential(
-          F func) /*const noexcept*/ {
-        (void)for_each_block_sequential(
+      inline void for_each_system_sequential(F func) /*const noexcept*/ {
+        // For_each adapter copies the func inside in an unmutable context
+        // To allow for mutable functions, add a ref() here.
+        for_each_block_sequential(
             ::blocks::for_each_slice_adapter(std::ref(func)));
-        return func;
       }
       //************************************************************************
 
