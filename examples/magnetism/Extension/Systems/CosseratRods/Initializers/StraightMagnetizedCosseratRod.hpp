@@ -1,6 +1,3 @@
-//
-// Created by Tejaswin Parthasarathy on 5/3/22.
-//
 #pragma once
 
 #include <elastica/Systems/CosseratRods/Initializers/StraightCosseratRod.hpp>
@@ -16,14 +13,14 @@ namespace elastica {
         : public ComposeInitializers<
               Initializers::CosseratRod,                                     //
               Initializers::Geometry::StraightRod,                           //
-              Initializers::Elasticity::LinearHyperElasticModelWithDamping,  //
+              Initializers::Elasticity::LinearHyperElasticModel,  //
               Initializers::Kinematics::DefaultRodKinematics,
               MagnetismInitializers::UniformMagnetizedRod> {
      public:
       using P = ComposeInitializers<
           Initializers::CosseratRod,                                     //
           Initializers::Geometry::StraightRod,                           //
-          Initializers::Elasticity::LinearHyperElasticModelWithDamping,  //
+          Initializers::Elasticity::LinearHyperElasticModel,  //
           Initializers::Kinematics::DefaultRodKinematics,
           MagnetismInitializers::UniformMagnetizedRod>;
       using P::P;
@@ -36,14 +33,14 @@ namespace elastica {
         : public ComposeInitializers<
               Initializers::CosseratRod,                                     //
               Initializers::Geometry::StraightRod,                           //
-              Initializers::Elasticity::LinearHyperElasticModelWithDamping,  //
+              Initializers::Elasticity::LinearHyperElasticModel,  //
               Initializers::Kinematics::DefaultRodKinematics,
               MagnetismInitializers::NonUniformMagnetizedRod> {
      public:
       using P = ComposeInitializers<
           Initializers::CosseratRod,                                     //
           Initializers::Geometry::StraightRod,                           //
-          Initializers::Elasticity::LinearHyperElasticModelWithDamping,  //
+          Initializers::Elasticity::LinearHyperElasticModel,  //
           Initializers::Kinematics::DefaultRodKinematics,
           MagnetismInitializers::NonUniformMagnetizedRod>;
       using P::P;
