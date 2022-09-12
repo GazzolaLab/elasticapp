@@ -29,16 +29,23 @@
 #include "FieldProfiles/OscillatoryMagneticField.hpp"  //customization
 #include "FieldProfiles/RampedAdapter.hpp"             // customization
 
-// global is fine since its a cpp file
+// global alias
 using String = const char* const;
-namespace ec = elastica::configuration;
-using MagnetizedCosseratRod = ::elastica::cosserat_rod::MagnetizedCosseratRod;
+using MagnetizedCosseratRod = ::elastica::cosserat_rod::MagnetizedCosseratRodWithoutDamping;
+using CosseratRod = ::elastica::cosserat_rod::CosseratRodWithoutDamping;
+using MagneticRodInitializer = ::elastica::cosserat_rod::StraightUniformMagnetizedCosseratRodInitializer;
+using RodInitializer = ::elastica::cosserat_rod::StraightCosseratRodWithoutDampingInitializer;
+using Vec3 = ::elastica::Vec3;
+using Rot3 = ::elastica::Rot3;
+using real_t = ::elastica::real_t;
+using Traits = ::elastica::cosserat_rod::DefaultCosseratRodTraits;
 
+namespace ec = elastica::configuration;
 struct MagneticMillipedesConfiguration {
   static inline auto make_simulator_configuration() {
     auto system_config =
-        ec::make_systems_configuration<tmpl::list<MagnetizedCosseratRod>>(
-            ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{50UL}),
+        ec::make_systems_configuration<tmpl::list<CosseratRod, MagnetizedCosseratRod>>(
+            ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{256UL}),
             ec::make_iteration_policy(
                 ec::iterate_across_system_types_in(ec::seq),
                 ec::iterate_over_systems_in(ec::seq)));
@@ -73,8 +80,7 @@ struct MagneticMillipedesConfiguration {
 };
 
 struct MagneticMillipedesCaseStudy
-    : public ::elastica::CaseStudyInterface<
-          MagneticMillipedesCaseStudy> {
+    : public ::elastica::CaseStudyInterface<MagneticMillipedesCaseStudy> {
   using Configuration = MagneticMillipedesConfiguration;
   using This = MagneticMillipedesCaseStudy;
 
@@ -105,7 +111,7 @@ Demonstrates an magnetic millipedes simulation.
     using type = std::size_t;
     // documentation
     static constexpr String help = {"Number of elements in the rod"};
-    static type default_value() { return 100UL; }
+    static type default_value() { return 10UL; }
   };
 
   struct radius {
@@ -114,33 +120,15 @@ Demonstrates an magnetic millipedes simulation.
     static type default_value() { return 0.15; }
   };
 
+  struct damping_constant{
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Analytical Damping Constant"};
+    static type default_value() { return 1.5; }
+  };
+
   struct length {
     using type = ::elastica::real_t;
     static constexpr String help = {"Length of the rod"};
-    static type default_value() { return 6.0; }
-  };
-
-  struct youngs_modulus {
-    using type = ::elastica::real_t;
-    static constexpr String help = {"Youngs modulus of the rod"};
-    static type default_value() { return 5e6; }
-  };
-
-  struct shear_modulus {
-    using type = ::elastica::real_t;
-    static constexpr String help = {"Shear modulus of the rod"};
-    static type default_value() { return (5e6 / 1.5); }
-  };
-
-  struct damping_rate {
-    using type = ::elastica::real_t;
-    static constexpr String help = {"Internal damping rate of the rod"};
-    static type default_value() { return 1.0; }
-  };
-
-  struct magnetization_density {
-    using type = ::elastica::real_t;
-    static constexpr String help = {"Magnetization density of the rod"};
     static type default_value() { return 6.0; }
   };
 
@@ -216,8 +204,8 @@ Demonstrates an magnetic millipedes simulation.
 
   using Parameters = tmpl::list<
       n_rods_along_x, n_rods_along_y, n_elements, length, radius,
-      youngs_modulus, shear_modulus, damping_rate, magnetization_density,
-      carpet_spacing, carpet_magnetization_spatial_wavelength_along_x,
+      damping_constant, carpet_spacing,
+      carpet_magnetization_spatial_wavelength_along_x,
       carpet_magnetization_spatial_wavelength_along_y,
       carpet_magnetization_spatial_phase_difference,
       magnetic_field_in_plane_amplitude, magnetic_field_out_of_plane_amplitude,
@@ -227,38 +215,41 @@ Demonstrates an magnetic millipedes simulation.
   void setup(InputTypes<This> const& input_parameters);
   void step();
   void run();
+
+  /* Features */
+  void add_analytical_damper(InputTypes<This> const&, const real_t&);
   ::elastica::real_t final_time;
 
   decltype(Configuration::make_time_stepper()) time_stepper =
       Configuration::make_time_stepper();
   decltype(Configuration::make_simulator()) simulator =
       Configuration::make_simulator();
-  using RodRef = decltype(simulator->get_invalid_ref<MagnetizedCosseratRod>());
-  using RodRefs = std::vector<RodRef>;
-  RodRefs rod_refs;
+  using CRRef = decltype(simulator->get_invalid_ref<CosseratRod>());
+  using MCRRef = decltype(simulator->get_invalid_ref<MagnetizedCosseratRod>());
+  std::vector<CRRef> backbone_rod_list, backbone_rod_second_layer_list;
+  std::vector<MCRRef> magnetic_rod_list;
 
-  inline auto communicate_from(RodRef& ref) {
+  inline auto communicate_from(CRRef& ref) {
     auto rod = ref.get();
     return std::make_tuple(::elastica::position(rod),
                            ::elastica::velocity(rod));
   }
   inline auto communicate() {
     // we dont have CTAD :(
-    using CT = decltype(communicate_from(std::declval<RodRef&>()));
-    using RT = std::vector<CT>;
-    RT return_list;
-    return_list.reserve(rod_refs.size());
-    std::transform(std::begin(rod_refs), std::end(rod_refs),
-                   std::back_inserter(return_list), [this](RodRef& rod_ref) {
-                     return this->communicate_from(rod_ref);
-                   });
-    // return also the interpenetration here
-    return return_list;
+//    using CT = decltype(communicate_from(std::declval<CRRef&>()));
+//    using RT = std::vector<CT>;
+//    RT return_list;
+//    return_list.reserve(rod_refs.size());
+//    std::transform(std::begin(rod_refs), std::end(rod_refs),
+//                   std::back_inserter(return_list), [this](CRRef& rod_ref) {
+//                     return this->communicate_from(rod_ref);
+//                   });
+//    // return also the interpenetration here
+//    return return_list;
   }
 
   MagneticMillipedesCaseStudy() = default;
-  MagneticMillipedesCaseStudy(
-      MagneticMillipedesCaseStudy&&) noexcept = default;
+  MagneticMillipedesCaseStudy(MagneticMillipedesCaseStudy&&) noexcept = default;
 };
 
 ELASTICA_REGISTER_CASE_STUDY(MagneticMillipedesCaseStudy);
