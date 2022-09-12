@@ -9,6 +9,7 @@ target_link_libraries(MagneticMillipedesCaseStudy
         Materials
         ElasticaFlags
         MagnetismExtension
+        CustomConnection.cpp
         )
 # elastica
 target_include_directories(MagneticMillipedesCaseStudy PRIVATE ${CMAKE_SOURCE_DIR})
