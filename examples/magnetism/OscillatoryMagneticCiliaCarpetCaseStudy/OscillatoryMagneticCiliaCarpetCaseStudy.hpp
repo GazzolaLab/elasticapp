@@ -72,11 +72,10 @@ struct OscillatoryMagneticCiliaCarpetConfiguration {
   }
 };
 
-struct OscillatoryMagneticCiliaCarpetCaseStudy
-    : public ::elastica::CaseStudyInterface<
-          OscillatoryMagneticCiliaCarpetCaseStudy> {
+struct MagneticMillipedesCaseStudy
+    : public ::elastica::CaseStudyInterface<MagneticMillipedesCaseStudy> {
   using Configuration = OscillatoryMagneticCiliaCarpetConfiguration;
-  using This = OscillatoryMagneticCiliaCarpetCaseStudy;
+  using This = MagneticMillipedesCaseStudy;
 
   static constexpr String help = {R"help(
 Oscillatory magnetic cilia carpet study
@@ -278,9 +277,8 @@ magnetic rods.
     return return_list;
   }
 
-  OscillatoryMagneticCiliaCarpetCaseStudy() = default;
-  OscillatoryMagneticCiliaCarpetCaseStudy(
-      OscillatoryMagneticCiliaCarpetCaseStudy&&) noexcept = default;
+  MagneticMillipedesCaseStudy() = default;
+  MagneticMillipedesCaseStudy(MagneticMillipedesCaseStudy&&) noexcept = default;
 };
 
 ELASTICA_REGISTER_CASE_STUDY(OscillatoryMagneticCiliaCarpetCaseStudy);
