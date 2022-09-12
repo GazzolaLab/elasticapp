@@ -21,9 +21,7 @@
 #include <elastica/Simulator/Simulator.hpp>
 #include <elastica/Systems/CosseratRods.hpp>
 #include <elastica/Systems/CosseratRods/Utility.hpp>
-#include <elastica/Utilities/DefineTypes.h>
 #include <elastica/Utilities/Get.hpp>
-#include <elastica/Utilities/Math.hpp>
 #include <elastica/Utilities/Size.hpp>
 #include <elastica/Utilities/TMPL.hpp>
 
@@ -258,7 +256,6 @@ void MagneticMillipedesCaseStudy::setup(
     backbone_rod_second_layer_list.push_back(back_bone_rod);
   }
 
-  /* TODO: Orthogonal connection #316 */
   /* Connection: magnetic arm to backbones */
   // Orthogonal Connection
   MagneticMillipedesCaseStudy::orthogonal_connection(backbone_rod_list,
@@ -325,11 +322,11 @@ void MagneticMillipedesCaseStudy::setup(
   // ************************************************** //
   /* Collision */
   // set near-list update time
-  auto& collision_solver =
-      simulator
-          ->get_environment<elastica::environments::tags::CollisionSystem>();
-  collision_solver->time_interval_between_detection() =
-      1000.0 * dt;
+//  auto& collision_solver =
+//      simulator
+//          ->get_environment<elastica::environments::tags::CollisionSystem>();
+//  collision_solver->time_interval_between_detection() =
+//      1000.0 * dt;
 
   // ************************************************** //
   /* Gravity */
@@ -347,6 +344,10 @@ void MagneticMillipedesCaseStudy::setup(
 
   // Set the dt value
   set_dt(dt);
+
+  std::size_t block_count(0UL);
+  simulator->for_each_block([&block_count](auto& block) { block_count++; });
+  std::cout << "Block Count: " << block_count << '\n';
 }
 
 template <typename RodTypeOne, typename RodTypeTwo>
@@ -372,15 +373,16 @@ void MagneticMillipedesCaseStudy::orthogonal_connection(
           Traits::Operations::average_kernel(magnetic_rod.get_position()),
           magnetic_rod_connection_index);
 
-      auto distance_btw_rods = Traits::Operations::batch_norm(
+      blaze::DynamicVector<real_t> distance_btw_rods = Traits::Operations::batch_norm(
           back_bone_rod_element_position -
           blaze::expand(magnetic_rod_tip_element_position,
                         back_bone_rod_element_position.columns()));
       blaze::DynamicVector<real_t> magnetic_rod_rest_length =
           ::elastica::get<::elastica::tags::ReferenceElementLength>(
               magnetic_rod);
-      distance_btw_rods -= *(magnetic_rod_rest_length.end() - 1) / 2 +
-                           back_bone_rod.get_element_dimension(0UL);
+      distance_btw_rods -=
+          magnetic_rod_rest_length[magnetic_rod.size() - 1] / 2 +
+          back_bone_rod.get_element_dimension(0UL);
 
       // In this case rods are far from each other so no need for connection.
       if (blaze::min(distance_btw_rods) > 1e-8) continue;
@@ -493,18 +495,18 @@ void MagneticMillipedesCaseStudy::group_parallel_connection(std::vector<RodType>
     if (blaze::max(offset_btw_rods) > 1e-8)
       continue;
 
-    for (std::size_t k(0UL); k < n_elem; ++k) {
+    for (std::size_t e(0UL); e < n_elem; ++e) {
         auto connection_generator =
             ParallelConnection::parallel_connection_generator(
                 k,
                 nu,
                 k_repulsive,
-                blaze::column(rod_one_direction_vec_in_material_frame, k),
-                blaze::column(rod_two_direction_vec_in_material_frame, k),
-                offset_btw_rods[k]
+                blaze::column(rod_one_direction_vec_in_material_frame, e),
+                blaze::column(rod_two_direction_vec_in_material_frame, e),
+                offset_btw_rods[e]
             );
-        simulator->connect(rod_list[rod_one_idx], at(k))
-            .to(rod_list[rod_two_idx], at(k))
+        simulator->connect(rod_list[rod_one_idx], at(e))
+            .to(rod_list[rod_two_idx], at(e))
             .with(connection_generator());
     }
   }
@@ -548,7 +550,7 @@ void MagneticMillipedesCaseStudy::add_analytical_damper(
   namespace eco = ::elastica::constraints;
   auto analytical_linear_damper = eco::make_constraint(
       eco::make_value_constraint(
-          [](auto /*time*/, auto& rod_system, std::size_t index) {}),
+          [](auto /*time*/, auto& /*rod_system*/, std::size_t /*index*/) {}),
       eco::make_rate_constraint(
           [translational_mode_damping_coeff, rotational_mode_damping_coeff](
               auto /*time*/, auto& rod_system, std::size_t index) {
