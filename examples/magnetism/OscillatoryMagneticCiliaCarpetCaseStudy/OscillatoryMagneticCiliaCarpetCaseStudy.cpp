@@ -19,7 +19,7 @@
 #include <elastica/Simulator/Materials.hpp>
 #include <elastica/Utilities/Get.hpp>
 
-void MagneticMillipedesCaseStudy::setup(
+void OscillatoryMagneticCiliaCarpetCaseStudy::setup(
     InputTypes<This> const& input_parameters) {
   elastica::MaterialID my_material = elastica::create_material(
       // material density
@@ -168,12 +168,12 @@ void MagneticMillipedesCaseStudy::setup(
   set_dt(::elastica::get<dt>(input_parameters));
 }
 
-void MagneticMillipedesCaseStudy::step() {
+void OscillatoryMagneticCiliaCarpetCaseStudy::step() {
   simulator->step(time_stepper, get_current_time(), get_dt(),
                   get_current_iteration());
 }
 
-void MagneticMillipedesCaseStudy::run() {
+void OscillatoryMagneticCiliaCarpetCaseStudy::run() {
   /* After a call to this function, the code will terminate with a floating
    point exception on overflow, divide-by-zero, and invalid operations.
    NOTE : This won't get called if used from the python side!
