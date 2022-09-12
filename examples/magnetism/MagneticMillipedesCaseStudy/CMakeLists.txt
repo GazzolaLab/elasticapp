@@ -1,5 +1,5 @@
 add_library(MagneticMillipedesCaseStudy STATIC MagneticMillipedesCaseStudy.cpp)
-target_sources(MagneticMillipedesCaseStudy INTERFACE MagneticMillipedesCaseStudy.hpp)
+target_sources(MagneticMillipedesCaseStudy INTERFACE MagneticMillipedesCaseStudy.hpp CustomConnection.cpp)
 
 target_link_libraries(MagneticMillipedesCaseStudy
         PRIVATE
@@ -9,7 +9,6 @@ target_link_libraries(MagneticMillipedesCaseStudy
         Materials
         ElasticaFlags
         MagnetismExtension
-        CustomConnection.cpp
         )
 # elastica
 target_include_directories(MagneticMillipedesCaseStudy PRIVATE ${CMAKE_SOURCE_DIR})

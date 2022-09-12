@@ -14,15 +14,19 @@
 
 #pragma once
 
+#include <algorithm>
+#include <tuple>
+#include <utility>
 #include <vector>
 //
 #include <elastica/CaseStudy.hpp>
 //
-#include <elastica/Simulator/Environments.hpp>
 #include <elastica/Simulator/Connections.hpp>
 #include <elastica/Simulator/Constraints.hpp>
+#include <elastica/Simulator/Environments.hpp>
 #include <elastica/Simulator/Forcing.hpp>
 #include <elastica/Simulator/Simulator.hpp>
+#include <elastica/Systems/CosseratRods.hpp>
 #include <elastica/Utilities/DefineTypes.h>
 #include <elastica/Utilities/Geometry/Angles.hpp>
 #include <elastica/Utilities/TMPL.hpp>
@@ -37,11 +41,13 @@ using String = const char* const;
 using Vec3 = ::elastica::Vec3;
 using Rot3 = ::elastica::Rot3;
 using real_t = ::elastica::real_t;
-using MagnetizedCosseratRod = ::elastica::cosserat_rod::MagnetizedCosseratRodWithoutDamping;
+using MagnetizedCosseratRod =
+    ::elastica::cosserat_rod::MagnetizedCosseratRodWithoutDamping;
 using CosseratRod = ::elastica::cosserat_rod::CosseratRodWithoutDamping;
-using MagneticRodInitializer = ::elastica::cosserat_rod::StraightUniformMagnetizedCosseratRodInitializer;
-using RodInitializer = ::elastica::cosserat_rod::StraightCosseratRodWithoutDampingInitializer;
-using ImposedHalfSpace = ::elastica::collision::ImposedHalfSpacePrimitive;
+using MagneticRodInitializer =
+    ::elastica::cosserat_rod::StraightUniformMagnetizedCosseratRodInitializer;
+using RodInitializer =
+    ::elastica::cosserat_rod::StraightCosseratRodWithoutDampingInitializer;
 
 using ::elastica::interface::at;
 using Traits = ::elastica::cosserat_rod::DefaultCosseratRodTraits;
@@ -49,12 +55,11 @@ using Traits = ::elastica::cosserat_rod::DefaultCosseratRodTraits;
 namespace ec = elastica::configuration;
 struct MagneticMillipedesConfiguration {
   static inline auto make_simulator_configuration() {
-    auto system_config =
-        ec::make_systems_configuration<tmpl::list<CosseratRod, MagnetizedCosseratRod>>(
-            ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{256UL}),
-            ec::make_iteration_policy(
-                ec::iterate_across_system_types_in(ec::seq),
-                ec::iterate_over_systems_in(ec::seq)));
+    auto system_config = ec::make_systems_configuration<
+        tmpl::list<CosseratRod, MagnetizedCosseratRod>>(
+        ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{256UL}),
+        ec::make_iteration_policy(ec::iterate_across_system_types_in(ec::seq),
+                                  ec::iterate_over_systems_in(ec::seq)));
 
     using EnvironmentTags =
         tmpl::list<::elastica::environments::tags::MagneticFieldTag,
@@ -64,10 +69,10 @@ struct MagneticMillipedesConfiguration {
     auto gravity_config =
         ec::make_gravity_configuration(::elastica::Vec3{0., 0., 0.});
 
-    using ImposedPrimitives = tmpl::list<ImposedHalfSpace>;
+    using ImposedPrimitives = tmpl::list<::elastica::collision::ImposedHalfSpacePrimitive>;
     auto collision_config =
-        ec::make_collision_configuration(ec::par,  // between each type
-                                         ec::seq); // across each type
+        ec::make_collision_configuration(ec::par,   // between each type
+                                         ec::seq);  // across each type
 
     auto magnetic_config =
         ec::make_magnetic_field_configuration(::elastica::make_ramped_field(
@@ -76,10 +81,9 @@ struct MagneticMillipedesConfiguration {
             // be modified later on
             ::elastica::make_linear_rampup(0.0, 200.0)));
 
-    auto env_config =
-        ec::make_environments_configuration<EnvironmentTags, ImposedPrimitives>(
-            // process environments in sequence
-            ec::seq, gravity_config, magnetic_config, collision_config);
+    auto env_config = ec::make_environments_configuration<EnvironmentTags, ImposedPrimitives>(
+        // process environments in sequence
+        ec::seq, magnetic_config, gravity_config, collision_config);
 
     return ec::make_simulator_configuration(
         ec::DefaultDomainConfiguration{}, system_config,
@@ -126,7 +130,7 @@ Demonstrates an magnetic millipedes simulation.
     static type default_value() { return 0.15; }
   };
 
-  struct damping_constant{
+  struct damping_constant {
     using type = ::elastica::real_t;
     static constexpr String help = {"Analytical Damping Constant"};
     static type default_value() { return 1.5; }
@@ -182,13 +186,16 @@ Demonstrates an magnetic millipedes simulation.
 
   /* Features */
   template <typename RodType>
-  void add_analytical_damper(std::vector<RodType>&, InputTypes<This> const&, const real_t&);
+  void add_analytical_damper(std::vector<RodType>&, InputTypes<This> const&,
+                             const real_t&);
   template <typename RodType>
   void group_parallel_connection(std::vector<RodType>&);
   template <typename RodTypeOne, typename RodTypeTwo>
-  void crisscross_connection(std::vector<RodTypeOne>&, std::vector<RodTypeTwo>&);
+  void crisscross_connection(std::vector<RodTypeOne>&,
+                             std::vector<RodTypeTwo>&);
   template <typename RodTypeOne, typename RodTypeTwo>
-  void orthogonal_connection(std::vector<RodTypeOne>&, std::vector<RodTypeTwo>&);
+  void orthogonal_connection(std::vector<RodTypeOne>&,
+                             std::vector<RodTypeTwo>&);
   ::elastica::real_t final_time;
 
   // Rods
@@ -202,6 +209,8 @@ Demonstrates an magnetic millipedes simulation.
   std::vector<MCRRef> magnetic_rod_list;
 
   // Plane (Bottom)
+  using ImposedHalfSpace = ::elastica::collision::ImposedPrimitiveAdapter<
+      ::elastica::collision::HalfSpacePrimitive>;
   using ImposedHalfPlaneRef =
       decltype(simulator->get_invalid_ref<ImposedHalfSpace>());
   ImposedHalfPlaneRef imposed_half_space_bottom_ref =
@@ -214,16 +223,17 @@ Demonstrates an magnetic millipedes simulation.
   }
   inline auto communicate() {
     // we dont have CTAD :(
-//    using CT = decltype(communicate_from(std::declval<CRRef&>()));
-//    using RT = std::vector<CT>;
-//    RT return_list;
-//    return_list.reserve(rod_refs.size());
-//    std::transform(std::begin(rod_refs), std::end(rod_refs),
-//                   std::back_inserter(return_list), [this](CRRef& rod_ref) {
-//                     return this->communicate_from(rod_ref);
-//                   });
-//    // return also the interpenetration here
-//    return return_list;
+    //    using CT = decltype(communicate_from(std::declval<CRRef&>()));
+    //    using RT = std::vector<CT>;
+    //    RT return_list;
+    //    return_list.reserve(rod_refs.size());
+    //    std::transform(std::begin(rod_refs), std::end(rod_refs),
+    //                   std::back_inserter(return_list), [this](CRRef& rod_ref)
+    //                   {
+    //                     return this->communicate_from(rod_ref);
+    //                   });
+    //    // return also the interpenetration here
+    //    return return_list;
   }
 
   MagneticMillipedesCaseStudy() = default;
