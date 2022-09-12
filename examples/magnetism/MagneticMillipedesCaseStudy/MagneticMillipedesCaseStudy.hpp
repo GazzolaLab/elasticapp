@@ -18,7 +18,10 @@
 //
 #include <elastica/CaseStudy.hpp>
 //
+#include <elastica/Simulator/Environments.hpp>
+#include <elastica/Simulator/Connections.hpp>
 #include <elastica/Simulator/Constraints.hpp>
+#include <elastica/Simulator/Forcing.hpp>
 #include <elastica/Simulator/Simulator.hpp>
 #include <elastica/Utilities/DefineTypes.h>
 #include <elastica/Utilities/Geometry/Angles.hpp>
@@ -31,13 +34,16 @@
 
 // global alias
 using String = const char* const;
+using Vec3 = ::elastica::Vec3;
+using Rot3 = ::elastica::Rot3;
+using real_t = ::elastica::real_t;
 using MagnetizedCosseratRod = ::elastica::cosserat_rod::MagnetizedCosseratRodWithoutDamping;
 using CosseratRod = ::elastica::cosserat_rod::CosseratRodWithoutDamping;
 using MagneticRodInitializer = ::elastica::cosserat_rod::StraightUniformMagnetizedCosseratRodInitializer;
 using RodInitializer = ::elastica::cosserat_rod::StraightCosseratRodWithoutDampingInitializer;
-using Vec3 = ::elastica::Vec3;
-using Rot3 = ::elastica::Rot3;
-using real_t = ::elastica::real_t;
+using ImposedHalfSpace = ::elastica::collision::ImposedHalfSpacePrimitive;
+
+using ::elastica::interface::at;
 using Traits = ::elastica::cosserat_rod::DefaultCosseratRodTraits;
 
 namespace ec = elastica::configuration;
@@ -51,24 +57,40 @@ struct MagneticMillipedesConfiguration {
                 ec::iterate_over_systems_in(ec::seq)));
 
     using EnvironmentTags =
-        tmpl::list<::elastica::environments::tags::MagneticFieldTag>;
-    auto env_config = ec::make_environments_configuration<EnvironmentTags>(
-        // process environments in sequence
-        ec::seq,
+        tmpl::list<::elastica::environments::tags::MagneticFieldTag,
+                   ::elastica::environments::tags::GravityField,
+                   ::elastica::environments::tags::CollisionSystem>;
+
+    auto gravity_config =
+        ec::make_gravity_configuration(::elastica::Vec3{0., 0., 0.});
+
+    using ImposedPrimitives = tmpl::list<ImposedHalfSpace>;
+    auto collision_config =
+        ec::make_collision_configuration(ec::par,  // between each type
+                                         ec::seq); // across each type
+
+    auto magnetic_config =
         ec::make_magnetic_field_configuration(::elastica::make_ramped_field(
             ::elastica::environments::OscillatoryMagneticField(),
             // I initialize some parameter values here, but these can
             // be modified later on
-            ::elastica::make_linear_rampup(0.0, 200.0))));
+            ::elastica::make_linear_rampup(0.0, 200.0)));
+
+    auto env_config =
+        ec::make_environments_configuration<EnvironmentTags, ImposedPrimitives>(
+            // process environments in sequence
+            ec::seq, gravity_config, magnetic_config, collision_config);
 
     return ec::make_simulator_configuration(
         ec::DefaultDomainConfiguration{}, system_config,
         ec::DefaultParallelConfiguration{},
-        ec::DefaultConstraintsConfiguration{}, env_config);
+        ec::DefaultConstraintsConfiguration{},
+        ec::DefaultConnectionsConfiguration{}, env_config);
   }
 
   static inline auto make_simulator() {
     return elastica::make_simulator<::elastica::modules::Constraints,
+                                    ::elastica::modules::Connections,
                                     ::elastica::modules::Environments>(
         make_simulator_configuration());
   }
@@ -89,22 +111,6 @@ Magnetic millipedes case study
 ------------------------------
 Demonstrates an magnetic millipedes simulation.
 )help"};
-
-  struct n_rods_along_x {
-    // unsigned integer parameter
-    using type = std::size_t;
-    // documentation
-    static constexpr String help = {"Number of rods along X"};
-    static type default_value() { return 8UL; }
-  };
-
-  struct n_rods_along_y {
-    // unsigned integer parameter
-    using type = std::size_t;
-    // documentation
-    static constexpr String help = {"Number of rods along Y"};
-    static type default_value() { return 8UL; }
-  };
 
   struct n_elements {
     // unsigned integer parameter
@@ -132,61 +138,6 @@ Demonstrates an magnetic millipedes simulation.
     static type default_value() { return 6.0; }
   };
 
-  struct carpet_spacing {
-    using type = ::elastica::real_t;
-    static constexpr String help = {"Spacing between cilia in the carpet"};
-    static type default_value() { return 6.0; }
-  };
-
-  struct carpet_magnetization_spatial_wavelength_along_x {
-    using type = ::elastica::real_t;
-    static constexpr String help = {
-        "Wavelength of the spatial magnetization wave of the carpet along X"};
-    static type default_value() { return (8 - 1) * 6.0; }
-  };
-
-  struct carpet_magnetization_spatial_wavelength_along_y {
-    using type = ::elastica::real_t;
-    static constexpr String help = {
-        "Wavelength of the spatial magnetization wave of the carpet along Y"};
-    static type default_value() { return (8 - 1) * 6.0; }
-  };
-
-  struct carpet_magnetization_spatial_phase_difference {
-    using type = ::elastica::real_t;
-    static constexpr String help = {
-        "Phase difference of the spatial magnetization wave of the carpet"};
-    static type default_value() { return 0.0; }
-  };
-
-  struct magnetic_field_in_plane_amplitude {
-    using type = ::elastica::real_t;
-    static constexpr String help = {
-        "Amplitude of the in-plane external oscillating magnetic field"};
-    static type default_value() { return 1.0; }
-  };
-
-  struct magnetic_field_out_of_plane_amplitude {
-    using type = ::elastica::real_t;
-    static constexpr String help = {
-        "Amplitude of the out-of-plane invariant external magnetic field"};
-    static type default_value() { return 0.01; }
-  };
-
-  struct magnetic_field_angular_frequency {
-    using type = ::elastica::real_t;
-    static constexpr String help = {
-        "Angular frequency the external oscillating magnetic field"};
-    static type default_value() { return 1.0; }
-  };
-
-  struct rampup_interval {
-    using type = ::elastica::real_t;
-    static constexpr String help = {
-        "Time interval for which we rampup the mangetic field"};
-    static type default_value() { return type(100.0); }
-  };
-
   struct dt {
     using type = ::elastica::real_t;
     static constexpr String help = {"Time step of simulation"};
@@ -196,20 +147,33 @@ Demonstrates an magnetic millipedes simulation.
     }
   };
 
+  struct contact_stiffness {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Contact stiffness"};
+    static type default_value() { return 1e6; }
+  };
+
+  struct contact_damping_normal {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Contact damping in normal direction"};
+    static type default_value() { return 1e1; }
+  };
+
+  struct contact_damping_tangential {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Contact damping in tangential direction"};
+    static type default_value() { return 1e1; }
+  };
+
   struct final_sim_time {
     using type = ::elastica::real_t;
     static constexpr String help = {"Final simulation time"};
     static type default_value() { return type(200.0); }
   };
 
-  using Parameters = tmpl::list<
-      n_rods_along_x, n_rods_along_y, n_elements, length, radius,
-      damping_constant, carpet_spacing,
-      carpet_magnetization_spatial_wavelength_along_x,
-      carpet_magnetization_spatial_wavelength_along_y,
-      carpet_magnetization_spatial_phase_difference,
-      magnetic_field_in_plane_amplitude, magnetic_field_out_of_plane_amplitude,
-      magnetic_field_angular_frequency, rampup_interval, dt, final_sim_time>;
+  using Parameters = tmpl::list<n_elements, length, radius, damping_constant,
+                                dt, contact_stiffness, contact_damping_normal,
+                                contact_damping_tangential, final_sim_time>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);
@@ -217,9 +181,17 @@ Demonstrates an magnetic millipedes simulation.
   void run();
 
   /* Features */
-  void add_analytical_damper(InputTypes<This> const&, const real_t&);
+  template <typename RodType>
+  void add_analytical_damper(std::vector<RodType>&, InputTypes<This> const&, const real_t&);
+  template <typename RodType>
+  void group_parallel_connection(std::vector<RodType>&);
+  template <typename RodTypeOne, typename RodTypeTwo>
+  void crisscross_connection(std::vector<RodTypeOne>&, std::vector<RodTypeTwo>&);
+  template <typename RodTypeOne, typename RodTypeTwo>
+  void orthogonal_connection(std::vector<RodTypeOne>&, std::vector<RodTypeTwo>&);
   ::elastica::real_t final_time;
 
+  // Rods
   decltype(Configuration::make_time_stepper()) time_stepper =
       Configuration::make_time_stepper();
   decltype(Configuration::make_simulator()) simulator =
@@ -228,6 +200,12 @@ Demonstrates an magnetic millipedes simulation.
   using MCRRef = decltype(simulator->get_invalid_ref<MagnetizedCosseratRod>());
   std::vector<CRRef> backbone_rod_list, backbone_rod_second_layer_list;
   std::vector<MCRRef> magnetic_rod_list;
+
+  // Plane (Bottom)
+  using ImposedHalfPlaneRef =
+      decltype(simulator->get_invalid_ref<ImposedHalfSpace>());
+  ImposedHalfPlaneRef imposed_half_space_bottom_ref =
+      simulator->get_invalid_ref<ImposedHalfSpace>();
 
   inline auto communicate_from(CRRef& ref) {
     auto rod = ref.get();
