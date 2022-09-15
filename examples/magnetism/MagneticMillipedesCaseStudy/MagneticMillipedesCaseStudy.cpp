@@ -345,8 +345,13 @@ void MagneticMillipedesCaseStudy::setup(
   // Set the dt value
   set_dt(dt);
 
-  std::size_t block_count(0UL);
-  simulator->for_each_block([&block_count](auto& block) { block_count++; });
+  // Thread-safe version
+  auto& container = simulator->get_system_collection_container();
+  auto const block_count = cpp17::apply([](auto& ... cont){
+    std::size_t block_count(0UL);
+    EXPAND_PACK_LEFT_TO_RIGHT((block_count += cont.size()));
+    return block_count;
+  }, container);
   std::cout << "Block Count: " << block_count << '\n';
 }
 
