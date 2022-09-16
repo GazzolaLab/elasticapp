@@ -423,25 +423,3 @@ namespace {
 //
 // }  // namespace blocks
 //
-// namespace {
-//
-//   ELASTICA_TEST_CASE("Unit.Systems.BlockFacade.with_access_modifiers",
-//   "[Systems][Unit]") {
-//     using Plugin = BoundFacadePluginClassWithInitialization<blocks::Block>;
-//     using MyBlock = blocks::Block<Plugin>;
-//     MyBlock block;
-//
-//     static_assert(MyBlock::parent_to_be_initialized(),
-//                   "meta failure in BlockFacade");
-//
-//     CHECK(block.get_acceleration() == 5);
-//     CHECK(block.get_velocity() == 2);
-//     CHECK(block.get_position() == 1);
-//
-//     auto const& as_const_block = static_cast<MyBlock const&>(block);
-//     CHECK(as_const_block.get_acceleration() == 5);
-//     CHECK(as_const_block.get_velocity() == 2);
-//     CHECK(as_const_block.get_position() == 1);
-//   }
-//
-// }  // namespace

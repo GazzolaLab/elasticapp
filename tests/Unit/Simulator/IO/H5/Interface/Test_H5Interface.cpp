@@ -64,16 +64,16 @@ namespace {
       // Look whether the file/group has proper indices
       auto& h5file = interface.file();
       using namespace std::literals;
-      for (auto const& str : {"0"s, "1"s, "2"s, "3"s, "4"s}) {
+      for (auto const& str : {0U, 1U, 2U, 3U, 4U}) {
         CAPTURE(str);
-        CHECK(
-            h5file.getGroup(pretty_type::name<::elastica::Time>()).exist(str));
+        CHECK(h5file.getGroup(pretty_type::name<::elastica::Time>())
+                  .exist(interface.format(str)));
       }
 
-      for (auto const& str : {"0"s, "1"s, "2"s, "3"s, "4"s, "5"s}) {
+      for (auto const& str : {0U, 1U, 2U, 3U, 4U, 5U}) {
         CAPTURE(str);
         CHECK(h5file.getGroup(pretty_type::name<::elastica::TimeDelta>())
-                  .exist(str));
+                  .exist(interface.format(str)));
       }
 
       H5Reader reader{h5file};
