@@ -19,6 +19,7 @@
 /// serializatoin
 #include "Simulator/IO/Serialization.hpp"
 #include "Simulator/Interface/MockSimulatorSerialize.hpp"
+#include "Simulator/Interface/Systems/BlockRefs.hpp"
 #include "Simulator/Interface/Systems/Serialize.hpp"
 ///
 // instead of mocking a block with an emplace() method here, I just chose to
@@ -353,6 +354,87 @@ namespace {
     using Config = std::decay_t<decltype(config)>;
     using Sim = ::mock::SystemsSimulator<Config>;
     return Sim(std::move(config));
+  }
+
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Systems.BlockRefs",
+                     "[Unit][Simulator][Interface][Systems]") {
+    // clang-format on
+    using ListOfSystemPlugins = tmpl::list<ECPlugin, ECNamedPlugin>;
+    tmpl::for_each<ListOfSystemPlugins>([&](auto p) {
+      using Plugin = tmpl::type_from<decltype(p)>;
+      using Block = GenerateBlock<Plugin>;
+
+      std::vector<Block> vs;
+      // Make 3 blocks;
+      vs.resize(3);
+
+      for (std::size_t i = 0UL; i < 3UL; ++i) {
+        for (std::size_t j = 0UL; j < (1 + 2 * i); ++j) {
+          vs[i].emplace(
+              ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
+                  blocks::initialize<::elastica::tags::NElement>(
+                      // at least two elements needed
+                      [=]() { return 2UL + i + j; })));
+        }
+      }
+
+      {
+        blocks::BlockRefGenerator<Plugin> ref;
+        CHECK(ref.source() == nullptr);
+        CHECK(&ref.parent() == &ref);
+      }
+
+      {
+        blocks::BlockRefGenerator<Plugin> ref(vs, 1UL);
+        CHECK(ref.source() == &vs);
+        CHECK(&ref.parent() == &ref);
+        CHECK(ref.index() == 1UL);
+        CHECK(&ref.get() == &vs[1UL]);
+      }
+
+      {
+        blocks::BlockRefGenerator<Plugin> aref(vs, 1UL);
+        blocks::BlockRefGenerator<Plugin> bref(vs, 2UL);
+        CHECK(aref.uuid() == aref.uuid());
+        CHECK(aref.uuid() != bref.uuid());
+      }
+
+      {
+        blocks::BlockRefGenerator<Plugin> aref(vs, 0UL);
+        auto aref_sl = blocks::slice(aref, 0);
+        // Refs need not be preserved, only copies do
+        CHECK(aref_sl.parent() == aref);
+        CHECK(aref_sl.uuid() == aref.uuid());
+        CHECK(blocks::get<::elastica::tags::NElement>(aref_sl.get()).at(0) ==
+              2);
+
+        blocks::BlockRefGenerator<Plugin> bref(vs, 2UL);
+        auto bref_sl1 = blocks::slice(bref, 1);
+        auto bref_sl3 = blocks::slice(bref, 3);
+
+        CHECK(bref_sl1.parent() == bref);
+        CHECK(bref_sl3.parent() == bref);
+
+        CHECK(bref_sl1.uuid() == bref_sl3.uuid());
+        CHECK(blocks::get<::elastica::tags::NElement>(bref_sl1.get()).at(0) ==
+              5);
+        CHECK(blocks::get<::elastica::tags::NElement>(bref_sl3.get()).at(0) ==
+              7);
+      }
+
+      {
+        blocks::BlockRefGenerator<Plugin> bref(vs, 2UL);
+        auto bref_sl1 = blocks::slice(bref, 1, 4);  // 1, 2, 3
+        CHECK(bref_sl1.parent() == bref);
+        CHECK(bref_sl1.uuid() == bref.uuid());
+        CHECK(blocks::get<::elastica::tags::NElement>(bref_sl1.get()).at(0) ==
+              5);
+        CHECK(blocks::get<::elastica::tags::NElement>(bref_sl1.get()).at(1) ==
+              6);
+        CHECK(blocks::get<::elastica::tags::NElement>(bref_sl1.get()).at(2) ==
+              7);
+      }
+    });
   }
 
   // clang-format off

@@ -41,6 +41,7 @@
 #include "Systems/Block/Block.hpp"
 #include "Systems/Block/Block/TypeTraits.hpp"
 /// Interface methods
+#include "Simulator/Interface/Systems/BlockRefs.hpp"
 #include "Simulator/Interface/Systems/ExecutionPolicy.hpp"
 // #include "Simulator/Interface/Protocols/Systems.hpp"
 ///
@@ -53,7 +54,6 @@
 #include "ErrorHandling/NestedExceptions.hpp"
 #include "Utilities/AsConst.hpp"
 #include "Utilities/CRTP.hpp"
-#include "Utilities/GSL.hpp"
 #include "Utilities/Logging.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/NonCopyable.hpp"
@@ -239,77 +239,6 @@ namespace elastica {
       //@}
       //************************************************************************
 
-     protected:
-      //************************************************************************
-      /*! \cond ELASTICA_INTERNAL */
-      template <typename Plugin>
-      class LazyBlockSliceGenerator {
-        // TODO : Refactor, getting hairy without testing
-       private:
-        friend This;
-        using B = ::blocks::Block<Plugin>;
-        using SourceCollection =
-            AddSystemCollectionsType<B>;  // can be customized
-
-       protected:
-        LazyBlockSliceGenerator()
-            : src_(nullptr),
-              index_(std::numeric_limits<std::size_t>::max()),
-              slice_index_(std::numeric_limits<std::size_t>::max()) {}
-
-        LazyBlockSliceGenerator(SourceCollection& v, std::size_t index,
-                                std::size_t slice_index)
-            : src_(&v), index_(index), slice_index_(slice_index){};
-
-        using iterator = ::blocks::BlockIterator<Plugin>;
-
-       public:
-        LazyBlockSliceGenerator(LazyBlockSliceGenerator const& other) = default;
-        //
-        LazyBlockSliceGenerator& operator=(
-            LazyBlockSliceGenerator const& other) = default;
-
-        // We move away from iterator semantics here and give a reference
-        // wrapper semantics instead. To form an iterator, we use the function
-        using type = typename iterator::value_type;
-        using reference = typename iterator::reference;
-        using ParentBlock = B;
-        using const_reference = reference const&;
-
-        // generates a slice
-        /* implicit conversion to a blockslice */
-        inline operator type() const /* noexcept*/ { return this->get(); }
-        inline auto get() const /* noexcept*/ -> type {
-          gsl::not_null<SourceCollection*> ptr_to_collection(src_);
-          return *(::blocks::BlockIterator<Plugin>{
-              &((*ptr_to_collection)[index_]), slice_index_});
-        }
-
-       protected:
-        std::size_t cantor_pair(std::size_t a, std::size_t b) const noexcept {
-          return (a + b) * (a + b + 1) / 2 + a;
-        }
-
-       public:
-        // note : I could use std::hash() here and avoid this uuid() function
-        // definition. But I am pretty sure this is an imperfect hash.
-        // https://en.wikipedia.org/wiki/Pairing_function#Inverting_the_Cantor_pairing_function
-        // for now its okay as it does what we want.
-        inline std::size_t uuid() const {
-          gsl::not_null<SourceCollection*> ptr_to_collection(src_);
-          return cantor_pair(
-              reinterpret_cast<uintptr_t>(std::addressof(*ptr_to_collection)),
-              index_);
-        }
-
-       private:
-        SourceCollection* src_;
-        std::size_t index_;
-        std::size_t slice_index_;
-      };
-      /*! \endcond */
-      //************************************************************************
-
      public:
       //************************************************************************
       /*!\brief Get an invalid reference type for given a system type
@@ -320,7 +249,7 @@ namespace elastica {
        */
       template <typename Plugin, Requires<an_admissible<Plugin>{}> = nullptr>
       decltype(auto) get_invalid_ref() const noexcept {
-        using RT = LazyBlockSliceGenerator<Plugin>;
+        using RT = ::blocks::BlockSliceGenerator<Plugin>;
         return RT{};
       }
       //************************************************************************
@@ -462,6 +391,33 @@ namespace elastica {
       }
       //************************************************************************
 
+     protected:
+      //************************************************************************
+      /*!\brief Checks if the system is registered in the simulator
+       *
+       * \param system_slice_ref A ref to system to be checked for registration
+       * \return True if system registered, else false
+       */
+      template <typename InterfaceType>
+      inline auto check_if_registered_impl(
+          InterfaceType const& system_ref) const noexcept -> bool {
+        // two indirections here, to make check pass
+        using Parent = typename InterfaceType::BlockType;
+
+        const auto begin_ = get_system_collection_container<Parent>().cbegin();
+        const auto end_ = get_system_collection_container<Parent>().cend();
+
+        return std::find_if(
+                   begin_, end_,
+                   [&parent = cpp17::as_const(system_ref.get().parent())](
+                       Parent const& parent_in_collection) {
+                     // compare references themselves
+                     return &parent == &parent_in_collection;
+                   }) != end_;
+      }
+      //************************************************************************
+
+     public:
       //************************************************************************
       /*!\brief Checks if the system is registered in the simulator
        *
@@ -470,22 +426,23 @@ namespace elastica {
        */
       template <typename SystemPlugin>
       inline auto check_if_registered(
-          LazyBlockSliceGenerator<SystemPlugin> const& system_slice_ref)
+          ::blocks::BlockSliceGenerator<SystemPlugin> const& system_slice_ref)
           const noexcept -> bool {
-        // two indirections here, to make check pass
-        using InterfaceType = LazyBlockSliceGenerator<SystemPlugin>;
-        using Parent = typename InterfaceType::ParentBlock;
+        return check_if_registered_impl(system_slice_ref);
+      }
+      //************************************************************************
 
-        const auto begin_ = get_system_collection_container<Parent>().cbegin();
-        const auto end_ = get_system_collection_container<Parent>().cend();
-
-        return std::find_if(
-                   begin_, end_,
-                   [&parent = cpp17::as_const(system_slice_ref.get().parent())](
-                       Parent const& parent_in_collection) {
-                     // compare references themselves
-                     return &parent == &parent_in_collection;
-                   }) != end_;
+      //************************************************************************
+      /*!\brief Checks if the system is registered in the simulator
+       *
+       * \param system_slice_ref A ref to system to be checked for registration
+       * \return True if system registered, else false
+       */
+      template <typename SystemPlugin>
+      inline auto check_if_registered(
+          ::blocks::BlockViewGenerator<SystemPlugin> const& system_slice_ref)
+          const noexcept -> bool {
+        return check_if_registered_impl(system_slice_ref);
       }
       //************************************************************************
 
@@ -497,9 +454,9 @@ namespace elastica {
        * \exception std::runtime_error if the system is not registered in the
        * simulator
        */
-      template <typename SystemPlugin>
-      inline auto confirm_as_registered(
-          LazyBlockSliceGenerator<SystemPlugin> const& system) const -> void {
+      template <typename InterfaceType>
+      inline auto confirm_as_registered(InterfaceType const& system) const
+          -> void {
         if (not check_if_registered(system))
           throw std::runtime_error(
               "Input system was not found to be registered in the simulator");
@@ -957,13 +914,12 @@ the above type-list, using SystemsConfiguration.
             std::forward<Initializer>(initializer)));
 
         // block iterator
+        using ::blocks::n_units;
         const auto index_of_block_in_collection = static_cast<std::size_t>(
             ::std::distance(system_block_container.begin(), system_block_it));
-        return LazyBlockSliceGenerator<SystemPlugin>(
-            system_block_container, index_of_block_in_collection,
-            // TODO : This code has linker issues, although it is the SOLID code
-            // ::blocks::n_units(*system_block_it) - 1UL
-            (*system_block_it).n_units() - 1UL);
+        ::blocks::BlockRefGenerator<SystemPlugin> ref_to_block(
+            system_block_container, index_of_block_in_collection);
+        return ::blocks::slice(ref_to_block, n_units(*system_block_it) - 1UL);
       }
       //************************************************************************
 
