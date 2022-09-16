@@ -7,6 +7,7 @@ add_elastica_library(${LIBRARY} INTERFACE)
 set(LIBRARY_SOURCES
         BlockSlice.hpp
         CosseratRods.hpp
+        RigidBody.hpp
         )
 
 elastica_target_headers(
@@ -24,8 +25,13 @@ elastica_target_sources(
 add_subdirectory(CosseratRods)
 add_library(${LIBRARY}::CosseratRods ALIAS H5CosseratRods)
 
+add_subdirectory(RigidBody)
+add_library(${LIBRARY}::RigidBody ALIAS H5RigidBody)
+
+
 target_link_libraries(
         ${LIBRARY}
         INTERFACE
         H5CosseratRods
+        H5RigidBody
 )

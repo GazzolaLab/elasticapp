@@ -17,6 +17,7 @@
 // Includes
 //******************************************************************************
 #include "Simulator/IO/H5/Systems/CosseratRods.hpp"
+#include "Simulator/IO/H5/Systems/RigidBody.hpp"
 
 //==============================================================================
 //

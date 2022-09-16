@@ -1,7 +1,7 @@
 //==============================================================================
 /*!
 //  \file
-//  \brief Cosserat rod name
+//  \brief System name
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
@@ -32,8 +32,8 @@ namespace elastica {
     //==========================================================================
 
     //**************************************************************************
-    /*!\brief Provides a name to CosseratRod
-     * \ingroup cosserat_rod_component
+    /*!\brief Provides a name to a System
+     * \ingroup systems
      */
     template <typename /* Traits */, typename /* Block */, typename NameImpl>
     struct NameAdapter : public NameImpl {
@@ -55,9 +55,8 @@ namespace elastica {
        * \tparam CosseratInitializer An Initializer corresponding to the
        * Cosserat rod hierarchy
        */
-      template <typename DownstreamBlock, typename CosseratInitializer>
-      static void initialize(DownstreamBlock&, CosseratInitializer&&) noexcept {
-      }
+      template <typename DownstreamBlock, typename Initializer>
+      static void initialize(DownstreamBlock&, Initializer&&) noexcept {}
       //************************************************************************
 
      public:

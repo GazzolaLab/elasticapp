@@ -13,17 +13,21 @@
 #include "Simulator/Simulator.hpp"
 // CosseratRod is a default system now, so we include it
 #include "Systems/CosseratRods.hpp"
+// We also include Spheres
+#include "Systems/Sphere.hpp"
 #include "Time/Time.hpp"
 
 int main() {
   using ::elastica::cosserat_rod::CosseratRod;
+  using ::elastica::rigid_body::Sphere;
 
   namespace ec = elastica::configuration;
-  auto system_config = ec::make_systems_configuration<tmpl::list<CosseratRod>>(
-      // so that we have more than one block for testing purposes
-      ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{30UL}),
-      ec::make_iteration_policy(ec::iterate_across_system_types_in(ec::seq),
-                                ec::iterate_over_systems_in(ec::seq)));
+  auto system_config =
+      ec::make_systems_configuration<tmpl::list<CosseratRod, Sphere>>(
+          // so that we have more than one block for testing purposes
+          ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{30UL}),
+          ec::make_iteration_policy(ec::iterate_across_system_types_in(ec::seq),
+                                    ec::iterate_over_systems_in(ec::seq)));
 
   auto simulator_config = ec::make_simulator_configuration(
       ec::DefaultDomainConfiguration{}, system_config,
@@ -93,6 +97,50 @@ int main() {
                 return 0.1 + 0.002 * static_cast<double>(index);
               })));
 
+  // Add spheres to the simluator
+  auto sphere_initializer = ::blocks::initialize_block<Sphere>(
+      ::blocks::initialize<::elastica::tags::Position>([&]() {
+        return ::elastica::Vec3{0.0, 0.0, 2.0};
+      }),
+      ::blocks::initialize<::elastica::tags::Director>(
+          []() { return ::elastica::identity3(); }),
+      ::blocks::initialize<::elastica::tags::Radius>([]() { return 0.001; }),
+      ::blocks::initialize<::elastica::tags::Velocity>([&]() {
+        return ::elastica::Vec3{1.0, 0.0, 0.0};
+      }),
+      ::blocks::initialize<::elastica::tags::AngularVelocity>(
+          []() { return ::elastica::Vec3{}; }),
+      ::blocks::initialize<::elastica::tags::Acceleration>(
+          []() { return ::elastica::Vec3{}; }),
+      ::blocks::initialize<::elastica::tags::AngularAcceleration>(
+          []() { return ::elastica::Vec3{}; }),
+      ::blocks::initialize<::elastica::tags::Material>(
+          []() { return ::elastica::copper; }));
+  simulator->emplace_back<Sphere>(std::move(sphere_initializer));
+
+  for (auto idx = 0U; idx < 10U; ++idx) {
+    auto another_sphere_initializer = ::blocks::initialize_block<Sphere>(
+        ::blocks::initialize<::elastica::tags::Position>([=]() {
+          return ::elastica::Vec3{2.0, 3.0, 6.0 + static_cast<double>(idx)};
+        }),
+        ::blocks::initialize<::elastica::tags::Director>(
+            []() { return ::elastica::identity3(); }),
+        ::blocks::initialize<::elastica::tags::Radius>(
+            [=]() { return 5.0 + static_cast<double>(idx); }),
+        ::blocks::initialize<::elastica::tags::Velocity>([]() {
+          return ::elastica::Vec3{1.0, 0.0, 0.0};
+        }),
+        ::blocks::initialize<::elastica::tags::AngularVelocity>(
+            []() { return ::elastica::Vec3{}; }),
+        ::blocks::initialize<::elastica::tags::Acceleration>(
+            []() { return ::elastica::Vec3{}; }),
+        ::blocks::initialize<::elastica::tags::AngularAcceleration>(
+            []() { return ::elastica::Vec3{}; }),
+        ::blocks::initialize<::elastica::tags::Material>(
+            []() { return ::elastica::iron; }));
+    simulator->emplace_back<Sphere>(std::move(another_sphere_initializer));
+  }
+
   simulator->finalize();
   /// [setup_state]
 
@@ -107,4 +155,11 @@ int main() {
   // https://github.com/tp5uiuc/elasticapp/issues/413
   simulator->for_each_system_sequential(metadata.write_at(
       {::elastica::Time{50}, ::elastica::TimeDelta{0.02}, id}));
+
+  for (int i = 0; i < 50; ++i)
+  ++id;
+
+  simulator->for_each_system_sequential(metadata.write_at(
+      {::elastica::Time{100}, ::elastica::TimeDelta{0.02}, id}));
+
 }

@@ -24,6 +24,7 @@
 #include "Systems/RigidBody/Types.hpp"
 //
 #include "Systems/RigidBody/Components/WithRigidBodyKinematics.hpp"
+#include "Systems/RigidBody/Sphere/Name.hpp"
 #include "Systems/RigidBody/Sphere/WithSphereGeometry.hpp"
 
 namespace elastica {
@@ -35,7 +36,8 @@ namespace elastica {
       template <typename T, typename B>
       using SphereComponents = ::elastica::SymplecticPolicy<
           T, B, ::elastica::rigid_body::WithSphereGeometry,
-          ::elastica::rigid_body::WithRigidBodyKinematics>;
+          ::elastica::rigid_body::WithRigidBodyKinematics,
+          ::elastica::rigid_body::SphereNameAdapted>;
 
       // template <typename T, typename B>
       // using SphereComponents = ::elastica::rigid_body::WithSphereGeometry<T,
