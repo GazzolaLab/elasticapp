@@ -72,14 +72,14 @@ namespace elastica {
       ForcingExample(ForcingExample && other) noexcept : i_(other.i_) {}
       ~ForcingExample() override = default;
       template <typename TimeType, typename System>
-      void apply_forces(TimeType /*time*/, System& /*system*/, int /*index*/)
-          const {
+      void apply_forces(TimeType /*time*/, System& /*system*/,
+                        std::size_t /* index */) const {
         // do something
         ++i_;
       }
       template <typename TimeType, typename System>
-      void apply_torques(TimeType /*time*/, System& /*system*/, int /*index*/)
-          const {
+      void apply_torques(TimeType /*time*/, System& /*system*/,
+                         std::size_t /* index */) const {
         // do something
         --i_;
       }
@@ -108,8 +108,8 @@ namespace elastica {
           : i_(other.i_) {}
       ~ForcingWithForcesOnly() override = default;
       template <typename TimeType, typename System>
-      void apply_forces(TimeType /*time*/, System& /*system*/, int /*index*/)
-          const {
+      void apply_forces(TimeType /*time*/, System& /*system*/,
+                        std::size_t /* index */) const {
         // do something
         ++i_;
       }
@@ -140,8 +140,8 @@ namespace elastica {
       ~ForcingWithTorquesOnly() override = default;
       // no apply forces automatically assumed to be no-op
       template <typename TimeType, typename System>
-      void apply_torques(TimeType /*time*/, System& /*system*/, int /*index*/)
-          const {
+      void apply_torques(TimeType /*time*/, System& /*system*/,
+                         std::size_t /* index */) const {
         // do something
         --i_;
       }
@@ -175,7 +175,7 @@ namespace {
     auto my_forcing(check_and_make_forcing<F>(i));
     int mock_system = 2;
     int mock_time = 3;
-    int mock_index = 1;
+    std::size_t mock_index = 1;
 
     // check-metaprogramming
     {
@@ -252,7 +252,7 @@ namespace {
     auto my_forcing(check_and_make_forcing<F>(i));
     int mock_system = 2;
     int mock_time = 3;
-    int mock_index = 3;
+    std::size_t mock_index = 3;
 
     // check-metaprogramming
     {
@@ -325,7 +325,7 @@ namespace {
     auto my_forcing(check_and_make_forcing<F>(i));
     int mock_system = 2;
     int mock_time = 3;
-    int mock_index = 3;
+    std::size_t mock_index = 3;
 
     // check-metaprogramming
     {
@@ -405,8 +405,8 @@ namespace elastica {
           : i_(other.i_) {}
       ~ForcingWithForcesInRange() override = default;
       template <typename TimeType, typename System>
-      void apply_forces(TimeType /*time*/, System& /*system*/, int /*index*/)
-          const {
+      void apply_forces(TimeType /*time*/, System& /*system*/,
+                        std::size_t /* index */) const {
         // do nothing
       }
       template <typename TimeType, typename System>
@@ -437,7 +437,7 @@ namespace {
     auto my_forcing(check_and_make_forcing<F>(i));
     int mock_system = 2;
     int mock_time = 3;
-    int mock_index = 3;
+    std::size_t mock_index = 3;
 
     // check-metaprogramming
     {
@@ -506,8 +506,8 @@ namespace elastica {
           : i_(other.i_) {}
       ~ForcingWithTorquesInRange() override = default;
       template <typename TimeType, typename System>
-      void apply_torques(TimeType /*time*/, System& /*system*/, int /*index*/)
-          const {
+      void apply_torques(TimeType /*time*/, System& /*system*/,
+                         std::size_t /* index */) const {
         // do nothing
       }
       template <typename TimeType, typename System>
@@ -537,7 +537,7 @@ namespace {
     auto my_forcing(check_and_make_forcing<F>(i));
     int mock_system = 2;
     int mock_time = 3;
-    int mock_index = 3;
+    std::size_t mock_index = 3;
 
     // check-metaprogramming
     {
@@ -604,8 +604,8 @@ namespace elastica {
           : i_(other.i_) {}
       ~RangedForcingExample() override = default;
       template <typename TimeType, typename System>
-      void apply_forces(TimeType /*time*/, System& /*system*/, int /*index*/)
-          const {
+      void apply_forces(TimeType /*time*/, System& /*system*/,
+                        std::size_t /* index */) const {
         // do something
         ++i_;
       }
@@ -616,8 +616,8 @@ namespace elastica {
         i_ += 2;
       }
       template <typename TimeType, typename System>
-      void apply_torques(TimeType /*time*/, System& /*system*/, int /*index*/)
-          const {
+      void apply_torques(TimeType /*time*/, System& /*system*/,
+                         std::size_t /* index */) const {
         // do something
         --i_;
       }
@@ -648,7 +648,7 @@ namespace {
     auto my_forcing(check_and_make_forcing<F>(i));
     int mock_system = 2;
     int mock_time = 3;
-    int mock_index = 3;
+    std::size_t mock_index = 3;
 
     // check-metaprogramming
     {
@@ -773,7 +773,7 @@ namespace elastica {
 //    ::elastica::forcing::IncorrectForcingWithRange<> my_forcing(i);
 //    int mock_system = 2;
 //    int mock_time = 3;
-//    int mock_index = 3;
+//    std::size_t mock_index = 3;
 //    // ranged indices with a step of 1 does what we want it to do
 //    auto mock_range = numeric_range(1UL, 10UL, 1);
 //    my_forcing.apply_forces_internal(mock_time, mock_system, mock_range);
@@ -796,14 +796,14 @@ namespace elastica {
       ~ForcingWithForcesForSpecificSystem() override = default;
       // overloaded for specialized systems
       template <typename TimeType>
-      void apply_forces(TimeType /*time*/, int& /*system*/, int /*index*/)
-          const {
+      void apply_forces(TimeType /*time*/, int& /*system*/,
+                        std::size_t /* index */) const {
         // do something
         ++i_;
       }
       template <typename TimeType>
-      void apply_forces(TimeType /*time*/, float& /*system*/, int /*index*/)
-          const {
+      void apply_forces(TimeType /*time*/, float& /*system*/,
+                        std::size_t /* index */) const {
         // do something
         --i_;
       }
@@ -830,7 +830,7 @@ namespace {
     using F = ::elastica::forcing::ForcingWithForcesForSpecificSystem<>;
     auto my_forcing(check_and_make_forcing<F>(i));
     int mock_time = 3;
-    int mock_index = 3;
+    std::size_t mock_index = 3;
 
     int mock_int_system = 2;
     float mock_float_system = 2.0F;
@@ -1033,13 +1033,13 @@ namespace elastica {
       // can we do partial specialization?
       template <typename TimeType, typename T>
       void apply_forces(TimeType /*time*/, std::vector<T>& /*system*/,
-                        int /*index*/) const {
+                        std::size_t /* index */) const {
         // do something
         ++i_;
       }
       template <typename TimeType, typename T>
       void apply_forces(TimeType /*time*/, std::list<T>& /*system*/,
-                        int /*index*/) const {
+                        std::size_t /* index */) const {
         // do something
         --i_;
       }
@@ -1068,7 +1068,7 @@ namespace {
     using F = ::elastica::forcing::ForcingWithForcesForTemplatedSystems<>;
     auto my_forcing(check_and_make_forcing<F>(i));
     int mock_time = 3;
-    int mock_index = 3;
+    std::size_t mock_index = 3;
 
     std::vector<int> mock_vector_system{1, 2, 3};
     std::list<int> mock_list_system = {4, 5, 6};
@@ -1269,14 +1269,14 @@ namespace elastica {
       ~ForcingWithTorquesForSpecificSystem() override = default;
       // overloaded for specialized systems
       template <typename TimeType>
-      void apply_torques(TimeType /*time*/, int& /*system*/, int /*index*/)
-          const {
+      void apply_torques(TimeType /*time*/, int& /*system*/,
+                         std::size_t /* index */) const {
         // do something
         ++i_;
       }
       template <typename TimeType>
-      void apply_torques(TimeType /*time*/, float& /*system*/, int /*index*/)
-          const {
+      void apply_torques(TimeType /*time*/, float& /*system*/,
+                         std::size_t /* index */) const {
         // do something
         --i_;
       }
@@ -1315,7 +1315,7 @@ namespace {
     using F = ::elastica::forcing::ForcingWithTorquesForSpecificSystem<>;
     auto my_forcing(check_and_make_forcing<F>(i));
     int mock_time = 3;
-    int mock_index = 3;
+    std::size_t mock_index = 3;
 
     int mock_int_system = 2;
     float mock_float_system = 2.0F;
@@ -1551,13 +1551,13 @@ namespace elastica {
       // can we do partial specialization?
       template <typename TimeType, typename T>
       void apply_torques(TimeType /*time*/, std::vector<T>& /*system*/,
-                         int /*index*/) const {
+                         std::size_t /* index */) const {
         // do something
         ++i_;
       }
       template <typename TimeType, typename T>
       void apply_torques(TimeType /*time*/, std::list<T>& /*system*/,
-                         int /*index*/) const {
+                         std::size_t /* index */) const {
         // do something
         --i_;
       }
@@ -1596,7 +1596,7 @@ namespace {
     using F = ::elastica::forcing::ForcingWithTorquesForTemplatedSystems<>;
     auto my_forcing(check_and_make_forcing<F>(i));
     int mock_time = 3;
-    int mock_index = 3;
+    std::size_t mock_index = 3;
 
     std::vector<int> mock_vector_system{1, 2, 3};
     std::list<int> mock_list_system = {4, 5, 6};

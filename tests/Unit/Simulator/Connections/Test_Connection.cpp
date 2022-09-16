@@ -72,15 +72,17 @@ namespace elastica {
       ~ConnectionExample() override = default;
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       void apply_forces(TimeType /*time*/, FirstSystem& /*first_system*/,
-                        int /*first_index*/, SecondSystem& /*second_system*/,
-                        int /*second_index*/) const {
+                        std::size_t /* first_index */,
+                        SecondSystem& /*second_system*/,
+                        std::size_t /* second_index */) const {
         // do something
         ++i_;
       }
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       void apply_torques(TimeType /*time*/, FirstSystem& /*first_system*/,
-                         int /*first_index*/, SecondSystem& /*second_system*/,
-                         int /*second_index*/) const {
+                         std::size_t /* first_index */,
+                         SecondSystem& /*second_system*/,
+                         std::size_t /* second_index */) const {
         // do something
         --i_;
       }
@@ -110,8 +112,9 @@ namespace elastica {
       ~ConnectionWithForcesOnly() override = default;
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       void apply_forces(TimeType /*time*/, FirstSystem& /*first_system*/,
-                        int /*first_index*/, SecondSystem& /*second_system*/,
-                        int /*second_index*/) const {
+                        std::size_t /* first_index */,
+                        SecondSystem& /*second_system*/,
+                        std::size_t /* second_index */) const {
         // do something
         ++i_;
       }
@@ -143,8 +146,9 @@ namespace elastica {
       // no constrain values automatically assumed to be no-op
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       void apply_torques(TimeType /*time*/, FirstSystem& /*first_system*/,
-                         int /*first_index*/, SecondSystem& /*second_system*/,
-                         int /*second_index*/) const {
+                         std::size_t /* first_index */,
+                         SecondSystem& /*second_system*/,
+                         std::size_t /* second_index */) const {
         // do something
         --i_;
       }
@@ -366,8 +370,9 @@ namespace elastica {
       // 1. an integer specialization
       template <typename TimeType, typename SecondSystem>
       void apply_forces(TimeType /*time*/, int& /*first_system*/,
-                        int /*first_index*/, SecondSystem& /*second_system*/,
-                        int /*second_index*/) const {
+                        std::size_t /* first_index */,
+                        SecondSystem& /*second_system*/,
+                        std::size_t /* second_index */) const {
         // do something
         ++i_;
       }
@@ -382,8 +387,8 @@ namespace elastica {
       /*
       template <typename TimeType, typename FirstSystem>
       void apply_forces(TimeType time, FirstSystem & first_system,
-                        int first_index, int& second_system, int second_index)
-          const {
+                        std::size_t first_index, int& second_system, std::size_t
+      second_index) const {
         // do something, usually delegate to the other member
         apply_forces(time, second_system, second_index, first_system,
                      first_index);
@@ -393,8 +398,9 @@ namespace elastica {
       // 3. Specialization when the first system is a float
       template <typename TimeType, typename SecondSystem>
       void apply_forces(TimeType /*time*/, float& /*first_system*/,
-                        int /*first_index*/, SecondSystem& /*second_system*/,
-                        int /*second_index*/) const {
+                        std::size_t /* first_index */,
+                        SecondSystem& /*second_system*/,
+                        std::size_t /* second_index */) const {
         // do something
         --i_;
       }
@@ -404,8 +410,8 @@ namespace elastica {
       /*
       template <typename TimeType, typename FirstSystem>
       void apply_forces(TimeType time, FirstSystem & first_system,
-                        int first_index, float& second_system, int second_index)
-          const {
+                        std::size_t first_index, float& second_system,
+      std::size_t second_index) const {
         // do something, usually delegate to the other member
         apply_forces(time, second_system, second_index, first_system,
                      first_index);
@@ -423,8 +429,8 @@ namespace elastica {
       // system float
       template <typename TimeType>
       void apply_forces(TimeType /*time*/, float& /*first_system*/,
-                        int /*first_index*/, bool& /*second_system*/,
-                        int /*second_index*/) const {
+                        std::size_t /* first_index */, bool& /*second_system*/,
+                        std::size_t /* second_index */) const {
         // do something
         i_ *= 2;
       }
@@ -720,8 +726,9 @@ namespace elastica {
       // 1. a vector type as first system
       template <typename TimeType, typename T, typename System>
       void apply_forces(TimeType /*time*/, std::vector<T>& /*first_system*/,
-                        int /*first_index*/, System& /* second_system*/,
-                        int /* second_index */) const {
+                        std::size_t /* first_index */,
+                        System& /* second_system*/,
+                        std::size_t /* second_index */) const {
         // do something
         ++i_;
       }
@@ -729,8 +736,9 @@ namespace elastica {
       // 2. because \elastica's overload resolution is smart you can skip this
       /*
       template <typename TimeType, typename T, typename System>
-      void apply_forces(TimeType time, System & first_system, int first_index,
-                        std::vector<T>& second_system, int second_index) const {
+      void apply_forces(TimeType time, System & first_system, std::size_t
+      first_index, std::vector<T>& second_system, std::size_t second_index)
+      const {
         // do something
         apply_forces(time, second_system, second_index, first_system,
                      first_index);
@@ -740,8 +748,9 @@ namespace elastica {
       // 3. a list type as first system
       template <typename TimeType, typename T, typename System>
       void apply_forces(TimeType /*time*/, std::list<T>& /*first_system*/,
-                        int /*first_index*/, System& /* second_system*/,
-                        int /* second_index */) const {
+                        std::size_t /* first_index */,
+                        System& /* second_system*/,
+                        std::size_t /* second_index */) const {
         // do something
         --i_;
       }
@@ -749,8 +758,9 @@ namespace elastica {
       // 4. because \elastica's overload resolution is smart you can skip this
       /*
       template <typename TimeType, typename T, typename System>
-      void apply_forces(TimeType time, System & first_system, int first_index,
-                        std::list<T>& second_system, int second_index) const {
+      void apply_forces(TimeType time, System & first_system, std::size_t
+      first_index, std::list<T>& second_system, std::size_t second_index) const
+      {
         // do something
         apply_forces(time, second_system, second_index, first_system,
                      first_index);
@@ -760,8 +770,9 @@ namespace elastica {
       // 5. a "full" specialization with vector as first and list as second type
       template <typename TimeType, typename T, typename U>
       void apply_forces(TimeType /*time*/, std::vector<T>& /*first_system*/,
-                        int /*first_index*/, std::list<U>& /* second_system*/,
-                        int /* second_index */) const {
+                        std::size_t /* first_index */,
+                        std::list<U>& /* second_system*/,
+                        std::size_t /* second_index */) const {
         // do something
         i_ *= 2;
       }
@@ -776,8 +787,8 @@ namespace elastica {
       // since vector is also a valid system
       template <typename TimeType, typename T, typename U>
       void apply_forces(TimeType time, std::list<T> & first_system,
-                        int first_index, std::vector<U>& second_system,
-                        int second_index) const {
+                        std::size_t first_index, std::vector<U> & second_system,
+                        std::size_t second_index) const {
         // do something
         apply_forces(time, second_system, second_index, first_system,
                      first_index);
@@ -1073,8 +1084,9 @@ namespace elastica {
       // 1. an integer specialization
       template <typename TimeType, typename SecondSystem>
       void apply_torques(TimeType /*time*/, int& /*first_system*/,
-                         int /*first_index*/, SecondSystem& /*second_system*/,
-                         int /*second_index*/) const {
+                         std::size_t /* first_index */,
+                         SecondSystem& /*second_system*/,
+                         std::size_t /* second_index */) const {
         // do something
         ++i_;
       }
@@ -1089,8 +1101,8 @@ namespace elastica {
       /*
       template <typename TimeType, typename FirstSystem>
       void apply_torques(TimeType time, FirstSystem & first_system,
-                        int first_index, int& second_system, int second_index)
-          const {
+                        std::size_t first_index, int& second_system, std::size_t
+      second_index) const {
         // do something, usually delegate to the other member
         apply_torques(time, second_system, second_index, first_system,
                      first_index);
@@ -1100,8 +1112,9 @@ namespace elastica {
       // 3. Specialization when the first system is a float
       template <typename TimeType, typename SecondSystem>
       void apply_torques(TimeType /*time*/, float& /*first_system*/,
-                         int /*first_index*/, SecondSystem& /*second_system*/,
-                         int /*second_index*/) const {
+                         std::size_t /* first_index */,
+                         SecondSystem& /*second_system*/,
+                         std::size_t /* second_index */) const {
         // do something
         --i_;
       }
@@ -1111,8 +1124,8 @@ namespace elastica {
       /*
       template <typename TimeType, typename FirstSystem>
       void apply_torques(TimeType time, FirstSystem & first_system,
-                        int first_index, float& second_system, int second_index)
-          const {
+                        std::size_t first_index, float& second_system,
+      std::size_t second_index) const {
         // do something, usually delegate to the other member
         apply_torques(time, second_system, second_index, first_system,
                      first_index);
@@ -1130,8 +1143,8 @@ namespace elastica {
       // system float
       template <typename TimeType>
       void apply_torques(TimeType /*time*/, float& /*first_system*/,
-                         int /*first_index*/, bool& /*second_system*/,
-                         int /*second_index*/) const {
+                         std::size_t /* first_index */, bool& /*second_system*/,
+                         std::size_t /* second_index */) const {
         // do something
         i_ *= 2;
       }
@@ -1431,8 +1444,9 @@ namespace elastica {
       // 1. a vector type as first system
       template <typename TimeType, typename T, typename System>
       void apply_torques(TimeType /*time*/, std::vector<T>& /*first_system*/,
-                         int /*first_index*/, System& /* second_system*/,
-                         int /* second_index */) const {
+                         std::size_t /* first_index */,
+                         System& /* second_system*/,
+                         std::size_t /* second_index */) const {
         // do something
         ++i_;
       }
@@ -1440,8 +1454,9 @@ namespace elastica {
       // 2. because \elastica's overload resolution is smart you can skip this
       /*
       template <typename TimeType, typename T, typename System>
-      void apply_torques(TimeType time, System & first_system, int first_index,
-                        std::vector<T>& second_system, int second_index) const {
+      void apply_torques(TimeType time, System & first_system, std::size_t
+      first_index, std::vector<T>& second_system, std::size_t second_index)
+      const {
         // do something
         apply_torques(time, second_system, second_index, first_system,
                      first_index);
@@ -1451,8 +1466,9 @@ namespace elastica {
       // 3. a list type as first system
       template <typename TimeType, typename T, typename System>
       void apply_torques(TimeType /*time*/, std::list<T>& /*first_system*/,
-                         int /*first_index*/, System& /* second_system*/,
-                         int /* second_index */) const {
+                         std::size_t /* first_index */,
+                         System& /* second_system*/,
+                         std::size_t /* second_index */) const {
         // do something
         --i_;
       }
@@ -1460,8 +1476,9 @@ namespace elastica {
       // 4. because \elastica's overload resolution is smart you can skip this
       /*
       template <typename TimeType, typename T, typename System>
-      void apply_torques(TimeType time, System & first_system, int first_index,
-                        std::list<T>& second_system, int second_index) const {
+      void apply_torques(TimeType time, System & first_system, std::size_t
+      first_index, std::list<T>& second_system, std::size_t second_index) const
+      {
         // do something
         apply_torques(time, second_system, second_index, first_system,
                      first_index);
@@ -1471,8 +1488,9 @@ namespace elastica {
       // 5. a "full" specialization with vector as first and list as second type
       template <typename TimeType, typename T, typename U>
       void apply_torques(TimeType /*time*/, std::vector<T>& /*first_system*/,
-                         int /*first_index*/, std::list<U>& /* second_system*/,
-                         int /* second_index */) const {
+                         std::size_t /* first_index */,
+                         std::list<U>& /* second_system*/,
+                         std::size_t /* second_index */) const {
         // do something
         i_ *= 2;
       }
@@ -1486,9 +1504,9 @@ namespace elastica {
       // equivalent to <list, vector> specialization (6) since
       // since vector is also a valid system
       template <typename TimeType, typename T, typename U>
-      void apply_torques(TimeType time, std::list<T> & first_system,
-                         int first_index, std::vector<U>& second_system,
-                         int second_index) const {
+      void apply_torques(
+          TimeType time, std::list<T> & first_system, std::size_t first_index,
+          std::vector<U> & second_system, std::size_t second_index) const {
         // do something
         apply_torques(time, second_system, second_index, first_system,
                       first_index);

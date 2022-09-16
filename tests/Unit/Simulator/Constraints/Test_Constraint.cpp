@@ -69,13 +69,13 @@ namespace elastica {
       ~ConstraintExample() override = default;
       template <typename TimeType, typename System>
       void constrain_primitives(TimeType /*time*/, System& /*system*/,
-                                int /*index*/) const {
+                                std::size_t /* index */) const {
         // do something
         ++i_;
       }
       template <typename TimeType, typename System>
-      void constrain_rates(TimeType /*time*/, System& /*system*/, int /*index*/)
-          const {
+      void constrain_rates(TimeType /*time*/, System& /*system*/,
+                           std::size_t /* index */) const {
         // do something
         --i_;
       }
@@ -106,7 +106,7 @@ namespace elastica {
       ~ConstraintWithPrimitivesOnly() override = default;
       template <typename TimeType, typename System>
       void constrain_primitives(TimeType /*time*/, System& /*system*/,
-                                int /*index*/) const {
+                                std::size_t /* index */) const {
         // do something
         ++i_;
       }
@@ -139,8 +139,8 @@ namespace elastica {
       ~ConstraintWithRatesOnly() override = default;
       // no constrain primitives automatically assumed to be no-op
       template <typename TimeType, typename System>
-      void constrain_rates(TimeType /*time*/, System& /*system*/, int /*index*/)
-          const {
+      void constrain_rates(TimeType /*time*/, System& /*system*/,
+                           std::size_t /* index */) const {
         // do something
         --i_;
       }
@@ -174,7 +174,7 @@ namespace {
     auto my_constraint(check_and_make_constraint<BC>(i));
     int mock_system = 2;
     int mock_time = 3;
-    int mock_index = 1;
+    std::size_t mock_index = 1;
 
     // check-metaprogramming
     {
@@ -230,7 +230,7 @@ namespace {
     auto my_constraint(check_and_make_constraint<BC>(i));
     int mock_system = 2;
     int mock_time = 3;
-    int mock_index = 3;
+    std::size_t mock_index = 3;
 
     // check-metaprogramming
     {
@@ -284,7 +284,7 @@ namespace {
     auto my_constraint(check_and_make_constraint<BC>(i));
     int mock_system = 2;
     int mock_time = 3;
-    int mock_index = 3;
+    std::size_t mock_index = 3;
 
     // check-metaprogramming
     {
@@ -346,13 +346,13 @@ namespace elastica {
       // overloaded for specialized systems
       template <typename TimeType>
       void constrain_primitives(TimeType /*time*/, int& /*system*/,
-                                int /*index*/) const {
+                                std::size_t /* index */) const {
         // do something
         ++i_;
       }
       template <typename TimeType>
       void constrain_primitives(TimeType /*time*/, float& /*system*/,
-                                int /*index*/) const {
+                                std::size_t /* index */) const {
         // do something
         --i_;
       }
@@ -380,7 +380,7 @@ namespace {
         ::elastica::constraints::ConstraintWithPrimitivesForSpecificSystem<>;
     auto my_constraint(check_and_make_constraint<BC>(i));
     int mock_time = 3;
-    int mock_index = 3;
+    std::size_t mock_index = 3;
 
     int mock_int_system = 2;
     float mock_float_system = 2.0F;
@@ -536,13 +536,13 @@ namespace elastica {
       // can we do partial specialization?
       template <typename TimeType, typename T>
       void constrain_primitives(TimeType /*time*/, std::vector<T>& /*system*/,
-                                int /*index*/) const {
+                                std::size_t /* index */) const {
         // do something
         ++i_;
       }
       template <typename TimeType, typename T>
       void constrain_primitives(TimeType /*time*/, std::list<T>& /*system*/,
-                                int /*index*/) const {
+                                std::size_t /* index */) const {
         // do something
         --i_;
       }
@@ -571,7 +571,7 @@ namespace {
         ::elastica::constraints::ConstraintWithPrimitivesForTemplatedSystems<>;
     auto my_constraint(check_and_make_constraint<BC>(i));
     int mock_time = 3;
-    int mock_index = 3;
+    std::size_t mock_index = 3;
 
     std::vector<int> mock_vector_system{1, 2, 3};
     std::list<int> mock_list_system = {4, 5, 6};
@@ -724,14 +724,14 @@ namespace elastica {
       ~ConstraintWithRatesForSpecificSystem() override = default;
       // overloaded for specialized systems
       template <typename TimeType>
-      void constrain_rates(TimeType /*time*/, int& /*system*/, int /*index*/)
-          const {
+      void constrain_rates(TimeType /*time*/, int& /*system*/,
+                           std::size_t /* index */) const {
         // do something
         ++i_;
       }
       template <typename TimeType>
-      void constrain_rates(TimeType /*time*/, float& /*system*/, int /*index*/)
-          const {
+      void constrain_rates(TimeType /*time*/, float& /*system*/,
+                           std::size_t /* index */) const {
         // do something
         --i_;
       }
@@ -757,7 +757,7 @@ namespace {
     using BC = ::elastica::constraints::ConstraintWithRatesForSpecificSystem<>;
     auto my_constraint(check_and_make_constraint<BC>(i));
     int mock_time = 3;
-    int mock_index = 3;
+    std::size_t mock_index = 3;
 
     int mock_int_system = 2;
     float mock_float_system = 2.0F;
@@ -909,13 +909,13 @@ namespace elastica {
       // can we do partial specialization?
       template <typename TimeType, typename T>
       void constrain_rates(TimeType /*time*/, std::vector<T>& /*system*/,
-                           int /*index*/) const {
+                           std::size_t /* index */) const {
         // do something
         ++i_;
       }
       template <typename TimeType, typename T>
       void constrain_rates(TimeType /*time*/, std::list<T>& /*system*/,
-                           int /*index*/) const {
+                           std::size_t /* index */) const {
         // do something
         --i_;
       }
@@ -943,7 +943,7 @@ namespace {
         ::elastica::constraints::ConstraintWithRatesForTemplatedSystems<>;
     auto my_constraint(check_and_make_constraint<BC>(i));
     int mock_time = 3;
-    int mock_index = 3;
+    std::size_t mock_index = 3;
 
     std::vector<int> mock_vector_system{1, 2, 3};
     std::list<int> mock_list_system = {4, 5, 6};

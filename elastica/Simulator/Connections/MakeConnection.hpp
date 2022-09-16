@@ -98,20 +98,8 @@ namespace elastica {
         //**********************************************************************
         /*!\brief SFINAE Constructor for copyable functors
          */
-        template <
-            typename F = ForceFunc, typename G = TorqueFunc,
-            Requires<cpp17::conjunction_v<std::is_copy_constructible<F>,
-                                          std::is_copy_constructible<G>>> =
-                nullptr>
-        GenericConnection(ForceFunc const& v, TorqueFunc const& r)
-            : force_(v), torque_(r) {}
-        //**********************************************************************
-
-        //**********************************************************************
-        /*!\brief Constructor for move-able functors
-         */
-        GenericConnection(ForceFunc&& v, TorqueFunc&& r) noexcept
-            : force_(std::move(v)), torque_(std::move(r)){};
+        GenericConnection(ForceFunc ff, TorqueFunc tf)
+            : force_(std::move(ff)), torque_(std::move(tf)) {}
         //**********************************************************************
 
         //**********************************************************************
@@ -161,6 +149,37 @@ namespace elastica {
         //**********************************************************************
 
         //**********************************************************************
+        /*!\brief Compile-time check for rightly ordered functions
+         *
+         * \details
+         * If the template functor `Func` has its `operator()` overloaded for
+         * <Second, First> rather than <First, Second>, we need to switch
+         * arguments. This check for swapping arguments can happen in
+         * compile-time and is facilitated by this function.
+         *
+         * \note
+         * Also works for overloaded functions
+         *
+         * \tparam Func One of ForceFunc or TorqueFunc
+         * \tparam TimeType Type of time
+         * \tparam FirstSystem Type of first system
+         * \tparam SecondSystem Type of second system
+         *
+         * \metareturns ::cpp17::bool_constant
+         *
+         * \see force_is_rightly_ordered(), torque_is_rightly_ordered()
+         */
+        template <typename Func, typename TimeType, typename FirstSystem,
+                  typename SecondSystem>
+        static inline constexpr auto is_rightly_ordered_deferred() noexcept {
+          return ::tt::is_detected<
+              detail::Signatures<TimeType, FirstSystem, SecondSystem>::
+                  template nonwrapped_deferred_signature,
+              Func>{};
+        }
+        //**********************************************************************
+
+        //**********************************************************************
         /*!\brief Compile-time check for a rightly ordered force function
          *
          * \see is_rightly_ordered()
@@ -184,6 +203,35 @@ namespace elastica {
           return cpp17::negation<
               decltype(force_is_rightly_ordered<TimeType, FirstSystem,
                                                 SecondSystem>())>{};
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Compile-time check for a rightly ordered force function
+         *
+         * \see is_rightly_ordered()
+         */
+        template <typename TimeType, typename FirstSystem,
+                  typename SecondSystem>
+        static inline constexpr auto
+        force_is_rightly_ordered_deferred() noexcept {
+          return is_rightly_ordered_deferred<ForceFunc, TimeType, FirstSystem,
+                                             SecondSystem>();
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Compile-time check for an incorrectly ordered force function
+         *
+         * \see force_is_rightly_ordered()
+         */
+        template <typename TimeType, typename FirstSystem,
+                  typename SecondSystem>
+        static inline constexpr auto
+        force_is_not_rightly_ordered_deferred() noexcept {
+          return cpp17::negation<
+              decltype(force_is_rightly_ordered_deferred<TimeType, FirstSystem,
+                                                         SecondSystem>())>{};
         }
         //**********************************************************************
 
@@ -214,6 +262,37 @@ namespace elastica {
         }
         //**********************************************************************
 
+        //**********************************************************************
+        /*!\brief Compile-time check for a rightly ordered_deferred torque
+         * functions
+         *
+         * \see is_rightly_ordered_deferred()
+         */
+        template <typename TimeType, typename FirstSystem,
+                  typename SecondSystem>
+        static inline constexpr auto
+        torque_is_rightly_ordered_deferred() noexcept {
+          return is_rightly_ordered_deferred<TorqueFunc, TimeType, FirstSystem,
+                                             SecondSystem>();
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Compile-time check for an incorrectly ordered_deferred torque
+         * function
+         *
+         * \see torque_is_rightly_ordered_deferred()
+         */
+        template <typename TimeType, typename FirstSystem,
+                  typename SecondSystem>
+        static inline constexpr auto
+        torque_is_not_rightly_ordered_deferred() noexcept {
+          return cpp17::negation<
+              decltype(torque_is_rightly_ordered_deferred<TimeType, FirstSystem,
+                                                          SecondSystem>())>{};
+        }
+        //**********************************************************************
+
         //@}
         //**********************************************************************
 
@@ -241,8 +320,9 @@ namespace elastica {
                   Requires<force_is_rightly_ordered<TimeType, FirstSystem,
                                                     SecondSystem>()> = nullptr>
         inline auto apply_forces(TimeType t, FirstSystem& first_sys,
-                                 int first_idx, SecondSystem& second_sys,
-                                 int second_idx) const -> void {
+                                 std::size_t first_idx,
+                                 SecondSystem& second_sys,
+                                 std::size_t second_idx) const -> void {
           force_(t, first_sys, first_idx, second_sys, second_idx);
         }
         //**********************************************************************
@@ -257,9 +337,40 @@ namespace elastica {
                   Requires<force_is_not_rightly_ordered<
                       TimeType, FirstSystem, SecondSystem>()> = nullptr>
         inline auto apply_forces(TimeType t, FirstSystem& first_sys,
-                                 int first_idx, SecondSystem& second_sys,
-                                 int second_idx) const -> void {
+                                 std::size_t first_idx,
+                                 SecondSystem& second_sys,
+                                 std::size_t second_idx) const -> void {
           force_(t, second_sys, second_idx, first_sys, first_idx);
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Apply forces
+         *
+         * \see make_force()
+         */
+        template <typename TimeType, typename FirstSystem,
+                  typename SecondSystem,
+                  Requires<force_is_rightly_ordered_deferred<
+                      TimeType, FirstSystem, SecondSystem>()> = nullptr>
+        inline auto apply_forces(TimeType t, FirstSystem& first_sys,
+                                 SecondSystem& second_sys) const -> void {
+          force_(t, first_sys, second_sys);
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Apply forces
+         *
+         * \see make_force()
+         */
+        template <typename TimeType, typename FirstSystem,
+                  typename SecondSystem,
+                  Requires<force_is_not_rightly_ordered_deferred<
+                      TimeType, FirstSystem, SecondSystem>()> = nullptr>
+        inline auto apply_forces(TimeType t, FirstSystem& first_sys,
+                                 SecondSystem& second_sys) const -> void {
+          force_(t, second_sys, first_sys);
         }
         //**********************************************************************
 
@@ -273,8 +384,9 @@ namespace elastica {
                   Requires<torque_is_rightly_ordered<TimeType, FirstSystem,
                                                      SecondSystem>()> = nullptr>
         inline auto apply_torques(TimeType t, FirstSystem& first_sys,
-                                  int first_idx, SecondSystem& second_sys,
-                                  int second_idx) const -> void {
+                                  std::size_t first_idx,
+                                  SecondSystem& second_sys,
+                                  std::size_t second_idx) const -> void {
           torque_(t, first_sys, first_idx, second_sys, second_idx);
         }
         //**********************************************************************
@@ -289,9 +401,40 @@ namespace elastica {
                   Requires<torque_is_not_rightly_ordered<
                       TimeType, FirstSystem, SecondSystem>()> = nullptr>
         inline auto apply_torques(TimeType t, FirstSystem& first_sys,
-                                  int first_idx, SecondSystem& second_sys,
-                                  int second_idx) const -> void {
+                                  std::size_t first_idx,
+                                  SecondSystem& second_sys,
+                                  std::size_t second_idx) const -> void {
           torque_(t, second_sys, second_idx, first_sys, first_idx);
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Apply torques
+         *
+         * \see make_torque()
+         */
+        template <typename TimeType, typename FirstSystem,
+                  typename SecondSystem,
+                  Requires<torque_is_rightly_ordered_deferred<
+                      TimeType, FirstSystem, SecondSystem>()> = nullptr>
+        inline auto apply_torques(TimeType t, FirstSystem& first_sys,
+                                  SecondSystem& second_sys) const -> void {
+          torque_(t, first_sys, second_sys);
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Apply torques
+         *
+         * \see make_torque()
+         */
+        template <typename TimeType, typename FirstSystem,
+                  typename SecondSystem,
+                  Requires<torque_is_not_rightly_ordered_deferred<
+                      TimeType, FirstSystem, SecondSystem>()> = nullptr>
+        inline auto apply_torques(TimeType t, FirstSystem& first_sys,
+                                  SecondSystem& second_sys) const -> void {
+          torque_(t, second_sys, first_sys);
         }
         //**********************************************************************
 

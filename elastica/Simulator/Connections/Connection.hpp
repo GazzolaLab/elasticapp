@@ -48,16 +48,6 @@ namespace elastica {
 
       //************************************************************************
       /*! \cond ELASTICA_INTERNAL */
-      /*!\brief Abstract classes for templated connections within \elastica
-      // \ingroup connections
-      */
-      DEFINE_FAKE_VIRTUAL(apply_forces_internal)
-      DEFINE_FAKE_VIRTUAL(apply_torques_internal)
-      /*! \endcond */
-      //************************************************************************
-
-      //************************************************************************
-      /*! \cond ELASTICA_INTERNAL */
       /*!\brief Abstract class for storing connections within \elastica
        * \ingroup connections
        *
@@ -72,14 +62,8 @@ namespace elastica {
           : public NonCopyable,
             public ::tt::ConformsTo<
                 ::elastica::connections::protocols::Connection> {
-       public:
-        //**Type definitions****************************************************
-        //! Inherit type, all derived classes must inherit from this type
-        using Inherit = FakeVirtualInherit_apply_torques_internal<
-            FakeVirtualInherit_apply_forces_internal<
-                ConnectionBase<Registrars>>>;
-
        private:
+        //**Type definitions****************************************************
         //! All creatable (and callable) classes
         using creatable_classes = Registration::registrants<Registrars>;
         //**********************************************************************
@@ -147,8 +131,11 @@ namespace elastica {
                                    std::size_t first_index,
                                    SecondSystem& second_sys,
                                    std::size_t second_index) const -> void {
-          return fake_virtual_apply_forces_internal<creatable_classes>(
-              this, t, first_sys, first_index, second_sys, second_index);
+          return call_with_dynamic_type<void, creatable_classes>(
+              this, [&](auto* const connexion) {
+                return connexion->apply_forces_internal(
+                    t, first_sys, first_index, second_sys, second_index);
+              });
         }
         //**********************************************************************
 
@@ -162,8 +149,11 @@ namespace elastica {
                   typename SecondSystem>
         auto apply_forces_internal(TimeType t, FirstSystem& first_sys,
                                    SecondSystem& second_sys) const -> void {
-          return fake_virtual_apply_forces_internal<creatable_classes>(
-              this, t, first_sys, second_sys);
+          return call_with_dynamic_type<void, creatable_classes>(
+              this, [&](auto* const connexion) {
+                return connexion->apply_forces_internal(t, first_sys,
+                                                        second_sys);
+              });
         }
         //**********************************************************************
 
@@ -185,8 +175,11 @@ namespace elastica {
                                     std::size_t first_index,
                                     SecondSystem& second_sys,
                                     std::size_t second_index) const -> void {
-          return fake_virtual_apply_torques_internal<creatable_classes>(
-              this, t, first_sys, first_index, second_sys, second_index);
+          return call_with_dynamic_type<void, creatable_classes>(
+              this, [&](auto* const connexion) {
+                return connexion->apply_torques_internal(
+                    t, first_sys, first_index, second_sys, second_index);
+              });
         }
         //**********************************************************************
 
@@ -200,8 +193,11 @@ namespace elastica {
                   typename SecondSystem>
         auto apply_torques_internal(TimeType t, FirstSystem& first_sys,
                                     SecondSystem& second_sys) const -> void {
-          return fake_virtual_apply_torques_internal<creatable_classes>(
-              this, t, first_sys, second_sys);
+          return call_with_dynamic_type<void, creatable_classes>(
+              this, [&](auto* const connexion) {
+                return connexion->apply_torques_internal(t, first_sys,
+                                                         second_sys);
+              });
         }
         //**********************************************************************
         //@}
@@ -270,6 +266,11 @@ namespace elastica {
                 std::declval<TimeType>(), std::declval<FirstSystem&>(),
                 std::declval<std::size_t>(), std::declval<SecondSystem&>(),
                 std::declval<std::size_t>()));
+        template <typename Connection>
+        using nonwrapped_deferred_signature =
+            decltype(std::declval<Connection const&>().operator()(
+                std::declval<TimeType>(), std::declval<FirstSystem&>(),
+                std::declval<SecondSystem&>()));
 
         /// [apply_torques_signature]
         template <typename Connection>
@@ -449,12 +450,12 @@ act on the given systems FirstSystem (second template parameter) and SecondSyste
      * see elastica::connections::make_connection()
      */
     template <typename Registrars, typename ConcreteConnection>
-    class Connection : public detail::ConnectionBase<Registrars>::Inherit,
+    class Connection : public detail::ConnectionBase<Registrars>,
                        public CRTPHelper<ConcreteConnection, Connection> {
      private:
       //**Type definitions******************************************************
       //! Type of parent
-      using Parent = typename detail::ConnectionBase<Registrars>::Inherit;
+      using Parent = typename detail::ConnectionBase<Registrars>;
       //! This type
       using This = Connection<Registrars, ConcreteConnection>;
       //! CRTP Type

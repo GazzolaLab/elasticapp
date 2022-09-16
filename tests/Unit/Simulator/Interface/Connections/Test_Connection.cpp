@@ -110,15 +110,15 @@ namespace elastica {
 
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       void apply_torques(TimeType /* time */, FirstSystem& /* first_system */,
-                         int /* first_index */,
+                         std::size_t /* first_index */,
                          SecondSystem& /* second_system */,
-                         int /* second_index */) const {}
+                         std::size_t /* second_index */) const {}
 
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       void apply_forces(TimeType /* time */, FirstSystem& /* first_system */,
-                        int /* first_index */,
+                        std::size_t /* first_index */,
                         SecondSystem& /* second_system */,
-                        int /* second_index */) const {}
+                        std::size_t /* second_index */) const {}
 
       static std::string name() { return "ConnectionDefault"; }
     };
@@ -147,15 +147,15 @@ namespace elastica {
       ~ConnectionReferenceCounted() override = default;
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       void apply_torques(TimeType /* time */, FirstSystem& /* first_system */,
-                         int /* first_index */,
+                         std::size_t /* first_index */,
                          SecondSystem& /* second_system */,
-                         int /* second_index */) const {}
+                         std::size_t /* second_index */) const {}
 
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       void apply_forces(TimeType /* time */, FirstSystem& /* first_system */,
-                        int /* first_index */,
+                        std::size_t /* first_index */,
                         SecondSystem& /* second_system */,
-                        int /* second_index */) const {}
+                        std::size_t /* second_index */) const {}
 
       static std::string name() { return "ConnectionRefCounted"; }
 
@@ -185,15 +185,15 @@ namespace elastica {
 
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       void apply_torques(TimeType /* time */, FirstSystem& /* first_system */,
-                         int /* first_index */,
+                         std::size_t /* first_index */,
                          SecondSystem& /* second_system */,
-                         int /* second_index */) const {}
+                         std::size_t /* second_index */) const {}
 
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       void apply_forces(TimeType /* time */, FirstSystem& /* first_system */,
-                        int /* first_index */,
+                        std::size_t /* first_index */,
                         SecondSystem& /* second_system */,
-                        int /* second_index */) const {}
+                        std::size_t /* second_index */) const {}
 
       static std::string name() noexcept { return "FundamentalConnection"; }
 
@@ -225,15 +225,15 @@ namespace elastica {
 
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       void apply_torques(TimeType /* time */, FirstSystem& /* first_system */,
-                         int /* first_index */,
+                         std::size_t /* first_index */,
                          SecondSystem& /* second_system */,
-                         int /* second_index */) const {}
+                         std::size_t /* second_index */) const {}
 
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       void apply_forces(TimeType /* time */, FirstSystem& /* first_system */,
-                        int /* first_index */,
+                        std::size_t /* first_index */,
                         SecondSystem& /* second_system */,
-                        int /* second_index */) const {}
+                        std::size_t /* second_index */) const {}
 
       static std::string name() { return "AggregateConnection"; }
 
@@ -264,15 +264,15 @@ namespace elastica {
 
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       void apply_torques(TimeType /* time */, FirstSystem& /* first_system */,
-                         int /* first_index */,
+                         std::size_t /* first_index */,
                          SecondSystem& /* second_system */,
-                         int /* second_index */) const {}
+                         std::size_t /* second_index */) const {}
 
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       void apply_forces(TimeType /* time */, FirstSystem& /* first_system */,
-                        int /* first_index */,
+                        std::size_t /* first_index */,
                         SecondSystem& /* second_system */,
-                        int /* second_index */) const {}
+                        std::size_t /* second_index */) const {}
 
       static std::string name() { return "AggregateConnection"; }
 

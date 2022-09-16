@@ -99,7 +99,7 @@ namespace {
 
     int mock_time = 3;
     int mock_system = 2;
-    int mock_index = 1;
+    std::size_t mock_index = 1;
 
     my_constraint.constrain_primitives(mock_time, mock_system, mock_index);
     CHECK(mock_system == 3);
@@ -123,12 +123,12 @@ namespace {
     // constraint interface
     int mock_time = 2;
     int mock_system = 3;
-    int mock_index = 1;
+    std::size_t mock_index = 1;
     my_constraint.constrain_primitives(mock_time, mock_system, mock_index);
     CHECK(value_called == 1);
     value_called = 0;
     my_constraint.constrain_primitives_internal(mock_time, mock_system,
-                                            numeric_at(1UL, 2UL, 3UL, 4UL));
+                                                numeric_at(1UL, 2UL, 3UL, 4UL));
     CHECK(value_called == 4);
 
     auto new_constraint = constraint_factory();
@@ -163,7 +163,7 @@ namespace {
     // constraint interface
     int mock_time = 3;
     int mock_system = 2;
-    int mock_index = 1;
+    std::size_t mock_index = 1;
     my_constraint.constrain_primitives(mock_time, mock_system, mock_index);
     CHECK(mock_system == 3);
   }
@@ -177,7 +177,7 @@ namespace {
     // constraint interface
     int mock_time = 3;
     int mock_system = 2;
-    int mock_index = 1;
+    std::size_t mock_index = 1;
     my_constraint.constrain_rates(mock_time, mock_system, mock_index);
     CHECK(mock_system == 3);
   }
@@ -192,7 +192,7 @@ namespace {
     // constraint interface
     int mock_time = 3;
     int mock_system = 2;
-    int mock_index = 1;
+    std::size_t mock_index = 1;
     my_constraint.constrain_primitives(mock_time, mock_system, mock_index);
     CHECK(mock_system == 3);
     my_constraint.constrain_rates(mock_time, mock_system, mock_index);
@@ -322,7 +322,7 @@ namespace {
       // constraint interface
       int mock_time = 3;
       int mock_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_constraint.constrain_primitives(mock_time, mock_system, mock_index);
       CHECK(mock_system == 3);
     }
@@ -341,7 +341,7 @@ namespace {
       // constraint interface
       int mock_time = 3;
       int mock_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_constraint.constrain_rates(mock_time, mock_system, mock_index);
       CHECK(mock_system == 3);
     }
@@ -353,7 +353,7 @@ namespace {
       // constraint interface
       int mock_time = 3;
       int mock_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_constraint.constrain_rates(mock_time, mock_system, mock_index);
       // referece update
       CHECK(b.times_called == 1);
@@ -440,7 +440,7 @@ namespace {
       // constraint interface
       int mock_time = 3;
       int mock_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_constraint.constrain_primitives(mock_time, mock_system, mock_index);
       // referece update
       CHECK(mock_system == 4);
@@ -457,7 +457,8 @@ namespace {
       CHECK(mock_system == 8);
 
       auto another_constraint = constraint_factory(10, 20);
-      another_constraint.constrain_primitives(mock_time, mock_system, mock_index);
+      another_constraint.constrain_primitives(mock_time, mock_system,
+                                              mock_index);
       // referece update
       CHECK(mock_system == 18);
       // referece update
@@ -499,12 +500,14 @@ namespace {
       // constraint interface
       int mock_time = 3;
       int mock_int_system = 2;
-      int mock_index = 1;
-      my_constraint.constrain_primitives(mock_time, mock_int_system, mock_index);
+      std::size_t mock_index = 1;
+      my_constraint.constrain_primitives(mock_time, mock_int_system,
+                                         mock_index);
       CHECK(mock_int_system == 3);
 
       float mock_float_system = 0.8F;
-      my_constraint.constrain_primitives(mock_time, mock_float_system, mock_index);
+      my_constraint.constrain_primitives(mock_time, mock_float_system,
+                                         mock_index);
       CHECK(mock_float_system == approx(0.3F));
     }
 
@@ -536,25 +539,30 @@ namespace {
       // constraint interface
       int mock_time = 3;
       int mock_int_system = 2;
-      int mock_index = 1;
-      my_constraint.constrain_primitives(mock_time, mock_int_system, mock_index);
+      std::size_t mock_index = 1;
+      my_constraint.constrain_primitives(mock_time, mock_int_system,
+                                         mock_index);
       CHECK(mock_int_system == 3);
 
       float mock_float_system = 0.8F;
-      my_constraint.constrain_primitives(mock_time, mock_float_system, mock_index);
+      my_constraint.constrain_primitives(mock_time, mock_float_system,
+                                         mock_index);
       CHECK(mock_float_system == approx(0.3F));
 
       double mock_double_system = 0.2;
-      my_constraint.constrain_primitives(mock_time, mock_double_system, mock_index);
+      my_constraint.constrain_primitives(mock_time, mock_double_system,
+                                         mock_index);
       CHECK(mock_double_system == approx(-0.6));
 
       char mock_char_system = 'p';
-      my_constraint.constrain_primitives(mock_time, mock_char_system, mock_index);
+      my_constraint.constrain_primitives(mock_time, mock_char_system,
+                                         mock_index);
       CHECK(mock_char_system == 'b');
 
       // no-operation for bool type say
       bool mock_bool_system = true;
-      my_constraint.constrain_primitives(mock_time, mock_bool_system, mock_index);
+      my_constraint.constrain_primitives(mock_time, mock_bool_system,
+                                         mock_index);
       CHECK(mock_bool_system);
     }
 
@@ -575,12 +583,13 @@ namespace {
       // constraint interface
       int mock_time = 3;
       int mock_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_constraint.constrain_primitives(mock_time, mock_system, mock_index);
       CHECK(mock_system == 3);
 
       float mock_float_system(1.5F);
-      my_constraint.constrain_primitives(mock_time, mock_float_system, mock_index);
+      my_constraint.constrain_primitives(mock_time, mock_float_system,
+                                         mock_index);
       CHECK(mock_float_system == approx(1.0F));
 
       // Test for more overloads
@@ -606,11 +615,12 @@ namespace {
       auto my_new_constraint = new_constraint_factory();
       // new_constraint interface
       CHECK(mock_system == 3);
-      my_new_constraint.constrain_primitives(mock_time, mock_system, mock_index);
+      my_new_constraint.constrain_primitives(mock_time, mock_system,
+                                             mock_index);
       CHECK(mock_system == 4);
 
       my_new_constraint.constrain_primitives(mock_time, mock_float_system,
-                                         mock_index);
+                                             mock_index);
       CHECK(mock_float_system == approx(0.5F));
     }
 
@@ -630,17 +640,19 @@ namespace {
       // constraint interface
       int mock_time = 3;
       int mock_int_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_constraint.constrain_rates(mock_time, mock_int_system, mock_index);
       // referece update
       CHECK(b.times_called == 1);
 
       CHECK(mock_int_system == 2);
-      my_constraint.constrain_primitives(mock_time, mock_int_system, mock_index);
+      my_constraint.constrain_primitives(mock_time, mock_int_system,
+                                         mock_index);
       CHECK(mock_int_system == 3);
 
       float mock_float_system(1.5F);
-      my_constraint.constrain_primitives(mock_time, mock_float_system, mock_index);
+      my_constraint.constrain_primitives(mock_time, mock_float_system,
+                                         mock_index);
       CHECK(mock_float_system == approx(1.0F));
 
       // Test for more overloads
@@ -664,21 +676,21 @@ namespace {
 
       CHECK(mock_int_system == 3);
       my_new_constraint.constrain_primitives(mock_time, mock_int_system,
-                                         mock_index);
+                                             mock_index);
       CHECK(mock_int_system == 4);
 
       my_new_constraint.constrain_primitives(mock_time, mock_float_system,
-                                         mock_index);
+                                             mock_index);
       CHECK(mock_float_system == approx(0.5F));
 
       double mock_double_system = 0.1;
       my_new_constraint.constrain_primitives(mock_time, mock_double_system,
-                                         mock_index);
+                                             mock_index);
       CHECK(mock_double_system == approx(1.6));
 
       char mock_char_system = 'p';
       my_new_constraint.constrain_primitives(mock_time, mock_char_system,
-                                         mock_index);
+                                             mock_index);
       CHECK(mock_char_system == 'b');
     }
   }
@@ -706,7 +718,7 @@ namespace {
       // constraint interface
       int mock_time = 3;
       int mock_int_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_constraint.constrain_rates(mock_time, mock_int_system, mock_index);
       CHECK(mock_int_system == 3);
 
@@ -742,7 +754,7 @@ namespace {
       // constraint interface
       int mock_time = 3;
       int mock_int_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_constraint.constrain_rates(mock_time, mock_int_system, mock_index);
       CHECK(mock_int_system == 3);
 
@@ -781,7 +793,7 @@ namespace {
       // constraint interface
       int mock_time = 3;
       int mock_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_constraint.constrain_rates(mock_time, mock_system, mock_index);
       CHECK(mock_system == 3);
 
@@ -836,8 +848,9 @@ namespace {
       // constraint interface
       int mock_time = 3;
       int mock_int_system = 2;
-      int mock_index = 1;
-      my_constraint.constrain_primitives(mock_time, mock_int_system, mock_index);
+      std::size_t mock_index = 1;
+      my_constraint.constrain_primitives(mock_time, mock_int_system,
+                                         mock_index);
       // referece update
       CHECK(b.times_called == 1);
 
@@ -865,7 +878,7 @@ namespace {
       auto my_new_constraint = new_constraint_factory();
       // constraint interface
       my_new_constraint.constrain_primitives(mock_time, mock_int_system,
-                                         mock_index);
+                                             mock_index);
       // referece update
       CHECK(b.times_called == 2);
 

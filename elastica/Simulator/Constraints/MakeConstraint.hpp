@@ -98,24 +98,12 @@ namespace elastica {
         //@{
 
         //**********************************************************************
-        /*!\brief SFINAE Constructor for copyable functors
+        /*!\brief Base Constructor
          */
-        template <
-            typename F = ValueConstraintFunc, typename G = RateConstraintFunc,
-            Requires<cpp17::conjunction_v<std::is_copy_constructible<F>,
-                                          std::is_copy_constructible<G>>> =
-                nullptr>
-        GenericConstraint(ValueConstraintFunc const& v,
-                          RateConstraintFunc const& r)
-            : value_constraint_(v), rate_constraint_(r){}
-        //**********************************************************************
-
-        //**********************************************************************
-        /*!\brief Constructor for move-able functors
-         */
-        GenericConstraint(ValueConstraintFunc&& v,
-                          RateConstraintFunc&& r) noexcept
-            : value_constraint_(std::move(v)), rate_constraint_(std::move(r)){};
+        GenericConstraint(ValueConstraintFunc vc,
+                          RateConstraintFunc rc) noexcept
+            : value_constraint_(std::move(vc)),
+              rate_constraint_(std::move(rc)){};
         //**********************************************************************
 
         //**********************************************************************
@@ -148,8 +136,8 @@ namespace elastica {
          * \see make_value_constraint()
          */
         template <typename TimeType, typename System>
-        inline auto constrain_primitives(TimeType t, System& sys, int index) const
-            -> void {
+        inline auto constrain_primitives(TimeType t, System& sys,
+                                         std::size_t index) const -> void {
           value_constraint_(t, sys, index);
         }
         //**********************************************************************
@@ -160,8 +148,8 @@ namespace elastica {
          * \see make_rate_constraint()
          */
         template <typename TimeType, typename System>
-        inline auto constrain_rates(TimeType t, System& sys, int index) const
-            -> void {
+        inline auto constrain_rates(TimeType t, System& sys,
+                                    std::size_t index) const -> void {
           rate_constraint_(t, sys, index);
         }
         //**********************************************************************

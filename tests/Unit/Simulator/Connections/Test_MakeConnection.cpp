@@ -667,7 +667,7 @@ namespace {
       // connection interface
       int mock_time = 3;
       int mock_int_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
 
       int mock_second_system = 3;
       std::size_t mock_second_index = 1;
@@ -715,7 +715,7 @@ namespace {
       // connection interface
       int mock_time = 3;
       int mock_int_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
 
       int mock_second_system = 3;
       std::size_t mock_second_index = 1;
@@ -764,7 +764,7 @@ namespace {
       // connection interface
       int mock_time = 3;
       int mock_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
 
       int mock_second_system = 3;
       std::size_t mock_second_index = 1;
@@ -828,7 +828,7 @@ namespace {
       // connection interface
       int mock_time = 3;
       int mock_int_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
 
       int mock_second_system = 3;
       std::size_t mock_second_index = 1;
@@ -912,7 +912,7 @@ namespace {
       // connection interface
       int mock_time = 3;
       int mock_int_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
 
       int mock_second_system = 3;
       std::size_t mock_second_index = 1;
@@ -959,7 +959,7 @@ namespace {
       // connection interface
       int mock_time = 3;
       int mock_int_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
 
       int mock_second_system = 3;
       std::size_t mock_second_index = 1;
@@ -1008,7 +1008,7 @@ namespace {
       // connection interface
       int mock_time = 3;
       int mock_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
 
       int mock_second_system = 3;
       std::size_t mock_second_index = 1;
@@ -1072,7 +1072,7 @@ namespace {
       // connection interface
       int mock_time = 3;
       int mock_int_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
 
       int mock_second_system = 3;
       std::size_t mock_second_index = 1;
@@ -1142,6 +1142,44 @@ namespace {
     test_make_connection_overloaded_torques_interface();
   }
 
+  void test_make_connection_no_index_interface() {
+    /* This seems ambigous, so don't test on it.*/
+    auto f1 = [](auto /*time*/, int& first_system, float& second_system) {
+      first_system += 1;
+      second_system += 2.0F;
+    };
+    auto f2 = [](auto /*time*/, float& first_system, int& second_system) {
+      first_system -= 2.0F;
+      second_system -= 1;
+    };
+
+    auto connection_factory =
+        make_connection(make_torque(f1, f2), make_force(f1, f2));
+    auto my_connection = connection_factory();
+    // connection interface
+    int mock_time = 3;
+    int mock_first_system = 2;
+    float mock_second_system = 3.0F;
+
+    my_connection.apply_forces(mock_time, mock_first_system,
+                               mock_second_system);
+    CHECK(mock_first_system == 3);
+    CHECK(mock_second_system == 5.0F);
+
+    my_connection.apply_forces(mock_time, mock_second_system,
+                               mock_first_system);
+    CHECK(mock_first_system == 2);
+    CHECK(mock_second_system == 3.0F);
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE("Unit.Simulator.Connections.MakeConnection.no_index_interface",
+                     "[Unit][Simulator][Connections]") {
+    // clang-format on
+    // These always create a copy of the functors in question
+    test_make_connection_no_index_interface();
+  }
+
   void test_make_connection_unified_interface() {
     SECTION("Unified interface") {
       /// [make_unified_example]
@@ -1177,7 +1215,7 @@ namespace {
       // connection interface
       int mock_time = 3;
       int mock_int_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
 
       int mock_second_system = 3;
       std::size_t mock_second_index = 1;

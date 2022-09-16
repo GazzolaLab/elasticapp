@@ -99,7 +99,7 @@ namespace {
 
     int mock_time = 3;
     int mock_system = 2;
-    int mock_index = 1;
+    std::size_t mock_index = 1;
 
     my_forcing.apply_forces(mock_time, mock_system, mock_index);
     CHECK(mock_system == 3);
@@ -123,7 +123,7 @@ namespace {
     // forcing interface
     int mock_time = 3;
     int mock_system = 2;
-    int mock_index = 1;
+    std::size_t mock_index = 1;
     my_forcing.apply_forces(mock_time, mock_system, mock_index);
     CHECK(value_called == 1);
     value_called = 0;
@@ -163,7 +163,7 @@ namespace {
     // forcing interface
     int mock_time = 3;
     int mock_system = 2;
-    int mock_index = 1;
+    std::size_t mock_index = 1;
     my_forcing.apply_forces(mock_time, mock_system, mock_index);
     CHECK(mock_system == 3);
   }
@@ -177,7 +177,7 @@ namespace {
     // forcing interface
     int mock_time = 3;
     int mock_system = 2;
-    int mock_index = 1;
+    std::size_t mock_index = 1;
     my_forcing.apply_torques(mock_time, mock_system, mock_index);
     CHECK(mock_system == 3);
   }
@@ -192,7 +192,7 @@ namespace {
     // forcing interface
     int mock_time = 3;
     int mock_system = 2;
-    int mock_index = 1;
+    std::size_t mock_index = 1;
     my_forcing.apply_forces(mock_time, mock_system, mock_index);
     CHECK(mock_system == 3);
     my_forcing.apply_torques(mock_time, mock_system, mock_index);
@@ -320,7 +320,7 @@ namespace {
       // forcing interface
       int mock_time = 3;
       int mock_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_forcing.apply_forces(mock_time, mock_system, mock_index);
       CHECK(mock_system == 3);
     }
@@ -338,7 +338,7 @@ namespace {
       // forcing interface
       int mock_time = 3;
       int mock_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_forcing.apply_torques(mock_time, mock_system, mock_index);
       CHECK(mock_system == 3);
     }
@@ -349,7 +349,7 @@ namespace {
       // forcing interface
       int mock_time = 3;
       int mock_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_forcing.apply_torques(mock_time, mock_system, mock_index);
       // referece update
       CHECK(b.times_called == 1);
@@ -432,7 +432,7 @@ namespace {
       // forcing interface
       int mock_time = 3;
       int mock_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_forcing.apply_forces(mock_time, mock_system, mock_index);
       // referece update
       CHECK(mock_system == 4);
@@ -491,7 +491,7 @@ namespace {
       // forcing interface
       int mock_time = 3;
       int mock_int_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_forcing.apply_forces(mock_time, mock_int_system, mock_index);
       CHECK(mock_int_system == 3);
 
@@ -528,7 +528,7 @@ namespace {
       // forcing interface
       int mock_time = 3;
       int mock_int_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_forcing.apply_forces(mock_time, mock_int_system, mock_index);
       CHECK(mock_int_system == 3);
 
@@ -567,7 +567,7 @@ namespace {
       // forcing interface
       int mock_time = 3;
       int mock_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_forcing.apply_forces(mock_time, mock_system, mock_index);
       CHECK(mock_system == 3);
 
@@ -621,7 +621,7 @@ namespace {
       // forcing interface
       int mock_time = 3;
       int mock_int_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_forcing.apply_torques(mock_time, mock_int_system, mock_index);
       // referece update
       CHECK(b.times_called == 1);
@@ -692,7 +692,7 @@ namespace {
       // forcing interface
       int mock_time = 3;
       int mock_int_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_forcing.apply_torques(mock_time, mock_int_system, mock_index);
       CHECK(mock_int_system == 3);
 
@@ -728,7 +728,7 @@ namespace {
       // forcing interface
       int mock_time = 3;
       int mock_int_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_forcing.apply_torques(mock_time, mock_int_system, mock_index);
       CHECK(mock_int_system == 3);
 
@@ -767,7 +767,7 @@ namespace {
       // forcing interface
       int mock_time = 3;
       int mock_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_forcing.apply_torques(mock_time, mock_system, mock_index);
       CHECK(mock_system == 3);
 
@@ -821,7 +821,7 @@ namespace {
       // forcing interface
       int mock_time = 3;
       int mock_int_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_forcing.apply_forces(mock_time, mock_int_system, mock_index);
       // referece update
       CHECK(b.times_called == 1);
@@ -890,7 +890,7 @@ namespace {
       // forcing interface
       int mock_time = 3;
       int mock_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_forcing.apply_forces(mock_time, mock_system, mock_index);
       CHECK(mock_system == 3);
     }
@@ -909,7 +909,7 @@ namespace {
       // forcing interface
       int mock_time = 3;
       int mock_int_system = 2;
-      int mock_index = 1;
+      std::size_t mock_index = 1;
       my_forcing.apply_forces(mock_time, mock_int_system, mock_index);
       CHECK(mock_int_system == 3);
 

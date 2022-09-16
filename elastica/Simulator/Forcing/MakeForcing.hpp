@@ -97,20 +97,8 @@ namespace elastica {
         //**********************************************************************
         /*!\brief SFINAE Constructor for copyable functors
          */
-        template <
-            typename F = ForceFunc, typename G = TorqueFunc,
-            Requires<cpp17::conjunction_v<std::is_copy_constructible<F>,
-                                          std::is_copy_constructible<G>>> =
-                nullptr>
-        GenericForcing(ForceFunc const& v, TorqueFunc const& r)
-            : force_(v), torque_(r) {}
-        //**********************************************************************
-
-        //**********************************************************************
-        /*!\brief Constructor for move-able functors
-         */
-        GenericForcing(ForceFunc&& v, TorqueFunc&& r) noexcept
-            : force_(std::move(v)), torque_(std::move(r)) {}
+        GenericForcing(ForceFunc ff, TorqueFunc rr)
+            : force_(std::move(ff)), torque_(std::move(rr)) {}
         //**********************************************************************
 
         //**********************************************************************

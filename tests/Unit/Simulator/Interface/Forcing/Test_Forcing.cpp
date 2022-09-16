@@ -94,11 +94,11 @@ namespace elastica {
 
       template <typename TimeType, typename System>
       void apply_torques(TimeType /* time */, System& /* system */,
-                         int /* index */) const {}
+                         std::size_t /* index */) const {}
 
       template <typename TimeType, typename System>
       void apply_forces(TimeType /* time */, System& /* system */,
-                        int /* index */) const {}
+                        std::size_t /* index */) const {}
 
       static std::string name() { return "ForcingDefault"; }
     };
@@ -127,11 +127,11 @@ namespace elastica {
       ~ForcingReferenceCounted() override = default;
       template <typename TimeType, typename System>
       void apply_torques(TimeType /* time */, System& /* system */,
-                         int /* index */) const {}
+                         std::size_t /* index */) const {}
 
       template <typename TimeType, typename System>
       void apply_forces(TimeType /* time */, System& /* system */,
-                        int /* index */) const {}
+                        std::size_t /* index */) const {}
 
       static std::string name() { return "ForcingRefCounted"; }
 
@@ -160,11 +160,11 @@ namespace elastica {
 
       template <typename TimeType, typename System>
       void apply_torques(TimeType /* time */, System& /* system */,
-                         int /* index */) const {}
+                         std::size_t /* index */) const {}
 
       template <typename TimeType, typename System>
       void apply_forces(TimeType /* time */, System& /* system */,
-                        int /* index */) const {}
+                        std::size_t /* index */) const {}
 
       static std::string name() noexcept { return "FundamentalForcing"; }
 
@@ -195,11 +195,11 @@ namespace elastica {
 
       template <typename TimeType, typename System>
       void apply_torques(TimeType /* time */, System& /* system */,
-                         int /* index */) const {}
+                         std::size_t /* index */) const {}
 
       template <typename TimeType, typename System>
       void apply_forces(TimeType /* time */, System& /* system */,
-                        int /* index */) const {}
+                        std::size_t /* index */) const {}
 
       static std::string name() { return "AggregateForcing"; }
 
@@ -229,11 +229,11 @@ namespace elastica {
 
       template <typename TimeType, typename System>
       void apply_torques(TimeType /* time */, System& /* system */,
-                         int /* index */) const {}
+                         std::size_t /* index */) const {}
 
       template <typename TimeType, typename System>
       void apply_forces(TimeType /* time */, System& /* system */,
-                        int /* index */) const {}
+                        std::size_t /* index */) const {}
 
       static std::string name() { return "AggregateForcing"; }
 

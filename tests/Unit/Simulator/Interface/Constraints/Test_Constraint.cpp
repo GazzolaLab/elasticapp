@@ -97,11 +97,11 @@ namespace elastica {
 
       template <typename TimeType, typename System>
       void constrain_rates(TimeType /* time */, System& /* system */,
-                           int /* index */) const {}
+                           std::size_t /* index */) const {}
 
       template <typename TimeType, typename System>
       void constrain_primitives(TimeType /* time */, System& /* system */,
-                                int /* index */) const {}
+                                std::size_t /* index */) const {}
 
       static std::string name() { return "ConstraintDefault"; }
     };
@@ -130,11 +130,11 @@ namespace elastica {
       ~ConstraintReferenceCounted() override = default;
       template <typename TimeType, typename System>
       void constrain_rates(TimeType /* time */, System& /* system */,
-                           int /* index */) const {}
+                           std::size_t /* index */) const {}
 
       template <typename TimeType, typename System>
       void constrain_primitives(TimeType /* time */, System& /* system */,
-                                int /* index */) const {}
+                                std::size_t /* index */) const {}
 
       static std::string name() { return "ConstraintRefCounted"; }
 
@@ -164,11 +164,11 @@ namespace elastica {
 
       template <typename TimeType, typename System>
       void constrain_rates(TimeType /* time */, System& /* system */,
-                           int /* index */) const {}
+                           std::size_t /* index */) const {}
 
       template <typename TimeType, typename System>
       void constrain_primitives(TimeType /* time */, System& /* system */,
-                                int /* index */) const {}
+                                std::size_t /* index */) const {}
 
       static std::string name() noexcept { return "FundamentalConstraint"; }
 
@@ -200,11 +200,11 @@ namespace elastica {
 
       template <typename TimeType, typename System>
       void constrain_rates(TimeType /* time */, System& /* system */,
-                           int /* index */) const {}
+                           std::size_t /* index */) const {}
 
       template <typename TimeType, typename System>
       void constrain_primitives(TimeType /* time */, System& /* system */,
-                                int /* index */) const {}
+                                std::size_t /* index */) const {}
 
       static std::string name() { return "AggregateConstraint"; }
 
@@ -235,11 +235,11 @@ namespace elastica {
 
       template <typename TimeType, typename System>
       void constrain_rates(TimeType /* time */, System& /* system */,
-                           int /* index */) const {}
+                           std::size_t /* index */) const {}
 
       template <typename TimeType, typename System>
       void constrain_primitives(TimeType /* time */, System& /* system */,
-                                int /* index */) const {}
+                                std::size_t /* index */) const {}
 
       static std::string name() { return "AggregateConstraint"; }
 

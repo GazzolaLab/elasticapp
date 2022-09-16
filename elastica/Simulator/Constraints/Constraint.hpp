@@ -51,16 +51,6 @@ namespace elastica {
 
       //************************************************************************
       /*! \cond ELASTICA_INTERNAL */
-      /*!\brief Abstract classes for templated constraints within \elastica
-       * \ingroup constraints
-       */
-      DEFINE_FAKE_VIRTUAL(constrain_primitives_internal)
-      DEFINE_FAKE_VIRTUAL(constrain_rates_internal)
-      /*! \endcond */
-      //************************************************************************
-
-      //************************************************************************
-      /*! \cond ELASTICA_INTERNAL */
       /*!\brief Abstract class for storing constraints within \elastica
        * \ingroup constraints
        *
@@ -75,14 +65,8 @@ namespace elastica {
           : public NonCopyable,
             public ::tt::ConformsTo<
                 ::elastica::constraints::protocols::Constraint> {
-       public:
-        //**Type definitions****************************************************
-        //! Inherit type, all derived classes must inherit from this type
-        using Inherit = FakeVirtualInherit_constrain_rates_internal<
-            FakeVirtualInherit_constrain_primitives_internal<
-                ConstraintBase<Registrars>>>;
-
        private:
+        //**Type definitions****************************************************
         //! All creatable (and callable) classes
         using creatable_classes = Registration::registrants<Registrars>;
         //**********************************************************************
@@ -148,8 +132,11 @@ namespace elastica {
         auto constrain_primitives_internal(
             TimeType t, System& sys,
             elastica::detail::numeric_at_t<N> const& index_set) const -> void {
-          return fake_virtual_constrain_primitives_internal<creatable_classes>(
-              this, t, sys, index_set);
+          return call_with_dynamic_type<void, creatable_classes>(
+              this, [&](auto* const constraint) {
+                return constraint->constrain_primitives_internal(t, sys,
+                                                                 index_set);
+              });
         }
         //**********************************************************************
 
@@ -164,8 +151,11 @@ namespace elastica {
                                            const std::size_t* const index_data,
                                            std::size_t n_indices) const
             -> void {
-          return fake_virtual_constrain_primitives_internal<creatable_classes>(
-              this, t, sys, index_data, n_indices);
+          return call_with_dynamic_type<void, creatable_classes>(
+              this, [&](auto* const constraint) {
+                return constraint->constrain_primitives_internal(
+                    t, sys, index_data, n_indices);
+              });
         }
         //**********************************************************************
 
@@ -184,8 +174,10 @@ namespace elastica {
         auto constrain_rates_internal(
             TimeType t, System& sys,
             elastica::detail::numeric_at_t<N> const& index_set) const -> void {
-          return fake_virtual_constrain_rates_internal<creatable_classes>(
-              this, t, sys, index_set);
+          return call_with_dynamic_type<void, creatable_classes>(
+              this, [&](auto* const constraint) {
+                return constraint->constrain_rates_internal(t, sys, index_set);
+              });
         }
         //**********************************************************************
 
@@ -199,8 +191,11 @@ namespace elastica {
         auto constrain_rates_internal(TimeType t, System& sys,
                                       const std::size_t* const index_data,
                                       std::size_t n_indices) const -> void {
-          return fake_virtual_constrain_rates_internal<creatable_classes>(
-              this, t, sys, index_data, n_indices);
+          return call_with_dynamic_type<void, creatable_classes>(
+              this, [&](auto* const constraint) {
+                return constraint->constrain_rates_internal(t, sys, index_data,
+                                                            n_indices);
+              });
         }
         //**********************************************************************
         //@}
@@ -374,12 +369,12 @@ that can act on the given System (second template parameter)
      * \see make_constraint(), ELASTICA_DEFINE_CONSTRAINT()
      */
     template <typename Registrars, typename ConcreteConstraint>
-    class Constraint : public detail::ConstraintBase<Registrars>::Inherit,
+    class Constraint : public detail::ConstraintBase<Registrars>,
                        public CRTPHelper<ConcreteConstraint, Constraint> {
      private:
       //**Type definitions******************************************************
       //! Type of parent
-      using Parent = typename detail::ConstraintBase<Registrars>::Inherit;
+      using Parent = typename detail::ConstraintBase<Registrars>;
       //! This type
       using This = Constraint<Registrars, ConcreteConstraint>;
       //! CRTP Type

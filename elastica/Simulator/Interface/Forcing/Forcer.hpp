@@ -17,9 +17,9 @@
 // Includes
 //******************************************************************************
 
-#include <array>
 #include <cstdint>
 #include <memory>
+#include <utility>  // move
 
 ///
 #include "Simulator/Forcing/Forcing.hpp"
@@ -91,10 +91,10 @@ namespace elastica {
          * \param c Forcing
          * \param index_set indexset
          */
-        Forcer(ForcingUUID uuid, SystemType const& sys, ForcingType c,
+        Forcer(ForcingUUID uuid, SystemType sys, ForcingType c,
                IndexType index_set)
             : ForcerBase(std::move(uuid)),
-              sys_(sys),
+              sys_(std::move(sys)),
               forcing_(std::move(c)),
               indices_(std::move(index_set)){};
         //**********************************************************************
@@ -238,10 +238,10 @@ namespace elastica {
          * \param c Forcing
          * \param index_set indexset
          */
-        Forcer(ForcingUUID uuid, SystemType const& sys, ForcingType c,
+        Forcer(ForcingUUID uuid, SystemType sys, ForcingType c,
                IndexType index_set)
             : ForcerBase(std::move(uuid)),
-              sys_(sys),
+              sys_(std::move(sys)),
               forcing_(std::move(c)),
               indices_(std::move(index_set)){};
         //**********************************************************************
@@ -394,15 +394,13 @@ namespace elastica {
        */
       template <typename System, typename ConcreteForcing,
                 typename IndexSetOrRange>
-      inline auto make_forcer(
-          ForcingUUID id, System const& sys, ConcreteForcing&& bc,
-          IndexSetOrRange&& index_set_or_range) /* noexcept */
+      inline auto make_forcer(ForcingUUID id, System sys, ConcreteForcing bc,
+                              IndexSetOrRange index_set_or_range) /* noexcept */
           -> std::unique_ptr<ForcerBase> {
-        return std::unique_ptr<ForcerBase>(
-            new Forcer<System, std::decay_t<ConcreteForcing>,
-                       std::decay_t<IndexSetOrRange>>(
-                std::move(id), sys, std::forward<ConcreteForcing>(bc),
-                std::forward<IndexSetOrRange>(index_set_or_range)));
+        return std::make_unique<
+            Forcer<System, ConcreteForcing, IndexSetOrRange>>(
+            std::move(id), std::move(sys), std::move(bc),
+            std::move(index_set_or_range));
       }
       /*! \endcond */
       //************************************************************************
@@ -423,18 +421,16 @@ namespace elastica {
        */
       template <typename System, typename ForcingRegistrars>
       inline auto make_forcer(
-          ForcingUUID id, System const& sys,
+          ForcingUUID id, System sys,
           std::unique_ptr<
               ::elastica::forcing::detail::ForcingBase<ForcingRegistrars>>
               bc_ptr,
           std::unique_ptr<::elastica::detail::numeric_at_base_t> at_ptr)
           -> std::unique_ptr<ForcerBase> {
-        return std::unique_ptr<ForcerBase>(
-            new Forcer<System,
-                       std::unique_ptr<::elastica::forcing::detail::ForcingBase<
-                           ForcingRegistrars>>,
-                       std::unique_ptr<::elastica::detail::numeric_at_base_t>>(
-                std::move(id), sys, std::move(bc_ptr), std::move(at_ptr)));
+        return std::make_unique<
+            Forcer<System, decltype(bc_ptr), decltype(at_ptr)>>(
+            std::move(id), std::move(sys), std::move(bc_ptr),
+            std::move(at_ptr));
       }
       /*! \endcond */
       //************************************************************************
@@ -452,18 +448,16 @@ namespace elastica {
        */
       template <typename System, typename ForcingRegistrars>
       inline auto make_forcer(
-          ForcingUUID id, System const& sys,
+          ForcingUUID id, System sys,
           std::unique_ptr<
               ::elastica::forcing::detail::ForcingBase<ForcingRegistrars>>
               bc_ptr,
           std::unique_ptr<::elastica::detail::NumericRange> at_ptr)
           -> std::unique_ptr<ForcerBase> {
-        return std::unique_ptr<ForcerBase>(
-            new Forcer<System,
-                       std::unique_ptr<::elastica::forcing::detail::ForcingBase<
-                           ForcingRegistrars>>,
-                       std::unique_ptr<::elastica::detail::NumericRange>>(
-                std::move(id), sys, std::move(bc_ptr), std::move(at_ptr)));
+        return std::make_unique<
+            Forcer<System, decltype(bc_ptr), decltype(at_ptr)>>(
+            std::move(id), std::move(sys), std::move(bc_ptr),
+            std::move(at_ptr));
       }
       /*! \endcond */
       //************************************************************************

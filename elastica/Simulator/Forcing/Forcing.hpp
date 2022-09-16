@@ -49,16 +49,6 @@ namespace elastica {
 
       //************************************************************************
       /*! \cond ELASTICA_INTERNAL */
-      /*!\brief Abstract classes for templated forcing within \elastica
-       * \ingroup forcing
-       */
-      DEFINE_FAKE_VIRTUAL(apply_forces_internal)
-      DEFINE_FAKE_VIRTUAL(apply_torques_internal)
-      /*! \endcond */
-      //************************************************************************
-
-      //************************************************************************
-      /*! \cond ELASTICA_INTERNAL */
       /*!\brief Abstract class for storing forcings within \elastica
        * \ingroup forcing
        *
@@ -74,10 +64,6 @@ namespace elastica {
             public ::tt::ConformsTo<::elastica::forcing::protocols::Forcing> {
        public:
         //**Type definitions****************************************************
-        //! Inherit type, all derived classes must inherit from this type
-        using Inherit = FakeVirtualInherit_apply_torques_internal<
-            FakeVirtualInherit_apply_forces_internal<ForcingBase<Registrars>>>;
-
        private:
         //! All creatable (and callable) classes
         using creatable_classes = Registration::registrants<Registrars>;
@@ -142,8 +128,10 @@ namespace elastica {
             TimeType t, System& sys,
             ::elastica::detail::numeric_at_t<N> const& index_set) const
             -> void {
-          return fake_virtual_apply_forces_internal<creatable_classes>(
-              this, t, sys, index_set);
+          return call_with_dynamic_type<void, creatable_classes>(
+              this, [&, t = std::move(t)](auto* const forcing) {
+                return forcing->apply_forces_internal(t, sys, index_set);
+              });
         }
         //**********************************************************************
 
@@ -157,8 +145,11 @@ namespace elastica {
         auto apply_forces_internal(TimeType t, System& sys,
                                    const std::size_t* const index_data,
                                    std::size_t n_indices) const -> void {
-          return fake_virtual_apply_forces_internal<creatable_classes>(
-              this, t, sys, index_data, n_indices);
+          return call_with_dynamic_type<void, creatable_classes>(
+              this, [&, t = std::move(t)](auto* const forcing) {
+                return forcing->apply_forces_internal(t, sys, index_data,
+                                                      n_indices);
+              });
         }
         //**********************************************************************
 
@@ -172,8 +163,10 @@ namespace elastica {
         auto apply_forces_internal(
             TimeType t, System& sys,
             ::elastica::detail::NumericRange const& range) const -> void {
-          return fake_virtual_apply_forces_internal<creatable_classes>(
-              this, t, sys, range);
+          return call_with_dynamic_type<void, creatable_classes>(
+              this, [&, t = std::move(t)](auto* const forcing) {
+                return forcing->apply_forces_internal(t, sys, range);
+              });
         }
         //**********************************************************************
 
@@ -194,8 +187,10 @@ namespace elastica {
             TimeType t, System& sys,
             ::elastica::detail::numeric_at_t<N> const& index_set) const
             -> void {
-          return fake_virtual_apply_torques_internal<creatable_classes>(
-              this, t, sys, index_set);
+          return call_with_dynamic_type<void, creatable_classes>(
+              this, [&, t = std::move(t)](auto* const forcing) {
+                return forcing->apply_torques_internal(t, sys, index_set);
+              });
         }
         //**********************************************************************
 
@@ -209,8 +204,11 @@ namespace elastica {
         auto apply_torques_internal(TimeType t, System& sys,
                                     const std::size_t* const index_data,
                                     std::size_t n_indices) const -> void {
-          return fake_virtual_apply_torques_internal<creatable_classes>(
-              this, t, sys, index_data, n_indices);
+          return call_with_dynamic_type<void, creatable_classes>(
+              this, [&, t = std::move(t)](auto* const forcing) {
+                return forcing->apply_torques_internal(t, sys, index_data,
+                                                       n_indices);
+              });
         }
         //**********************************************************************
 
@@ -224,8 +222,10 @@ namespace elastica {
         auto apply_torques_internal(
             TimeType t, System& sys,
             ::elastica::detail::NumericRange const& range) const -> void {
-          return fake_virtual_apply_torques_internal<creatable_classes>(
-              this, t, sys, range);
+          return call_with_dynamic_type<void, creatable_classes>(
+              this, [&, t = std::move(t)](auto* const forcing) {
+                return forcing->apply_torques_internal(t, sys, range);
+              });
         }
         //**********************************************************************
         //@}
@@ -468,12 +468,12 @@ can act on the given System (second template parameter)
      * \see make_forcing(), ELASTICA_DEFINE_FORCING()
      */
     template <typename Registrars, typename ConcreteForcing>
-    class Forcing : public detail::ForcingBase<Registrars>::Inherit,
+    class Forcing : public detail::ForcingBase<Registrars>,
                     public CRTPHelper<ConcreteForcing, Forcing> {
      private:
       //**Type definitions******************************************************
       //! Type of parent
-      using Parent = typename detail::ForcingBase<Registrars>::Inherit;
+      using Parent = typename detail::ForcingBase<Registrars>;
       //! This type
       using This = Forcing<Registrars, ConcreteForcing>;
       //! CRTP Type
