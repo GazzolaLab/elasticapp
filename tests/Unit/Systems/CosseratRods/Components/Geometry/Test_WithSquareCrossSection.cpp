@@ -5,8 +5,8 @@
 
 #include "Framework/TestingFramework.hpp"
 // #include "Systems/CosseratRods/Components/Geometry/Protocols.hpp"
-#include "Systems/CosseratRods/CosseratRodTraits.hpp"
 #include "Systems/CosseratRods/Components/Geometry/WithSquareCosseratRod.hpp"
+#include "Systems/CosseratRods/CosseratRodTraits.hpp"
 ///
 #include "Systems/CosseratRods/Mocks.hpp"
 ///
@@ -41,8 +41,7 @@ namespace {
   using Traits = typename elastica::cosserat_rod::DefaultCosseratRodTraits;
 
   template <typename B>
-  class TestGeometry
-      : public WithSquareCosseratRod<Traits, B> {
+  class TestGeometry : public WithSquareCosseratRod<Traits, B> {
     // The point of this class is to bring
     //    Frame;
     //    DirectionType;
@@ -87,14 +86,40 @@ namespace {
     constexpr auto n_initializers = 6UL;
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
-        blocks::initialize<tags::Position>([&i = n_times_called[0]](std::size_t index) { ++i; return index * 1.0; }),
-        blocks::initialize<tags::Director>([&i = n_times_called[1]](...) { ++i; return 0.5; }),
-        blocks::initialize<tags::ElementDimension>( [&i = n_times_called[2]](...) { ++i; return 4.0; }),
-        blocks::initialize<tags::ReferenceCurvature>( [&i = n_times_called[3]](...) { ++i; return 1.0; }),
-        blocks::initialize<tags::ReferenceShearStretchStrain>( [&i = n_times_called[4]](...) { ++i; return 1.0; }),
-        blocks::initialize<tags::ElementDilatation>( [&i = n_times_called[5]](...) { ++i; return 1.0; })
-      );
+        // FIXME : Remove 10UL taken from mock::initialize_block
+        blocks::initialize<elastica::tags::NElement>([]() { return 10UL; }),
+        blocks::initialize<tags::Position>(
+            [&i = n_times_called[0]](std::size_t index) {
+              ++i;
+              return index * 1.0;
+            }),
+        blocks::initialize<tags::Director>([&i = n_times_called[1]](...) {
+          ++i;
+          return 0.5;
+        }),
+        blocks::initialize<tags::ElementDimension>(
+            [&i = n_times_called[2]](...) {
+              ++i;
+              return 4.0;
+            }),
+        blocks::initialize<tags::ReferenceCurvature>(
+            [&i = n_times_called[3]](...) {
+              ++i;
+              return 1.0;
+            }),
+        blocks::initialize<tags::ReferenceShearStretchStrain>(
+            [&i = n_times_called[4]](...) {
+              ++i;
+              return 1.0;
+            }),
+        blocks::initialize<tags::ElementDilatation>(
+            [&i = n_times_called[5]](...) {
+              ++i;
+              return 1.0;
+            }));
 
+    // FIXME : https://github.com/tp5uiuc/elasticapp/issues/460
+    // Don't use initialize on model
     Model::initialize(model, std::move(initializer));
 
     // check if initialization is done as expected
@@ -105,7 +130,8 @@ namespace {
     CHECK(model.get_element_dimension() == 4.0);
     // blocks::get<tags::ElementLength>(model) = 2.0;
     // volume = dimension * length, only calculated somewhere inside
-    CHECK(model.get_element_volume() == approx(4.0*4.0*4.0*blaze::sqrt(3)));
+    CHECK(model.get_element_volume() ==
+          approx(4.0 * 4.0 * 4.0 * blaze::sqrt(3)));
 
     CHECK(model.get_area() == 4.0 * 4.0 * 4.0);
 

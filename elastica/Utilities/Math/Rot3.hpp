@@ -1,11 +1,21 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Header for a 3D matrix for use in \elastica interface
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
 
+//******************************************************************************
+// Includes
+//******************************************************************************
 #include <blaze/math/StaticMatrix.h>
-
-#include "Utilities/DefineTypes.h"
-namespace elastica {
-  // TODO : customization here based on pe's template
-  using Rot3 = blaze::StaticMatrix<real_t, 3UL, 3UL, blaze::rowMajor,
-                                   blaze::unaligned, blaze::unpadded>;
-
-}  // namespace elastica
+//
+#include "Utilities/Math/Types.hpp"

@@ -275,7 +275,8 @@ namespace {
       for (auto i = 0UL; i < n_units; ++i)
         sim->template emplace_back<Plugin>(
             ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-                blocks::initialize<::elastica::tags::NElement>(n_elements)));
+                blocks::initialize<::elastica::tags::NElement>(
+                    [=](...) { return n_elements; })));
     });
     return sim;
   }

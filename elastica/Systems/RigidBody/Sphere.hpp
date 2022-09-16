@@ -25,7 +25,6 @@
 #include "Systems/RigidBody/RigidBodyPlugin.hpp"
 #include "Systems/RigidBody/RigidBodyTraits.hpp"
 //
-#include "Systems/RigidBody/Sphere/Access.hpp"
 #include "Systems/RigidBody/Sphere/Sphere.hpp"
 
 namespace elastica {

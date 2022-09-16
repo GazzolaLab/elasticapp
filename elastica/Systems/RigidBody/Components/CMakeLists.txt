@@ -4,20 +4,24 @@ set(LIBRARY RigidBodyComponents)
 
 add_elastica_library(${LIBRARY} INTERFACE)
 
-elastica_target_headers(
-        ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
+set(LIBRARY_SOURCES
+        Initialization.hpp
         Tags.hpp
         Types.hpp
         WithRigidBodyGeometry.hpp
+        WithRigidBodyKinematics.hpp
+        )
+
+elastica_target_headers(
+        ${LIBRARY}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
+        ${LIBRARY_SOURCES}
 )
 
 elastica_target_sources(
         ${LIBRARY}
         INTERFACE
-        Tags.hpp
-        Types.hpp
-        WithRigidBodyGeometry.hpp
+        ${LIBRARY_SOURCES}
 )
 
 target_link_libraries(

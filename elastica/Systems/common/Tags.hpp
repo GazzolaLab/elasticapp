@@ -117,6 +117,14 @@ namespace elastica {
     struct ExternalTorques {};
     //**************************************************************************
 
+    //**************************************************************************
+    /*!\brief Tag indicating total number of elements within a system of
+     * cardinality != 1
+     * \ingroup system_tags
+     */
+    struct NElement {};
+    //**************************************************************************
+
   }  // namespace tags
 
 }  // namespace elastica

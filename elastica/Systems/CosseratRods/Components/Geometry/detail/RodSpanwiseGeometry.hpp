@@ -28,6 +28,7 @@
 #include "Systems/CosseratRods/Components/Geometry/detail/Types.hpp"
 ///
 #include "Systems/CosseratRods/Components/Geometry/detail/Tags/RodSpanwiseGeometryTags.hpp"
+#include "Systems/CosseratRods/Components/Initialization.hpp"
 
 namespace elastica {
 
@@ -154,8 +155,6 @@ namespace elastica {
           using VariableDefinitions = RodSpanwiseGeometryVariables<Traits>;
           //! CRTP Type
           using CRTP = CRTPHelper<ComputationalBlock, RodSpanwiseGeometry>;
-          //! CRTP methods
-          using CRTP::self;
           //! Index type
           using index_type = typename Traits::index_type;
           //********************************************************************
@@ -175,52 +174,26 @@ namespace elastica {
           //********************************************************************
 
           //********************************************************************
-          /*!\brief Initialize method for the current component
-           *
-           * \details
-           * initialize() is responsible for initializing the variables present
-           * in the current component in the final block of data. For
-           * InitializedVariables, it fetches the corresponding initializer from
-           * the set of `initializers` to fill in the data. For
-           * ComputedVariables the default value is usually set. In this way,
-           * each component is responsible for initializing its own data in a
-           * manner that does not intrude with initialization from other
-           * components.
-           *
-           * \tparam DownstreamBlock The final block-like object which is
-           * derived from the current component
-           * \tparam CosseratInitializer An Initializer corresponding to the
-           * Cosserat rod hierarchy
+          /*!\copydoc ComponentInitializationDocStub
            */
-          template <typename DownstreamBlock, typename CosseratInitializer>
-          static void initialize(DownstreamBlock& downstream_block,
-                                 CosseratInitializer&& initializers) {
-            //        https://stackoverflow.com/a/53144382
-            struct {
-              CosseratInitializer value;
-            } cap{std::forward<CosseratInitializer>(initializers)};
-            // Note : need a mutable lambda as we can now "move" from cap
-            tmpl::for_each<This::InitializedVariables>(
-                [&downstream_block,
-                 //               cap = std::move(cap)
-                 &cap](auto v) mutable -> void {
-                  using Variable = tmpl::type_from<decltype(v)>;
-                  using Tag = blocks::initializer_t<Variable>;
-
-                  auto& variable(blocks::get<Tag>(downstream_block));
-                  auto&& initializer(blocks::get<Tag>(std::move(cap.value)));
-
-                  const auto dofs = Variable::get_dofs(cap.value.n_elems());
-                  for (std::size_t i = 0; i < dofs; ++i) {
-                    // TODO : This doesn't work on slices, consider having the
-                    // slice member in the initializer itself
-                    Variable::slice(variable, i) = initializer(i);
-                  }
-                });
+          template <typename BlockLike, typename CosseratInitializer>
+          static void initialize(
+              RodSpanwiseGeometry<Traits, BlockLike>& this_component,
+              CosseratInitializer&& initializer) {
+            initialize_component<This::InitializedVariables>(
+                this_component.self(),
+                std::forward<CosseratInitializer>(initializer));
           }
           //********************************************************************
 
          public:
+          //**CRTP method*******************************************************
+          /*!\name CRTP method*/
+          //@{
+          using CRTP::self;
+          //@}
+          //********************************************************************
+
           //**Get methods*******************************************************
           /*!\name Get methods*/
           //@{

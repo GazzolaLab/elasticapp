@@ -29,10 +29,15 @@ namespace {
     cosserat_rod.get_velocity();
     cosserat_rod.get_angular_velocity();
     //
+    cosserat_rod.get_bending_twist_rigidity_matrix();
+    cosserat_rod.get_shear_stretch_rigidity_matrix();
+    //
     cosserat_rod.get_material();
     cosserat_rod.get_mass();
     cosserat_rod.get_external_loads();
     cosserat_rod.get_external_torques();
+    cosserat_rod.get_mass_second_moment_of_inertia();
+    cosserat_rod.get_inverse_mass_second_moment_of_inertia();
     //
     cosserat_rod.get_acceleration();
     cosserat_rod.get_angular_acceleration();
@@ -56,11 +61,20 @@ namespace {
     cosserat_rod.get_velocity(index);
     cosserat_rod.get_angular_velocity(index);
 
+    cosserat_rod.get_acceleration(index);
+    cosserat_rod.get_angular_acceleration(index);
+
     cosserat_rod.get_material(index);
     cosserat_rod.get_mass(index);
 
     cosserat_rod.get_external_loads(index);
     cosserat_rod.get_external_torques(index);
+
+    cosserat_rod.get_mass_second_moment_of_inertia(index);
+    cosserat_rod.get_inverse_mass_second_moment_of_inertia(index);
+
+    cosserat_rod.get_bending_twist_rigidity_matrix(index);
+    cosserat_rod.get_shear_stretch_rigidity_matrix(index);
     /// [rod_member_index_api]
   }
 

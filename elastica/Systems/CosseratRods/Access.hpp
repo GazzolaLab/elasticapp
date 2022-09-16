@@ -13,14 +13,16 @@
 
 #pragma once
 
+//******************************************************************************
+// Includes
+//******************************************************************************
+
 #include <cstddef>  // size_t
 
 #include "Systems/common/Access.hpp"
 /// Forward declarations
 #include "Systems/CosseratRods/Types.hpp"
 ///
-#include "Systems/CosseratRods/Access/CosseratRod.hpp"
-#include "Systems/CosseratRods/Access/CosseratRodWithoutDamping.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
 
 namespace elastica {
@@ -41,17 +43,17 @@ namespace elastica {
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) position(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>>& cosserat_rod) noexcept {
+      ::elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, ComputationalBlock, Components...>& cosserat_rod) noexcept {
     // get_position() wraps around a free function, so the API is still not bad
-    return cosserat_rod.get_position();
+    return cosserat_rod.self().get_position();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) position(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>>& cosserat_rod,
+      ::elastica::cosserat_rod::CosseratRodPlugin<CRT, ComputationalBlock,
+                                                  Components...>& cosserat_rod,
       std::size_t index) noexcept {
     // tentative, can change
     // ideally should be position(blocks::slice(cosserat_rod, index));
@@ -63,26 +65,26 @@ namespace elastica {
     // which is very close to what we have below. The problem here is that
     // position(cosserat_rod) is not a block anymore, so the semantics are not
     // well formed.
-    return cosserat_rod.get_position(index);
+    return cosserat_rod.self().get_position(index);
   }
 
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) position(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>> const&
+      ::elastica::cosserat_rod::CosseratRodPlugin<CRT, ComputationalBlock,
+                                                  Components...> const&
           cosserat_rod) noexcept {
-    return cosserat_rod.get_position();
+    return cosserat_rod.self().get_position();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) position(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>> const& cosserat_rod,
+      ::elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, ComputationalBlock, Components...> const& cosserat_rod,
       std::size_t index) noexcept {
-    return cosserat_rod.get_position(index);
+    return cosserat_rod.self().get_position(index);
   }
   //@}
   //****************************************************************************
@@ -97,37 +99,37 @@ namespace elastica {
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) director(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>>& cosserat_rod) noexcept {
-    return cosserat_rod.get_director();
+      ::elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, ComputationalBlock, Components...>& cosserat_rod) noexcept {
+    return cosserat_rod.self().get_director();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) director(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>>& cosserat_rod,
+      ::elastica::cosserat_rod::CosseratRodPlugin<CRT, ComputationalBlock,
+                                                  Components...>& cosserat_rod,
       std::size_t index) noexcept {
-    return cosserat_rod.get_director(index);
+    return cosserat_rod.self().get_director(index);
   }
 
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) director(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>> const&
+      ::elastica::cosserat_rod::CosseratRodPlugin<CRT, ComputationalBlock,
+                                                  Components...> const&
           cosserat_rod) noexcept {
-    return cosserat_rod.get_director();
+    return cosserat_rod.self().get_director();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) director(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>> const& cosserat_rod,
+      ::elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, ComputationalBlock, Components...> const& cosserat_rod,
       std::size_t index) noexcept {
-    return cosserat_rod.get_director(index);
+    return cosserat_rod.self().get_director(index);
   }
   //@}
   //****************************************************************************
@@ -142,37 +144,37 @@ namespace elastica {
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) velocity(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>>& cosserat_rod) noexcept {
-    return cosserat_rod.get_velocity();
+      ::elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, ComputationalBlock, Components...>& cosserat_rod) noexcept {
+    return cosserat_rod.self().get_velocity();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) velocity(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>>& cosserat_rod,
+      ::elastica::cosserat_rod::CosseratRodPlugin<CRT, ComputationalBlock,
+                                                  Components...>& cosserat_rod,
       std::size_t index) noexcept {
-    return cosserat_rod.get_velocity(index);
+    return cosserat_rod.self().get_velocity(index);
   }
 
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) velocity(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>> const&
+      ::elastica::cosserat_rod::CosseratRodPlugin<CRT, ComputationalBlock,
+                                                  Components...> const&
           cosserat_rod) noexcept {
-    return cosserat_rod.get_velocity();
+    return cosserat_rod.self().get_velocity();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) velocity(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>> const& cosserat_rod,
+      ::elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, ComputationalBlock, Components...> const& cosserat_rod,
       std::size_t index) noexcept {
-    return cosserat_rod.get_velocity(index);
+    return cosserat_rod.self().get_velocity(index);
   }
   //@}
   //****************************************************************************
@@ -187,37 +189,37 @@ namespace elastica {
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) angular_velocity(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>>& cosserat_rod) noexcept {
-    return cosserat_rod.get_angular_velocity();
+      ::elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, ComputationalBlock, Components...>& cosserat_rod) noexcept {
+    return cosserat_rod.self().get_angular_velocity();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) angular_velocity(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>>& cosserat_rod,
+      ::elastica::cosserat_rod::CosseratRodPlugin<CRT, ComputationalBlock,
+                                                  Components...>& cosserat_rod,
       std::size_t index) noexcept {
-    return cosserat_rod.get_angular_velocity(index);
+    return cosserat_rod.self().get_angular_velocity(index);
   }
 
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) angular_velocity(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>> const&
+      ::elastica::cosserat_rod::CosseratRodPlugin<CRT, ComputationalBlock,
+                                                  Components...> const&
           cosserat_rod) noexcept {
-    return cosserat_rod.get_angular_velocity();
+    return cosserat_rod.self().get_angular_velocity();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) angular_velocity(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>> const& cosserat_rod,
+      ::elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, ComputationalBlock, Components...> const& cosserat_rod,
       std::size_t index) noexcept {
-    return cosserat_rod.get_angular_velocity(index);
+    return cosserat_rod.self().get_angular_velocity(index);
   }
   //@}
   //****************************************************************************
@@ -232,36 +234,36 @@ namespace elastica {
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) external_loads(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>>& cosserat_rod) noexcept {
-    return cosserat_rod.get_external_loads();
+      ::elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, ComputationalBlock, Components...>& cosserat_rod) noexcept {
+    return cosserat_rod.self().get_external_loads();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) external_loads(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>>& cosserat_rod,
+      ::elastica::cosserat_rod::CosseratRodPlugin<CRT, ComputationalBlock,
+                                                  Components...>& cosserat_rod,
       std::size_t index) noexcept {
-    return cosserat_rod.get_external_loads(index);
+    return cosserat_rod.self().get_external_loads(index);
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) external_loads(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>> const&
+      ::elastica::cosserat_rod::CosseratRodPlugin<CRT, ComputationalBlock,
+                                                  Components...> const&
           cosserat_rod) noexcept {
-    return cosserat_rod.get_external_loads();
+    return cosserat_rod.self().get_external_loads();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) external_loads(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>> const& cosserat_rod,
+      ::elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, ComputationalBlock, Components...> const& cosserat_rod,
       std::size_t index) noexcept {
-    return cosserat_rod.get_external_loads(index);
+    return cosserat_rod.self().get_external_loads(index);
   }
   //@}
   //****************************************************************************
@@ -276,36 +278,36 @@ namespace elastica {
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) external_torques(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>>& cosserat_rod) noexcept {
-    return cosserat_rod.get_external_torques();
+      ::elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, ComputationalBlock, Components...>& cosserat_rod) noexcept {
+    return cosserat_rod.self().get_external_torques();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) external_torques(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>>& cosserat_rod,
+      ::elastica::cosserat_rod::CosseratRodPlugin<CRT, ComputationalBlock,
+                                                  Components...>& cosserat_rod,
       std::size_t index) noexcept {
-    return cosserat_rod.get_external_torques(index);
+    return cosserat_rod.self().get_external_torques(index);
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) external_torques(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>> const&
+      ::elastica::cosserat_rod::CosseratRodPlugin<CRT, ComputationalBlock,
+                                                  Components...> const&
           cosserat_rod) noexcept {
-    return cosserat_rod.get_external_torques();
+    return cosserat_rod.self().get_external_torques();
   }
   template <typename CRT, template <typename> class ComputationalBlock,
             template <typename /*CRT*/, typename /* ComputationalBlock */>
             class... Components>
   inline constexpr decltype(auto) external_torques(
-      ComputationalBlock<::elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ComputationalBlock, Components...>> const& cosserat_rod,
+      ::elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, ComputationalBlock, Components...> const& cosserat_rod,
       std::size_t index) noexcept {
-    return cosserat_rod.get_external_torques(index);
+    return cosserat_rod.self().get_external_torques(index);
   }
   //@}
   //****************************************************************************

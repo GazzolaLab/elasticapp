@@ -21,6 +21,7 @@
 
 #include "Systems/Block.hpp"
 //
+#include "Systems/RigidBody/Components/Initialization.hpp"
 #include "Systems/RigidBody/Components/Tags.hpp"
 #include "Systems/RigidBody/Components/Types.hpp"
 //
@@ -123,8 +124,6 @@ namespace elastica {
       using VariableDefinitions = WithRigidBodyGeometryVariables<Traits>;
       //! CRTP Type
       using CRTP = CRTPHelper<ComputationalBlock, WithRigidBodyGeometry>;
-      //! CRTP methods
-      using CRTP::self;
       //! Index type
       using index_type = typename Traits::index_type;
       //************************************************************************
@@ -144,49 +143,26 @@ namespace elastica {
       //************************************************************************
 
       //************************************************************************
-      /*!\brief Initialize method for the current component
-       *
-       * \details
-       * initialize() is responsible for initializing the variables present
-       * in the current component in the final block of data. For
-       * InitializedVariables, it fetches the corresponding initializer from
-       * the set of `initializers` to fill in the data. For
-       * ComputedVariables the default value is usually set. In this way,
-       * each component is responsible for initializing its own data in a
-       * manner that does not intrude with initialization from other
-       * components.
-       *
-       * \tparam DownstreamBlock The final block-like object which is
-       * derived from the current component
-       * \tparam RigidBodyInitializer An Initializer corresponding to the
-       * RigidBody rod hierarchy
+      /*!\copydoc ComponentInitializationDocStub
        */
-      template <typename DownstreamBlock, typename RigidBodyInitializer>
-      static void initialize(DownstreamBlock& downstream_block,
-                             RigidBodyInitializer&& initializers) {
-        //        https://stackoverflow.com/a/53144382
-        struct {
-          RigidBodyInitializer value;
-        } cap{std::forward<RigidBodyInitializer>(initializers)};
-        // Note : need a mutable lambda as we can now "move" from cap
-        tmpl::for_each<This::InitializedVariables>(
-            [&downstream_block,
-             //               cap = std::move(cap)
-             &cap](auto v) mutable -> void {
-              using Variable = tmpl::type_from<decltype(v)>;
-              using Tag = blocks::initializer_t<Variable>;
-
-              auto& variable(blocks::get<Tag>(downstream_block));
-              auto&& initializer(blocks::get<Tag>(std::move(cap.value)));
-
-              // invoke directly, assuming this is the template here
-              // TODO : This 0 needs to be properly refactored
-              Variable::slice(variable, 0UL) = initializer();
-            });
+      template <typename BlockLike, typename RigidBodyInitializer>
+      static inline auto initialize(
+          WithRigidBodyGeometry<RBT, BlockLike>& this_component,
+          RigidBodyInitializer&& initializer) -> void {
+        initialize_component<typename This::InitializedVariables>(
+            this_component.self(),
+            std::forward<RigidBodyInitializer>(initializer));
       }
       //************************************************************************
 
      public:
+      //**CRTP method***********************************************************
+      /*!\name CRTP method*/
+      //@{
+      using CRTP::self;
+      //@}
+      //************************************************************************
+
       //**Get methods***********************************************************
       /*!\name Get methods*/
       //@{

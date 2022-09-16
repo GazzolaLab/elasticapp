@@ -4,25 +4,27 @@ set(LIBRARY SystemsCommon)
 
 add_elastica_library(${LIBRARY} INTERFACE)
 
-elastica_target_headers(
-        ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
+set(TARGET_SOURCES
         Access.hpp
+        Cardinality.hpp
+        Components.hpp
+        Initialization.hpp
         Protocols.hpp
         SymplecticStepperAdapter.hpp
         Tags.hpp
         Types.hpp
+        )
+
+elastica_target_headers(
+        ${LIBRARY}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
+        ${TARGET_SOURCES}
 )
 
 elastica_target_sources(
         ${LIBRARY}
         INTERFACE
-        Access.hpp
-        Components.hpp
-        Protocols.hpp
-        SymplecticStepperAdapter.hpp
-        Tags.hpp
-        Types.hpp
+        ${TARGET_SOURCES}
 )
 
 add_subdirectory(Components)

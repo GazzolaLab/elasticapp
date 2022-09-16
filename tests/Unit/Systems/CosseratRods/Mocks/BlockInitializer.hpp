@@ -23,8 +23,6 @@ namespace mock {
     // inline std::size_t n_elems() const&& noexcept { return 10UL; }
   };
 
-
-
   namespace detail {
 
     template <typename>
@@ -40,8 +38,8 @@ namespace mock {
   template <typename AnyMockPlugin, typename... NamedInitializers>
   constexpr inline decltype(auto) initialize_block(
       NamedInitializers&&... initializers) noexcept {
-    using ReturnType = typename detail::Rebind<decltype(
-        blocks::initialize_block<AnyMockPlugin>(
+    using ReturnType = typename detail::Rebind<
+        decltype(blocks::initialize_block<AnyMockPlugin>(
             std::declval<NamedInitializers>()...))>::type;
     return ReturnType{std::forward<NamedInitializers>(initializers).get()...};
     //    return ReturnType{blocks::initialize_block<AnyMockPlugin>(

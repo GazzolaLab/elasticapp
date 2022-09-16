@@ -32,8 +32,10 @@
 /// Types always first
 #include "Systems/CosseratRods/Components/Kinematics/Types.hpp"
 ///
+#include "Systems/CosseratRods/Components/Initialization.hpp"
 #include "Systems/CosseratRods/Components/Kinematics/Protocols.hpp"
 #include "Systems/CosseratRods/Components/Kinematics/Tags.hpp"  // there is only one tags here
+#include "Systems/CosseratRods/Components/Noexcept.hpp"
 #include "Systems/CosseratRods/Components/helpers.hpp"
 
 namespace elastica {
@@ -281,8 +283,6 @@ namespace elastica {
         using VariableDefinitions = detail::RodKinematicsVariables<Traits>;
         //! CRTP Type
         using CRTP = CRTPHelper<ComputationalBlock, WithRodKinematics>;
-        //! CRTP methods
-        using CRTP::self;
         //! Real number type
         using real_type = typename Traits::real_type;
         //! Index type
@@ -311,67 +311,40 @@ namespace elastica {
         using typename VariableDefinitions::Velocity;
         //**********************************************************************
 
-        //**********************************************************************
-        /*!\brief Initialize method for the current component
-         *
-         * \details
-         * initialize() is responsible for initializing the variables present
-         * in the current component in the final block of data. For
-         * InitializedVariables, it fetches the corresponding initializer from
-         * the set of `initializers` to fill in the data. For
-         * ComputedVariables the default value is usually set. In this way,
-         * each component is responsible for initializing its own data in a
-         * manner that does not intrude with initialization from other
-         * components.
-         *
-         * \tparam DownstreamBlock The final block-like object which is
-         * derived from the current component
-         * \tparam CosseratInitializer An Initializer corresponding to the
-         * Cosserat rod hierarchy
+        //********************************************************************
+        /*!\copydoc ComponentInitializationDocStub
          */
-        template <typename DownstreamBlock, typename CosseratInitializer>
-        static void initialize(DownstreamBlock& downstream_block,
-                               CosseratInitializer&& initializers) {
-          //        https://stackoverflow.com/a/53144382
-          struct {
-            CosseratInitializer value;
-          } cap{std::forward<CosseratInitializer>(initializers)};
-          // Note : need a mutable lambda as we can now "move" from cap
-          tmpl::for_each<This::InitializedVariables>(
-              [&downstream_block,
-               //               cap = std::move(cap)
-               &cap](auto v) mutable -> void {
-                using Variable = tmpl::type_from<decltype(v)>;
-                using Tag = blocks::initializer_t<Variable>;
+        template <typename BlockLike, typename CosseratInitializer>
+        static void initialize(
+            WithRodKinematics<Traits, BlockLike>& this_component,
+            CosseratInitializer&& initializer) {
+          // 1. Initialize required variables
+          initialize_component<
+              typename VariableDefinitions::InitializedVariables>(
+              this_component.self(),
+              std::forward<CosseratInitializer>(initializer));
 
-                auto& variable(blocks::get<Tag>(downstream_block));
-                auto&& initializer(blocks::get<Tag>(std::move(cap.value)));
-
-                const auto dofs = Variable::get_dofs(cap.value.n_elems());
-                for (std::size_t i = 0; i < dofs; ++i) {
-                  // TODO : This doesn't work on slices, consider having the
-                  // slice member in the initializer itself
-                  Variable::slice(variable, i) = initializer(i);
-                }
-              });
+          auto const n_elem = blocks::get<elastica::tags::NElement>(
+              cpp17::as_const(initializer))();
 
           /* mass second moment of inertia */
           {
             using Variable = MassSecondMomentOfInertia;
             using Tag = blocks::parameter_t<Variable>;
 
-            auto& variable(blocks::get<Tag>(downstream_block));
+            auto&& variable(blocks::get<Tag>(this_component.self()));
 
             // already initialized
-            auto& material(blocks::get<tags::Material>(downstream_block));
-            auto& reference_lengths(
-                blocks::get<tags::ReferenceElementLength>(downstream_block));
-            const auto dofs = Variable::get_dofs(initializers.n_elems());
+            auto&& material(blocks::get<tags::Material>(this_component.self()));
+            auto&& reference_lengths(blocks::get<tags::ReferenceElementLength>(
+                this_component.self()));
+
+            const auto dofs = Variable::get_dofs(n_elem);
             for (std::size_t idx = 0U; idx < dofs; ++idx) {
               // (I_1, I_2, I_3)
               Variable::slice(variable, idx) = real_type(0.0);
               const Vec3 I_idx =
-                  downstream_block.get_second_moment_of_area(idx) *
+                  this_component.self().get_second_moment_of_area(idx) *
                   ::elastica::Material::get_density(
                       Traits::DataType::Index::slice(material, idx)) *
                   Traits::DataType::Scalar::slice(reference_lengths, idx);
@@ -384,18 +357,18 @@ namespace elastica {
             using Variable = InvMassSecondMomentOfInertia;
             using Tag = blocks::parameter_t<Variable>;
 
-            auto& variable(blocks::get<Tag>(downstream_block));
-            auto& material(blocks::get<tags::Material>(downstream_block));
-            auto& reference_lengths(
-                blocks::get<tags::ReferenceElementLength>(downstream_block));
+            auto&& variable(blocks::get<Tag>(this_component.self()));
+            auto&& material(blocks::get<tags::Material>(this_component.self()));
+            auto&& reference_lengths(blocks::get<tags::ReferenceElementLength>(
+                this_component.self()));
 
-            const auto dofs = Variable::get_dofs(initializers.n_elems());
+            const auto dofs = Variable::get_dofs(n_elem);
             for (std::size_t idx = 0U; idx < dofs; ++idx) {
               // inv(I_1, I_2, I_3)
               Variable::slice(variable, idx) = real_type(0.0);
               const Vec3 I_idx =
                   real_type(1.0) /
-                  (downstream_block.get_second_moment_of_area(idx) *
+                  (this_component.self().get_second_moment_of_area(idx) *
                    ::elastica::Material::get_density(
                        Traits::DataType::Index::slice(material, idx)) *
                    Traits::DataType::Scalar::slice(reference_lengths, idx));
@@ -407,16 +380,15 @@ namespace elastica {
           {
             // using MassVariable = typename Traits::DataType::Scalar;
 
-            auto& mass(blocks::get<::elastica::tags::Mass>(downstream_block));
-            // why?
-            const std::size_t n_elem = initializers.n_elems();
+            auto&& mass(
+                blocks::get<::elastica::tags::Mass>(this_component.self()));
 
             mass = 0.0;  // clear
             for (std::size_t idx = 0UL; idx < n_elem; ++idx) {
               typename Traits::real_type mass_on_element =
                   ::elastica::Material::get_density(
-                      downstream_block.get_material(idx)) *
-                  downstream_block.get_element_volume(idx);
+                      this_component.self().get_material(idx)) *
+                  this_component.self().get_element_volume(idx);
               Mass::slice(mass, idx) += 0.5 * mass_on_element;
               Mass::slice(mass, idx + 1UL) += 0.5 * mass_on_element;
             }
@@ -424,11 +396,11 @@ namespace elastica {
 
           /* Reset forces and torques */
           {
-            auto& external_loads(
-                blocks::get<::elastica::tags::ExternalLoads>(downstream_block));
-            auto& external_torques(
+            auto&& external_loads(blocks::get<::elastica::tags::ExternalLoads>(
+                this_component.self()));
+            auto&& external_torques(
                 blocks::get<::elastica::tags::ExternalTorques>(
-                    downstream_block));
+                    this_component.self()));
             external_loads = 0.0;
             external_torques = 0.0;
           }
@@ -436,29 +408,37 @@ namespace elastica {
         //**********************************************************************
 
        public:
+        //**CRTP method*********************************************************
+        /*!\name CRTP method*/
+        //@{
+        using CRTP::self;
+        //@}
+        //**********************************************************************
+
         //**Get methods*********************************************************
         /*!\name Get methods*/
         //@{
+
+#define STAMP_GETTERS(Var, func)                                         \
+  inline constexpr decltype(auto) func()& noexcept {                     \
+    return blocks::get<::elastica::tags::Var>(self());                   \
+  }                                                                      \
+  inline constexpr decltype(auto) func() const& noexcept {               \
+    return blocks::get<::elastica::tags::Var>(self());                   \
+  }                                                                      \
+  inline constexpr decltype(auto) func(index_type idx)& noexcept {       \
+    return Var::slice(func(), idx);                                      \
+  }                                                                      \
+  inline constexpr decltype(auto) func(index_type idx) const& noexcept { \
+    return Var::slice(func(), idx);                                      \
+  }
 
         //**********************************************************************
         /*!\name Velocity methods*/
         //@{
         /*!\brief Gets velocity of the current rod
          */
-        inline constexpr decltype(auto) get_velocity() & noexcept {
-          return blocks::get<tags::Velocity>(self());
-        }
-        inline constexpr decltype(auto) get_velocity() const& noexcept {
-          return blocks::get<tags::Velocity>(self());
-        }
-        inline constexpr decltype(auto) get_velocity(
-            index_type idx) & noexcept {
-          return Velocity::slice(get_velocity(), idx);
-        }
-        inline constexpr decltype(auto) get_velocity(
-            index_type idx) const& noexcept {
-          return Velocity::slice(get_velocity(), idx);
-        }
+        STAMP_GETTERS(Velocity, get_velocity)
         //@}
         //**********************************************************************
 
@@ -467,20 +447,7 @@ namespace elastica {
         //@{
         /*!\brief Gets angular velocity of the current rod
          */
-        inline constexpr decltype(auto) get_angular_velocity() & noexcept {
-          return blocks::get<tags::AngularVelocity>(self());
-        }
-        inline constexpr decltype(auto) get_angular_velocity() const& noexcept {
-          return blocks::get<tags::AngularVelocity>(self());
-        }
-        inline constexpr decltype(auto) get_angular_velocity(
-            index_type idx) & noexcept {
-          return AngularVelocity::slice(get_angular_velocity(), idx);
-        }
-        inline constexpr decltype(auto) get_angular_velocity(
-            index_type idx) const& noexcept {
-          return AngularVelocity::slice(get_angular_velocity(), idx);
-        }
+        STAMP_GETTERS(AngularVelocity, get_angular_velocity)
         //@}
         //**********************************************************************
 
@@ -489,12 +456,7 @@ namespace elastica {
         //@{
         /*!\brief Gets acceleration of the current rod
          */
-        inline constexpr decltype(auto) get_acceleration() & noexcept {
-          return blocks::get<tags::Acceleration>(self());
-        }
-        inline constexpr decltype(auto) get_acceleration() const& noexcept {
-          return blocks::get<tags::Acceleration>(self());
-        }
+        STAMP_GETTERS(Acceleration, get_acceleration)
         //@}
         //**********************************************************************
 
@@ -503,13 +465,7 @@ namespace elastica {
         //@{
         /*!\brief Gets angular acceleration of the current rod
          */
-        inline constexpr decltype(auto) get_angular_acceleration() & noexcept {
-          return blocks::get<tags::AngularAcceleration>(self());
-        }
-        inline constexpr decltype(auto) get_angular_acceleration()
-            const& noexcept {
-          return blocks::get<tags::AngularAcceleration>(self());
-        }
+        STAMP_GETTERS(AngularAcceleration, get_angular_acceleration)
         //@}
         //**********************************************************************
 
@@ -518,20 +474,7 @@ namespace elastica {
         //@{
         /*!\brief Gets material of the current rod
          */
-        inline constexpr decltype(auto) get_material() & noexcept {
-          return blocks::get<tags::Material>(self());
-        }
-        inline constexpr decltype(auto) get_material() const& noexcept {
-          return blocks::get<tags::Material>(self());
-        }
-        inline constexpr decltype(auto) get_material(
-            std::size_t idx) & noexcept {
-          return Material::slice(get_material(), idx);
-        }
-        inline constexpr decltype(auto) get_material(
-            std::size_t idx) const& noexcept {
-          return Material::slice(get_material(), idx);
-        }
+        STAMP_GETTERS(Material, get_material)
         //@}
         //**********************************************************************
 
@@ -540,19 +483,7 @@ namespace elastica {
         //@{
         /*!\brief Gets mass of the current rod
          */
-        inline constexpr decltype(auto) get_mass() & noexcept {
-          return blocks::get<tags::Mass>(self());
-        }
-        inline constexpr decltype(auto) get_mass() const& noexcept {
-          return blocks::get<tags::Mass>(self());
-        }
-        inline constexpr decltype(auto) get_mass(std::size_t idx) & noexcept {
-          return Mass::slice(get_mass(), idx);
-        }
-        inline constexpr decltype(auto) get_mass(
-            std::size_t idx) const& noexcept {
-          return Mass::slice(get_mass(), idx);
-        }
+        STAMP_GETTERS(Mass, get_mass)
         //@}
         //**********************************************************************
 
@@ -561,20 +492,7 @@ namespace elastica {
         //@{
         /*!\brief Gets external loads of the current rod
          */
-        inline constexpr decltype(auto) get_external_loads() & noexcept {
-          return blocks::get<tags::ExternalLoads>(self());
-        }
-        inline constexpr decltype(auto) get_external_loads() const& noexcept {
-          return blocks::get<tags::ExternalLoads>(self());
-        }
-        inline constexpr decltype(auto) get_external_loads(
-            index_type idx) & noexcept {
-          return ExternalLoads::slice(get_external_loads(), idx);
-        }
-        inline constexpr decltype(auto) get_external_loads(
-            index_type idx) const& noexcept {
-          return ExternalLoads::slice(get_external_loads(), idx);
-        }
+        STAMP_GETTERS(ExternalLoads, get_external_loads)
         //@}
         //**********************************************************************
 
@@ -583,151 +501,32 @@ namespace elastica {
         //@{
         /*!\brief Gets external torques of the current rod
          */
-        inline constexpr decltype(auto) get_external_torques() & noexcept {
-          return blocks::get<tags::ExternalTorques>(self());
-        }
-        inline constexpr decltype(auto) get_external_torques() const& noexcept {
-          return blocks::get<tags::ExternalTorques>(self());
-        }
-        inline constexpr decltype(auto) get_external_torques(
-            index_type idx) & noexcept {
-          return ExternalTorques::slice(get_external_torques(), idx);
-        }
-        inline constexpr decltype(auto) get_external_torques(
-            index_type idx) const& noexcept {
-          return ExternalTorques::slice(get_external_torques(), idx);
-        }
+        STAMP_GETTERS(ExternalTorques, get_external_torques)
         //@}
         //**********************************************************************
 
-        //@}
         //**********************************************************************
-
-        //**Computation methods*************************************************
-        /*!\name Compute methods*/
+        /*!\name Mass SMOI methods*/
         //@{
-
-        //**********************************************************************
-        /*!\brief Gets temporal rate of dilatation based on the current state
-         * of the current rod
-         *
-         * \details
-         * Computes rate of change of elemental dilatations (de / dt) given the
-         * rod positions and velocities (state). \n
-         * dilatation_rate{i} =
-         * (position{i+1} - position{i}) dot
-         * (velocity{i+1} - velocity{i}) /
-         * (length{i} * rest_length{i}) \n
-         * Assumes compute_all_dilatations() has been called.
-         *
-         * \return dilatation rate
-         *
+        /*!\brief Gets mass second moment of inertia of the current rod
          */
-        inline constexpr decltype(auto) get_dilatation_rate() const& noexcept {
-          auto& position(blocks::get<tags::Position>(self()));
-          auto& length(blocks::get<tags::ElementLength>(self()));
-          auto& reference_length(
-              blocks::get<tags::ReferenceElementLength>(self()));
-          auto& velocity(blocks::get<tags::Velocity>(self()));
-          return Traits::Operations::batch_dot(
-                     Traits::Operations::difference_kernel(position),
-                     Traits::Operations::difference_kernel(velocity)) /
-                 (length * reference_length);
-        }
+        STAMP_GETTERS(MassSecondMomentOfInertia,
+                      get_mass_second_moment_of_inertia)
+        //@}
         //**********************************************************************
 
         //**********************************************************************
-        /*!\brief Gets temporal rate of curvature based on the current state
-         * of the current rod
+        /*!\name Inverse Mass SMOI methods*/
+        //@{
+        /*!\brief Gets inverse fo mass second moment of inertia of the current
+         * rod
          */
-        inline decltype(auto) get_curvature_rate() const noexcept {
-          // TODO get curvature rate
-          auto& curvature(blocks::get<tags::Curvature>(self()));
-          auto& omega(blocks::get<tags::AngularAcceleration>(self()));
-          auto averaged_omega = Traits::Operations::average_kernel(omega);
-          return Traits::Operations::difference_kernel(omega) +
-                 Traits::Operations::batch_cross(curvature, averaged_omega);
-        }
+        STAMP_GETTERS(InvMassSecondMomentOfInertia,
+                      get_inverse_mass_second_moment_of_inertia)
+        //@}
         //**********************************************************************
 
-        //**********************************************************************
-        /*!\brief Gets temporal rate of curvature based on the current state
-         * of the current rod
-         */
-        inline decltype(auto) get_shear_stretch_strain_rate() const noexcept {
-          // TODO get shear stretch strain rate
-          auto& director(blocks::get<tags::Director>(self()));
-          auto& velocity(blocks::get<tags::Velocity>(self()));
-          auto& reference_length(
-              blocks::get<tags::ReferenceElementLength>(self()));
-          auto& sigma(blocks::get<tags::ShearStretchStrain>(self()));
-          auto& omega(blocks::get<tags::AngularAcceleration>(self()));
-
-          auto sigma_rate(sigma);
-          auto diff_velocity = Traits::Operations::difference_kernel(velocity);
-          Traits::Operations::batch_add_z_unit(sigma_rate);
-          // z_vector = np.array([ 0.0, 0.0, 1.0 ]).reshape(3, -1);
-          return Traits::Operations::batch_cross(sigma_rate, omega) -
-                 Traits::Operations::batch_matvec(director, diff_velocity) /
-                     reference_length;
-        }
-        //**********************************************************************
-
-       public:  // TODO: temporary change from protected
-        //**********************************************************************
-        /*!\brief Update acceleration based on the current state
-         *
-         * \details
-         * Updates accelerations of the system (translational and angular) given
-         * the state of the system. \n
-         * acceleration_batch{i} =
-         * (internal_force_batch{i} + external_force_batch{i})
-         * / mass_batch{i} \n
-         * alpha_batch{i} = inv_mass_second_moment_of_inertia_batch{i} *
-         * (internal_torque_batch{i} + external_torque_batch{i}) *
-         * dilatation_batch{i} \n
-         * Also resets external_force_batch and external_torque_batch = 0.0
-         *
-         * \example
-         * The following shows a typical use of the update_acceleration()
-         * function with the expected (correct) result also shown.
-         * \snippet test_gov_eqns.cpp update_acceleration_example
-         *
-         * \return void/None
-         *
-         * \see fill later?
-         */
-
-        // TODO: double check how external force and external torque comes into
-        // play
-        inline void update_acceleration() noexcept {
-          auto& mass(blocks::get<tags::Mass>(self()));
-          auto& dilatation(blocks::get<tags::ElementDilatation>(self()));
-          auto& inv_mass_SMOI(
-              blocks::get<tags::InvMassSecondMomentOfInertia>(self()));
-          auto& acceleration(blocks::get<tags::Acceleration>(self()));
-          auto& angular_acceleration(
-              blocks::get<tags::AngularAcceleration>(self()));
-          auto& internal_loads(blocks::get<tags::InternalLoads>(self()));
-          auto& internal_torques(blocks::get<tags::InternalTorques>(self()));
-          auto& external_loads(blocks::get<tags::ExternalLoads>(self()));
-          auto& external_torques(blocks::get<tags::ExternalTorques>(self()));
-
-          auto total_loads = internal_loads + external_loads;
-          // TODO: Revisit division vs power+multiplication
-          // TODO: remove transpose if possible
-          // acceleration = total_loads /
-          // Traits::Operations::expand_for_broadcast(mass);
-          Traits::Operations::batch_division_matvec(acceleration, total_loads,
-                                                    mass);
-
-          auto total_torque = internal_torques + external_torques;
-          Traits::Operations::batch_matvec(
-              angular_acceleration, inv_mass_SMOI,
-              total_torque % Traits::Operations::expand_for_broadcast(
-                                 Traits::Operations::transpose(dilatation)));
-        }
-        //*********************************************************************
+#undef STAMP_GETTERS
 
         //@}
         //**********************************************************************
@@ -752,6 +551,144 @@ namespace elastica {
       // clang-format on
 
     }  // namespace component
+
+    //**************************************************************************
+    /*!\brief Gets temporal rate of dilatation based on the current state
+     * of the current rod
+     * \ingroup cosserat_rod_custom_entries
+     *
+     * \details
+     * Computes rate of change of elemental dilatations (de / dt) given the
+     * rod positions and velocities (state). \n
+     * dilatation_rate{i} =
+     * (position{i+1} - position{i}) dot
+     * (velocity{i+1} - velocity{i}) /
+     * (length{i} * rest_length{i}) \n
+     * Assumes compute_all_dilatations() has been called.
+     *
+     * \return dilatation rate
+     */
+    template <typename Traits, typename ComputationalBlock>
+    decltype(auto) get_dilatation_rate(
+        component::WithRodKinematics<Traits, ComputationalBlock> const&
+            block_like) COSSERATROD_LIB_NOEXCEPT {
+      auto&& position(blocks::get<tags::Position>(block_like.self()));
+      auto&& length(blocks::get<tags::ElementLength>(block_like.self()));
+      auto&& reference_length(
+          blocks::get<tags::ReferenceElementLength>(block_like.self()));
+      auto&& velocity(blocks::get<tags::Velocity>(block_like.self()));
+
+      return Traits::Operations::batch_dot(
+                 Traits::Operations::difference_kernel(position),
+                 Traits::Operations::difference_kernel(velocity)) /
+             (length * reference_length);
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Gets temporal rate of curvature based on the current state
+     * of the current rod
+     *
+     * TODO get curvature rate
+     */
+    template <typename Traits, typename ComputationalBlock>
+    decltype(auto) get_curvature_rate(
+        component::WithRodKinematics<Traits, ComputationalBlock> const&
+            block_like) COSSERATROD_LIB_NOEXCEPT {
+      auto&& curvature(blocks::get<tags::Curvature>(block_like.self()));
+      auto&& omega(blocks::get<tags::AngularAcceleration>(block_like.self()));
+      auto&& averaged_omega = Traits::Operations::average_kernel(omega);
+
+      return Traits::Operations::difference_kernel(omega) +
+             Traits::Operations::batch_cross(curvature, averaged_omega);
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Gets temporal rate of curvature based on the current state
+     * of the current rod
+     * TODO get shear stretch strain rate
+     */
+    template <typename Traits, typename ComputationalBlock>
+    decltype(auto) get_shear_stretch_strain_rate(
+        component::WithRodKinematics<Traits, ComputationalBlock> const&
+            block_like) COSSERATROD_LIB_NOEXCEPT {
+      auto&& director(blocks::get<tags::Director>(block_like.self()));
+      auto&& velocity(blocks::get<tags::Velocity>(block_like.self()));
+      auto&& reference_length(
+          blocks::get<tags::ReferenceElementLength>(block_like.self()));
+      auto&& sigma(blocks::get<tags::ShearStretchStrain>(block_like.self()));
+      auto&& omega(blocks::get<tags::AngularAcceleration>(block_like.self()));
+
+      auto& sigma_rate(sigma);
+      auto&& diff_velocity = Traits::Operations::difference_kernel(velocity);
+      Traits::Operations::batch_add_z_unit(sigma_rate);
+      // z_vector = np.array([ 0.0, 0.0, 1.0 ]).reshape(3, -1);
+      return Traits::Operations::batch_cross(sigma_rate, omega) -
+             Traits::Operations::batch_matvec(director, diff_velocity) /
+                 reference_length;
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Update acceleration based on the current state
+     *
+     * \details
+     * Updates accelerations of the system (translational and angular) given
+     * the state of the system. \n
+     * acceleration_batch{i} =
+     * (internal_force_batch{i} + external_force_batch{i})
+     * / mass_batch{i} \n
+     * alpha_batch{i} = inv_mass_second_moment_of_inertia_batch{i} *
+     * (internal_torque_batch{i} + external_torque_batch{i}) *
+     * dilatation_batch{i} \n
+     * Also resets external_force_batch and external_torque_batch = 0.0
+     *
+     * \example
+     * The following shows a typical use of the update_acceleration()
+     * function with the expected (correct) result also shown.
+     * \snippet test_gov_eqns.cpp update_acceleration_example
+     *
+     * \return void/None
+     *
+     * \see fill later?
+     */
+    template <typename Traits, typename ComputationalBlock>
+    void update_acceleration(
+        component::WithRodKinematics<Traits, ComputationalBlock>& block_like)
+        COSSERATROD_LIB_NOEXCEPT {
+      auto&& mass(blocks::get<tags::Mass>(block_like.self()));
+      auto&& dilatation(
+          blocks::get<tags::ElementDilatation>(block_like.self()));
+      auto&& inv_mass_SMOI(
+          blocks::get<tags::InvMassSecondMomentOfInertia>(block_like.self()));
+      auto&& acceleration(blocks::get<tags::Acceleration>(block_like.self()));
+      auto&& angular_acceleration(
+          blocks::get<tags::AngularAcceleration>(block_like.self()));
+      auto&& internal_loads(
+          blocks::get<tags::InternalLoads>(block_like.self()));
+      auto&& internal_torques(
+          blocks::get<tags::InternalTorques>(block_like.self()));
+      auto&& external_loads(
+          blocks::get<tags::ExternalLoads>(block_like.self()));
+      auto&& external_torques(
+          blocks::get<tags::ExternalTorques>(block_like.self()));
+
+      auto&& total_loads = internal_loads + external_loads;
+      // TODO: Revisit division vs power+multiplication
+      // TODO: remove transpose if possible
+      // acceleration = total_loads /
+      // Traits::Operations::expand_for_broadcast(mass);
+      Traits::Operations::batch_division_matvec(acceleration, total_loads,
+                                                mass);
+
+      auto&& total_torque = internal_torques + external_torques;
+      Traits::Operations::batch_matvec(
+          angular_acceleration, inv_mass_SMOI,
+          total_torque % Traits::Operations::expand_for_broadcast(
+                             Traits::Operations::transpose(dilatation)));
+    }
+    //**************************************************************************
 
   }  // namespace cosserat_rod
 

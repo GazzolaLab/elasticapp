@@ -31,6 +31,7 @@
 /////
 #include "Systems/CosseratRods/Components/Geometry/detail/CosseratRodSpanwiseGeometry.hpp"
 #include "Systems/CosseratRods/Components/Geometry/detail/Tags/CosseratRodCrossSectionInterfaceTags.hpp"
+#include "Systems/CosseratRods/Components/Noexcept.hpp"
 
 namespace elastica {
 
@@ -203,8 +204,6 @@ namespace elastica {
           //! CRTP Type
           using CRTP =
               CRTPHelper<ComputationalBlock, CosseratRodCrossSectionInterface>;
-          //! CRTP methods
-          using CRTP::self;
           //! Real number type
           using real_type = typename Traits::real_type;
           //! Index type
@@ -263,77 +262,64 @@ namespace elastica {
 
          protected:
           //********************************************************************
-          /*!\brief Initialize method for the current component
-           *
-           * \details
-           * initialize() is responsible for initializing the variables present
-           * in the current component in the final block of data. For
-           * InitializedVariables, it fetches the corresponding initializer from
-           * the set of `initializers` to fill in the data. For
-           * ComputedVariables the default value is usually set. In this way,
-           * each component is responsible for initializing its own data in a
-           * manner that does not intrude with initialization from other
-           * components.
-           *
-           * \tparam DownstreamBlock The final block-like object which is
-           * derived from the current component
-           * \tparam CosseratInitializer An Initializer corresponding to the
-           * Cosserat rod hierarchy
+          /*!\copydoc ComponentInitializationDocStub
            */
-          template <typename DownstreamBlock, typename CosseratInitializer>
-          static void initialize(DownstreamBlock& downstream_block,
-                                 CosseratInitializer&& initializers) {
+          template <typename BlockLike, typename CosseratInitializer>
+          static void initialize(
+              CosseratRodCrossSectionInterface<Traits, BlockLike, CrossSection>&
+                  this_component,
+              CosseratInitializer&& initializer) {
             // 1. Initialize parent
-            Parent::initialize(downstream_block,
-                               std::forward<CosseratInitializer>(initializers));
+            Parent::initialize(this_component,
+                               std::forward<CosseratInitializer>(initializer));
 
-            // 2. Initialize generators first
-            struct {
-              CosseratInitializer value;
-            } cap{std::forward<CosseratInitializer>(initializers)};
-            tmpl::for_each<typename VariableDefinitions::InitializedVariables>(
-                [&downstream_block, &cap
-                 // cap = std::move(cap)
-            ](auto v) mutable -> void {
-                  using Variable = tmpl::type_from<decltype(v)>;
-                  using Tag = blocks::initializer_t<Variable>;
-
-                  auto& variable(blocks::get<Tag>(downstream_block));
-                  auto&& initializer(blocks::get<Tag>(std::move(cap.value)));
-
-                  auto dofs = Variable::get_dofs(cap.value.n_elems());
-                  for (std::size_t i = 0; i < dofs; ++i) {
-                    Variable::slice(variable, i) = initializer(i);
-                  }
-                });
+            // 2. Initialize required variables
+            initialize_component<
+                typename VariableDefinitions::InitializedVariables>(
+                this_component.self(),
+                std::forward<CosseratInitializer>(initializer));
 
             // 3. Computed tags (<conserved> volumes)
             {
-              auto& volumes(blocks::get<::elastica::tags::ElementVolume>(
-                  downstream_block));
-              auto& dimensions(blocks::get<::elastica::tags::ElementDimension>(
-                  downstream_block));
-              auto& ref_lengths(
-                  blocks::get<::elastica::tags::ReferenceElementLength>(
-                      downstream_block));
+              auto&& volumes(blocks::get<::elastica::tags::ElementVolume>(
+                  this_component.self()));
+              auto&& dimensions(blocks::get<::elastica::tags::ElementDimension>(
+                  this_component.self()));
+              // FIXME : use lengths instead of ref_lengths
+              // https://github.com/tp5uiuc/elasticapp/issues/462
+#define FIX_462_IMPLEMENTED 0
+#if FIX_462_IMPLEMENTED
+              using LengthVariableTag = ::elastica::tags::ElementLength;
+#else
+              using LengthVariableTag =
+                  ::elastica::tags::ReferenceElementLength;
+#endif
+#undef FIX_462_IMPLEMENTED
 
-              volumes = compute_cross_section_area(dimensions) * ref_lengths;
+              auto&& lengths_variable(
+                  blocks::get<LengthVariableTag>(this_component.self()));
+
+              volumes =
+                  compute_cross_section_area(dimensions) * lengths_variable;
             }
 
             // 4. Update cross-sectional variables (dimension)
-            {
-              downstream_block.compute_cross_sectional_variables();
-            }
+            { compute_cross_sectional_variables(this_component.self()); }
           }
           //********************************************************************
 
          public:
+          //**CRTP method*******************************************************
+          /*!\name CRTP method*/
+          //@{
+          using CRTP::self;
+          //@}
+          //********************************************************************
+
           //**Get methods*******************************************************
           /*!\name Get methods*/
           //@{
 
-          // These are all interface functions, explicitly disallow on temporary
-          // objects by non overload on &&
           //********************************************************************
           /*!\name dimension methods*/
           //@{
@@ -363,10 +349,6 @@ namespace elastica {
           /*!\brief Gets volume of the current rod
            */
           inline constexpr decltype(auto) get_element_volume() & /*noexcept*/ {
-            // Do we need it here, or should it be under update volume?
-            //          (blocks::get<ElementVolume>(self())) =
-            //              (blocks::get<ElementDimension>(self())) *
-            //              (blocks::get<ElementLength>(self()));
             return blocks::get<::elastica::tags::ElementVolume>(self());
           }
           inline constexpr decltype(auto) get_element_volume() const& noexcept {
@@ -388,12 +370,13 @@ namespace elastica {
           //@{
           /*!\brief Gets area of the current rod
            */
-          inline constexpr auto get_area() const& /*noexcept*/ {
+          inline constexpr auto get_area() const& COSSERATROD_LIB_NOEXCEPT {
             // Should give out a VecVecExpr rather than Dimensions object
             // for expression template mechanisms
             return compute_cross_section_area(This::get_element_dimension());
           }
-          inline constexpr auto get_area(index_type idx) const& /*noexcept*/ {
+          inline constexpr auto get_area(
+              index_type idx) const& COSSERATROD_LIB_NOEXCEPT {
             // Should give out a VecVecExpr rather than Dimensions object
             // for expression template mechanisms
             return compute_cross_section_area(This::get_element_dimension(idx));
@@ -408,8 +391,7 @@ namespace elastica {
            */
           template <DirectionType Dim, Requires<(Dim < Frame::D3)> = nullptr>
           inline constexpr decltype(auto) get_second_moment_of_area(
-              index_type idx) const
-          /*noexcept*/ {
+              index_type idx) const COSSERATROD_LIB_NOEXCEPT {
             // Should give out a VecVecExpr rather than Dimensions object
             // for expression template mechanisms
             return compute_second_moment_of_area(
@@ -417,8 +399,7 @@ namespace elastica {
           }
           template <DirectionType Dim, Requires<(Dim == Frame::D3)> = nullptr>
           inline constexpr decltype(auto) get_second_moment_of_area(
-              index_type idx) const
-          /*noexcept*/ {
+              index_type idx) const COSSERATROD_LIB_NOEXCEPT {
             // Should give out a VecVecExpr rather than Dimensions object
             // for expression template mechanisms
             return real_t(2.0) * compute_second_moment_of_area(
@@ -427,94 +408,13 @@ namespace elastica {
           // do not have APIs return vec3, seems to reduce customizability and
           // promotes bad code
           inline constexpr auto get_second_moment_of_area(index_type idx) const
-          /*noexcept*/ {
+              COSSERATROD_LIB_NOEXCEPT {
             return Vec3{real_t(This::get_second_moment_of_area<D1>(idx)),
                         real_t(This::get_second_moment_of_area<D2>(idx)),
                         real_t(This::get_second_moment_of_area<D3>(idx))};
           }
 
           //@}
-          //********************************************************************
-
-         public:
-          //**Computation methods***********************************************
-          /*!\name Computation methods*/
-          //@{
-
-          //**************************************************************************
-          /*!\brief Update rod cross-sectional geometric properties given state.
-          //
-          // \details
-          // Ref: eq (3.3) from \cite gazzola2018forward. \n
-          // radius{i} = (volume{i} / M_PI / length{i})^0.5
-          //
-          // The following members are modified:
-          //  - radius(n_elems) (tag: ElementDimension)
-          //
-          // with the following inputs:
-          //  - volume_batch(n_elems)
-          //  - element_length (3, n_nodes)
-          //
-          // \return void/None
-          //
-          */
-
-          void compute_cross_sectional_variables() noexcept {
-            // Compute new radius based on above lengths
-            // volume conservation
-            auto& volume(blocks::get<tags::ElementVolume>(self()));
-            auto& element_length(blocks::get<tags::ElementLength>(self()));
-            auto& dimensions(blocks::get<tags::ElementDimension>(self()));
-            dimensions = CrossSection::update_dimension(volume, element_length);
-          }
-
-         public:
-          //**************************************************************************
-          /*!\brief Compute elemental shear and stretch mode strains
-          //
-          // \details
-          // Computes elemental shear and stretch modes strains given the rod
-          // positions and directors (state), calls compute_all_dilatations()
-          // inside. Ref: eq (2.9) from \cite gazzola2018forward.
-          // \n
-          // strain_batch{i} =
-          // dilatation_batch{i} * director_collection_batch{i} *
-          // tangent_batch{i} - {0.0, 0.0, 1.0}
-          //
-          // The following members are modified:
-          // - strain_batch(3, n_elems)
-          //
-          // with the following inputs:
-          // - director_collection_batch(3, 3, n_elems)
-          // - temp container of (3, n_elems) for intermediate storage \n
-          // given inputs of compute_all_dilatations() are set.
-          //
-          // \example
-          // The following shows a typical use of the
-          // compute_shear_stretch_strains()
-          // function with the expected (correct) result also shown.
-          // \snippet test_gov_eqns.cpp compute_shear_stretch_strains_example
-          //
-          // \return void/None
-          //
-          // \see fill later?
-          */
-          void compute_shear_strains() noexcept {
-            // Q (et - d_3)
-            // Q is always latest, only e and t need to be computed
-            Parent::update_spanwise_variables(self()); // Dilatation updated here!
-            compute_cross_sectional_variables();
-            Parent::update_shear_stretch_strain(self());
-          }
-          //********************************************************************
-
-          //********************************************************************
-          // TODO : document
-          void compute_curvature() noexcept {
-            // kappa is the only rotational diagnostic, so we direcelty compute
-            // that here
-            Parent::update_curvature(self());
-          }
           //********************************************************************
 
           //@}
@@ -525,6 +425,100 @@ namespace elastica {
       }  // namespace detail
 
     }  // namespace component
+
+    //**************************************************************************
+    /*!\brief Update rod cross-sectional geometric properties given state.
+     * \ingroup cosserat_rod_custom_entries
+     *
+     * \details
+     * Ref: eq (3.3) from \cite gazzola2018forward. \n
+     * radius{i} = (volume{i} / M_PI / length{i})^0.5
+     *
+     * The following members are modified:
+     *  - radius(n_elems) (tag: ElementDimension)
+     *
+     * with the following inputs:
+     *  - volume_batch(n_elems)
+     *  - element_length (3, n_nodes)
+     *
+     * \return void/None
+     */
+    template <typename Traits, typename ComputationalBlock,
+              typename CrossSection>
+    void compute_cross_sectional_variables(
+        component::detail::CosseratRodCrossSectionInterface<
+            Traits, ComputationalBlock, CrossSection>& block_like)
+        COSSERATROD_LIB_NOEXCEPT {
+      auto&& volume(blocks::get<tags::ElementVolume>(block_like.self()));
+      auto&& element_length(
+          blocks::get<tags::ElementLength>(block_like.self()));
+      auto&& dimensions(blocks::get<tags::ElementDimension>(block_like.self()));
+      dimensions = CrossSection::update_dimension(volume, element_length);
+    }
+    //**********************************************************************
+
+    //**************************************************************************
+    /*!\brief Compute elemental shear and stretch mode strains
+     * \ingroup cosserat_rod_custom_entries
+     *
+     * \details
+     * Computes elemental shear and stretch modes strains given the rod
+     * positions and directors (state), calls compute_all_dilatations()
+     * inside. Ref: eq (2.9) from \cite gazzola2018forward.
+     *
+     * strain_batch{i} =
+     * dilatation_batch{i} * director_collection_batch{i} *
+     * tangent_batch{i} - {0.0, 0.0, 1.0}
+     *
+     * The following members are modified:
+     * - strain_batch(3, n_elems)
+     *
+     * with the following inputs:
+     * - director_collection_batch(3, 3, n_elems)
+     * - temp container of (3, n_elems) for intermediate storage
+     *
+     * given inputs of compute_all_dilatations() are set.
+     *
+     * \example
+     * The following shows a typical use of the
+     * compute_shear_stretch_strains()
+     * function with the expected (correct) result also shown.
+     * \snippet test_gov_eqns.cpp compute_shear_stretch_strains_example
+     *
+     * \return void/None
+     *
+     * \see fill later?
+     */
+    template <typename Traits, typename ComputationalBlock,
+              typename CrossSection>
+    void compute_shear_strains(
+        component::detail::CosseratRodCrossSectionInterface<
+            Traits, ComputationalBlock, CrossSection>& block_like)
+        COSSERATROD_LIB_NOEXCEPT {
+      // Q (et - d_3)
+      // Q is always latest, only e and t need to be computed
+      // Dilatation updated here!
+      update_spanwise_variables(block_like.self());
+      compute_cross_sectional_variables(block_like.self());
+      update_shear_stretch_strain(block_like.self());
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Compute curvature
+     * \ingroup cosserat_rod_custom_entries
+     * \note
+     * kappa is the only rotational diagnostic, so we direcetly compute
+     * that here
+     */
+    template <typename Traits, typename ComputationalBlock,
+              typename CrossSection>
+    void compute_curvature(component::detail::CosseratRodCrossSectionInterface<
+                           Traits, ComputationalBlock, CrossSection>&
+                               block_like) COSSERATROD_LIB_NOEXCEPT {
+      update_curvature(block_like.self());
+    }
+    //**************************************************************************
 
   }  // namespace cosserat_rod
 

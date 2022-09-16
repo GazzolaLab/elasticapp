@@ -5,6 +5,8 @@
 #pragma once
 
 #include "Systems/Block.hpp"
+#include "Systems/common/Cardinality.hpp"
+#include "Systems/common/Initialization.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TMPLDebugging.hpp"
@@ -15,6 +17,7 @@ namespace mock {
   template <template <typename> class B, template <typename> class T>
   struct SingleComponentPlugin
       : public T<B<SingleComponentPlugin<B, T>>>,
+        public ::elastica::HasMultipleCardinality<SingleComponentPlugin<B, T>>,
         public ::tt::ConformsTo<blocks::protocols::Plugin> {
     using This = SingleComponentPlugin<B, T>;
     using Model = B<This>;
@@ -31,6 +34,8 @@ namespace mock {
             template <typename> class... T>
   struct MultiComponentPlugin
       : public T<B<MultiComponentPlugin<Tr, B, T...>>>...,
+        public ::elastica::HasMultipleCardinality<
+            MultiComponentPlugin<Tr, B, T...>>,
         public ::tt::ConformsTo<blocks::protocols::Plugin> {
     using This = MultiComponentPlugin<Tr, B, T...>;
     using Model = B<This>;
@@ -107,3 +112,24 @@ namespace mock {
   using MockPlugin = MultiComponentPlugin<Tr, blocks::Block, T...>;
 
 }  // namespace mock
+
+namespace elastica {
+
+  template <typename Variables, typename Tr, template <typename> class... T,
+            typename Initializer>
+  void initialize_component(::blocks::BlockSlice<mock::MultiComponentPlugin<
+                                Tr, ::blocks::BlockSlice, T...>>& block_like,
+                            Initializer initializer) {
+    detail::initialize_component<Variables>(block_like, std::move(initializer));
+  }
+
+  template <typename Variables, typename Tr, template <typename> class... T,
+            typename Initializer>
+  void initialize_component(
+      ::blocks::Block<mock::MultiComponentPlugin<Tr, ::blocks::Block, T...>>&
+          block_like,
+      Initializer initializer) {
+    detail::initialize_component<Variables>(block_like, std::move(initializer));
+  }
+
+}  // namespace elastica

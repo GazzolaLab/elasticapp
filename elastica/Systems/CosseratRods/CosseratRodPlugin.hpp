@@ -25,6 +25,7 @@
 #include "Systems/Block/Block.hpp"  // for plugin, get
 ///
 #include "Systems/CosseratRods/Tags.hpp"
+#include "Systems/common/Cardinality.hpp"
 #include "Utilities/End.hpp"
 #include "Utilities/TMPL.hpp"
 ///
@@ -202,6 +203,8 @@ namespace elastica {
               class... Components>
     class CosseratRodPlugin
         : public detail::CosseratRodPluginVariables<CRT>,
+          public HasMultipleCardinality<
+              CosseratRodPlugin<CRT, ComputationalBlock, Components...>>,
           public Components<
               CRT, ComputationalBlock<CosseratRodPlugin<CRT, ComputationalBlock,
                                                         Components...>>>...,
@@ -234,6 +237,7 @@ namespace elastica {
       using ConstReference = Self const&;
       //************************************************************************
 
+     public:
       //**Self method***********************************************************
       /*!\brief Access to the underlying derived
       //
@@ -316,31 +320,37 @@ namespace elastica {
        * \tparam CosseratInitializer An Initializer corresponding to the
        * Cosserat rod hierarchy
        */
-      template <class DownstreamBlock, class CosseratInitializer>
-      static void initialize(DownstreamBlock& downstream_block,
-                             CosseratInitializer&& initializers) {
+      template <template <typename> class BlockLike,
+                typename CosseratInitializer>
+      static void initialize(
+          CosseratRodPlugin<Traits, BlockLike, Components...>& this_component,
+          CosseratInitializer&& initializer) {
         // initialize the elements boi
         {
           using Variable = typename VariableDefinitions::NElement;
           using Tag = blocks::initializer_t<Variable>;
 
-          auto& variable(blocks::get<Tag>(downstream_block));
+          auto& variable(blocks::get<Tag>(this_component.self()));
           // this automatically is deduced to 1
           constexpr index_type index_of_rod = 0UL;
+          auto const n_elem = blocks::get<Tag>(cpp17::as_const(initializer))();
           ELASTICA_ASSERT(
-              Variable::slice(variable, index_of_rod) == initializers.n_elems(),
+              Variable::slice(variable, index_of_rod) == n_elem,
               "Invariant violation detected, contact the developers!");
         }
 
+        // Pass self here to make minimal changes to the tests.
         EXPAND_PACK_LEFT_TO_RIGHT(Components<CRT, Self>::initialize(
-            downstream_block, std::forward<CosseratInitializer>(initializers)));
+            this_component.self(),
+            std::forward<CosseratInitializer>(initializer)));
       }
       //************************************************************************
 
       //**Utility functions*****************************************************
       /*!\name Utility functions */
       //@{
-     protected:
+
+     public:
       //************************************************************************
       /*!\name Element methods*/
       //@{
@@ -350,21 +360,25 @@ namespace elastica {
         // this version is only for testing
         return blocks::get<tags::NElement>(self());
       }
+
+      inline constexpr decltype(auto) n_elements() const& noexcept {
+        // this version is only for testing
+        return blocks::get<tags::NElement>(self());
+      }
+
       inline auto n_elements(index_type const unit) & noexcept -> size_type& {
         // Zero-based indexing
         return NElement::slice(n_elements(), unit);
         // return n_elements()[unit];
       }
 
-     public:
-      inline constexpr decltype(auto) n_elements() const& noexcept {
-        return blocks::get<tags::NElement>(self());
-      }
-      // Zero-based indexing
       inline auto n_elements(index_type const unit) const& noexcept
-          -> size_type {
+          -> size_type const& {
+        // Zero-based indexing
         return NElement::slice(n_elements(), unit);
+        // return n_elements()[unit];
       }
+
       inline auto n_elements(index_type const start_unit,
                              size_type const slice_size) const& noexcept
           -> size_type {
@@ -383,7 +397,7 @@ namespace elastica {
       //@}
       //************************************************************************
 
-     protected:
+     public:
       //************************************************************************
       /*!\name Ghost methods*/
       //@{

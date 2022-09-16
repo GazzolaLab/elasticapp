@@ -21,8 +21,13 @@
 #include "Systems/CosseratRods/Components/Elasticity/detail/Types.hpp"
 ///
 #include "Systems/Block.hpp"
+//
+#include "Systems/common/Tags.hpp"
+//
 #include "Systems/CosseratRods/Components/Elasticity/detail/Tags/LinearHyperElasticityFacadeTags.hpp"
 #include "Systems/CosseratRods/Components/Geometry/detail/Tags/CosseratRodSpanwiseGeometryTags.hpp"
+#include "Systems/CosseratRods/Components/Noexcept.hpp"
+//
 #include "Utilities/Math/Vec3.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -161,51 +166,74 @@ namespace elastica {
           //! CRTP Type
           using CRTP =
               CRTPHelper<ComputationalBlock, LinearHyperElasticityFacade>;
-          //! CRTP methods
-          using CRTP::self;
+          //! Index type
+          using index_type = typename Traits::index_type;
           //********************************************************************
 
-          /*
-          // These need to be there to feed in stuff to hyper-elasticity base
-          template <typename B>
-          static inline auto get_moment_of_inertia_along_principal_directions(
-              B const& block, std::size_t i) noexcept {
-            return Vec3{block.template get_second_moment_of_area<B::D1>(),
-                        block.template get_second_moment_of_area<B::D1>(),
-                        block.template get_second_moment_of_area<B::D3>()};
-            // return block.get_second_moment_of_area(i);
-          }
-          */
-
-          /*
-          inline auto get_moment_of_inertia_along_principal_directions(
-              std::size_t idx) const noexcept {
-            return self().get_second_moment_of_area(idx);
-          }
-          */
+         public:
+          //**CRTP method*******************************************************
+          /*!\name CRTP method*/
+          //@{
+          using CRTP::self;
+          //@}
+          //********************************************************************
 
           //**Get methods*******************************************************
           /*!\name Get methods*/
           //@{
 
           //********************************************************************
-          /*!\name Area along principal direction methods*/
+          /*!\name bending-twist methods*/
           //@{
-          /*!\brief Gets effective area along principal directions of the
-           * current rod
+          /*!\brief Gets get_bending_twist_rigidity_matrix of the current rod
            */
-          template <typename B>
-          static inline auto get_effective_area_along_principal_directions(
-              B const& block, std::size_t i) noexcept -> Vec3 {
-            // TODO : Return a Matrix type instead
-            return Vec3{real_t(block.get_area(i) * block.shape_factor()),
-                        real_t(block.get_area(i) * block.shape_factor()),
-                        real_t(block.get_area(i))};
+          inline constexpr decltype(auto)
+          get_bending_twist_rigidity_matrix() & noexcept {
+            return blocks::get<::elastica::tags::BendingTwistRigidityMatrix>(
+                self());
           }
-          inline auto get_effective_area_along_principal_directions(
-              std::size_t i) const noexcept {
-            return This::get_effective_area_along_principal_directions(self(),
-                                                                       i);
+          inline constexpr decltype(auto) get_bending_twist_rigidity_matrix()
+              const& noexcept {
+            return blocks::get<::elastica::tags::BendingTwistRigidityMatrix>(
+                self());
+          }
+          inline constexpr decltype(auto) get_bending_twist_rigidity_matrix(
+              index_type idx) & noexcept {
+            return BendingTwistRigidityMatrix::slice(
+                get_bending_twist_rigidity_matrix(), idx);
+          }
+          inline constexpr decltype(auto) get_bending_twist_rigidity_matrix(
+              index_type idx) const& noexcept {
+            return BendingTwistRigidityMatrix::slice(
+                get_bending_twist_rigidity_matrix(), idx);
+          }
+          //@}
+          //********************************************************************
+
+          //********************************************************************
+          /*!\name shear-stretch methods*/
+          //@{
+          /*!\brief Gets get_shear_stretch_rigidity_matrix of the current rod
+           */
+          inline constexpr decltype(auto)
+          get_shear_stretch_rigidity_matrix() & noexcept {
+            return blocks::get<::elastica::tags::ShearStretchRigidityMatrix>(
+                self());
+          }
+          inline constexpr decltype(auto) get_shear_stretch_rigidity_matrix()
+              const& noexcept {
+            return blocks::get<::elastica::tags::ShearStretchRigidityMatrix>(
+                self());
+          }
+          inline constexpr decltype(auto) get_shear_stretch_rigidity_matrix(
+              index_type idx) & noexcept {
+            return ShearStretchRigidityMatrix::slice(
+                get_shear_stretch_rigidity_matrix(), idx);
+          }
+          inline constexpr decltype(auto) get_shear_stretch_rigidity_matrix(
+              index_type idx) const& noexcept {
+            return ShearStretchRigidityMatrix::slice(
+                get_shear_stretch_rigidity_matrix(), idx);
           }
           //@}
           //********************************************************************
@@ -228,31 +256,19 @@ namespace elastica {
 
          protected:
           //********************************************************************
-          /*!\brief Initialize method for the current component
-           *
-           * \details
-           * initialize() is responsible for initializing the variables present
-           * in the current component in the final block of data. For
-           * InitializedVariables, it fetches the corresponding initializer from
-           * the set of `initializers` to fill in the data. For
-           * ComputedVariables the default value is usually set. In this way,
-           * each component is responsible for initializing its own data in a
-           * manner that does not intrude with initialization from other
-           * components.
-           *
-           * \tparam DownstreamBlock The final block-like object which is
-           * derived from the current component
-           * \tparam CosseratInitializer An Initializer corresponding to the
-           * Cosserat rod hierarchy
+          /*!\copydoc ComponentInitializationDocStub
            */
-          template <typename DownstreamBlock, typename CosseratInitializer>
-          static void initialize(DownstreamBlock& downstream_block,
-                                 CosseratInitializer&& initializers) {
+          template <typename BlockLike, typename CosseratInitializer>
+          static void initialize(
+              LinearHyperElasticityFacade<Traits, BlockLike>& this_component,
+              CosseratInitializer&& initializer) {
             // 1. Initialize generators first
 
             // In this case, the generator expressions are customized to only
             // provide E or B, the modulus of elasticity. We are responsible
             // for putting in the correct are etc. from the expression.
+            auto const n_elem = blocks::get<elastica::tags::NElement>(
+                cpp17::as_const(initializer))();
 
             // bending and twisting only
             {
@@ -261,38 +277,37 @@ namespace elastica {
               using Tag = blocks::parameter_t<Variable>;
               using real_type = typename Traits::real_type;
 
-              auto& variable(blocks::get<Tag>(downstream_block));
+              auto&& variable(blocks::get<Tag>(this_component.self()));
               auto&& stiffness_along_principal_directions_initializer =
-                  blocks::get<Tag>(std::move(initializers));
+                  blocks::get<Tag>(std::move(initializer));
 
-              auto& rest_length(
+              auto&& rest_length(
                   blocks::get<elastica::tags::ReferenceElementLength>(
-                      downstream_block));
+                      this_component.self()));
 
-              const auto dofs = Variable::get_dofs(initializers.n_elems());
+              auto const dofs = Variable::get_dofs(n_elem);
               auto stiffness =
                   stiffness_along_principal_directions_initializer(0);
+              auto MOI = this_component.self().get_second_moment_of_area(0);
+              auto len = ScalarVariable::slice(rest_length, 0);
+
               for (std::size_t idx = 0U; idx < dofs; ++idx) {
                 // (E, E, G) * (I_1, I_2, I_3)
-                auto prev_stiffness = stiffness;
+                auto const prev_stiffness = stiffness;
+                auto const prev_MOI = MOI;
+                auto const prev_len = len;
+
                 stiffness =
                     stiffness_along_principal_directions_initializer(idx + 1);
+                MOI = this_component.self().get_second_moment_of_area(idx + 1);
+                len = ScalarVariable::slice(rest_length, idx + 1);
+
                 Variable::slice(variable, idx) = real_type(0.0);
                 Variable::diagonal_assign(
                     variable, idx,
-                    (ScalarVariable::slice(rest_length, idx) *
-                         (prev_stiffness *
-                          downstream_block.get_second_moment_of_area(idx)) +
-                     ScalarVariable::slice(rest_length, idx + 1) *
-                         (stiffness *
-                          downstream_block.get_second_moment_of_area(idx +
-                                                                     1))) /
-                        (ScalarVariable::slice(rest_length, idx) +
-                         ScalarVariable::slice(rest_length, idx + 1)));
-                /*
-                    This::get_moment_of_inertia_along_principal_directions(
-                        downstream_block, i);
-                        */
+                    (prev_len * prev_stiffness * prev_MOI +
+                     len * stiffness * MOI) /
+                        (prev_len + len));
               }
             }
 
@@ -302,19 +317,19 @@ namespace elastica {
               using Tag = blocks::parameter_t<Variable>;
               using real_type = typename Traits::real_type;
 
-              auto& variable(blocks::get<Tag>(downstream_block));
+              auto&& variable(blocks::get<Tag>(this_component.self()));
               auto&& stiffness_along_principal_directions_initializer =
-                  blocks::get<Tag>(std::move(initializers));
+                  blocks::get<Tag>(std::move(initializer));
 
-              const auto dofs = Variable::get_dofs(initializers.n_elems());
+              auto const dofs = Variable::get_dofs(n_elem);
               for (std::size_t idx = 0U; idx < dofs; ++idx) {
                 // (G, G, E) * (\alpha A, \alpha A, A)
                 Variable::slice(variable, idx) = real_type(0.0);
                 Variable::diagonal_assign(
                     variable, idx,
                     stiffness_along_principal_directions_initializer(idx) *
-                        This::get_effective_area_along_principal_directions(
-                            downstream_block, idx));
+                        compute_effective_area_along_principal_directions(
+                            this_component.self(), idx));
               }
             }
           }
@@ -325,6 +340,26 @@ namespace elastica {
       }  // namespace detail
 
     }  // namespace component
+
+    //**************************************************************************
+    /*!\name Area along principal direction methods
+     * \ingroup cosserat_rod_custom_entries
+     *
+     *!\brief Gets effective area along principal directions of the
+     * current rod
+     */
+    template <typename Traits, typename ComputationalBlock>
+    auto compute_effective_area_along_principal_directions(
+        component::detail::LinearHyperElasticityFacade<
+            Traits, ComputationalBlock>& block_like,
+        std::size_t i) COSSERATROD_LIB_NOEXCEPT -> Vec3 {
+      return Vec3{real_t(block_like.self().get_area(i) *
+                         block_like.self().shape_factor()),
+                  real_t(block_like.self().get_area(i) *
+                         block_like.self().shape_factor()),
+                  real_t(block_like.self().get_area(i))};
+    }
+    //**************************************************************************
 
   }  // namespace cosserat_rod
 
