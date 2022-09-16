@@ -161,60 +161,6 @@ namespace blocks {
     using index_type = typename Traits::index_type;
     //**************************************************************************
 
-   public:
-    //////////////////////////// start conformance /////////////////////////////
-
-    //**Check functions*********************************************************
-    /*!\name Check functions */
-    //@{
-    /*!\brief Checks whether indices are within range of accessible values
-     */
-    inline auto check(std::size_t index_to_be_sliced) const -> std::size_t {
-      constexpr index_type current_rod_index(0UL);
-      std::size_t max_index(PluginType::n_elements(current_rod_index));
-      if (index_to_be_sliced < max_index) {
-        return index_to_be_sliced;
-      } else {
-        throw std::out_of_range(
-            "Index to be sliced exceeds the number of dofs inside a Cosserat "
-            "rod blockslice!");
-      }
-    }
-    inline auto check(elastica::from_end index_to_be_sliced) const
-        -> std::size_t {
-      // cannot be 0
-      const auto fe = index_to_be_sliced.i;
-      constexpr index_type current_rod_index(0UL);
-      std::size_t max_index(PluginType::n_elements(current_rod_index));
-      if (fe <= max_index) {
-        return max_index - fe;
-      } else {
-        throw std::out_of_range(
-            "Index to be sliced from the end exceeds the number of dogs inside "
-            "a Cosserat rod blocksize!");
-      }
-    };
-    //**************************************************************************
-
-    //@}
-    //**************************************************************************
-
-    ///////////////////////////// end conformance //////////////////////////////
-
-    //**Ghosting functions******************************************************
-    /*!\name Ghosting functions */
-    //@{
-
-    //**************************************************************************
-    /*!\brief Fills ghosts for a variable of tag `Tag` in the current Block
-     * Needed because some of the kernels use it
-     */
-    template <typename Tag>
-    void fill_ghosts_for() const noexcept {}
-    //**************************************************************************
-    //@}
-    //**************************************************************************
-
    private:
     //**Member variables********************************************************
     /*!\name Member variables */
@@ -345,68 +291,6 @@ namespace blocks {
     }
     //**************************************************************************
 
-    //@}
-    //**************************************************************************
-
-   private:
-    //**Type definitions********************************************************
-    //! Size type
-    using size_type = typename Traits::size_type;
-    //! Index type
-    using index_type = typename Traits::index_type;
-    //**************************************************************************
-
-   public:
-    //////////////////////////// start conformance /////////////////////////////
-
-    //**Check functions*********************************************************
-    /*!\name Check functions */
-    //@{
-    /*!\brief Checks whether indices are within range of accessible values
-     */
-    inline auto check(std::size_t index_to_be_sliced) const -> std::size_t {
-      constexpr index_type current_rod_index(0UL);
-      std::size_t max_index(PluginType::n_elements(current_rod_index));
-      if (index_to_be_sliced < max_index) {
-        return index_to_be_sliced;
-      } else {
-        throw std::out_of_range(
-            "Index to be sliced exceeds the number of rods inside a Cosserat "
-            "rod block!");
-      }
-    }
-    inline auto check(elastica::from_end index_to_be_sliced) const
-        -> std::size_t {
-      // cannot be 0
-      const auto fe = index_to_be_sliced.i;
-      constexpr index_type current_rod_index(0UL);
-      std::size_t max_index(PluginType::n_elements(current_rod_index));
-      if (fe <= max_index) {
-        return max_index - fe;
-      } else {
-        throw std::out_of_range(
-            "Index to be sliced from the end exceeds the number of rods inside "
-            "a Cosserat rod block!");
-      }
-    };
-    //**************************************************************************
-
-    //@}
-    //**************************************************************************
-
-    ///////////////////////////// end conformance //////////////////////////////
-
-    //**Ghosting functions******************************************************
-    /*!\name Ghosting functions */
-    //@{
-
-    //**************************************************************************
-    /*!\brief Fills ghosts for a variable of tag `Tag` in the current Block
-     * Needed because some of the kernels use it
-     */
-    template <typename Tag>
-    void fill_ghosts_for() const noexcept {}
-    //**************************************************************************
     //@}
     //**************************************************************************
 
@@ -560,6 +444,65 @@ namespace blocks {
     // it might be not the best idea to have a size() member
     return cosserat_rod.size();
   }
+  //****************************************************************************
+
+  //**Ghosting functions********************************************************
+  /*!\name Ghosting functions
+   * \ingroup cosserat_rod */
+  //@{
+
+  //****************************************************************************
+  /*!\brief Fills ghosts for a variable of tag `Tag` in the current Block
+   * Needed because some of the kernels use it
+   */
+  template <typename Tag,
+            typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  inline void fill_ghosts_for(
+      BlockSlice<elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, BlockSlice, Components...>>&) noexcept {}
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Fills ghosts for all variables in the current Block
+   *
+   * \param block_like Block to fill ghosts
+   */
+  template <typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  inline void fill_ghosts(BlockSlice<elastica::cosserat_rod::CosseratRodPlugin<
+                              CRT, BlockSlice, Components...>>&) noexcept {}
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Fills ghosts for a variable of tag `Tag` in the current Block
+   * Needed because some of the kernels use it
+   */
+  template <typename Tag,
+            typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  inline void fill_ghosts_for(
+      ConstBlockSlice<elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, ConstBlockSlice, Components...>>&) noexcept {}
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Fills ghosts for all variables in the current Block
+   *
+   * \param block_like Block to fill ghosts
+   */
+  template <typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  inline void fill_ghosts(
+      ConstBlockSlice<elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, ConstBlockSlice, Components...>>&) noexcept {}
+  //****************************************************************************
+
+  //@}
   //****************************************************************************
 
 }  // namespace blocks

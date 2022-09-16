@@ -8,6 +8,7 @@ set(TARGET_SOURCES
         Access.hpp
         Cardinality.hpp
         Components.hpp
+        IndexCheck.hpp
         Initialization.hpp
         Protocols.hpp
         SymplecticStepperAdapter.hpp

@@ -502,11 +502,12 @@ namespace blocks {
   template <typename Plugin, typename StartIndex, typename StopIndex>
   inline decltype(auto) slice(Block<Plugin>& block_like, StartIndex start_index,
                               StopIndex stop_index) {
-    auto const start = block_like.check(std::move(start_index));
+    auto const start = units_check(block_like, std::move(start_index));
     // workaround to support slices with last index : stop_index - 1 does not
     // throw in check(), and once we have the numeric index, we add one to
     // recover original index.
-    auto const stop = block_like.check(std::move(stop_index) - 1UL) + 1UL;
+    auto const stop =
+        units_check(block_like, std::move(stop_index) - 1UL) + 1UL;
     assert(stop > start);
     return detail::slice_impl(block_like, start, stop - start,
                               typename Plugin::Variables{});
@@ -517,11 +518,12 @@ namespace blocks {
   template <typename Plugin, typename StartIndex, typename StopIndex>
   inline decltype(auto) slice(Block<Plugin> const& block_like,
                               StartIndex start_index, StopIndex stop_index) {
-    auto const start = block_like.check(std::move(start_index));
+    auto const start = units_check(block_like, std::move(start_index));
     // workaround to support slices with last index : stop_index - 1 does not
     // throw in check(), and once we have the numeric index, we add one to
     // recover original index.
-    auto const stop = block_like.check(std::move(stop_index) - 1UL) + 1UL;
+    auto const stop =
+        units_check(block_like, std::move(stop_index) - 1UL) + 1UL;
     assert(stop > start);
     return detail::slice_impl(static_cast<Block<Plugin> const&>(block_like),
                               start, stop - start,
@@ -530,7 +532,6 @@ namespace blocks {
   //****************************************************************************
 
   namespace detail {
-    // TODO : replace with check() free function after 222
     inline constexpr auto as_index(std::size_t n_units, std::size_t index)
         -> std::size_t {
       // Equality is added here because the stop index is not-inclusive.
@@ -559,10 +560,11 @@ namespace blocks {
   inline decltype(auto) slice(BlockView<Plugin>& block_like,
                               StartIndex start_index, StopIndex stop_index) {
     // We should avoid the block check() here as it may contain more elements
-    auto const start = detail::as_index(block_like.region().size, start_index);
+    auto const start =
+        detail::as_index(block_like.region().size, std::move(start_index));
     // stop_index - 0 to also include (end - 0), the last index
     auto const stop =
-        detail::as_index(block_like.region().size, stop_index - 0UL);
+        detail::as_index(block_like.region().size, std::move(stop_index) - 0UL);
     assert(stop > start);
     return detail::slice_impl(block_like.parent(),
                               block_like.region().start + start, stop - start,
@@ -575,10 +577,11 @@ namespace blocks {
   inline decltype(auto) slice(ConstBlockView<Plugin> const& block_like,
                               StartIndex start_index, StopIndex stop_index) {
     // We should avoid the block check() here as it may contain more elements
-    auto const start = detail::as_index(block_like.region().size, start_index);
+    auto const start =
+        detail::as_index(block_like.region().size, std::move(start_index));
     // stop_index - 0 to also include (end - 0), the last index
     auto const stop =
-        detail::as_index(block_like.region().size, stop_index - 0UL);
+        detail::as_index(block_like.region().size, std::move(stop_index) - 0UL);
     assert(stop > start);
     return detail::slice_impl(block_like.parent(),
                               block_like.region().start + start, stop - start,
@@ -591,10 +594,11 @@ namespace blocks {
   inline decltype(auto) slice(BlockView<Plugin> const& block_like,
                               StartIndex start_index, StopIndex stop_index) {
     // We should avoid the block check() here as it may contain more elements
-    auto const start = detail::as_index(block_like.region().size, start_index);
+    auto const start =
+        detail::as_index(block_like.region().size, std::move(start_index));
     // stop_index - 0 to also include (end - 0), the last index
     auto const stop =
-        detail::as_index(block_like.region().size, stop_index - 0UL);
+        detail::as_index(block_like.region().size, std::move(stop_index) - 0UL);
     assert(stop > start);
     return detail::slice_impl(cpp17::as_const(block_like.parent()),
                               block_like.region().start + start, stop - start,
@@ -650,7 +654,7 @@ namespace blocks {
     return detail::slice_impl(
         block_like.parent(),
         block_like.region().start +
-            detail::as_index(block_like.region().size, index),
+            detail::as_index(block_like.region().size, std::move(index)),
         typename Plugin::Variables{});
   }
   //****************************************************************************
@@ -662,7 +666,7 @@ namespace blocks {
     return detail::slice_impl(
         block_like.parent(),
         block_like.region().start +
-            detail::as_index(block_like.region().size, index),
+            detail::as_index(block_like.region().size, std::move(index)),
         typename Plugin::Variables{});
   }
   //****************************************************************************
@@ -674,7 +678,7 @@ namespace blocks {
     return detail::slice_impl(
         cpp17::as_const(block_like.parent()),
         block_like.region().start +
-            detail::as_index(block_like.region().size, index),
+            detail::as_index(block_like.region().size, std::move(index)),
         typename Plugin::Variables{});
   }
   //****************************************************************************

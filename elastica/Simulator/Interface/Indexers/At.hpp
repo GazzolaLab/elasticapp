@@ -362,7 +362,7 @@ namespace elastica {
     // \return pair
     */
     template <typename T,
-        Requires<tt::IsPair<std::decay_t<T>>::value> = nullptr>
+              Requires<tt::IsPair<std::decay_t<T>>::value> = nullptr>
     constexpr decltype(auto) at(T&& pair) noexcept {
       return std::forward<T>(pair);
     }
@@ -390,7 +390,7 @@ namespace elastica {
     // \param sys A valid \elastica system that affords index checking with
     // the types `end_from` and `int` using the syntax
     // \code
-        sys.check(end_from or int) -> int;
+        index_check(sys, end_from or int) -> int;
     // \endcode
     // \exception std::out_of_range if any index within the system is out of sys
     // range
@@ -411,7 +411,7 @@ namespace elastica {
            &sys](typename AtType::IntegralIndexType src_idx) mutable
           -> std::size_t {
             try {
-              return sys.check(src_idx);
+              return index_check(sys, src_idx);
             } catch (const std::out_of_range& exc) {
               s_stream << src_idx << ", ";
               failed = true;
@@ -422,7 +422,7 @@ namespace elastica {
            &sys](typename AtType::EndIntegralIndexType src_idx) mutable
           -> std::size_t {
             try {
-              return sys.check(src_idx);
+              return index_check(sys, src_idx);
             } catch (const std::out_of_range& exc) {
               s_stream << src_idx.i << ", ";
               failed = true;
@@ -474,7 +474,7 @@ namespace elastica {
     // \param sys A valid \elastica system that affords index checking with
     // the types `end_from` and `int` using the syntax
     // \code
-        sys.check(end_from or int) -> int;
+        index_check(sys, end_from or int) -> int;
     // \endcode
     // \exception std::out_of_range if any index within the system is out of sys
     // range
@@ -497,7 +497,7 @@ namespace elastica {
           [&failed, &s_stream,
            &sys](typename AtType::IntegralIndexType src_idx) mutable -> int {
             try {
-              return sys.check(src_idx);
+              return index_check(sys, src_idx);
             } catch (const std::out_of_range& exc) {
               s_stream << src_idx << ", ";
               failed = true;
@@ -507,7 +507,7 @@ namespace elastica {
           [&failed, &s_stream,
            &sys](typename AtType::EndIntegralIndexType src_idx) mutable -> int {
             try {
-              return sys.check(src_idx);
+              return index_check(sys, src_idx);
             } catch (const std::out_of_range& exc) {
               s_stream << src_idx.i << ", ";
               failed = true;

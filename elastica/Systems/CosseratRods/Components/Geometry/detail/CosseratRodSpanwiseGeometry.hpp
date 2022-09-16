@@ -17,22 +17,24 @@
 //****************************************************************************
 // Includes
 //****************************************************************************
-#include <cstddef>
-#include <utility>
 
 #include "ErrorHandling/Assert.hpp"
-#include "Systems/Block.hpp"
-#include "Utilities/CRTP.hpp"
-#include "Utilities/TMPL.hpp"
-
 // module
+#include "Systems/Block.hpp"
 /// Types always first
 #include "Systems/CosseratRods/Components/Geometry/detail/Types.hpp"
+#include "Systems/CosseratRods/_Types.hpp"  // for ghosts lookup
 ///
 #include "Systems/CosseratRods/Components/Geometry/detail/RodSpanwiseGeometry.hpp"
 #include "Systems/CosseratRods/Components/Geometry/detail/Tags/CosseratRodSpanwiseGeometryTags.hpp"
 #include "Systems/CosseratRods/Components/Initialization.hpp"
 #include "Systems/CosseratRods/Components/Noexcept.hpp"
+//
+#include "Utilities/CRTP.hpp"
+#include "Utilities/TMPL.hpp"
+//
+#include <cstddef>
+#include <utility>
 
 namespace elastica {
 
@@ -601,8 +603,9 @@ namespace elastica {
       auto position_diff(Traits::Operations::difference_kernel(position));
       element_length = Traits::Operations::batch_norm(position_diff);
       // +1e-14; if want to match pyelastica
-      // TODO : Refactor fill_ghosts_for to a free function
-      block_like.self().template fill_ghosts_for<tags::ElementLength>();
+
+      using ::blocks::fill_ghosts_for;
+      fill_ghosts_for<tags::ElementLength>(block_like.self());
 
       // 2. Update tangents
       // before division by element_length, I fill ghosts so that

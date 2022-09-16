@@ -19,6 +19,7 @@
 #include <cstddef>  // std::size_t
 ///
 #include "Systems/common/Access.hpp"
+#include "Systems/common/IndexCheck.hpp"
 ///
 #include "Utilities/End.hpp"
 #include "Utilities/TypeTraits/Cpp17.hpp"
@@ -33,11 +34,21 @@ namespace elastica {
       using elastica::director;
       using elastica::external_loads;
       using elastica::external_torques;
+      using elastica::index_check;
       using elastica::position;
       using elastica::velocity;
 
       struct Signatures {
         // [signatures]
+        using index = std::size_t;
+        using index_from_end = elastica::from_end;
+        template <typename ConformingType>
+        using index_check_from_start_result = decltype(index_check(
+            std::declval<ConformingType const&>(), std::declval<index>()));
+        template <typename ConformingType>
+        using index_check_from_end_result =
+            decltype(index_check(std::declval<ConformingType const&>(),
+                                 std::declval<index_from_end>()));
         template <typename ConformingType>
         using position_result =
             decltype(position(std::declval<ConformingType&>()));
@@ -117,32 +128,28 @@ namespace elastica {
         /// [expected_types]
 
         /// [expected_functions]
-        using index = std::size_t;
-        using index_from_end = elastica::from_end;
-        using expected_return_type = std::size_t;
-
-        using check_index_return_type =
-            decltype(std::declval<ConformingType const&>().check(
-                std::declval<index>()));
-        static_assert(
-            cpp17::is_same_v<check_index_return_type, expected_return_type>,
-            R"error(
-Not a conforming PhysicalSystem, doesn't properly implement function
-`std::size_t check(std::size_t index_from_start) const`
-)error");
-
-        using check_end_index_return_type =
-            decltype(std::declval<ConformingType const&>().check(
-                std::declval<index_from_end>()));
-        static_assert(
-            cpp17::is_same_v<check_end_index_return_type, expected_return_type>,
-            R"error(
-Not a conforming PhysicalSystem, doesn't properly implement function
-`std::size_t check(elastica::from_end index_from_end) const`
-)error");
         /// [expected_functions]
 
         /// [expected_free_functions]
+        using expected_return_type = std::size_t;
+
+        static_assert(
+            cpp17::is_same_v<detail::Signatures::index_check_from_start_result<
+                                 ConformingType>,
+                             expected_return_type>,
+            R"error(
+Not a conforming PhysicalSystem, doesn't have a free-function
+`std::size_t index_check(ConformingType const&, std::size_t index_from_start)`
+)error");
+        static_assert(
+            cpp17::is_same_v<
+                detail::Signatures::index_check_from_end_result<ConformingType>,
+                expected_return_type>,
+            R"error(
+Not a conforming PhysicalSystem, doesn't properly implement function
+`std::size_t index_check(ConformingType const&, elastica::from_end index_from_end)`
+)error");
+
         static_assert(::tt::is_detected_v<detail::Signatures::position_result,
                                           ConformingType>,
                       R"error(

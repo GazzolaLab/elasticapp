@@ -26,11 +26,12 @@ namespace {
     CHECK(model.empty());
 
     // block check
-    CHECK_THROWS_AS(model.check(0UL), std::out_of_range);
-    CHECK_THROWS_AS(model.check(end - 1UL), std::out_of_range);
+    CHECK_THROWS_AS(index_check(model, 0UL), std::out_of_range);
+    CHECK_THROWS_AS(index_check(model, end - 1UL), std::out_of_range);
 
-    CHECK_THROWS_WITH(model.check(0UL), Catch::Contains("Index to be "));
-    CHECK_THROWS_WITH(model.check(end - 1UL), Catch::Contains("Index to be "));
+    CHECK_THROWS_WITH(index_check(model, 0UL), Catch::Contains("Index to be "));
+    CHECK_THROWS_WITH(index_check(model, end - 1UL),
+                      Catch::Contains("Index to be "));
   }
 
   ELASTICA_TEST_CASE("Unit.Systems.Sphere.Block", "[Systems][Unit]") {
@@ -87,14 +88,15 @@ namespace {
       CHECK(model.size() == 1UL);
       CHECK(not model.empty());
 
-      CHECK(model.check(0UL) == 0UL);
-      CHECK(model.check(end - 1UL) == 0UL);
+      CHECK(index_check(model, 0UL) == 0UL);
+      CHECK(index_check(model, end - 1UL) == 0UL);
 
-      CHECK_THROWS_AS(model.check(1UL), std::out_of_range);
-      CHECK_THROWS_AS(model.check(end - 2UL), std::out_of_range);
+      CHECK_THROWS_AS(index_check(model, 1UL), std::out_of_range);
+      CHECK_THROWS_AS(index_check(model, end - 2UL), std::out_of_range);
 
-      CHECK_THROWS_WITH(model.check(1UL), Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(model.check(end - 2UL),
+      CHECK_THROWS_WITH(index_check(model, 1UL),
+                        Catch::Contains("Index to be "));
+      CHECK_THROWS_WITH(index_check(model, end - 2UL),
                         Catch::Contains("Index to be "));
 
       // check the sliced model
@@ -104,15 +106,15 @@ namespace {
       CHECK(::blocks::size(sliced_model) == 1UL);  // free function check
 
       CHECK(not sliced_model.empty());
-      CHECK(sliced_model.check(0UL) == 0UL);
-      CHECK(sliced_model.check(end - 1UL) == 0UL);
+      CHECK(index_check(sliced_model, 0UL) == 0UL);
+      CHECK(index_check(sliced_model, end - 1UL) == 0UL);
 
-      CHECK_THROWS_AS(sliced_model.check(2UL), std::out_of_range);
-      CHECK_THROWS_AS(sliced_model.check(end - 2UL), std::out_of_range);
+      CHECK_THROWS_AS(index_check(sliced_model, 2UL), std::out_of_range);
+      CHECK_THROWS_AS(index_check(sliced_model, end - 2UL), std::out_of_range);
 
-      CHECK_THROWS_WITH(sliced_model.check(2UL),
+      CHECK_THROWS_WITH(index_check(sliced_model, 2UL),
                         Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(sliced_model.check(end - 2UL),
+      CHECK_THROWS_WITH(index_check(sliced_model, end - 2UL),
                         Catch::Contains("Index to be "));
 
       // noe check if a new slice matches the old slice
@@ -126,16 +128,16 @@ namespace {
       CHECK(const_sliced_model.size() == 1UL);
       CHECK(::blocks::size(const_sliced_model) == 1UL);  // free function check
       CHECK(not const_sliced_model.empty());
-      CHECK(const_sliced_model.check(0UL) == 0UL);
-      CHECK(const_sliced_model.check(end - 1UL) == 0UL);
+      CHECK(index_check(const_sliced_model, 0UL) == 0UL);
+      CHECK(index_check(const_sliced_model, end - 1UL) == 0UL);
 
-      CHECK_THROWS_AS(const_sliced_model.check(1UL), std::out_of_range);
-      CHECK_THROWS_AS(const_sliced_model.check(end - 1UL - 1UL),
+      CHECK_THROWS_AS(index_check(const_sliced_model, 1UL), std::out_of_range);
+      CHECK_THROWS_AS(index_check(const_sliced_model, end - 1UL - 1UL),
                       std::out_of_range);
 
-      CHECK_THROWS_WITH(const_sliced_model.check(1UL),
+      CHECK_THROWS_WITH(index_check(const_sliced_model, 1UL),
                         Catch::Contains("Index to be "));
-      CHECK_THROWS_WITH(const_sliced_model.check(end - 1UL - 1UL),
+      CHECK_THROWS_WITH(index_check(const_sliced_model, end - 1UL - 1UL),
                         Catch::Contains("Index to be "));
     }
     {
@@ -373,8 +375,8 @@ namespace {
           // just check if the matrix is the same for now
           using Variables = typename Model::Variables;
           using Tags =
-          tmpl::transform<Variables,
-              tmpl::bind<::blocks::parameter_t, tmpl::_1>>;
+              tmpl::transform<Variables,
+                              tmpl::bind<::blocks::parameter_t, tmpl::_1>>;
 
           auto first_view = ::blocks::slice(cpp17::as_const(model), 0UL, 1UL);
           auto second_view = ::blocks::slice(cpp17::as_const(model), 1UL, 2UL);

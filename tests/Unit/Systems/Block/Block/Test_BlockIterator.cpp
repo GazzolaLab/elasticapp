@@ -77,10 +77,6 @@ namespace blocks {
 
     // In this case, we do not check the business logic in this class, but only
     // if the interfaces are OK.
-    inline std::size_t check(std::size_t index) const noexcept { return index; }
-    inline std::size_t check(elastica::from_end index) const noexcept {
-      return n_ - index.i;
-    };
 
     // customization point for generating a slice. Since all are vectors, a
     // simple indexing should do
@@ -115,6 +111,18 @@ namespace blocks {
           block) noexcept -> std::size_t {
     return block.n_;
   }
+
+  // conformance to slice
+  inline std::size_t index_check(
+      Block<BoundFacadePluginWithoutInitialization<Block>> const&,
+      std::size_t index) noexcept {
+    return index;
+  }
+  inline std::size_t index_check(
+      Block<BoundFacadePluginWithoutInitialization<Block>> const& block,
+      elastica::from_end index) noexcept {
+    return n_units(block) - index.i;
+  };
 
 }  // namespace blocks
 

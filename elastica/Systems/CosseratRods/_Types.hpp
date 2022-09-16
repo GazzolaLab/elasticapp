@@ -1,7 +1,7 @@
 //==============================================================================
 /*!
 //  \file
-//  \brief All types belonging to @ref cosserat_rod
+//  \brief Core types belonging to @ref cosserat_rod
 //  \details This header is "protected" for exposing CosseratRodAliases as types
 //  to the outside world
 //
@@ -15,8 +15,12 @@
 
 #pragma once
 
+//******************************************************************************
+// Includes
+//******************************************************************************
+#include <cstddef>
+
 #include "Systems/Block/Types.hpp"
-#include "Systems/CosseratRods/Components/Types.hpp"
 
 namespace elastica {
 
@@ -67,3 +71,167 @@ namespace elastica {
   }  // namespace cosserat_rod
 
 }  // namespace elastica
+
+namespace blocks {
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  template <typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  class Block<
+      elastica::cosserat_rod::CosseratRodPlugin<CRT, Block, Components...>>;
+
+  template <typename CRT,
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  class BlockSlice<elastica::cosserat_rod::CosseratRodPlugin<CRT, BlockSlice,
+                                                             Components...>>;
+
+  template <typename CRT,
+            template <typename /*CRT*/, typename /*InitializedConstBlock*/>
+            class... Components>
+  class ConstBlockSlice<elastica::cosserat_rod::CosseratRodPlugin<
+      CRT, ConstBlockSlice, Components...>>;
+
+  template <typename CRT,
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  class BlockView<
+      elastica::cosserat_rod::CosseratRodPlugin<CRT, BlockView, Components...>>;
+
+  template <typename CRT,
+            template <typename /*CRT*/, typename /*InitializedConstBlock*/>
+            class... Components>
+  class ConstBlockView<elastica::cosserat_rod::CosseratRodPlugin<
+      CRT, ConstBlockView, Components...>>;
+
+  /*! \endcond */
+  //****************************************************************************
+
+  //////////////////////////////////////////////////////////////////////////////
+  //
+  // Forward declarations of functions
+  //
+  //////////////////////////////////////////////////////////////////////////////
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  template <typename Variable,
+            typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void fill_ghosts_for(Block<elastica::cosserat_rod::CosseratRodPlugin<
+                           CRT, Block, Components...>>& block_like,
+                       std::size_t region_start, std::size_t region_size,
+                       std::size_t deficit) noexcept;
+  template <typename Tag,
+            typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void fill_ghosts_for(Block<elastica::cosserat_rod::CosseratRodPlugin<
+                           CRT, Block, Components...>>& block_like,
+                       std::size_t region_start,
+                       std::size_t region_size) noexcept;
+
+  template <typename Tag,
+            typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void fill_ghosts_for(Block<elastica::cosserat_rod::CosseratRodPlugin<
+                           CRT, Block, Components...>>& block_like) noexcept;
+
+  template <typename OnStaggerType,
+            typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void fill_ghosts_placed(Block<elastica::cosserat_rod::CosseratRodPlugin<
+                              CRT, Block, Components...>>& block_like,
+                          std::size_t region_start, std::size_t region_size,
+                          const std::size_t deficit) noexcept;
+
+  template <typename OnStaggerType,
+            typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void fill_ghosts_placed(Block<elastica::cosserat_rod::CosseratRodPlugin<
+                              CRT, Block, Components...>>& block_like,
+                          std::size_t region_start,
+                          std::size_t region_size) noexcept;
+
+  template <typename OnStaggerType,
+            typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void fill_ghosts_placed(Block<elastica::cosserat_rod::CosseratRodPlugin<
+                              CRT, Block, Components...>>& block_like) noexcept;
+
+  template <typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void fill_ghosts(Block<elastica::cosserat_rod::CosseratRodPlugin<
+                       CRT, Block, Components...>>& block_like,
+                   std::size_t region_start, std::size_t region_size) noexcept;
+
+  template <typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void fill_ghosts(Block<elastica::cosserat_rod::CosseratRodPlugin<
+                       CRT, Block, Components...>>& block_like) noexcept;
+
+  template <typename Tag,
+            typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void fill_ghosts_for(BlockSlice<elastica::cosserat_rod::CosseratRodPlugin<
+                           CRT, BlockSlice, Components...>>&) noexcept;
+
+  template <typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void fill_ghosts(BlockSlice<elastica::cosserat_rod::CosseratRodPlugin<
+                       CRT, BlockSlice, Components...>>&) noexcept;
+
+  template <typename Tag,
+            typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void fill_ghosts_for(
+      ConstBlockSlice<elastica::cosserat_rod::CosseratRodPlugin<
+          CRT, ConstBlockSlice, Components...>>&) noexcept;
+
+  template <typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void fill_ghosts(ConstBlockSlice<elastica::cosserat_rod::CosseratRodPlugin<
+                       CRT, ConstBlockSlice, Components...>>&) noexcept;
+
+  template <typename Tag,
+            typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void fill_ghosts_for(BlockView<elastica::cosserat_rod::CosseratRodPlugin<
+                           CRT, BlockView, Components...>>&) noexcept;
+
+  template <typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void fill_ghosts(BlockView<elastica::cosserat_rod::CosseratRodPlugin<
+                       CRT, BlockView, Components...>>&) noexcept;
+
+  template <typename Tag,
+            typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void fill_ghosts_for(ConstBlockView<elastica::cosserat_rod::CosseratRodPlugin<
+                           CRT, ConstBlockView, Components...>>&) noexcept;
+
+  template <typename CRT,  // Cosserat Rod Traits
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void fill_ghosts(ConstBlockView<elastica::cosserat_rod::CosseratRodPlugin<
+                       CRT, ConstBlockView, Components...>>&) noexcept;
+  /*! \endcond */
+  //****************************************************************************
+
+}  // namespace blocks

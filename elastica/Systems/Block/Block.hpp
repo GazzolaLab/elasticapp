@@ -31,6 +31,8 @@
 // Variable implementations
 #include "BlockVariables/BlockInitializer.hpp"
 #include "BlockVariables/BlockVariables.hpp"
+//
+#include "Utilities/End.hpp"  // from_end
 
 //==============================================================================
 //
@@ -106,6 +108,56 @@ namespace blocks {
   template <typename Plugin>
   inline auto n_units(ConstBlockView<Plugin> const& block) noexcept
       -> std::size_t;
+  // @}
+  //****************************************************************************
+
+  //**Index check support*******************************************************
+  /*!\name Block index check */
+  /*!\brief Checks whether block unit indices are within range of accessible
+   * values
+   */
+  //@{
+
+#define STAMP_UNITS_CHECKER(Type, msg)                           \
+  template <typename Plugin>                                     \
+  inline auto units_check(Type<Plugin> const& block_like,        \
+                          std::size_t index_to_be_sliced)        \
+      ->std::size_t {                                            \
+    using ::blocks::n_units;                                     \
+    if (index_to_be_sliced < n_units(block_like)) {              \
+      return index_to_be_sliced;                                 \
+    } else {                                                     \
+      throw std::out_of_range(msg);                              \
+    }                                                            \
+  }                                                              \
+                                                                 \
+  template <typename Plugin>                                     \
+  inline auto units_check(Type<Plugin> const& block_like,        \
+                          elastica::from_end index_to_be_sliced) \
+      ->std::size_t {                                            \
+    /* This index cannot be 0 */                                 \
+    const auto fe = index_to_be_sliced.i;                        \
+    using ::blocks::n_units;                                     \
+    const auto un = n_units(block_like);                         \
+    if (fe <= un) {                                              \
+      return un - fe;                                            \
+    } else {                                                     \
+      throw std::out_of_range(msg);                              \
+    }                                                            \
+  }
+
+  STAMP_UNITS_CHECKER(
+      Block,  //
+      "Index to be sliced exceeds the number of units inside a block!");
+  STAMP_UNITS_CHECKER(
+      BlockView,  //
+      "Index to be sliced exceeds the number of units inside a BlockView!");
+  STAMP_UNITS_CHECKER(ConstBlockView,  //
+                      "Index to be sliced exceeds the number of units inside a "
+                      "ConstBlockView!");
+
+#undef STAMP_UNITS_CHECKER
+
   // @}
   //****************************************************************************
 

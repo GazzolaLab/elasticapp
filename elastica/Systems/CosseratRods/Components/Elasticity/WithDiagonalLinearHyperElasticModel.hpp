@@ -21,7 +21,9 @@
 #include <utility>
 
 ///// Types always first
+#include "Systems/CosseratRods/Components/Elasticity/Types.hpp"
 #include "Systems/CosseratRods/Components/Tags.hpp"
+#include "Systems/CosseratRods/_Types.hpp"  // for ghosts lookup
 /////
 #include "Systems/CosseratRods/Components/Elasticity/Protocols.hpp"
 #include "Systems/CosseratRods/Components/Elasticity/detail/ElasticityInterface.hpp"
@@ -228,7 +230,9 @@ namespace elastica {
                                                 temp_vec, element_dilatation);
 
       // before doing difference, fill it to 0.0
-      block_like.self().template fill_ghosts_for<tags::_DummyElementVector>();
+
+      using ::blocks::fill_ghosts_for;
+      fill_ghosts_for<tags::_DummyElementVector>(block_like.self());
 
       Traits::Operations::two_point_difference_kernel(internal_load,
                                                       cosserat_internal_stress);
@@ -280,7 +284,9 @@ namespace elastica {
       // FIXME : all geometrical computations can be moved into another function
       // for DRY.
       compute_curvature(block_like.self());
-      block_like.self().template fill_ghosts_for<tags::Curvature>();
+
+      using ::blocks::fill_ghosts_for;
+      fill_ghosts_for<tags::Curvature>(block_like.self());
 
       Traits::Operations::batch_matvec(internal_couple, bend_matrix,
                                        curvature - reference_curvature);

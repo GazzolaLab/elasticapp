@@ -18,4 +18,6 @@
 //******************************************************************************
 #include "Systems/CosseratRods/_Types.hpp"
 //
+#include "Systems/CosseratRods/Components/Types.hpp"
+//
 #include "Systems/CosseratRods/Aliases.hpp"

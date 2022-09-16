@@ -20,13 +20,15 @@
 #include "ErrorHandling/Assert.hpp"
 
 /// Forward declarations
+#include "Systems/CosseratRods/Tags.hpp"
 #include "Systems/CosseratRods/Types.hpp"
 ///
 #include "Systems/Block/Block.hpp"  // for plugin, get
 ///
-#include "Systems/CosseratRods/Tags.hpp"
+//
 #include "Systems/common/Cardinality.hpp"
-#include "Utilities/End.hpp"
+#include "Systems/common/IndexCheck.hpp"
+//
 #include "Utilities/TMPL.hpp"
 ///
 #include <numeric>    // for std::accumulate
@@ -269,6 +271,11 @@ namespace elastica {
 
      private:
       //**Useful aliases********************************************************
+      //! Variable for marking number of elements
+      using NElement = typename VariableDefinitions::NElement;
+
+     public:
+      //************************************************************************
       //! Tag to place on nodes
       using OnNode = typename Traits::Place::OnNode;
       //! Tag to place on elements
@@ -277,8 +284,6 @@ namespace elastica {
       using OnVoronoi = typename Traits::Place::OnVoronoi;
       //! Tag to place on the whole rod rather than at discrete points
       using OnRod = typename Traits::Place::OnRod;
-      //! Variable for marking number of elements
-      using NElement = typename VariableDefinitions::NElement;
       //************************************************************************
 
      public:
@@ -489,6 +494,23 @@ namespace elastica {
 
   }  // namespace cosserat_rod
 
+  //****************************************************************************
+  /*!\brief Checks whether indices are within range of accessible values
+   * \ingroup cosserat_rod
+   * */
+  template <typename CRT, template <typename> class ComputationalBlock,
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components,
+            typename IndexType>
+  auto index_check(
+      cosserat_rod::CosseratRodPlugin<CRT, ComputationalBlock,
+                                      Components...> const& block_like,
+      IndexType index_to_be_sliced) -> std::size_t {
+    return index_check_helper(size(block_like.self()),
+                              std::move(index_to_be_sliced));
+  }
+  //****************************************************************************
+
 }  // namespace elastica
 
 namespace blocks {
@@ -564,6 +586,24 @@ namespace elastica {
     //**************************************************************************
 
   }  // namespace cosserat_rod
+
+  //****************************************************************************
+  /*!\brief Checks whether indices are within range of accessible values
+   * \ingroup cosserat_rod
+   * */
+  template <typename CRT, template <typename> class ComputationalBlock,
+            typename Tag,
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components,
+            typename IndexType>
+  auto index_check(
+      cosserat_rod::TaggedCosseratRodPlugin<CRT, ComputationalBlock, Tag,
+                                            Components...> const& block_like,
+      IndexType index_to_be_sliced) -> std::size_t {
+    return index_check_helper(size(block_like.self()),
+                              std::move(index_to_be_sliced));
+  }
+  //****************************************************************************
 
 }  // namespace elastica
 

@@ -45,7 +45,6 @@ namespace {
     using typename Parent::GhostNodeIndices;
 
     // functions
-    using Parent::check;
     using Parent::get_size_of_slice;
     using Parent::get_start_of_slice;
     using Parent::initialize_elements_buffer;
@@ -60,9 +59,6 @@ namespace {
     using Parent::total_n_elements;
     using Parent::total_n_nodes;
     using Parent::total_n_voronois;
-
-    using Parent::fill_ghosts;
-    using Parent::fill_ghosts_placed;
 
     // variable function
     using Parent::get_ghost_node_buffer;
@@ -96,7 +92,6 @@ namespace {
     static void initialize(DownstreamBlock&, CosseratInitializer&&) {}
   };
 }  // namespace
-
 
 namespace {
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.serialize.empty_component",
@@ -144,7 +139,7 @@ namespace {
                      "[Systems][Unit]") {
     // two vectors and two tensors, all randomized here
     using TestPlugin =
-    GenerateTestPlugin<component::WithDiagonalLinearHyperElasticModel>;
+        GenerateTestPlugin<component::WithDiagonalLinearHyperElasticModel>;
     using Model = GenerateBlock<TestPlugin>;
 
     using namespace elastica::io;

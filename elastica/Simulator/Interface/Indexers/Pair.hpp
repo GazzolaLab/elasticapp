@@ -313,7 +313,7 @@ namespace elastica {
     //
     // Both these systems should afford checking with the following syntax
     // \code
-        first_sys.check(end_from or int) -> int;
+        index_check(first_sys, end_from or int) -> int;
        \endcode
     // \exception std::out_of_range if any index within one of the the systems
     // is out of range
@@ -331,7 +331,7 @@ namespace elastica {
           [&failed, &s_stream](auto const& sys,
                                std::size_t src_idx) -> std::size_t {
             try {
-              return sys.check(src_idx);
+              return index_check(sys, src_idx);
             } catch (const std::out_of_range& exc) {
               s_stream << src_idx;
               failed = true;
@@ -341,7 +341,7 @@ namespace elastica {
           [&failed, &s_stream](auto const& sys,
                                from_end src_idx) -> std::size_t {
             try {
-              return sys.check(src_idx);
+              return index_check(sys, src_idx);
             } catch (const std::out_of_range& exc) {
               s_stream << src_idx.i;
               failed = true;

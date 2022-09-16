@@ -153,49 +153,6 @@ namespace blocks {
     //**************************************************************************
 
    private:
-    //**Type definitions********************************************************
-    //! Size type
-    using size_type = typename Traits::size_type;
-    //! Index type
-    using index_type = typename Traits::index_type;
-    //**************************************************************************
-
-   public:
-    //////////////////////////// start conformance /////////////////////////////
-
-    //**Check functions*********************************************************
-    /*!\name Check functions */
-    //@{
-    /*!\brief Checks whether indices are within range of accessible values
-     */
-    inline auto check(std::size_t index_to_be_sliced) const -> std::size_t {
-      if (index_to_be_sliced == 0UL) {
-        return index_to_be_sliced;
-      } else {
-        throw std::out_of_range(
-            "Index to be sliced exceeds the number of dofs inside a "
-            "RigidBody blockslice!");
-      }
-    }
-    inline auto check(elastica::from_end index_to_be_sliced) const
-        -> std::size_t {
-      const auto fe = index_to_be_sliced.i;
-      if (fe == 1) {
-        return 0UL;
-      } else {
-        throw std::out_of_range(
-            "Index to be sliced from the end exceeds the number of dofs "
-            "inside a Rigid body blocksize!");
-      }
-    };
-    //**************************************************************************
-
-    //@}
-    //**************************************************************************
-
-    ///////////////////////////// end conformance //////////////////////////////
-
-   private:
     //**Member variables********************************************************
     /*!\name Member variables */
     //@{
@@ -327,49 +284,6 @@ namespace blocks {
 
     //@}
     //**************************************************************************
-
-   private:
-    //**Type definitions********************************************************
-    //! Size type
-    using size_type = typename Traits::size_type;
-    //! Index type
-    using index_type = typename Traits::index_type;
-    //**************************************************************************
-
-   public:
-    //////////////////////////// start conformance /////////////////////////////
-
-    //**Check functions*********************************************************
-    /*!\name Check functions */
-    //@{
-    /*!\brief Checks whether indices are within range of accessible values
-     */
-    inline auto check(std::size_t index_to_be_sliced) const -> std::size_t {
-      if (index_to_be_sliced == 0UL) {
-        return index_to_be_sliced;
-      } else {
-        throw std::out_of_range(
-            "Index to be sliced exceeds the number of rods inside a RigidBody "
-            "rod block!");
-      }
-    }
-    inline auto check(elastica::from_end index_to_be_sliced) const
-        -> std::size_t {
-      const auto fe = index_to_be_sliced.i;
-      if (fe == 1) {
-        return 0UL;
-      } else {
-        throw std::out_of_range(
-            "Index to be sliced from the end exceeds the number of rods inside "
-            "a Rigid body block!");
-      }
-    };
-    //**************************************************************************
-
-    //@}
-    //**************************************************************************
-
-    ///////////////////////////// end conformance //////////////////////////////
 
    private:
     //**Member variables********************************************************

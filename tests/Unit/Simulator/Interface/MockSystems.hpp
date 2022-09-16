@@ -14,33 +14,36 @@
 namespace mock {
 
   /// [nothrow_mock_system]
-  struct NoThrowSystem {
-    std::size_t check(std::size_t i) const noexcept { return i + 1; };
-    std::size_t check(elastica::from_end f) const noexcept {
-      return 200 - f.i;
-    };
+  struct NoThrowSystem {};
+
+  inline std::size_t index_check(NoThrowSystem const&, std::size_t i) noexcept {
+    return i + 1;
+  };
+  inline std::size_t index_check(NoThrowSystem const&,
+                                 elastica::from_end f) noexcept {
+    return 200 - f.i;
   };
   /// [nothrow_mock_system]
 
   struct ThrowSystem {
-    // Assume we have b indices
-    std::size_t check(std::size_t i) const {
-      if (i < n_indices) {
-        return i;
-      } else {
-        throw std::out_of_range("index exceeds n_indices for MockSystem!");
-      }
-    };
-
-    std::size_t check(elastica::from_end fe) const {
-      if (fe.i < n_indices) {
-        return n_indices - fe.i;
-      } else {
-        throw std::out_of_range("index is less than zero for MockSystem!");
-      }
-    };
-
     std::size_t n_indices = {4};
+  };
+
+  // Assume we have b indices
+  inline std::size_t index_check(ThrowSystem const& ts, std::size_t i) {
+    if (i < ts.n_indices) {
+      return i;
+    } else {
+      throw std::out_of_range("index exceeds n_indices for MockSystem!");
+    }
+  };
+
+  inline std::size_t index_check(ThrowSystem const& ts, elastica::from_end fe) {
+    if (fe.i < ts.n_indices) {
+      return ts.n_indices - fe.i;
+    } else {
+      throw std::out_of_range("index is less than zero for MockSystem!");
+    }
   };
 
   // We mock the system's check() class here
@@ -50,26 +53,24 @@ namespace mock {
     explicit MockSystem(std::size_t n_dofs) : n_indices(n_dofs) {}
     ~MockSystem() = default;
 
-    // Assume we have b indices
-    inline std::size_t check(std::size_t i) const {
-      if (i < n_indices) {
-        return i;
-      } else {
-        throw std::out_of_range(
-            "second_index exceeds n_indices for MockSystem!");
-      }
-    };
-
-    inline std::size_t check(elastica::from_end fe) const {
-      if (fe.i <= n_indices) {
-        return n_indices - fe.i;
-      } else {
-        throw std::out_of_range(
-            "second_index is less than zero for MockSystem!");
-      }
-    };
-
     std::size_t n_indices;
+  };
+
+  // Assume we have b indices
+  inline std::size_t index_check(MockSystem const& ms, std::size_t i) {
+    if (i < ms.n_indices) {
+      return i;
+    } else {
+      throw std::out_of_range("second_index exceeds n_indices for MockSystem!");
+    }
+  };
+
+  inline std::size_t index_check(MockSystem const& ms, elastica::from_end fe) {
+    if (fe.i <= ms.n_indices) {
+      return ms.n_indices - fe.i;
+    } else {
+      throw std::out_of_range("second_index is less than zero for MockSystem!");
+    }
   };
 
   // free functions in case the need arises

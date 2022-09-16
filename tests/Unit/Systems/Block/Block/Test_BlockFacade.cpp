@@ -113,15 +113,6 @@ namespace blocks {
 
     //////////////////////////// start conformance /////////////////////////////
 
-    // In this case, we do not check the business logic in this class, but only
-    // if the interfaces are OK.
-    inline std::size_t check(std::size_t /* index */) const noexcept {
-      return 0UL;
-    }
-    inline std::size_t check(elastica::from_end /* index */) const noexcept {
-      return 0UL;
-    };
-
     // customization point for generating a slice. Since all are vectors, a
     // simple indexing should do
     template <typename Tag>
@@ -137,6 +128,19 @@ namespace blocks {
 
     Block() = default;
     ~Block() = default;
+  };
+
+  // In this case, we do not check the business logic in this class, but only
+  // if the interfaces are OK.
+  template <typename B>
+  inline std::size_t index_check(FacadePluginWithoutInitialization<B> const&,
+                                 std::size_t /* index */) noexcept {
+    return 0UL;
+  }
+  template <typename B>
+  inline std::size_t index_check(FacadePluginWithoutInitialization<B> const&,
+                                 elastica::from_end /* index */) noexcept {
+    return 0UL;
   };
 
 }  // namespace blocks
@@ -241,15 +245,6 @@ namespace blocks {
 
     //////////////////////////// start conformance /////////////////////////////
 
-    // In this case, we do not check the business logic in this class, but only
-    // if the interfaces are OK.
-    inline std::size_t check(std::size_t /* index */) const noexcept {
-      return 0UL;
-    }
-    inline std::size_t check(elastica::from_end /* index */) const noexcept {
-      return 0UL;
-    };
-
     // customization point for generating a slice. Since all are vectors, a
     // simple indexing should do
     template <typename Tag>
@@ -268,6 +263,19 @@ namespace blocks {
       Parent::initialize(*this, NoSuchType{});
     };
     ~Block() = default;
+  };
+
+  // In this case, we do not check the business logic in this class, but only
+  // if the interfaces are OK.
+  template <typename B>
+  inline std::size_t index_check(FacadePluginWithInitialization<B> const&,
+                                 std::size_t /* index */) noexcept {
+    return 0UL;
+  }
+  template <typename B>
+  inline std::size_t index_check(FacadePluginWithInitialization<B> const&,
+                                 elastica::from_end /* index */) noexcept {
+    return 0UL;
   };
 
 }  // namespace blocks
@@ -295,134 +303,145 @@ namespace {
 }  // namespace
 
 //// same as example above, but with access specifiers
-//namespace {
+// namespace {
 //
-//  template <typename B>
-//  class FacadePluginClassWithInitialization
-//      : public ::elastica::CRTPHelper<B, FacadePluginClassWithInitialization> {
+//   template <typename B>
+//   class FacadePluginClassWithInitialization
+//       : public ::elastica::CRTPHelper<B, FacadePluginClassWithInitialization>
+//       {
+//     private:
+//     // Declare the variables
+//     // !! New !! Everything is a vector now!
+//     struct ExamplePosition : DummyVariable<1> {};
+//     struct ExampleVelocity : DummyVariable<2> {};
+//     struct ExampleAcceleration : DummyVariable<3> {};
+//
+//    protected:
+//     // !! New !! Variables to be initialized are put in a separate list
+//     using InitializedVariables = tmpl::list<ExamplePosition,
+//     ExampleVelocity>;
+//     // !! New !! Other Variables (that can be computed based on initialized
+//     // variables) are put in a different list
+//     using ComputedVariables = tmpl::list<ExampleAcceleration>;
+//     // All variables
+//     using Variables = tmpl::append<InitializedVariables, ComputedVariables>;
+//
+//     // !! New !! To help initialize the block to be formed, we have an
+//     // initialize method
+//     template <typename DownstreamBlock, typename Initializer>
+//     static void initialize(DownstreamBlock& downstream_block, Initializer&&)
+//     {
+//       // initialize all ints properly
+//       // do not use blocks::get here, that is tested elsewhere
+//       // do not test initialization routines here
+//
+//       {
+//         using Tag = ExamplePosition;
+//         tuples::get<Tag>(downstream_block.data()) = Tag::value;
+//       }
+//       {
+//         using Tag = ExampleVelocity;
+//         tuples::get<Tag>(downstream_block.data()) = Tag::value;
+//       }
+//       // say it is computed from the other two tags
+//       tuples::get<ExampleAcceleration>(downstream_block.data()) = 5;
+//     }
+//
 //    private:
-//    // Declare the variables
-//    // !! New !! Everything is a vector now!
-//    struct ExamplePosition : DummyVariable<1> {};
-//    struct ExampleVelocity : DummyVariable<2> {};
-//    struct ExampleAcceleration : DummyVariable<3> {};
+//     using ::elastica::CRTPHelper<B,
+//     FacadePluginClassWithInitialization>::self;
 //
-//   protected:
-//    // !! New !! Variables to be initialized are put in a separate list
-//    using InitializedVariables = tmpl::list<ExamplePosition, ExampleVelocity>;
-//    // !! New !! Other Variables (that can be computed based on initialized
-//    // variables) are put in a different list
-//    using ComputedVariables = tmpl::list<ExampleAcceleration>;
-//    // All variables
-//    using Variables = tmpl::append<InitializedVariables, ComputedVariables>;
+//    public:
+//     int& get_position() { return tuples::get<ExamplePosition>(self().data());
+//     } int& get_velocity() { return
+//     tuples::get<ExampleVelocity>(self().data()); } int& get_acceleration() {
+//       return tuples::get<ExampleAcceleration>(self().data());
+//     }
 //
-//    // !! New !! To help initialize the block to be formed, we have an
-//    // initialize method
-//    template <typename DownstreamBlock, typename Initializer>
-//    static void initialize(DownstreamBlock& downstream_block, Initializer&&) {
-//      // initialize all ints properly
-//      // do not use blocks::get here, that is tested elsewhere
-//      // do not test initialization routines here
+//     int const& get_position() const {
+//       return tuples::get<ExamplePosition>(self().data());
+//     }
+//     int const& get_velocity() const {
+//       return tuples::get<ExampleVelocity>(self().data());
+//     }
+//     int const& get_acceleration() const {
+//       return tuples::get<ExampleAcceleration>(self().data());
+//     }
 //
-//      {
-//        using Tag = ExamplePosition;
-//        tuples::get<Tag>(downstream_block.data()) = Tag::value;
-//      }
-//      {
-//        using Tag = ExampleVelocity;
-//        tuples::get<Tag>(downstream_block.data()) = Tag::value;
-//      }
-//      // say it is computed from the other two tags
-//      tuples::get<ExampleAcceleration>(downstream_block.data()) = 5;
-//    }
+//     int do_it_or_else() { return 3; }
+//   };
 //
-//   private:
-//    using ::elastica::CRTPHelper<B, FacadePluginClassWithInitialization>::self;
+//   template <template <typename> class B>
+//   using BoundFacadePluginClassWithInitialization =
+//   PluginHelper<B, FacadePluginClassWithInitialization>;
 //
-//   public:
-//    int& get_position() { return tuples::get<ExamplePosition>(self().data()); }
-//    int& get_velocity() { return tuples::get<ExampleVelocity>(self().data()); }
-//    int& get_acceleration() {
-//      return tuples::get<ExampleAcceleration>(self().data());
-//    }
+// }  // namespace
 //
-//    int const& get_position() const {
-//      return tuples::get<ExamplePosition>(self().data());
-//    }
-//    int const& get_velocity() const {
-//      return tuples::get<ExampleVelocity>(self().data());
-//    }
-//    int const& get_acceleration() const {
-//      return tuples::get<ExampleAcceleration>(self().data());
-//    }
+// namespace blocks {
+//   template <>
+//   class Block<BoundFacadePluginClassWithInitialization<Block>>
+//       : public
+//       TestBlockFacade<BoundFacadePluginClassWithInitialization<Block>> {
+//    public:
+//     using Parent =
+//     TestBlockFacade<BoundFacadePluginClassWithInitialization<Block>>;
 //
-//    int do_it_or_else() { return 3; }
-//  };
+//     //////////////////////////// start conformance
+//     /////////////////////////////
 //
-//  template <template <typename> class B>
-//  using BoundFacadePluginClassWithInitialization =
-//  PluginHelper<B, FacadePluginClassWithInitialization>;
+//     // In this case, we do not check the business logic in this class, but
+//     only
+//     // if the interfaces are OK.
+//     inline std::size_t check(std::size_t /* index */) const noexcept {
+//       return 0UL;
+//     }
+//     inline std::size_t check(elastica::from_end /* index */) const noexcept {
+//       return 0UL;
+//     };
 //
-//}  // namespace
+//     // customization point for generating a slice. Since all are vectors, a
+//     // simple indexing should do
+//     template <typename Tag>
+//     inline constexpr typename Tag::slice_type slice(std::size_t /* index */)
+//     & {
+//       return tuples::get<Tag>(this->data());
+//     }
+//     template <typename Tag>
+//     inline constexpr typename Tag::const_slice_type slice(
+//         std::size_t /* index */) const& {
+//       return tuples::get<Tag>(this->data());
+//     }
+//     ///////////////////////////// end conformance
+//     //////////////////////////////
 //
-//namespace blocks {
-//  template <>
-//  class Block<BoundFacadePluginClassWithInitialization<Block>>
-//      : public TestBlockFacade<BoundFacadePluginClassWithInitialization<Block>> {
-//   public:
-//    using Parent = TestBlockFacade<BoundFacadePluginClassWithInitialization<Block>>;
+//     Block() : Parent() {
+//       // we are not using initializer so give it a no value
+//       Parent::initialize(*this, NoSuchType{});
+//     };
+//     ~Block() = default;
+//   };
 //
-//    //////////////////////////// start conformance /////////////////////////////
+// }  // namespace blocks
 //
-//    // In this case, we do not check the business logic in this class, but only
-//    // if the interfaces are OK.
-//    inline std::size_t check(std::size_t /* index */) const noexcept {
-//      return 0UL;
-//    }
-//    inline std::size_t check(elastica::from_end /* index */) const noexcept {
-//      return 0UL;
-//    };
+// namespace {
 //
-//    // customization point for generating a slice. Since all are vectors, a
-//    // simple indexing should do
-//    template <typename Tag>
-//    inline constexpr typename Tag::slice_type slice(std::size_t /* index */) & {
-//      return tuples::get<Tag>(this->data());
-//    }
-//    template <typename Tag>
-//    inline constexpr typename Tag::const_slice_type slice(
-//        std::size_t /* index */) const& {
-//      return tuples::get<Tag>(this->data());
-//    }
-//    ///////////////////////////// end conformance //////////////////////////////
+//   ELASTICA_TEST_CASE("Unit.Systems.BlockFacade.with_access_modifiers",
+//   "[Systems][Unit]") {
+//     using Plugin = BoundFacadePluginClassWithInitialization<blocks::Block>;
+//     using MyBlock = blocks::Block<Plugin>;
+//     MyBlock block;
 //
-//    Block() : Parent() {
-//      // we are not using initializer so give it a no value
-//      Parent::initialize(*this, NoSuchType{});
-//    };
-//    ~Block() = default;
-//  };
+//     static_assert(MyBlock::parent_to_be_initialized(),
+//                   "meta failure in BlockFacade");
 //
-//}  // namespace blocks
+//     CHECK(block.get_acceleration() == 5);
+//     CHECK(block.get_velocity() == 2);
+//     CHECK(block.get_position() == 1);
 //
-//namespace {
+//     auto const& as_const_block = static_cast<MyBlock const&>(block);
+//     CHECK(as_const_block.get_acceleration() == 5);
+//     CHECK(as_const_block.get_velocity() == 2);
+//     CHECK(as_const_block.get_position() == 1);
+//   }
 //
-//  ELASTICA_TEST_CASE("Unit.Systems.BlockFacade.with_access_modifiers", "[Systems][Unit]") {
-//    using Plugin = BoundFacadePluginClassWithInitialization<blocks::Block>;
-//    using MyBlock = blocks::Block<Plugin>;
-//    MyBlock block;
-//
-//    static_assert(MyBlock::parent_to_be_initialized(),
-//                  "meta failure in BlockFacade");
-//
-//    CHECK(block.get_acceleration() == 5);
-//    CHECK(block.get_velocity() == 2);
-//    CHECK(block.get_position() == 1);
-//
-//    auto const& as_const_block = static_cast<MyBlock const&>(block);
-//    CHECK(as_const_block.get_acceleration() == 5);
-//    CHECK(as_const_block.get_velocity() == 2);
-//    CHECK(as_const_block.get_position() == 1);
-//  }
-//
-//}  // namespace
+// }  // namespace

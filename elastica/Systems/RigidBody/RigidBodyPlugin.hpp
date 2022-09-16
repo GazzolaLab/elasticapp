@@ -15,7 +15,7 @@
 
 //
 #include "Systems/common/Cardinality.hpp"
-//#include "Systems/common/IndexCheck.hpp"
+#include "Systems/common/IndexCheck.hpp"
 /// Forward declarations
 #include "Systems/RigidBody/Types.hpp"
 ///
@@ -332,24 +332,23 @@ namespace elastica {
 
   }  // namespace rigid_body
 
-  //  //**Check
-  //  functions*********************************************************
-  //  /*!\name Index check functions
-  //   * \ingroup rigid_body
-  //   * \brief Checks whether indices are within range of accessible values
-  //   * */
-  //  template <typename RBT, template <typename> class ComputationalBlock,
-  //            template <typename /*RBT*/, typename /*InitializedBlock*/>
-  //            class... Components,
-  //            typename IndexType>
-  //  inline auto index_check(
-  //      ::elastica::rigid_body::RigidBodyPlugin<RBT, ComputationalBlock,
-  //                                              Components...> const&
-  //                                              block_like,
-  //      IndexType index_to_be_sliced) -> std::size_t {
-  //    return index_check_helper(size(block_like.self()),
-  //                              std::move(index_to_be_sliced));
-  //  }
+  //**Check functions***********************************************************
+  /*!\name Index check functions
+   * \ingroup rigid_body
+   * \brief Checks whether indices are within range of accessible values
+   * */
+  template <typename RBT, template <typename> class ComputationalBlock,
+            template <typename /*RBT*/, typename /*InitializedBlock*/>
+            class... Components,
+            typename IndexType>
+  inline auto index_check(
+      ::elastica::rigid_body::RigidBodyPlugin<RBT, ComputationalBlock,
+                                              Components...> const& block_like,
+      IndexType index_to_be_sliced) -> std::size_t {
+    return index_check_helper(size(block_like.self()),
+                              std::move(index_to_be_sliced));
+  }
+  //****************************************************************************
 
 }  // namespace elastica
 
@@ -391,5 +390,24 @@ namespace elastica {
     //**************************************************************************
 
   }  // namespace rigid_body
+
+  //**Check functions***********************************************************
+  /*!\name Index check functions
+   * \ingroup rigid_body
+   * \brief Checks whether indices are within range of accessible values
+   * */
+  template <typename RBT, template <typename> class ComputationalBlock,
+            typename Tag,
+            template <typename /*RBT*/, typename /*InitializedBlock*/>
+            class... Components,
+            typename IndexType>
+  inline auto index_check(
+      ::elastica::rigid_body::TaggedRigidBodyPlugin<
+          RBT, ComputationalBlock, Tag, Components...> const& block_like,
+      IndexType index_to_be_sliced) -> std::size_t {
+    return index_check_helper(size(block_like.self()),
+                              std::move(index_to_be_sliced));
+  }
+  //****************************************************************************
 
 }  // namespace elastica
