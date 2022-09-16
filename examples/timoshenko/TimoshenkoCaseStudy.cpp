@@ -93,7 +93,13 @@ void TimoshenkoCaseStudy::setup(InputTypes<This> const& input_parameters) {
             ::elastica::angular_velocity(rod_system, index) = 0.0;
           }));
 
+// #define TEST_VIEWS  // Uncomment if connection to a block view is needed
+#ifdef TEST_VIEWS
+  auto view_ref = blocks::slice(rod_ref.parent(), 0UL, 1UL);
+  simulator->constrain(view_ref).at(0UL).with(constraint_generator());
+#else
   simulator->constrain(rod_ref).at(0UL).with(constraint_generator());
+#endif  // TEST_VIEWS
 
   namespace efo = ::elastica::forcing;
 
