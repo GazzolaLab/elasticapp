@@ -198,9 +198,6 @@ namespace elastica {
           //**Parent methods****************************************************
           //! Initialize method inherited from parent class
           using Parent::initialize;
-          //! Loads and torque calculations
-          using Parent::compute_internal_modeled_loads_impl;
-          using Parent::compute_internal_modeled_torques_impl;
           //********************************************************************
         };
         //**********************************************************************
@@ -370,9 +367,6 @@ namespace elastica {
           //**Parent methods****************************************************
           //! Initialize method inherited from parent class
           using Parent::initialize;
-          //! Loads and torque calculations
-          using Parent::compute_internal_modeled_loads_impl;
-          using Parent::compute_internal_modeled_torques_impl;
           //********************************************************************
         };
         //**********************************************************************

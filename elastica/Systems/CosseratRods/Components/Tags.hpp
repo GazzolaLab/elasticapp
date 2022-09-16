@@ -19,18 +19,3 @@
 #include "Systems/CosseratRods/Components/Elasticity/Tags.hpp"
 #include "Systems/CosseratRods/Components/Geometry/Tags.hpp"
 #include "Systems/CosseratRods/Components/Kinematics/Tags.hpp"
-
-namespace elastica {
-
-  namespace tags {
-
-    //**************************************************************************
-    /*!\brief Tag indicating total number of elements within a cosserat rod
-     * \ingroup system_tags
-     */
-    struct NElement {};
-    //**************************************************************************
-
-  }  // namespace tags
-
-}  // namespace elastica

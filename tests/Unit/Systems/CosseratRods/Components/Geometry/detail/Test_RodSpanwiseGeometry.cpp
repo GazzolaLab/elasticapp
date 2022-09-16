@@ -59,11 +59,13 @@ namespace {
     Model model{};
 
     auto initializer = mock::initialize_block<Plugin>(
+        // FIXME : Remove 10UL taken from mock::initialize_block
+        blocks::initialize<elastica::tags::NElement>([]() { return 10UL; }),
         blocks::initialize<tags::Position>([](...) { return 2.0; }),
         blocks::initialize<tags::Director>([](...) { return 3.0; }));
 
-//    model.get_position().resize(3UL, 2 + initializer.n_elems());
-//    model.get_director().resize(3UL, 3UL, 2 + initializer.n_elems());
+    //    model.get_position().resize(3UL, 2 + initializer.n_elems());
+    //    model.get_director().resize(3UL, 3UL, 2 + initializer.n_elems());
 
     Model::initialize(model, std::move(initializer));
 

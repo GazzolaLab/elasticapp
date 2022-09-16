@@ -25,8 +25,10 @@
 //
 #include "Systems/common/Components.hpp"
 //
+#include "Systems/RigidBody/Components/Initialization.hpp"
 #include "Systems/RigidBody/Components/Tags.hpp"
 #include "Systems/RigidBody/Components/Types.hpp"
+#include "Systems/common/Cardinality.hpp"
 //
 #include "Time/SimulationTime.hpp"
 //
@@ -195,8 +197,6 @@ namespace elastica {
       using VariableDefinitions = WithRigidBodyKinematicsVariables<Traits>;
       //! CRTP Type
       using CRTP = CRTPHelper<ComputationalBlock, WithRigidBodyKinematics>;
-      //! CRTP methods
-      using CRTP::self;
       //! Real number type
       using real_type = typename Traits::real_type;
       //! Index type
@@ -224,65 +224,38 @@ namespace elastica {
       using typename VariableDefinitions::Velocity;
       //************************************************************************
 
-      //************************************************************************
-      /*!\brief Initialize method for the current component
-       *
-       * \details
-       * initialize() is responsible for initializing the variables present
-       * in the current component in the final block of data. For
-       * InitializedVariables, it fetches the corresponding initializer from
-       * the set of `initializers` to fill in the data. For
-       * ComputedVariables the default value is usually set. In this way,
-       * each component is responsible for initializing its own data in a
-       * manner that does not intrude with initialization from other
-       * components.
-       *
-       * \tparam DownstreamBlock The final block-like object which is
-       * derived from the current component
-       * \tparam RigidBodyInitializer An Initializer corresponding to the
-       * RigidBody rod hierarchy
+      //********************************************************************
+      /*!\copydoc ComponentInitializationDocStub
        */
-      template <typename DownstreamBlock, typename RigidBodyInitializer>
-      static void initialize(DownstreamBlock& downstream_block,
-                             RigidBodyInitializer&& initializers) {
-        // TODO : refactor
-        constexpr std::size_t at_only_index = 0UL;
+      template <typename BlockLike, typename RigidBodyInitializer>
+      static void initialize(
+          WithRigidBodyKinematics<Traits, BlockLike>& this_component,
+          RigidBodyInitializer&& initializer) {
+        // 1. Initialize required variables
+        initialize_component<
+            typename VariableDefinitions::InitializedVariables>(
+            this_component.self(),
+            std::forward<RigidBodyInitializer>(initializer));
 
-        //        https://stackoverflow.com/a/53144382
-        struct {
-          RigidBodyInitializer value;
-        } cap{std::forward<RigidBodyInitializer>(initializers)};
-        // Note : need a mutable lambda as we can now "move" from cap
-        tmpl::for_each<This::InitializedVariables>(
-            [&downstream_block,
-             //               cap = std::move(cap)
-             &cap](auto v) mutable -> void {
-              using Variable = tmpl::type_from<decltype(v)>;
-              using Tag = blocks::initializer_t<Variable>;
-
-              auto& variable(blocks::get<Tag>(downstream_block));
-              auto&& initializer(blocks::get<Tag>(std::move(cap.value)));
-
-              // invoke directly, assuming this is the template here
-              Variable::slice(variable, at_only_index) = initializer();
-            });
+        constexpr std::size_t at_only_index = UnitCardinality::index();
 
         /* mass second moment of inertia */
         {
           using Variable = InvMassSecondMomentOfInertia;
           using Tag = blocks::parameter_t<Variable>;
 
-          auto& variable(blocks::get<Tag>(downstream_block));
+          auto&& variable(blocks::get<Tag>(this_component.self()));
 
           // already initialized
-          auto& material(blocks::get<tags::Material>(downstream_block));
+          auto&& material(blocks::get<tags::Material>(this_component.self()));
 
           // (I_1, I_2, I_3)
-          Variable::slice(variable, at_only_index) = real_type(0.0);
+          Variable::slice(variable, UnitCardinality::index()) = real_type(0.0);
           // in lagrangian coordinates
           const ::elastica::Vec3 I_at_only_index =
               1.0 /
-              (downstream_block.get_unscaled_moment_of_inertia(at_only_index) *
+              (this_component.self().get_unscaled_moment_of_inertia(
+                   at_only_index) *
                ::elastica::Material::get_density(
                    Traits::DataType::Index::slice(material, at_only_index)));
           Variable::diagonal_assign(variable, at_only_index, I_at_only_index);
@@ -293,21 +266,23 @@ namespace elastica {
          * Mass can be computed from geometry. Here we fill in the
          * actual mass, considering the volume of the rigid bodies*/
         {
-          auto& mass(blocks::get<::elastica::tags::Mass>(downstream_block));
-          auto& material(downstream_block.get_material());
+          auto&& mass(
+              blocks::get<::elastica::tags::Mass>(this_component.self()));
+          auto&& material(this_component.self().get_material());
 
           Mass::slice(mass, at_only_index) =
               ::elastica::Material::get_density(
                   This::Material::slice(material, at_only_index)) *
-              downstream_block.get_volume(at_only_index);
+              this_component.self().get_volume(at_only_index);
         }
 
         /* Reset forces and torques */
         {
-          auto& external_loads(
-              blocks::get<::elastica::tags::ExternalLoads>(downstream_block));
-          auto& external_torques(
-              blocks::get<::elastica::tags::ExternalTorques>(downstream_block));
+          auto&& external_loads(blocks::get<::elastica::tags::ExternalLoads>(
+              this_component.self()));
+          auto&& external_torques(
+              blocks::get<::elastica::tags::ExternalTorques>(
+                  this_component.self()));
           external_loads = 0.0;
           external_torques = 0.0;
         }
@@ -315,6 +290,27 @@ namespace elastica {
       //************************************************************************
 
      public:
+      //**CRTP method***********************************************************
+      /*!\name CRTP method*/
+      //@{
+      using CRTP::self;
+      //@}
+      //************************************************************************
+
+#define STAMP_GETTERS(Var, func)                                         \
+  inline constexpr decltype(auto) func()& noexcept {                     \
+    return blocks::get<::elastica::tags::Var>(self());                   \
+  }                                                                      \
+  inline constexpr decltype(auto) func() const& noexcept {               \
+    return blocks::get<::elastica::tags::Var>(self());                   \
+  }                                                                      \
+  inline constexpr decltype(auto) func(index_type idx)& noexcept {       \
+    return Var::slice(func(), idx);                                      \
+  }                                                                      \
+  inline constexpr decltype(auto) func(index_type idx) const& noexcept { \
+    return Var::slice(func(), idx);                                      \
+  }
+
       //**Get methods***********************************************************
       /*!\name Get methods*/
       //@{
@@ -322,192 +318,92 @@ namespace elastica {
       //************************************************************************
       /*!\name Velocity methods*/
       //@{
-      /*!\brief Gets velocity of the current rod
+      /*!\brief Gets velocity of the current rigid body
        */
-      inline constexpr decltype(auto) get_velocity() & noexcept {
-        return blocks::get<tags::Velocity>(self());
-      }
-      inline constexpr decltype(auto) get_velocity() const& noexcept {
-        return blocks::get<tags::Velocity>(self());
-      }
-      inline constexpr decltype(auto) get_velocity(index_type idx) & noexcept {
-        return Velocity::slice(get_velocity(), idx);
-      }
-      inline constexpr decltype(auto) get_velocity(
-          index_type idx) const& noexcept {
-        return Velocity::slice(get_velocity(), idx);
-      }
+      STAMP_GETTERS(Velocity, get_velocity)
       //@}
       //************************************************************************
 
       //************************************************************************
       /*!\name Angular Velocity methods*/
       //@{
-      /*!\brief Gets angular velocity of the current rod
+      /*!\brief Gets angular velocity of the current rigid body
        */
-      inline constexpr decltype(auto) get_angular_velocity() & noexcept {
-        return blocks::get<tags::AngularVelocity>(self());
-      }
-      inline constexpr decltype(auto) get_angular_velocity() const& noexcept {
-        return blocks::get<tags::AngularVelocity>(self());
-      }
-      inline constexpr decltype(auto) get_angular_velocity(
-          index_type idx) & noexcept {
-        return AngularVelocity::slice(get_angular_velocity(), idx);
-      }
-      inline constexpr decltype(auto) get_angular_velocity(
-          index_type idx) const& noexcept {
-        return AngularVelocity::slice(get_angular_velocity(), idx);
-      }
+      STAMP_GETTERS(AngularVelocity, get_angular_velocity)
       //@}
       //************************************************************************
 
       //************************************************************************
       /*!\name Aceeleration methods*/
       //@{
-      /*!\brief Gets acceleration of the current rod
+      /*!\brief Gets acceleration of the current rigid body
        */
-      inline constexpr decltype(auto) get_acceleration() & noexcept {
-        return blocks::get<tags::Acceleration>(self());
-      }
-      inline constexpr decltype(auto) get_acceleration() const& noexcept {
-        return blocks::get<tags::Acceleration>(self());
-      }
+      STAMP_GETTERS(Acceleration, get_acceleration)
       //@}
       //************************************************************************
 
       //************************************************************************
       /*!\name Angular acceleration methods*/
       //@{
-      /*!\brief Gets angular acceleration of the current rod
+      /*!\brief Gets angular acceleration of the current rigid body
        */
-      inline constexpr decltype(auto) get_angular_acceleration() & noexcept {
-        return blocks::get<tags::AngularAcceleration>(self());
-      }
-      inline constexpr decltype(auto) get_angular_acceleration()
-          const& noexcept {
-        return blocks::get<tags::AngularAcceleration>(self());
-      }
+      STAMP_GETTERS(AngularAcceleration, get_angular_acceleration)
       //@}
       //************************************************************************
 
       //************************************************************************
       /*!\name Material methods*/
       //@{
-      /*!\brief Gets material of the current rod
+      /*!\brief Gets material of the current rigid body
        */
-      inline constexpr decltype(auto) get_material() & noexcept {
-        return blocks::get<tags::Material>(self());
-      }
-      inline constexpr decltype(auto) get_material() const& noexcept {
-        return blocks::get<tags::Material>(self());
-      }
-      inline constexpr decltype(auto) get_material(std::size_t idx) & noexcept {
-        return Material::slice(get_material(), idx);
-      }
-      inline constexpr decltype(auto) get_material(
-          std::size_t idx) const& noexcept {
-        return Material::slice(get_material(), idx);
-      }
+      STAMP_GETTERS(Material, get_material)
+      //@}
+      //************************************************************************
+
+      //************************************************************************
+      /*!\name Mass methods*/
+      //@{
+      /*!\brief Gets mass of the current rod
+       */
+      STAMP_GETTERS(Mass, get_mass)
       //@}
       //************************************************************************
 
       //************************************************************************
       /*!\name External Loads methods*/
       //@{
-      /*!\brief Gets external loads of the current rod
+      /*!\brief Gets external loads of the current rigid body
        */
-      inline constexpr decltype(auto) get_external_loads() & noexcept {
-        return blocks::get<tags::ExternalLoads>(self());
-      }
-      inline constexpr decltype(auto) get_external_loads() const& noexcept {
-        return blocks::get<tags::ExternalLoads>(self());
-      }
-      inline constexpr decltype(auto) get_external_loads(
-          index_type idx) & noexcept {
-        return ExternalLoads::slice(get_external_loads(), idx);
-      }
-      inline constexpr decltype(auto) get_external_loads(
-          index_type idx) const& noexcept {
-        return ExternalLoads::slice(get_external_loads(), idx);
-      }
+      STAMP_GETTERS(ExternalLoads, get_external_loads)
       //@}
       //************************************************************************
 
       //************************************************************************
       /*!\name External Torques methods*/
       //@{
-      /*!\brief Gets external torques of the current rod
+      /*!\brief Gets external torques of the current rigid body
        */
-      inline constexpr decltype(auto) get_external_torques() & noexcept {
-        return blocks::get<tags::ExternalTorques>(self());
-      }
-      inline constexpr decltype(auto) get_external_torques() const& noexcept {
-        return blocks::get<tags::ExternalTorques>(self());
-      }
-      inline constexpr decltype(auto) get_external_torques(
-          index_type idx) & noexcept {
-        return ExternalTorques::slice(get_external_torques(), idx);
-      }
-      inline constexpr decltype(auto) get_external_torques(
-          index_type idx) const& noexcept {
-        return ExternalTorques::slice(get_external_torques(), idx);
-      }
+      STAMP_GETTERS(ExternalTorques, get_external_torques)
       //@}
       //************************************************************************
 
+      //************************************************************************
+      /*!\name Inverse Mass SMOI methods*/
+      //@{
+      /*!\brief Gets inverse fo mass second moment of inertia of the current
+       * rod
+       */
+      STAMP_GETTERS(InvMassSecondMomentOfInertia,
+                    get_inverse_mass_second_moment_of_inertia)
       //@}
       //************************************************************************
 
-     public:  // TODO: temporary change from protected
-      //************************************************************************
-      /*!\brief Update acceleration based on the current state
-       *
-       * \details
-       * Updates accelerations of the system (translational and angular) given
-       * the state of the system. \n
-       * acceleration_batch{i} =
-       * (internal_force_batch{i} + external_force_batch{i})
-       * / mass_batch{i} \n
-       * alpha_batch{i} = inv_mass_second_moment_of_inertia_batch{i} *
-       * (internal_torque_batch{i} + external_torque_batch{i}) *
-       * dilatation_batch{i} \n
-       * Also resets external_force_batch and external_torque_batch = 0.0
-       *
-       * \example
-       * The following shows a typical use of the update_acceleration()
-       * function with the expected (correct) result also shown.
-       * \snippet test_gov_eqns.cpp update_acceleration_example
-       *
-       * \return void/None
-       *
-       * \see fill later?
-       */
+#undef STAMP_GETTERS
 
-      // TODO: double check how external force and external torque comes into
-      // play
-      inline void update_acceleration() noexcept {
-        auto& mass(blocks::get<tags::Mass>(self()));
-        auto& inv_mass_SMOI(
-            blocks::get<tags::InvMassSecondMomentOfInertia>(self()));
-        auto& acceleration(blocks::get<tags::Acceleration>(self()));
-        auto& angular_acceleration(
-            blocks::get<tags::AngularAcceleration>(self()));
-        auto& external_loads(blocks::get<tags::ExternalLoads>(self()));
-        auto& external_torques(blocks::get<tags::ExternalTorques>(self()));
-
-        // TODO: Revisit division vs power+multiplication
-        // TODO: remove transpose if possible
-        // acceleration = total_loads /
-        // Traits::Operations::expand_for_broadcast(mass);
-        Traits::Operations::batch_division_matvec(acceleration, external_loads,
-                                                  mass);
-
-        Traits::Operations::batch_matvec(angular_acceleration, inv_mass_SMOI,
-                                         external_torques);
-      }
+      //@}
       //************************************************************************
 
+     public:
       //************************************************************************
       /*!\brief Compute internal dynamics
        *
@@ -523,6 +419,56 @@ namespace elastica {
       //@}
       //************************************************************************
     };
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Update acceleration based on the current state
+     *
+     * \details
+     * Updates accelerations of the system (translational and angular) given
+     * the state of the system. \n
+     * acceleration_batch{i} =
+     * (internal_force_batch{i} + external_force_batch{i})
+     * / mass_batch{i} \n
+     * alpha_batch{i} = inv_mass_second_moment_of_inertia_batch{i} *
+     * (internal_torque_batch{i} + external_torque_batch{i}) *
+     * dilatation_batch{i} \n
+     * Also resets external_force_batch and external_torque_batch = 0.0
+     *
+     * \example
+     * The following shows a typical use of the update_acceleration()
+     * function with the expected (correct) result also shown.
+     * \snippet test_gov_eqns.cpp update_acceleration_example
+     *
+     * \return void/None
+     *
+     * \see fill later?
+     */
+    template <typename Traits, typename ComputationalBlock>
+    void update_acceleration(
+        WithRigidBodyKinematics<Traits, ComputationalBlock>&
+            block_like) noexcept {
+      auto&& mass(blocks::get<tags::Mass>(block_like.self()));
+      auto&& inv_mass_SMOI(
+          blocks::get<tags::InvMassSecondMomentOfInertia>(block_like.self()));
+      auto&& acceleration(blocks::get<tags::Acceleration>(block_like.self()));
+      auto&& angular_acceleration(
+          blocks::get<tags::AngularAcceleration>(block_like.self()));
+      auto&& external_loads(
+          blocks::get<tags::ExternalLoads>(block_like.self()));
+      auto&& external_torques(
+          blocks::get<tags::ExternalTorques>(block_like.self()));
+
+      // TODO: Revisit division vs power+multiplication
+      // TODO: remove transpose if possible
+      // acceleration = total_loads /
+      // Traits::Operations::expand_for_broadcast(mass);
+      Traits::Operations::batch_division_matvec(acceleration, external_loads,
+                                                mass);
+
+      Traits::Operations::batch_matvec(angular_acceleration, inv_mass_SMOI,
+                                       external_torques);
+    }
     //**************************************************************************
 
   }  // namespace rigid_body

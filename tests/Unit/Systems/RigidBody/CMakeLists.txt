@@ -1,6 +1,7 @@
 set(LIBRARY "Test_RigidBody")
 
 set(LIBRARY_SOURCES
+        Test_RigidBodyAPI.cpp
         Test_RigidBodyPlugin.cpp
         Test_Sphere.cpp
         )

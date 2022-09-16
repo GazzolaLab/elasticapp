@@ -47,7 +47,7 @@ namespace {
     const std::size_t new_n_elements(10UL);
 
     auto initializer(cosserat_rod::initialize_cosserat_rod<TestPlugin>(
-        blocks::initialize<tags::NElement>(new_n_elements),
+        blocks::initialize<tags::NElement>([=]() { return new_n_elements; }),
         blocks::initialize<tags::Position>(
             [](std::size_t i) { return 3.0 + static_cast<double>(i); }),
         blocks::initialize<tags::Director>(

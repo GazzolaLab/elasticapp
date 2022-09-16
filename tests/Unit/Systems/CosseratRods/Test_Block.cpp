@@ -276,7 +276,8 @@ namespace {
       auto model = test_empty();
 
       auto initializer(cosserat_rod::initialize_cosserat_rod<TestPlugin>(
-          blocks::initialize<tags::NElement>(new_n_elements)));
+          blocks::initialize<tags::NElement>(
+              [=](...) { return new_n_elements; })));
 
       auto sliced_model = model.emplace(std::move(initializer));
       static_assert(cpp17::is_same_v<decltype(sliced_model), ExpectedSlice>,
@@ -435,7 +436,8 @@ namespace {
       auto model(test_one_initializer(first_n_elements));
 
       auto second_initializer(cosserat_rod::initialize_cosserat_rod<TestPlugin>(
-          blocks::initialize<tags::NElement>(second_n_elements)));
+          blocks::initialize<tags::NElement>(
+              [=](...) { return second_n_elements; })));
 
       auto sliced_model = model.emplace(std::move(second_initializer));
       static_assert(cpp17::is_same_v<decltype(sliced_model), ExpectedSlice>,
@@ -603,7 +605,8 @@ namespace {
 
       const std::size_t third_n_elements(20UL);
       auto third_initializer(cosserat_rod::initialize_cosserat_rod<TestPlugin>(
-          blocks::initialize<tags::NElement>(third_n_elements)));
+          blocks::initialize<tags::NElement>(
+              [=](...) { return third_n_elements; })));
 
       auto sliced_model = model.emplace(std::move(third_initializer));
       static_assert(cpp17::is_same_v<decltype(sliced_model), ExpectedSlice>,
@@ -1030,7 +1033,8 @@ namespace {
       auto model = test_empty();
 
       auto initializer(cosserat_rod::initialize_cosserat_rod<TestPlugin>(
-          blocks::initialize<tags::NElement>(new_n_elements),
+          blocks::initialize<tags::NElement>(
+              [=](...) { return new_n_elements; }),
           blocks::initialize<test_tags::VarOnNode>(
               [](std::size_t i) { return 3.0 + static_cast<double>(i); }),
           blocks::initialize<test_tags::VarOnElement>(
@@ -1446,7 +1450,8 @@ namespace {
       auto model = test_one_initializer(first_n_elements);
 
       auto initializer(cosserat_rod::initialize_cosserat_rod<TestPlugin>(
-          blocks::initialize<tags::NElement>(new_n_elements),
+          blocks::initialize<tags::NElement>(
+              [=](...) { return new_n_elements; }),
           blocks::initialize<test_tags::VarOnNode>(
               [](std::size_t) { return 1.0; }),
           blocks::initialize<test_tags::VarOnElement>(
@@ -2243,7 +2248,8 @@ namespace {
       auto model = test_empty();
 
       auto initializer(cosserat_rod::initialize_cosserat_rod<TestPlugin>(
-          blocks::initialize<tags::NElement>(new_n_elements),
+          blocks::initialize<tags::NElement>(
+              [=](...) { return new_n_elements; }),
           blocks::initialize<test_tags::VarOnNode>(
               [](std::size_t i) { return 3.0 + static_cast<double>(i); }),
           blocks::initialize<test_tags::VarOnElement>(
@@ -2741,7 +2747,8 @@ namespace {
 
     {
       auto initializer(cosserat_rod::initialize_cosserat_rod<TestPlugin>(
-          blocks::initialize<tags::NElement>(n_elements[0]),
+          blocks::initialize<tags::NElement>(
+              [nelem = n_elements[0]](...) { return nelem; }),
           blocks::initialize<test_tags::VarOnNode>(
               [](std::size_t i) { return static_cast<double>(i); }),
           blocks::initialize<test_tags::VarOnElement>(
@@ -2753,7 +2760,8 @@ namespace {
     }
     {
       auto initializer(cosserat_rod::initialize_cosserat_rod<TestPlugin>(
-          blocks::initialize<tags::NElement>(n_elements[1]),
+          blocks::initialize<tags::NElement>(
+              [nelem = n_elements[1]](...) { return nelem; }),
           blocks::initialize<test_tags::VarOnNode>(
               [](std::size_t i) { return 10.0 + static_cast<double>(i); }),
           blocks::initialize<test_tags::VarOnElement>(
@@ -2765,7 +2773,8 @@ namespace {
     }
     {
       auto initializer(cosserat_rod::initialize_cosserat_rod<TestPlugin>(
-          blocks::initialize<tags::NElement>(n_elements[2]),
+          blocks::initialize<tags::NElement>(
+              [nelem = n_elements[2]](...) { return nelem; }),
           blocks::initialize<test_tags::VarOnNode>(
               [](std::size_t i) { return 50.0 + static_cast<double>(i); }),
           blocks::initialize<test_tags::VarOnElement>(

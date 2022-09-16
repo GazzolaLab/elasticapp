@@ -1,6 +1,15 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Square Cross section implementatino of @ref cosserat_rod_component
 //
-// Created by Seung Hyun Kim on 9/16/21.
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy, S Kim - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
 //
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
 
 #pragma once
 
@@ -14,7 +23,9 @@
 #include "Systems/CosseratRods/Components/Geometry/Types.hpp"
 ///
 #include "Systems/CosseratRods/Components/Geometry/detail/CosseratRodCrossSectionInterface.hpp"
+#include "Systems/CosseratRods/Components/Noexcept.hpp"
 #include "Systems/CosseratRods/Components/helpers.hpp"
+//
 #include "Utilities/ProtocolHelpers.hpp"
 // Implementation details
 #include "Utilities/Math/Sqrt.hpp"
@@ -72,7 +83,7 @@ namespace elastica {
            */
           template <typename InCircleRadius>
           static inline decltype(auto) compute_cross_section_area(
-              InCircleRadius const& incircle_radius) noexcept {
+              InCircleRadius const& incircle_radius) COSSERATROD_LIB_NOEXCEPT {
             return static_cast<real_type>(4.0) * sq(incircle_radius);
           }
           //********************************************************************
@@ -84,7 +95,7 @@ namespace elastica {
            */
           template <typename InCircleRadius>
           static inline decltype(auto) compute_second_moment_of_area(
-              InCircleRadius const& incircle_radius) noexcept {
+              InCircleRadius const& incircle_radius) COSSERATROD_LIB_NOEXCEPT {
             constexpr auto coefficient = static_cast<real_type>(1.0 / 12.0);
             return coefficient *
                    sq(compute_cross_section_area(incircle_radius));
@@ -98,8 +109,9 @@ namespace elastica {
            * \param length Length of the rod
            */
           template <typename Volume, typename Length>
-          static inline decltype(auto) update_dimension(
-              Volume const& volume, Length const& length) noexcept {
+          static inline decltype(auto) update_dimension(Volume const& volume,
+                                                        Length const& length)
+              COSSERATROD_LIB_NOEXCEPT {
             return static_cast<real_type>(0.5) * sqrt(volume / length);
           }
           //********************************************************************
@@ -108,7 +120,8 @@ namespace elastica {
           /*!\brief Returns the (real) shape factor for a shape, derived from
            * theory of elasticity
            */
-          static inline constexpr auto shape_factor() noexcept -> real_type {
+          static inline constexpr auto shape_factor() COSSERATROD_LIB_NOEXCEPT
+              -> real_type {
             // Timoshenko and Gere Mechanics of Materials book
             // (2nd edition page 143)
             // This value is pretty close to more recent published values,

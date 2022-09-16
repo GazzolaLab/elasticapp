@@ -409,7 +409,8 @@ namespace {
 
       sim.emplace_back<Plugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-              blocks::initialize<::elastica::tags::NElement>(n_elements)));
+              blocks::initialize<::elastica::tags::NElement>(
+                  [=](...) { return n_elements; })));
 
       // 1 block is now there with 13 UL elements
       CHECK(::elastica::size(sim.get_system_collection_container<Block>()) ==
@@ -420,7 +421,8 @@ namespace {
       // another
       sim.emplace_back<Plugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-              blocks::initialize<::elastica::tags::NElement>(n_elements)));
+              blocks::initialize<::elastica::tags::NElement>(
+                  [=](...) { return n_elements; })));
 
       CHECK(::elastica::size(sim.get_system_collection_container<Block>()) ==
             1UL);
@@ -428,7 +430,8 @@ namespace {
 
       sim.emplace_back<Plugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-              blocks::initialize<::elastica::tags::NElement>(n_elements)));
+              blocks::initialize<::elastica::tags::NElement>(
+                  [=](...) { return n_elements; })));
       // now the policy has no chocie but to add another block
       CHECK(::elastica::size(sim.get_system_collection_container<Block>()) ==
             2UL);
@@ -451,7 +454,8 @@ namespace {
 
       sim.emplace_back<Plugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-              blocks::initialize<::elastica::tags::NElement>(n_elements)));
+              blocks::initialize<::elastica::tags::NElement>(
+                  [=](...) { return n_elements; })));
 
       // 1 block is now there with 8 UL elements
       CHECK(::elastica::size(sim.get_system_collection_container<Block>()) ==
@@ -463,7 +467,8 @@ namespace {
       // another
       sim.emplace_back<Plugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-              blocks::initialize<::elastica::tags::NElement>(n_elements)));
+              blocks::initialize<::elastica::tags::NElement>(
+                  [=](...) { return n_elements; })));
 
       CHECK(::elastica::size(sim.get_system_collection_container<Block>()) ==
             1UL);
@@ -471,7 +476,8 @@ namespace {
 
       sim.emplace_back<Plugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-              blocks::initialize<::elastica::tags::NElement>(n_elements)));
+              blocks::initialize<::elastica::tags::NElement>(
+                  [=](...) { return n_elements; })));
       // now the policy has no choice but to add another block
       CHECK(::elastica::size(sim.get_system_collection_container<Block>()) ==
             2UL);
@@ -497,7 +503,8 @@ namespace {
       for (std::size_t i = 0UL; i < 2UL; ++i) {
         sim.emplace_back<Plugin>(
             ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-                blocks::initialize<::elastica::tags::NElement>(n_elements)));
+                blocks::initialize<::elastica::tags::NElement>(
+                    [=](...) { return n_elements; })));
         // 1 block is now there with 8 UL elements
         CHECK(::elastica::size(sim.get_system_collection_container<Block>()) ==
               1UL);
@@ -506,7 +513,8 @@ namespace {
       for (std::size_t i = 0UL; i < 2UL; ++i) {
         sim.emplace_back<Plugin>(
             ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-                blocks::initialize<::elastica::tags::NElement>(n_elements)));
+                blocks::initialize<::elastica::tags::NElement>(
+                    [=](...) { return n_elements; })));
         // 1 block is now there with 8 UL elements
         CHECK(::elastica::size(sim.get_system_collection_container<Block>()) ==
               2UL);
@@ -518,14 +526,16 @@ namespace {
       using Block = ECNamedBlock;
       sim.emplace_back<Plugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-              blocks::initialize<::elastica::tags::NElement>(n_elements)));
+              blocks::initialize<::elastica::tags::NElement>(
+                  [=](...) { return n_elements; })));
       // 1 block is now there with 8 UL elements
       CHECK(::elastica::size(sim.get_system_collection_container<Block>()) ==
             1UL);
 
       sim.emplace_back<Plugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-              blocks::initialize<::elastica::tags::NElement>(n_elements)));
+              blocks::initialize<::elastica::tags::NElement>(
+                  [=](...) { return n_elements; })));
       // 1 block is now there with 8 UL elements
       CHECK(::elastica::size(sim.get_system_collection_container<Block>()) ==
             2UL);
@@ -564,18 +574,21 @@ namespace {
 
       sim.emplace_back<Plugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-              blocks::initialize<::elastica::tags::NElement>(n_elements)));
+              blocks::initialize<::elastica::tags::NElement>(
+                  [=](...) { return n_elements; })));
       CHECK(sim.n_systems() == ++n_system_count);
 
       // another
       sim.emplace_back<Plugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-              blocks::initialize<::elastica::tags::NElement>(n_elements)));
+              blocks::initialize<::elastica::tags::NElement>(
+                  [=](...) { return n_elements; })));
       CHECK(sim.n_systems() == ++n_system_count);
 
       sim.emplace_back<Plugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-              blocks::initialize<::elastica::tags::NElement>(n_elements)));
+              blocks::initialize<::elastica::tags::NElement>(
+                  [=](...) { return n_elements; })));
       CHECK(sim.n_systems() == ++n_system_count);
     });
   }
@@ -594,7 +607,8 @@ namespace {
       CHECK_THROWS_WITH(
           sim.emplace_back<Plugin>(
               ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-                  blocks::initialize<::elastica::tags::NElement>(200UL))),
+                  blocks::initialize<::elastica::tags::NElement>(
+                      [](...) { return 200UL; }))),
           Catch::Contains("simulator has been finalized"));
     }
   }
@@ -616,7 +630,8 @@ namespace {
 
       auto sliced = (sim.emplace_back<Plugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-              blocks::initialize<::elastica::tags::NElement>(n_elements))));
+              blocks::initialize<::elastica::tags::NElement>(
+                  [=](...) { return n_elements; }))));
       CHECK(sim.check_if_registered(sliced));
 
       // This code no longer compiles by design -> only lazy block slice
@@ -624,7 +639,8 @@ namespace {
       // Block block{};
       // auto another_sliced = block.emplace(
       //     ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-      //         blocks::initialize<::elastica::tags::NElement>(n_elements)));
+      //         blocks::initialize<::elastica::tags::NElement>([=](...){return
+      //         n_elements;} )));
       // CHECK_FALSE(sim.check_if_registered(std::ref(another_sliced)));
     });
   }
@@ -646,7 +662,8 @@ namespace {
 
       auto sliced_ref = (sim.emplace_back<Plugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-              blocks::initialize<::elastica::tags::NElement>(n_elements))));
+              blocks::initialize<::elastica::tags::NElement>(
+                  [=](...) { return n_elements; }))));
       CHECK(sim.check_if_registered(sliced_ref));
       CHECK_NOTHROW(sim.confirm_as_registered(sliced_ref));
 
@@ -655,7 +672,8 @@ namespace {
       // Block block{};
       // auto another_sliced = block.emplace(
       //     ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-      //         blocks::initialize<::elastica::tags::NElement>(n_elements)));
+      //         blocks::initialize<::elastica::tags::NElement>([=](...){return
+      //         n_elements;} )));
       // CHECK_THROWS_WITH(sim.confirm_as_registered(another_sliced),
       //                   Catch::Contains("Input system was not found"));
     });
@@ -687,7 +705,8 @@ namespace {
       for (auto i = 0UL; i < n_units; ++i)
         sim.template emplace_back<Plugin>(
             ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
-                blocks::initialize<::elastica::tags::NElement>(n_elements)));
+                blocks::initialize<::elastica::tags::NElement>(
+                    [=](...) { return n_elements; })));
     });
     return sim;
   }
@@ -776,32 +795,39 @@ namespace {
     auto ec_sliced =
         (sim.emplace_back<ECPlugin>(
              ::elastica::cosserat_rod::initialize_cosserat_rod<ECPlugin>(
-                 blocks::initialize<::elastica::tags::NElement>(n_elements))))
+                 blocks::initialize<::elastica::tags::NElement>(
+                     [=](...) { return n_elements; }))))
             .get();
     auto ec_named_sliced =
         (sim.emplace_back<ECNamedPlugin>(
              ::elastica::cosserat_rod::initialize_cosserat_rod<ECNamedPlugin>(
-                 blocks::initialize<::elastica::tags::NElement>(n_elements))))
+                 blocks::initialize<::elastica::tags::NElement>(
+                     [=](...) { return n_elements; }))))
             .get();
     auto another_ec_sliced =
         (sim.emplace_back<AnotherECPlugin>(
              ::elastica::cosserat_rod::initialize_cosserat_rod<AnotherECPlugin>(
-                 blocks::initialize<::elastica::tags::NElement>(n_elements))))
+                 blocks::initialize<::elastica::tags::NElement>(
+                     [=](...) { return n_elements; }))))
             .get();
     {
       sim.emplace_back<ECNamedPlugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<ECNamedPlugin>(
-              blocks::initialize<::elastica::tags::NElement>(n_elements)));
+              blocks::initialize<::elastica::tags::NElement>(
+                  [=](...) { return n_elements; })));
       sim.emplace_back<ECNamedPlugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<ECNamedPlugin>(
-              blocks::initialize<::elastica::tags::NElement>(n_elements)));
+              blocks::initialize<::elastica::tags::NElement>(
+                  [=](...) { return n_elements; })));
       sim.emplace_back<ECNamedPlugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<ECNamedPlugin>(
-              blocks::initialize<::elastica::tags::NElement>(n_elements)));
+              blocks::initialize<::elastica::tags::NElement>(
+                  [=](...) { return n_elements; })));
 
       sim.emplace_back<AnotherECPlugin>(
           ::elastica::cosserat_rod::initialize_cosserat_rod<AnotherECPlugin>(
-              blocks::initialize<::elastica::tags::NElement>(n_elements)));
+              blocks::initialize<::elastica::tags::NElement>(
+                  [=](...) { return n_elements; })));
     }
 
     std::atomic<std::size_t> ec_slice_counter(0UL), ec_named_slice_counter(0UL),

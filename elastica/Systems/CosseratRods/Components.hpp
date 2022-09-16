@@ -48,6 +48,19 @@ namespace elastica {
     //**************************************************************************
 
     //**************************************************************************
+    /*!\defgroup cosserat_rod_custom_entries Cosserat Rod customization
+     * \ingroup cosserat_rod_component
+     * \brief Entry points to customize core-rod functionality
+     *
+     * \details
+     * To customize the behavior of the library-provided CosseratRods, users are
+     * encouraged to overload these set of functions with the following
+     * signature
+     * TODO
+     */
+    //**************************************************************************
+
+    //**************************************************************************
     /*!\brief Components comprising Cosserat rods
     // \ingroup cosserat_rod_component
     */

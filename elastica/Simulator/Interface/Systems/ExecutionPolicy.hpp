@@ -32,6 +32,7 @@
 #include "Utilities/CRTP.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Invoke.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeFromTuple.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Size.hpp"
@@ -177,7 +178,7 @@ namespace elastica {
            */
           template <typename F>
           ELASTICA_ALWAYS_INLINE constexpr auto operator()(
-              F&& func) const noexcept {
+              F func) const noexcept {
             /*
              * \param system_collection (Iterable) collection of systems of one
              * type
@@ -188,7 +189,7 @@ namespace elastica {
              * mutable, but then since the member is const it throws a weird
              * error.
              */
-            return [func = FWD_CAPTURE(func)](
+            return [func = std::move(func)](
                        auto /*const*/& system_collection) /*mutable*/
                    -> void /*decltype(auto)*/ {
               // parallelism should go here
@@ -198,7 +199,7 @@ namespace elastica {
                             // If rvalue, func is a tuple of the type so we can
                             // move If lvalue, func is a tuple of the lvalue of
                             // the type so move does nothing really
-                            std::move(detail::access(func)));
+                            std::ref(func));
               // std::forward<F>(func));
             };
           }
@@ -231,7 +232,7 @@ namespace elastica {
            */
           template <typename F>
           ELASTICA_ALWAYS_INLINE constexpr auto operator()(
-              F&& func) const noexcept {
+              F func) const noexcept {
             /*
              * \param system_collection (Iterable) collection of systems of one
              * type
@@ -243,8 +244,8 @@ namespace elastica {
              * error.
              * [func = std::forward<F>(func)]
              */
-            return [func = FWD_CAPTURE(func)](
-                       auto /*const*/& system_collection) /*mutable*/
+            return [func = std::move(func)](
+                       auto /*const*/& system_collection) mutable
                    -> void /*decltype(auto)*/ {
               // parallelism should go here
               using ::elastica::size;
@@ -253,9 +254,13 @@ namespace elastica {
               ::elastica::parallel::for_each(
                   system_collection,
                   // same logic as sequential for moving it
-                  [f = detail::access(func)](auto& curr_system) {
-                    f(curr_system);
-                  });
+                  // Moving is fine here for two reasons :
+                  // 1. Within for_each, f gets copy constructed within the
+                  // threads from the lambda passed to for_each below
+                  // 2. In invoke_over, each parallel invoker gets its own copy
+                  // of lambda (whose scope we are in)---hence its safe to move
+                  // into the next lambda.
+                  [f = std::move(func)](auto& curr_system) { f(curr_system); });
               // detail::access returns a & to a non-existing value, which is
               // dangerous
               // return static_cast<std::decay_t<F>>(detail::access(func));
@@ -307,20 +312,20 @@ namespace elastica {
            */
           template <typename F>
           ELASTICA_ALWAYS_INLINE constexpr auto operator()(
-              F&& func) const noexcept {
+              F func) const noexcept {
             /*
              * \param system_collection (Iterable) collection of systems of one
              * type
              */
-            return [&, func = FWD_CAPTURE(func)](
-                       auto /*const*/& system_collection) /*mutable*/
+            return [&, func = std::move(func)](
+                       auto /*const*/& system_collection) mutable
                    -> void /*decltype(auto)*/ {
               // Is this if() check viable when put in a flow graph?
               if (module_handle.to_be_iterated_sequentially(system_collection))
-                ForEachSystemInSequence::operator()(detail::access(func))(
+                ForEachSystemInSequence::operator()(std::move(func))(
                     system_collection);
               else
-                ForEachSystemInParallel::operator()(detail::access(func))(
+                ForEachSystemInParallel::operator()(std::move(func))(
                     system_collection);
             };
           }
@@ -366,31 +371,54 @@ namespace elastica {
            */
           template <typename ForEachOp>
           ELASTICA_ALWAYS_INLINE constexpr auto invoke_over_systems(
-              ForEachOp&& for_each_op) const noexcept {
-            return
-                [op_for_each = FWD_CAPTURE(for_each_op)](
-                    auto&... system_collections) mutable -> void /*ForEach*/ {
-                  /* 1. Needs func to be assignable, NRVO should kick in to move
-                   * from for_each_system
-                   * 2. evaluation func_for_each(system) gives back func and not
-                   * func_for_each, so we cannot assign it to func for each.
-                   */
-                  // EXPAND_PACK_LEFT_TO_RIGHT(
-                  //     (func_for_each = func_for_each(system_collections)));
+              ForEachOp for_each_op) const noexcept {
+            return [op_for_each = std::move(for_each_op)](
+                       auto&... system_collections) -> void /*ForEach*/ {
+              /* 1. Needs func to be assignable, NRVO should kick in to move
+               * from for_each_system
+               * 2. evaluation func_for_each(system) gives back func and not
+               * func_for_each, so we cannot assign it to func for each.
+               */
+              // EXPAND_PACK_LEFT_TO_RIGHT(
+              //     (func_for_each = func_for_each(system_collections)));
 
-                  // TODO : Whats the performance impact of std::ref, since this
-                  // is going to be a tight loop?
-                  EXPAND_PACK_LEFT_TO_RIGHT(
-                      detail::access(op_for_each)(system_collections));
+              // Make one copy for each system invocation before launching it
+              // op_for_each can modify its state (by moving resources) after
+              // every call, so create copies here.
 
-                  // cpp17 fold style
-                  // ((void)(func(decltype(system_collections)(system_collections))),
-                  // ...);
+              //              EXPAND_PACK_LEFT_TO_RIGHT(
+              //                  [op = op_for_each, &system_collections]() {
+              //                    op(system_collections);
+              //                  }());
 
-                  // TODO : why doesnt this work? shouldnt NRVO kick in?
-                  // return func_for_each;
-                  // return static_cast<F&&>(func);
-                };
+              // For the same reason as parallel invoke, we explicitly ensure
+              // that this lambda is NOT maked mutable by having a buffer of
+              // ops and systems.
+              // This allows execution of lambdas marked const (as it should)
+              // without compilation issues.
+
+              constexpr auto n_system_types = sizeof...(system_collections);
+              /*constexpr*/ auto operations(
+                  make_array<n_system_types>(std::move(op_for_each)));
+              /*constexpr*/ auto systems(std::tie(system_collections...));
+
+              auto form_function = [&](auto Is) noexcept {
+                return [&op = std::get<Is>(operations),
+                        &system = std::get<Is>(systems)]() { op(system); };
+              };
+              // Form function and immediately execute.
+              index_apply<n_system_types>([&](auto... Is) {
+                EXPAND_PACK_LEFT_TO_RIGHT(form_function(Is)());
+              });
+
+              // cpp17 fold style
+              // ((void)(func(decltype(system_collections)(system_collections))),
+              // ...);
+
+              // TODO : why doesnt this work? shouldnt NRVO kick in?
+              // return func_for_each;
+              // return static_cast<F&&>(func);
+            };
           }
           /*! \endcond */
           //********************************************************************
@@ -422,19 +450,46 @@ namespace elastica {
            */
           template <typename ForEachOp>
           ELASTICA_ALWAYS_INLINE constexpr auto invoke_over_systems(
-              ForEachOp&& for_each_op) const noexcept {
-            return
-                [op_for_each = FWD_CAPTURE(for_each_op)](
-                    auto&... system_collections) mutable -> void /*ForEachOp*/ {
-                  // op_for_each is copied to each thread here, so pay attention
-                  // to state
-                  parallel::invoke([op_for_each = detail::access(op_for_each),
-                                    &system_collections]() /*mutable*/ {
-                    op_for_each(system_collections);
-                  }...);
-                  //  EXPAND_PACK_LEFT_TO_RIGHT(
-                  //      detail::access(op_for_each)(system_collections));
-                };
+              ForEachOp for_each_op) const noexcept {
+            return [op_for_each = std::move(for_each_op)](
+                       auto&... system_collections) -> void /*ForEachOp*/ {
+              // op_for_each is copied to each thread here, so pay attention
+              // to state
+              // TBB parallel invoke does not copy its functors by design.
+              // Method is marked mutable for the same reason as sequential:
+              // each captured op's operator() is mutable (for moving
+              // resources). op is captured by value, and so the lambda below is
+              // indirectly changed by op.
+
+              /// See explanation below.
+              // parallel::invoke(
+              //     [op = op_for_each, &system_collections]() mutable {
+              //       op(system_collections);
+              //     }...);
+
+              // TBB parallel invoke necessitates that function is marked
+              // const(), but our op is allowed to change state. To WAR this
+              // issue, we create n_copies of op and refer to them instead.
+              // using Ops = std::array<decltype(op), >;
+              constexpr auto n_system_types = sizeof...(system_collections);
+              // op_for_each may not have constexpr constructors
+              /*constexpr*/ auto operations(
+                  make_array<n_system_types>(std::move(op_for_each)));
+              // Form a tuple of references, system_collections is not constexpr
+              // as it is a function parameter.
+              /*constexpr*/ auto systems(std::tie(system_collections...));
+
+              auto form_function = [&](auto Is) noexcept {
+                return [&op = std::get<Is>(operations),
+                        &system = std::get<Is>(systems)]() { op(system); };
+              };
+
+              index_apply<n_system_types>(
+                  [&](auto... Is) { parallel::invoke(form_function(Is)...); });
+
+              //  EXPAND_PACK_LEFT_TO_RIGHT(
+              //      detail::access(op_for_each)(system_collections));
+            };
           }
           //********************************************************************
         };
@@ -493,14 +548,12 @@ namespace elastica {
            * \param func Callable to be applied over one system type
            */
           template <typename F, typename SystemsBlock>
-          inline auto subset_for_each(F do_func,
-                                      tmpl::list<SystemsBlock>) const noexcept
-              -> F {
+          inline void subset_for_each(F do_func,
+                                      tmpl::list<SystemsBlock>) const noexcept {
             // this cannot happen serially, so push resposibility to for_each
-            for_each_system(std::ref(do_func))(
+            for_each_system(std::move(do_func))(
                 module_handle
                     .template get_system_collection_container<SystemsBlock>());
-            return do_func;
           }
           /*! \endcond */
           //********************************************************************
@@ -516,15 +569,12 @@ namespace elastica {
            * \param func Callable to be applied over system types
            */
           template <typename F, typename... SystemsBlocks>
-          inline auto subset_for_each(
-              F func, tmpl::list<SystemsBlocks...>) const noexcept -> F {
-            // TODO : Whats the performance impact of std::ref, since this
-            // is going to be a tight loop?
+          inline void subset_for_each(
+              F func, tmpl::list<SystemsBlocks...>) const noexcept {
             (void)cpp17::apply(
-                invoke_over_systems(for_each_system(std::ref(func))),
+                invoke_over_systems(for_each_system(std::move(func))),
                 std::tie(module_handle.template get_system_collection_container<
                          SystemsBlocks>()...));
-            return func;
           }
           /*! \endcond */
           //********************************************************************
@@ -537,8 +587,8 @@ namespace elastica {
            * \param func Callable to be applied over a subset of system types
            */
           template <typename BlocksTypeList, typename F>
-          inline decltype(auto) operator()(F&& func) const noexcept {
-            return subset_for_each(std::forward<F>(func), BlocksTypeList{});
+          inline void operator()(F func) const noexcept {
+            subset_for_each(std::move(func), BlocksTypeList{});
           }
           //********************************************************************
 
@@ -548,13 +598,9 @@ namespace elastica {
            * \param func Callable to be applied over system types
            */
           template <typename F>
-          inline auto operator()(F func) const noexcept -> F {
-            // TODO : Whats the performance impact of std::ref, since this
-            // is going to be a tight loop?
-            (void)cpp17::apply(
-                invoke_over_systems(for_each_system(std::ref(func))),
-                module_handle.get_system_collection_container());
-            return func;
+          inline void operator()(F func) const noexcept {
+            cpp17::apply(invoke_over_systems(for_each_system(std::move(func))),
+                         module_handle.get_system_collection_container());
           }
           //********************************************************************
 
@@ -611,7 +657,7 @@ namespace elastica {
            * \param func Callable to be applied over system types
            */
           template <typename F>
-          inline auto operator()(F func) const noexcept -> F {
+          inline void operator()(F func) const noexcept {
             return module_handle.for_each_block_untimed(std::move(func));
           }
           //********************************************************************

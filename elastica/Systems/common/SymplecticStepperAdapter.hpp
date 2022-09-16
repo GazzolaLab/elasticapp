@@ -23,7 +23,7 @@ namespace elastica {
   namespace detail {
 
     template <typename... X>
-    struct Der : public X... {
+    struct Inherit : public X... {
       //**Block type definitions************************************************
       //! List of computed variables
       using ComputedVariables = tmpl::append<typename X::ComputedVariables...>;
@@ -73,20 +73,37 @@ namespace elastica {
   template <typename Traits, typename Block,
             template <typename, typename> class... OtherComponents>
   class SymplecticPolicy
-      : public detail::Der<OtherComponents<Traits, Block>...> {
+      : public detail::Inherit<OtherComponents<Traits, Block>...> {
    private:
     //**Type definitions********************************************************
     //! Parent type
-    using P = detail::Der<OtherComponents<Traits, Block>...>;
+    using P = detail::Inherit<OtherComponents<Traits, Block>...>;
     //! This type
     using This = SymplecticPolicy<Traits, Block, OtherComponents...>;
+    //**************************************************************************
+
+   private:
+    //**************************************************************************
+    // CRTP section
+    // \note : cant use CRTP helper because it does not expect template
+    // template parameters
+    //! Type of the bottom level derived class
+    using Self = Block;
+    //! Reference type of the bottom level derived class
+    using Reference = Self&;
+    //! const reference type of the bottom level derived class
+    using ConstReference = Self const&;
+    //**************************************************************************
 
    protected:
+    //**Type definitions********************************************************
+    //! List of computed variables
     using typename P::ComputedVariables;
     //! List of initialized variables
     using typename P::InitializedVariables;
     //! List of all variables
     using typename P::Variables;
+    //**************************************************************************
 
     //**************************************************************************
     /*!\name Variable data */
@@ -132,8 +149,6 @@ namespace elastica {
     using AngularAccelerationState =
         ::elastica::states::SO3<AngularAccelerationData,
                                 ::elastica::states::tags::DoubleDerivativeTag>;
-    //@}
-    //**************************************************************************
 
     //! Collection of all kinematic states
     using KinematicState =
@@ -144,6 +159,9 @@ namespace elastica {
     //! Collection of all dynamic rates
     using DynamicRate =
         ::elastica::states::States<AccelerationState, AngularAccelerationState>;
+
+    //@}
+    //**************************************************************************
 
    protected:
     // At this point the facade would be instantiated so hopefully
@@ -165,41 +183,102 @@ namespace elastica {
           dynamic_rates_(std::move(other.dynamic_rates_)) {}
 
    public:
-    // Do not need const overloads : if its const, it should be a hard
-    // error
+    //**************************************************************************
+    /*!\name CRTP methods */
+    //@{
 
+    //**Self method*************************************************************
+    /*!\brief Access to the underlying derived
+     *
+     * \return Mutable reference to the underlying derived
+     *
+     * Safely down-casts this module to the underlying derived type, using
+     * the Curiously Recurring Template Pattern (CRTP).
+     */
+    inline constexpr auto self() & noexcept -> Reference {
+      return static_cast<Reference>(*this);
+    }
+    //**************************************************************************
+
+    //**Self method*************************************************************
+    /*!\brief Access to the underlying derived
+     *
+     * \return Const reference to the underlying derived
+     *
+     * Safely down-casts this module to the underlying derived type, using
+     * the Curiously Recurring Template Pattern (CRTP).
+     */
+    inline constexpr auto self() const& noexcept -> ConstReference {
+      return static_cast<ConstReference>(*this);
+    }
+    //**************************************************************************
+
+    //@}
+    //**************************************************************************
+
+   public:
+    // Do not need const overloads : const here should be a hard compile error
+    //**************************************************************************
+    /*!\name State functions */
+    //@{
+
+    //**************************************************************************
+    /*!\brief Access to kinematic states
+     */
     inline auto kinematic_states() & noexcept -> KinematicState& {
       return kinematic_states_;
     }
+    //**************************************************************************
 
+    //**************************************************************************
+    /*!\brief Access to kinematic rates
+     */
     inline auto kinematic_rates(::elastica::Time /*time_v*/) const noexcept
         -> DynamicState const& {
       return dynamic_states();
     }
+    //**************************************************************************
 
+    //**************************************************************************
+    /*!\brief Access to dynamic states
+     */
     inline auto dynamic_states() & noexcept -> DynamicState& {
       return dynamic_states_;
     }
+    //**************************************************************************
 
+    //**************************************************************************
+    /*!\brief Access to immutable dynamic states
+     */
     inline auto dynamic_states() const& noexcept -> DynamicState const& {
       return dynamic_states_;
     }
+    //**************************************************************************
 
-    inline auto dynamic_rates(::elastica::Time /*time_v*/) /*const*/ noexcept
+    //**************************************************************************
+    /*!\brief Access to dynamic rates
+     */
+    inline auto dynamic_rates(::elastica::Time /*time_v*/) /*const*/ noexcept(noexcept(update_acceleration(self())))
         -> DynamicRate const& {
       /* To be truly lazy, one should only compute acceleration
        * data and internal dynamics here.
        * but the cosserat rods need precomputing to account
        * for environment effects etc. so we can skip that here
        */
-      // return std::get<SymplecticAccelerations>(self().data());
-      P::update_acceleration();
+      update_acceleration(self());
       return dynamic_rates_;
     }
+    //**************************************************************************
+
+    //@}
+    //**************************************************************************
 
    private:
+    //! Kinematic state information of the system.
     KinematicState kinematic_states_;
+    //! Dynamic state information of the system.
     DynamicState dynamic_states_;
+    //! Dynamic rate information of the system.
     DynamicRate dynamic_rates_;
   };
   //****************************************************************************

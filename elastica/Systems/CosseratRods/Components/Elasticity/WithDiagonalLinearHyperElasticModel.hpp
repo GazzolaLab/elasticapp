@@ -230,6 +230,7 @@ namespace elastica {
                                                 temp_vec, element_dilatation);
 
       // before doing difference, fill it to 0.0
+
       using ::blocks::fill_ghosts_for;
       fill_ghosts_for<tags::_DummyElementVector>(block_like.self());
 

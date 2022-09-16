@@ -1,6 +1,15 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Sphere geometry component
 //
-// Created by Tejaswin Parthasarathy on 4/21/22.
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
 //
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
 
 #pragma once
 
@@ -14,6 +23,7 @@
 //
 #include "Systems/Block.hpp"
 //
+#include "Systems/RigidBody/Components/Initialization.hpp"
 #include "Systems/RigidBody/Components/WithRigidBodyGeometry.hpp"
 //
 #include "Systems/RigidBody/Sphere/Tags.hpp"
@@ -117,8 +127,6 @@ namespace elastica {
       using Parent = WithRigidBodyGeometry<Traits, ComputationalBlock>;
       //! CRTP Type
       using CRTP = CRTPHelper<ComputationalBlock, WithSphereGeometry>;
-      //! CRTP methods
-      using CRTP::self;
       //! Real number type
       using real_type = typename Traits::real_type;
       //! Index type
@@ -151,48 +159,19 @@ namespace elastica {
       //************************************************************************
 
       //************************************************************************
-      /*!\brief Initialize method for the current component
-       *
-       * \details
-       * initialize() is responsible for initializing the variables present
-       * in the current component in the final block of data. For
-       * InitializedVariables, it fetches the corresponding initializer from
-       * the set of `initializers` to fill in the data. For
-       * ComputedVariables the default value is usually set. In this way,
-       * each component is responsible for initializing its own data in a
-       * manner that does not intrude with initialization from other
-       * components.
-       *
-       * \tparam DownstreamBlock The final block-like object which is
-       * derived from the current component
-       * \tparam RigidBodyInitializer An Initializer corresponding to the
-       * RigidBody rod hierarchy
+      /*!\copydoc ComponentInitializationDocStub
        */
-      template <typename DownstreamBlock, typename RigidBodyInitializer>
-      static void initialize(DownstreamBlock& downstream_block,
-                             RigidBodyInitializer&& initializers) {
+      template <typename BlockLike, typename RigidBodyInitializer>
+      static void initialize(WithSphereGeometry<RBT, BlockLike>& this_component,
+                             RigidBodyInitializer&& initializer) {
         // 1. Initialize parent
-        Parent::initialize(downstream_block,
-                           std::forward<RigidBodyInitializer>(initializers));
+        Parent::initialize(this_component,
+                           std::forward<RigidBodyInitializer>(initializer));
 
-        //        https://stackoverflow.com/a/53144382
-        struct {
-          RigidBodyInitializer value;
-        } cap{std::forward<RigidBodyInitializer>(initializers)};
-        // Note : need a mutable lambda as we can now "move" from cap
-        tmpl::for_each<typename VariableDefinitions::InitializedVariables>(
-            [&downstream_block,
-             //               cap = std::move(cap)
-             &cap](auto v) mutable -> void {
-              using Variable = tmpl::type_from<decltype(v)>;
-              using Tag = blocks::initializer_t<Variable>;
-
-              auto& variable(blocks::get<Tag>(downstream_block));
-              auto&& initializer(blocks::get<Tag>(std::move(cap.value)));
-
-              // invoke directly, assuming this is the template here
-              variable = initializer();
-            });
+        initialize_component<
+            typename VariableDefinitions::InitializedVariables>(
+            this_component.self(),
+            std::forward<RigidBodyInitializer>(initializer));
       }
       //************************************************************************
 
@@ -207,6 +186,13 @@ namespace elastica {
       //************************************************************************
 
      public:
+      //**CRTP method***********************************************************
+      /*!\name CRTP method*/
+      //@{
+      using CRTP::self;
+      //@}
+      //************************************************************************
+
       //**Get methods***********************************************************
       /*!\name Get methods*/
       //@{
@@ -232,51 +218,20 @@ namespace elastica {
       //@}
       //************************************************************************
 
-     protected:
-      //************************************************************************
-      /*!\brief computes volume
-       *
-       * \param radius radius of the circle
-       */
-      template <typename Radius>
-      static inline decltype(auto) compute_volume(
-          Radius const& radius) noexcept {
-        return static_cast<real_type>(4.0) / static_cast<real_type>(3.0) *
-               M_PI * radius * radius * radius;
-      }
-      //************************************************************************
-
-     public:
       //************************************************************************
       /*!\name volume methods*/
       //@{
       /*!\brief Gets volume of the current rod
        */
       inline constexpr auto get_volume() /*noexcept*/ {
-        return compute_volume(get_radius());
+        return compute_volume(self(), get_radius());
       }
       inline constexpr auto get_volume(index_type idx) noexcept {
-        return compute_volume(get_radius(idx));
+        return compute_volume(self(), get_radius(idx));
       }
       //@}
       //************************************************************************
 
-     protected:
-      //************************************************************************
-      /*!\brief computes volume
-       *
-       * \param radius radius of the circle
-       */
-      template <typename Radius>
-      static inline decltype(auto) compute_unscaled_moment_of_inertia(
-          Radius const& radius) noexcept {
-        return (static_cast<real_type>(2.0) / static_cast<real_type>(5.0))
-               /* density not multiple because unscaled*/
-               * compute_volume(radius) * sq(radius);
-      }
-      //************************************************************************
-
-     public:
       //************************************************************************
       /*!\name Moment of inertia methods*/
       //@{
@@ -288,7 +243,8 @@ namespace elastica {
       /*noexcept*/ {
         // Should give out a VecVecExpr rather than Dimensions object
         // for expression template mechanisms
-        return compute_unscaled_moment_of_inertia(This::get_radius(idx));
+        return compute_unscaled_moment_of_inertia(self(),
+                                                  This::get_radius(idx));
       }
       template <DirectionType Dim, Requires<(Dim == Frame::D3)> = nullptr>
       inline constexpr decltype(auto) get_unscaled_moment_of_inertia(
@@ -296,7 +252,8 @@ namespace elastica {
       /*noexcept*/ {
         // Should give out a VecVecExpr rather than Dimensions object
         // for expression template mechanisms
-        return compute_unscaled_moment_of_inertia(This::get_radius(idx));
+        return compute_unscaled_moment_of_inertia(self(),
+                                                  This::get_radius(idx));
       }
       // do not have APIs return vec3, seems to reduce customizability and
       // promotes bad code
@@ -314,6 +271,39 @@ namespace elastica {
       //************************************************************************
     };
     //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Computes volume of sphere
+     *
+     * \param radius radius of the sphere
+     */
+    template <typename Traits, typename ComputationalBlock, typename Radius>
+    inline decltype(auto) compute_volume(
+        WithSphereGeometry<Traits, ComputationalBlock> const&,
+        Radius const& radius) noexcept {
+      using real_type = typename Traits::real_type;
+      // M_PI is double precision
+      return static_cast<real_type>(4.0) / static_cast<real_type>(3.0) *
+             static_cast<real_type>(M_PI) * radius * radius * radius;
+    }
+    //**************************************************************************
+
+    //************************************************************************
+    /*!\brief computes unscaled moment of inertia
+     * \ingroup
+     *
+     * \param radius radius of the circle
+     */
+    template <typename Traits, typename ComputationalBlock, typename Radius>
+    inline decltype(auto) compute_unscaled_moment_of_inertia(
+        WithSphereGeometry<Traits, ComputationalBlock> const& block_like,
+        Radius const& radius) noexcept {
+      using real_type = typename Traits::real_type;
+      return (static_cast<real_type>(2.0) / static_cast<real_type>(5.0))
+             /* density not multiple because unscaled*/
+             * compute_volume(block_like.self(), radius) * sq(radius);
+    }
+    //************************************************************************
 
   }  // namespace rigid_body
 

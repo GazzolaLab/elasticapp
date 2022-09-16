@@ -31,7 +31,6 @@ namespace {
       : public elastica::CRTPHelper<B, TestElasticityModel>,
         public ElasticityComponent<TestElasticityModel<CRT, B>> {
     using CRTP = elastica::CRTPHelper<B, TestElasticityModel>;
-    using CRTP::self;
 
    protected:
     using InitializedVariables = tmpl::list<>;
@@ -42,18 +41,25 @@ namespace {
     static void initialize(DownstreamBlock& downstream_block,
                            CosseratInitializer&& initializers) {}
 
-    void compute_internal_modeled_loads_impl() {
-      auto& internal_load = blocks::get<elastica::tags::InternalLoads>(self());
-      internal_load = 3.14;
-    }
-
-    void compute_internal_modeled_torques_impl() {
-      auto& internal_torque =
-          blocks::get<elastica::tags::InternalTorques>(self());
-      internal_torque = 42.0;
-    }
+   public:
+    using CRTP::self;
   };
 
+  template <typename CRT, typename B>
+  void compute_internal_modeled_loads_impl(
+      TestElasticityModel<CRT, B>& block_like) {
+    auto& internal_load =
+        blocks::get<elastica::tags::InternalLoads>(block_like.self());
+    internal_load = 3.14;
+  }
+
+  template <typename CRT, typename B>
+  void compute_internal_modeled_torques_impl(
+      TestElasticityModel<CRT, B>& block_like) {
+    auto& internal_torque =
+        blocks::get<elastica::tags::InternalTorques>(block_like.self());
+    internal_torque = 42.0;
+  }
   template <typename CRT,                 // Cosserat Rod Traits
             typename ComputationalBlock>  // Block
   class TestElasticityModelWithInterfaceOnly
@@ -123,6 +129,8 @@ namespace {
     Model model{};
 
     auto initializer = mock::initialize_block<Plugin>(
+        // FIXME : Remove 10UL taken from mock::initialize_block
+        blocks::initialize<tags::NElement>([]() { return 10UL; }),
         // Geometry Variables
         blocks::initialize<tags::Position>(
             [](std::size_t index) { return index * 1.0; }),
@@ -146,10 +154,19 @@ namespace {
         blocks::initialize<tags::Acceleration>([](...) { return 0.0; }),
         blocks::initialize<tags::AngularAcceleration>([](...) { return 0.0; }));
 
+    // FIXME : https://github.com/tp5uiuc/elasticapp/issues/460
+    // Don't use initialize on model
     Model::initialize(model, std::move(initializer));
 
-    CHECK(model.compute_internal_forces() == 3.14);
-    CHECK(model.compute_internal_torques() == 42.0);
+    CHECK(blocks::get<::elastica::tags::InternalLoads>(model) != approx(3.14));
+    compute_internal_forces(model);
+    CHECK(blocks::get<::elastica::tags::InternalLoads>(model) == approx(3.14));
+
+    CHECK(blocks::get<::elastica::tags::InternalTorques>(model) !=
+          approx(42.0));
+    compute_internal_torques(model);
+    CHECK(blocks::get<::elastica::tags::InternalTorques>(model) ==
+          approx(42.0));
   }
 
   // clang-format off
@@ -160,6 +177,8 @@ namespace {
     DampedModel model{};
 
     auto initializer = mock::initialize_block<DampedPlugin>(
+        // FIXME : Remove 10UL taken from mock::initialize_block
+        blocks::initialize<tags::NElement>([]() { return 10UL; }),
         // Geometry Variables
         blocks::initialize<tags::Position>(
             [](std::size_t index) { return index * 1.0; }),
@@ -185,11 +204,20 @@ namespace {
         blocks::initialize<tags::Acceleration>([](...) { return 0.0; }),
         blocks::initialize<tags::AngularAcceleration>([](...) { return 0.0; }));
 
+    // FIXME : https://github.com/tp5uiuc/elasticapp/issues/460
+    // Don't use initialize on model
     DampedModel::initialize(model, std::move(initializer));
 
     // TODO: Need to initialize velocity(at least) to resolve
-    CHECK(model.compute_internal_forces() == 3.14);
-    CHECK(model.compute_internal_torques() == 42.0);
+    CHECK(blocks::get<::elastica::tags::InternalLoads>(model) != approx(3.14));
+    compute_internal_forces(model);
+    CHECK(blocks::get<::elastica::tags::InternalLoads>(model) == approx(3.14));
+
+    CHECK(blocks::get<::elastica::tags::InternalTorques>(model) !=
+          approx(42.0));
+    compute_internal_torques(model);
+    CHECK(blocks::get<::elastica::tags::InternalTorques>(model) ==
+          approx(42.0));
   }
 
 }  // namespace

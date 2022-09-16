@@ -28,6 +28,19 @@ namespace elastica {
     /*! \endcond */
     //**************************************************************************
 
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <typename Traits, typename ComputationalBlock, typename Radius>
+    inline decltype(auto) compute_volume(
+        WithSphereGeometry<Traits, ComputationalBlock> const&,
+        Radius const&) noexcept;
+    template <typename Traits, typename ComputationalBlock, typename Radius>
+    inline decltype(auto) compute_unscaled_moment_of_inertia(
+        WithSphereGeometry<Traits, ComputationalBlock> const&,
+        Radius const& radius) noexcept;
+    /*! \endcond */
+    //**************************************************************************
+
   }  // namespace rigid_body
 
 }  // namespace elastica

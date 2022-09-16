@@ -140,8 +140,10 @@ namespace {
       CounterCache<ListOfSystem> cache_for_noncopyable;
       NonCopyableCounter<ListOfSystem> noncopyable_type_counter(
           cache_for_noncopyable);
-      auto updated_cache_for_noncopyable(
-          algorithm(std::move(noncopyable_type_counter)));
+      // Non-copyable types will be pased by refs
+      algorithm(std::ref(noncopyable_type_counter));
+
+      auto& updated_cache_for_noncopyable = noncopyable_type_counter;
 
       tmpl::for_each<ListOfSystem>(
           check_counter_for_correctness(updated_cache_for_noncopyable));
@@ -154,8 +156,9 @@ namespace {
       CounterCache<ListOfSystem> cache_for_single_type;
       Counter<ListOfSystem> single_type_counter(cache_for_single_type);
 
-      auto updated_single_type_counter(
-          algorithm.template operator()<TargetSystemType>(single_type_counter));
+      auto& updated_single_type_counter = single_type_counter;
+      // holds a ref, so can be copied.
+      algorithm.template operator()<TargetSystemType>(single_type_counter);
 
       CHECK(updated_single_type_counter.value == 0);
       tmpl::for_each<TargetSystemType>(
@@ -166,8 +169,9 @@ namespace {
       CounterCache<ListOfSystem> cache_noncopyable;
       NonCopyableCounter<ListOfSystem> noncopyable_type_counter(
           cache_noncopyable);
-      auto updated_type_counter(algorithm.template operator()<TargetSystemType>(
-          std::move(noncopyable_type_counter)));
+      auto& updated_type_counter = noncopyable_type_counter;
+      algorithm.template operator()<TargetSystemType>(
+          std::ref(noncopyable_type_counter));
       tmpl::for_each<TargetSystemType>(
           check_counter_for_correctness(updated_type_counter));
       tmpl::for_each<OtherSystemTypes>(
@@ -189,8 +193,9 @@ namespace {
       CounterCache<ListOfSystem> cache_noncopyable;
       NonCopyableCounter<ListOfSystem> noncopyable_type_counter(
           cache_noncopyable);
-      auto updated_type_counter(algorithm.template operator()<OtherSystemTypes>(
-          std::move(noncopyable_type_counter)));
+      auto& updated_type_counter = noncopyable_type_counter;
+      algorithm.template operator()<OtherSystemTypes>(
+          std::ref(noncopyable_type_counter));
       tmpl::for_each<TargetSystemType>(
           check_counter_is_zero(updated_type_counter));
       tmpl::for_each<OtherSystemTypes>(

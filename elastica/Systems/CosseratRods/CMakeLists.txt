@@ -36,9 +36,6 @@ elastica_target_sources(
         ${LIBRARY_SOURCES}
 )
 
-add_subdirectory(Access)
-add_library(${LIBRARY}::Access ALIAS CosseratRodAccess)
-
 add_subdirectory(Aliases)
 add_library(${LIBRARY}::Aliases ALIAS CosseratRodAliases)
 
@@ -57,7 +54,6 @@ add_library(${LIBRARY}::Utility ALIAS CosseratRodUtility)
 target_link_libraries(
         ${LIBRARY}
         INTERFACE
-        CosseratRodAccess
         CosseratRodAliases
         CosseratRodComponents
         CosseratRodInitializers

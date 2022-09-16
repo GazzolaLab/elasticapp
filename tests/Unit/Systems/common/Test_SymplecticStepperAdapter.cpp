@@ -76,9 +76,10 @@ namespace {
     float const& get_angular_acceleration() const {
       return tuples::get<AngularAcceleration>(self().data());
     }
-
-    void update_acceleration() noexcept {};
   };
+
+  template <typename Traits, typename B>
+  void update_acceleration(TestPlugin<Traits, B>&) noexcept {};
 
   template <typename T, template <typename> class B,
             template <typename, typename> class Plugin>

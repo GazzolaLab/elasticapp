@@ -18,6 +18,7 @@
 //******************************************************************************
 //
 #include "Simulator/IO/H5/Interface/Types.hpp"
+#include "Simulator/IO/Interface/Helpers.hpp"  // format
 //
 #include "Simulator/IO/H5/_Impl.hpp"  // we need all implementation here for read write
 //
@@ -96,6 +97,21 @@ namespace elastica {
       //@}
       //************************************************************************
 
+      //**Utility functions*****************************************************
+      /*!\name Utility functions */
+      //@{
+
+      //************************************************************************
+      /*!\brief Formats the counter.
+       *
+       * \note This supports upto a maximum of 10^10 systems.
+       */
+      static auto format(std::size_t count) -> std::string {
+        return format_id(10, std::to_string(count), '0');
+      }
+      //@}
+      //************************************************************************
+
      protected:
       //**Member variables******************************************************
       /*!\name Member variables */
@@ -149,7 +165,7 @@ namespace elastica {
         auto group = file().exist(name)
                          ? file().getGroup(name)
                          : (counter = 0, file().createGroup(name));
-        write_data(group, system, std::to_string(counter++));
+        write_data(group, system, Parent::format(counter++));
       };
       //************************************************************************
 
@@ -194,7 +210,7 @@ namespace elastica {
       auto operator()(System& system) /*const noexcept*/ {
         auto const name = pretty_type::name<System>();
         auto& counter = counters_[name];
-        read_data(file().getGroup(name), system, std::to_string(counter++));
+        read_data(file().getGroup(name), system, Parent::format(counter++));
       };
       //************************************************************************
 
