@@ -108,8 +108,6 @@ int main() {
   std::cout << "Position using free function" << std::endl;
   // we dereference the iterator to get the rod!
   std::cout << ::elastica::position(rod_ref.get()) << std::endl;
-  // The call below also works, use it if you are comfortable with it
-  std::cout << ::elastica::position(rod_ref) << std::endl;
 
   /*
    * 4.3
