@@ -13,7 +13,6 @@
 //==============================================================================
 
 #include "MagneticMillipedesCaseStudy.hpp"
-#include "CustomConnection.cpp"
 
 #include <cmath>
 #include <elastica/ErrorHandling/FloatingPointExceptions.hpp>
@@ -24,6 +23,8 @@
 #include <elastica/Utilities/Get.hpp>
 #include <elastica/Utilities/Size.hpp>
 #include <elastica/Utilities/TMPL.hpp>
+
+#include "CustomConnection.cpp"
 
 void MagneticMillipedesCaseStudy::setup(
     InputTypes<This> const& input_parameters) {
@@ -322,11 +323,11 @@ void MagneticMillipedesCaseStudy::setup(
   // ************************************************** //
   /* Collision */
   // set near-list update time
-//  auto& collision_solver =
-//      simulator
-//          ->get_environment<elastica::environments::tags::CollisionSystem>();
-//  collision_solver->time_interval_between_detection() =
-//      1000.0 * dt;
+  //  auto& collision_solver =
+  //      simulator
+  //          ->get_environment<elastica::environments::tags::CollisionSystem>();
+  //  collision_solver->time_interval_between_detection() =
+  //      1000.0 * dt;
 
   // ************************************************** //
   /* Gravity */
@@ -347,17 +348,20 @@ void MagneticMillipedesCaseStudy::setup(
 
   // Thread-safe version
   auto& container = simulator->get_system_collection_container();
-  auto const block_count = cpp17::apply([](auto& ... cont){
-    std::size_t block_count(0UL);
-    EXPAND_PACK_LEFT_TO_RIGHT((block_count += cont.size()));
-    return block_count;
-  }, container);
+  auto const block_count = cpp17::apply(
+      [](auto&... cont) {
+        std::size_t block_count(0UL);
+        EXPAND_PACK_LEFT_TO_RIGHT((block_count += cont.size()));
+        return block_count;
+      },
+      container);
   std::cout << "Block Count: " << block_count << '\n';
 }
 
 template <typename RodTypeOne, typename RodTypeTwo>
 void MagneticMillipedesCaseStudy::orthogonal_connection(
-    std::vector<RodTypeOne>& rod_list_one, std::vector<RodTypeTwo>& rod_list_two) {
+    std::vector<RodTypeOne>& rod_list_one,
+    std::vector<RodTypeTwo>& rod_list_two) {
   /* connection configuration */
   const real_t k = 1e5;
   const real_t nu = 0.1;
@@ -366,22 +370,23 @@ void MagneticMillipedesCaseStudy::orthogonal_connection(
 
   /* Connection: Connect magnetic rods with their backbone */
   // Orthogonal Connection
-  for (auto const& back_bone_rod_ref : rod_list_one){
+  for (auto const& back_bone_rod_ref : rod_list_one) {
     auto back_bone_rod = back_bone_rod_ref.get();
     blaze::DynamicMatrix<real_t> back_bone_rod_element_position =
         Traits::Operations::average_kernel(back_bone_rod.get_position());
 
-    for (auto const& magnetic_rod_ref : rod_list_two){
+    for (auto const& magnetic_rod_ref : rod_list_two) {
       auto magnetic_rod = magnetic_rod_ref.get();
       const std::size_t magnetic_rod_connection_index = magnetic_rod.size() - 1;
       const Vec3 magnetic_rod_tip_element_position = blaze::column(
           Traits::Operations::average_kernel(magnetic_rod.get_position()),
           magnetic_rod_connection_index);
 
-      blaze::DynamicVector<real_t> distance_btw_rods = Traits::Operations::batch_norm(
-          back_bone_rod_element_position -
-          blaze::expand(magnetic_rod_tip_element_position,
-                        back_bone_rod_element_position.columns()));
+      blaze::DynamicVector<real_t> distance_btw_rods =
+          Traits::Operations::batch_norm(
+              back_bone_rod_element_position -
+              blaze::expand(magnetic_rod_tip_element_position,
+                            back_bone_rod_element_position.columns()));
       blaze::DynamicVector<real_t> magnetic_rod_rest_length =
           ::elastica::get<::elastica::tags::ReferenceElementLength>(
               magnetic_rod);
@@ -390,7 +395,8 @@ void MagneticMillipedesCaseStudy::orthogonal_connection(
           back_bone_rod.get_element_dimension(0UL);
 
       // In this case rods are far from each other so no need for connection.
-      if (blaze::min(distance_btw_rods) > 1e-8) continue;
+      if (blaze::min(distance_btw_rods) > 1e-8)
+        continue;
 
       const std::size_t back_bone_rod_connection_index =
           blaze::argmin(distance_btw_rods);
@@ -401,16 +407,13 @@ void MagneticMillipedesCaseStudy::orthogonal_connection(
       std::tie(rod_one_direction_vec_in_material_frame,
                rod_two_direction_vec_in_material_frame, offset_btw_rods) =
           OrthogonalConnection::get_connection_vector_for_perpendicular_rods(
-              back_bone_rod, magnetic_rod,
-              back_bone_rod_connection_index,
+              back_bone_rod, magnetic_rod, back_bone_rod_connection_index,
               magnetic_rod_connection_index);
 
       auto connection_generator =
           OrthogonalConnection::perpendicular_connection_generator(
-              k, nu, k_repulsive, kt,
-              rod_one_direction_vec_in_material_frame,
-              rod_two_direction_vec_in_material_frame,
-              offset_btw_rods);
+              k, nu, k_repulsive, kt, rod_one_direction_vec_in_material_frame,
+              rod_two_direction_vec_in_material_frame, offset_btw_rods);
       simulator->connect(back_bone_rod_ref, at(back_bone_rod_connection_index))
           .to(magnetic_rod_ref, at(magnetic_rod_connection_index))
           .with(connection_generator());
@@ -420,7 +423,8 @@ void MagneticMillipedesCaseStudy::orthogonal_connection(
 
 template <typename RodTypeOne, typename RodTypeTwo>
 void MagneticMillipedesCaseStudy::crisscross_connection(
-    std::vector<RodTypeOne>& rod_list_one, std::vector<RodTypeTwo>& rod_list_two) {
+    std::vector<RodTypeOne>& rod_list_one,
+    std::vector<RodTypeTwo>& rod_list_two) {
   /* connection configuration */
   const real_t k = 1e5;
   const real_t nu = 0.1;
@@ -444,8 +448,7 @@ void MagneticMillipedesCaseStudy::crisscross_connection(
         std::tie(rod_one_direction_vec_in_material_frame,
                  rod_two_direction_vec_in_material_frame, offset_btw_rods) =
             ParallelConnection::get_connection_vector_straight_straight_rod(
-                rod_one, rod_two,
-                rod_one_elem_idx, rod_one_elem_idx + 1,
+                rod_one, rod_two, rod_one_elem_idx, rod_one_elem_idx + 1,
                 rod_two_elem_idx, rod_two_elem_idx + 1);
 
         if (blaze::max(offset_btw_rods) > 1e-13)
@@ -465,7 +468,8 @@ void MagneticMillipedesCaseStudy::crisscross_connection(
 }
 
 template <typename RodType>
-void MagneticMillipedesCaseStudy::group_parallel_connection(std::vector<RodType>& rod_list){
+void MagneticMillipedesCaseStudy::group_parallel_connection(
+    std::vector<RodType>& rod_list) {
   const std::size_t size = rod_list.size();
   /* connection configuration */
   const real_t k = 1e5;
@@ -473,54 +477,49 @@ void MagneticMillipedesCaseStudy::group_parallel_connection(std::vector<RodType>
   const real_t k_repulsive = 1e6;
 
   for (std::size_t rod_one_idx(0UL); rod_one_idx < size; ++rod_one_idx)
-  for (std::size_t rod_two_idx(rod_one_idx+1); rod_two_idx < size; ++rod_two_idx) {
-    auto rod_one = rod_list[rod_one_idx].get();
-    auto rod_two = rod_list[rod_two_idx].get();
+    for (std::size_t rod_two_idx(rod_one_idx + 1); rod_two_idx < size;
+         ++rod_two_idx) {
+      auto rod_one = rod_list[rod_one_idx].get();
+      auto rod_two = rod_list[rod_two_idx].get();
 
-    // Backbone rods do not have same number of elements
-    assert(rod_one.size() != rod_two.size());
+      // Backbone rods do not have same number of elements
+      assert(rod_one.size() != rod_two.size());
 
-    const std::size_t n_elem = rod_one.size();
-    blaze::DynamicMatrix<real_t> rod_one_direction_vec_in_material_frame(3UL, n_elem);
-    blaze::DynamicMatrix<real_t> rod_two_direction_vec_in_material_frame(3UL, n_elem);
-    blaze::DynamicVector<real_t> offset_btw_rods(n_elem);
-    std::tie(rod_one_direction_vec_in_material_frame,
-             rod_two_direction_vec_in_material_frame,
-             offset_btw_rods) = ParallelConnection::get_connection_vector_straight_straight_rod(
-        rod_one,
-        rod_two,
-        0,
-        n_elem,
-        0,
-        n_elem
-    );
+      const std::size_t n_elem = rod_one.size();
+      blaze::DynamicMatrix<real_t> rod_one_direction_vec_in_material_frame(
+          3UL, n_elem);
+      blaze::DynamicMatrix<real_t> rod_two_direction_vec_in_material_frame(
+          3UL, n_elem);
+      blaze::DynamicVector<real_t> offset_btw_rods(n_elem);
+      std::tie(rod_one_direction_vec_in_material_frame,
+               rod_two_direction_vec_in_material_frame, offset_btw_rods) =
+          ParallelConnection::get_connection_vector_straight_straight_rod(
+              rod_one, rod_two, 0, n_elem, 0, n_elem);
 
-    // spacing_btw_magnetic_rods_in_one_backbone - 2 * rod_one.radius[0]:# 1e-8:
-    // In this case rods are far from each other so no need for connection.
-    if (blaze::max(offset_btw_rods) > 1e-8)
-      continue;
+      // spacing_btw_magnetic_rods_in_one_backbone - 2 * rod_one.radius[0]:#
+      // 1e-8: In this case rods are far from each other so no need for
+      // connection.
+      if (blaze::max(offset_btw_rods) > 1e-8)
+        continue;
 
-    for (std::size_t e(0UL); e < n_elem; ++e) {
+      for (std::size_t e(0UL); e < n_elem; ++e) {
         auto connection_generator =
             ParallelConnection::parallel_connection_generator(
-                k,
-                nu,
-                k_repulsive,
+                k, nu, k_repulsive,
                 blaze::column(rod_one_direction_vec_in_material_frame, e),
                 blaze::column(rod_two_direction_vec_in_material_frame, e),
-                offset_btw_rods[e]
-            );
+                offset_btw_rods[e]);
         simulator->connect(rod_list[rod_one_idx], at(e))
             .to(rod_list[rod_two_idx], at(e))
             .with(connection_generator());
+      }
     }
-  }
 }
 
 template <typename RodType>
 void MagneticMillipedesCaseStudy::add_analytical_damper(
-    std::vector<RodType>& rod_list,
-    InputTypes<This> const& input_parameters, const real_t& dt) {
+    std::vector<RodType>& rod_list, InputTypes<This> const& input_parameters,
+    const real_t& dt) {
   // Since all rods are same we create this once and reuse for all rods
   // ===========ANALYTICAL DAMPING CODE START============================
   const real_t damping_coeff =
@@ -579,9 +578,138 @@ void MagneticMillipedesCaseStudy::step() {
 void MagneticMillipedesCaseStudy::run() {
   enable_floating_point_exceptions();
 
+  // Logging Configuration
+  const ::elastica::real_t fps = 60;
   const std::size_t n_steps = (final_time / current_dt());
+  const std::size_t write_interval =
+      n_steps / (final_time * fps);  // 1000000UL;
+
+  float current_progress = 0.0;
+  auto stime = std::chrono::system_clock::now();
 
   for (std::size_t i = 0UL; i < n_steps; ++i) {
+    // Progress Bar
+    float progress = float(i) / float(n_steps);
+    progress_bar(progress, current_progress, stime);
+
+    // Logging
+    if (not(i % write_interval)) {
+      log_rod_position(backbone_rod_list, i,
+                       "data/backbone_rod_coordinates_%010d.csv");
+      log_rod_position(backbone_rod_second_layer_list, i,
+                       "data/backbone_rod_second_layer_coordinates_%010d.csv");
+      log_rod_position(magnetic_rod_list, i,
+                       "data/magnetic_rod_coordinates_%010d.csv");
+      log_penetration(i);
+    }
+
+    // Iterate
     step();
   }
+}
+
+inline void MagneticMillipedesCaseStudy::progress_bar(
+    float progress, float& current_progress,
+    std::chrono::time_point<std::chrono::system_clock> start_time) {
+  constexpr float progress_step =
+      0.001;                     // Update estimated time every 0.001 progress
+  constexpr int bar_width = 70;  // Progress bar width
+  constexpr float min_progress =
+      0.0001;  // Display after 0.0001 progress (to avoid divide by zero)
+
+  std::cout << std::fixed << std::setprecision(1);
+  auto current_time = std::chrono::system_clock::now();
+  if (current_progress <= progress && progress > min_progress) {
+    std::cout << "[";
+    int pos = bar_width * progress;
+    for (int i = 0; i < bar_width; ++i) {
+      if (i < pos)
+        std::cout << "=";
+      else if (i == pos)
+        std::cout << ">";
+      else
+        std::cout << " ";
+    }
+    std::chrono::duration<int> elapsed_time =
+        std::chrono::duration_cast<std::chrono::seconds>(current_time -
+                                                         start_time);
+    std::time_t etd = std::chrono::system_clock::to_time_t(
+        start_time +
+        std::chrono::seconds(int(float(elapsed_time.count()) / progress)));
+    std::cout << "]" << progress * 100.0 << "%"
+              << " [elapsed: " << elapsed_time.count() << " sec]"
+              << " [etd: " << std::strtok(std::ctime(&etd), "\n") << "]\r";
+    std::cout.flush();
+    current_progress += progress_step;
+  }
+}
+
+template <typename RodRefType>
+inline void MagneticMillipedesCaseStudy::log_rod_position(
+    std::vector<RodRefType>& rod_refs, const int i, const char* tag) {
+  /* After a call to this function, the code will terminate with a floating
+   point exception on overflow, divide-by-zero, and invalid operations.
+   NOTE : This won't get called if used from the python side!
+  */
+  using RodCoordinates =
+      std::tuple<::elastica::real_t, ::elastica::real_t, ::elastica::real_t>;
+  std::vector<RodCoordinates> rod_coordinates;
+
+  //  explicitly get the system
+  constexpr auto x_axis = 0UL;
+  constexpr auto y_axis = 1UL;
+  constexpr auto z_axis = 2UL;
+  const auto n_nodes = ::elastica::size(rod_refs[0].get()) + 1UL;
+  const auto n_rod = rod_refs.size();
+
+  rod_coordinates.reserve(n_rod * n_nodes);
+
+  char file_name[100];
+  std::ofstream temporal_file;
+
+  // record rod position
+  for (auto const& rod_ref : rod_refs) {
+    for (std::size_t k = 0; k < n_nodes; ++k) {
+      rod_coordinates.emplace_back(
+          ::elastica::position(rod_ref.get(), k)[x_axis],
+          ::elastica::position(rod_ref.get(), k)[y_axis],
+          ::elastica::position(rod_ref.get(), k)[z_axis]);
+    }
+  }
+  // TODO : replace with a csv writer
+  sprintf(file_name, tag, i);
+  temporal_file.open(file_name);
+  for (auto const& rod_coord : rod_coordinates) {
+    temporal_file << std::setprecision(16) << std::get<x_axis>(rod_coord) << ","
+                  << std::get<y_axis>(rod_coord) << ","
+                  << std::get<z_axis>(rod_coord) << "\n";
+  }
+  temporal_file << std::endl;
+  temporal_file.close();
+  rod_coordinates.clear();
+}
+
+inline void MagneticMillipedesCaseStudy::log_penetration(const int i) {
+  // Record Interpenetration
+  auto& collision_system =
+      simulator
+          ->get_environment<elastica::environments::tags::CollisionSystem>();
+  auto& contacts = collision_system->contacts();
+  using Penetrations = std::vector<elastica::real_t>;
+  Penetrations penetrations;
+  penetrations.reserve(contacts.size());
+
+  char file_name[100];
+  std::ofstream temporal_file;
+
+  std::transform(std::cbegin(contacts), std::cend(contacts),
+                 std::back_inserter(penetrations),
+                 [](auto& c) { return -c.get_distance(); });
+  sprintf(file_name, "data/penetrations_%010d.csv", i);
+  temporal_file.open(file_name);
+  for (auto const& depth : penetrations) {
+    temporal_file << std::setprecision(16) << depth << '\n';
+  }
+  temporal_file.close();
+  penetrations.clear();
 }

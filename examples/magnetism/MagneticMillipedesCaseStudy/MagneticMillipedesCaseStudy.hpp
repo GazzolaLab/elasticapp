@@ -33,7 +33,7 @@
 //
 #include "Extension/Simulator/Environments.hpp"
 #include "Extension/Systems/CosseratRods.hpp"
-#include "FieldProfiles/OscillatoryMagneticField.hpp"  //customization
+#include "FieldProfiles/OscillatoryMagneticField.hpp"  // customization
 #include "FieldProfiles/RampedAdapter.hpp"             // customization
 
 // global alias
@@ -57,7 +57,7 @@ struct MagneticMillipedesConfiguration {
   static inline auto make_simulator_configuration() {
     auto system_config = ec::make_systems_configuration<
         tmpl::list<CosseratRod, MagnetizedCosseratRod>>(
-        ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{256UL}),
+        ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{512UL}),
         ec::make_iteration_policy(ec::iterate_across_system_types_in(ec::seq),
                                   ec::iterate_over_systems_in(ec::seq)));
 
@@ -69,7 +69,8 @@ struct MagneticMillipedesConfiguration {
     auto gravity_config =
         ec::make_gravity_configuration(::elastica::Vec3{0., 0., 0.});
 
-    using ImposedPrimitives = tmpl::list<::elastica::collision::ImposedHalfSpacePrimitive>;
+    using ImposedPrimitives =
+        tmpl::list<::elastica::collision::ImposedHalfSpacePrimitive>;
     auto collision_config =
         ec::make_collision_configuration(ec::par,   // between each type
                                          ec::seq);  // across each type
@@ -81,9 +82,10 @@ struct MagneticMillipedesConfiguration {
             // be modified later on
             ::elastica::make_linear_rampup(0.0, 200.0)));
 
-    auto env_config = ec::make_environments_configuration<EnvironmentTags, ImposedPrimitives>(
-        // process environments in sequence
-        ec::seq, magnetic_config, gravity_config, collision_config);
+    auto env_config =
+        ec::make_environments_configuration<EnvironmentTags, ImposedPrimitives>(
+            // process environments in sequence
+            ec::seq, magnetic_config, gravity_config, collision_config);
 
     return ec::make_simulator_configuration(
         ec::DefaultDomainConfiguration{}, system_config,
@@ -183,6 +185,11 @@ Demonstrates an magnetic millipedes simulation.
   void setup(InputTypes<This> const& input_parameters);
   void step();
   void run();
+  inline void progress_bar(float, float&,
+                           std::chrono::time_point<std::chrono::system_clock>);
+  template <typename RodRefType>
+  inline void log_rod_position(std::vector<RodRefType>&, const int, const char*);
+  inline void log_penetration(const int);
 
   /* Features */
   template <typename RodType>
