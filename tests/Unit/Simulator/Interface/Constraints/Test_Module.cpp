@@ -198,14 +198,18 @@ namespace elastica {
 
   namespace constraints {
 
-    ELASTICA_DEFINE_CONSTRAINT(ConstraintDefaulted) {
+    // Because there exists another ConstraintDefaultedInTestModule in
+    // TestConstraint within the same namespace, certain compilers pick that one
+    // instead. So give it a different name for disambiugation.
+    ELASTICA_DEFINE_CONSTRAINT(ConstraintDefaultedInTestModule) {
      public:
-      ConstraintDefaulted() = default;
-      ConstraintDefaulted(ConstraintDefaulted && other) noexcept
+      ConstraintDefaultedInTestModule() = default;
+      ConstraintDefaultedInTestModule(ConstraintDefaultedInTestModule &&
+                                      other) noexcept
           : some_member(other.some_member){};
-      ~ConstraintDefaulted() = default;
+      ~ConstraintDefaultedInTestModule() = default;
       // move constructor is deleted if a destructor is defined
-      //      ~ConstraintDefaulted(){
+      //      ~ConstraintDefaultedInTestModule(){
       //        std::cout << "Destructor caleld!" << std::endl;
       //      }
       template <typename FirstSystem>
@@ -307,10 +311,10 @@ namespace {
     CHECK(sim.n_constraints() == 0UL);
 
     using ::elastica::end;
-    using ::elastica::constraints::ConstraintDefaulted;
+    using ::elastica::constraints::ConstraintDefaultedInTestModule;
     using ::elastica::interface::at;
     using ::mock::MockSystem;
-    using ExampleConstraint = ConstraintDefaulted<>;
+    using ExampleConstraint = ConstraintDefaultedInTestModule<>;
 
     std::size_t expected_count = 0UL;
 
@@ -433,9 +437,9 @@ namespace {
 
     CHECK(sim.n_constraints() == 0UL);
 
-    using ::elastica::constraints::ConstraintDefaulted;
+    using ::elastica::constraints::ConstraintDefaultedInTestModule;
     using ::mock::MockSystem;
-    using ExampleConstraint = ConstraintDefaulted<>;
+    using ExampleConstraint = ConstraintDefaultedInTestModule<>;
 
     {
       using System = MockSystem;
@@ -473,7 +477,7 @@ namespace {
     CHECK(sim.n_constraints() == 0UL);
 
     using ::elastica::end;
-    using ::elastica::constraints::ConstraintDefaulted;
+    using ::elastica::constraints::ConstraintDefaultedInTestModule;
     using ::elastica::constraints::ConstraintWithOneMember;
     using ::elastica::interface::at;
     using ::elastica::interface::pair;
@@ -587,9 +591,9 @@ namespace {
       "[Unit][Simulator][Interface][Constraints]") {
     // clang-format on
     using namespace elastica::io;
-    using ::elastica::constraints::ConstraintDefaulted;
+    using ::elastica::constraints::ConstraintDefaultedInTestModule;
     using ::mock::MockSystem;
-    using ExampleConstraint = ConstraintDefaulted<>;
+    using ExampleConstraint = ConstraintDefaultedInTestModule<>;
     using ::elastica::end;
 
     // no throw case

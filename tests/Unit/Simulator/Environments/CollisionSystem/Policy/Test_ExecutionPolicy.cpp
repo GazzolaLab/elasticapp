@@ -56,14 +56,16 @@ namespace {
   }
 
   struct RepeatCounter {
+    explicit RepeatCounter() : val{0} {}
+
     template <typename T, typename U>
-    void operator()(T first, U second) {
+    void operator()(T /*first*/, U /*second*/) {
       using F = tmpl::type_from<T>;
       using G = tmpl::type_from<U>;
       val += ((F::value) == (G::value));
     }
     explicit operator std::size_t() const { return val; }
-    std::size_t val{0};
+    std::atomic<std::size_t> val;
   };
 
   // clang-format off
@@ -71,17 +73,14 @@ namespace {
       "Unit.Environments.CollisionSystem.ExecutionPolicy.OverPairs",
       "[Unit][Environments]") {
     // clang-format on
-    using value_type = int;
     using types = tmpl::range<int, 1, 6>;
     using distinct_matrix = elastica::combinations<types>;
-
-    std::size_t repeated_pairs = 0UL;
     std::size_t expected_answer = 5UL;  // 6 - 1
 
     SECTION("Sequential") {
       using Policy = ::elastica::configuration::sequential_policy;
       using F = OverPairsOp<Policy>;
-      RepeatCounter answer{0UL};
+      RepeatCounter answer{};
       F::pairwise_for_each<distinct_matrix>(std::ref(answer));
       CHECK(static_cast<std::size_t>(answer) == expected_answer);
     }
@@ -89,7 +88,7 @@ namespace {
     SECTION("Parallel") {
       using Policy = ::elastica::configuration::parallel_policy;
       using F = OverPairsOp<Policy>;
-      RepeatCounter answer{0UL};
+      RepeatCounter answer{};
       F::pairwise_for_each<distinct_matrix>(std::ref(answer));
       CHECK(static_cast<std::size_t>(answer) == expected_answer);
     }
@@ -97,7 +96,7 @@ namespace {
     SECTION("Hybrid") {
       using Policy = ::elastica::configuration::hybrid_policy;
       using F = OverPairsOp<Policy>;
-      RepeatCounter answer{0UL};
+      RepeatCounter answer{};
       F::pairwise_for_each<distinct_matrix>(std::ref(answer));
       CHECK(static_cast<std::size_t>(answer) == expected_answer);
     }

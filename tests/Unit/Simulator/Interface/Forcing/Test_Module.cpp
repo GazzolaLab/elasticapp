@@ -202,14 +202,18 @@ namespace elastica {
 
   namespace forcing {
 
-    ELASTICA_DEFINE_FORCING(ForcingDefaulted) {
+    // Because there exists another ForcingDefaulted in TestForcing within the
+    // same namespace, certain compilers pick that one instead. So give it a
+    // different name for disambiugation.
+    ELASTICA_DEFINE_FORCING(ForcingDefaultedInTestModule) {
      public:
-      ForcingDefaulted() = default;
-      ForcingDefaulted(ForcingDefaulted && other) noexcept
+      ForcingDefaultedInTestModule() = default;
+      ForcingDefaultedInTestModule(ForcingDefaultedInTestModule &&
+                                   other) noexcept
           : some_member(other.some_member){};
-      ~ForcingDefaulted() = default;
+      ~ForcingDefaultedInTestModule() = default;
       // move constructor is deleted if a destructor is defined
-      //      ~ForcingDefaulted(){
+      //      ~ForcingDefaultedInTestModule(){
       //        std::cout << "Destructor caleld!" << std::endl;
       //      }
       template <typename FirstSystem>
@@ -243,7 +247,7 @@ namespace elastica {
           : some_member(std::move(other.some_member)){};
       ~ForcingWithOneMember() = default;
       // move constructor is deleted if a destructor is defined
-      //      ~ForcingDefaulted(){
+      //      ~ForcingDefaultedInTestModule(){
       //        std::cout << "Destructor caleld!" << std::endl;
       //      }
       template <typename FirstSystem>
@@ -313,10 +317,10 @@ namespace {
     CHECK(sim.n_forcings() == 0UL);
 
     using ::elastica::end;
-    using ::elastica::forcing::ForcingDefaulted;
+    using ::elastica::forcing::ForcingDefaultedInTestModule;
     using ::elastica::interface::at;
     using ::mock::MockSystem;
-    using ExampleForcing = ForcingDefaulted<>;
+    using ExampleForcing = ForcingDefaultedInTestModule<>;
 
     std::size_t expected_count = 0UL;
 
@@ -438,9 +442,9 @@ namespace {
 
     CHECK(sim.n_forcings() == 0UL);
 
-    using ::elastica::forcing::ForcingDefaulted;
+    using ::elastica::forcing::ForcingDefaultedInTestModule;
     using ::mock::MockSystem;
-    using ExampleForcing = ForcingDefaulted<>;
+    using ExampleForcing = ForcingDefaultedInTestModule<>;
 
     {
       using System = MockSystem;
@@ -603,9 +607,9 @@ namespace {
       "[Unit][Simulator][Interface][Forcing]") {
     // clang-format on
     using namespace elastica::io;
-    using ::elastica::forcing::ForcingDefaulted;
+    using ::elastica::forcing::ForcingDefaultedInTestModule;
     using ::mock::MockSystem;
-    using ExampleForcing = ForcingDefaulted<>;
+    using ExampleForcing = ForcingDefaultedInTestModule<>;
     using ::elastica::end;
 
     // no throw case

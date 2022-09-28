@@ -207,19 +207,22 @@ namespace elastica {
 
   namespace connections {
 
-    ELASTICA_DEFINE_CONNECTION(ConnectionDefaulted) {
+    // Because there exists another ConnectionDefaultedInTestModuleInTestModule
+    // in TestConnection within the same namespace, certain compilers pick that
+    // one instead. So give it a different name for disambiugation.
+    ELASTICA_DEFINE_CONNECTION(ConnectionDefaultedInTestModule) {
      public:
-      ConnectionDefaulted(std::size_t some_arg = 23UL)
+      ConnectionDefaultedInTestModule(std::size_t some_arg = 23UL)
           : some_member{some_arg} {}
       // Needs to be properly defined for query to work
-      ConnectionDefaulted(ConnectionDefaulted &&) {}
+      ConnectionDefaultedInTestModule(ConnectionDefaultedInTestModule &&) {}
       // If I do this, the counter doesn't work :/
       /*
-      ConnectionDefaulted(ConnectionDefaulted && other)
+      ConnectionDefaultedInTestModule(ConnectionDefaultedInTestModule && other)
           : some_member{std::move(other.some_member)} {};
           */
 
-      ~ConnectionDefaulted() = default;
+      ~ConnectionDefaultedInTestModule() = default;
       template <typename FirstSystem, typename SecondSystem>
       inline void change_with_noop(FirstSystem & first_system,
                                    SecondSystem & second_system) const {
@@ -305,9 +308,7 @@ namespace elastica {
       AnotherConnectionWithMember(AnotherConnectionWithMember && other) noexcept
           : char_member(other.char_member),
             float_member(other.float_member),
-            double_member(other.double_member) {
-        std::cout << "Move constructor called" << std::endl;
-      };
+            double_member(other.double_member){};
       ~AnotherConnectionWithMember() = default;
 
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
@@ -388,11 +389,11 @@ namespace {
     CHECK(sim.n_connections() == 0UL);
 
     using ::elastica::end;
-    using ::elastica::connections::ConnectionDefaulted;
+    using ::elastica::connections::ConnectionDefaultedInTestModule;
     using ::elastica::interface::at;
     using ::elastica::interface::pair;
     using ::mock::MockSystem;
-    using ExampleConnection = ConnectionDefaulted<>;
+    using ExampleConnection = ConnectionDefaultedInTestModule<>;
     {
       using first_system = MockSystem;
       using second_system = MockSystem;
@@ -420,10 +421,10 @@ namespace {
       /// [connect_eg]
 
       CHECK(sim.n_connections() == 2UL);
-      sim.connect(fs, ss).with<ConnectionDefaulted<>>().at(
+      sim.connect(fs, ss).with<ConnectionDefaultedInTestModule<>>().at(
           pair(2UL, end - 40UL));
       CHECK(sim.n_connections() == 3UL);
-      sim.connect(fs, ss).with<ConnectionDefaulted<>>().at(
+      sim.connect(fs, ss).with<ConnectionDefaultedInTestModule<>>().at(
           pair(end - 2UL, end - 49UL));
       CHECK(sim.n_connections() == 4UL);
     }
@@ -444,15 +445,15 @@ namespace {
 
       CHECK(sim.n_connections() == 5UL);
 
-      sim.connect(fs, ss).with(ConnectionDefaulted<>{},
+      sim.connect(fs, ss).with(ConnectionDefaultedInTestModule<>{},
                                at(pair(end - 1UL, 5UL)));
       CHECK(sim.n_connections() == 6UL);
 
-      sim.connect(fs, ss).with(ConnectionDefaulted<>{},
+      sim.connect(fs, ss).with(ConnectionDefaultedInTestModule<>{},
                                at(pair(5UL, end - 4UL)));
       CHECK(sim.n_connections() == 7UL);
 
-      sim.connect(fs, ss).with(ConnectionDefaulted<>{},
+      sim.connect(fs, ss).with(ConnectionDefaultedInTestModule<>{},
                                at(pair(end - 25UL, end - 4UL)));
       CHECK(sim.n_connections() == 8UL);
     }
@@ -479,12 +480,12 @@ namespace {
       CHECK(sim.n_connections() == 10UL);
 
       sim.connect(fs, ss)
-          .with(ConnectionDefaulted<>{})
+          .with(ConnectionDefaultedInTestModule<>{})
           .at(pair(6UL, end - 9UL));
       CHECK(sim.n_connections() == 11UL);
 
       sim.connect(fs, ss)
-          .with(ConnectionDefaulted<>{})
+          .with(ConnectionDefaultedInTestModule<>{})
           .at(pair(end - 42UL, end - 9UL));
       CHECK(sim.n_connections() == 12UL);
     }
@@ -718,9 +719,9 @@ namespace {
     auto sim = mock::make_simulator<::mock::ConnectionsModule>(
         sim_config, arg_all_registered, is_final);
     CHECK(sim.n_connections() == 0UL);
-    using ::elastica::connections::ConnectionDefaulted;
+    using ::elastica::connections::ConnectionDefaultedInTestModule;
     using ::mock::MockSystem;
-    using ExampleConnection = ConnectionDefaulted<>;
+    using ExampleConnection = ConnectionDefaultedInTestModule<>;
 
     {
       using first_system = MockSystem;
@@ -761,14 +762,14 @@ namespace {
     CHECK(sim.n_connections() == 0UL);
 
     using ::elastica::end;
-    using ::elastica::connections::ConnectionDefaulted;
+    using ::elastica::connections::ConnectionDefaultedInTestModule;
     using ::elastica::connections::ConnectionWithMember;
     using ::elastica::interface::at;
     using ::elastica::interface::pair;
     using ::mock::MockSystem;
-    using Reg =
-        tmpl::list<::elastica::connections::Registrars::ConnectionDefaulted,
-                   ::elastica::connections::Registrars::ConnectionWithMember>;
+    using Reg = tmpl::list<
+        ::elastica::connections::Registrars::ConnectionDefaultedInTestModule,
+        ::elastica::connections::Registrars::ConnectionWithMember>;
     using ExampleConnection = ConnectionWithMember<Reg>;
     {
       using first_system = MockSystem;
@@ -823,12 +824,12 @@ namespace {
 
     using ::elastica::end;
     using ::elastica::connections::AnotherConnectionWithMember;
-    using ::elastica::connections::ConnectionDefaulted;
+    using ::elastica::connections::ConnectionDefaultedInTestModule;
     using ::elastica::connections::ConnectionWithMember;
     using ::elastica::interface::at;
     using ::elastica::interface::pair;
     using ::mock::MockSystem;
-    // using ExampleConnection = ConnectionDefaulted<>;
+    // using ExampleConnection = ConnectionDefaultedInTestModule<>;
     {
       using first_system = MockSystem;
       using second_system = MockSystem;
@@ -848,7 +849,7 @@ namespace {
       //          sim.connect(fs)
       //              .to(ss)
       //              .with_name(optional_connection_name)  // can be skipped
-      //              .with<ConnectionDefaulted<>>(43UL)
+      //              .with<ConnectionDefaultedInTestModule<>>(43UL)
       //              .at(pair(1UL, 2UL));
       auto second_connection_key =
           sim.connect(fs)
@@ -860,7 +861,7 @@ namespace {
       //          sim.connect(fs)
       //              .to(ss)
       //              .with_name(optional_connection_name)  // can be skipped
-      //              .with<ConnectionDefaulted<>>(
+      //              .with<ConnectionDefaultedInTestModule<>>(
       //                  /* ExampleConnection arguments*/)
       //              .at(pair(5UL, 12UL));
       auto fourth_connection_key =
@@ -933,9 +934,9 @@ namespace {
       "[Unit][Simulator][Interface][Connections]") {
     // clang-format on
     using namespace elastica::io;
-    using ::elastica::connections::ConnectionDefaulted;
+    using ::elastica::connections::ConnectionDefaultedInTestModule;
     using ::mock::MockSystem;
-    using ExampleConnection = ConnectionDefaulted<>;
+    using ExampleConnection = ConnectionDefaultedInTestModule<>;
     using ::elastica::end;
 
     // no throw case

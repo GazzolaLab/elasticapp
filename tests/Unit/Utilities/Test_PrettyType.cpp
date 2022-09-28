@@ -436,8 +436,8 @@ namespace {
           "Template2");
     CHECK(NameFunc::template name<Template2<std::nullptr_t, Special>>() ==
           "Template2");
-    CHECK(NameFunc::template name<NullptrTemplate<nullptr>>() ==
-          "NullptrTemplate");
+    //    CHECK(NameFunc::template name<NullptrTemplate<nullptr>>() ==
+    //          "NullptrTemplate");
 
     // Enum non-type template parameters
     CHECK(NameFunc::template name<
