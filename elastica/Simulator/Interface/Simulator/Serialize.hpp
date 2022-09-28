@@ -29,12 +29,7 @@
 /// domain serialization
 #include "Simulator/Domain/Serialize.hpp"
 /// module serialization
-#include "Simulator/Interface/Connections/Serialize.hpp"
-#include "Simulator/Interface/Constraints/Serialize.hpp"
-#include "Simulator/Interface/Environments/Serialize.hpp"
-#include "Simulator/Interface/Forcing/Serialize.hpp"
 #include "Simulator/Interface/Systems/Serialize.hpp"
-#include "Simulator/Interface/Wrappers/Serialize.hpp"
 
 namespace elastica {
 

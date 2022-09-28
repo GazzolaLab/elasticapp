@@ -22,9 +22,6 @@
 #include <string>
 #include <utility>
 
-/// Serialization support
-#include "Simulator/IO/Serialization/Types.hpp"
-
 namespace elastica {
 
   namespace interface {
@@ -99,11 +96,6 @@ namespace elastica {
         //**********************************************************************
 
         //@}
-        //**********************************************************************
-
-        //**Friendships*********************************************************
-        //! Friendship with Serialize
-        friend struct ::elastica::io::Serialize<This>;
         //**********************************************************************
 
         //**Member variables****************************************************

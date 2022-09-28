@@ -1,13 +1,32 @@
 # Distributed under the MIT License. See LICENSE.txt for details.
 
-set(LIBRARY Simulator)
+set(LIBRARY Forcing)
+
+add_elastica_library(${LIBRARY} INTERFACE)
+
+set(LIBRARY_SOURCES
+        Forcing.hpp
+        MakeForcing.hpp
+        Protocols.hpp
+        Registration.hpp
+        Types.hpp
+)
 
 elastica_target_headers(
         ${LIBRARY}
         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
-        Forcing.hpp
-        MakeForcing.hpp
-        Registration.hpp
-        Protocols.hpp
-        Types.hpp
+        ${LIBRARY_SOURCES}
+)
+
+elastica_target_sources(
+        ${LIBRARY}
+        INTERFACE
+        ${LIBRARY_SOURCES}
+)
+
+target_link_libraries(
+        ${LIBRARY}
+        INTERFACE
+        Stl
+        Utilities
 )

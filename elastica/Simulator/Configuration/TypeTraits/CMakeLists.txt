@@ -1,13 +1,10 @@
 # Distributed under the MIT License. See LICENSE.txt for details.
 
-set(LIBRARY Simulator)
+set(LIBRARY SimulatorConfigurationTypeTraits)
 
-add_subdirectory(Aliases)
+add_elastica_library(${LIBRARY} INTERFACE)
 
-elastica_target_headers(
-        ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
-        HEADERS
+set(LIBRARY_SOURCES
         Aliases.hpp
         Connections.hpp
         Constraints.hpp
@@ -17,8 +14,25 @@ elastica_target_headers(
         Systems.hpp
 )
 
-#target_link_libraries(
-#        ${LIBRARY}
-#        PUBLIC
-#        Utilities
-#)
+add_subdirectory(Aliases)
+target_link_libraries(${LIBRARY} INTERFACE SimulatorConfigurationTypeTraitsAliases)
+add_library(${LIBRARY}::Aliases ALIAS SimulatorConfigurationTypeTraitsAliases)
+
+elastica_target_headers(
+        ${LIBRARY}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
+        ${LIBRARY_SOURCES}
+)
+
+elastica_target_sources(
+        ${LIBRARY}
+        INTERFACE
+        ${LIBRARY_SOURCES}
+)
+
+target_link_libraries(
+        ${LIBRARY}
+        INTERFACE
+        Utilities
+        SimulatorConfigurationProtocols
+)

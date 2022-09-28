@@ -1,14 +1,32 @@
 # Distributed under the MIT License. See LICENSE.txt for details.
 
-set(LIBRARY Simulator)
+set(LIBRARY Constraints)
+
+add_elastica_library(${LIBRARY} INTERFACE)
+
+set(LIBRARY_SOURCES
+        Constraint.hpp
+        MakeConstraint.hpp
+        Protocols.hpp
+        Registration.hpp
+        Types.hpp
+)
 
 elastica_target_headers(
         ${LIBRARY}
         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
-        Constraint.hpp
-        MakeConstraint.hpp
-        Others.hpp
-        Protocols.hpp
-        Registration.hpp
-        Types.hpp
+        ${LIBRARY_SOURCES}
+)
+
+elastica_target_sources(
+        ${LIBRARY}
+        INTERFACE
+        ${LIBRARY_SOURCES}
+)
+
+target_link_libraries(
+        ${LIBRARY}
+        INTERFACE
+        Stl
+        Utilities
 )

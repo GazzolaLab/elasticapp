@@ -12,17 +12,38 @@ elastica_target_sources(
 )
 
 add_subdirectory(Configuration)
+target_link_libraries(${LIBRARY} INTERFACE SimulatorConfiguration)
+add_library(${LIBRARY}::Configuration ALIAS SimulatorConfiguration)
+
 add_subdirectory(Connections)
+target_link_libraries(${LIBRARY} INTERFACE Connections)
+add_library(${LIBRARY}::Connections ALIAS Connections)
+
 add_subdirectory(Constraints)
+target_link_libraries(${LIBRARY} INTERFACE Constraints)
+add_library(${LIBRARY}::Constraints ALIAS Constraints)
+
 add_subdirectory(Domain)
+target_link_libraries(${LIBRARY} INTERFACE Domain)
+add_library(${LIBRARY}::Domain ALIAS Domain)
+
 add_subdirectory(Environments)
+target_link_libraries(${LIBRARY} INTERFACE Environments)
+add_library(${LIBRARY}::Environments ALIAS Environments)
+
 add_subdirectory(Forcing)
+target_link_libraries(${LIBRARY} INTERFACE Forcing)
+add_library(${LIBRARY}::Forcing ALIAS Forcing)
 
 add_subdirectory(Frames)
 target_link_libraries(${LIBRARY} INTERFACE Frames)
 add_library(${LIBRARY}::Frames ALIAS Frames)
 
 add_subdirectory(Interface)
+target_link_libraries(${LIBRARY} INTERFACE SimulatorInterface)
+add_library(${LIBRARY}::Interface ALIAS SimulatorInterface)
+
+# TODO : Refactor into separate module.
 add_subdirectory(IO)
 
 add_subdirectory(Materials)
@@ -31,13 +52,12 @@ add_library(elastica::Materials ALIAS Materials)
 add_subdirectory(Utilities)
 add_library(Simulator::Utilities ALIAS SimulatorUtilities)
 
-elastica_target_headers(
-        ${LIBRARY}
-        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
+set(LIBRARY_SOURCES
         Configuration.hpp
         Connections.hpp
         Constraints.hpp
         Domain.hpp
+        EnableReset.hpp
         Environments.hpp
         Forcing.hpp
         Frames.hpp
@@ -46,9 +66,17 @@ elastica_target_headers(
         Modules.hpp
         Protocols.hpp
         Simulator.hpp
-        Trigger.hpp
         Types.hpp
+        # TODO : Remove
+        Trigger.hpp
         Visualization.hpp
+)
+
+
+elastica_target_headers(
+        ${LIBRARY}
+        INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
+        ${LIBRARY_SOURCES}
 )
 
 # FIXME refactor serialization
@@ -58,19 +86,15 @@ target_link_libraries(
         Blaze
         ErrorHandling
         Utilities
-        Domain
-        Frames
         Parallel
-        SimulatorUtilities
+        SimulatorConfiguration
+        Connections
+        Constraints
+        Domain
+        Environments
+        Forcing
+        Frames
         Materials
+        SimulatorUtilities
         IO # This is a code smell. As our simulator imports systems/Block which in turn imports serialization, we need to include this at the moment
 )
-#set(LIBRARY_SOURCES Trigger.cpp Visualization.cpp Materials.cpp)
-
-#target_include_directories(${LIBRARY} PRIVATE Interface)
-#target_include_directories(${LIBRARY} PRIVATE CollisionSystem)
-#target_include_directories(${LIBRARY} PRIVATE IO)
-
-#add_elastica_library(${LIBRARY} ${LIBRARY_SOURCES})
-#
-#
