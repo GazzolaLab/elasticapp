@@ -32,7 +32,6 @@
 #include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TMPLDebugging.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 namespace elastica {

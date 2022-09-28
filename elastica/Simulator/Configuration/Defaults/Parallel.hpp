@@ -26,7 +26,7 @@
 //  CONFIGURATION
 //
 //==============================================================================
-#include "Configuration/Forcing.hpp"
+#include "Configuration/Parallel.hpp"
 
 namespace elastica {
 

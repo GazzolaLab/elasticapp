@@ -20,6 +20,7 @@
 #include <type_traits>
 #include <utility>
 ///
+// TODO : Code Smell : Configuration should not depend on implementation details.
 // HEALTH WARNING : We need a complete implementation of Domain here to let
 // the compiler know that it conforms to the protocol (the types header only
 // forward declares it without conformance)
