@@ -96,8 +96,8 @@ namespace mock {
     }
     //**************************************************************************
 
-    template <class DownstreamBlock, class CosseratInitializer>
-    static void initialize(DownstreamBlock& downstream_block,
+    template <class CosseratInitializer>
+    static void initialize(Model& downstream_block,
                            CosseratInitializer&& initializers) {
       downstream_block.resize_members(initializers.n_elems());
       EXPAND_PACK_LEFT_TO_RIGHT(T<Model>::initialize(
@@ -115,14 +115,9 @@ namespace mock {
 
 namespace elastica {
 
-  template <typename Variables, typename Tr, template <typename> class... T,
-            typename Initializer>
-  void initialize_component(::blocks::BlockSlice<mock::MultiComponentPlugin<
-                                Tr, ::blocks::BlockSlice, T...>>& block_like,
-                            Initializer initializer) {
-    detail::initialize_component<Variables>(block_like, std::move(initializer));
-  }
-
+  // BlockSlice overload is not added as Multicomponent plugin is always used
+  // with a block only.
+  // TODO : Remove this?
   template <typename Variables, typename Tr, template <typename> class... T,
             typename Initializer>
   void initialize_component(
