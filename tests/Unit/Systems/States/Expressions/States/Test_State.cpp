@@ -9,9 +9,9 @@
 #include "Systems/States/Expressions/States.hpp"
 #include "Time/SimulationTime.hpp"
 #include "Time/Types.hpp"
+#include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits/Cpp17.hpp"
-#include "Utilities/IgnoreUnused.hpp"
 
 namespace {
 
@@ -26,10 +26,10 @@ namespace {
     using Order = OrderTag;
 
     Holder() : t_(){};
-    Holder(T t) : t_(t){};
+    Holder(T t) : t_(std::move(t)){};
 
-    template <typename... Args>
-    Holder(Args&&... args) : t_(std::forward<Args>(args)...){}
+    //    template <typename... Args>
+    //    Holder(Args&&... args) : t_(std::forward<Args>(args)...) {}
 
     template <typename Arg, typename SomeOrderTag>
     Holder& operator=(Holder<Arg, SomeOrderTag> const& arg) {
@@ -89,8 +89,8 @@ namespace {
     CountedString() : p(), s(){};
     CountedString(std::string str) : p(), s(std::move(str)){};
     CountedString(CountedString const& other) : p(other), s(other.s) {}
-    //    CountedString(CountedString&& other)
-    //        : p(std::move(other)), s(std::move(other.s)) {}
+    CountedString(CountedString&& other) noexcept
+        : p(std::move(other)), s(std::move(other.s)) {}
 
     //    // need a move assingment from a string to make it work
     //    CountedString& operator=(CountedString&& other) {
@@ -128,8 +128,8 @@ namespace {
     return l.s + r.s;
   }
 
-  inline auto IGNORE_UNUSED operator+(CountedString const& l, std::string const& r)
-      -> std::string {
+  inline auto IGNORE_UNUSED operator+(CountedString const& l,
+                                      std::string const& r) -> std::string {
     return l.s + r;
   }
 
@@ -225,7 +225,8 @@ namespace {
       CHECK(state.get<1UL>().t_ == "Hai");
       CHECK(state.get<2UL>().t_ == approx(3.5F));
 
-      decltype(state) another_state(3, "Bai", 4.5F);
+      decltype(state) another_state(Holder<int>{3}, Holder<std::string>{"Bai"},
+                                    Holder<float>{4.5F});
       CHECK(another_state.get<0UL>().t_ == 3);
       CHECK(another_state.get<1UL>().t_ == "Bai");
       CHECK(another_state.get<2UL>().t_ == approx(4.5F));
@@ -243,10 +244,11 @@ namespace {
     // value semantics to be respected
     States<Holder<int>, Holder<std::string>, Holder<float>> state(i, s, f);
     // these are internal functions so a member is fine
-    States<Holder<int, tags::internal::DerivativeMultipliedByTimeTag>,
-           Holder<std::string, tags::internal::DerivativeMultipliedByTimeTag>,
-           Holder<float, tags::internal::DerivativeMultipliedByTimeTag>>
-        another_state(3, "Bai", 4.5F);
+    using A = Holder<int, tags::internal::DerivativeMultipliedByTimeTag>;
+    using B =
+        Holder<std::string, tags::internal::DerivativeMultipliedByTimeTag>;
+    using C = Holder<float, tags::internal::DerivativeMultipliedByTimeTag>;
+    States<A, B, C> another_state(A{3}, B{"Bai"}, C{4.5F});
 
     // check addition of two states
     {
@@ -274,7 +276,7 @@ namespace {
       // this checks the + operator
       // and the get operator of state addition, recursively
       // and the assignment operator of state
-      decltype(another_state) yet_another_state(4, "Pai", 5.0F);
+      decltype(another_state) yet_another_state(A{4}, B{"Pai"}, C{5.0F});
       auto addexpr = state + another_state + yet_another_state;
       static_assert(
           cpp17::is_same_v<
@@ -294,7 +296,7 @@ namespace {
 
     // check addition of three states in a sequence
     {
-      decltype(another_state) yet_another_state(4, "Pai", 5.0F);
+      decltype(another_state) yet_another_state(A{4}, B{"Pai"}, C{5.0F});
       auto addexpr = state + another_state;
       auto another_addexpr = addexpr + yet_another_state;
       static_assert(
@@ -332,80 +334,86 @@ namespace {
     // check allocation of memory
     {
       using S = States<Holder<int>, Holder<CountedString>>;
-      using TS =
-          States<Holder<int, ::elastica::states::tags::internal::
-                                 DerivativeMultipliedByTimeTag>,
-                 Holder<CountedString, ::elastica::states::tags::internal::
-                                           DerivativeMultipliedByTimeTag>>;
+      using TSA = Holder<
+          int,
+          ::elastica::states::tags::internal::DerivativeMultipliedByTimeTag>;
+      using TSB = Holder<
+          CountedString,
+          ::elastica::states::tags::internal::DerivativeMultipliedByTimeTag>;
+      using TS = States<TSA, TSB>;
+      reset_counter();
       // here the constructor always copy constructs
       // but holder's variaid args constructor constructs it in place
-      S counted_state(2, std::string("Hai"));
-      CHECK(counter<CountedString>::objects_created == 1);
+      S counted_state(Holder<int>{2},
+                      Holder<CountedString>{std::string("Hai")});
+      // Holder<CountedString> = 1, plus a move into Holder's t_ = 2
+      // Move it into S = 3 => 2 moves, 3 objects
+      CHECK(counter<CountedString>::objects_created == 3);
       CHECK(counter<CountedString>::objects_alive == 1);
       CHECK(counter<CountedString>::objects_copied == 0);
-      CHECK(counter<CountedString>::objects_moved == 0);
+      CHECK(counter<CountedString>::objects_moved == 2);
 
-      TS another_counted_state(3, std::string("Bai"));
-      CHECK(counter<CountedString>::objects_created == 2);
+      TS another_counted_state(TSA{3}, TSB{std::string("Bai")});
+      CHECK(counter<CountedString>::objects_created == 6);
       CHECK(counter<CountedString>::objects_alive == 2);
       CHECK(counter<CountedString>::objects_copied == 0);
-      CHECK(counter<CountedString>::objects_moved == 0);
+      CHECK(counter<CountedString>::objects_moved == 4);
 
-      TS yet_another_counted_state(4, std::string("Pai"));
-      CHECK(counter<CountedString>::objects_created == 3);
+      TS yet_another_counted_state(TSA{4}, TSB{std::string("Pai")});
+      CHECK(counter<CountedString>::objects_created == 9);
       CHECK(counter<CountedString>::objects_alive == 3);
       CHECK(counter<CountedString>::objects_copied == 0);
-      CHECK(counter<CountedString>::objects_moved == 0);
+      CHECK(counter<CountedString>::objects_moved == 6);
 
       auto addexpr = counted_state + another_counted_state;
-      CHECK(counter<CountedString>::objects_created == 3);
+      CHECK(counter<CountedString>::objects_created == 9);
       CHECK(counter<CountedString>::objects_alive == 3);
       CHECK(counter<CountedString>::objects_copied == 0);
-      CHECK(counter<CountedString>::objects_moved == 0);
+      CHECK(counter<CountedString>::objects_moved == 6);
 
       //      TypeDisplayer<typename decltype(addexpr)::ResultType> td{};
 
       auto another_add_expr = addexpr + yet_another_counted_state;
-      CHECK(counter<CountedString>::objects_created == 3);
+      CHECK(counter<CountedString>::objects_created == 9);
       CHECK(counter<CountedString>::objects_alive == 3);
       CHECK(counter<CountedString>::objects_copied == 0);
-      CHECK(counter<CountedString>::objects_moved == 0);
+      CHECK(counter<CountedString>::objects_moved == 6);
 
       auto yet_another_addexpr = yet_another_counted_state + addexpr;
-      CHECK(counter<CountedString>::objects_created == 3);
+      CHECK(counter<CountedString>::objects_created == 9);
       CHECK(counter<CountedString>::objects_alive == 3);
       CHECK(counter<CountedString>::objects_copied == 0);
-      CHECK(counter<CountedString>::objects_moved == 0);
+      CHECK(counter<CountedString>::objects_moved == 6);
 
       S result_state;
       // result state increments by 1
-      CHECK(counter<CountedString>::objects_created == 4);
+      CHECK(counter<CountedString>::objects_created == 10);
       CHECK(counter<CountedString>::objects_alive == 4);
       CHECK(counter<CountedString>::objects_copied == 0);
-      CHECK(counter<CountedString>::objects_moved == 0);
+      CHECK(counter<CountedString>::objects_moved == 6);
 
       result_state = addexpr;
-      CHECK(counter<CountedString>::objects_created == 4);
+      CHECK(counter<CountedString>::objects_created == 10);
       CHECK(counter<CountedString>::objects_alive == 4);
       CHECK(counter<CountedString>::objects_copied == 0);
-      CHECK(counter<CountedString>::objects_moved == 0);
+      CHECK(counter<CountedString>::objects_moved == 6);
 
       CHECK(result_state.get<0UL>().t_ == 5);
       CHECK(result_state.get<1UL>().t_.s == ("HaiBai"));
 
       result_state = another_add_expr;
-      CHECK(counter<CountedString>::objects_created == 4);
+      CHECK(counter<CountedString>::objects_created == 10);
       CHECK(counter<CountedString>::objects_alive == 4);
       CHECK(counter<CountedString>::objects_copied == 0);
-      CHECK(counter<CountedString>::objects_moved == 0);
+      CHECK(counter<CountedString>::objects_moved == 6);
       CHECK(result_state.get<0UL>().t_ == 9);
       CHECK(result_state.get<1UL>().t_.s == ("HaiBaiPai"));
 
       result_state = yet_another_addexpr;
-      CHECK(counter<CountedString>::objects_created == 4);
+      CHECK(counter<CountedString>::objects_created == 10);
       CHECK(counter<CountedString>::objects_alive == 4);
       CHECK(counter<CountedString>::objects_copied == 0);
-      CHECK(counter<CountedString>::objects_moved == 0);
+      CHECK(counter<CountedString>::objects_moved == 6);
       CHECK(result_state.get<0UL>().t_ == 9);
       CHECK(result_state.get<1UL>().t_.s == ("HaiBaiPai"));
 
@@ -414,7 +422,8 @@ namespace {
 
     // check += expression
     {
-      decltype(state) result_state(4, "Pai", 5.0F);
+      decltype(state) result_state(Holder<int>{4}, Holder<std::string>{"Pai"},
+                                   Holder<float>{5.0F});
       result_state += another_state;
 
       CHECK(result_state.get<0UL>().t_ == 7);
