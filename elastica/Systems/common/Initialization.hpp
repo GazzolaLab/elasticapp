@@ -53,8 +53,8 @@ namespace elastica {
       auto&& variable(blocks::get<Tag>(block_like));
       // We may not need a ref here as it will be moved, but keep it for
       // symmetry.
-      auto&& initializer(blocks::get<Tag>(std::move(cap.value)));
-      Variable::slice(variable, UnitCardinality::index()) = initializer();
+      auto&& variable_initializer(blocks::get<Tag>(std::move(cap.value)));
+      Variable::slice(variable, UnitCardinality::index()) = variable_initializer();
     });
   }
   //****************************************************************************
@@ -89,13 +89,13 @@ namespace elastica {
           auto&& variable(blocks::get<Tag>(block_like));
           // We may not need a ref here as it will be moved, but keep
           // it for symmetry.
-          auto&& initializer(blocks::get<Tag>(std::move(cap.value)));
+          auto&& variable_initializer(blocks::get<Tag>(std::move(cap.value)));
 
           const auto dofs = Variable::get_dofs(n_elem);
           for (std::size_t i = 0; i < dofs; ++i) {
             // TODO : This doesn't work on slices, consider having the
-            // slice member in the initializer itself
-            Variable::slice(variable, i) = initializer(i);
+            // slice member in the variable_initializer itself
+            Variable::slice(variable, i) = variable_initializer(i);
           }
         });
   }
