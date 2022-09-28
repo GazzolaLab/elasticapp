@@ -1,7 +1,7 @@
 from typing import NewType, List
 
 import numpy as np
-from elasticapp import Arrays  # noqa
+from elasticapp.Systems import CosseratRods  # noqa
 from elasticapp.CaseStudies.PyTimoshenkoCaseStudy import TimoshenkoCaseStudy
 
 from cli.progress import ProgressionStatus
@@ -64,8 +64,8 @@ def simulate_timoshenko_beam_with(
         # state
         progress[uuid] = ProgressionStatus(current=i_step + 1, total=n_steps)
 
-    final_positions, _ = cs.communicate()
-    final_positions = np.copy(final_positions)
+    rod = cs.communicate()
+    final_positions = np.copy(rod.get_position())
 
     _, y_analytical = analytical_solution(
         youngs_modulus=youngs_modulus,

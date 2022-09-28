@@ -120,7 +120,7 @@ def plot_helicalbuckling_results(n_elem, base_length, numerical_positions, save_
         fig.show()  # don't block yo
 
         new_fig = plt.figure(figsize=(5, 4), dpi=150)
-        new_ax = new_fig.gca(projection="3d")
+        new_ax = new_fig.add_subplot(projection="3d")
         new_ax.plot(
             numerical_positions[0, ...],
             numerical_positions[1, ...],
@@ -134,6 +134,6 @@ def plot_helicalbuckling_results(n_elem, base_length, numerical_positions, save_
         new_ax.set_zlabel("z")
 
         if save_figure:
-            new_fig.savenew_fig(f"HelicalBuckling_3D_{n_elem}.png")
+            new_fig.savefig(f"HelicalBuckling_3D_{n_elem}.png")
 
     plt.show()
