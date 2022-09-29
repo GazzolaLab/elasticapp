@@ -9,9 +9,7 @@ import click
 
 
 @clickify(
-    click.option(
-        "--inclination", default=np.deg2rad(45.0), type=float, help="Inclination angle"
-    )
+    click.option("--inclination", default=45.0, type=float, help="Inclination angle in degrees")
 )
 @replace_docstring(ButterflyCaseStudy.__doc__)
 def run_example(
@@ -31,7 +29,7 @@ def run_example(
 
     params = ButterflyCaseStudy.params(
         n_elements=n_elem,
-        angle_of_inclination=inclination,
+        angle_of_inclination=np.deg2rad(inclination),
         length=base_length,
         dt=dt,
     )

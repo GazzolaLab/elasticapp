@@ -77,14 +77,14 @@ void ButterflyCaseStudy::setup(InputTypes<This> const& input_parameters) {
         if (index < half_n_elem) {
           return ::elastica::Rot3(
               {{ 0.0            , 1.0, 0.0                 },
-               {-std::sin(bend_angle), 0.0, std::cos(bend_angle)},
-               { std::cos(bend_angle), 0.0, std::sin(bend_angle)}}
+               { +std::cos(bend_angle), 0.0, -std::sin(bend_angle)},
+               { +std::sin(bend_angle), 0.0, +std::cos(bend_angle)}}
           );
         } else {
           return ::elastica::Rot3(
               {{ 0.0            , 1.0, 0.0                 },
-               {-std::sin(bend_angle), 0.0,-std::cos(bend_angle)},
-               {-std::cos(bend_angle), 0.0, std::sin(bend_angle)}}
+               { +std::cos(bend_angle), 0.0, +std::sin(bend_angle)},
+               { -std::sin(bend_angle), 0.0, +std::cos(bend_angle)}}
           );
         }
     // clang-format on

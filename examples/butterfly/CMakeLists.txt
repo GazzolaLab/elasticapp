@@ -23,3 +23,5 @@ add_elastica_case_study(PyButterflyCaseStudy
         FROM ButterflyCaseStudy
         AS elastica::python_object
         )
+
+elastica_python_add_dependencies(PyButterflyCaseStudy PyCosseratRods)
