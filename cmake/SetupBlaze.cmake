@@ -66,6 +66,8 @@ target_compile_definitions(Blaze
         # Set inlining settings
         BLAZE_USE_STRONG_INLINE=1
         BLAZE_USE_ALWAYS_INLINE=1
+        # Set vectorization (leave to 1, else there is no use for blaze)
+        BLAZE_USE_VECTORIZATION=1
         )
 
 add_interface_lib_headers(
