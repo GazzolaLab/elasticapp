@@ -569,7 +569,9 @@ namespace elastica {
 
         ELASTICA_PROFILING_SECTION {
           get_meter<Step>(timers()).start();
-          get_meter<Step>(memory_meters()).start();
+          // TODO : Memory profiling is turned off because on M2 mac, it causes
+          // signficant (2-10x) slowdown.
+          //          get_meter<Step>(memory_meters()).start();
         }
       }
       //************************************************************************
@@ -584,7 +586,9 @@ namespace elastica {
 
         ELASTICA_PROFILING_SECTION {
           get_meter<Step>(timers()).stop();
-          get_meter<Step>(memory_meters()).stop();
+          // TODO : Memory profiling is turned off because on M2 mac, it causes
+          // signficant (2-10x) slowdown.
+          //          get_meter<Step>(memory_meters()).stop();
         }
 
         log<debug>([](auto const& log) {

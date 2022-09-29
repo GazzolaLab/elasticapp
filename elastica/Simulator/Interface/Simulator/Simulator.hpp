@@ -690,7 +690,9 @@ reorganizing your code logic.
 
         ELASTICA_PROFILING_SECTION {
           get_timer<Step>().start();
-          get_memory_meter<Step>().start();
+          // TODO : Memory profiling is turned off because on M2 mac, it causes
+          // signficant (2-10x) slowdown.
+          //          get_memory_meter<Step>().start();
         }
       }
       //************************************************************************
@@ -702,7 +704,9 @@ reorganizing your code logic.
 
         ELASTICA_PROFILING_SECTION {
           get_timer<Step>().stop();
-          get_timer<Step>().stop();
+          // TODO : Memory profiling is turned off because on M2 mac, it causes
+          // signficant (2-10x) slowdown.
+          //          get_memory_meter<Step>().stop();
         }
 
         log<debug>([](auto const& log) {
