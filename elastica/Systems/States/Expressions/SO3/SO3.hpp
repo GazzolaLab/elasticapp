@@ -22,10 +22,10 @@
 /// Forward declaration first
 #include "Systems/States/Expressions/SO3/Types.hpp"
 ///
+#include "Systems/States/Expressions/SO3/SO3Base.hpp"
 #include "Systems/States/Expressions/SO3/SO3RotRotAddExpr.hpp"
 #include "Systems/States/Expressions/SO3/SO3SO3AddExpr.hpp"
 #include "Systems/States/Expressions/SO3/SO3TimeDeltaMultExpr.hpp"
-#include "Systems/States/Expressions/SO3/SO3Base.hpp"
 #include "Systems/States/Expressions/backends.hpp"
 #include "Systems/States/TypeTraits/SupportsVectorizedOperations.hpp"
 #include "Utilities/NonCopyable.hpp"
@@ -149,8 +149,7 @@ namespace elastica {
      * \see elastica::states::States, elastica::states::SE3
      */
     template <typename Type, typename DerivativeOrder>
-    class SO3 : public SO3Base<SO3<Type, DerivativeOrder>>,
-                private NonCopyable {
+    class SO3 : public SO3Base<SO3<Type, DerivativeOrder>> {
      private:
       //**Type definitions******************************************************
       //! NonOwningPointer Type of the Groups instantiated
@@ -169,7 +168,8 @@ namespace elastica {
       //@{
       SO3() = default;
       explicit SO3(NonOwningPointer p);
-      explicit SO3(SO3&&) noexcept;
+      SO3(SO3 const&) = default;
+      SO3(SO3&&) noexcept = default;
       //@}
       //************************************************************************
 
@@ -391,18 +391,6 @@ namespace elastica {
     template <class Type,                // storage type
               typename DerivativeOrder>  // order of derivative
     SO3<Type, DerivativeOrder>::SO3(NonOwningPointer p) : p_(p) {}
-    //**************************************************************************
-
-    //**Move Constructor********************************************************
-    /*!\brief Move Constructor for the class.
-     *
-     * \param p NonOwningPointer to the value to be stored
-     */
-    template <class Type,                // storage type
-              typename DerivativeOrder>  // order of derivative
-    SO3<Type, DerivativeOrder>::SO3(SO3&& other) noexcept : p_(other.p_) {
-      other.p_ = nullptr;
-    }
     //**************************************************************************
 
     //==========================================================================

@@ -173,6 +173,26 @@ namespace elastica {
       //************************************************************************
 
       //************************************************************************
+      /*!\brief Obtain subslice of a temporary slice type at a given index
+       *
+       * \details
+       * Overload to obtain a subslice of slice at `index`.
+       *
+       * It is typically used when lazily generating individual slices from a
+       * lazily generated slice : for example blockslice.get_position(i), where
+       * get_position() lazily generates a slice, which then gets further
+       * sliced.
+       *
+       * \param slice Slice to be further sliced
+       * \param index Index of slicing
+       */
+      static inline decltype(auto) slice(slice_type&& slice,
+                                         std::size_t index) {
+        return blaze::column(static_cast<slice_type&&>(slice), index);
+      }
+      //************************************************************************
+
+      //************************************************************************
       /*!\brief Obtain sub-slice of the const_slice type at a given index
        *
        * \details

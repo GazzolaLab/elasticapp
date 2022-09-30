@@ -19,8 +19,10 @@
 
 #include "Systems/Block/Block/Types.hpp"
 //
+#include "Systems/Block/Block/Concepts.hpp"
+//
 #include "Systems/Block/Block/AsVariables.hpp"
-#include "Systems/Block/Block/BlockSliceFacade.hpp"
+#include "Systems/Block/Block/BlockViewFacade.hpp"
 #include "Systems/Block/Block/TypeTraits.hpp"
 #include "Systems/Block/BlockVariables/TypeTraits.hpp"
 //
@@ -47,35 +49,6 @@ namespace blocks {
   // inline auto size(BlockView<Plugin> const& view) -> bool;
   // template <class Plugin>
   // inline auto size(ConstBlockView<Plugin> const& view) -> bool;
-  /*! \endcond */
-  //****************************************************************************
-
-  //****************************************************************************
-  /*! \cond ELASTICA_INTERNAL */
-  // FIXME : replace with symbolic indices if needed.
-  //****************************************************************************
-  //! Region over a block
-  struct Region {
-    //! Start index
-    std::size_t start;
-    //! Region size
-    std::size_t size;
-  };
-  //****************************************************************************
-
-  //**Equality operator*********************************************************
-  /*!\brief Equality comparison between two Region objects.
-   *
-   * \param lhs The left-hand side region.
-   * \param rhs The right-hand side region.
-   * \return \a true if the regions are over the same space, else \a false
-   */
-  inline constexpr auto operator==(Region const& lhs,
-                                   Region const& rhs) noexcept -> bool {
-    // Brings in the tuple header
-    // return std::tie(lhs.start, lhs.size) == std::tie(rhs.start, rhs.size);
-    return (lhs.start == rhs.start) && (lhs.size == rhs.size);
-  }
   /*! \endcond */
   //****************************************************************************
 
@@ -129,23 +102,34 @@ namespace blocks {
    * \see Block, blocks::slice
    */
   template <class Plugin>
-  class BlockView : public detail::BlockSliceFacade<Plugin> {
+  class BlockView : public detail::BlockViewFacade<Plugin>,
+                    public Gettable<BlockView<Plugin>>,
+                    public Spannable<BlockView<Plugin>>,
+                    public Plugin {
+    // NOTE : Plugin is inherited after Facade so that indices and references to
+    // the parent block is filled first. This is because some elements of Plugin
+    // may require that the slice (and index) be valid, for example to generate
+    // internal refs/pointers for time-stepping.
    protected:
     //**Type definitions********************************************************
     //! Type of the parent plugin
-    using Parent = detail::BlockSliceFacade<Plugin>;
+    using Parent = detail::BlockViewFacade<Plugin>;
     //! Type of the view
     using This = BlockView<Plugin>;
+    //! Type of gettable
+    using GetAffordance = Gettable<This>;
+    //! Type of sliceable
+    using SpanAffordance = Spannable<This>;
     //**************************************************************************
 
    public:
     //**Type definitions********************************************************
     //! Type of the parent plugin
     using typename Parent::PluginType;
-    //! Slice variables
-    using BlockVariableViews = typename Parent::BlockVariableSlices;
     //! Type of the parent block
-    using ParentBlock = typename PluginFrom<This>::template to<Block>::type;
+    using typename Parent::ParentBlock;
+    //! Type of Variables
+    using typename Parent::Variables;
     //**************************************************************************
 
     //**Friendships*************************************************************
@@ -164,15 +148,13 @@ namespace blocks {
      * \param parent_block The parent block that
      * \param start_index The start index
      * \param region_size The stop index
-     * \param views view to be transferred to the underlying container
      */
-    explicit BlockView(
-        ParentBlock& parent_block, std::size_t start_index,
-        std::size_t region_size,
-        BlockVariableViews views) noexcept(noexcept(Parent(std::move(views))))
-        : Parent(std::move(views)),
-          parent_block_(parent_block),
-          region_{start_index, region_size} {}
+    explicit BlockView(ParentBlock& parent_block, std::size_t start_index,
+                       std::size_t region_size) noexcept
+        : Parent(parent_block, start_index, region_size),
+          GetAffordance(),
+          SpanAffordance(),
+          PluginType() {}
     //**************************************************************************
 
     //**************************************************************************
@@ -182,8 +164,9 @@ namespace blocks {
      */
     BlockView(BlockView const& other)
         : Parent(static_cast<Parent const&>(other)),
-          parent_block_(other.parent_block_),
-          region_(other.region_){};
+          GetAffordance(),
+          SpanAffordance(),
+          PluginType(static_cast<PluginType const&>(other)){};
     //**************************************************************************
 
     //**************************************************************************
@@ -193,8 +176,9 @@ namespace blocks {
      */
     BlockView(BlockView&& other) noexcept
         : Parent(static_cast<Parent&&>(other)),
-          parent_block_(other.parent_block_),
-          region_(std::move(other.region_)){};
+          GetAffordance(),
+          SpanAffordance(),
+          PluginType(static_cast<PluginType&&>(other)){};
     //**************************************************************************
 
     //@}
@@ -208,37 +192,12 @@ namespace blocks {
     //@}
     //**************************************************************************
 
-    //**Utility methods*********************************************************
-    /*!\name Utility methods*/
+   public:
+    //**Access operators********************************************************
+    /*!\name Access operators */
     //@{
-
-    //**************************************************************************
-    /*!\brief Gets the parent block
-     */
-    inline constexpr auto parent() const noexcept -> ParentBlock& {
-      return parent_block_;
-    }
-    //**************************************************************************
-
-    //**************************************************************************
-    /*!\brief Gets the region
-     */
-    inline constexpr auto region() const noexcept -> Region const& {
-      return region_;
-    }
-    //**************************************************************************
-
-    //@}
-    //**************************************************************************
-
-   private:
-    //**Member variables********************************************************
-    /*!\name Member variables */
-    //@{
-    //! Reference to the parent block
-    ParentBlock& parent_block_;
-    //! Region of parent block
-    Region region_;
+    //! Operator for slicing and viewing
+    using SpanAffordance::operator[];
     //@}
     //**************************************************************************
   };
@@ -265,23 +224,34 @@ namespace blocks {
    * \see BlockView
    */
   template <class Plugin>
-  class ConstBlockView : public detail::ConstBlockSliceFacade<Plugin> {
+  class ConstBlockView : public detail::ConstBlockViewFacade<Plugin>,
+                         public Gettable<ConstBlockView<Plugin>>,
+                         public Spannable<ConstBlockView<Plugin>>,
+                         public Plugin {
+    // NOTE : Plugin is inherited after Facade so that indices and references to
+    // the parent block is filled first. This is because some elements of Plugin
+    // may require that the slice (and index) be valid, for example to generate
+    // internal refs/pointers for time-stepping.
    protected:
     //**Type definitions********************************************************
     //! Type of the parent plugin
-    using Parent = detail::ConstBlockSliceFacade<Plugin>;
+    using Parent = detail::ConstBlockViewFacade<Plugin>;
     //! Type of the view
     using This = ConstBlockView<Plugin>;
+    //! Type of gettable
+    using GetAffordance = Gettable<This>;
+    //! Type of sliceable
+    using SpanAffordance = Spannable<This>;
     //**************************************************************************
 
    public:
     //**Type definitions********************************************************
     //! Type of the parent plugin
     using typename Parent::PluginType;
-    //! Slice variables
-    using BlockVariableViews = typename Parent::BlockVariableSlices;
     //! Type of the parent block
-    using ParentBlock = typename PluginFrom<This>::template to<Block>::type;
+    using typename Parent::ParentBlock;
+    //! Type of Variables
+    using typename Parent::Variables;
     //**************************************************************************
 
     //**Friendships*************************************************************
@@ -300,15 +270,14 @@ namespace blocks {
      * \param parent_block The parent block that
      * \param start_index The start index
      * \param region_size The stop index
-     * \param views view to be transferred to the underlying container
      */
-    explicit ConstBlockView(
-        ParentBlock const& parent_block, std::size_t start_index,
-        std::size_t region_size,
-        BlockVariableViews views) noexcept(noexcept(Parent(std::move(views))))
-        : Parent(std::move(views)),
-          parent_block_(parent_block),
-          region_{start_index, region_size} {}
+    explicit ConstBlockView(ParentBlock const& parent_block,
+                            std::size_t start_index,
+                            std::size_t region_size) noexcept
+        : Parent(parent_block, start_index, region_size),
+          GetAffordance(),
+          SpanAffordance(),
+          PluginType() {}
     //**************************************************************************
 
     //**************************************************************************
@@ -318,8 +287,9 @@ namespace blocks {
      */
     ConstBlockView(ConstBlockView const& other)
         : Parent(static_cast<Parent const&>(other)),
-          parent_block_(other.parent_block_),
-          region_(other.region_){};
+          GetAffordance(),
+          SpanAffordance(),
+          PluginType(static_cast<PluginType const&>(other)){};
     //**************************************************************************
 
     //**************************************************************************
@@ -329,8 +299,9 @@ namespace blocks {
      */
     ConstBlockView(ConstBlockView&& other) noexcept
         : Parent(static_cast<Parent&&>(other)),
-          parent_block_(other.parent_block_),
-          region_(std::move(other.region_)){};
+          GetAffordance(),
+          SpanAffordance(),
+          PluginType(static_cast<PluginType&&>(other)){};
     //**************************************************************************
 
     //@}
@@ -344,37 +315,12 @@ namespace blocks {
     //@}
     //**************************************************************************
 
-    //**Utility methods*********************************************************
-    /*!\name Utility methods*/
+   public:
+    //**Access operators********************************************************
+    /*!\name Access operators */
     //@{
-
-    //**************************************************************************
-    /*!\brief Gets the parent block
-     */
-    inline constexpr auto parent() const noexcept -> ParentBlock const& {
-      return parent_block_;
-    }
-    //**************************************************************************
-
-    //**************************************************************************
-    /*!\brief Gets the region
-     */
-    inline constexpr auto region() const noexcept -> Region const& {
-      return region_;
-    }
-    //**************************************************************************
-
-    //@}
-    //**************************************************************************
-
-   private:
-    //**Member variables********************************************************
-    /*!\name Member variables */
-    //@{
-    //! Reference to the parent block
-    ParentBlock const& parent_block_;
-    //! Region of parent block
-    Region region_;
+    //! Operator for slicing and viewing
+    using SpanAffordance::operator[];
     //@}
     //**************************************************************************
   };
@@ -397,7 +343,8 @@ namespace blocks {
   inline constexpr auto operator==(BlockView<Plugin> const& lhs,
                                    BlockView<Plugin> const& rhs) noexcept
       -> bool {
-    return (&lhs.parent() == &rhs.parent()) and (lhs.region() == rhs.region());
+    return static_cast<detail::BlockViewFacade<Plugin> const&>(lhs) ==
+           static_cast<detail::BlockViewFacade<Plugin> const&>(rhs);
   }
   //****************************************************************************
 
@@ -412,68 +359,156 @@ namespace blocks {
   inline constexpr auto operator==(ConstBlockView<Plugin> const& lhs,
                                    ConstBlockView<Plugin> const& rhs) noexcept
       -> bool {
-    return (&lhs.parent() == &rhs.parent()) and (lhs.region() == rhs.region());
+    return static_cast<detail::ConstBlockViewFacade<Plugin> const&>(lhs) ==
+           static_cast<detail::ConstBlockViewFacade<Plugin> const&>(rhs);
   }
   //****************************************************************************
 
+  //============================================================================
+  //
+  //  FREE FUNCTIONS
+  //
+  //============================================================================
+
+  //****************************************************************************
+  /*!\brief Get number of units from a BlockView
+   * \ingroup blocks
+   *
+   * \details
+   * Get number of units from a BlockView. By 'units' we mean the number of
+   * individual BlockSlice(s) composing the View.
+   *
+   * \usage
+   * \code
+   * BlockView<...> b;
+   * std::size_t n_units = blocks::n_units(b);
+   * \endcode
+   *
+   * \param block_like The block whose number of units is to be extracted.
+   *
+   * \note
+   * These can be customized for your block type.
+   */
+  template <typename Plugin>
+  inline auto n_units(BlockView<Plugin> const& block_view) noexcept
+      -> std::size_t {
+    return block_view.region().size;
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Get number of units from a ConstBlockView
+   * \ingroup blocks
+   *
+   * \details
+   * Get number of units from a ConstBlockView. By 'units' we mean the number of
+   * individual BlockSlice(s) composing the View.
+   *
+   * \usage
+   * \code
+   * ConstBlockView<...> b;
+   * std::size_t n_units = blocks::n_units(b);
+   * \endcode
+   *
+   * \param block_like The block whose number of units is to be extracted.
+   *
+   * \note
+   * These can be customized for your block type.
+   */
+  template <typename Plugin>
+  inline auto n_units(ConstBlockView<Plugin> const& block_view) noexcept
+      -> std::size_t {
+    return block_view.region().size;
+  }
+  //****************************************************************************
+
+  //============================================================================
+  //
+  //  GET FUNCTIONS
+  //
+  //============================================================================
+
   namespace detail {
 
-    //**************************************************************************
-    /*! \cond ELASTICA_INTERNAL */
-    /*!\brief View operator for mutable blocks
-     * \ingroup blocks
-     *
-     * \details
-     * Helps take slices of a mutable lvalue reference to block.
-     * BlockView<PluginTrait<BlockLike>::template type<BlockView>>
-     * PluginFrom<BlockLike>::template to<BlockView>::type;
-     */
-    template <typename Plugin, typename... Vars,
-              typename ReturnType = typename PluginFrom<
-                  Block<Plugin>>::template to<BlockView>::type>
-    inline decltype(auto) slice_impl(Block<Plugin>& block_like,
-                                     std::size_t start_index,
-                                     std::size_t region_size,
-                                     tmpl::list<Vars...> /* meta */) {
-      return ReturnType{
-          block_like, start_index, region_size,
-          typename ReturnType::BlockVariableViews{
-              block_like.template slice<Vars>(start_index, region_size)...}};
+    template <typename BlockVariableTag, typename ViewLike>
+    inline constexpr decltype(auto) get_view(ViewLike&& view_like) noexcept {
+      return std::forward<ViewLike>(view_like)
+          .parent()
+          .template slice<BlockVariableTag>(
+              std::forward<ViewLike>(view_like).region().start,
+              std::forward<ViewLike>(view_like).region().size);
     }
-    //**************************************************************************
-
-    //**************************************************************************
-    /*!\brief View operator for constant blocks
-     * \ingroup blocks
-     *
-     * \details
-     * Helps take slices of a constant lvalue reference to a block.
-     */
-    template <typename Plugin, typename... Vars,
-              typename ReturnType = const typename PluginFrom<
-                  Block<Plugin>>::template to<ConstBlockView>::type>
-    inline decltype(auto) slice_impl(Block<Plugin> const& block_like,
-                                     std::size_t start_index,
-                                     std::size_t region_size,
-                                     tmpl::list<Vars...> /* meta */) {
-      return ReturnType{
-          block_like, start_index, region_size,
-          typename ReturnType::BlockVariableViews{
-              block_like.template slice<Vars>(start_index, region_size)...}};
-    }
-    /*! \endcond */
-    //**************************************************************************
 
   }  // namespace detail
 
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\name Get functions for Slice types */
+  //@{
+
+  //****************************************************************************
+  /*!\brief Extract element from a BlockView
+   * \ingroup blocks
+   *
+   * \details
+   * Extracts the element of the BlockView `block_view` whose tag type is `Tag`.
+   * Fails to compile unless the block has the `Tag` being extracted.
+   *
+   * \usage
+   * The usage is similar to std::get(), shown below
+   * \code
+     Block<...> b;
+     auto my_tag_data = blocks::get<tags::MyTag>(b);
+   * \endcode
+   *
+   * \tparam Tag Tag to extract
+   *
+   * \param block_like The block to extract the tag from
+   */
+  template <typename BlockVariableTag, typename Plugin>
+  inline constexpr decltype(auto) get_backend(
+      BlockView<Plugin>& block_view) noexcept {
+    return detail::get_view<BlockVariableTag>(block_view);
+  }
+
+  template <typename BlockVariableTag, typename Plugin>
+  inline constexpr decltype(auto) get_backend(
+      BlockView<Plugin> const& block_view) noexcept {
+    return detail::get_view<BlockVariableTag>(block_view);
+  }
+
+  template <typename BlockVariableTag, typename Plugin>
+  inline constexpr decltype(auto) get_backend(
+      BlockView<Plugin>&& block_view) noexcept {
+    return detail::get_view<BlockVariableTag>(
+        static_cast<BlockView<Plugin>&&>(block_view));
+  }
+
+  template <typename BlockVariableTag, typename Plugin>
+  inline constexpr decltype(auto) get_backend(
+      BlockView<Plugin> const&& block_view) noexcept {
+    return detail::get_view<BlockVariableTag>(
+        static_cast<BlockView<Plugin> const&&>(block_view));
+  }
+
+  template <typename BlockVariableTag, typename Plugin>
+  inline constexpr decltype(auto) get_backend(
+      ConstBlockView<Plugin> const& block_view) noexcept {
+    return detail::get_view<BlockVariableTag>(block_view);
+  }
+  //@}
+  /*! \endcond */
+  //****************************************************************************
+
   //============================================================================
   //
-  //  BLOCK SLICE FUNCTIONS
+  //  VIEW FUNCTIONS
   //
   //============================================================================
 
-  //**Block slice***************************************************************
-  /*!\name Block slice functions */
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\name Block view functions */
   //@{
 
   //****************************************************************************
@@ -481,7 +516,7 @@ namespace blocks {
    * \ingroup blocks
    *
    * \details
-   * Implements contiguous views on entities modeling block concept.
+   * Implements contiguous views on Blocks
    *
    * \param block_like Data-structure modeling the block concept
    * \param start_index The start index of the slice (int or from_end)
@@ -495,195 +530,192 @@ namespace blocks {
    * auto b_view_from_end = block::slice(b, elastica::end - 5UL, elastica::end -
    * 2UL);
    * \endcode
-   *
-   * \note
-   * not marked noexcept because we can have out of range indices
    */
-  template <typename Plugin, typename StartIndex, typename StopIndex>
-  inline decltype(auto) slice(Block<Plugin>& block_like, StartIndex start_index,
-                              StopIndex stop_index) {
-    auto const start = units_check(block_like, std::move(start_index));
-    // workaround to support slices with last index : stop_index - 1 does not
-    // throw in check(), and once we have the numeric index, we add one to
-    // recover original index.
-    auto const stop =
-        units_check(block_like, std::move(stop_index) - 1UL) + 1UL;
-    assert(stop > start);
-    return detail::slice_impl(block_like, start, stop - start,
-                              typename Plugin::Variables{});
+  template <typename Plugin>
+  inline decltype(auto) slice_backend(Block<Plugin>& block_like,
+                                      std::size_t start_index,
+                                      std::size_t region_size) noexcept {
+    using ReturnType =
+        typename PluginFrom<Block<Plugin>>::template to<BlockView>::type;
+    return ReturnType{block_like, start_index, region_size};
   }
   //****************************************************************************
 
   //****************************************************************************
-  template <typename Plugin, typename StartIndex, typename StopIndex>
-  inline decltype(auto) slice(Block<Plugin> const& block_like,
-                              StartIndex start_index, StopIndex stop_index) {
-    auto const start = units_check(block_like, std::move(start_index));
-    // workaround to support slices with last index : stop_index - 1 does not
-    // throw in check(), and once we have the numeric index, we add one to
-    // recover original index.
-    auto const stop =
-        units_check(block_like, std::move(stop_index) - 1UL) + 1UL;
-    assert(stop > start);
-    return detail::slice_impl(static_cast<Block<Plugin> const&>(block_like),
-                              start, stop - start,
-                              typename Plugin::Variables{});
-  }
-  //****************************************************************************
-
-  namespace detail {
-    inline constexpr auto as_index(std::size_t n_units, std::size_t index)
-        -> std::size_t {
-      // Equality is added here because the stop index is not-inclusive.
-      // For example in a blockview of size 5 a sub-view of size a[3:5] is still
-      // valid, as the slice only contains a[3], a[4] by the indexing scheme
-      // used.
-      if (index <= n_units) {
-        return index;
-      } else {
-        throw std::out_of_range(
-            "Index to be sliced does not lie within the block-view range");
-      }
-    }
-
-    inline constexpr auto as_index(std::size_t n_units,
-                                   ::elastica::from_end index) -> std::size_t {
-      // This is technically incorrect, but for the range of units we work with
-      // it should be okay
-      return as_index(n_units, n_units - index.i);
-    }
-
-  }  // namespace detail
-
-  //****************************************************************************
-  template <typename Plugin, typename StartIndex, typename StopIndex>
-  inline decltype(auto) slice(BlockView<Plugin>& block_like,
-                              StartIndex start_index, StopIndex stop_index) {
-    // We should avoid the block check() here as it may contain more elements
-    auto const start =
-        detail::as_index(block_like.region().size, std::move(start_index));
-    // stop_index - 0 to also include (end - 0), the last index
-    auto const stop =
-        detail::as_index(block_like.region().size, std::move(stop_index) - 0UL);
-    assert(stop > start);
-    return detail::slice_impl(block_like.parent(),
-                              block_like.region().start + start, stop - start,
-                              typename Plugin::Variables{});
-  }
-  //****************************************************************************
-
-  //****************************************************************************
-  template <typename Plugin, typename StartIndex, typename StopIndex>
-  inline decltype(auto) slice(ConstBlockView<Plugin> const& block_like,
-                              StartIndex start_index, StopIndex stop_index) {
-    // We should avoid the block check() here as it may contain more elements
-    auto const start =
-        detail::as_index(block_like.region().size, std::move(start_index));
-    // stop_index - 0 to also include (end - 0), the last index
-    auto const stop =
-        detail::as_index(block_like.region().size, std::move(stop_index) - 0UL);
-    assert(stop > start);
-    return detail::slice_impl(block_like.parent(),
-                              block_like.region().start + start, stop - start,
-                              typename Plugin::Variables{});
-  }
-  //****************************************************************************
-
-  //****************************************************************************
-  template <typename Plugin, typename StartIndex, typename StopIndex>
-  inline decltype(auto) slice(BlockView<Plugin> const& block_like,
-                              StartIndex start_index, StopIndex stop_index) {
-    // We should avoid the block check() here as it may contain more elements
-    auto const start =
-        detail::as_index(block_like.region().size, std::move(start_index));
-    // stop_index - 0 to also include (end - 0), the last index
-    auto const stop =
-        detail::as_index(block_like.region().size, std::move(stop_index) - 0UL);
-    assert(stop > start);
-    return detail::slice_impl(cpp17::as_const(block_like.parent()),
-                              block_like.region().start + start, stop - start,
-                              typename Plugin::Variables{});
+  template <typename Plugin>
+  inline decltype(auto) slice_backend(Block<Plugin> const& block_like,
+                                      std::size_t start_index,
+                                      std::size_t region_size) noexcept {
+    using ReturnType = const typename PluginFrom<Block<Plugin>>::template to<
+        ConstBlockView>::type;
+    return ReturnType{block_like, start_index, region_size};
   }
   //****************************************************************************
 
   //@}
+  /*! \endcond */
   //****************************************************************************
 
-  namespace detail {
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\name BlockView view functions */
+  //@{
 
-    //**************************************************************************
-    //!\brief Slice operator for block views and const-views
-    //!\ingroup blocks
-    template <typename B, typename... Vars>
-    inline decltype(auto) slice_impl(B&& block_like,
-                                     std::size_t numeric_index) {
-      return slice_impl(block_like.parent(),
-                        block_like.region().start + numeric_index,
-                        typename cpp20::remove_cvref_t<B>::Variables{});
-    }
-    //**************************************************************************
+  //****************************************************************************
+  /*!\brief View into views
+   * \ingroup blocks
+   *
+   * \details
+   * Implements contiguous views on Views
+   *
+   * \param block_like Data-structure modeling the block concept
+   * \param start_index The start index of the slice
+   * \param region_size The size of the slice
+   *
+   * \example
+   * Given a block or a view `b`, we can obtain a view into it by using
+   * \code
+   * auto b_view = block::slice(b, 5UL, 10UL); // gets b[5, 6, 7, 8, 9]
+   * // Gets b[end - 5, end - 4, end - 3]
+   * auto b_view_from_end = block::slice(b, elastica::end - 5UL, elastica::end -
+   * 2UL);
+   * \endcode
+   *
+   */
 
-  }  // namespace detail
+  //****************************************************************************
+  template <typename Plugin>
+  inline decltype(auto) slice_backend(BlockView<Plugin>& block_like,
+                                      std::size_t start_index,
+                                      std::size_t region_size) noexcept {
+    // index is already confirmed within the acceptable limits, so use
+    // slice_backend instead of slice(parent())
+    return slice_backend(block_like.parent(),
+                         block_like.region().start + start_index, region_size);
+  }
+  //****************************************************************************
 
-  //**BlockView slice***********************************************************
+  //****************************************************************************
+  template <typename Plugin>
+  inline decltype(auto) slice_backend(BlockView<Plugin> const& block_like,
+                                      std::size_t start_index,
+                                      std::size_t region_size) noexcept {
+    // index is already confirmed within the acceptable limits, so use
+    // slice_backend instead of slice(parent())
+    return slice_backend(block_like.parent(),
+                         block_like.region().start + start_index, region_size);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  template <typename Plugin>
+  inline decltype(auto) slice_backend(BlockView<Plugin>&& block_like,
+                                      std::size_t start_index,
+                                      std::size_t region_size) noexcept {
+    // index is already confirmed within the acceptable limits, so use
+    // slice_backend instead of slice(parent())
+    return slice_backend(
+        static_cast<BlockView<Plugin>&&>(block_like).parent(),
+        static_cast<BlockView<Plugin>&&>(block_like).region().start +
+            start_index,
+        region_size);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  template <typename Plugin>
+  inline decltype(auto) slice_backend(ConstBlockView<Plugin> const& block_like,
+                                      std::size_t start_index,
+                                      std::size_t region_size) noexcept {
+    // index is already confirmed within the acceptable limits, so use
+    // slice_backend instead of slice(parent())
+    return slice_backend(block_like.parent(),
+                         block_like.region().start + start_index, region_size);
+  }
+  //****************************************************************************
+
+  //@}
+  /*! \endcond */
+  //****************************************************************************
+
+  //============================================================================
+  //
+  //  SLICE FUNCTIONS
+  //
+  //============================================================================
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
   /*!\name BlockView slice functions */
   //@{
 
   //****************************************************************************
-  /*!\brief View into blocks
-   * \ingroup blocks
+  /*!\brief Slice into views
+   * \ingroup block_customization
    *
    * \details
    * Implements slices on entities modeling block concept.
    *
    * \param block_like Data-structure modeling the block concept
-   * \param index The index of the slice (int or from_end)
+   * \param index The index of the slice
    *
    * \example
    * Given a view `b`, we can obtain a slice
    * \code
    * auto b_slice = block::slice(b, 5UL); // at index 5 from start
-   * auto b_slice_from_end = block::slice(b, elastica::end - 2UL); // 2 from end
+   * // 2 from end
+   * auto b_slice_from_end = block::slice(b, elastica::end - 2UL);
    * \endcode
    *
    * \note
    * not marked noexcept because we can have out of range indices
    */
-  template <typename Plugin, typename Index>
-  inline decltype(auto) slice(BlockView<Plugin>& block_like, Index index) {
-    return detail::slice_impl(
-        block_like.parent(),
-        block_like.region().start +
-            detail::as_index(block_like.region().size, std::move(index)),
-        typename Plugin::Variables{});
+  template <typename Plugin>
+  inline decltype(auto) slice_backend(BlockView<Plugin>& block_like,
+                                      std::size_t index) noexcept {
+    // index is already confirmed within the acceptable limits, so use
+    // slice_backend instead of slice(parent())
+    return slice_backend(block_like.parent(),
+                         block_like.region().start + index);
   }
   //****************************************************************************
 
   //****************************************************************************
-  template <typename Plugin, typename Index>
-  inline decltype(auto) slice(ConstBlockView<Plugin> const& block_like,
-                              Index index) {
-    return detail::slice_impl(
-        block_like.parent(),
-        block_like.region().start +
-            detail::as_index(block_like.region().size, std::move(index)),
-        typename Plugin::Variables{});
+  template <typename Plugin>
+  inline decltype(auto) slice_backend(BlockView<Plugin> const& block_like,
+                                      std::size_t index) noexcept {
+    // index is already confirmed within the acceptable limits, so use
+    // slice_backend instead of slice(parent())
+    return slice_backend(block_like.parent(),
+                         block_like.region().start + index);
   }
   //****************************************************************************
 
   //****************************************************************************
-  template <typename Plugin, typename Index>
-  inline decltype(auto) slice(BlockView<Plugin> const& block_like,
-                              Index index) {
-    return detail::slice_impl(
-        cpp17::as_const(block_like.parent()),
-        block_like.region().start +
-            detail::as_index(block_like.region().size, std::move(index)),
-        typename Plugin::Variables{});
+  template <typename Plugin>
+  inline decltype(auto) slice_backend(BlockView<Plugin>&& block_like,
+                                      std::size_t index) noexcept {
+    // index is already confirmed within the acceptable limits, so use
+    // slice_backend instead of slice(parent())
+    return slice_backend(
+        static_cast<BlockView<Plugin>&&>(block_like).parent(),
+        static_cast<BlockView<Plugin>&&>(block_like).region().start + index);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  template <typename Plugin>
+  inline decltype(auto) slice_backend(ConstBlockView<Plugin> const& block_like,
+                                      std::size_t index) noexcept {
+    // index is already confirmed within the acceptable limits, so use
+    // slice_backend instead of slice(parent())
+    return slice_backend(block_like.parent(),
+                         block_like.region().start + index);
   }
   //****************************************************************************
 
   //@}
+  /*! \endcond */
   //****************************************************************************
 
 }  // namespace blocks

@@ -8,6 +8,7 @@
 #include "Systems/CosseratRods/Block.hpp"
 #include "Systems/CosseratRods/BlockInitializer.hpp"
 #include "Systems/CosseratRods/BlockSlice.hpp"
+#include "Systems/CosseratRods/BlockView.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
 #include "Systems/CosseratRods/CosseratRodTraits.hpp"
 #include "Utilities/AsConst.hpp"
@@ -34,6 +35,14 @@ namespace {
   template <template <typename, typename> class... T>
   using GenerateTestPluginConstSlice =
       TaggedCosseratRodPlugin<DefaultCosseratRodTraits, blocks::ConstBlockSlice,
+                              TestTag, T...>;
+  template <template <typename, typename> class... T>
+  using GenerateTestPluginView =
+      TaggedCosseratRodPlugin<DefaultCosseratRodTraits, blocks::BlockView,
+                              TestTag, T...>;
+  template <template <typename, typename> class... T>
+  using GenerateTestPluginConstView =
+      TaggedCosseratRodPlugin<DefaultCosseratRodTraits, blocks::ConstBlockView,
                               TestTag, T...>;
 
   template <typename Plugin>
@@ -82,8 +91,6 @@ namespace {
     CHECK(to_vec(blocks::get<tags::NElement>(model)) == n_elements);
 
     {
-      // using the [] syntax does not lead to the correct slice type (it returns
-      // slice of the parent instead).
       auto first_slice = blocks::slice(model, 0UL);
       static_assert(
           cpp17::is_same_v<
@@ -114,6 +121,30 @@ namespace {
       CHECK(third_slice.total_n_elements() == 30UL);
       CHECK(to_vec(blocks::get<tags::NElement>(third_slice)) ==
             std::vector<std::size_t>{30UL});
+    }
+
+    {
+      auto some_view = blocks::slice(model, 0UL, 2UL);
+      static_assert(
+          cpp17::is_same_v<
+              decltype(some_view),
+              blocks::BlockView<GenerateTestPluginView<EmptyComponent>>>,
+          "Tagged plugin failure!");
+      CHECK(some_view.total_n_elements() == 32UL);
+      CHECK(to_vec(blocks::get<tags::NElement>(some_view)) ==
+            std::vector<std::size_t>{10UL, 20UL});
+    }
+
+    {
+      auto some_view = blocks::slice(cpp17::as_const(model), 0UL, 2UL);
+      static_assert(
+          cpp17::is_same_v<decltype(some_view),
+                           blocks::ConstBlockView<
+                               GenerateTestPluginConstView<EmptyComponent>>>,
+          "Tagged plugin failure!");
+      CHECK(some_view.total_n_elements() == 32UL);
+      CHECK(to_vec(blocks::get<tags::NElement>(some_view)) ==
+            std::vector<std::size_t>{10UL, 20UL});
     }
   }
 

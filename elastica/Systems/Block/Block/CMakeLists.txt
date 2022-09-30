@@ -13,6 +13,8 @@ set(LIBRARY_SOURCES
         BlockSlice.hpp
         BlockSliceFacade.hpp
         BlockView.hpp
+        BlockViewFacade.hpp
+        Concepts.hpp
         Metadata.hpp
         Protocols.hpp
         Types.hpp
@@ -32,9 +34,13 @@ elastica_target_sources(
         ${LIBRARY_SOURCES}
 )
 
+add_subdirectory(Concepts)
+add_library(${LIBRARY}::Concepts ALIAS BlockConcepts)
+
 target_link_libraries(
         ${LIBRARY}
         INTERFACE
         Utilities
         BlockVariables
+        BlockConcepts
 )

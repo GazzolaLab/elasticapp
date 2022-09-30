@@ -26,17 +26,6 @@
 
 namespace blocks {
 
-  //****************************************************************************
-  /*! \cond ELASTICA_INTERNAL */
-  // forward declarations of the slice() function for iteraton
-  // in blockFacade::slice()
-  template <typename Plugin, typename Index>
-  inline decltype(auto) slice(Block<Plugin>& block_like, Index index);
-  template <typename Plugin, typename Index>
-  inline decltype(auto) slice(Block<Plugin> const& block_like, Index index);
-  /*! \endcond */
-  //****************************************************************************
-
   //============================================================================
   //
   //  CLASS DEFINITION
@@ -208,7 +197,11 @@ namespace blocks {
      * \return Accessed slice.
      */
     constexpr ReferenceType operator[](size_t index) const noexcept {
-      return blocks::slice(*block_, curr_idx_ + index);
+      // A static cast is necessary to properly return tagged systems. Tagged
+      // systems may be implemented as deriving from a Block, in which case the
+      // slice method() returns a non-tagged reference, which is then converted
+      // to a tagged reference.
+      return static_cast<ReferenceType>(slice(*block_, curr_idx_ + index));
     };
     //**************************************************************************
 
@@ -218,10 +211,7 @@ namespace blocks {
      * \return Current slice.
      */
     constexpr ReferenceType operator*() const noexcept {
-      // block[] returns not a "tagged" rod but the rod itself. So overloading
-      // based on tags do not work as expected
-      // so use slice() instead, which doesn't have this problem
-      return blocks::slice(*block_, curr_idx_);
+      return static_cast<ReferenceType>(slice_backend(*block_, curr_idx_));
     };
     //@}
     //**************************************************************************
@@ -237,6 +227,47 @@ namespace blocks {
      */
     constexpr ParentBlock* data() const noexcept { return block_; }
     //**************************************************************************
+
+    //************************************************************************
+    /*!\brief Gets the parent block
+     */
+    inline constexpr auto parent() & noexcept -> ParentBlock& {
+      return *block_;
+    }
+    //************************************************************************
+
+    //************************************************************************
+    /*!\brief Gets the parent block
+     */
+    inline constexpr auto parent() const& noexcept -> ParentBlock const& {
+      return *block_;
+    }
+    //************************************************************************
+
+    //************************************************************************
+    /*!\brief Gets the parent block
+     *
+     * \note
+     * This method is useful when xvalue block-slices are generated
+     * on-the-fly via BlockRefs. If this overload is not present, then the
+     * const& is picked up, and it is not possible to assign values to the
+     * parent block anymore.
+     */
+    inline constexpr auto parent() && noexcept -> ParentBlock& {
+      return *block_;
+    }
+    //************************************************************************
+
+    //************************************************************************
+    /*!\brief Gets the parent block
+     *
+     * \note
+     * This method is provided for symmetry with the overload above.
+     */
+    inline constexpr auto parent() const&& noexcept -> ParentBlock const& {
+      return *block_;
+    }
+    //************************************************************************
 
     //**************************************************************************
     /*!\brief Low-level access to the index of the iterator.
@@ -492,7 +523,7 @@ namespace blocks {
      * \return Accessed slice.
      */
     constexpr ReferenceType operator[](size_t index) const noexcept {
-      return blocks::slice(*block_, curr_idx_ + index);
+      return static_cast<ReferenceType>(slice(*block_, curr_idx_ + index));
     };
     //**************************************************************************
 
@@ -502,7 +533,7 @@ namespace blocks {
      * \return Current slice.
      */
     constexpr ReferenceType operator*() const noexcept {
-      return blocks::slice(*block_, curr_idx_);
+      return static_cast<ReferenceType>(slice(*block_, curr_idx_));
     };
     //@}
     //**************************************************************************
@@ -517,6 +548,14 @@ namespace blocks {
      * \return Pointer to the parent block.
      */
     constexpr ParentBlock const* data() const noexcept { return block_; }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Gets the parent block
+     */
+    inline constexpr auto parent() const noexcept -> ParentBlock const& {
+      return *block_;
+    }
     //**************************************************************************
 
     //**************************************************************************

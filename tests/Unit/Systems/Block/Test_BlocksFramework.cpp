@@ -58,7 +58,9 @@ namespace {
 namespace blocks {
 
   template <>
-  class Block<BeginnerExamplePlugin> : public BeginnerExamplePlugin {
+  class Block<BeginnerExamplePlugin>
+      : public Gettable<Block<BeginnerExamplePlugin>>,
+        public BeginnerExamplePlugin {
     using Parent = BeginnerExamplePlugin;
     using Parent::Variables;
 
@@ -79,6 +81,16 @@ namespace blocks {
     }
     inline constexpr BlockVariables const&& data() const&& noexcept {
       return static_cast<BlockVariables const&&>(variables_);
+    }
+
+    using This = Block<BeginnerExamplePlugin>;
+    inline constexpr This& parent() & noexcept { return *this; }
+    inline constexpr This const& parent() const& noexcept { return *this; }
+    inline constexpr This&& parent() && noexcept {
+      return static_cast<This&&>(*this);
+    }
+    inline constexpr This const&& parent() const&& noexcept {
+      return static_cast<This const&&>(*this);
     }
 
     // Conformance type definitions
@@ -191,10 +203,21 @@ namespace {
 namespace blocks {
 
   template <>
-  class Block<IntermediateExamplePlugin> : public IntermediateExamplePlugin {
+  class Block<IntermediateExamplePlugin>
+      : public Gettable<Block<IntermediateExamplePlugin>>,   // add gettable
+        public Spannable<Block<IntermediateExamplePlugin>>,  // add rest
+        public IntermediateExamplePlugin {
    public:
     using Parent = IntermediateExamplePlugin;
     using Parent::Variables;
+    // This type
+    using This = Block<Parent>;
+    //! Type of gettable
+    using GetAffordance = Gettable<This>;
+    //! Type of sliceable
+    using SpanAfforance = Spannable<This>;
+    //! Operator for slicing
+    using SpanAfforance::operator[];
 
    private:
     // Make it a value type
@@ -214,6 +237,15 @@ namespace blocks {
     }
     inline constexpr BlockVariables const&& data() const&& noexcept {
       return static_cast<BlockVariables const&&>(variables_);
+    }
+
+    inline constexpr This& parent() & noexcept { return *this; }
+    inline constexpr This const& parent() const& noexcept { return *this; }
+    inline constexpr This&& parent() && noexcept {
+      return static_cast<This&&>(*this);
+    }
+    inline constexpr This const&& parent() const&& noexcept {
+      return static_cast<This const&&>(*this);
     }
 
     // Conformance type definitions
@@ -541,6 +573,25 @@ namespace {
       check_slice_from_view(blocks::slice(block_view, ::elastica::end - 2UL));
       check_slice_from_view(blocks::slice(block_view_1, 1UL));
       check_slice_from_view(blocks::slice(block_view_1, ::elastica::end - 1UL));
+
+      // Check that slice at the last but one index does not throw
+      CHECK_NOTHROW(blocks::slice(block_view, 1UL));
+      CHECK_NOTHROW(block_view[1UL]);
+      CHECK_THROWS(blocks::slice(block_view, 2UL));  // end of index
+      CHECK_THROWS(block_view[2UL]);
+      CHECK_NOTHROW(blocks::slice(block_view, ::elastica::end - 1UL));
+      CHECK_NOTHROW(block_view[::elastica::end - 1UL]);
+      CHECK_THROWS(blocks::slice(block_view, ::elastica::end - 3UL));
+      CHECK_THROWS(block_view[::elastica::end - 3UL]);
+
+      CHECK_NOTHROW(blocks::slice(block_view_1, 0UL));
+      CHECK_NOTHROW(block_view_1[0UL]);
+      CHECK_THROWS(blocks::slice(block_view_1, 2UL));  // end of index
+      CHECK_THROWS(block_view_1[2UL]);
+      CHECK_NOTHROW(blocks::slice(block_view_1, ::elastica::end - 2UL));
+      CHECK_NOTHROW(block_view_1[::elastica::end - 2UL]);
+      CHECK_THROWS(blocks::slice(block_view_1, ::elastica::end - 3UL));
+      CHECK_THROWS(block_view_1[::elastica::end - 3UL]);
     };
 
     SECTION("BlockView") {
@@ -556,6 +607,15 @@ namespace {
       // to be reflected in blocks
       CHECK(blocks::get<tags::ExampleAcceleration>(const_block_alias) ==
             std::vector<int>{0, 1, 2});
+
+      // View using the operator[]
+      auto another_block_view = block[{1UL, 3UL}];  // block[1, 2]
+      // assign to a view
+      (blocks::get<tags::ExampleAcceleration>(another_block_view).at(0).get() =
+           3);
+      // to be reflected in blocks
+      CHECK(blocks::get<tags::ExampleAcceleration>(const_block_alias) ==
+            std::vector<int>{0, 3, 2});
 
       // While block view
       auto whole_block_view = blocks::slice(block);
@@ -707,12 +767,23 @@ namespace {
 namespace blocks {
 
   template <>
-  class Block<AdvancedExamplePlugin> : public AdvancedExamplePlugin {
+  class Block<AdvancedExamplePlugin>
+      : public Gettable<Block<AdvancedExamplePlugin>>,   // add gettable
+        public Spannable<Block<AdvancedExamplePlugin>>,  // add slice support
+        public AdvancedExamplePlugin {
    public:
     using Parent = AdvancedExamplePlugin;
     // Conformance for initialization
     using Parent::InitializedVariables;
     using Parent::Variables;
+    // This type
+    using This = Block<Parent>;
+    //! Type of gettable
+    using GetAffordance = Gettable<This>;
+    //! Type of sliceable
+    using SpanAfforance = Spannable<This>;
+    //! Operator for slicing
+    using SpanAfforance::operator[];
 
    private:
     // Make it a value type
@@ -732,6 +803,15 @@ namespace blocks {
     }
     inline constexpr BlockVariables const&& data() const&& noexcept {
       return static_cast<BlockVariables const&&>(variables_);
+    }
+
+    inline constexpr This& parent() & noexcept { return *this; }
+    inline constexpr This const& parent() const& noexcept { return *this; }
+    inline constexpr This&& parent() && noexcept {
+      return static_cast<This&&>(*this);
+    }
+    inline constexpr This const&& parent() const&& noexcept {
+      return static_cast<This const&&>(*this);
     }
 
     // Conformance type definitions
@@ -1106,12 +1186,23 @@ namespace blocks {
 
   template <>
   class Block<CompositionExamplePlugin<Block>>
-      : public CompositionExamplePlugin<Block> {
+      : public Gettable<Block<CompositionExamplePlugin<Block>>>,   // get
+        public Spannable<Block<CompositionExamplePlugin<Block>>>,  // add slice
+        public CompositionExamplePlugin<Block> {
    public:
     using Parent = CompositionExamplePlugin<Block>;
     // Conformance for initialization
     using Parent::InitializedVariables;
     using Parent::Variables;
+
+    // This type
+    using This = Block<Parent>;
+    //! Type of gettable
+    using GetAffordance = Gettable<This>;
+    //! Type of sliceable
+    using SpanAfforance = Spannable<This>;
+    //! Operator for slicing
+    using SpanAfforance::operator[];
 
    private:
     // Make it a value type
@@ -1132,6 +1223,15 @@ namespace blocks {
     }
     inline constexpr BlockVariables const&& data() const&& noexcept {
       return static_cast<BlockVariables const&&>(variables_);
+    }
+
+    inline constexpr This& parent() & noexcept { return *this; }
+    inline constexpr This const& parent() const& noexcept { return *this; }
+    inline constexpr This&& parent() && noexcept {
+      return static_cast<This&&>(*this);
+    }
+    inline constexpr This const&& parent() const&& noexcept {
+      return static_cast<This const&&>(*this);
     }
 
     // Conformance type definitions

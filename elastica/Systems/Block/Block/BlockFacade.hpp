@@ -16,30 +16,22 @@
 //******************************************************************************
 // Includes
 //******************************************************************************
-#include <type_traits>
-
 #include "Systems/Block/Block/Types.hpp"
-///
+//
+#include "Systems/Block/Block/Concepts.hpp"
+//
 #include "Systems/Block/Block/Aliases.hpp"
 #include "Systems/Block/Block/AsVariables.hpp"
 #include "Systems/Block/BlockVariables/TypeTraits.hpp"
+//
 #include "Utilities/CRTP.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits/Cpp17.hpp"
 #include "Utilities/TypeTraits/IsDetected.hpp"
+//
+#include <type_traits>
 
 namespace blocks {
-
-  //****************************************************************************
-  /*! \cond ELASTICA_INTERNAL */
-  // forward declarations of the slice() function for overload resolution
-  // in blockFacade::slice()
-  template <typename Plugin, typename Index>
-  inline decltype(auto) slice(Block<Plugin>& block_like, Index index);
-  template <typename Plugin, typename Index>
-  inline decltype(auto) slice(Block<Plugin> const& block_like, Index index);
-  /*! \endcond */
-  //****************************************************************************
 
   namespace detail {
 
@@ -136,9 +128,7 @@ namespace blocks {
    * \snippet this const_slice_signature
    *
    * where
-   * - `t` is the current time of the simulation
-   * - `sys` is an object modeling an \elastica system
-   * - `index` is the index being constrained.
+   * - `Tag` is the tag to be retrieved
    *
    * \example
    * For a simple custom Plugin as shown below,
@@ -158,8 +148,10 @@ namespace blocks {
    * \see Block
    */
   template <typename Plugin>
-  class BlockFacade : public Plugin,
-                      public elastica::CRTPHelper<Block<Plugin>, BlockFacade> {
+  class BlockFacade : public elastica::CRTPHelper<Block<Plugin>, BlockFacade>,
+                      public Gettable<Block<Plugin>>,
+                      public Spannable<Block<Plugin>>,
+                      public Plugin {
    protected:
     //**Type definitions********************************************************
     /*! \cond ELASTICA_INTERNAL */
@@ -236,6 +228,10 @@ namespace blocks {
     using CRTP = elastica::CRTPHelper<Block<Parent>, BlockFacade>;
     //! CRTP methods
     using CRTP::self;
+    //! Type of gettable
+    using GetAffordance = Gettable<Block<Plugin>>;
+    //! Type of spannable
+    using SpanAffordance = Spannable<Block<Plugin>>;
     //**************************************************************************
 
    protected:
@@ -249,7 +245,11 @@ namespace blocks {
      */
     BlockFacade() noexcept(
         std::is_nothrow_default_constructible<BlockVariables>::value)
-        : Parent(), variables_(){};
+        : CRTP(),
+          GetAffordance(),
+          SpanAffordance(),
+          Parent(),
+          variables_(){};
     //**************************************************************************
 
     //**************************************************************************
@@ -258,7 +258,11 @@ namespace blocks {
      * \param other block to move from
      */
     BlockFacade(BlockFacade&& other) noexcept
-        : Parent(), variables_(std::move(other.variables_)){};
+        : CRTP(),
+          GetAffordance(),
+          SpanAffordance(),
+          Parent(),
+          variables_(std::move(other.variables_)){};
     //**************************************************************************
 
    public:
@@ -277,6 +281,15 @@ namespace blocks {
     /*!\name Destructor */
     //@{
     ~BlockFacade() = default;
+    //@}
+    //**************************************************************************
+
+   public:
+    //**Access operators********************************************************
+    /*!\name Access operators */
+    //@{
+    //! Operator for slicing and viewing
+    using SpanAffordance::operator[];
     //@}
     //**************************************************************************
 
@@ -327,6 +340,45 @@ namespace blocks {
     //@}
     //**************************************************************************
 
+    //**Utility methods*********************************************************
+    /*!\name Utility methods*/
+    //@{
+
+    //**************************************************************************
+    /*!\brief Returns the current block
+     */
+    inline constexpr auto parent() & noexcept -> Block<Plugin>& {
+      return self();
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Returns the current block
+     */
+    inline constexpr auto parent() const& noexcept -> Block<Plugin> const& {
+      return self();
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Returns the current block
+     */
+    inline constexpr auto parent() && noexcept -> Block<Plugin>&& {
+      return static_cast<Block<Plugin>&&>(*this);
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Returns the current block
+     */
+    inline constexpr auto parent() const&& noexcept -> Block<Plugin> const&& {
+      return static_cast<Block<Plugin> const&&>(*this);
+    }
+    //**************************************************************************
+
+    //@}
+    //**************************************************************************
+
    private:
     //**************************************************************************
     /*!\brief Implementation to initialize the underlying data
@@ -361,38 +413,6 @@ namespace blocks {
     }
     //**************************************************************************
 
-   public:
-    //**Slice operators*********************************************************
-    /*!\name slice operators */
-    //@{
-
-    //**************************************************************************
-    /*!\brief Subscript operator for slicing the block
-     *
-     * \return Slice of the current block
-     */
-    template <typename IndexLike>
-    inline decltype(auto) operator[](IndexLike index) & {
-      using ::blocks::slice;
-      return slice(self(), index);
-    }
-    //**************************************************************************
-
-    //**************************************************************************
-    /*!\brief Subscript operator for slicing the block
-     *
-     * \return ConstSlice of the current block
-     */
-    template <typename IndexLike>
-    inline decltype(auto) operator[](IndexLike index) const& {
-      using ::blocks::slice;
-      return slice(self(), index);
-    }
-    //**************************************************************************
-
-    //@}
-    //**************************************************************************
-
    private:
     //**Member variables********************************************************
     /*!\name Member variables */
@@ -402,6 +422,58 @@ namespace blocks {
     //@}
     //**************************************************************************
   };
+  //****************************************************************************
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\name Get functions for Block */
+  //@{
+
+  //****************************************************************************
+  /*!\brief Extract element from a Block
+   * \ingroup blocks
+   *
+   * \details
+   * Extracts the element of the Block `block_like` whose tag type is `Tag`.
+   * Fails to compile unless the block has the `Tag` being extracted.
+   *
+   * \usage
+   * The usage is similar to std::get(), shown below
+   * \code
+     Block<...> b;
+     auto my_tag_data = blocks::get<tags::MyTag>(b);
+   * \endcode
+   *
+   * \tparam Tag Tag to extract
+   *
+   * \param block_like The block to extract the tag from
+   */
+  template <typename BlockVariableTag, typename Plugin>
+  inline constexpr decltype(auto) get_backend(Block<Plugin>& block) noexcept {
+    return tuples::get<BlockVariableTag>(block.data());
+  }
+
+  template <typename BlockVariableTag, typename Plugin>
+  inline constexpr decltype(auto) get_backend(
+      Block<Plugin> const& block) noexcept {
+    return tuples::get<BlockVariableTag>(block.data());
+  }
+
+  template <typename BlockVariableTag, typename Plugin>
+  inline constexpr decltype(auto) get_backend(Block<Plugin>&& block) noexcept {
+    return tuples::get<BlockVariableTag>(
+        static_cast<Block<Plugin>&&>(block).data());
+  }
+
+  template <typename BlockVariableTag, typename Plugin>
+  inline constexpr decltype(auto) get_backend(
+      Block<Plugin> const&& block) noexcept {
+    return tuples::get<BlockVariableTag>(
+        static_cast<Block<Plugin> const&&>(block).data());
+  }
+
+  //@}
+  /*! \endcond */
   //****************************************************************************
 
 }  // namespace blocks

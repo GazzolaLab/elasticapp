@@ -146,6 +146,9 @@ namespace {
 
 }  // namespace
 
+// BlockSlice(Facade) now depends on Block : so a definition and instantiation
+// needs to be present.
+
 namespace {
 
   ELASTICA_TEST_CASE("Unit.Systems.BlockSliceFacade.member_construction",

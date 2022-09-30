@@ -335,7 +335,7 @@ namespace elastica {
           using Variable = typename VariableDefinitions::NElement;
           using Tag = blocks::initializer_t<Variable>;
 
-          auto& variable(blocks::get<Tag>(this_component.self()));
+          auto&& variable(blocks::get<Tag>(this_component.self()));
           // this automatically is deduced to 1
           constexpr index_type index_of_rod = 0UL;
           auto const n_elem = blocks::get<Tag>(cpp17::as_const(initializer))();
@@ -391,8 +391,9 @@ namespace elastica {
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 
         // may need to change based on elements() structure
+        auto&& elements_buffer = n_elements();
         auto const start =
-            n_elements().begin() + static_cast<std::size_t>(start_unit);
+            elements_buffer.begin() + static_cast<std::size_t>(start_unit);
         return OnElement::get_dofs(
             std::accumulate(start, start + static_cast<std::size_t>(slice_size),
                             static_cast<size_type>(n_ghosts(OnElement{}) *

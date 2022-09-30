@@ -13,6 +13,10 @@
 
 #pragma once
 
+//******************************************************************************
+// Includes
+//******************************************************************************
+
 #include "Systems/Block.hpp"
 //
 #include "Utilities/GSL.hpp"
@@ -27,9 +31,14 @@ namespace blocks {
 
   // TODO : Add sliceable, viewable semantics
   template <typename Plugin>
-  class BlockRefGenerator {
+  class BlockRefGenerator : public Spannable<BlockRefGenerator<Plugin>> {
    private:
+    //**Type definitions********************************************************
+    //! Type of this
     using This = BlockRefGenerator<Plugin>;
+    //! Type of sliceable
+    using SpanAffordance = Spannable<This>;
+    //**************************************************************************
 
    public:
     using BlockType = Block<Plugin>;
@@ -38,9 +47,12 @@ namespace blocks {
     using Pointer = Source*;
 
     BlockRefGenerator()
-        : src_(nullptr), index_(std::numeric_limits<std::size_t>::max()) {}
+        : SpanAffordance(),
+          src_(nullptr),
+          index_(std::numeric_limits<std::size_t>::max()) {}
 
-    BlockRefGenerator(Source& v, std::size_t index) : src_(&v), index_(index){};
+    BlockRefGenerator(Source& v, std::size_t index)
+        : SpanAffordance(), src_(&v), index_(index){};
 
     auto source() const noexcept -> Pointer { return src_; }
     auto index() const noexcept -> std::size_t { return index_; }
@@ -65,10 +77,20 @@ namespace blocks {
           index_);
     }
 
+   public:
+    //**Access operators********************************************************
+    /*!\name Access operators */
+    //@{
+    //! Operator for slicing and viewing
+    using SpanAffordance::operator[];
+    //@}
+    //**************************************************************************
+
    private:
     Pointer src_;
     std::size_t index_;
   };
+  //****************************************************************************
 
   template <class Plugin>
   inline constexpr auto operator==(
@@ -78,19 +100,30 @@ namespace blocks {
   }
 
   template <typename Plugin>
-  class BlockViewGenerator {
+  class BlockViewGenerator : public Spannable<BlockViewGenerator<Plugin>> {
+   private:
+    //**Type definitions********************************************************
+    //! Type of this
+    using This = BlockViewGenerator<Plugin>;
+    //! Type of sliceable
+    using SpanAffordance = Spannable<This>;
+    //**************************************************************************
+
    public:  // in case some metavariables are needed.
     using Parent = BlockRefGenerator<Plugin>;
     using BlockType = typename Parent::BlockType;
 
     BlockViewGenerator()
-        : parent_(),
-          slice_index_(std::numeric_limits<std::size_t>::max()),
-          slice_stop_(std::numeric_limits<std::size_t>::max()) {}
+        : SpanAffordance(),
+          parent_(),
+          region_{std::numeric_limits<std::size_t>::max(),
+                  std::numeric_limits<std::size_t>::max()} {}
 
     BlockViewGenerator(Parent parent, std::size_t slice_index,
                        std::size_t slice_size)
-        : parent_(parent), slice_index_(slice_index), slice_stop_(slice_size){};
+        : SpanAffordance(),
+          parent_(std::move(parent)),
+          region_{slice_index, slice_size} {};
 
     BlockViewGenerator(BlockViewGenerator const& other) = default;
     //
@@ -113,25 +146,41 @@ namespace blocks {
     inline auto get() const /* noexcept*/ -> type {
       // The call to .get() does not return a temporary lvalue, so it is safe
       // to propogate.
-      return blocks::slice(parent_.get(), slice_index_, slice_stop_);
+      // This may throw for now, but can be refactored to not throw.
+      return blocks::slice(parent_.get(), region().start,
+                           region().start + region().size);
     }
     inline std::size_t uuid() const { return parent_.uuid(); }
-    auto start_index() const noexcept -> std::size_t { return slice_index_; }
-    auto stop_index() const noexcept -> std::size_t { return slice_stop_; }
+
+    //**************************************************************************
+    /*!\brief Returns the slice region
+     */
+    inline constexpr auto region() const noexcept -> detail::Region const& {
+      return region_;
+    }
+    //**************************************************************************
+
+   public:
+    //**Access operators********************************************************
+    /*!\name Access operators */
+    //@{
+    //! Operator for slicing and viewing
+    using SpanAffordance::operator[];
+    //@}
+    //**************************************************************************
 
    private:
     Parent parent_;
-    std::size_t slice_index_;
-    std::size_t slice_stop_;
+    //! View region
+    detail::Region region_;
   };
+  //****************************************************************************
 
   template <class Plugin>
   inline constexpr auto operator==(
       BlockViewGenerator<Plugin> const& lhs,
       BlockViewGenerator<Plugin> const& rhs) noexcept -> bool {
-    return (lhs.parent() == rhs.parent()) and
-           (lhs.start_index() == rhs.start_index()) and
-           (lhs.stop_index() == rhs.stop_index());
+    return (lhs.parent() == rhs.parent()) and (lhs.region() == rhs.region());
   }
 
   template <typename Plugin>
@@ -144,7 +193,7 @@ namespace blocks {
         : parent_(), slice_index_(std::numeric_limits<std::size_t>::max()) {}
 
     BlockSliceGenerator(Parent parent, std::size_t slice_index)
-        : parent_(parent), slice_index_(slice_index){};
+        : parent_(std::move(parent)), slice_index_(slice_index){};
 
     BlockSliceGenerator(BlockSliceGenerator const& other) = default;
     //
@@ -184,16 +233,155 @@ namespace blocks {
     return (lhs.parent() == rhs.parent()) and (lhs.index() == rhs.index());
   }
 
+  //============================================================================
+  //
+  //  N_UNITS FUNCTIONS
+  //
+  //============================================================================
+
+  //**Units funcs***************************************************************
+  /*!\name Units functions*/
+  //@{
+
+  //****************************************************************************
+  /*!\brief Get number of units from BlockGenerators
+   * \ingroup blocks
+   *
+   * \details
+   * Get number of units from a BlockGenerators. By 'units' we mean the number
+   * of individual BlockSlice(s) composing the Generators.
+   *
+   * \usage
+   * \code
+   * BlockLike<...> b;
+   * std::size_t n_units = blocks::n_units(b);
+   * \endcode
+   *
+   * \param generator The generator whose number of units is to be extracted.
+   */
+
+  //****************************************************************************
   template <typename Plugin>
-  inline auto slice(BlockRefGenerator<Plugin> parent, std::size_t start,
-                    std::size_t stop) -> BlockViewGenerator<Plugin> {
-    return BlockViewGenerator<Plugin>(std::move(parent), start, stop);
+  inline auto n_units(BlockRefGenerator<Plugin> const& generator) noexcept
+      -> std::size_t {
+    return n_units(generator.get());
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  template <typename Plugin>
+  inline auto n_units(BlockViewGenerator<Plugin> const& generator) noexcept
+      -> std::size_t {
+    return generator.region().size;
+  }
+  //****************************************************************************
+
+  //@}
+  //****************************************************************************
+
+  //============================================================================
+  //
+  //  VIEW FUNCTIONS
+  //
+  //============================================================================
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\name BlockRef view functions */
+  //@{
+
+  //****************************************************************************
+  /*!\brief View into blockref
+   * \ingroup block_customization
+   *
+   * \details
+   * Implements contiguous views on BlockRefs
+   *
+   * \param generator Data-structure modeling the block concept
+   * \param start_index The start index of the slice
+   * \param region_size The size of the slice
+   *
+   * \example
+   * Given a block or a view `b`, we can obtain a view into it by using
+   * \code
+   * auto b_view = block::slice(b, 5UL, 10UL); // gets b[5, 6, 7, 8, 9]
+   * // Gets b[end - 5, end - 4, end - 3]
+   * auto b_view_from_end = block::slice(b, elastica::end - 5UL, elastica::end -
+   * 2UL);
+   * \endcode
+   *
+   * \note
+   * not marked noexcept because we can have out of range indices
+   */
+  template <typename Plugin>
+  inline auto slice_backend(BlockRefGenerator<Plugin> generator,
+                            std::size_t start_index,
+                            std::size_t region_size) noexcept
+      -> BlockViewGenerator<Plugin> {
+    return BlockViewGenerator<Plugin>{std::move(generator), start_index,
+                                      region_size};
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  template <typename Plugin>
+  inline decltype(auto) slice_backend(BlockViewGenerator<Plugin> generator,
+                                      std::size_t start_index,
+                                      std::size_t region_size) noexcept {
+    return slice_backend(generator.parent(),
+                         generator.region().start + start_index, region_size);
+  }
+  //****************************************************************************
+
+  //@}
+  /*! \endcond */
+  //****************************************************************************
+
+  //============================================================================
+  //
+  //  SLICE FUNCTIONS
+  //
+  //============================================================================
+
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\name BlockRef slice functions */
+  //@{
+
+  //****************************************************************************
+  /*!\brief Slice into blockref
+   * \ingroup block_customization
+   *
+   * \details
+   * Implements slices on blockrefs
+   *
+   * \param generator Data-structure modeling the block concept
+   * \param slice_index The index of the slice (int or from_end)
+   *
+   * \example
+   * Given a view `b`, we can obtain a slice
+   * \code
+   * auto b_slice = block::slice(b, 5UL); // at index 5 from start
+   * // 2 from end
+   * auto b_slice_from_end = block::slice(b, elastica::end - 2UL);
+   * \endcode
+   */
+  template <typename Plugin>
+  inline auto slice_backend(BlockRefGenerator<Plugin> generator,
+                            std::size_t slice_index) noexcept
+      -> BlockSliceGenerator<Plugin> {
+    return BlockSliceGenerator<Plugin>(std::move(generator), slice_index);
   }
 
   template <typename Plugin>
-  inline auto slice(BlockRefGenerator<Plugin> parent, std::size_t slice_index)
-      -> BlockSliceGenerator<Plugin> {
-    return BlockSliceGenerator<Plugin>(std::move(parent), slice_index);
+  inline decltype(auto) slice_backend(BlockViewGenerator<Plugin> generator,
+                                      std::size_t slice_index) noexcept {
+    return slice_backend(generator.parent(),
+                         generator.region().start + slice_index);
   }
+
+  //@}
+  /*! \endcond */
+  //****************************************************************************
 
 }  // namespace blocks

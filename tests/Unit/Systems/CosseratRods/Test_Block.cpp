@@ -802,7 +802,7 @@ namespace {
             using Variable = tmpl::type_from<decltype(v)>;
             using Tag = blocks::initializer_t<Variable>;
 
-            auto& variable(blocks::get<Tag>(downstream_block));
+            auto&& variable(blocks::get<Tag>(downstream_block));
             auto&& initializer(blocks::get<Tag>(std::move(cap.value)));
 
             auto dofs = Variable::get_dofs(cap.value.n_elems());

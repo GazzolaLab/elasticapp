@@ -146,8 +146,7 @@ namespace elastica {
      * \see elastica::states::States, elastica::states::SO3
      */
     template <typename Type, typename DerivativeOrder>
-    class SE3 : public SE3Base<SE3<Type, DerivativeOrder>>,
-                public NonCopyable {
+    class SE3 : public SE3Base<SE3<Type, DerivativeOrder>> {
      private:
       //**Type definitions******************************************************
       //! NonOwningPointer Type of the Groups instantiated
@@ -166,7 +165,8 @@ namespace elastica {
       //@{
       SE3() = default;
       explicit SE3(NonOwningPointer p);
-      explicit SE3(SE3&&) noexcept;
+      SE3(SE3 const& other) = default;
+      SE3(SE3&&) noexcept = default;
       //@}
       //************************************************************************
 
@@ -332,18 +332,6 @@ namespace elastica {
     template <class Type,                // storage type
               typename DerivativeOrder>  // order of derivative
     SE3<Type, DerivativeOrder>::SE3(NonOwningPointer p) : p_(p) {}
-    //**************************************************************************
-
-    //**Move Constructor********************************************************
-    /*!\brief Move Constructor for the class.
-     *
-     * \param p NonOwningPointer to the value to be stored
-     */
-    template <class Type,                // storage type
-              typename DerivativeOrder>  // order of derivative
-    SE3<Type, DerivativeOrder>::SE3(SE3&& other) noexcept : p_(other.p_) {
-      other.p_ = nullptr;
-    }
     //**************************************************************************
 
     //==========================================================================

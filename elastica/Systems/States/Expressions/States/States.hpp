@@ -29,7 +29,7 @@
 ///
 #include "Utilities/Invoke.hpp"  // index_apply
 #include "Utilities/NonCopyable.hpp"
-#include "Utilities/TMPL.hpp" // for expand pack
+#include "Utilities/TMPL.hpp"  // for expand pack
 //#include "Utilities/Requires.hpp"
 
 namespace elastica {
@@ -140,7 +140,7 @@ namespace elastica {
      * \see elastica::states::SE3, elastica::states::SO3
      */
     template <class... Groups>
-    class States : public StatesBase<States<Groups...>>, private NonCopyable {
+    class States : public StatesBase<States<Groups...>> {
      private:
       //**Type definitions******************************************************
       //! Storage Type of the Groups instantiated
@@ -164,7 +164,6 @@ namespace elastica {
       /*!\name Constructors */
       //@{
       inline States() : groups_(){};
-      // template <typename... ValueInitializers>
       explicit States(Groups&&... group_elements);
       //@}
       //************************************************************************
@@ -313,13 +312,12 @@ namespace elastica {
     //
     // \param elements Initializers of groups
     */
-    template <typename... Groups>             // Parameter-pack of groups
+    template <typename... Groups>  // Parameter-pack of groups
     // TODO : Revisit, this doesnt seem right that you need to pass in
     // Groups by forwarding references.
     // template <typename... ValueInitializers>  // Pack of group initializers
     States<Groups...>::States(Groups&&... group_elements)
-        : groups_(std::forward<Groups>(group_elements)...) {
-    }  // copy by value
+        : groups_(std::forward<Groups>(group_elements)...) {}  // copy by value
     //**************************************************************************
 
     //==========================================================================

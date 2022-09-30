@@ -82,29 +82,29 @@ namespace blocks {
   class Block<
       elastica::cosserat_rod::CosseratRodPlugin<CRT, Block, Components...>>;
 
-  template <typename CRT,
+  template <typename CRT, typename Tag,
             template <typename /*CRT*/, typename /*InitializedBlock*/>
             class... Components>
-  class BlockSlice<elastica::cosserat_rod::CosseratRodPlugin<CRT, BlockSlice,
-                                                             Components...>>;
+  class BlockSlice<elastica::cosserat_rod::TaggedCosseratRodPlugin<
+      CRT, BlockSlice, Tag, Components...>>;
 
-  template <typename CRT,
+  template <typename CRT, typename Tag,
             template <typename /*CRT*/, typename /*InitializedConstBlock*/>
             class... Components>
-  class ConstBlockSlice<elastica::cosserat_rod::CosseratRodPlugin<
-      CRT, ConstBlockSlice, Components...>>;
+  class ConstBlockSlice<elastica::cosserat_rod::TaggedCosseratRodPlugin<
+      CRT, ConstBlockSlice, Tag, Components...>>;
 
-  template <typename CRT,
+  template <typename CRT, typename Tag,
             template <typename /*CRT*/, typename /*InitializedBlock*/>
             class... Components>
-  class BlockView<
-      elastica::cosserat_rod::CosseratRodPlugin<CRT, BlockView, Components...>>;
+  class BlockView<elastica::cosserat_rod::TaggedCosseratRodPlugin<
+      CRT, BlockView, Tag, Components...>>;
 
-  template <typename CRT,
+  template <typename CRT, typename Tag,
             template <typename /*CRT*/, typename /*InitializedConstBlock*/>
             class... Components>
-  class ConstBlockView<elastica::cosserat_rod::CosseratRodPlugin<
-      CRT, ConstBlockView, Components...>>;
+  class ConstBlockView<elastica::cosserat_rod::TaggedCosseratRodPlugin<
+      CRT, ConstBlockView, Tag, Components...>>;
 
   /*! \endcond */
   //****************************************************************************

@@ -223,10 +223,12 @@ namespace blocks {
     /*!\brief Slice of a variable within the blocks infrastructure
     // \ingroup blocks
     */
-    template <typename Variable, template <typename> class SliceImplementation>
+    template <typename Variable_, template <typename> class SliceImplementation>
     struct VariableSlice : /*public tt::ConformsTo<protocols::Variable>,*/
-                           SliceImplementation<typename Variable::Rank> {
+                           SliceImplementation<typename Variable_::Rank> {
       //**Type definitions******************************************************
+      //!
+      using Variable = Variable_;
       //! Parent type
       using Parent = SliceImplementation<typename Variable::Rank>;
       //! UUID Parameter type

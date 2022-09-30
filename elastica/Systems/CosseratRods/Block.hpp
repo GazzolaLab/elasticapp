@@ -32,7 +32,7 @@
 ///
 #include "Utilities/NonCopyable.hpp"
 #include "Utilities/Requires.hpp"
-//#include "Utilities/StdHelpers.hpp"
+// #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 // serialization support, feels strange coming from simulator
@@ -880,7 +880,11 @@ namespace blocks {
             class... Components>
   class Block<elastica::cosserat_rod::TaggedCosseratRodPlugin<CRT, Block, Tag,
                                                               Components...>>
-      : public Block<elastica::cosserat_rod::CosseratRodPlugin<CRT, Block,
+      : public Sliceable<Block<elastica::cosserat_rod::TaggedCosseratRodPlugin<
+            CRT, Block, Tag, Components...>>>,
+        public Viewable<Block<elastica::cosserat_rod::TaggedCosseratRodPlugin<
+            CRT, Block, Tag, Components...>>>,
+        public Block<elastica::cosserat_rod::CosseratRodPlugin<CRT, Block,
                                                                Components...>> {
    private:
     //**Type definitions********************************************************
@@ -895,12 +899,27 @@ namespace blocks {
     //! Parent type
     using Parent = Block<
         elastica::cosserat_rod::CosseratRodPlugin<CRT, Block, Components...>>;
+    //! Sliceable type
+    using SliceAffordance = Sliceable<This>;
+    //! Viewable type
+    using ViewAffordance = Viewable<This>;
 
    protected:
     //! Template type of expected initializer
     template <typename... Initializers>
     using CosseratInitializer =
         typename Parent::template CosseratInitializer<Initializers...>;
+    //**************************************************************************
+
+   public:
+    //**Access operators********************************************************
+    /*!\name Access operators */
+    //@{
+    //! Operator for slicing
+    using SliceAffordance::operator[];
+    //! Operator for viewing
+    using ViewAffordance::operator[];
+    //@}
     //**************************************************************************
 
    public:
@@ -949,6 +968,99 @@ namespace blocks {
   //  FREE FUNCTIONS
   //
   //============================================================================
+
+  // These slice overloads are added to prevent template deduction failure from
+  // Sliceable<Tagged> and Sliceable<Block> (which we derive from).
+
+  //****************************************************************************
+  /*!\brief Slices a tagged Cosserat Rod.
+   * \ingroup cosserat_rod blocks
+   *
+   * \param cosserat_rod The current cosserat rod.
+   * \param index The index of the slice (int or from_end)
+   */
+  template <typename CRT, typename Tag,
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components,
+            typename Index>
+  inline decltype(auto) slice(
+      Block<::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+          CRT, Block, Tag, Components...>>& cosserat_rod,
+      Index index) /*noexcept*/ {
+    using Affordance =
+        Sliceable<Block<::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+            CRT, Block, Tag, Components...>>>;
+    return slice(static_cast<Affordance&>(cosserat_rod), index);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Slices a tagged Cosserat Rod.
+   * \ingroup cosserat_rod blocks
+   *
+   * \param cosserat_rod The current cosserat rod.
+   * \param index The index of the slice (int or from_end)
+   */
+  template <typename CRT, typename Tag,
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components,
+            typename Index>
+  inline decltype(auto) slice(
+      Block<::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+          CRT, Block, Tag, Components...>> const& cosserat_rod,
+      Index index) /*noexcept*/ {
+    using Affordance =
+        Sliceable<Block<::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+            CRT, Block, Tag, Components...>>>;
+    return slice(static_cast<Affordance const&>(cosserat_rod), index);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Slices a tagged Cosserat Rod.
+   * \ingroup cosserat_rod blocks
+   *
+   * \param cosserat_rod The current cosserat rod.
+   * \param index The index of the slice (int or from_end)
+   */
+  template <typename CRT, typename Tag,
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components,
+            typename StartIndex, typename StopIndex>
+  inline decltype(auto) slice(
+      Block<::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+          CRT, Block, Tag, Components...>>& cosserat_rod,
+      StartIndex start_index, StopIndex stop_index) /*noexcept*/ {
+    using Affordance =
+        Viewable<Block<::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+            CRT, Block, Tag, Components...>>>;
+    return slice(static_cast<Affordance&>(cosserat_rod), std::move(start_index),
+                 std::move(stop_index));
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Slices a tagged Cosserat Rod.
+   * \ingroup cosserat_rod blocks
+   *
+   * \param cosserat_rod The current cosserat rod.
+   * \param index The index of the slice (int or from_end)
+   */
+  template <typename CRT, typename Tag,
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components,
+            typename StartIndex, typename StopIndex>
+  inline decltype(auto) slice(
+      Block<::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+          CRT, Block, Tag, Components...>> const& cosserat_rod,
+      StartIndex start_index, StopIndex stop_index) /*noexcept*/ {
+    using Affordance =
+        Viewable<Block<::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+            CRT, Block, Tag, Components...>>>;
+    return slice(static_cast<Affordance const&>(cosserat_rod),
+                 std::move(start_index), std::move(stop_index));
+  }
+  //****************************************************************************
 
   //****************************************************************************
   /*!\brief Returns the size of the Cosserat Rod.

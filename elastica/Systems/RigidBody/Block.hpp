@@ -30,7 +30,7 @@
 #include "Systems/common/SymplecticStepperAdapter.hpp"
 ///
 #include "Utilities/NonCopyable.hpp"
-//#include "Utilities/StdHelpers.hpp"
+// #include "Utilities/StdHelpers.hpp"
 #include "Utilities/End.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -56,7 +56,7 @@ namespace blocks {
    *
    * \see blocks::Block
    */
-  template <typename RBT,  // Cosserat Rod Traits
+  template <typename RBT,  // Rigid Body Traits
             template <typename /*RBT*/, typename /*InitializedBlock*/>
             class... Components>
   class Block<elastica::rigid_body::RigidBodyPlugin<RBT, Block, Components...>>
@@ -163,7 +163,7 @@ namespace blocks {
     /*
      * \note
      * Most of the non-default public interface should more or less come from
-     * the Cosserat Rod plugin class per design
+     * the Rigid Body plugin class per design
      */
     //**************************************************************************
 
@@ -358,6 +358,8 @@ namespace blocks {
   //
   //============================================================================
 
+  // TODO : Test the tagged plugin.
+
   //****************************************************************************
   /*! \cond ELASTICA_INTERNAL */
   /*!\brief Specialization of blocks::Block for a TaggedRigidBodyPlugin
@@ -375,7 +377,11 @@ namespace blocks {
             class... Components>
   class Block<elastica::rigid_body::TaggedRigidBodyPlugin<RBT, Block, Tag,
                                                           Components...>>
-      : public Block<
+      : public Sliceable<Block<elastica::rigid_body::TaggedRigidBodyPlugin<
+            RBT, Block, Tag, Components...>>>,
+        public Viewable<Block<elastica::rigid_body::TaggedRigidBodyPlugin<
+            RBT, Block, Tag, Components...>>>,
+        public Block<
             elastica::rigid_body::RigidBodyPlugin<RBT, Block, Components...>> {
    private:
     //**Type definitions********************************************************
@@ -389,12 +395,27 @@ namespace blocks {
     //! Parent type
     using Parent =
         Block<elastica::rigid_body::RigidBodyPlugin<RBT, Block, Components...>>;
+    //! Sliceable type
+    using SliceAffordance = Sliceable<This>;
+    //! Viewable type
+    using ViewAffordance = Viewable<This>;
 
    protected:
     //! Template type of expected initializer
     template <typename... Initializers>
     using RigidBodyInitializer =
         typename Parent::template RigidBodyInitializer<Initializers...>;
+    //**************************************************************************
+
+   public:
+    //**Access operators********************************************************
+    /*!\name Access operators */
+    //@{
+    //! Operator for slicing
+    using SliceAffordance::operator[];
+    //! Operator for viewing
+    using ViewAffordance::operator[];
+    //@}
     //**************************************************************************
 
    public:
@@ -444,12 +465,58 @@ namespace blocks {
   //
   //============================================================================
 
+  // These slice overloads are added to prevent template deduction failure from
+  // Sliceable<Tagged> and Sliceable<Block> (which we derive from).
+
   //****************************************************************************
-  /*!\brief Returns the size of the Cosserat Rod.
+  /*!\brief Slices a tagged Rigid Body.
    * \ingroup rigid_body blocks
    *
-   * \param rigid_body The current cosserat rod.
-   * \return The  number of elements in the cosserat rod.
+   * \param rigid_body The current rigid body.
+   * \param index The index of the slice (int or from_end)
+   */
+  template <typename RBT, typename Tag,
+            template <typename /*RBT*/, typename /*InitializedBlock*/>
+            class... Components,
+            typename Index>
+  inline decltype(auto) slice(Block<elastica::rigid_body::TaggedRigidBodyPlugin<
+                                  RBT, Block, Tag, Components...>>& rigid_body,
+                              Index index) /*noexcept*/ {
+    using Affordance =
+        Sliceable<Block<elastica::rigid_body::TaggedRigidBodyPlugin<
+            RBT, Block, Tag, Components...>>>;
+    return slice(static_cast<Affordance&>(rigid_body), index);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Slices a tagged Rigid Body.
+   * \ingroup rigid_body blocks
+   *
+   * \param rigid_body The current rigid body.
+   * \param index The index of the slice (int or from_end)
+   */
+  template <typename RBT, typename Tag,
+            template <typename /*RBT*/, typename /*InitializedBlock*/>
+            class... Components,
+            typename Index>
+  inline decltype(auto) slice(
+      Block<elastica::rigid_body::TaggedRigidBodyPlugin<
+          RBT, Block, Tag, Components...>> const& rigid_body,
+      Index index) /*noexcept*/ {
+    using Affordance =
+        Sliceable<Block<elastica::rigid_body::TaggedRigidBodyPlugin<
+            RBT, Block, Tag, Components...>>>;
+    return slice(static_cast<Affordance const&>(rigid_body), index);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Returns the size of the Rigid Body.
+   * \ingroup rigid_body blocks
+   *
+   * \param rigid_body The current rigid body.
+   * \return The  number of elements in the rigid body.
    */
   template <typename RBT,
             template <typename /*RBT*/, typename /*InitializedBlock*/>
@@ -476,7 +543,7 @@ namespace blocks {
      std::size_t n_units = blocks::n_units(b);
    * \endcode
    *
-   * \param rigid_body The cosserat rod whose n_units is to be extracted
+   * \param rigid_body The rigid body whose n_units is to be extracted
    */
   template <typename RBT,
             template <typename /*RBT*/, typename /*InitializedBlock*/>

@@ -245,7 +245,7 @@ namespace elastica {
           CosseratInitializer&& initializers) {
         // initialize the elements boi
         {
-          auto& variable(blocks::get<tags::NElement>(this_component.self()));
+          auto&& variable(blocks::get<tags::NElement>(this_component.self()));
           // this automatically is deduced to 1
           variable = 1UL;
         }

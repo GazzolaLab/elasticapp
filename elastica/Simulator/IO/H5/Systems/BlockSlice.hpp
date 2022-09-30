@@ -33,6 +33,7 @@ namespace blocks {
   template <typename Slice>
   void write_slice_to_h5(HighFive::Group& group, Slice&& slice,
                          std::string const& data_name) {
+    // Here, data() buffer is first generated and then written to disk.
     return ::elastica::io::write_data(group, std::forward<Slice>(slice).data(),
                                       data_name);
   }
@@ -47,8 +48,13 @@ namespace blocks {
   template <typename Slice>
   void read_slice_from_h5(HighFive::Group const& group, Slice&& slice,
                           std::string const& data_name) {
-    ::elastica::io::read_data(group, std::forward<Slice>(slice).data(),
-                              data_name);
+    // All slice access is done lazily. So instead of passing along
+    // std::forward<Slice>(slice).data() to read_data()
+    // we first generate the data() buffer eagerly, and then pass this along
+    // the chain.
+    // The buffer contains views into memory regions by design.
+    auto&& data_slices = std::forward<Slice>(slice).data();
+    ::elastica::io::read_data(group, data_slices, data_name);
   }
   /*! \endcond */
   //****************************************************************************

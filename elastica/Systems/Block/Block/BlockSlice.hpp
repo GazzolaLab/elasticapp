@@ -26,38 +26,6 @@
 
 namespace blocks {
 
-  //****************************************************************************
-  /*! \cond ELASTICA_INTERNAL */
-  template <class Plugin>
-  //, typename Parent = detail::BlockSliceFacade<Plugin>>
-  inline constexpr auto operator==(
-      BlockSlice<Plugin> const& lhs,
-      BlockSlice<Plugin> const&
-          rhs)  // noexcept(noexcept(detail::blocks_equality_impl(lhs,
-                // rhs)))
-      /*
-      noexcept(noexcept(detail::
-                                     blocks_equality_impl(
-                                         static_cast<Parent const&>(lhs),
-                                         static_cast<Parent const&>(rhs))))
-                                         */
-      -> bool;
-  template <class Plugin>
-  // typename Parent = detail::ConstBlockSliceFacade<Plugin>>
-  inline constexpr auto operator==(
-      ConstBlockSlice<Plugin> const& lhs,
-      ConstBlockSlice<Plugin> const&
-          rhs)  // noexcept(noexcept(detail::blocks_equality_impl(lhs, rhs)))
-      /*
-      noexcept(noexcept(detail::
-                                     blocks_equality_impl(
-                                         static_cast<Parent const&>(lhs),
-                                         static_cast<Parent const&>(rhs))))
-                                         */
-      -> bool;
-  /*! \endcond */
-  //****************************************************************************
-
   //============================================================================
   //
   //  CLASS DEFINITION
@@ -96,11 +64,10 @@ namespace blocks {
    * Finally, with no additional coding effort, the BlockSlice has exactly the
    * same operations as the mother Block (aka Block of the same `Plugin` type),
    * but now it operates only on that slice of the data. This means that a
-   * BlockSlice can be used as a small Block in itself which greatly simplifies
-   * interfacing different components of \elastica---the user need not care or
-   * even know about whether the data that she has is a Block or a BlockSlice!
-   * For example,
-   * \code
+   * BlockSlice can be used as a small Block in itself which greatly
+   * sbackendifies interfacing different components of \elastica---the user need
+   * not care or even know about whether the data that she has is a Block or a
+   * BlockSlice! For example, \code
    *     // ... make simulator etc ...
    *     auto my_rod = simulator.emplace_back<CosseratRod>( * ...args... *);
    *     // the args go and form a Block
@@ -119,32 +86,36 @@ namespace blocks {
    * \see Block, blocks::slice
    */
   template <class Plugin>
-  class BlockSlice : public detail::BlockSliceFacade<Plugin> {
+  class BlockSlice : public detail::BlockSliceFacade<Plugin>,
+                     public Gettable<BlockSlice<Plugin>>,
+                     public Plugin {
+    // NOTE : Plugin is inherited after Facade so that indices and references to
+    // the parent block is filled first. This is because some elements of Plugin
+    // may require that the slice (and index) be valid, for example to generate
+    // internal refs/pointers for time-stepping.
    protected:
     //**Type definitions********************************************************
     //! Type of the parent plugin
     using Parent = detail::BlockSliceFacade<Plugin>;
     //! Type of the slice
     using This = BlockSlice<Plugin>;
+    //! Type of gettable
+    using GetAffordance = Gettable<This>;
     //**************************************************************************
 
    public:
     //**Type definitions********************************************************
     //! Type of the parent plugin
     using typename Parent::PluginType;
-    //! Slice variables
-    using typename Parent::BlockVariableSlices;
     //! Type of the parent block
-    using ParentBlock = typename PluginFrom<This>::template to<Block>::type;
+    using typename Parent::ParentBlock;
+    //! Type of Variables
+    using typename Parent::Variables;
     //**************************************************************************
 
     //**Friendships*************************************************************
     //! Friend the main block
     friend ParentBlock;
-    //! Friend the equality operator
-    friend bool operator==
-        <Plugin>(BlockSlice<Plugin> const& lhs, BlockSlice<Plugin> const& rhs);
-    // noexcept(noexcept(detail::blocks_equality_impl(lhs, rhs)));
     //**************************************************************************
 
    public:
@@ -155,13 +126,11 @@ namespace blocks {
     //**************************************************************************
     /*!\brief The default constructor.
      *
-     * \param slices slices to be transferred to the underlying container
+     * \param parent_block Parent block for the slice
+     * \param index Index of the slice
      */
-    explicit BlockSlice(
-        ParentBlock& parent_block,
-        BlockVariableSlices
-            slices) noexcept(noexcept(Parent(std::move(slices))))
-        : Parent(std::move(slices)), parent_block_(parent_block) {}
+    explicit BlockSlice(ParentBlock& parent_block, std::size_t index) noexcept
+        : Parent(parent_block, index), GetAffordance(), PluginType() {}
     //**************************************************************************
 
     //**************************************************************************
@@ -171,7 +140,8 @@ namespace blocks {
      */
     BlockSlice(BlockSlice const& other)
         : Parent(static_cast<Parent const&>(other)),
-          parent_block_(other.parent_block_){};
+          GetAffordance(),
+          PluginType(static_cast<PluginType const&>(other)){};
     //**************************************************************************
 
     //**************************************************************************
@@ -181,7 +151,8 @@ namespace blocks {
      */
     BlockSlice(BlockSlice&& other) noexcept
         : Parent(static_cast<Parent&&>(other)),
-          parent_block_(other.parent_block_){};
+          GetAffordance(),
+          PluginType(static_cast<PluginType&&>(other)){};
     //**************************************************************************
 
     //@}
@@ -192,30 +163,6 @@ namespace blocks {
     /*!\name Destructor */
     //@{
     ~BlockSlice() = default;
-    //@}
-    //**************************************************************************
-
-    //**Utility methods*********************************************************
-    /*!\name Utility methods*/
-    //@{
-
-    //**************************************************************************
-    /*!\brief Gets the parent block
-     */
-    inline constexpr auto parent() const noexcept -> ParentBlock& {
-      return parent_block_;
-    }
-    //**************************************************************************
-
-    //@}
-    //**************************************************************************
-
-   private:
-    //**Member variables********************************************************
-    /*!\name Member variables */
-    //@{
-    //! Reference to the parent block
-    ParentBlock& parent_block_;
     //@}
     //**************************************************************************
   };
@@ -242,32 +189,36 @@ namespace blocks {
    * \see BlockSlice
    */
   template <class Plugin>
-  class ConstBlockSlice : public detail::ConstBlockSliceFacade<Plugin> {
+  class ConstBlockSlice : public detail::ConstBlockSliceFacade<Plugin>,
+                          public Gettable<ConstBlockSlice<Plugin>>,
+                          public Plugin {
+    // NOTE : Plugin is inherited after Facade so that indices and references to
+    // the parent block is filled first. This is because some elements of Plugin
+    // may require that the slice (and index) be valid, for example to generate
+    // internal refs/pointers for time-stepping.
    protected:
     //**Type definitions********************************************************
     //! Type of the parent plugin
     using Parent = detail::ConstBlockSliceFacade<Plugin>;
     //! Type of the slice
     using This = ConstBlockSlice<Plugin>;
+    //! Type of gettable
+    using GetAffordance = Gettable<This>;
     //**************************************************************************
 
    public:
     //**Type definitions********************************************************
     //! Type of the parent plugin
     using typename Parent::PluginType;
-    //! Slice variables
-    using typename Parent::BlockVariableSlices;
     //! Type of the parent block
-    using ParentBlock = typename PluginFrom<This>::template to<Block>::type;
+    using typename Parent::ParentBlock;
+    //! Type of Variables
+    using typename Parent::Variables;
     //**************************************************************************
 
     //**Friendships*************************************************************
     //! Friend the main block
     friend ParentBlock;
-    //! Friend the equality operator
-    friend bool operator==<Plugin>(ConstBlockSlice<Plugin> const& lhs,
-                                   ConstBlockSlice<Plugin> const& rhs);
-    // noexcept(noexcept(detail::blocks_equality_impl(lhs, rhs)));
     //**************************************************************************
 
    public:
@@ -278,13 +229,11 @@ namespace blocks {
     //**************************************************************************
     /*!\brief The default constructor.
      *
-     * \param slices slices to be transferred to the underlying container
+     * \param parent_block Parent block for the slice
+     * \param index Index of the slice
      */
-    explicit ConstBlockSlice(
-        ParentBlock const& parent_block,
-        BlockVariableSlices
-            slices) noexcept(noexcept(Parent(std::move(slices))))
-        : Parent(std::move(slices)), parent_block_(parent_block) {}
+    ConstBlockSlice(ParentBlock const& parent_block, std::size_t index) noexcept
+        : Parent(parent_block, index), GetAffordance(), PluginType() {}
     //**************************************************************************
 
     //**************************************************************************
@@ -294,17 +243,8 @@ namespace blocks {
      */
     ConstBlockSlice(ConstBlockSlice const& other)
         : Parent(static_cast<Parent const&>(other)),
-          parent_block_(other.parent_block_){};
-    //**************************************************************************
-
-    //**************************************************************************
-    /*!\brief The copy constructor.
-     *
-     * \param other slice to copy
-     */
-    ConstBlockSlice(ConstBlockSlice& other)
-        : Parent(static_cast<Parent&>(other)),
-          parent_block_(other.parent_block_){};
+          GetAffordance(),
+          PluginType(static_cast<PluginType const&>(other)){};
     //**************************************************************************
 
     //**************************************************************************
@@ -314,7 +254,8 @@ namespace blocks {
      */
     ConstBlockSlice(ConstBlockSlice&& other) noexcept
         : Parent(static_cast<Parent&&>(other)),
-          parent_block_(other.parent_block_){};
+          GetAffordance(),
+          PluginType(static_cast<PluginType&&>(other)){};
     //**************************************************************************
 
     //@}
@@ -325,30 +266,6 @@ namespace blocks {
     /*!\name Destructor */
     //@{
     ~ConstBlockSlice() = default;
-    //@}
-    //**************************************************************************
-
-    //**Utility methods*********************************************************
-    /*!\name Utility methods*/
-    //@{
-
-    //**************************************************************************
-    /*!\brief Gets the parent block
-     */
-    inline constexpr auto parent() const noexcept -> ParentBlock const& {
-      return parent_block_;
-    }
-    //**************************************************************************
-
-    //@}
-    //**************************************************************************
-
-   private:
-    //**Member variables********************************************************
-    /*!\name Member variables */
-    //@{
-    //! Reference to the parent block
-    ParentBlock const& parent_block_;
     //@}
     //**************************************************************************
   };
@@ -368,16 +285,11 @@ namespace blocks {
    * \return \a true if the slices are same, else \a false
    */
   template <class Plugin>
-  inline constexpr auto operator==(
-      BlockSlice<Plugin> const& lhs,
-      BlockSlice<Plugin> const&
-          rhs)  // noexcept(noexcept(detail::blocks_equality_impl(lhs,
-                // rhs)))
+  inline constexpr auto operator==(BlockSlice<Plugin> const& lhs,
+                                   BlockSlice<Plugin> const& rhs) noexcept
       -> bool {
-    // using Parent = typename BlockSlice<Plugin>::Parent;
-    // short circuit if the parent blocks dont match
-    return (&lhs.parent() == &rhs.parent()) and
-           detail::blocks_equality_impl(lhs, rhs);
+    return static_cast<detail::BlockSliceFacade<Plugin> const&>(lhs) ==
+           static_cast<detail::BlockSliceFacade<Plugin> const&>(rhs);
   }
   //****************************************************************************
 
@@ -389,80 +301,104 @@ namespace blocks {
    * \return \a true if the const slices are same, else \a false
    */
   template <class Plugin>
-  inline constexpr auto operator==(
-      ConstBlockSlice<Plugin> const& lhs,
-      ConstBlockSlice<Plugin> const&
-          rhs)  // noexcept(noexcept(detail::blocks_equality_impl(lhs, rhs)))
+  inline constexpr auto operator==(ConstBlockSlice<Plugin> const& lhs,
+                                   ConstBlockSlice<Plugin> const& rhs) noexcept
       -> bool {
-    // using Parent = typename ConstBlockSlice<Plugin>::Parent;
-    // short circuit if the parent blocks dont match
-    return (&lhs.parent() == &rhs.parent()) and
-           detail::blocks_equality_impl(lhs, rhs);
+    return static_cast<detail::ConstBlockSliceFacade<Plugin> const&>(lhs) ==
+           static_cast<detail::ConstBlockSliceFacade<Plugin> const&>(rhs);
   }
   //****************************************************************************
 
+  //============================================================================
+  //
+  //  GET FUNCTIONS
+  //
+  //============================================================================
+
   namespace detail {
 
-    //**************************************************************************
-    /*! \cond ELASTICA_INTERNAL */
-    /*!\brief Slice operator for mutable blocks
-     * \ingroup blocks
-     *
-     * \details
-     * Helps take slices of a mutable lvalue reference to block.
-     * BlockSlice<PluginTrait<BlockLike>::template type<BlockSlice>>
-     * PluginFrom<BlockLike>::template to<BlockSlice>::type;
-     */
-    template <typename Plugin, typename... Vars,
-              typename ReturnType = typename PluginFrom<
-                  Block<Plugin>>::template to<BlockSlice>::type>
-    inline constexpr decltype(auto) slice_impl(
-        Block<Plugin>& block_like, std::size_t index,
-        tmpl::list<Vars...> /* meta */) noexcept(noexcept(ReturnType{
-        block_like, typename ReturnType::BlockVariableSlices{
-                        block_like.template slice<Vars>(index)...}})) {
-      return ReturnType{block_like,
-                        typename ReturnType::BlockVariableSlices{
-                            block_like.template slice<Vars>(index)...}};
+    template <typename BlockVariableTag, typename SliceLike>
+    inline constexpr decltype(auto) get_slice(SliceLike&& slice_like) noexcept {
+      return std::forward<SliceLike>(slice_like)
+          .parent()
+          .template slice<BlockVariableTag>(
+              std::forward<SliceLike>(slice_like).index());
     }
-    //**************************************************************************
-
-    //**************************************************************************
-    /*!\brief Slice operator for constant blocks
-     * \ingroup blocks
-     *
-     * \details
-     * Helps take slices of a constant lvalue reference to a block.
-     */
-    template <typename Plugin, typename... Vars,
-              typename ReturnType = const typename PluginFrom<
-                  Block<Plugin>>::template to<ConstBlockSlice>::type>
-    inline constexpr decltype(auto) slice_impl(
-        Block<Plugin> const& block_like, std::size_t index,
-        tmpl::list<Vars...> /* meta */) noexcept(noexcept(ReturnType{
-        block_like, typename ReturnType::BlockVariableSlices{
-                        block_like.template slice<Vars>(index)...}})) {
-      return ReturnType{block_like,
-                        typename ReturnType::BlockVariableSlices{
-                            block_like.template slice<Vars>(index)...}};
-    }
-    /*! \endcond */
-    //**************************************************************************
 
   }  // namespace detail
 
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
+  /*!\name Get functions for Slice types */
+  //@{
+
+  //****************************************************************************
+  /*!\brief Extract element from a BlockSlice
+   * \ingroup blocks
+   *
+   * \details
+   * Extracts the element of the Block `block_slice` whose tag type is `Tag`.
+   * Fails to compile unless the block has the `Tag` being extracted.
+   *
+   * \usage
+   * The usage is similar to std::get(), shown below
+   * \code
+     Block<...> b;
+     auto my_tag_data = blocks::get<tags::MyTag>(b);
+   * \endcode
+   *
+   * \tparam Tag Tag to extract
+   *
+   * \param block_like The block to extract the tag from
+   */
+  template <typename BlockVariableTag, typename Plugin>
+  inline constexpr decltype(auto) get_backend(
+      BlockSlice<Plugin>& block_slice) noexcept {
+    return detail::get_slice<BlockVariableTag>(block_slice);
+  }
+
+  template <typename BlockVariableTag, typename Plugin>
+  inline constexpr decltype(auto) get_backend(
+      BlockSlice<Plugin> const& block_slice) noexcept {
+    return detail::get_slice<BlockVariableTag>(block_slice);
+  }
+
+  template <typename BlockVariableTag, typename Plugin>
+  inline constexpr decltype(auto) get_backend(
+      BlockSlice<Plugin>&& block_slice) noexcept {
+    return detail::get_slice<BlockVariableTag>(
+        static_cast<BlockSlice<Plugin>&&>(block_slice));
+  }
+
+  template <typename BlockVariableTag, typename Plugin>
+  inline constexpr decltype(auto) get_backend(
+      BlockSlice<Plugin> const&& block_slice) noexcept {
+    return detail::get_slice<BlockVariableTag>(
+        static_cast<BlockSlice<Plugin> const&&>(block_slice));
+  }
+
+  template <typename BlockVariableTag, typename Plugin>
+  inline constexpr decltype(auto) get_backend(
+      ConstBlockSlice<Plugin> const& block_slice) noexcept {
+    return detail::get_slice<BlockVariableTag>(block_slice);
+  }
+  //@}
+  /*! \endcond */
+  //****************************************************************************
+
   //============================================================================
   //
-  //  BLOCK SLICE FUNCTION
+  //  SLICE FUNCTIONS
   //
   //============================================================================
 
-  //**Block slice***************************************************************
+  //****************************************************************************
+  /*! \cond ELASTICA_INTERNAL */
   /*!\name Block slice functions */
   //@{
 
   //****************************************************************************
-  /*!\brief Slice operator for blocks
+  /*!\brief Slice backend for Block
    * \ingroup blocks
    *
    * \details
@@ -481,25 +417,27 @@ namespace blocks {
    * \note
    * not marked noexcept because we can have out of range indices
    */
-  template <typename Plugin, typename Index>
-  inline decltype(auto) slice(Block<Plugin>& block_like,
-                              Index index) /*noexcept*/ {
-    return detail::slice_impl(block_like, units_check(block_like, index),
-                              typename Plugin::Variables{});
+  template <typename Plugin>
+  inline decltype(auto) slice_backend(Block<Plugin>& block_like,
+                                      std::size_t index) noexcept {
+    using ReturnType =
+        typename PluginFrom<Block<Plugin>>::template to<BlockSlice>::type;
+    return ReturnType{block_like, index};
   }
   //****************************************************************************
 
   //****************************************************************************
-  template <typename Plugin, typename Index>
-  inline decltype(auto) slice(Block<Plugin> const& block_like,
-                              Index index) /*noexcept*/ {
-    return detail::slice_impl(static_cast<Block<Plugin> const&>(block_like),
-                              units_check(block_like, index),
-                              typename Plugin::Variables{});
+  template <typename Plugin>
+  inline decltype(auto) slice_backend(Block<Plugin> const& block_like,
+                                      std::size_t index) noexcept {
+    using ReturnType =
+        typename PluginFrom<Block<Plugin>>::template to<ConstBlockSlice>::type;
+    return ReturnType{block_like, index};
   }
   //****************************************************************************
 
   //@}
+  /*! \endcond */
   //****************************************************************************
 
 }  // namespace blocks

@@ -17,7 +17,8 @@
 // Includes
 //******************************************************************************
 
-#include "Systems/Block/Block/Block.hpp"
+#include "Systems/Block/Block/Block.hpp"  // only declaration, so ok to include.
+#include "Systems/Block/Block/Concepts/Types.hpp"
 
 namespace blocks {
 
@@ -52,6 +53,9 @@ namespace blocks {
 
   template <typename /*Plugin*/>
   struct Metadata;
+
+  template <typename /*Derived*/>
+  class Sliceable;
   /*! \endcond */
   //****************************************************************************
 

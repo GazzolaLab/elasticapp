@@ -359,7 +359,7 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Systems.BlockRefs",
                      "[Unit][Simulator][Interface][Systems]") {
     // clang-format on
-    using ListOfSystemPlugins = tmpl::list<ECPlugin, ECNamedPlugin>;
+    using ListOfSystemPlugins = tmpl::list<ECPlugin>;  // , ECNamedPlugin>;
     tmpl::for_each<ListOfSystemPlugins>([&](auto p) {
       using Plugin = tmpl::type_from<decltype(p)>;
       using Block = GenerateBlock<Plugin>;
@@ -378,35 +378,97 @@ namespace {
         }
       }
 
-      {
-        blocks::BlockRefGenerator<Plugin> ref;
-        CHECK(ref.source() == nullptr);
-        CHECK(&ref.parent() == &ref);
+      SECTION("BlockRefGenerator") {
+        {
+          blocks::BlockRefGenerator<Plugin> ref;
+          CHECK(ref.source() == nullptr);
+          CHECK(&ref.parent() == &ref);
+        }
+
+        {
+          blocks::BlockRefGenerator<Plugin> ref(vs, 1UL);
+          CHECK(ref.source() == &vs);
+          CHECK(&ref.parent() == &ref);
+          CHECK(ref.index() == 1UL);
+          CHECK(&ref.get() == &vs[1UL]);
+        }
+
+        {
+          blocks::BlockRefGenerator<Plugin> aref(vs, 1UL);
+          blocks::BlockRefGenerator<Plugin> bref(vs, 2UL);
+          CHECK(aref.uuid() == aref.uuid());
+          CHECK(aref.uuid() != bref.uuid());
+        }
       }
 
-      {
-        blocks::BlockRefGenerator<Plugin> ref(vs, 1UL);
-        CHECK(ref.source() == &vs);
-        CHECK(&ref.parent() == &ref);
-        CHECK(ref.index() == 1UL);
-        CHECK(&ref.get() == &vs[1UL]);
-      }
-
-      {
-        blocks::BlockRefGenerator<Plugin> aref(vs, 1UL);
+      SECTION("BlockViewGenerator") {
         blocks::BlockRefGenerator<Plugin> bref(vs, 2UL);
-        CHECK(aref.uuid() == aref.uuid());
-        CHECK(aref.uuid() != bref.uuid());
+        auto check_view = [&](auto& bref_sl1) {
+          CHECK(bref_sl1.parent() == bref);
+          CHECK(bref_sl1.uuid() == bref.uuid());
+          CHECK(blocks::get<::elastica::tags::NElement>(bref_sl1.get()).at(0) ==
+                5);
+          CHECK(blocks::get<::elastica::tags::NElement>(bref_sl1.get()).at(1) ==
+                6);
+          CHECK(blocks::get<::elastica::tags::NElement>(bref_sl1.get()).at(2) ==
+                7);
+        };
+        {
+          auto bref_sl1 = blocks::slice(bref, 1, 4);  // 1, 2, 3
+          check_view(bref_sl1);
+        }
+        {
+          auto bref_sl1 = bref[{1, 4}];  // 1, 2, 3
+          check_view(bref_sl1);
+        }
+        {
+          auto bref_sl1 = blocks::slice(bref, 1, ::elastica::end);  // 1, 2, 3
+          check_view(bref_sl1);
+          auto another_sl1 = blocks::slice(bref_sl1, 0, 3);
+          check_view(another_sl1);
+        }
+        {
+          auto bref_sl1 =
+              blocks::slice(bref, 1, ::elastica::end - 1);  // 1, 2, 3
+          check_view(bref_sl1);
+        }
       }
 
-      {
-        blocks::BlockRefGenerator<Plugin> aref(vs, 0UL);
-        auto aref_sl = blocks::slice(aref, 0);
-        // Refs need not be preserved, only copies do
-        CHECK(aref_sl.parent() == aref);
-        CHECK(aref_sl.uuid() == aref.uuid());
-        CHECK(blocks::get<::elastica::tags::NElement>(aref_sl.get()).at(0) ==
-              2);
+      SECTION("BlockSliceGenerator") {
+        blocks::BlockRefGenerator<Plugin> aref(vs, 1UL);
+        auto check_slice = [&](auto& aref_sl) {
+          // Refs need not be preserved, only copies do
+          CHECK(aref_sl.parent() == aref);
+          CHECK(aref_sl.uuid() == aref.uuid());
+          CHECK(blocks::get<::elastica::tags::NElement>(aref_sl.get()).at(0) ==
+                3);
+        };
+        {
+          auto aref_sl = blocks::slice(aref, 0);
+          check_slice(aref_sl);
+        }
+        {
+          auto aref_sl = blocks::slice(aref, ::elastica::end - 3UL);  // 0UL
+          check_slice(aref_sl);
+        }
+        {
+          auto aref_sl = aref[0UL];
+          check_slice(aref_sl);
+        }
+        {
+          auto aref_sl = aref[::elastica::end - 3UL];  // 0UL
+          check_slice(aref_sl);
+        }
+        {
+          auto aref_view = blocks::slice(aref, 0UL, elastica::end);  // 0ULUL
+          auto aref_sl = blocks::slice(aref_view, 0UL);              // 0ULUL
+          check_slice(aref_sl);
+
+          auto another_aref_view =
+              blocks::slice(aref, 1UL, elastica::end);           // 1UL, 2
+          auto another_aref_sl = blocks::slice(another_aref_view, 1UL);  // 0UL
+          CHECK(another_aref_sl.index() == 2UL);
+        }
 
         blocks::BlockRefGenerator<Plugin> bref(vs, 2UL);
         auto bref_sl1 = blocks::slice(bref, 1);
@@ -419,19 +481,6 @@ namespace {
         CHECK(blocks::get<::elastica::tags::NElement>(bref_sl1.get()).at(0) ==
               5);
         CHECK(blocks::get<::elastica::tags::NElement>(bref_sl3.get()).at(0) ==
-              7);
-      }
-
-      {
-        blocks::BlockRefGenerator<Plugin> bref(vs, 2UL);
-        auto bref_sl1 = blocks::slice(bref, 1, 4);  // 1, 2, 3
-        CHECK(bref_sl1.parent() == bref);
-        CHECK(bref_sl1.uuid() == bref.uuid());
-        CHECK(blocks::get<::elastica::tags::NElement>(bref_sl1.get()).at(0) ==
-              5);
-        CHECK(blocks::get<::elastica::tags::NElement>(bref_sl1.get()).at(1) ==
-              6);
-        CHECK(blocks::get<::elastica::tags::NElement>(bref_sl1.get()).at(2) ==
               7);
       }
     });
@@ -746,6 +795,10 @@ namespace {
           ::elastica::cosserat_rod::initialize_cosserat_rod<Plugin>(
               blocks::initialize<::elastica::tags::NElement>(
                   [=](...) { return n_elements; }))));
+      // Check that the plugin is actually what we want.
+      static_assert(cpp17::is_same_v<decltype(sliced_ref),
+                                     ::blocks::BlockSliceGenerator<Plugin>>,
+                    "Metafailure");
       CHECK(sim.check_if_registered(sliced_ref));
       CHECK_NOTHROW(sim.confirm_as_registered(sliced_ref));
 
