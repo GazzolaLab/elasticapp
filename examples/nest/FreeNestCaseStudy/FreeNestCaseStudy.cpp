@@ -292,15 +292,10 @@ void FreeNestCaseStudy::run() {
 
 void FreeNestCaseStudy::reset_ghost() {
   simulator->for_each_block([](auto& block) {
-    block.template fill_ghosts_for<::elastica::tags::Velocity>();
-  });
-  simulator->for_each_block([](auto& block) {
-    block.template fill_ghosts_for<::elastica::tags::AngularVelocity>();
-  });
-  simulator->for_each_block([](auto& block) {
-    block.template fill_ghosts_for<::elastica::tags::Acceleration>();
-  });
-  simulator->for_each_block([](auto& block) {
-    block.template fill_ghosts_for<::elastica::tags::AngularAcceleration>();
+    using ::blocks::fill_ghosts_for;
+    fill_ghosts_for<::elastica::tags::Velocity>(block);
+    fill_ghosts_for<::elastica::tags::AngularVelocity>(block);
+    fill_ghosts_for<::elastica::tags::Acceleration>(block);
+    fill_ghosts_for<::elastica::tags::AngularAcceleration>(block);
   });
 }

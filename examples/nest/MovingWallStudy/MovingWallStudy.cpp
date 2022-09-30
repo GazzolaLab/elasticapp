@@ -139,7 +139,7 @@ void MovingWallStudy::setup(InputTypes<This> const& input_parameters) {
       blaze::exp(-damping_coeff * time_step);
 
   auto rod = rod_refs[0UL].get();
-  auto& mass = ::elastica::get<elastica::tags::Mass>(rod);
+  auto&& mass = ::elastica::get<elastica::tags::Mass>(rod);
   blaze::DynamicVector<::elastica::real_t> elemental_mass =
       Traits::Operations::average_kernel(mass);
   // correct elemental mass at ends
