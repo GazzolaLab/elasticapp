@@ -163,7 +163,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
       blaze::exp(-damping_coeff * time_step);
 
   auto rod = rod_refs[0UL].get();
-  auto& mass = ::elastica::get<elastica::tags::Mass>(rod);
+  auto&& mass = ::elastica::get<elastica::tags::Mass>(rod);
   blaze::DynamicVector<::elastica::real_t> elemental_mass =
       Traits::Operations::average_kernel(mass);
   // correct elemental mass at ends
@@ -557,15 +557,10 @@ void NestCaseWithWallStudy::run() {
 
 void NestCaseWithWallStudy::reset_ghost() {
   simulator->for_each_block([](auto& block) {
-    block.template fill_ghosts_for<::elastica::tags::Velocity>();
-  });
-  simulator->for_each_block([](auto& block) {
-    block.template fill_ghosts_for<::elastica::tags::AngularVelocity>();
-  });
-  simulator->for_each_block([](auto& block) {
-    block.template fill_ghosts_for<::elastica::tags::Acceleration>();
-  });
-  simulator->for_each_block([](auto& block) {
-    block.template fill_ghosts_for<::elastica::tags::AngularAcceleration>();
+    using ::blocks::fill_ghosts_for;
+    fill_ghosts_for<::elastica::tags::Velocity>(block);
+    fill_ghosts_for<::elastica::tags::AngularVelocity>(block);
+    fill_ghosts_for<::elastica::tags::Acceleration>(block);
+    fill_ghosts_for<::elastica::tags::AngularAcceleration>(block);
   });
 }
