@@ -528,7 +528,7 @@ void MagneticMillipedesCaseStudy::add_analytical_damper(
       blaze::exp(-damping_coeff * dt);
 
   auto rod = rod_list[0UL].get();
-  auto& mass = ::elastica::get<elastica::tags::Mass>(rod);
+  auto&& mass = ::elastica::get<elastica::tags::Mass>(rod);
   blaze::DynamicVector<real_t> elemental_mass =
       Traits::Operations::average_kernel(mass);
   // correct elemental mass at ends
