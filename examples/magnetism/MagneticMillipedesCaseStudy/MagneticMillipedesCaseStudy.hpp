@@ -44,8 +44,8 @@ using real_t = ::elastica::real_t;
 using MagnetizedCosseratRod =
     ::elastica::cosserat_rod::MagnetizedCosseratRodWithoutDamping;
 using CosseratRod = ::elastica::cosserat_rod::CosseratRodWithoutDamping;
-using MagneticRodInitializer =
-    ::elastica::cosserat_rod::StraightUniformMagnetizedCosseratRodInitializer;
+using MagneticRodInitializer = ::elastica::cosserat_rod::
+    StraightUniformMagnetizedCosseratRodWithoutDampingInitializer;
 using RodInitializer =
     ::elastica::cosserat_rod::StraightCosseratRodWithoutDampingInitializer;
 
@@ -188,7 +188,8 @@ Demonstrates an magnetic millipedes simulation.
   inline void progress_bar(float, float&,
                            std::chrono::time_point<std::chrono::system_clock>);
   template <typename RodRefType>
-  inline void log_rod_position(std::vector<RodRefType>&, const int, const char*);
+  inline void log_rod_position(std::vector<RodRefType>&, const int,
+                               const char*);
   inline void log_penetration(const int);
 
   /* Features */
