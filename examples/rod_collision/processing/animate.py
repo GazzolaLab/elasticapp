@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.colors import to_rgb
 from rich.progress import Progress
+from functools import reduce
 
 from .stats import Stats, PositiveInt, RodStats
 
@@ -181,8 +182,11 @@ def plot_energies(stats: Stats, save_figure: bool = False) -> plt.Figure:
         def compute_pe(depths):
             return 0.5 * k_collision * np.sum(np.asarray(depths) ** 2)
 
-        pe_collision = np.fromiter(
-            map(compute_pe, stats.penetration_depth), dtype=float
+        # since there are multiple identical system pairs, we divide by n_pairs
+        # for average value
+        n_pairs = len(stats.rod_stats) // 2
+        pe_collision = (
+            np.fromiter(map(compute_pe, stats.penetration_depth), dtype=float) / n_pairs
         )
 
         new_ax.plot(
@@ -199,6 +203,99 @@ def plot_energies(stats: Stats, save_figure: bool = False) -> plt.Figure:
 
     if save_figure:
         new_fig.savefig("energies.png")
+
+    return new_fig
+
+
+def plot_total_energies(stats: Stats, save_figure: bool = False) -> plt.Figure:
+    with plt.style.context("ggplot"):
+        new_fig = plt.figure(figsize=(5, 4), dpi=150)
+
+        new_ax = new_fig.add_subplot(111)
+
+        new_ax.set_xlabel("x")
+        new_ax.set_ylabel("total_energies")
+
+        times = np.asarray(stats.time)
+        zero_value = 0.0 * times
+        te = reduce(
+            lambda x, y: x + np.asarray(y.translational_energy),
+            stats.rod_stats,
+            zero_value,
+        )
+        re = reduce(
+            lambda x, y: x + np.asarray(y.rotational_energy),
+            stats.rod_stats,
+            zero_value,
+        )
+        be = reduce(
+            lambda x, y: x + np.asarray(y.bending_energy), stats.rod_stats, zero_value
+        )
+        se = reduce(
+            lambda x, y: x + np.asarray(y.shearing_energy), stats.rod_stats, zero_value
+        )
+
+        # two springs in series
+        k_collision = 0.5 * stats.contact_stiffness
+
+        # at every instant there may actually be no or multiple penetrations
+        def compute_pe(depths):
+            return 0.5 * k_collision * np.sum(np.asarray(depths) ** 2)
+
+        pe_collision = np.fromiter(
+            map(compute_pe, stats.penetration_depth), dtype=float
+        )
+
+        total_e = te + re + be + se + pe_collision
+
+        new_ax.plot(
+            times,
+            te,
+            c=to_rgb("xkcd:reddish"),
+            lw=2.0,
+            label="Translations",
+        )
+        new_ax.plot(
+            times,
+            re,
+            c=to_rgb("xkcd:bluish"),
+            lw=2.0,
+            label="Rotation",
+        )
+        new_ax.plot(
+            times,
+            be,
+            c=to_rgb("xkcd:burple"),
+            lw=2.0,
+            label="Bend",
+        )
+        new_ax.plot(
+            times,
+            se,
+            c=to_rgb("xkcd:goldenrod"),
+            lw=2.0,
+            label="Shear",
+        )
+        new_ax.plot(
+            times,
+            pe_collision,
+            c=to_rgb("xkcd:greenish"),
+            lw=2.0,
+            label="Potential energy",
+        )
+        new_ax.plot(
+            times,
+            total_e,
+            c="k",
+            lw=2.0,
+            label="Total energy",
+        )
+
+        new_fig.legend()
+        new_fig.show()
+
+    if save_figure:
+        new_fig.savefig("total_energies.png")
 
     return new_fig
 

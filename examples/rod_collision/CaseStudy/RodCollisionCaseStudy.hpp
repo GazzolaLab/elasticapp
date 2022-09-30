@@ -98,14 +98,20 @@ conserved.
     static type default_value() { return 1e-3; }
   };
 
+  struct n_rod_pairs {
+    using type = std::size_t;
+    static constexpr String help = {"Number of rod pairs"};
+    static type default_value() { return 10UL; }
+  };
+
   struct dt {
     using type = ::elastica::real_t;
     static constexpr String help = {"Time step of simulation"};
-    static type default_value() { return 5e-4; }
+    static type default_value() { return 5e-5; }
   };
 
-  using Parameters =
-      tmpl::list<angle_of_inclination, contact_stiffness, contact_damping, dt>;
+  using Parameters = tmpl::list<angle_of_inclination, contact_stiffness,
+                                contact_damping, n_rod_pairs, dt>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);
@@ -122,8 +128,7 @@ conserved.
   using CosseratRodRef = decltype(simulator->get_invalid_ref<CosseratRod>());
   using CosseratRodRefs = std::vector<CosseratRodRef>;
 
-  CosseratRodRefs cosserat_rod_refs{2UL,
-                                    simulator->get_invalid_ref<CosseratRod>()};
+  CosseratRodRefs cosserat_rod_refs;
 
   inline auto communicate_from(CosseratRodRef& ref) { return ref.get(); }
   inline auto communicate() {

@@ -21,8 +21,15 @@ class RodStats:
 @dataclass
 class Stats:
     contact_stiffness: float
-    first_rod: RodStats
-    second_rod: RodStats
+    rod_stats: List[RodStats]
     time: List[float] = field(default_factory=list)
     step: List[PositiveInt] = field(default_factory=list)
     penetration_depth: List[float] = field(default_factory=list)
+
+    @property
+    def first_rod(self) -> RodStats:
+        return self.rod_stats[0]
+
+    @property
+    def second_rod(self) -> RodStats:
+        return self.rod_stats[1]

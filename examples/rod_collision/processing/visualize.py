@@ -6,12 +6,19 @@ from elasticapp.CaseStudies.PyRodCollisionCaseStudy import (
 from elasticapp.Systems import CosseratRods  # noqa
 from matplotlib import pyplot as plt
 
-from .animate import animate_collision, plot_energies, plot_velocities, plot_momenta
+from .animate import (
+    animate_collision,
+    plot_energies,
+    plot_velocities,
+    plot_momenta,
+    plot_total_energies,
+)
 from .stats import Stats, RodStats
 
 
 def run_rod_collision_case_study(
     angle_of_inclination: float = 0.0,
+    n_rod_pairs: int = 1,
     save_to_csv: bool = False,
     save_figure: bool = False,
 ):
@@ -35,6 +42,7 @@ def run_rod_collision_case_study(
         angle_of_inclination=angle_of_inclination,
         contact_stiffness=contact_stiffness,
         contact_damping=contact_damping,
+        n_rod_pairs=n_rod_pairs,
         dt=dt,
     )
 
@@ -45,16 +53,13 @@ def run_rod_collision_case_study(
             _, rods, _ = cas.communicate()
         else:
             _, rods = cas.communicate()
-        keys = ("first_rod", "second_rod")
-        values = (RodStats(np.copy(r.get_mass())) for r in rods)
+        rod_stats = [RodStats(np.copy(r.get_mass())) for r in rods]
 
-        return Stats(contact_stiffness=contact_stiffness, **dict(zip(keys, values)))
+        return Stats(contact_stiffness=contact_stiffness, rod_stats=rod_stats)
 
     total_stats = setup_stats(cs)
     first_cosserat_rod_stats = total_stats.first_rod
     second_cosserat_rod_stats = total_stats.second_rod
-
-    cosserat_rod_stats = (first_cosserat_rod_stats, second_cosserat_rod_stats)
 
     def collect_global_stats_from(cas):
         total_stats.time.append(cas.current_time())
@@ -74,7 +79,7 @@ def run_rod_collision_case_study(
 
     def collect_statistics_backend_agnostic(depths, rods):
         total_stats.penetration_depth.append(depths)
-        for stat, pv in zip(cosserat_rod_stats, rods):
+        for stat, pv in zip(total_stats.rod_stats, rods):
             add_to(stat, pv)
 
     if run_on_debug_mode:
@@ -123,6 +128,7 @@ def run_rod_collision_case_study(
     else:
         momenta_fig = plot_momenta(stats=total_stats, save_figure=save_figure)
     energy_fig = plot_energies(stats=total_stats, save_figure=save_figure)
+    total_energy_fig = plot_total_energies(stats=total_stats, save_figure=save_figure)
     animation = animate_collision(
         total_stats,
         save_figure=save_figure,

@@ -43,12 +43,15 @@ void RodCollisionCaseStudy::setup(InputTypes<This> const& input_parameters) {
       1e-10);
 
   const ::elastica::Vec3 anchor{0., 0., 0.};
+  const ::elastica::Vec3 rod_plane_offset{1., 0., 0.};
+
   const auto inclination(
       ::elastica::get<angle_of_inclination>(input_parameters));
   const ::elastica::Vec3 direction{0.0, std::cos(inclination),
                                    std::sin(inclination)};
   const ::elastica::Vec3 normal{0.0, -std::sin(inclination),
                                 std::cos(inclination)};
+  const auto number_of_pairs = ::elastica::get<n_rod_pairs>(input_parameters);
 
   using RodInitializer =
       ::elastica::cosserat_rod::StraightCosseratRodInitializer;
@@ -61,24 +64,38 @@ void RodCollisionCaseStudy::setup(InputTypes<This> const& input_parameters) {
       RodInitializer::ForceDampingRate{1e-8},
       RodInitializer::TorqueDampingRate{1e-8}};
 
-  cosserat_rod_refs[0] = simulator->template emplace_back<CosseratRod>(
-      straight_initializer.initialize<CosseratRod>(
-          ::blocks::initialize<::elastica::tags::Velocity>(
-              [=](std::size_t) -> ::elastica::Vec3 {
-                return -0.05 * normal;  // already normalized
-              })));
-
   const auto second_inclination(0.0);
   const ::elastica::Vec3 second_direction{0.0, std::cos(second_inclination),
                                           std::sin(second_inclination)};
   const ::elastica::Vec3 second_normal{0.0, -std::sin(second_inclination),
                                        std::cos(second_inclination)};
-  cosserat_rod_refs[1] = simulator->template emplace_back<CosseratRod>(
-      straight_initializer
-          .but_with(RodInitializer::Origin{anchor},
-                    RodInitializer::Direction{second_direction},
-                    RodInitializer::Normal{second_normal})
-          .initialize<CosseratRod>());
+
+  cosserat_rod_refs.resize(2 * number_of_pairs,
+                           simulator->get_invalid_ref<CosseratRod>());
+
+  for (auto pair_idx = 0UL; pair_idx < number_of_pairs; ++pair_idx) {
+    cosserat_rod_refs[2 * pair_idx] =
+        simulator->template emplace_back<CosseratRod>(
+            straight_initializer
+                .but_with(RodInitializer::Origin{anchor + normal * 0.2 +
+                                                 ::elastica::real_t(pair_idx) *
+                                                     rod_plane_offset})
+                .initialize<CosseratRod>(
+                    ::blocks::initialize<::elastica::tags::Velocity>(
+                        [=](std::size_t) -> ::elastica::Vec3 {
+                          return -0.05 * normal;  // already normalized
+                        })));
+
+    cosserat_rod_refs[2 * pair_idx + 1UL] =
+        simulator->template emplace_back<CosseratRod>(
+            straight_initializer
+                .but_with(RodInitializer::Origin{anchor +
+                                                 ::elastica::real_t(pair_idx) *
+                                                     rod_plane_offset},
+                          RodInitializer::Direction{second_direction},
+                          RodInitializer::Normal{second_normal})
+                .initialize<CosseratRod>());
+  }
 
   simulator->finalize();
 
