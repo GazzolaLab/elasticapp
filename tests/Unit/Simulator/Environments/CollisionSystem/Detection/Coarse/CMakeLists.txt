@@ -6,6 +6,7 @@ set(LIBRARY "Test_CoarseCollisionDetection")
 set(LIBRARY_SOURCES
         Test_BoundingBox.cpp
         Test_ExhaustiveSearch.cpp
+        Test_HashGrids.cpp
         Test_RigidBodyPrimitiveTrait.cpp
         Test_TypeTraits.cpp
         )

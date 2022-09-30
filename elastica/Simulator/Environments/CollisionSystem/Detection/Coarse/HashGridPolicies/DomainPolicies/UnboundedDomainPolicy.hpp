@@ -1,12 +1,28 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Unbounded domain customization for HashGrid implementation
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+*/
+//==============================================================================
+
 #pragma once
+
+//******************************************************************************
+// Includes
+//******************************************************************************
 
 /// Types first
 #include "Simulator/Domain/Types.hpp"
+#include "Simulator/Environments/CollisionSystem/Detection/Coarse/HashGridPolicies/DomainPolicies/DomainPolicyBase.hpp"
 #include "Simulator/Environments/CollisionSystem/Detection/Coarse/HashGridPolicies/DomainPolicies/Types.hpp"
-#include "elastica/Utilities/DefineTypes.h"
 ///
-
-#include "Simulator/Environments/CollisionSystem/Detection/Coarse/HashGridPolicies/DomainPolicies/DomainPolicyImplBase.hpp"
+#include "Utilities/DefineTypes.h"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -20,81 +36,161 @@ namespace elastica {
 
         namespace detail {
 
-          // Specialization for unbounded domain
+          //********************************************************************
+          /*! \cond ELASTICA_INTERNAL */
+          /*!\brief Customization of the HashGrid for unbounded domains
+           * \ingroup coarse_collision_detection
+           *
+           * \tparam SimulatorConfig The configuration of collision detection
+           */
           template <typename SimulatorConfig>
           class DomainPolicyImpl<SimulatorConfig, ::elastica::UnboundedDomain>
-              : private DomainPolicyImplBase {
+              : private DomainPolicyBase {
            public:
-            //!< Type of the simulation domain
+            //**Type definitions************************************************
+            //! Type of the simulation domain
             using DomainType = UnboundedDomain;
+            //******************************************************************
 
-            //!< Type of ghost primitives
-            using GhostPrimitives = typename SimulatorConfig::PrimitiveStorage;
-            // Here we don't need GhostPrimitives, but keep it around?
-            //            using GhostPrimitives = unsigned char;
-
+            //**Compile time checks*********************************************
+            /*! \cond ELASTICA_INTERNAL */
             static_assert(
-                std::is_same<typename SimulatorConfig::DomainType,
-                             DomainType>::value,
+                cpp17::is_same_v<typename SimulatorConfig::DomainType,
+                                 DomainType>,
                 "This should not be reached, please contact the developers!");
+            /*! \endcond */
+            //******************************************************************
 
            protected:
-            explicit DomainPolicyImpl(const DomainType*& unbounded_domain,
-                                      GhostPrimitives& ghosts)
-                : domain_(unbounded_domain), ghost_primitives_(ghosts) {}
+            //**Constructor*****************************************************
+            /*!\name Constructor */
+            //@{
+            explicit DomainPolicyImpl(DomainType const* unbounded_domain)
+                : domain_(unbounded_domain) {}
+            // DomainPolicyImpl(DomainPolicyImpl const&) = default;
+            // DomainPolicyImpl(DomainPolicyImpl&&) noexcept = default;
+            // DomainPolicyImpl& operator=(DomainPolicyImpl const&) = default;
+            // DomainPolicyImpl& operator=(DomainPolicyImpl&&) noexcept =
+            // default;
+            //@}
+            //******************************************************************
 
+            //**Destructor******************************************************
+            /*!\name Destructor */
+            //@{
             inline ~DomainPolicyImpl() = default;
-            DomainPolicyImpl(DomainPolicyImpl const&) = default;
-            DomainPolicyImpl(DomainPolicyImpl&&) noexcept = default;
-            DomainPolicyImpl& operator=(DomainPolicyImpl const&) = default;
-            DomainPolicyImpl& operator=(DomainPolicyImpl&&) noexcept = default;
+            //@}
+            //******************************************************************
 
             /* These need not be specified, the using class gives the scope
             template <typename SC, typename DT>
             DomainPolicyImpl(const DomainPolicyImpl<SC, DT>&) = delete;
             */
            private:
+            //**Utility functions***********************************************
+            /*!\name Utility functions */
+            //@{
+
+            //******************************************************************
+            /*!\brief Gets the initial cell count in the DirectionType `Dir`
+             * of the hashgrid.
+             *
+             * \tparam Dir Direction type Dir
+             */
             template <DirectionType Dir>
-            inline constexpr auto initial_cell_count(
-                real_t requested_cell_span) const noexcept -> std::size_t {
-              return DomainPolicyImplBase::initial_cell_count<Dir>();
-            };
+            static inline constexpr auto initial_cell_count(
+                real_t /*requested_cell_span*/) noexcept -> std::size_t {
+              return DomainPolicyBase::initial_cell_count<Dir>();
+            }
+            //******************************************************************
 
            protected:
-            inline auto initial_cell_counts(
-                real_t requested_cell_span) const noexcept {
-              static constexpr auto X = ::elastica::detail::Directions::X;
-              static constexpr auto Y = ::elastica::detail::Directions::Y;
-              static constexpr auto Z = ::elastica::detail::Directions::Z;
+            //******************************************************************
+            /*!\brief Gets the initial cell counts in all the Directions
+             * of the hashgrid.
+             */
+            static inline auto initial_cell_counts(
+                real_t requested_cell_span) noexcept {
               return std::make_tuple(
-                  initial_cell_count<X>(requested_cell_span),
-                  initial_cell_count<Y>(requested_cell_span),
-                  initial_cell_count<Z>(requested_cell_span));
+                  initial_cell_count<DomainType::X>(requested_cell_span),
+                  initial_cell_count<DomainType::Y>(requested_cell_span),
+                  initial_cell_count<DomainType::Z>(requested_cell_span));
             }
+            //******************************************************************
 
-            inline auto adjust_cell_span(
-                real_t requested_cell_span) const noexcept -> real_t {
+            //******************************************************************
+            /*!\brief Adjusts the cell-span if necessary
+             *
+             * \note
+             * This function is trivial for Unbounded domains but important for
+             * periodic domains.
+             */
+            static inline auto adjust_cell_span(
+                real_t requested_cell_span) noexcept -> real_t {
               return requested_cell_span;
             }
+            //******************************************************************
 
-            inline bool should_enlarge(std::size_t total_primitive_count,
-                                       std::size_t enlargement_threshold) {
+            //******************************************************************
+            /*!\brief Enlargement criterion for the hash-grid
+             */
+            static inline bool should_enlarge(
+                std::size_t total_primitive_count,
+                std::size_t enlargement_threshold) noexcept {
               return total_primitive_count == enlargement_threshold;
             }
+            //******************************************************************
 
-            // Always enlarge in non-periodic settings
-            // Overkill dude.
-            template <typename... CellCounts,
-                      Requires<cpp17::conjunction_v<
-                          std::is_same<CellCounts, std::size_t>...> > = nullptr>
-            inline void enlarge(CellCounts&... cell_counts) {
-              EXPAND_PACK_LEFT_TO_RIGHT(cell_counts *= 2);
+           private:
+            //******************************************************************
+            /*!\brief Enlarge cell count in a particular direction
+             */
+            template <DirectionType Dir>
+            static inline constexpr void enlarge(
+                std::size_t& cell_count) noexcept {
+              cell_count *= 2;
             }
+            //******************************************************************
 
-            DomainType const*& domain_;  //!< Pointer to the simulation domain
-            GhostPrimitives&
-                ghost_primitives_;  //!< Pointer to ghost primitives
+           protected:
+            //******************************************************************
+            /*!\brief Enlarge the cell counts for the hash-grid across all the
+             * dimensions
+             */
+            static inline void enlarge(std::size_t& x_cell_count,
+                                       std::size_t& y_cell_count,
+                                       std::size_t& z_cell_count) {
+              enlarge<DomainType::X>(x_cell_count);
+              enlarge<DomainType::Y>(y_cell_count);
+              enlarge<DomainType::Z>(z_cell_count);
+            }
+            //******************************************************************
+
+            //@}
+            //******************************************************************
+
+           public:
+            //**Get functions***************************************************
+            /*!\name Get functions */
+            //@{
+            DomainType const*& domain() & noexcept { return domain_; }
+            DomainType const* const& domain() const& noexcept {
+              return domain_;
+            }
+            //@}
+            //******************************************************************
+
+           protected:
+            //**Member variables************************************************
+            /*!\name Member variables */
+            //@{
+            //! Pointer to the simulation domain
+            DomainType const* domain_;
+            //@}
+            //******************************************************************
           };
+          /*! \endcond */
+          //********************************************************************
 
         }  // namespace detail
 

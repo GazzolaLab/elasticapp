@@ -30,10 +30,24 @@ namespace elastica {
     static constexpr auto lookup() noexcept
         -> tmpl::lookup<LookupTable, tmpl::pair<T1, T2>>;
 
+    // This indirection is needed since algorithms like HashGrid may not always
+    // respect ordering from different cells
+    template <typename T1, typename T2>
+    void emplace_back_impl(tmpl::type_<tmpl::no_such_type_>, T1& t1,
+                           T2& t2) /* const noexcept*/ {
+      using C = decltype(lookup<T2, T1>());
+      emplace_back_impl(tmpl::type_<C>{}, t2, t1);
+    }
+
+    template <typename C, typename T1, typename T2>
+    void emplace_back_impl(tmpl::type_<C>, T1& t1, T2& t2) /* const noexcept*/ {
+      std::get<C>(data_).emplace_back(t1, t2);
+    }
+
     template <typename T1, typename T2>
     void emplace_back(T1& t1, T2& t2) /* const noexcept*/ {
       using C = decltype(lookup<T1, T2>());
-      std::get<C>(data_).emplace_back(t1, t2);
+      emplace_back_impl(tmpl::type_<C>{}, t1, t2);
     }
 
     auto clear() /*const noexcept */ -> void {

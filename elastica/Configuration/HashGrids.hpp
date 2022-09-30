@@ -39,7 +39,8 @@
 
 //******************************************************************************
 /*!\brief The initial number of cells in x-direction of a newly created hash
- * grid. \ingroup config
+ * grid.
+ * \ingroup config
  *
  * This value represents the initial number of cells of a newly created hash
  * grid in x-direction. The larger the value (i.e. the greater the number of
@@ -77,7 +78,8 @@ constexpr std::size_t initial_y_cell_count() { return 4UL; /*16UL;*/ }
 
 //******************************************************************************
 /*!\brief The initial number of cells in z-direction of a newly created hash
- * grid. \ingroup config
+ * grid.
+ * \ingroup config
  *
  * This value represents the initial number of cells of a newly created hash
  * grid in z-direction. The larger the value (i.e. the greater the number of
@@ -110,7 +112,7 @@ constexpr std::size_t initial_z_cell_count() { return 4UL; /*16UL;*/ }
  *
  *                        \f$ cellVectorSize = 2 \cdot hierarchyFactor^3 \f$
  */
-constexpr std::size_t initial_cell_vector_size() { return 16UL; }
+constexpr std::size_t initial_cell_vector_size() { return 8UL; }
 //******************************************************************************
 
 //******************************************************************************
@@ -129,7 +131,8 @@ constexpr std::size_t initial_occupied_cells_vector_size() { return 256UL; }
 
 //******************************************************************************
 /*!\brief The minimal ratio of cells to bodies that must be maintained at any
- * time. \ingroup config
+ * time.
+ * \ingroup config
  *
  * This \a minimalGridDensity specifies the minimal ratio of cells to bodies
  * that is allowed before a grid grows.\n In order to handle an initially
@@ -148,7 +151,8 @@ constexpr std::size_t minimal_grid_density() { return 8UL; }
 
 //******************************************************************************
 /*!\brief Activation threshold for the hierarchical hash grids coarse collision
- * detection algorithm. \ingroup config
+ * detection algorithm.
+ * \ingroup config
  *
  * If the simulation only consists of a very small number of bodies, simply
  * checking each body against each other body proves to be faster than involving
@@ -163,12 +167,13 @@ constexpr std::size_t minimal_grid_density() { return 8UL; }
  *
  * Possible settings: any integral value greater-or-equal to 0.
  */
-constexpr std::size_t hashgrid_activation_threshold() { return 0UL; }
+constexpr std::size_t hashgrid_activation_threshold() { return 32UL; }
 //******************************************************************************
 
 //******************************************************************************
 /*!\brief The constant factor by which the cell size of any two successive grids
- * differs. \ingroup config
+ * differs.
+ * \ingroup config
  *
  * This factor specifies the size difference of two successive grid levels of
  * the hierarchical hash grids. The grid hierarchy is constructed such that the

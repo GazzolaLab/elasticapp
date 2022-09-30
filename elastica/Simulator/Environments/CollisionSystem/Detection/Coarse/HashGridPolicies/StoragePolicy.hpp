@@ -18,8 +18,13 @@ namespace elastica {
           // Output:
           // CellPrimities = tmpl::list<vector<Sphere*>*, vector<Cylinder*>*>
           template <typename T>
-          struct AddCellPrimitivesStorage {
+          struct AsIDToPrimitiveIDCollection {
             using type = std::vector<T*>*;
+          };
+
+          template <typename Primitive>
+          struct AsTagsToCellStorage {
+            using type = AsIDToPrimitiveIDCollection<Primitive>;
           };
         };
 

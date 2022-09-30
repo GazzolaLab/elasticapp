@@ -40,7 +40,7 @@
  *   - elastica::collision::detection::coarse::SweepAndPrune
  */
 #define ELASTICA_COARSE_COLLISION_DETECTOR \
-  elastica::collision::detection::coarse::ExhaustiveSearch
+  elastica::collision::detection::coarse::HashGrids
 //******************************************************************************
 
 //******************************************************************************

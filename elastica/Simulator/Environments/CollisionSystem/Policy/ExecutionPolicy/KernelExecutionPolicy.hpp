@@ -24,6 +24,7 @@
 #include "Simulator/Environments/CollisionSystem/Policy/ExecutionPolicy/Types.hpp"
 //
 #include "Simulator/Environments/CollisionSystem/Policy/ExecutionPolicy/ForEach.hpp"
+#include "Simulator/Environments/CollisionSystem/Policy/ExecutionPolicy/ForEachType.hpp"
 #include "Simulator/Environments/CollisionSystem/Policy/ExecutionPolicy/PairwiseForEach.hpp"
 ///
 #include "Utilities/TMPL.hpp"
@@ -43,10 +44,11 @@ namespace elastica {
      * execution
      */
     template <typename ForEachExecutionPolicy_,
-              typename OverPairsExecutionPolicy_>
+              typename OverTypesExecutionPolicy>
     struct KernelExecutionPolicy
         : public detail::ForEachOp<ForEachExecutionPolicy_>,
-          public detail::OverPairsOp<OverPairsExecutionPolicy_> {
+          public detail::ForEachTypeOp<OverTypesExecutionPolicy>,
+          public detail::OverPairsOp<OverTypesExecutionPolicy> {
      protected:
       //**Type definitions******************************************************
       //! Internal ordering to find which is the execution policy
@@ -61,7 +63,7 @@ namespace elastica {
       using ExecutionPolicy = tmpl::at<
           Ordered,
           tmpl::max<tmpl::index_of<Ordered, ForEachExecutionPolicy_>,
-                    tmpl::index_of<Ordered, OverPairsExecutionPolicy_>>>;
+                    tmpl::index_of<Ordered, OverTypesExecutionPolicy>>>;
       //************************************************************************
     };
     //**************************************************************************

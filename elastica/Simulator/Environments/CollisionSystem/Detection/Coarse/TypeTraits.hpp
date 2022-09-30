@@ -64,8 +64,9 @@ namespace elastica {
 
           namespace detail {
             // need this to name, else use primitive
-            auto downcast(std::true_type) -> SamePrimitivesTag;
-            auto downcast(std::false_type) -> DifferentPrimitivesTag;
+            static constexpr auto downcast(std::true_type) -> SamePrimitivesTag;
+            static constexpr auto downcast(std::false_type)
+                -> DifferentPrimitivesTag;
           }  // namespace detail
 
           //********************************************************************

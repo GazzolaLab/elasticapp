@@ -1,52 +1,79 @@
-//=================================================================================================
+//==============================================================================
 /*!
- *  \file pe/core/detection/coarse/HashGrids.h
- *  \brief Implementation of the 'Hierarchical Hash Grids' coarse collision
- * detection algorithm
- *
- *  Copyright (C) 2009 Klaus Iglberger
- *
- *  This file is part of pe.
- *
- *  pe is free software: you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- *
- *  pe is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with
- * pe. If not, see <http://www.gnu.org/licenses/>.
- */
-//=================================================================================================
+//  \file
+//  \brief Implementation of the 'Hierarchical Hash Grids' coarse collision
+//  detection algorithm
+//
+//  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
+//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//
+//  Distributed under the MIT License.
+//  See LICENSE.txt for details.
+//
+//  This file contains implementation from the pe library with the following
+//  copyrights
+**
+**  Project home: https://www.cs10.tf.fau.de/research/software/pe/
+**
+**  Copyright (C) 2009 Klaus Iglberger
+**
+**  This file is part of pe.
+**
+**  pe is free software: you can redistribute it and/or modify it under the
+** terms of the GNU General Public License as published by the Free Software
+** Foundation, either version 3 of the License, or (at your option) any later
+** version.
+**
+**  pe is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+** A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License along with
+** pe. If not, see <http://www.gnu.org/licenses/>.
+*/
+//==============================================================================
 
 #pragma once
 
-//#include <algorithm>
+//******************************************************************************
+// Includes
+//******************************************************************************
+
+#include "ErrorHandling/Assert.hpp"
+#include "ErrorHandling/ExpectsAndEnsures.hpp"
+//
+#include "Simulator/Environments/CollisionSystem/Detection/Coarse/BoundingBox.hpp"  // length
+#include "Simulator/Environments/CollisionSystem/Detection/Coarse/ExhaustiveSearch.hpp"
+#include "Simulator/Environments/CollisionSystem/Detection/Coarse/TypeTraits.hpp"
+//
+#include "Utilities/AsConst.hpp"
+#include "Utilities/AsTaggedTuple.hpp"
+#include "Utilities/CountingIterator.hpp"
+#include "Utilities/DefineTypes.h"
+#include "Utilities/Invoke.hpp"
+#include "Utilities/Requires.hpp"
+#include "Utilities/Size.hpp"
+#include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits/Cpp17.hpp"
+
+/// Customization
+#include "Simulator/Environments/CollisionSystem/Detection/Coarse/HashGridPolicies/DomainPolicy.hpp"
+#include "Simulator/Environments/CollisionSystem/Detection/Coarse/HashGridPolicies/StoragePolicy.hpp"
+#include "Simulator/Environments/CollisionSystem/Detection/Coarse/HashGridsConfigurationParameters.hpp"
+/// Internal
+#include "Simulator/Environments/CollisionSystem/Detection/Coarse/HashGridPrimitiveCache.hpp"
+//
+
+#include <algorithm>  // for_each
 #include <array>
 #include <cmath>
 #include <list>
+#include <mutex>
+#include <numeric>  // accumulate
 #include <tuple>
 #include <type_traits>
-
-#include "elastica/DataStructures/TaggedTuple.hpp"
-#include "elastica/ErrorHandling/Assert.hpp"
-#include "elastica/ModuleSettings/HashGrids.hpp"
-#include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/ExhaustiveSearch.hpp"
-#include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/Tags.hpp"
-#include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/TypeTraits.hpp"
-#include "elastica/Utilities/DefineTypes.h"
-#include "elastica/Utilities/Requires.hpp"
-#include "elastica/Utilities/StdHelpers.hpp"
-#include "elastica/Utilities/TMPL.hpp"
-#include "elastica/Utilities/TMPLDebugging.hpp"
-
-/// Customization
-#include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/HashGridPolicies/DomainPolicy.hpp"
-#include "elastica/Simulator/Environments/CollisionSystem/Detection/Coarse/HashGridPolicies/StoragePolicy.hpp"
-///
+#include <unordered_map>
 
 namespace elastica {
 
@@ -56,78 +83,125 @@ namespace elastica {
 
       namespace coarse {
 
-        template <typename C>  // Type of the configuration
+        //======================================================================
+        //
+        //  CLASS DEFINITION
+        //
+        //======================================================================
+
+        //**********************************************************************
+        /*!\brief Implementation of the 'Hierarchical Hash Grids' coarse
+         * collision detection algorithm.
+         * \ingroup coarse_collision_detection
+         *
+         * \details
+         * The 'Hierarchical Hash Grids' coarse collision detection algorithm is
+         * based on a spatial partitioning scheme that uses a hierarchy of
+         * uniform, hash storage based grids. Uniform grids subdivide the
+         * simulation space into cubic cells. A hierarchy of spatially
+         * superimposed grids provides a set of grids with each grid subdividing
+         * the very same space, however possessing different and thus
+         * unique-sized cells. Spatial partitioning is achieved by assigning
+         * every rigid body to exactly one cell in exactly one grid - that is
+         * the grid with the smallest cells that are larger than the rigid body
+         * (more precisely cells that are larger than the longest edge of the
+         * rigid body's axis-aligned bounding box). As a consequence, the
+         * collision detection is reduced to only checking body's that are
+         * assigned to spatially directly adjacent cells.
+         *
+         * Key features of this implementation are not only an **average-case
+         * computational complexity of order O(N)** as well as a space
+         * complexity of order O(N), but also a short actual runtime combined
+         * with low memory consumption. Moreover, the data structure
+         * representing the hierarchy of grids has the ability to, at runtime,
+         * automatically and perfectly adapt to the bodies of the underlying
+         * simulation. Also, arbitrary bodies can be added and removed in
+         * constant time, O(1). Consequently, the coarse collision detection
+         * algorithm based on these hierarchical hash grids is **especially
+         * well-suited for large-scale simulations** involving very large
+         * numbers of bodies.
+         *
+         * This is frequently the case with \elastica++ as the number of rigid
+         * bodies for which contact detection needs to be resolved is usually
+         * large. For N rods with an average of M elements each, the number of
+         * bodies is O(MN), which quickly scales up the computational cost of
+         * contact detection. Hence, other collision detection schemes like
+         * exhaustive searching (see ::elastica::collision::detection::coarse::
+         * ExhaustiveSearch) usually do not perform well except in the simplest
+         * of scenarios involving O(1--5) rods.
+         *
+         * The core algorithm has been rediscovered over and over in many
+         * communities (involving simulations of rigid bodies, particulate
+         * matter, DEM and condensed matter, crowd simulations). Our
+         * implementation is based on the pe library. For further information
+         * and a much more detailed explanation of this algorithm see
+         * http://www10.informatik.uni-erlangen.de/Publications/Theses/2009/Schornbaum_SA09.pdf
+         *
+         * \tparam Config_ Type of the collision configuration (enhanced from
+         * the collision module with system properties)
+         */
+        template <typename Config_>
         class HashGrids : private NonCopyable,
-                          public DomainPolicy<C>,
+                          public DomainPolicy<Config_>,
                           public StoragePolicy {
          public:
           //**Type definitions**************************************************
-          using EnhancedCollisionConfig = C;  //!< Type of the configuration.
-          using This =
-              HashGrids<EnhancedCollisionConfig>;  //!< Type of this HashGrids
-                                                   //!< instance.
+          //! Type of the configuration.
+          using Config = Config_;
+          //! Type of this HashGrids instance
+          using This = HashGrids<Config>;
+          //! Type of the domain policy
+          using DomainPolicyType = DomainPolicy<Config>;
+          //! Type of the simulation domain
+          using DomainType = typename DomainPolicyType::DomainType;
+          //! Type of the admissible primitives
+          using AdmissiblePrimitives = typename Config::AdmissiblePrimitives;
+          //! Combinations of primitive-primitive collision matrix
+          using PrimitiveCombinations = typename Config::PrimitiveCombinations;
+          //! Type of the primitive-imposed primitive collision matrix
+          using PrimitiveImposedPrimitiveCombinations =
+              typename Config::PrimitiveImposedPrimitiveCombinations;
+          //! Type of runtime parametrization.
+          using Parameters = HashGridsConfigurationParameters;
+          //! Execution policy for the fine detection module
+          using Exec = typename Config::KernelExecutionPolicy;
 
-          //!< Type of the domain policy
-          using DomainPolicy = DomainPolicy<C>;
-          //!< Type of the simulation domain
-          using DomainType = typename DomainPolicy::DomainType;
-          using GhostPrimitives = typename DomainPolicy::GhostPrimitives;
-          static_assert(
-              std::is_same<typename C::DomainType, DomainType>::value,
-              "This should not be reached, please contact the developers!");
-
-          //!< Metafunction that returns type of the simulation boundaries
-          template <::elastica::detail::Directions::DirectionType N>
-          using BoundaryTypeAlong =
-              typename EnhancedCollisionConfig::template BoundaryTypeAlong<N>;
-
-          //!< Types of primitives in the current simulation
-          using AdmissiblePrimitives =
-              typename EnhancedCollisionConfig::AdmissiblePrimitives;
-
-          // Storage types
-          //!< Type of the primitive storage.
-          using PrimitiveStorage =
-              typename EnhancedCollisionConfig::PrimitiveStorage;
-          //!< Type of the imposed primitive storage.
-          using ImposedPrimitiveStorage =
-              typename EnhancedCollisionConfig::ImposedPrimitiveStorage;
-
-          // Matrix types
-          //!< Type of the primitive-primitive collision matrix.
-          using PrimitivePrimitiveMatrix =
-              typename EnhancedCollisionConfig::PrimitivePrimitiveMatrix;
-          //!< Type of the primitive-imposed primitive collision matrix.
-          using PrimitiveImposedPrimitiveMatrix =
-              typename EnhancedCollisionConfig::PrimitiveImposedPrimitiveMatrix;
-          //!< Lower triangular part of the primitive-primitive collision
-          //!< matrix.
-          using LowerTriangularPrimitivePrimitiveMatrix =
-              typename EnhancedCollisionConfig::
-                  LowerTriangularPrimitivePrimitiveMatrix;
-
-          //          using BodyID =
-          //              typename EnhancedCollisionConfig::BodyID;  //!< Handle
-          //              for a rigid
-          //!< body.
-
-          //!< Type of the fine collision detector.
-          using FineDetector = typename EnhancedCollisionConfig::FineDetector;
+         private:
+          //! Type of domain policy
+          using DP = DomainPolicyType;
+          //! Type of storage policy
+          using SP = StoragePolicy;
           //********************************************************************
 
-          static constexpr auto get_number_of_primitives() noexcept
+         private:
+          //**Compile time checks***********************************************
+          /*! \cond ELASTICA_INTERNAL */
+          static_assert(
+              cpp17::is_same_v<typename Config::DomainType, DomainType>,
+              "Meta-failure in hashgrids, please contact the developers!");
+          /*! \endcond */
+          //********************************************************************
+
+         public:
+          //**Utility Metafunctions ********************************************
+          /*!\name Utility meta-functions */
+          //@{
+
+          //********************************************************************
+          /*!\brief Gets number of primitives as initialized in the
+           * configuration
+           */
+          static constexpr auto get_number_of_primitive_types() noexcept
               -> std::size_t {
             return tmpl::size<AdmissiblePrimitives>::value;
           }
+          //********************************************************************
 
-          static constexpr auto get_number_of_imposed_primitives() noexcept
-              -> std::size_t {
-            return tmpl::size<ImposedPrimitiveStorage>::value;
-          }
+          //@}
+          //********************************************************************
 
          private:
           //**Type definitions**************************************************
-
           //! A heterogenous collection of pointers to vectors of primitive
           //! pointers
 
@@ -139,139 +213,243 @@ namespace elastica {
 
           // Since its internal to HashGrids, we put the type-trait here
           // and do a tmpl::transform on it
-
-          // DONE Complete logic for CellPrimitives
-          using CellPrimitives = tmpl::as_tuple<tmpl::transform<
-              AdmissiblePrimitives, AddCellPrimitivesStorage<tmpl::_1>>>;
-
-          //          TypeDisplayer<CellPrimitives> aeou;
-
+          //! Primitives residing within a single cell of the hashgrid
+          using CellPrimitives = tmpl::as_tagged_tuple<tmpl::transform<
+              AdmissiblePrimitives,
+              // make it explicit
+              typename SP::template AsTagsToCellStorage<tmpl::_1>>>;
+          //! Storage of IDs for occupied cells
           using OccupiedCellsIDs =
-              std::array<std::size_t, get_number_of_primitives()>;
-
+              std::array<std::size_t, get_number_of_primitive_types()>;
+          //! Storage for keeping count of primitives
           using PrimitiveCounts =
-              std::array<std::size_t, get_number_of_primitives()>;
+              std::array<std::size_t, get_number_of_primitive_types()>;
+          //********************************************************************
 
-          //! A heterogenoous collection of a vector of imposed
-          //! primitive pointers
-          // ImposedPrimitiveStorage = tuple<vector<Plane>, vector<Spline>>
-          // NonGridPrimitiveStorage = tuple<vector<Plane*>, vector<Spline*>>
-
-          // NOT POSSIBLE Complete logic for NonGridPrimitiveStorage
-          //          using NonGridPrimitiveStorage =
-          //              tmpl::transform<ImposedPrimitiveStorage,
-          //                              std::add_pointer<tmpl::_1>>;
-
-          // Types for literate addition and removal
+          //********************************************************************
+          /*!\name Literate types */
+          // \brief Types and variables for literate addition and removal
+          //@{
+          //! Type marking a destination
           struct to_t {};
+          //! Type marking a source
           struct from_t {};
-
-          // Variables for literate addition and removal
+          //! Variables for literate addition
           static constexpr from_t from{};
+          //! Variable for literate destination
           static constexpr to_t to{};
+          //@}
+          //********************************************************************
 
-          //**********************************************************************************************
+          //********************************************************************
           /*!\brief Implementation of the hash grid data structure.
+           * \ingroup coarse_collision_detection
            */
           class HashGrid {
+           protected:
+            //**Forward declarations********************************************
+            struct Cell;
+            // template <typename PrimitiveType>
+            // inline static constexpr auto index_of_() noexcept -> std::size_t;
+            //******************************************************************
+
            private:
             //**Type definitions************************************************
             //! The signed integer type that is used for storing offsets to
             //! neighboring cells.
             using offset_t = long;
+            //! Vector for storing pointers to (body-occupied) cells.
+            using CellVector = typename std::vector<Cell*>;
+            //! Tag type for indexing into a tagged tuple
+            template <typename T>
+            struct AsCellVector {
+              using type = CellVector;
+            };
+            //! Tagged tuple of cell vectors
+            using OccupiedCells = tmpl::as_tagged_tuple<tmpl::transform<
+                AdmissiblePrimitives, tmpl::bind<AsCellVector, tmpl::_1>>>;
+            //! Custom tag for dispatch
+            using DifferentPrimitivesOrCellsTag = tt::DifferentPrimitivesTag;
             //******************************************************************
 
+           protected:
             //******************************************************************
             /*!\brief Data structure for representing a cell in the hash grid
-            (used by the 'Hierarchical
-            //        Hash Grids' coarse collision detection algorithm).
-            */
-            // sizof(Cell) = n_primitive_types * (8 (=pointer) + 8
-            // (=std::size_t))
-            // + 8 (pointer to offset)
-
+             * ,used by the 'Hierarchical  Hash Grids' coarse collision
+             * detection algorithm.
+             * \ingroup coarse_collision_detection
+             *
+             * \note
+             * Here a choice was made between two competing designs:
+             * 1) To have a Cell templated on each primitive type, which only
+             * carries information associated with that primitive type. In this
+             * case when we allocate a cell, we only allocate memory for one
+             * pointer to a vector of pointers for storing the body (8 bytes),
+             * one pointer for neighbor offsets (8 bytes) and one index into the
+             * cell_ids vector (8 bytes).
+             * 2) Have a cell that carries a tuple of pointers to vectors of
+             * pointers to different rigid bodies (of size 8 * n_primitives),
+             * one pointer for for neighbor offsets (8 bytes) and a tuple of
+             * indices into the cell_ids vector (8 * * n_primitives).
+             *
+             * In the former design the hashgrid can carry a tuple of
+             * templated Cell vectors. In the latter design we need to carry
+             * only Cell vectors. Both approaches have advantages/disadvantages
+             *
+             * The benefit of this design is :
+             *  - (1) has straightforward code than (2)
+             *  - Allocating one cell in (1) only allocates 24 bytes. Allocating
+             *  one cell in (2) allocates 8 + 16 * n_primitives bytes.
+             *  However allocating M cells (M >> 1 usually) allocates
+             *  M * 24 * n_primitives
+             *  bytes in (1), while in (2) its
+             *  M * (8 + 16 * n_primitives) bytes
+             *  with a difference of 8 * M * (n_primitives - 1) bytes, saved by
+             *  storing a common neihbor array. For n_primitives = 3
+             *  (protoypical case with a Cosserat rod (capsules), spheres and
+             *  cylinders) this is a savings of 16 * M bytes per grid, so a
+             *  total of 16 * M * n_grids bytes which is considerable.
+             *  - In (1) cells can be created on demand---if the grid does not
+             * contain a sphere in one cell but contains a capsule in that cell,
+             * memory needs to be allocated within the cell for creating a
+             * vector of capsule ptrs (typically another 24 bytes, for start_,
+             * capacity_ and end_ of std::vector.). In (2) this is not possible.
+             * If you want allocation for some primitive within the cell, you
+             * necessarily need to allocate for all primitives---this takes
+             * 24 * n_primitive bytes. Usually, its rare to have all types of
+             * primitives in all types of cells.
+             *
+             * The implications to performance of these choices do not seem
+             * obvious. But to err on the side of caution we implement choice
+             * (2) as there is at least a clear benefit of saving memory.
+             *
+             * \note
+             * Its important that we keep the size of a single cell as low as
+             * possible. Here it is
+             * p = sizeof(Pointer) = 8
+             * s = sizeof(std::size_t) = 8
+             * o = sizeof(point to offset) = 8
+             * Therefore sizeof(Cell) = n_primitive_types * (p + s) + o
+             *
+             */
             // TODO : While default constructing a Cell, maybe ensure that
             // occupiedCellIDs have SIZE_MAX as the default value for error
             // checking?
             struct Cell {
-              CellPrimitives cell_primitives_; /*!< \brief The cell's body
-                                      container that stores (handles to) all the
-                                      bodies that are assigned to this cell. */
+              //**Member variables**********************************************
+              /*!\name Member variables */
+              //@{
+              //! The cell's body container that stores (handles to) all
+              //! the bodies that are assigned to this cell.
+              CellPrimitives cell_primitives_;
               /*!< Note that only a pointer to such a body container is
                    stored: in order to save memory, this container object
                    is only allocated as long as there are bodies assigned
                    to this cell. */
-              offset_t* neighborOffset_; /*!< \brief Pointer to an array that is
-                                            storing offsets that can be used to
-                                            directly access all the neighboring
-                                              cells in the hash grid. */
-              OccupiedCellsIDs
-                  occupiedCellsIds_;  //!< The cell's index in the
-                                      //!< \a occupiedCells_ vector.
+              //! Pointer to an array that is storing offsets that can be used
+              //! to directly access all the neighboring cells in the hash grid
+              offset_t* neighbor_offset_;
+              //! A tuple which carries the indices of the current cell in the
+              //! `occupiedCells_` tuple of the hash-grid
+              OccupiedCellsIDs occupied_cells_ids_;
+              //@}
+              //****************************************************************
 
-              // Only constexpr here
-              // No reference explicitly, its a pointer already. The pointed
-              // value can change, but the pointer itself isnt
-              template <typename PrimitiveType>  // Type of the primitive
-              inline constexpr auto get_handle_of() noexcept ->
-                  typename AddCellPrimitivesStorage<PrimitiveType>::type {
-                // DONE Complete logic for CellPrimitives
-                using CellPrimitiveType =
-                    typename AddCellPrimitivesStorage<PrimitiveType>::type;
-                return std::get<CellPrimitiveType>(cell_primitives_);
-              }
+             protected:
+              //**Type definitions**********************************************
+              //! Metafunction to return handles to cell primitives
+              template <typename PrimitiveType>
+              using tag_t = AsIDToPrimitiveIDCollection<PrimitiveType>;
+              //****************************************************************
 
-              template <typename PrimitiveType>  // Type of the primitive
+             public:
+              //****************************************************************
+              /*!\name Utility functions */
+              //@{
+
+              //****************************************************************
+              /*!\brief Gets handle to storage of a specific primitive type
+               * among all cell primitives
+               */
+              template <typename PrimitiveType,
+                        typename Tag = tag_t<PrimitiveType>>
               inline constexpr auto set_handle_of() noexcept ->
-                  typename AddCellPrimitivesStorage<PrimitiveType>::type& {
+                  typename Tag::type& {
+                // No reference explicitly, its a pointer already. The pointed
+                // value can change, but the pointer itself isnt
+                return tuples::get<Tag>(cell_primitives_);
+              }
+              //****************************************************************
+
+              //****************************************************************
+              /*!\brief Gets handle to storage of a specific primitive type
+               * among all cell primitives
+               */
+              template <typename PrimitiveType,
+                        typename Tag = tag_t<PrimitiveType>>
+              inline constexpr auto get_handle_to() const noexcept ->
+                  typename Tag::type {
+                // No reference explicitly, its a pointer already. The pointed
+                // value can change, but the pointer itself isnt
                 // DONE Complete logic for CellPrimitives
-                using CellPrimitiveType =
-                    typename AddCellPrimitivesStorage<PrimitiveType>::type;
-                return std::get<CellPrimitiveType>(cell_primitives_);
+                return tuples::get<Tag>(cell_primitives_);
               }
+              //****************************************************************
 
+              //****************************************************************
+              /*!\brief Gets the occupied cell ID of a primitive type
+               */
               template <typename PrimitiveType>  // Type of the primitive
-              inline constexpr auto get_occupied_cellID() const noexcept
+              inline constexpr auto occupied_cellID() const& noexcept
                   -> std::size_t {
-                return std::get<
-                    tmpl::index_of<AdmissiblePrimitives, PrimitiveType>::value>(
-                    occupiedCellsIds_);
+                return std::get<index_of_<PrimitiveType>()>(
+                    occupied_cells_ids_);
               }
+              //****************************************************************
 
+              //****************************************************************
+              /*!\brief Gets the occupied cell ID of a primitive type
+               */
               template <typename PrimitiveType>  // Type of the primitive
-              inline constexpr auto set_occupied_cellID() noexcept
+              inline constexpr auto occupied_cellID() & noexcept
                   -> std::size_t& {
-                return std::get<
-                    tmpl::index_of<AdmissiblePrimitives, PrimitiveType>::value>(
-                    occupiedCellsIds_);
+                return std::get<index_of_<PrimitiveType>()>(
+                    occupied_cells_ids_);
+              }
+              //****************************************************************
+
+              //@}
+              //****************************************************************
+
+              template <typename ListOfPrimitives = AdmissiblePrimitives>
+              inline auto get_number_of_primitives() const noexcept
+                  -> std::size_t {
+                using L = tmpl::transform<ListOfPrimitives,
+                                          AsTagsToCellStorage<tmpl::_1>>;
+                auto count_primitives =
+                    [](auto handle_to_primitives) -> std::size_t {
+                  return handle_to_primitives
+                             ? ::elastica::size(*handle_to_primitives)
+                             : 0UL;
+                };
+                return tuples::apply<L>(
+                    [=](const auto... handle_to_primitives) {
+                      std::size_t running_count(0UL);
+                      EXPAND_PACK_LEFT_TO_RIGHT(
+                          running_count +=
+                          count_primitives(handle_to_primitives));
+                      return running_count;
+                    },
+                    cell_primitives_);
               }
             };
-
-            //**Type definitions************************************************
-            //! Vector for storing pointers to (body-occupied) cells.
-            using CellVector = typename std::vector<Cell*>;
             //******************************************************************
-
-            // Tagged tuple of cell vectors, with tags being the admissible
-            // primitives
-            template <typename T>
-            struct CellVectorStorageTag {
-              using data_type = CellVector;
-            };
-
-            template <typename Primitive>
-            struct AddCellVectorStorage {
-              using type = CellVectorStorageTag<Primitive>;
-            };
-
-            using OccupiedCellStorage = tmpl::as_tagged_tuple<tmpl::transform<
-                AdmissiblePrimitives, AddCellVectorStorage<tmpl::_1>>>;
 
            public:
             //**Constructor*****************************************************
             /*!\name Constructor */
             //@{
-            explicit HashGrid(real_t cellSpan);
+            explicit HashGrid(real_t cellSpan, Parameters const& parameters);
             //@}
             //******************************************************************
 
@@ -285,221 +463,128 @@ namespace elastica {
             //**Get functions***************************************************
             /*!\name Get functions */
             //@{
-            real_t get_cell_span() const noexcept {
-              return cellSpan_;
-            }  //!< Getter for \a cellSpan_.
+
+           public:
+            //******************************************************************
+            /*!\brief Getter for \a cellSpan_
+             */
+            real_t get_cell_span() const noexcept { return cellSpan_; }
+            //******************************************************************
+
+           protected:
+            //******************************************************************
+            /*!\brief Gets the index of a primitive type in the occupied_cells
+             * buffer
+             */
+            template <typename Primitive>
+            inline static constexpr auto impl_index_() noexcept
+                -> tmpl::index_of<AdmissiblePrimitives, Primitive>;
+            //******************************************************************
+
+            //******************************************************************
+            /*!\brief Gets the index of a primitive type in the occupied_cells
+             * buffer
+             */
+            template <typename Primitive>
+            inline static constexpr auto index_of_() noexcept {
+              return decltype(impl_index_<Primitive>())::value;
+            }
+            //******************************************************************
+
+            //******************************************************************
+            /*!\brief Gets the suffix type list of primitives, from the position
+             * of the current primitive
+             *
+             * \example
+             * using AdmissiblePrimitives = tmpl::list<A, B, C, D, E>;
+             * using L = decltype(suffix_to<B>());
+             * // L = tmpl::list<B, C, D, E>
+             */
+            template <typename Primitive>
+            inline static constexpr auto suffix_of_() noexcept
+                -> tmpl::pop_front<AdmissiblePrimitives,
+                                   decltype(impl_index_<Primitive>())>;
+            //******************************************************************
+
+           public:
+            //******************************************************************
+            /*!\brief Gets the count of one type of primitive in the current
+             * hashgrid
+             */
+            template <typename PrimitiveType>
+            inline constexpr auto get_count_of() & noexcept -> std::size_t& {
+              // retrieving it from
+              // Could be decltype(auto).
+              return std::get<index_of_<PrimitiveType>()>(primitive_count_);
+            }
+            template <typename PrimitiveType>
+            inline constexpr auto get_count_of() const& noexcept
+                -> std::size_t {
+              return std::get<index_of_<PrimitiveType>()>(primitive_count_);
+            }
+            //******************************************************************
+
+            //******************************************************************
+            /*!\brief Gets the count of primitives of type `Primitive` assigned
+             * to the current hashgrid
+             */
+            template <typename Primitive>
+            inline decltype(auto) get_number_of_primitives() & noexcept {
+              return get_count_of<Primitive>();
+            }
+            template <typename Primitive>
+            inline decltype(auto) get_number_of_primitives() const& noexcept {
+              return get_count_of<Primitive>();
+            }
+            //******************************************************************
 
             // While this should remain private, we need it for communication
             // in between hash grids, so promote to public
-            inline auto get_total_primitive_count() const noexcept
-                -> std::size_t {
-              std::size_t total_count_primitives(0UL);
 
-              // this explicit to silence warnings in clang
-              auto reducer = [this, &total_count_primitives](auto Is) {
-                total_count_primitives += this->get_count<Is>();
-              };
-              index_apply<get_number_of_primitives()>([&reducer](auto... Is) {
-                EXPAND_PACK_LEFT_TO_RIGHT(reducer(Is));
-              });
-
-              return total_count_primitives;
-            }
-
-            // Needed for transferring primitives in HashGrids, so promoted to
-            // public
-            template <typename PrimitiveType,
-                      Requires<tmpl::list_contains_v<AdmissiblePrimitives,
-                                                     PrimitiveType>> = nullptr>
-            inline constexpr auto get_count() noexcept -> std::size_t& {
-              // Could be decltype(auto).
-              return std::get<
-                  tmpl::index_of<AdmissiblePrimitives, PrimitiveType>::value>(
-                  primitive_count_);
-            }
-
-            template <typename PrimitiveType,
-                      Requires<tmpl::list_contains_v<AdmissiblePrimitives,
-                                                     PrimitiveType>> = nullptr>
-            inline constexpr auto get_count() const noexcept -> std::size_t {
-              return std::get<
-                  tmpl::index_of<AdmissiblePrimitives, PrimitiveType>::value>(
-                  primitive_count_);
-            }
-
-            template <std::size_t PrimitiveIndex,
-                      Requires<(PrimitiveIndex <= get_number_of_primitives())> =
-                          nullptr>
-            inline constexpr decltype(auto) get_count() /*const*/
-                noexcept
-            /*-> std::size_t&*/ {
-              return std::get<PrimitiveIndex>(primitive_count_);
-            }
-
-            template <std::size_t PrimitiveIndex,
-                      Requires<(PrimitiveIndex <= get_number_of_primitives())> =
-                          nullptr>
-            inline constexpr auto get_count() const noexcept -> std::size_t {
-              return std::get<PrimitiveIndex>(primitive_count_);
-            }
-
-            /*
-            template <typename PrimitiveType,
-                      Requires<tmpl::list_contains_v<AdmissiblePrimitives,
-                                                     PrimitiveType>> = nullptr>
-            inline constexpr auto set_count() noexcept -> std::size_t& {
-              return std::get<
-                  tmpl::index_of<AdmissiblePrimitives, PrimitiveType>::value>(
-                  primitive_count_);
-            }
-
-            template <std::size_t PrimitiveIndex,
-                      Requires<(PrimitiveIndex <= get_number_of_primitives())> =
-                          nullptr>
-            inline constexpr auto set_count() noexcept -> std::size_t& {
-              return std::get<PrimitiveIndex>(primitive_count_);
-            }
+            //******************************************************************
+            /*!\brief Gets the total count of primitives assigned to the current
+             * hashgrid
              */
-
-            //@}
-            //******************************************************************
-
-            //**Add/remove functions********************************************
-            /*!\name Add/remove functions */
-            //@{
-            template <typename PrimitiveType>  // Type of the primitive
-            inline void add(PrimitiveType* primitive);
-            template <typename PrimitiveType>  // Type of the primitive
-            inline void remove(PrimitiveType* primitive);
-            //@}
-            //******************************************************************
-
-            //**Utility functions***********************************************
-            /*!\name Utility functions */
-            //@{
-            template <typename PrimitiveType>  // Type of the primitive
-            void update(PrimitiveType* primitive);
-
-            void clear();
-            //@}
-            //******************************************************************
-
-            //**Contact functions***********************************************
-            /*!\name Contact functions */
-
-            template <typename Contacts>
-            void process_grid(Contacts& contacts) const;
-
-            template <typename PrimitiveType>
-            std::size_t transfer_primitives(
-                to_t /* meta */,
-                PrimitiveType** output_primitives_buffer) const;
-
-            template <typename FCP, typename Contacts>
-            void process_primitives_from_finer_grid(
-                FCP** primitives_from_finer_grid,
-                size_t n_primitives_from_finer_grid, Contacts& contacts) const;
-            //@}
+            inline auto get_number_of_primitives() const noexcept
+                -> std::size_t {
+              return std::accumulate(primitive_count_.cbegin(),
+                                     primitive_count_.cend(), 0UL);
+            }
             //******************************************************************
 
            private:
-            //**Utility
-            // functions********************************************************
-            /*!\name Utility functions */
-            //@{
-            void initializeNeighborOffsets();
-
-            template <typename PrimitiveType>  // Type of the primitive
-            std::size_t hash(PrimitiveType* primitive) const noexcept;
-
-            void enlarge();
-            //@}
             //******************************************************************
-
-            //**Add/remove functions********************************************
-            /*!\name Add/remove functions */
-            //@{
-
-            template <typename PrimitiveType>  // Type of the primitive
-            void add(PrimitiveType* primitive, to_t /* meta */, Cell* cell);
-
-            template <typename PrimitiveType>  // Type of the primitive
-            void remove(PrimitiveType* primitive, from_t /* meta */,
-                        Cell* cell);
-
-            //@}
-            //******************************************************************
-
-            //**Contact functions***********************************************
-            /*!\name Contact functions */
-
-            // TODO These can be extracted as free functions and reused in
-            // Exhaustive search too
-            template <typename Contacts, typename FCPS, typename SCPS>
-            void process_primitives(Contacts& contacts, FCPS& first_primitives,
-                                    SCPS&, tags::SamePrimitivesTag) const;
-
-            template <typename Contacts, typename FCPS, typename SCPS>
-            void process_primitives(Contacts& contacts, FCPS& first_primitives,
-                                    SCPS& second_primitives,
-                                    tags::DifferentPrimitivesTag) const;
-
-            template <typename FCP, typename Contacts>
-            void process_within_cell(Contacts& contacts) const;
-
-            template <typename FCP, typename Contacts>
-            void process_neighboring_cells(Contacts& contacts) const;
-
-            template <typename FCP, typename Contacts>
-            void process_neighboring_cells_version_two(
-                Contacts& contacts) const;
-
-            //@}
-            //******************************************************************
-
-            //**Get functions***************************************************
-            /*!\name Get functions */
-            //@{
-
-            inline auto get_number_of_primitives_currently_in(
-                Cell* cell) const noexcept -> std::size_t {
-              // Iterate over the tuple and reduce
-              std::size_t n_primitives(0UL);
-              auto reducer = [&n_primitives](auto* primitive_vector) {
-                n_primitives +=
-                    primitive_vector == nullptr ? 0 : primitive_vector->size();
-              };
-              index_apply<get_number_of_primitives()>(
-                  [cell, &reducer](auto... Is) {
-                    EXPAND_PACK_LEFT_TO_RIGHT(
-                        reducer(std::get<Is>(cell->cell_primitives_)));
-                  });
-              return n_primitives;
+            /*!\brief Gets the count of a primitive type in a given cell of the
+             * hashgrid
+             */
+            inline auto get_number_of_primitives(Cell* cell) const noexcept
+                -> std::size_t {
+              // all primitives
+              return cell->template get_number_of_primitives<>();
             }
+            //******************************************************************
 
-            template <typename PrimitiveType,
-                      Requires<tmpl::list_contains_v<AdmissiblePrimitives,
-                                                     PrimitiveType>> = nullptr>
-            inline constexpr auto get_cells_occupied_by() noexcept
+            //******************************************************************
+            /*!\brief Gets a collection of cells occupied by a primitive type in
+             * the current hashgrid
+             */
+            template <typename PrimitiveType>
+            inline constexpr auto get_cells_occupied_by() & noexcept
                 -> CellVector& {
-              return std::get<CellVectorStorageTag<PrimitiveType>>(
-                  occupiedCells_);
+              return tuples::get<AsCellVector<PrimitiveType>>(occupiedCells_);
             }
-
-            template <typename PrimitiveType,
-                      Requires<tmpl::list_contains_v<AdmissiblePrimitives,
-                                                     PrimitiveType>> = nullptr>
-            inline constexpr auto get_cells_occupied_by() const noexcept
+            template <typename PrimitiveType>
+            inline constexpr auto get_cells_occupied_by() const& noexcept
                 -> CellVector const& {
-              return std::get<CellVectorStorageTag<PrimitiveType>>(
-                  occupiedCells_);
+              return tuples::get<AsCellVector<PrimitiveType>>(occupiedCells_);
             }
+            //******************************************************************
 
             /* Disallow indexing based access for now
             template <std::size_t PrimitiveIndex,
-                      Requires<(PrimitiveIndex <= get_number_of_primitives())> =
-                          nullptr>
-            inline constexpr auto get_cells_occupied_by() noexcept
+                      Requires<(PrimitiveIndex <=
+            get_number_of_primitive_types())> = nullptr> inline constexpr auto
+            get_cells_occupied_by() noexcept
                 -> CellVector& {
               return std::get<CellVectorStorageTag<
                   tmpl::at_c<AdmissiblePrimitives, PrimitiveIndex>>>(
@@ -507,76 +592,172 @@ namespace elastica {
             }
              */
 
-            inline static constexpr auto number_of_neighbors() -> std::size_t {
+            //******************************************************************
+            /*!\brief Gets the number of neighbors to a cell in the context of
+             * the hashgrid.
+             */
+            inline static constexpr auto get_number_of_neighbors()
+                -> std::size_t {
               return 27UL;
             }
+            //******************************************************************
 
-            inline static constexpr auto half_number_of_neighbors()
+            //******************************************************************
+            /*!\brief Gets half the number of neighbors to a cell in the context
+             * of the hashgrid.
+             */
+            inline static constexpr auto get_half_number_of_neighbors()
                 -> std::size_t {
               return 13UL;
             }
+            //******************************************************************
+
+            //@}
+            //******************************************************************
+
+            //**Add/remove functions********************************************
+            /*!\name Add/remove functions */
+            //@{
+           public:
+            template <typename PrimitiveType>  // Type of the primitive
+            inline void add(PrimitiveType* primitive);
+            template <typename PrimitiveType>  // Type of the primitive
+            inline void remove(PrimitiveType* primitive);
+
+           private:
+            template <typename PrimitiveType>
+            void add(PrimitiveType* primitive, to_t /* meta */, Cell* cell);
+
+            template <typename PrimitiveType>
+            void remove(PrimitiveType* primitive, from_t /* meta */,
+                        Cell* cell);
+            //@}
+            //******************************************************************
+
+            //**Utility functions***********************************************
+            /*!\name Utility functions */
+            //@{
+           public:
+            template <typename Primitive>
+            void update(Primitive* primitive);
+            void clear();
+
+           private:
+            void destroy();
+            void clear_neighbor_offsets();
+            void initialize_neighbor_offsets();
+            void set_cell_primitives_to_null();
+
+            template <typename Primitive>
+            std::size_t hash(Primitive* primitive) const noexcept;
+
+            void enlarge();
+            //@}
+            //******************************************************************
+
+            //**Contact functions***********************************************
+            /*!\name Contact functions */
+            //@{
+           public:
+            // template <typename Contacts>
+            // void process_grid(Contacts& contacts) const;
+            template <typename Contacts>
+            void process_v2(Contacts& contacts) const;
+
+            template <typename PrimitiveType>
+            std::size_t transfer_primitives(
+                to_t /* meta */,
+                PrimitiveType** output_primitives_buffer) const;
+
+            template <typename FCP, typename Contacts>
+            void generate_contacts_from_finer_grid(
+                FCP** primitives_from_finer_grid,
+                size_t n_primitives_from_finer_grid, Contacts& contacts) const;
+
+            void check_invariance() const;
+
+           private:
+            // TODO These can be extracted as free functions and reused in
+            // Exhaustive search too
+            template <typename Contacts, typename FCPCollection,
+                      typename SCPCollection>
+            void generate_contacts(Contacts& contacts,
+                                   FCPCollection& first_primitives,
+                                   SCPCollection&, tt::SamePrimitivesTag) const;
+
+            template <typename Contacts, typename FCPCollection,
+                      typename SCPCollection>
+            void generate_contacts(Contacts& contacts,
+                                   FCPCollection& first_primitives,
+                                   SCPCollection& second_primitives,
+                                   DifferentPrimitivesOrCellsTag) const;
+
+            template <typename PrimitiveToCollide, typename Contacts>
+            void process_within(Cell const*, Contacts&) const;
+
+            template <typename PrimitiveToCollide, typename Contacts>
+            void process_between(Cell const* const, Cell const* const,
+                                 Contacts&) const;
+
             //@}
             //******************************************************************
 
            private:
-            //**Member
-            // variables*************************************************************************
+            //**Member variables************************************************
             /*!\name Member variables */
             //@{
-            Cell* cell_;  //!< Linear array of cells representing the
-                          //!< three-dimensional hash grid.
+            //! Linear array of cells representing the 3D hash grid.
+            Cell* cell_;
+            //! Number of cells allocated in x-axis direction.
+            std::size_t xCellCount_;
+            //! Number of cells allocated in y-axis direction.
+            std::size_t yCellCount_;
+            //! Number of cells allocated in z-axis direction.
+            std::size_t zCellCount_;
+            //! Bit-mask required for the hash calculation in x-axis direction
+            std::size_t xHashMask_;
+            //! Bit-mask required for the hash calculation in y-axis direction
+            std::size_t yHashMask_;
+            //! Bit-mask required for the hash calculation in z-axis direction
+            std::size_t zHashMask_;
+            /*! \brief Number of cells allocated in x-axis direction multiplied
+             *  by the number of cells allocated in y-axis direction.
+             */
+            std::size_t xyCellCount_;
+            //! Total number of allocated cells.
+            std::size_t xyzCellCount_;
 
-            std::size_t xCellCount_;  //!< Number of cells allocated in x-axis
-                                      //!< direction.
-            std::size_t yCellCount_;  //!< Number of cells allocated in y-axis
-                                      //!< direction.
-            std::size_t zCellCount_;  //!< Number of cells allocated in z-axis
-                                      //!< direction.
-
-            std::size_t
-                xHashMask_;  //!< Bit-mask required for the hash calculation
-                             //!< in x-axis direction (\a xCellCount_ - 1).
-            std::size_t
-                yHashMask_;  //!< Bit-mask required for the hash calculation
-                             //!< in y-axis direction (\a yCellCount_ - 1).
-            std::size_t
-                zHashMask_;  //!< Bit-mask required for the hash calculation
-                             //!< in z-axis direction (\a zCellCount_ - 1).
-
-            std::size_t
-                xyCellCount_; /*!< \brief Number of cells allocated in x-axis
-                                 direction multiplied by the number of cells
-                                 allocated in y-axis direction. */
-            std::size_t xyzCellCount_;  //!< Total number of allocated cells.
-
-            std::size_t
-                enlargementThreshold_; /*!< \brief The enlargement threshold
-                                     - the moment the number of assigned
-                                     bodies exceeds this threshold, the
-                                              size of this hash grid is
-                                     increased. */
-
-            real_t cellSpan_;  //!< The grid's cell size (edge length of the
-                               //!< underlying cubic grid cells).
-            real_t inverseCellSpan_;  //!< The inverse cell size.
-            /*!< Required for replacing floating point divisions with
-               multiplications during the hash computation. */
-
-            OccupiedCellStorage
-                occupiedCells_;  //!< A grid-global list that keeps track
-                                 //!< of all body-occupied cells.
-            /*!< The list is required in order to avoid iterating through all
-                 grid cells whenever all bodies that are stored in the grid
-                 need to be addressed.  */
-
-            PrimitiveCounts primitive_count_;  //!< Number of primitives
-                                               //!< assigned to this hash grid.
-
-            offset_t
-                stdNeighborOffset_[number_of_neighbors()]; /*!< \brief Array
-                                           of offsets to the neighboring cells
-                                           (valid for all the inner cells of the
-                                           hash grid). */
+            /*! \brief The enlargement threshold---the moment the number of
+             * assigned bodies exceeds this threshold, the size of this hash
+             * grid is increased.
+             */
+            std::size_t enlargementThreshold_;
+            //! The grid's cell size (edge length of the  cubic grid cells).
+            real_t cellSpan_;
+            ////////////////////////////////////////////////////////////////////
+            //! The inverse cell size.
+            real_t inverseCellSpan_;
+            /* \devnote : This is required for replacing floating point
+             * divisions with multiplications during the hash computation.
+             */
+            ////////////////////////////////////////////////////////////////////
+            //! A grid-global list that keeps track of all body-occupied cells,
+            //! according to the type of the primitive
+            OccupiedCells occupiedCells_;
+            /* \devnote : The list is required in order to avoid iterating
+             * through all grid cells whenever all bodies that are stored in the
+             * grid need to be addressed.
+             */
+            ////////////////////////////////////////////////////////////////////
+            //! Number of primitives assigned to this hash grid, categorized
+            //! according to the type of the primitive
+            PrimitiveCounts primitive_count_;
+            /*!\brief Array of offsets to the neighboring cells (valid for all
+             * the inner cells of the hash grid).
+             */
+            offset_t stdNeighborOffset_[get_number_of_neighbors()];
+            //! Handle to configuration parameters
+            Parameters const* parameters_{nullptr};
             //@}
             //******************************************************************
           };
@@ -596,9 +777,9 @@ namespace elastica {
           //**Constructor*******************************************************
           /*!\name Constructor */
           //@{
-          HashGrids(DomainType const*& domain,
-                    PrimitiveStorage& primitivestorage, GhostPrimitives& ghosts,
-                    ImposedPrimitiveStorage*& imposed_primitive_storage);
+          HashGrids() : HashGrids(nullptr){};
+          explicit HashGrids(DomainType const* domain);
+          HashGrids(DomainType const* domain, Parameters parameters);
           //@}
           //********************************************************************
 
@@ -612,7 +793,10 @@ namespace elastica {
           //**Add/remove functions**********************************************
           /*!\name Add/remove functions */
           //@{
-          void add_all_primitives();
+         public:
+          template <typename Simulator_>
+          void add_all_primitives(::elastica::collision::tags::from_t,
+                                  Simulator_& simulator);
 
           template <typename PrimitiveType>  // Type of the primitive
           void add(PrimitiveType* primitive);
@@ -620,144 +804,171 @@ namespace elastica {
           template <typename PrimitiveType>  // Type of the primitive
           void remove(PrimitiveType* primitive);
 
+         private:
+          template <typename PrimitiveType>  // Type of the primitive
+          void add_finite_primitives(PrimitiveType* primitive,
+                                     real_t primitive_length);
+
+          template <typename PrimitiveType>  // Type of the primitive
+          void add_nonfinite_primitives(PrimitiveType* primitive,
+                                        real_t primitive_length);
           //@}
           //********************************************************************
 
           //**Utility functions*************************************************
           /*!\name Utility functions */
+          //@{
+         public:
           void clear();
+
+          //********************************************************************
+          /*!\brief Performs state invariant checks on the grids.
+           *
+           * \return void
+           */
+          auto check_invariance() const -> void {
+            if (not is_hashgrid_active())
+              return;
+
+            for (HashGrid* grid : grid_list_)
+              grid->check_invariance();
+          }
+          //********************************************************************
+
+          //@}
+          //********************************************************************
+
+         public:
+          //**Get functions*****************************************************
+          /*!\name Get functions */
+          //@{
+
+          //********************************************************************
+          //! \brief Checks if hash-grid algorithm is active algorithm is active
+          auto is_hashgrid_active() const noexcept -> bool {
+            return grid_active_;
+          }
+          //********************************************************************
+
+          //********************************************************************
+          //! \brief Gets the configuration parameters
+          auto parameters() & noexcept -> Parameters& { return parameters_; }
+          //********************************************************************
+
+          //********************************************************************
+          //! \brief Gets the configuration parameters
+          auto parameters() const& noexcept -> Parameters const& {
+            return parameters_;
+          }
+          //********************************************************************
+
+          //********************************************************************
+          //! \brief Gets the configuration parameters
+          auto grids() & noexcept -> GridList& { return grid_list_; }
+          //********************************************************************
+
+          //********************************************************************
+          //! \brief Gets the configuration parameters
+          auto grids() const& noexcept -> GridList const& { return grid_list_; }
+          //********************************************************************
+
           //@}
           //********************************************************************
 
           //**Contact functions*************************************************
           /*!\name Contact functions */
-
-          template <typename Contacts>
-          void find_contacts(Contacts& contacts);
-
-          //@}
-          //********************************************************************
+         public:
+          template <typename PrimitivesCollection_,
+                    typename ImposedPrimitivesCollection_,
+                    typename Contacts>  // Contact container type
+          void operator()(
+              PrimitivesCollection_& primitives_collection,
+              ImposedPrimitivesCollection_& imposed_primitives_collection,
+              Contacts& contacts);
 
          protected:
-          //**Contact functions*************************************************
-          /*!\name Contact functions */
-          //@{
-          template <typename FirstPrimitive, typename SecondPrimitive,
-                    typename Contacts>
-          static inline void collide(FirstPrimitive* first_primitive,
-                                     SecondPrimitive* second_primitive,
-                                     Contacts& contacts);
+          template <typename FCP,                // First colliding primitive
+                    typename SCP,                // Second colliding primitive
+                    typename ContactsContainer>  // Contact container type
+          static inline void generate_contact(ContactsContainer& contacts,
+                                              FCP* first_primitive,
+                                              SCP* second_primitive);
           //@}
           //********************************************************************
-
-          //**Get functions*****************************************************
-          /*!\name Get/remove functions */
-          //@{
-          inline auto get_total_primitive_count_in_simulation() const noexcept
-              -> std::size_t {
-            std::size_t total_count_primitives(0UL);
-
-            auto reducer = [this, &total_count_primitives](auto Is) {
-              total_count_primitives += std::get<Is>(primitives_).size();
-            };
-
-            index_apply<get_number_of_primitives()>([&reducer](auto... Is) {
-              EXPAND_PACK_LEFT_TO_RIGHT(reducer(Is));
-            });
-
-            return total_count_primitives;
-          }
-
-          /*
-          template <typename PrimitiveType>  // Type of the primitive
-          inline constexpr auto get_non_grid_collection_of() noexcept
-              -> AddPrimitiveStorageType<PrimitiveType>& {
-            // TODO
-            //            using PrimitiveCollectionType =
-            //            AddPrimitiveStorageType<Primitive>; return
-            //            std::get<PrimitiveCollectionType>(primitives_);
-          }
-           */
-
-          template <std::size_t PrimitiveIdx>
-          inline constexpr decltype(auto) get_primitive_collection() noexcept {
-            return std::get<PrimitiveIdx>(primitives_);
-          }
-
-          //@}
-          //********************************************************************
-         private:
-          // DONE : Put in policy class
-          //          using DomainPolicy::adjust_span;
-          /* real_t adjust_span(real_t requested_cell_span) const noexcept; */
-
-          template <typename PrimitiveType>  // Type of the primitive
-          void add_finite_primitives(PrimitiveType* primitive,
-                                     real_t primitive_size);
-
-          template <typename PrimitiveType>  // Type of the primitive
-          void add_nonfinite_primitives(PrimitiveType* primitive,
-                                        real_t primitive_size);
 
          private:
           //**Member variables**************************************************
           /*!\name Member variables */
           //@{
-          // The lifetime of the referred variable will exceed the
-          // CoarseDetectors lifetime Hence this operation is valid
-          PrimitiveStorage&
-              primitives_;  //!< Reference to the primitive storage.
-          ImposedPrimitiveStorage*&
-              imposed_primitives_;  //!< Pointer to the primitives that are
-                                    //!< fixed as the simulation progresses
-          // NonGridPrimitiveStorage
-          //     non_grid_primitives_;  //!< Vector of all unassigned rigid
-          //     bodies.
+          //////////////////////////////////////////////////////////////////////
           /*!< This vector contains all bodies that are not assigned to any
                grid in the hierarchy. A body is not assigned to any grid if
                the body is infinite in size or if the detection algorithm
                based on hierarchical hash grids has not yet been activated
-               (see \a gridActive_). */
+               (see \ref grid_active_). */
+          // NonGridPrimitiveStorage
+          //     non_grid_primitives_;  //!< Vector of all unassigned rigid
+          //     bodies.
+          //////////////////////////////////////////////////////////////////////
 
-          GridList grid_list_;  //!< List of all grids that form the hierarchy.
-          /*!< The grids in this list are sorted in ascending order by the
-               size of their cells. */
-          bool grid_active_;  //!< Grid activation flag.
-          /*!< This flag indicates whether the detection algorithm based on
-               hierarchical hash grids is activated. If the simulation only
-               consists of a very small number of bodies, each body is simply
-               checked against every other body. This strategy proves to be
-               faster than involving the far more complex mechanisms of the
-               hierarchical hash grids. */
-          ExhaustiveSearch<EnhancedCollisionConfig> exhaustive_search;
+          //////////////////////////////////////////////////////////////////////
+          /* The grids in this list are sorted in ascending order by the
+           * size of their cells. */
+          //!< List of all grids that form the hierarchy.
+          GridList grid_list_;
+          //////////////////////////////////////////////////////////////////////
+
+          //////////////////////////////////////////////////////////////////////
+          /* This flag indicates whether the detection algorithm based on
+           * hierarchical hash grids is activated. If the simulation only
+           * consists of a very small number of bodies, each body is simply
+           * checked against every other body. This strategy proves to be
+           * faster than involving the far more complex mechanisms of the
+           * hierarchical hash grids.
+           */
+          //! Grid activation flag.
+          bool grid_active_;
+          //////////////////////////////////////////////////////////////////////
+          //! Keeps track of primitives that get transferred between each grid
+          Cache<AdmissiblePrimitives> transfer_cache_;
+          //////////////////////////////////////////////////////////////////////
+          //! Runtime parameters
+          Parameters parameters_;
+          //////////////////////////////////////////////////////////////////////
+          /* Below a certain threshold on the number of primitives, we switch
+           * over to the exhaustive search algorithm, see \ref grid_active_.
+           */
+          //! The exhaustive search algorithm
+          ExhaustiveSearch<Config> exhaustive_search;
+          //////////////////////////////////////////////////////////////////////
 
           //**Compile time checks***********************************************
           /*! \cond ELASTICA_INTERNAL */
           static_assert(
-              std::is_same<
-                  This, typename CollisionConfig::template CoarseDetectorFamily<
-                            EnhancedCollisionConfig>>::value,
+              std::is_same<This, typename Config::template CoarseDetectorFamily<
+                                     Config>>::value,
               "Should not be reached!");
           /*! \endcond */
           //********************************************************************
         };
+        //**********************************************************************
 
-        //=================================================================================================
+        //======================================================================
         //
         //  CONSTRUCTOR
         //
-        //=================================================================================================
+        //======================================================================
 
-        //*************************************************************************************************
+        //**********************************************************************
         /*!\brief Constructor for the HashGrid class.
          */
-        template <typename C>  // Type of the configuration
-        HashGrids<C>::HashGrid::HashGrid(real_t cellSpan) {
-          using namespace elastica::collision::detection::coarse::hhg;
-
+        template <typename C>
+        HashGrids<C>::HashGrid::HashGrid(real_t cellSpan,
+                                         Parameters const& parameters)
+            : parameters_(&parameters) {
           // Initialization of all member variables and ...
           std::tie(xCellCount_, yCellCount_, zCellCount_) =
-              DomainPolicy::initial_cell_counts();
+              DomainPolicyType::initial_cell_counts(cellSpan);
           /*
           xCellCount_ = initial_x_cell_count();
           yCellCount_ = initial_y_cell_count();
@@ -771,84 +982,59 @@ namespace elastica {
           xyCellCount_ = xCellCount_ * yCellCount_;
           xyzCellCount_ = xyCellCount_ * zCellCount_;
 
-          enlargementThreshold_ = xyzCellCount_ / minimal_grid_density();
+          enlargementThreshold_ =
+              xyzCellCount_ / parameters.minimal_grid_density;
 
-          // ... allocation of the linear array that is representing the hash
+          // ... allocation of the linear array that represents the hash
           // grid.
           cell_ = new Cell[xyzCellCount_];
 
           // Initialization of each cell - i.e., initially setting the pointer
           // to the body container to NULL (=> no bodies are assigned to this
           // hash grid yet!) and ...
-
-          {
-            Cell* c = cell_;
-
-            auto null_initializer = [&c](auto Is) {
-              using PrimitiveType = tmpl::at_c<AdmissiblePrimitives, Is>;
-              c->template set_handle_of<PrimitiveType>() = nullptr;
-            };
-
-            for (; c < cell_ + xyzCellCount_; ++c) {
-              index_apply<get_number_of_primitives()>(
-                  [&null_initializer](auto... Is) {
-                    EXPAND_PACK_LEFT_TO_RIGHT(null_initializer(Is));
-                  });
-            }
-          }
+          set_cell_primitives_to_null();
 
           // ... setting up the neighborhood relationship (using the offset
           // array).
-          initializeNeighborOffsets();
+          initialize_neighbor_offsets();
 
           cellSpan_ = cellSpan;
-          inverseCellSpan_ = static_cast<real_t>(1) / cellSpan;
+          inverseCellSpan_ = static_cast<real_t>(1.0) / cellSpan;
 
           // this explicit to silence warnings in clang
-          index_apply<get_number_of_primitives()>([this](auto... Is) {
-            EXPAND_PACK_LEFT_TO_RIGHT(
-                this->get_cells_occupied_by<
-                        tmpl::at_c<AdmissiblePrimitives, Is>>()
-                    .reserve(initial_occupied_cells_vector_size()));
-          });
-
-          // Set all primitive counts to 0
-          // this explicit to silence warnings in clang
-          index_apply<get_number_of_primitives()>([this](auto... Is) {
-            EXPAND_PACK_LEFT_TO_RIGHT(this->get_count<Is>() = 0UL);
+          tmpl::for_each<AdmissiblePrimitives>([this](auto p) {
+            using Primitive = tmpl::type_from<decltype(p)>;
+            // rseerve memory
+            this->template get_cells_occupied_by<Primitive>().reserve(
+                this->parameters_->initial_occupied_cells_vector_size);
+            // initialize to 0
+            this->template get_count_of<Primitive>() = 0UL;
           });
         }
-        //*************************************************************************************************
+        //**********************************************************************
 
-        //=================================================================================================
+        //======================================================================
         //
         //  DESTRUCTOR
         //
-        //=================================================================================================
+        //======================================================================
 
-        //*************************************************************************************************
+        //**********************************************************************
         /*!\brief Destructor for the HashGrid class.
          */
-        template <typename C>  // Type of the configuration
+        template <typename C>
         HashGrids<C>::HashGrid::~HashGrid() {
-          clear();
-
-          for (Cell* c = cell_; c < cell_ + xyzCellCount_; ++c) {
-            // if its not an interior cell
-            if (c->neighborOffset_ != stdNeighborOffset_)
-              delete[] c->neighborOffset_;
-          }
-          delete[] cell_;
+          destroy();
         }
-        //*************************************************************************************************
+        //**********************************************************************
 
-        //=================================================================================================
+        //======================================================================
         //
         //  ADD/REMOVE FUNCTIONS
         //
-        //=================================================================================================
+        //======================================================================
 
-        //*************************************************************************************************
+        //**********************************************************************
         /*!\brief Adds a body to this hash grid.
          *
          * \param body The body that is about to be added to this hash grid.
@@ -861,15 +1047,15 @@ namespace elastica {
          * grid density (= ratio of cells to bodies). This function may also be
          * called during the update phase.
          */
-        template <typename C>              // Type of the configuration
-        template <typename PrimitiveType>  // Type of the primitive
-        void HashGrids<C>::HashGrid::add(PrimitiveType* primitive) {
+        template <typename C>
+        template <typename Primitive>
+        void HashGrids<C>::HashGrid::add(Primitive* primitive) {
           // TODO : You can exercise more control here, and add it as a policy
           // If adding the primitive will cause the total number of primitives
           // assigned to this grid to exceed the enlargement threshold, the size
           // of this hash grid must be increased.
-          if (DomainPolicy::should_enlarge(get_total_primitive_count(),
-                                           enlargementThreshold_))
+          if (DP::should_enlarge(get_number_of_primitives(),
+                                 enlargementThreshold_))
             HashGrid::enlarge();
 
           // Calculate (and store) the hash value (= the primitive's cell
@@ -882,11 +1068,11 @@ namespace elastica {
           add(primitive, to, cell);
 
           // Raise the corresponding primitive count
-          ++get_count<PrimitiveType>();
+          ++get_count_of<Primitive>();
         }
-        //*************************************************************************************************
+        //**********************************************************************
 
-        //*************************************************************************************************
+        //**********************************************************************
         /*!\brief Removes a body from this hash grid.
          *
          * \param body The body that is about to be removed from this hash grid.
@@ -895,9 +1081,9 @@ namespace elastica {
          * This function is called every time a rigid body is removed from this
          * grid. It may also be called during the update phase.
          */
-        template <typename C>              // Type of the configuration
-        template <typename PrimitiveType>  // Type of the primitive
-        void HashGrids<C>::HashGrid::remove(PrimitiveType* primitive) {
+        template <typename C>
+        template <typename Primitive>
+        void HashGrids<C>::HashGrid::remove(Primitive* primitive) {
           // The stored hash value (= the body's cell association) is used in
           // order to directly access the cell from which this body will be
           // removed.
@@ -910,7 +1096,7 @@ namespace elastica {
           // TODO concurrent array (this is not that important, if we know
           //      how many times the remove function is called for every
           //      primitive, we can update it later)
-          --get_count<PrimitiveType>();
+          --get_count_of<Primitive>();
         }
         //**********************************************************************
 
@@ -925,7 +1111,8 @@ namespace elastica {
          * to this grid.
          *
          * \param primitive The primitive whose cell association is being
-         * updated. \return void
+         * updated.
+         * \return void
          *
          * Checks if a given rigid primitive can remain stored in its currently
          * assigned cell - and if not, removes the primitive from this cell and
@@ -933,13 +1120,13 @@ namespace elastica {
          * the primitive's hash value).
          */
         template <typename C>
-        template <typename PrimitiveType>  // Type of the primitive
-        void HashGrids<C>::HashGrid::update(PrimitiveType* primitive) {
+        template <typename Primitive>
+        void HashGrids<C>::HashGrid::update(Primitive* primitive) {
           // DONE : primitive is parallel
           // The hash value is recomputed based on the primitive's current
           // spatial location.
-          std::size_t new_hash = hash(primitive);
-          std::size_t old_hash = primitive->get_hash();
+          std::size_t const new_hash = hash(primitive);
+          std::size_t const old_hash = primitive->get_hash();
 
           // If this new hash value is identical to the hash value of the
           // previous time step, the primitive
@@ -971,6 +1158,57 @@ namespace elastica {
         //**********************************************************************
 
         //**********************************************************************
+        /*!\brief Performs invariant checks on hash grid.
+         *
+         * \return void
+         */
+        template <typename C>
+        void HashGrids<C>::HashGrid::check_invariance() const {
+          // Count the number of primitives in each cell and see if it agrees
+          // with the counter.
+          tmpl::for_each<AdmissiblePrimitives>([this](auto p) {
+            using Primitive = tmpl::type_from<decltype(p)>;
+
+            // 1. Call destructor of each element
+            auto& primitive_occupied_cells =
+                this->get_cells_occupied_by<Primitive>();
+            auto const actual = std::accumulate(
+                std::cbegin(primitive_occupied_cells),
+                std::cend(primitive_occupied_cells), 0UL,
+                [](std::size_t sum, Cell* cell) {
+                  auto ptr = cell->template get_handle_to<Primitive>();
+                  Expects(ptr != nullptr);
+                  sum += cpp17::size(*ptr);
+                  return sum;
+                });
+            auto const expected = this->get_count_of<Primitive>();
+            Ensures(actual == expected);
+          });
+
+          tmpl::for_each<AdmissiblePrimitives>([this](auto p) {
+            using Primitive = tmpl::type_from<decltype(p)>;
+
+            std::for_each(
+                elastica::make_counting_iterator(0UL),
+                elastica::make_counting_iterator(xyzCellCount_),
+                [=](auto const expected_hash) {
+                  Cell* cell = cell_ + expected_hash;
+                  auto* primitives = cell->template get_handle_to<Primitive>();
+
+                  if (primitives != nullptr) {
+                    auto const primitives_have_expected_hash = std::all_of(
+                        std::cbegin(*primitives), std::cend(*primitives),
+                        [=](auto& primitive) {
+                          return primitive->get_hash() == expected_hash;
+                        });
+                    Ensures(primitives_have_expected_hash);
+                  }
+                });
+          });
+        }
+        //**********************************************************************
+
+        //**********************************************************************
         /*!\brief Clears the hash grid.
          *
          * \return void
@@ -979,24 +1217,65 @@ namespace elastica {
          * assigned to this hash grid from the body containers of the grid's
          * cells.
          */
-        template <typename C>  // Type of the configuration
+        template <typename C>
         void HashGrids<C>::HashGrid::clear() {
-          auto clearer = [this](auto Idx) {
-            using PrimitiveType = tmpl::at_c<AdmissiblePrimitives, Idx>;
+          tmpl::for_each<AdmissiblePrimitives>([this](auto p) {
+            using Primitive = tmpl::type_from<decltype(p)>;
+
+            // 1. Call destructor of each element
             auto& primitive_occupied_cells =
-                get_cells_occupied_by<PrimitiveType>();
+                this->get_cells_occupied_by<Primitive>();
+
             for (Cell* cell : primitive_occupied_cells) {
-              auto* primitives = cell->template get_handle_of<PrimitiveType>();
+              auto* primitives = cell->template get_handle_to<Primitive>();
+              // clears only the pointers, leaves the pointed to objects
+              // untouched
+              primitives->clear();
+
+              // In add(primitive, to, cell) we do a new PrimitiveContainer, so
+              // we explicitly delete it.
               delete primitives;
               primitives = nullptr;
             }
-            primitive_occupied_cells.clear();
-            std::get<Idx>(primitive_count_) = 0;
-          };
 
-          index_apply<get_number_of_primitives()>([&clearer](auto... Is) {
-            EXPAND_PACK_LEFT_TO_RIGHT(clearer(Is));
+            primitive_occupied_cells.clear();
+
+            // 2. Set size to 0
+            this->get_count_of<Primitive>() = 0UL;
           });
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Clears the offset array of the current hash-grid.
+         *
+         * \return void
+         *
+         * This function clears all the offset arrays in the cells of the
+         * current hashgrid
+         */
+        template <typename C>
+        void HashGrids<C>::HashGrid::clear_neighbor_offsets() {
+          std::for_each(cell_, cell_ + xyzCellCount_, [this](Cell& c) {
+            // if its not an interior cell
+            if (c.neighbor_offset_ != stdNeighborOffset_)
+              delete[] c.neighbor_offset_;
+          });
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Destroys any and all allocations made inside the hashgrid,
+         *
+         * \details
+         * Can be called in place of the destructor.
+         *
+         */
+        template <typename C>
+        void HashGrids<C>::HashGrid::destroy() {
+          clear();
+          clear_neighbor_offsets();
+          delete[] cell_;
         }
         //**********************************************************************
 
@@ -1009,8 +1288,8 @@ namespace elastica {
          * cells. The offsets are required for ensuring fast direct access to
          * all directly adjacent cells for each cell in the hash grid.
          */
-        template <typename C>  // Type of the configuration
-        void HashGrids<C>::HashGrid::initializeNeighborOffsets() {
+        template <typename C>
+        void HashGrids<C>::HashGrid::initialize_neighbor_offsets() {
           auto xc = static_cast<offset_t>(xCellCount_);
           auto yc = static_cast<offset_t>(yCellCount_);
           auto zc = static_cast<offset_t>(zCellCount_);
@@ -1038,9 +1317,12 @@ namespace elastica {
                 /* border cell */
                 if (x == 0 or x == (xc - 1) or y == 0 or y == (yc - 1) or
                     z == 0 or z == (zc - 1)) {
-                  c->neighborOffset_ = new offset_t[27];
+                  c->neighbor_offset_ = new offset_t[get_number_of_neighbors()];
 
                   i = 0;
+                  // 27 = 3 * 3 * 3
+
+                  // loop 3
                   for (offset_t zz = -xyc; zz <= xyc; zz += xyc) {
                     offset_t zo = zz;
                     if (z == 0 && zz == -xyc) {
@@ -1049,6 +1331,7 @@ namespace elastica {
                       zo = xyc - xyzc;
                     }
 
+                    // loop 3
                     for (offset_t yy = -xc; yy <= xc; yy += xc) {
                       offset_t yo = yy;
                       if (y == 0 && yy == -xc) {
@@ -1057,6 +1340,7 @@ namespace elastica {
                         yo = xc - xyc;
                       }
 
+                      // loop 3
                       for (offset_t xx = -1; xx <= 1; ++xx, ++i) {
                         offset_t xo = xx;
                         if (x == 0 && xx == -1) {
@@ -1065,18 +1349,35 @@ namespace elastica {
                           xo = 1 - xc;
                         }
 
-                        c->neighborOffset_[i] = xo + yo + zo;
+                        c->neighbor_offset_[i] = xo + yo + zo;
                       }
                     }
                   }
                 }
                 /* inner cell */
                 else {
-                  c->neighborOffset_ = stdNeighborOffset_;
+                  c->neighbor_offset_ = stdNeighborOffset_;
                 }
               }
             }
           }
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Sets the handle of each primitive storage across cells to
+         * empty
+         *
+         * \return void
+         */
+        template <typename C>
+        void HashGrids<C>::HashGrid::set_cell_primitives_to_null() {
+          std::for_each(cell_, cell_ + xyzCellCount_, [](Cell& c) {
+            tmpl::for_each<AdmissiblePrimitives>([&](auto p) {
+              using Primitive = tmpl::type_from<decltype(p)>;
+              c.template set_handle_of<Primitive>() = nullptr;
+            });
+          });
         }
         //**********************************************************************
 
@@ -1100,10 +1401,10 @@ namespace elastica {
          * operations - hence, the spatial dimensions of the hash grid must be
          * restricted to powers of two!
          */
-        template <typename C>              // Type of the configuration
-        template <typename PrimitiveType>  // Type of the primitive
+        template <typename C>
+        template <typename Primitive>
         std::size_t HashGrids<C>::HashGrid::hash(
-            PrimitiveType* primitive) const noexcept {
+            Primitive* primitive) const noexcept {
           auto const& aabb = primitive->get_AABB();
           const real_t x = aabb[0];
           const real_t y = aabb[1];
@@ -1142,22 +1443,21 @@ namespace elastica {
 
           return x_hash + y_hash * xCellCount_ + z_hash * xyCellCount_;
         }
-        //******************************************************************************
+        //**********************************************************************
 
-        //*************************************************************************************************
+        //**********************************************************************
         /*!\brief Adds a body to a specific cell in this hash grid.
          *
          * \param body The body that is about to be added to this hash grid.
          * \param cell The cell the body is assigend to.
          * \return void
          */
-        template <typename C>              // Type of the configuration
-        template <typename PrimitiveType>  // Type of the primitive
-        void HashGrids<C>::HashGrid::add(PrimitiveType* primitive,
-                                         to_t /* meta */, Cell* cell) {
+        template <typename C>
+        template <typename Primitive>
+        void HashGrids<C>::HashGrid::add(Primitive* primitive, to_t /* meta */,
+                                         Cell* cell) {
           // TODO The first part is parallel provided cell pointer
           //      is uniquely accessed within this function
-          using namespace elastica::collision::detection::coarse::hhg;
 
           // HEALTH WARNING : Here we obtain a pointer to the location
           // pointed by the underlying handle from get_handle. Chances are
@@ -1172,7 +1472,7 @@ namespace elastica {
           // https://stackoverflow.com/questions/6421083/reference-pointing-to-a-null-object
 
           // Pointer to a vector of primitive pointers
-          auto* primitives = cell->template get_handle_of<PrimitiveType>();
+          auto* primitives = cell->template get_handle_to<Primitive>();
 
           // If this cell is already occupied by other bodies, which means the
           // pointer to the body container holds a valid address and thus the
@@ -1194,62 +1494,49 @@ namespace elastica {
           else {
             //            // Prepare to see if the cell is already occupied
             //            const bool occupied =
-            //                get_number_of_primitives_currently_in(cell) > 0;
+            //                get_number_of_primitive_types_currently_in(cell) >
+            //                0;
 
             using PrimitiveContainer =
                 std::remove_pointer_t<decltype(primitives)>;
-            cell->template set_handle_of<PrimitiveType>() =
-                new PrimitiveContainer;
+            cell->template set_handle_of<Primitive>() = new PrimitiveContainer;
             //            primitives = new PrimitiveContainer;
-            primitives = cell->template get_handle_of<PrimitiveType>();
-            primitives->reserve(initial_cell_vector_size());
+            primitives = cell->template get_handle_to<Primitive>();
+            primitives->reserve(parameters_->initial_cell_vector_size);
 
             primitive->set_cell_ID(0);
             primitives->push_back(primitive);
 
             // TODO If parallel, these need to be concurrent vectors which may
-            // be
-            //      simultaneously modified
+            // be simultaneously modified
             // TODO Else have a thread local buffer that reduces the cells need
             //      to be added
             // Vector of cell pointers containing this primitive
-            auto& occupied_cells = get_cells_occupied_by<PrimitiveType>();
-            cell->template set_occupied_cellID<PrimitiveType>() =
-                occupied_cells.size();
+            auto& occupied_cells = get_cells_occupied_by<Primitive>();
+            cell->template occupied_cellID<Primitive>() = occupied_cells.size();
             occupied_cells.push_back(cell);
-
-            //            // If cell is already occupied by primitives, leave
-            //            alone
-            //            // Else it is not in occupied cells, because no
-            //            primitives
-            //            // are present, and we insert into occupiedCells_
-            //            if (!occupied) {
-            //              cell->occupiedCellsIds_ = occupiedCells_.size();
-            //              occupiedCells_.push_back(cell);
-            //            }
           }
         }
-        //*************************************************************************************************
+        //**********************************************************************
 
-        //*************************************************************************************************
+        //**********************************************************************
         /*!\brief Removes a body from a specific cell in this hash grid.
          *
          * \param body The body that is about to be removed from this hash grid.
          * \param cell The cell the body is removed from.
          * \return void
          */
-        template <typename C>              // Type of the configuration
-        template <typename PrimitiveType>  // Type of the primitive
-        void HashGrids<C>::HashGrid::remove(PrimitiveType* primitive,
+        template <typename C>
+        template <typename Primitive>
+        void HashGrids<C>::HashGrid::remove(Primitive* primitive,
                                             from_t /* meta */, Cell* cell) {
           // TODO The first part is parallel provided cell pointer
           //      is uniquely accessed within this function
           // Pointer to a vector of primitive pointers
-          auto* primitives = cell->template get_handle_of<PrimitiveType>();
+          auto* primitives = cell->template get_handle_to<Primitive>();
 
-          ELASTICA_ASSERT(primitives != nullptr, "Shouldn't reach this point!");
-          ELASTICA_ASSERT(primitives->size() > 0,
-                          "Shouldn't reach this point!");
+          Expects(primitives != nullptr);
+          Expects(primitives->size() > 0);
 
           // If the primitive is the last primitive that is stored in this cell
           // ...
@@ -1263,22 +1550,21 @@ namespace elastica {
             delete primitives;
             primitives = nullptr;
             //            delete cell->template get_handle_of<PrimitiveType>();
-            cell->template set_handle_of<PrimitiveType>() = nullptr;
+            cell->template set_handle_of<Primitive>() = nullptr;
 
             // ... the cell is removed from the grid-global vector
             // 'occupiedCells_' that records all body-occupied cells. Since the
-            // cell memorized its index (=> 'occupiedCellsIds_') in this vector,
-            // it can be removed in constant time, O(1).
+            // cell memorized its index (=> 'occupied_cells_ids_') in this
+            // vector, it can be removed in constant time, O(1).
 
             // Get values from cache
             // TODO If parallel, these need to be concurrent vectors which may
-            // be
-            //      simultaneously modified
+            // be simultaneously modified
             // TODO Else have a thread local buffer that reduces what cells need
             //      to be removed and remove after the step
-            auto& occupied_cells = get_cells_occupied_by<PrimitiveType>();
+            auto& occupied_cells = get_cells_occupied_by<Primitive>();
             const std::size_t occupied_cellID =
-                cell->template get_occupied_cellID<PrimitiveType>();
+                cpp17::as_const(cell)->template occupied_cellID<Primitive>();
 
             if (occupied_cellID == occupied_cells.size() - 1) {
               occupied_cells.pop_back();
@@ -1287,9 +1573,10 @@ namespace elastica {
               Cell* last_cell = occupied_cells.back();
               // Removes the cell, so don't need to erase it
               occupied_cells.pop_back();
-              last_cell->template set_occupied_cellID<PrimitiveType>() =
+              last_cell->template occupied_cellID<Primitive>() =
                   occupied_cellID;
               occupied_cells[occupied_cellID] = last_cell;
+              // after this the current cell is no longer in the occupied cells
             }
           }
           // If the body is *not* the last body that is stored in this cell ...
@@ -1304,18 +1591,35 @@ namespace elastica {
             if (cellID == primitives->size() - 1) {
               primitives->pop_back();
             } else {
-              PrimitiveType* last_element = primitives->back();
+              Primitive* last_element = primitives->back();
               primitives->pop_back();
               last_element->set_cell_ID(cellID);
               (*primitives)[cellID] = last_element;
+              // after this the current primitive is no longer in the list of
+              // primitives of the occupied cell
             }
           }
         }
 
-        template <typename C>  // Type of the configuration
+        //**********************************************************************
+        /*!\brief Increases the number of cells used by this hash grid.
+         *
+         * \details
+         * In order to handle an initially unknown and ultimately arbitrary
+         * number of bodies, the hash grid, starting with a rather small number
+         * of cells at the time of its creation, must have the ability to grow
+         * as new bodies are inserted. Therefore, if by inserting a body into
+         * this hash grid the associated grid density - that is the ratio of
+         * cells to bodies - drops below the threshold specified by \a
+         * minimalGridDensity, or in other words, if the number of bodies grows
+         * larger than specified by \a enlargementThreshold_, the number of
+         * cells in each coordinate direction is doubled (thus the total number
+         * of grid cells is increased by a factor of 8).
+         *
+         * \return void
+         */
+        template <typename C>
         void HashGrids<C>::HashGrid::enlarge() {
-          using namespace elastica::collision::detection::coarse::hhg;
-
           // Not using smart pointers because smart pointer to smart pointers
           // is exhausting
 
@@ -1326,22 +1630,26 @@ namespace elastica {
               tmpl::transform<PrimitiveIDs, std::add_pointer<tmpl::_1>>>;
 
           //! Storage of all previous primitives in the hash grid
+          // Primitive** or PrimitiveID*
           PrimitiveIDHandleStorage primitives;
           //! Handle to a current primitive ID, helper variable
+          // Primitive**
           PrimitiveIDHandleStorage curr_primitive;
 
           // Create memory to backup all primitives assigned to this grid
           // and get handle to the first pointer
-          auto allocator = [this, &primitives, &curr_primitive](auto Is) {
-            using PrimitiveType = tmpl::at_c<AdmissiblePrimitives, Is>;
+          auto allocate = [this, &primitives, &curr_primitive](auto Is) {
+            using Primitive = tmpl::at_c<AdmissiblePrimitives, Is>;
             using PrimitiveID = tmpl::at_c<PrimitiveIDs, Is>;
+            // Primitive** primitives = new Primitive*[count]
             std::get<Is>(primitives) =
-                new PrimitiveID[this->get_count<PrimitiveType>()];
+                new PrimitiveID[this->get_count_of<Primitive>()];
+            // curr_primitive = primitives (sets to the beginning)
             std::get<Is>(curr_primitive) = std::get<Is>(primitives);
           };
 
-          index_apply<get_number_of_primitives()>([&allocator](auto... Is) {
-            EXPAND_PACK_LEFT_TO_RIGHT(allocator(Is));
+          index_apply<get_number_of_primitive_types()>([allocate](auto... Is) {
+            EXPAND_PACK_LEFT_TO_RIGHT(allocate(Is));
           });
 
           //          using PrimitiveType = tmpl::at_c<AdmissiblePrimitives,
@@ -1351,19 +1659,19 @@ namespace elastica {
           //              new PrimitivePointer[get_count<PrimitiveType>()];
           //          PrimitivePointer* curr_primitive = primitives;
 
-          // Do backup all primitives assigned to this grid
+          // Backup all primitives assigned to this grid currently, and
+          // temporarily remove them.
           auto copier = [this, &curr_primitive](auto Is) {
             // can use Is, but this is more expressive
-            using PrimitiveType = tmpl::at_c<AdmissiblePrimitives, Is>;
-            auto& occupied_cells = this->get_cells_occupied_by<PrimitiveType>();
+            using Primitive = tmpl::at_c<AdmissiblePrimitives, Is>;
+            auto& occupied_cells = this->get_cells_occupied_by<Primitive>();
 
             // We copy the pointer here (not a reference) and so it isnt updated
-            PrimitiveType** curr = std::get<Is>(curr_primitive);
+            Primitive** curr = std::get<Is>(curr_primitive);
 
             for (Cell* cell : occupied_cells) {
               // Pointer to a vector of primitive pointers
-              auto* cell_primitives =
-                  cell->template get_handle_of<PrimitiveType>();
+              auto* cell_primitives = cell->template get_handle_to<Primitive>();
 
               // Copy pointers
               for (auto* cell_primitive : *cell_primitives) {
@@ -1375,30 +1683,21 @@ namespace elastica {
 
             // Now copy the new pointer back onto curr_primitive
             std::get<Is>(curr_primitive) = curr;
+            // after this curr_primitive points to the end of the primitiveID
+            // pointer array
           };
 
           // All bodies that are assigned to this grid are temporarily
           // removed,
-          index_apply<get_number_of_primitives()>(
+          index_apply<get_number_of_primitive_types()>(
               [&copier](auto... Is) { EXPAND_PACK_LEFT_TO_RIGHT(copier(Is)); });
 
-          // ... the grid's current data structures are deleted, ...
-          clear();
+          // ... the grid's current data structures are destroyed, ...
+          destroy();
 
-          for (Cell* c = cell_; c < cell_ + xyzCellCount_; ++c) {
-            if (c->neighborOffset_ != stdNeighborOffset_)
-              delete[] c->neighborOffset_;
-          }
-          delete[] cell_;
-
-          // ... the number of cells is doubled in each coordinate direction,
+          // ... the number of cells is enlarged in each coordinate direction,
           // ...
-          DomainPolicy::enlarge(xCellCount_, yCellCount_, zCellCount_);
-          /*
-            xCellCount_ *= 2;
-            yCellCount_ *= 2;
-            zCellCount_ *= 2;
-          */
+          DomainPolicyType::enlarge(xCellCount_, yCellCount_, zCellCount_);
 
           xHashMask_ = xCellCount_ - 1;
           yHashMask_ = yCellCount_ - 1;
@@ -1408,36 +1707,25 @@ namespace elastica {
           xyzCellCount_ = xyCellCount_ * zCellCount_;
 
           // ... a new threshold for enlarging this hash grid is set, ...
-          enlargementThreshold_ = xyzCellCount_ / minimal_grid_density();
+          enlargementThreshold_ =
+              xyzCellCount_ / parameters_->minimal_grid_density;
 
           // ... a new linear array of cells representing this enlarged hash
           // grid is allocated and ...
           cell_ = new Cell[xyzCellCount_];
 
-          // ... initialized, and finally ...
-          {
-            Cell* c = cell_;
+          // ... initialized to null ...
+          set_cell_primitives_to_null();
 
-            auto null_initializer = [&c](auto Is) {
-              using PrimitiveType = tmpl::at_c<AdmissiblePrimitives, Is>;
-              c->template set_handle_of<PrimitiveType>() = nullptr;
-            };
-
-            for (; c < cell_ + xyzCellCount_; ++c) {
-              index_apply<get_number_of_primitives()>(
-                  [&null_initializer](auto... Is) {
-                    EXPAND_PACK_LEFT_TO_RIGHT(null_initializer(Is));
-                  });
-            }
-          }
-
-          initializeNeighborOffsets();
+          // ... with the neighbors setup, and finally ...
+          initialize_neighbor_offsets();
 
           // At this stage all the current primitive points to the end
           auto reinserter = [this, &primitives, &curr_primitive](auto Is) {
             using PrimitiveType = tmpl::at_c<AdmissiblePrimitives, Is>;
             using PrimitivePointer = std::add_pointer_t<PrimitiveType>;
 
+            // From before, curr_primitive points to the end
             auto end_ = std::get<Is>(curr_primitive);
 
             for (PrimitivePointer* p = std::get<Is>(primitives); p < end_;
@@ -1447,19 +1735,19 @@ namespace elastica {
           };
 
           // ... all previously removed bodies are reinserted.
-          index_apply<get_number_of_primitives()>([&reinserter](auto... Is) {
-            EXPAND_PACK_LEFT_TO_RIGHT(reinserter(Is));
-          });
+          index_apply<get_number_of_primitive_types()>(
+              [&reinserter](auto... Is) {
+                EXPAND_PACK_LEFT_TO_RIGHT(reinserter(Is));
+              });
 
-          // Don't forget to clear memory
-          auto deleter = [&primitives](auto Is) {
-            delete[](std::get<Is>(primitives));
-          };
-
-          index_apply<get_number_of_primitives()>([&deleter](auto... Is) {
-            EXPAND_PACK_LEFT_TO_RIGHT(deleter(Is));
-          });
+          cpp17::apply(
+              [](auto&... prim) {
+                // delete a bunch of pointers we allpcated
+                EXPAND_PACK_LEFT_TO_RIGHT(delete[](prim));
+              },
+              primitives);
         }
+        //**********************************************************************
 
         //======================================================================
         //
@@ -1467,38 +1755,72 @@ namespace elastica {
         //
         //======================================================================
 
-        template <typename C>         // Type of the configuration
-        template <typename Contacts,  // Contact container type
-                  typename FCPS,  // Storage of the first colliding primitive
-                  typename SCPS>  // Storage of the second colliding primitive
-        void HashGrids<C>::HashGrid::process_primitives(
-            Contacts& contacts, FCPS& first_primitives,
-            SCPS& /*second_primitives*/,
-            tags::SamePrimitivesTag /*meta*/) const {
-          static_assert(std::is_same<FCPS, SCPS>::value, "Oopsie!");
+        //**********************************************************************
+        /*!\brief Contact generation between colliding rigid primitives of the
+         * same type
+         *
+         * \details
+         * This function generates all contacts between rigid primitives of the
+         * same type contained in the simulation world. The contacts are added
+         * to the contact container \a contacts.
+         *
+         * \param contacts Contact container for the generated contacts.
+         * \return void
+         */
+        template <typename C>
+        template <typename Contacts,       // Contact container type
+                  typename FCPCollection,  // Storage of the first colliding
+                                           // primitive
+                  typename SCPCollection>  // Storage of the second colliding
+                                           // primitive
+        void HashGrids<C>::HashGrid::generate_contacts(
+            Contacts& contacts, FCPCollection& first_primitives,
+            SCPCollection& /*second_primitives*/,
+            tt::SamePrimitivesTag /*meta*/) const {
+          // FCPCollection and SCPCollection are contiguous collections of
+          // pointers by design
+          static_assert(cpp17::is_same_v<FCPCollection, SCPCollection>,
+                        "Hashgrids Meta failure!");
 
           // Its const, so no need to bother extracting it :/
-          auto first_end = first_primitives.end();
+          auto const first_end = first_primitives.end();
           for (auto first_primitive_it = first_primitives.begin();
                first_primitive_it != first_end; ++first_primitive_it) {
             for (auto second_primitive_it = first_primitive_it + 1;
                  second_primitive_it != first_end; ++second_primitive_it) {
               // Derefence the iterator which returns a pointer to the body
               // which is aga
-              HashGrids<C>::collide(*first_primitive_it, *second_primitive_it,
-                                    contacts);
+              HashGrids<C>::generate_contact(contacts, *first_primitive_it,
+                                             *second_primitive_it);
             }
           }
         }
+        //**********************************************************************
 
-        template <typename C>         // Type of the configuration
-        template <typename Contacts,  // Contact container type
-                  typename FCPS,  // Storage of the first colliding primitive
-                  typename SCPS>  // Storage of the second colliding primitive
-        void HashGrids<C>::HashGrid::process_primitives(
-            Contacts& contacts, FCPS& first_primitives, SCPS& second_primitives,
-            tags::DifferentPrimitivesTag /*meta*/) const {
-          // TODO : Rename the tags
+        //**********************************************************************
+        /*!\brief Contact generation between colliding rigid primitives of
+         * different types
+         *
+         * \details
+         * This function generates all contacts between rigid primitives of
+         * different type contained in the simulation world. The contacts
+         * generated are added to the container \a contacts.
+         *
+         * \param contacts Contact container for the generated contacts.
+         * \return void
+         */
+        template <typename C>              // Type of the configuration
+        template <typename Contacts,       // Contact container type
+                  typename FCPCollection,  // Storage of the first colliding
+                                           // primitive
+                  typename SCPCollection>  // Storage of the second colliding
+                                           // primitive
+        void HashGrids<C>::HashGrid::generate_contacts(
+            Contacts& contacts, FCPCollection& first_primitives,
+            SCPCollection& second_primitives,
+            DifferentPrimitivesOrCellsTag /*meta*/) const {
+          // FCPCollection and SCPCollection are contiguous collections of
+          // pointers by design
           // NOTE : Here the static assert is only useful for determining
           // that primitives WITHIN one cell are different. However, we reuse
           // the same code to check for collisions between neighbors, where
@@ -1507,325 +1829,214 @@ namespace elastica {
           // collections). Maybe the tag should be renamed to better express the
           // intent?
 
-          //          static_assert(!std::is_same<FCPS, SCPS>::value,
-          //          "Oopsie!");
+          /*
+          static_assert(cpp17::is_same_v<FCPCollection, SCPCollection>,
+                        "Hashgrids Meta failure!");
+          */
 
-          // Its const, so no need to bother extracting it :/
-          auto first_end = first_primitives.end();
-          auto second_end = second_primitives.end();
-
-          for (auto first_primitive_it = first_primitives.begin();
-               first_primitive_it != first_end; ++first_primitive_it) {
-            for (auto second_primitive_it = second_primitives.begin();
-                 second_primitive_it != second_end; ++second_primitive_it) {
-              // Derefence the iterator which returns a pointer to the primitive
-              HashGrids<C>::collide(*first_primitive_it, *second_primitive_it,
-                                    contacts);
+          for (auto& first_primitive : first_primitives)
+            for (auto& second_primitive : second_primitives) {
+              HashGrids<C>::generate_contact(contacts, first_primitive,
+                                             second_primitive);
             }
-          }
         }
+        //**********************************************************************
 
         //**********************************************************************
-        /*!\brief Processes this hash grid for colliding bodies.
+        /*!\brief Processes colliding primitives within a cell for this hash
+         * grid
          *
-         * \param gridBodies Linear array of (handles to) all the bodies stored
-         * in this hash grid. \param contacts Contact container for the
-         * generated contacts. \return The number of bodies stored in this grid
-         * - which is the number of bodies stored in \a gridBodies.
+         * This function generates all contacts between rigid bodies that are
+         * local to each cell assigned to this hashgrid. The contacts are added
+         * to the contact container `contacts`.
          *
-         * This function generates all contacts between all rigid bodies that
-         * are assigned to this grid. The contacts are added to the contact
-         * container \a contacts. Moreover, a linear array that contains
-         * (handles to) all bodies that are stored in this grid is returned in
-         * order to being able to check these bodies against other bodies that
-         * are stored in grids with larger sized cells.
+         * \param contacts Contact container for the generated contacts.
+         * \tparam PrimitiveToCollide Type of the primitive whose collisions are
+         * to be processed within the cells
+         */
+        template <typename C>
+        template <typename PrimitiveToCollide, typename Contacts>
+        void HashGrids<C>::HashGrid::process_within(Cell const* const cell,
+                                                    Contacts& contacts) const {
+          // auto here is std::vector<PrimitiveToCollide*>
+          // so std::vector<PrimitiveToCollide*> * const
+          auto* const first_primitives =
+              cell->template get_handle_to<PrimitiveToCollide>();
+          //
+          Expects(first_primitives != nullptr);
+
+          // Primitives to collide against also includes the current primitive.
+          using PrimitivesToCollideAgainst =
+              decltype(suffix_of_<PrimitiveToCollide>());
+
+          Exec::template for_each_type<PrimitivesToCollideAgainst>(
+              [this, cell, first_primitives, &contacts](auto op) {
+                using PrimitiveToCollideAgainst = tmpl::type_from<decltype(op)>;
+                using Dispatch = tt::IsSamePrimitive<PrimitiveToCollide,
+                                                     PrimitiveToCollideAgainst>;
+
+                auto* const second_primitives =
+                    cell->template get_handle_to<PrimitiveToCollideAgainst>();
+
+                // There might not be any second primitive belonging to the same
+                // cell
+                if (second_primitives != nullptr) {
+                  this->generate_contacts(contacts, *first_primitives,
+                                          *second_primitives, Dispatch{});
+                }
+              });
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Processes colliding primitives between a cell and a
+         * neighboring for the current hash grid
+         *
+         * This function generates all contacts between rigid bodies that are
+         * spread over one cell and one of its neighbor cells assigned to this
+         * hashgrid. The contacts are added to the contact container `contacts`.
+         *
+         * \param contacts Contact container for the generated contacts.
+         * \tparam PrimitiveToCollide Type of the primitive whose collisions are
+         * to be processed within the cells
+         */
+        template <typename C>
+        template <typename PrimitiveToCollide, typename Contacts>
+        void HashGrids<C>::HashGrid::process_between(
+            Cell const* const current_cell, Cell const* const neighboring_cell,
+            Contacts& contacts) const {
+          auto* const first_primitives =
+              current_cell->template get_handle_to<PrimitiveToCollide>();
+          //
+          Expects(first_primitives != nullptr);
+
+          // Note : here we should do processing for all primitives
+          // and not only the lower half of the primitive matrix
+          using PrimitivesToCollideAgainst = AdmissiblePrimitives;
+
+          Exec::template for_each_type<PrimitivesToCollideAgainst>(
+              [this, first_primitives, neighboring_cell, &contacts](auto op) {
+                using PrimitiveToCollideAgainst = tmpl::type_from<decltype(op)>;
+                using Dispatch = DifferentPrimitivesOrCellsTag;
+
+                auto* const second_primitives =
+                    neighboring_cell
+                        ->template get_handle_to<PrimitiveToCollideAgainst>();
+
+                // There might not be any second primitive belonging to the same
+                // cell
+                if (second_primitives != nullptr) {
+                  this->generate_contacts(contacts, *first_primitives,
+                                          *second_primitives, Dispatch{});
+                }
+              });
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Processes colliding primitives internal to one hash-grid
+         *
+         * This function generates all contacts between rigid bodies that are
+         * local to the current hashgrid. The contacts are added to the contact
+         * container `contacts`.
+         *
+         * \param contacts Contact container for the generated contacts.
          */
         template <typename C>         // Type of the configuration
-        template <typename FCP,       // Type of the first colliding primitive
-                  typename Contacts>  // Contact container type
-        void HashGrids<C>::HashGrid::process_within_cell(
-            Contacts& contacts) const {
-          // Extract a tmpl list of all primitives colliding with the
-          // current primitive in the half matrix This operation is
-          // beneficial from a memory cache perspective as we process all
-          // these other primitives in one go without iterating over the
-          // first primitives list again However due to heterogenous
-          // instructions, ILP may suffer.
-          // TODO : Replace with a tmpl::filter from remove.hpp
-          using SecondCollidingPrimitives =
-              tmpl::fold<LowerTriangularPrimitivePrimitiveMatrix, tmpl::list<>,
-                         typename tt::ExtractSecondPrimitive<FCP>::
-                             template apply<tmpl::_state, tmpl::_element>>;
-          constexpr auto n_second_colliding_primitives =
-              tmpl::size<SecondCollidingPrimitives>::value;
-          // END META
-
-          // Only get the occupied cells, so the first_primitives below is
-          // guaranteed to be not null
-          auto const& occupied_cells = get_cells_occupied_by<FCP>();
-
-          // Iterate through all cells that are occupied by bodies (=>
-          // 'occupiedCells_') and ...
-          auto const cend = occupied_cells.cend();
-          auto cell_it = occupied_cells.cbegin();
-
-          // Expand here, is this inefficient?
-          // ... perform pairwise collision checks within each of these cells.
-          auto intra_cell_collider = [this, &cell_it, &contacts](auto Is) {
-            using SCP = tmpl::at_c<SecondCollidingPrimitives, Is>;
-            using Dispatcher = tt::PrimitivesDispatchType<FCP, SCP>;
-
-            auto* first_primitives = (*cell_it)->template get_handle_of<FCP>();
-            ELASTICA_ASSERT(first_primitives != nullptr, "Oopsie!");
-
-            auto* second_primitives = (*cell_it)->template get_handle_of<SCP>();
-
-            // There might not be any second primitive belonging to the same
-            // cell
-            if (second_primitives != nullptr) {
-              this->process_primitives(contacts, *first_primitives,
-                                       *second_primitives, Dispatcher{});
-            }
-          };
-
-          for (; cell_it != cend; ++cell_it) {
-            index_apply<n_second_colliding_primitives>(
-                [&intra_cell_collider](auto... Is) {
-                  EXPAND_PACK_LEFT_TO_RIGHT(intra_cell_collider(Is));
-                });
-          }
-        }
-
-        template <typename C>         // Type of the configuration
-        template <typename FCP,       // Type of the first colliding primitive
-                  typename Contacts>  // Contact container type
-        void HashGrids<C>::HashGrid::process_neighboring_cells(
-            Contacts& contacts) const {
-          // TODO : Which version is more performant?
-          // chaning the order of the loops?
-          // Currently we have
-          // For each primitive
-          //  iterate over contanining cell
-          //    For each colliding primitives
-          //      iterate over neighbors
-          //        iterate over primitive's collection
-          //          iterate over neighbors' colliding primitive collection
-
-          // Note : here we should do processing for all primitives
-          // and not only the lower half of the primitive matrix
-          using SecondCollidingPrimitives =
-              tmpl::fold<PrimitivePrimitiveMatrix, tmpl::list<>,
-                         typename tt::ExtractSecondPrimitive<FCP>::
-                             template apply<tmpl::_state, tmpl::_element>>;
-          constexpr auto n_second_colliding_primitives =
-              tmpl::size<SecondCollidingPrimitives>::value;
-
-          auto const& occupied_cells = get_cells_occupied_by<FCP>();
-
-          // Iterate through all cells that are occupied by bodies (=>
-          // 'occupiedCells_') and ...
-          auto const cend = occupied_cells.cend();
-          auto cell_it = occupied_cells.cbegin();
-
-          // Expand here, is this inefficient?
-          // ... perform pairwise collision checks within each of these cells.
-          auto inter_cell_collider = [this, &cell_it, &contacts](auto Is) {
-            using SCP = tmpl::at_c<SecondCollidingPrimitives, Is>;
-            // Although one can have FCP = SCP, these come from different
-            // collections (one from this cell, one from the neighbor), hence
-            // we always consider them different primitives and iterate over
-            // the full collection
-            using Dispatcher = tags::DifferentPrimitivesTag;
-
-            auto* first_primitives = (*cell_it)->template get_handle_of<FCP>();
-            ELASTICA_ASSERT(first_primitives != nullptr, "Oopsie!");
-
-            // Moreover, check all the bodies that are stored in the currently
-            // processed cell against all
-            // bodies that are stored in the first half of all directly adjacent
-            // cells.
-            for (unsigned int i = 0; i < half_number_of_neighbors(); ++i) {
-              Cell* nbCell = (*cell_it) + (*cell_it)->neighborOffset_[i];
-              auto* second_primitives =
-                  (*nbCell)->template get_handle_of<SCP>();
-
-              // the neighboring cells may not have any primitive
-              if (second_primitives != nullptr) {
-                process_primitives(contacts, *first_primitives,
-                                   *second_primitives, Dispatcher{});
-              }
-            }
-          };
-
-          for (; cell_it != cend; ++cell_it) {
-            index_apply<n_second_colliding_primitives>(
-                [&inter_cell_collider](auto... Is) {
-                  EXPAND_PACK_LEFT_TO_RIGHT(inter_cell_collider(Is));
-                });
-          }
-        }
-
-        template <typename C>         // Type of the configuration
-        template <typename FCP,       // Type of the first colliding primitive
-                  typename Contacts>  // Contact container type
-        void HashGrids<C>::HashGrid::process_neighboring_cells_version_two(
-            Contacts& contacts) const {
-          //  For each primitive
-          //  iterate over cell
-          //    iterate over neighbors
-          //        For each colliding primitives
-          //          iterate over primitive's collection
-          //            iterate over neighbors' colliding primitive collection
-
-          // Note : here we should do processing for all primitives
-          // and not only the lower half of the primitive matrix
-
-          using SecondCollidingPrimitives = AdmissiblePrimitives;
-          //          using SecondCollidingPrimitives =
-          //              tmpl::fold<PrimitivePrimitiveMatrix, tmpl::list<>,
-          //                         typename tt::ExtractSecondPrimitive<FCP>::
-          //                             template apply<tmpl::_state,
-          //                             tmpl::_element>>;
-          constexpr auto n_second_colliding_primitives =
-              tmpl::size<SecondCollidingPrimitives>::value;
-
-          auto const& occupied_cells = get_cells_occupied_by<FCP>();
-
-          // Iterate through all cells that are occupied by bodies (=>
-          // 'occupiedCells_') and ...
-          auto const cend = occupied_cells.cend();
-          auto cell_it = occupied_cells.cbegin();
-
-          // The value from get_handle is a reference to the original pointer to
-          // vector of primitives so that changes are reflected there
-          using PointerToPrimitiveStorage = std::remove_reference_t<decltype(
-              (*cell_it)->template get_handle_of<FCP>())>;
-
-          // Easy to check with a nullptr
-          PointerToPrimitiveStorage first_primitives = nullptr;
-          Cell* nbCell = nullptr;
-
-          auto inter_cell_collider = [this, &first_primitives, &nbCell,
-                                      &contacts](auto Is) {
-            using SCP = tmpl::at_c<SecondCollidingPrimitives, Is>;
-            // Although one can have FCP = SCP, these come from different
-            // collections (one from this cell, one from the neighbor), hence
-            // we always consider them different primitives and iterate over
-            // the full collection
-            using Dispatcher = tags::DifferentPrimitivesTag;
-
-            auto* second_primitives = nbCell->template get_handle_of<SCP>();
-
-            // the neighboring cells may not have any primitive
-            if (second_primitives != nullptr) {
-              this->process_primitives(contacts, *first_primitives,
-                                       *second_primitives, Dispatcher{});
-            }
-          };
-
-          for (; cell_it != cend; ++cell_it) {
-            first_primitives = (*cell_it)->template get_handle_of<FCP>();
-            ELASTICA_ASSERT(first_primitives != nullptr, "Oopsie!");
-
-            // Check all the bodies that are stored in the currently
-            // processed cell against all
-            // bodies that are stored in the first half of all directly adjacent
-            // cells.
-            for (unsigned int i = 0; i < half_number_of_neighbors(); ++i) {
-              nbCell = (*cell_it) + (*cell_it)->neighborOffset_[i];
-
-              index_apply<n_second_colliding_primitives>(
-                  [&inter_cell_collider](auto... Is) {
-                    EXPAND_PACK_LEFT_TO_RIGHT(inter_cell_collider(Is));
-                  });
-            }  // end neighbor iteration
-          }    // end cell iteration
-        }
-
-        template <typename C>         // Type of the configuration
         template <typename Contacts>  // Contact container type
-        void HashGrids<C>::HashGrid::process_grid(Contacts& contacts) const {
+        void HashGrids<C>::HashGrid::process_v2(Contacts& contacts) const {
           // Wraps process_within_cell and process_with_neighbors
-          // TODO : Most of the index apply calls should really be apply calls
-          // TODO : It may be more beneficial to have a loop here rather than
-          // pushing it to the inner calls? Such as:
-          //
-          // For all primitives
-          // Loop over cells containing said primitive
-          //    Delegated : Process within this call
-          //    Delegated : Process with neighboring cells
-          // instead of looping in each delegated call
+          Exec::template for_each_type<AdmissiblePrimitives>(
+              [this, &contacts](auto p) {
+                using PrimitiveToCollide = tmpl::type_from<decltype(p)>;
+                auto const& occupied_cells =
+                    this->get_cells_occupied_by<PrimitiveToCollide>();
 
-          // First process within cells for each primitive
-          index_apply<get_number_of_primitives()>([this,
-                                                   &contacts](auto... Is) {
-            EXPAND_PACK_LEFT_TO_RIGHT(
-                this->process_within_cell<tmpl::at_c<AdmissiblePrimitives, Is>>(
-                    contacts));
-          });
+                Exec::for_each(
+                    std::cbegin(occupied_cells), std::cend(occupied_cells),
+                    [this, &contacts](Cell const* const cell) {
+                      // each thread works on subset of cells
+                      this->process_within<PrimitiveToCollide>(cell, contacts);
 
-          // Then do neighbors
-          index_apply<get_number_of_primitives()>(
-              [this, &contacts](auto... Is) {
-                EXPAND_PACK_LEFT_TO_RIGHT(
-                    this->process_neighboring_cells_version_two<
-                        tmpl::at_c<AdmissiblePrimitives, Is>>(contacts));
+                      // loop for half number of neighbors
+                      constexpr auto hnn = get_half_number_of_neighbors();
+
+                      for (std::size_t i = 0; i < hnn; ++i) {
+                        Cell const* const neighboring_cell =
+                            cell + cell->neighbor_offset_[i];
+                        this->process_between<PrimitiveToCollide>(
+                            cell, neighboring_cell, contacts);
+                      }  // end neighbor iteration
+                    });
               });
-
           // At this point all operations within the grid are performed
         }
+        //**********************************************************************
 
-        template <typename C>              // Type of the configuration
-        template <typename PrimitiveType>  // Type of the primitive
+        //**********************************************************************
+        /*!\brief Transfer primitives from a finer grid to an intermediate
+         * buffer, in order to transfer those to a coarser grid
+         *
+         * \details
+         * Get pointers to primitives of a certain type residing in one
+         * hash grid in an intermediate buffer, to detect contacts with hash
+         * grids higher up the chain.
+         *
+         * The memory for output_primitives_buffer is supposed to be managed
+         * from the caller scope (C style), as it's a pointer of pointers.
+         *
+         * We only copy a bunch of pointers so the cost is 8 * n_primitives in
+         * grid
+         *
+         * \param output_primitives_buffer Output buffer to copy the primitives
+         * \return Number of primitives transferred as meta-data
+         */
+        template <typename C>
+        template <typename Primitive>
         std::size_t HashGrids<C>::HashGrid::transfer_primitives(
-            to_t /* meta */, PrimitiveType** output_primitives_buffer) const {
-          // Get pointers to primitives of a certain type residing in one
-          // hash grid, to detect contacts with hash grids higher
-          // up the chain
-          // The space for output_primitives_buffer is supposed to be already
-          // allocated from the caller scope, which takes care of memory
-          // management
-
-          //          PrimitiveType** out_primitives_it =
-          //          *output_primitives_buffer;
-
+            to_t /* meta */, Primitive** output_primitives_buffer) const {
           // vector of cell pointers
-          auto const& occupied_cells = get_cells_occupied_by<PrimitiveType>();
-
-          auto const cend = occupied_cells.cend();
+          auto const& occupied_cells = get_cells_occupied_by<Primitive>();
 
           std::size_t count = 0UL;
 
-          for (auto cell_it = occupied_cells.cbegin(); cell_it != cend;
-               ++cell_it) {
+          for (Cell const* const cell : occupied_cells) {
             // Get pointer to vector of pointers to primitives
-            auto const* primitives =
-                (*cell_it)->template get_handle_of<PrimitiveType>();
-            ELASTICA_ASSERT(primitives != nullptr, "Oopsie!");
+            auto const* const primitives =
+                cell->template get_handle_to<Primitive>();
+            Expects(primitives != nullptr);
 
-            // Its const, so no need to bother extracting it :/
-            auto primitives_end = primitives->cend();
+            // // v1
+            // for (auto ptr : *primitives) {
+            //   output_primitives_buffer[count] = ptr;
+            //   ++count;  // I can also do output_primitives_buffer[count++]
+            // }
 
-            for (auto primitive_it = primitives->cbegin();
-                 primitive_it != primitives_end; ++primitive_it, ++count) {
-              // Pointer copy
-              output_primitives_buffer[count] = (*primitive_it);
-            }
-            //            std::copy(primitives->cbegin(), primitives->cend(),
-            //            output_primitives_buffer);
+            // v2, seems faster in quickbench.
+            std::copy(primitives->cbegin(), primitives->cend(),
+                      output_primitives_buffer + count);
+            count += primitives->size();
           }
 
+          // Cannot have no primitives.
+          Ensures(count > 0UL);
           return count;
         }
+        //**********************************************************************
 
-        // TODO : Not very type-safe and RAII. Can allocate a vector each and
-        // every time, but it might be a performance hit, but simplifies the
-        // code
-        template <typename C>         // Type of the configuration
-        template <typename FCP,       // Type of the first colliding primitive
-                  typename Contacts>  // Contact container type
-        void HashGrids<C>::HashGrid::process_primitives_from_finer_grid(
-            FCP** primitives_from_finer_grid,
+        //**********************************************************************
+        /*!\brief Processes (Generates contacts) for primitives from the
+         * intermediate buffer populated by #transfer_primitives against those
+         * stored in the current grid.
+         *
+         * \param primitives_from_finer_grid
+         * \param n_primitives_from_finer_grid
+         * \param contacts Contact container for the generated contacts.
+         */
+        template <typename C>
+        template <typename PrimitiveFromFinerGrid, typename Contacts>
+        void HashGrids<C>::HashGrid::generate_contacts_from_finer_grid(
+            PrimitiveFromFinerGrid** primitives_from_finer_grid,
             std::size_t n_primitives_from_finer_grid,
             Contacts& contacts) const {
           /* Order of processing
@@ -1834,104 +2045,102 @@ namespace elastica {
            *
            * For each primitive type from finer grid
            *  Iterate over primitives
-           *   Calculate cell in which the primitives
+           *   Calculate cell in which the primitives lie
            *    Iterate over this cell's neighbors
            *        For each colliding primitives
            *            iterate over neighbors' colliding primitive collection
            *
            *
-           *  Instruction friendly version : process each neighbor cell only
-           *  for a particular primitive type. Then repeat iterations over
-           *  neighbors for every primitive type. Seems wasteful at first
+           * Instruction friendly version : process each neighbor cell only
+           * for a particular primitive type. Then repeat iterations over
+           * neighbors for every primitive type. Seems wasteful at first
            * glance.
            */
-
-          // Note : here we should do processing for all primitives
+          // Here we should do processing for all primitives
           // and not only the lower half of the primitive matrix as
           // they come from different collections
-          using SecondCollidingPrimitives = AdmissiblePrimitives;
-          constexpr auto n_second_colliding_primitives =
-              tmpl::size<SecondCollidingPrimitives>::value;
-          using PrimitiveID = FCP*;
+          using CollidingPrimitivesFromCurrentGrid = AdmissiblePrimitives;
+          using PrimitiveID = PrimitiveFromFinerGrid*;
 
-          PrimitiveID* first_primitive_it = primitives_from_finer_grid;
-          Cell* nbCell = nullptr;
-
-          auto coarse_grid_collider = [&first_primitive_it, &nbCell,
-                                       &contacts](auto Is) {
-            using SCP = tmpl::at_c<SecondCollidingPrimitives, Is>;
-
-            auto* second_primitives = nbCell->template get_handle_of<SCP>();
-
-            // the neighboring cells may not have any primitive
-            if (second_primitives != nullptr) {
-              for (auto second_primitive_it = second_primitives->begin();
-                   second_primitive_it != second_primitives->end();
-                   ++second_primitive_it) {
-                HashGrids<C>::collide(*first_primitive_it, *second_primitive_it,
-                                      contacts);
-              }
-            };
-          };
+          PrimitiveID* const begin_fine_grid_primitives =
+              primitives_from_finer_grid;
+          PrimitiveID* const end_fine_grid_primitives =
+              (primitives_from_finer_grid + n_primitives_from_finer_grid);
 
           // For each primitive 'p' that is stored in
           // 'primitives_from_finer_grid' ...
-          PrimitiveID* end_primitives =
-              (primitives_from_finer_grid + n_primitives_from_finer_grid);
+          Exec::for_each(
+              begin_fine_grid_primitives, end_fine_grid_primitives,
+              [this, &contacts](PrimitiveID fine_grid_primitive) {
+                Cell const* const cell =
+                    this->cell_ + this->hash(fine_grid_primitive);
 
-          for (; first_primitive_it < end_primitives; ++first_primitive_it) {
-            // ... calculate the body's cell association (=> "hash()")
-            // within this hash grid and ...
-            Cell* cell = cell_ + hash(*first_primitive_it);
+                // for each neighbor cell
+                for (auto i = 0UL; i < get_number_of_neighbors(); ++i) {
+                  Cell const* const nbCell = cell + cell->neighbor_offset_[i];
 
-            // ... check 'p' against every primitive that is stored in
-            // this or in any of the directly adjacent cells. Note: one
-            // entry in the offset array of a cell is always referring
-            // back to the cell itself. As a consequence, a specific cell
-            // X and all of its neighbors can be addressed by simply
-            // iterating through all entries of X's offset array!
-            for (unsigned int i = 0; i < number_of_neighbors(); ++i) {
-              nbCell = cell + cell->neighborOffset_[i];
+                  // for each type
+                  // this should be refactored
+                  tmpl::for_each<CollidingPrimitivesFromCurrentGrid>(
+                      [fine_grid_primitive, nbCell, &contacts](auto cp) {
+                        using PotentiallyCollidingPrimitiveFromCurrentGrid =
+                            tmpl::type_from<decltype(cp)>;
+                        using PCPC =
+                            PotentiallyCollidingPrimitiveFromCurrentGrid;
 
-              index_apply<n_second_colliding_primitives>(
-                  [&coarse_grid_collider](auto... Is) {
-                    EXPAND_PACK_LEFT_TO_RIGHT(coarse_grid_collider(Is));
-                  });
-            }
-          }
+                        auto* const current_grid_primitives =
+                            nbCell->template get_handle_to<PCPC>();
+
+                        // the neighboring cells may not have any primitive
+                        if (current_grid_primitives != nullptr) {
+                          // for each colliding neighbor
+                          auto const b = current_grid_primitives->begin();
+                          auto const e = current_grid_primitives->end();
+
+                          for (auto second_primitive = b; second_primitive != e;
+                               ++second_primitive) {
+                            HashGrids<C>::generate_contact(contacts,
+                                                           fine_grid_primitive,
+                                                           *second_primitive);
+                          }  // second primitive
+                        };   // null check
+                      });    // type of second primitive
+                }            // neighbor
+              });            // first primitive
         }
+        //**********************************************************************
 
         //======================================================================
         //
         //  CONSTRUCTOR
         //
         //======================================================================
+
         //**********************************************************************
         /*!\brief Constructor for the HashGrids class.
-         *
-         * \param bodystorage Reference to the general body storage.
-         *
-         * Note that all (local, global and remote) must be contained in the
-         * body storage.
          */
         template <typename C>  // Type of the configuration
-        HashGrids<C>::HashGrids(
-            const DomainType*& domain, PrimitiveStorage& primitivestorage,
-            GhostPrimitives& ghosts,
-            ImposedPrimitiveStorage*& imposed_primitive_storage)
-            : DomainPolicy(domain, ghosts),
+        HashGrids<C>::HashGrids(DomainType const* domain, Parameters parameters)
+            : DomainPolicyType(domain),
               StoragePolicy(),
-              primitives_(primitivestorage),
-              imposed_primitives_(imposed_primitive_storage),
-              exhaustive_search(primitivestorage, imposed_primitive_storage) {
-          //          using namespace
-          //          elastica::collision::detection::coarse::hhg;
-
+              grid_list_(),
+              grid_active_(false),
+              transfer_cache_(),
+              parameters_(std::move(parameters)),
+              exhaustive_search(domain) {
+          // grid_active_ is set to false
           // As long as the number of bodies is less-or-equal than specified
           // by 'gridActivationThreshold', no hierarchy of hash grids is
           // constructed. Instead, pairwise collision checks are performed.
-          grid_active_ = false;
         }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief No-parameter constructor for the HashGrids class.
+         */
+        template <typename C>  // Type of the configuration
+        HashGrids<C>::HashGrids(DomainType const* domain)
+            : HashGrids(domain, Parameters{}) {}
         //**********************************************************************
 
         //======================================================================
@@ -1952,7 +2161,7 @@ namespace elastica {
         }
         //**********************************************************************
 
-        //*************************************************************************************************
+        //**********************************************************************
         /*!\brief Checks whether two bodies are colliding or not, and if so
          * generates the related points of contact.
          *
@@ -1961,30 +2170,28 @@ namespace elastica {
          * \param contacts Contact container for the generated contacts.
          * \return void
          */
-        template <typename C>                    // Type of the configuration
-        template <typename FirstPrimitiveType,   // Type of the first primitive
-                  typename SecondPrimitiveType,  // Type of the second
-                                                 // primitive
-                  typename Contacts>             // Contact container type
-        void HashGrids<C>::collide(
-            FirstPrimitiveType* const __restrict__ first_primitive,
-            SecondPrimitiveType* const __restrict__ second_primitive,
-            Contacts& contacts) {
+        template <typename C>
+        template <typename FirstPrimitive, typename SecondPrimitive,
+                  typename Contacts>
+        void HashGrids<C>::generate_contact(
+            Contacts& contacts,
+            FirstPrimitive* const __restrict__ first_primitive,
+            SecondPrimitive* const __restrict__ second_primitive) {
           if (
               // Testing for overlapping bounding boxes, more probable
-              (first_primitive->get_AABB().overlaps(
-                  second_primitive->get_AABB()))
+              overlaps(first_primitive->get_AABB(),
+                       second_primitive->get_AABB())
               // // All fixed primitives to be checked are pushed to imposed
               // // bodies,  hence skip checkinh
               //  Ignoring contacts between two fixed bodies
               // // && (!first_primitive->is_fixed() or
               // !second_primitive->is_fixed())
           ) {
-            FineDetector::collide(*first_primitive, *second_primitive,
-                                  contacts);
+            contacts.emplace_back(*first_primitive,
+                                  *second_primitive);  // modify
           }
         }
-        //*************************************************************************************************
+        //**********************************************************************
 
         //======================================================================
         //
@@ -2000,63 +2207,45 @@ namespace elastica {
          * It is automatically called every time a new rigid primitive is
          * added to the simulation world.
          */
-        template <typename C>  // Type of the configuration
-        void HashGrids<C>::add_all_primitives() {
-          using namespace elastica::collision::detection::coarse::hhg;
-
+        template <typename C>
+        template <typename Simulator_>
+        void HashGrids<C>::add_all_primitives(
+            ::elastica::collision::tags::from_t, Simulator_& simulator) {
           // Get total size of primitives
-          std::size_t all_primitives_count =
-              get_total_primitive_count_in_simulation();
+          std::size_t const primitives_count = simulator.n_primitives();
 
-          // If greater than the activation threshold, add
-          if (all_primitives_count >= hashgrid_activation_threshold()) {
-            auto primitive_adder = [this](auto Is) {
-              auto& primitive_collection = std::get<Is>(primitives_);
-              // For each primitive in this primitive collection, add to
-              // grid
-              for (auto& primitive : primitive_collection) {
-                // Add a pointer
-                this->add(&primitive);
-              }
-            };
+          if (primitives_count >= parameters_.hashgrid_activation_threshold) {
+            // do hashgrid
 
-            index_apply<get_number_of_primitives()>(
-                [&primitive_adder](auto... Is) {
-                  EXPAND_PACK_LEFT_TO_RIGHT(primitive_adder(Is));
-                });
+            // Serialize execution, okay since its an initialization loop.
+            std::mutex primitive_add_mutex;
 
-            // TODO : The imposed primitive strategy
-            //    should be determined by a policy class
-            /*
-            auto imposed_primitive_adder = [this](auto Is) {
-              auto& imposed_primitive_collection =
-                  std::get<Is>(*imposed_primitives_);
-              // For each primitive in this primitive collection, add to
-              // grid
-              for (auto& imposed_primitive : imposed_primitive_collection) {
-                // Add a pointer
-                this->add(&imposed_primitive);
-              }
-            };
+            simulator.for_each_primitive([&](auto& primitive) {
+              std::lock_guard<std::mutex> guard(primitive_add_mutex);
+              this->add(&primitive);
+            });
 
-            index_apply<get_number_of_imposed_primitives()>(
-                [&imposed_primitive_adder](auto... Is) {
-                  EXPAND_PACK_LEFT_TO_RIGHT(imposed_primitive_adder(Is));
-                });
-             */
+            // Here allocate resources for a memory block of pointers which
+            // we use to transfer between grids in the detection step
+            // This only works since we know that the number of primitives
+            // in the simulation is constant, and set at initialization time.
+            // Revisit if the number of primitives grow.
+            tmpl::for_each<AdmissiblePrimitives>([&](auto p) {
+              using Primitive = tmpl::type_from<decltype(p)>;
+              // We may be reserving more memory than required, for the worst
+              // case scenario when all primitives belong to one grid, such as
+              // when all elements are uniformly sized.
+              // The upper bound is always `n_primitives`.
+
+              get<Primitive>(this->transfer_cache_)
+                  .resize(simulator.template n_primitives<Primitive>(),
+                          nullptr);
+            });
 
             grid_active_ = true;
 
-            // Here allocate resources for a memory block of pointers which
-            // we use in the detection step
-            //            void* memory_resource_ = std::malloc(sizeof(void*) *
-            //            all_primitives_count);
-
-          }
-          // else do exhaustive detection
-          else {
-            // pointless statement given initializaion, but leave for
-            // readability
+          } else {
+            // do exhaustive detection
             grid_active_ = false;
           }
         }
@@ -2066,39 +2255,23 @@ namespace elastica {
         /*!\brief Registering a rigid primitive with the coarse collision
          * detector.
          *
-         * \param primitive The primitive to be registered with the coarse
-         * collision detector. \return void
-         *
+         * \details
          * This function is a requirement for all coarse collision detectors.
          * It is automatically called every time a new rigid primitive is
          * added to the simulation world.
+         *
+         * \param primitive The primitive to be registered with the coarse
+         * collision detector.
+         * \return void
          */
-        template <typename C>              // Type of the configuration
-        template <typename PrimitiveType>  // Type of the primitive
+        template <typename C>
+        template <typename PrimitiveType>
         void HashGrids<C>::add(PrimitiveType* primitive) {
-          real_t primitive_size = (primitive->is_finite())
-                                      ? primitive->get_AABB_size()
-                                      : static_cast<real_t>(-1);
-
           // only finite primitives should even reach this point
-          ELASTICA_ASSERT(primitive_size > 0,
-                          "Logic error : Infinite primitive in a function "
-                          "meant for finite types!");
-          add_finite_primitives(primitive, primitive_size);
+          Expects(primitive->is_finite());
 
-          /*
-          if (primitive_size > 0) {
-            add_finite_primitives(primitive, primitive_size);
-          } else {
-            // TODO : The imposed primitive strategy
-            //    should be determined by a policy class
-            // TODO : This depends on the strategy, for doing imposed
-            // primitives, its better to rely on the exhaustive search
-            // algorithm rather than having a separate data structure
-            // here that adds to the complication
-            add_nonfinite_primitives(primitive, primitive_size);
-          }
-          */
+          real_t primitive_length = length(primitive->get_AABB());
+          add_finite_primitives(primitive, primitive_length);
         }
         //**********************************************************************
 
@@ -2117,55 +2290,64 @@ namespace elastica {
          * non-grid-bodies
          */
 
-        //*************************************************************************************************
+        //**********************************************************************
         /*!\brief Adds a primitive to the hierarchical hash grids data
          * structure.
          *
-         * \param primitive The primitive that is about to be added to the
-         * hierarchical hash grids data structure. \return void
-         *
+         * \details
          * If the usage of hierarchical hash grids is activated, this function
          * is called every time a new rigid primitive is added to the data
          * structure. It may also be called during the update phase.
+         *
+         * \param primitive The primitive that is about to be added to the
+         * hierarchical hash grids data structure.
+         * \param primitive_length Rough size of the primitive to determine the
+         * hash grid level
+         * \return void
          */
-        template <typename C>              // Type of the configuration
-        template <typename PrimitiveType>  // Type of the primitive
+        template <typename C>
+        template <typename PrimitiveType>
         void HashGrids<C>::add_finite_primitives(PrimitiveType* primitive,
-                                                 real_t primitive_size) {
-          using namespace elastica::collision::detection::coarse::hhg;
+                                                 real_t primitive_length) {
+          auto const hierarchy_factor = parameters_.hierarchy_factor;
 
-          // Assign to a grid with suitably primitive_sized cells.
+          // Assign to a grid with suitably primitive_lengthd cells.
           HashGrid* grid = nullptr;
 
           if (grid_list_.empty()) {
             // If no hash grid yet exists in the hierarchy, an initial hash
-            // grid is created based on the primitive's primitive_size.
+            // grid is created based on the primitive's primitive_length.
 
-            grid = new HashGrid(DomainPolicy::adjust_cell_span(
-                primitive_size * std::sqrt(hierarchy_factor())));
+            grid = new HashGrid(
+                DomainPolicyType::adjust_cell_span(primitive_length *
+                                                   std::sqrt(hierarchy_factor)),
+                parameters());
           } else {
             // Check the hierarchy for a hash grid with suitably
-            // primitive_sized cells - if such a grid does not yet exist, it
+            // primitive_lengthd cells - if such a grid does not yet exist, it
             // will be created.
 
-            real_t cell_span = 0;
+            real_t cell_span = 0.0;
+            // Loop via an iterator to insert
             for (auto g = grid_list_.begin(); g != grid_list_.end(); ++g) {
               grid = *g;
               cell_span = grid->get_cell_span();
 
-              if (primitive_size < cell_span) {
-                cell_span /= hierarchy_factor();
-                if (primitive_size < cell_span) {
+              if (primitive_length < cell_span) {
+                cell_span /= hierarchy_factor;
+                if (primitive_length < cell_span) {
                   // Primitive is less than the current span
                   // but also less than the span one below, in
                   // which case we create a new grid and add
                   // it to the list
-                  while (primitive_size < cell_span)
-                    cell_span /= hierarchy_factor();
+                  while (primitive_length < cell_span)
+                    cell_span /= hierarchy_factor;
 
                   // No need for size policy here as cell_span is already
-                  // appropriately sized
-                  grid = new HashGrid(cell_span * hierarchy_factor());
+                  // appropriately sized, since
+                  // cell_span = appropraitely_sized_cell * factor**k
+                  grid =
+                      new HashGrid(cell_span * hierarchy_factor, parameters());
                   // Insert at the iterator g pushes behind it!
                   grid_list_.insert(g, grid);
                 }
@@ -2181,9 +2363,13 @@ namespace elastica {
 
             // The current object is big for all the current grids. So create
             // a new grid that can accomodate this primitive
-            while (primitive_size >= cell_span)
-              cell_span *= hierarchy_factor();
-            grid = new HashGrid(cell_span);
+            while (primitive_length >= cell_span)
+              cell_span *= hierarchy_factor;
+
+            // No need for size policy here as cell_span is already
+            // appropriately sized, since
+            // cell_span = appropraitely_sized_cell * factor**k
+            grid = new HashGrid(cell_span, parameters());
           }
 
           grid->add(primitive);
@@ -2191,9 +2377,9 @@ namespace elastica {
 
           grid_list_.push_back(grid);
         }
-        //*************************************************************************************************
+        //**********************************************************************
 
-        //*************************************************************************************************
+        //**********************************************************************
         /*!\brief Adds a primitive to the non grid data structure.
          *
          * \param primitive The primitive that is about to be added to the non
@@ -2205,7 +2391,7 @@ namespace elastica {
         template <typename C>              // Type of the configuration
         template <typename PrimitiveType>  // Type of the primitive
         void HashGrids<C>::add_nonfinite_primitives(
-            PrimitiveType* /*primitive*/, real_t /* primitive_size */) {
+            PrimitiveType* /*primitive*/, real_t /* primitive_length */) {
           // The primitive - which is infinite in size - is marked as being
           // added to 'nonGridBodies_' by setting the grid pointer to NULL and
           // setting the cell-ID to '1'. Additionally, the hash value is used
@@ -2222,8 +2408,9 @@ namespace elastica {
           non_grid_primitives.push_back(primitive);
            */
         }
+        //**********************************************************************
 
-        //*************************************************************************************************
+        //**********************************************************************
         /*!\brief Deregistering a rigid body from the coarse collision
          * detector.
          *
@@ -2234,7 +2421,7 @@ namespace elastica {
          * It is automatically called every time a rigid body is removed from
          * the simulation world.
          */
-        template <typename C>  // Type of the configuration
+        template <typename C>
         template <typename PrimitiveType>
         void HashGrids<C>::remove(PrimitiveType* /*primitive*/) {
           // TODO : Complete
@@ -2274,18 +2461,28 @@ namespace elastica {
           }
            */
         }
-        //*************************************************************************************************
+        //**********************************************************************
 
-        template <typename C>         // Type of the configuration
-        template <typename Contacts>  // Contact container type
-        void HashGrids<C>::find_contacts(Contacts& contacts) {
-          using namespace elastica::collision::detection::coarse::hhg;
+        //**********************************************************************
+        /*!\brief Contact generation between colliding rigid bodies.
+         *
+         * \details
+         * This function generates all contacts between the rigid bodies
+         * contained in the simulation world. The contacts are added to the
+         * contact container \a contacts.
+         *
+         * \param contacts Contact container for the generated contacts.
+         * \return void
+         */
+        template <typename C>
+        template <typename PrimitivesCollection_,
+                  typename ImposedPrimitivesCollection_,
+                  typename Contacts>  // Contact container type
+        void HashGrids<C>::operator()(
+            PrimitivesCollection_& primitives_collection,
+            ImposedPrimitivesCollection_& imposed_primitives_collection,
+            Contacts& contacts) {
           // Serial
-          LOG_DEBUG_SECTION(log) {
-            log << "   Finding the contacts via the hash grids "
-                   "algorithm...";
-          }
-
           /* TODO : Parallelization of update
            *  Bottlenecks and fixes:
                 1. grid->update and grid->remove methods
@@ -2312,147 +2509,171 @@ namespace elastica {
 
               Requirements:
           */
+          using elastica::collision::for_each;
+          using elastica::collision::get_collection;
 
+          // Pre-processing : O(N), currently serial.
+          // TODO : profile.
           if (grid_active_) {
             // 1. Update all moving primitive associations
-            auto updater = [this](auto Is) {
-              auto& curr_primitives = this->get_primitive_collection<Is>();
-              for (auto& primitive : curr_primitives) {
-                auto grid = static_cast<HashGrid*>(primitive.get_grid());
-                ELASTICA_ASSERT(grid != nullptr, "Oopise, not assigned!");
-                if (grid != nullptr) {
-                  real_t primitive_size = primitive.get_AABB_size();
-                  real_t cell_span = grid->get_cell_span();
+            for_each(primitives_collection, [this](auto& primitive) {
+              auto grid = static_cast<HashGrid*>(primitive.get_grid());
+              Expects(grid != nullptr);
 
-                  if (primitive_size >= cell_span or
-                      primitive_size < (cell_span / hierarchy_factor())) {
-                    // TODO parallel
-                    grid->remove(&primitive);
-                    // We know apriori that primitives_ are finite
-                    add_finite_primitives(&primitive, primitive_size);
+              real_t const primitive_length = length(primitive.get_AABB());
+              real_t const cell_span = grid->get_cell_span();
 
-                  } else {
-                    // Even if the association of the grid doesn't change
-                    // the cell association within a grid might change
-                    // TODO parallel
-                    grid->update(&primitive);
-                  }
-                }
+              if (primitive_length >= cell_span or
+                  primitive_length <
+                      (cell_span / parameters_.hierarchy_factor)) {
+                // TODO parallel
+                grid->remove(&primitive);
+                // We know apriori that primitives_ are finite
+                this->add_finite_primitives(&primitive, primitive_length);
+
+              } else {
+                // Even if the association of the grid doesn't change
+                // the cell association within a grid might change
+                // TODO parallel
+                grid->update(&primitive);
               }
-            };
-
-            index_apply<get_number_of_primitives()>([&updater](auto... Is) {
-              EXPAND_PACK_LEFT_TO_RIGHT(updater(Is));
             });
 
             // 2. Detection step
 
             // Contact generation by traversing through all hash grids (which
-            // are sorted in ascending order
-            // with respect to the size of their cells).
-            std::vector<std::size_t> total_primitives_in_grid(grid_list_.size(),
-                                                              0UL);
-            std::size_t i_grid(0UL);
+            // are sorted in ascending order with respect to the size of their
+            // cells).
 
             // First completely process all primitives within each grid
-            for (HashGrid* grid : grid_list_) {
-              // TODO : Parallel
-              //  This can be made parallel WLO correctness and performant
-              //  (provided that contacts
-              //  is a concurrent vector) since the grid and cells are not
-              //  modified But to be sure, we should revisit the const
-              //  correctness of the code to ensure that even the
-              //  pointers/objects it points to cannot be modified
-              grid->process_grid(contacts);
-              total_primitives_in_grid[i_grid] =
-                  grid->get_total_primitive_count();
-              ++i_grid;
-            }
+            Exec::for_each(std::cbegin(grid_list_), std::cend(grid_list_),
+                           [&contacts](HashGrid const* const grid) {
+                             grid->process_v2(contacts);
+                           });
 
-            // Next process between grids, for which we need to:
-            auto grid_it = grid_list_.begin();
-            auto grid_end = grid_list_.end();
+            // Next process between grids.
+            // The strategy here is to
+            // Parallellize for each grid
+            //   Parallelize over types
+            //     Parallelize collision over higher grids
+            // This parallelization strategy needs a composable parallel
+            // backend. For this we need to:
 
-            auto inter_grid_collider = [&grid_it, &grid_end,
-                                        &contacts](auto Is) {
-              using PrimitiveType = tmpl::at_c<AdmissiblePrimitives, Is>;
+            // 1. Keep count of types of primitives transferred, for each grid
+            // Grids are stored as lists, so for fastish lookup, we use a map
+            // here. Ideally we would use a vector.
+            using StartCounter = CounterCache<AdmissiblePrimitives>;
+            using StopCounter = StartCounter;
+            // Stored as [start, stop) so adjacent start, stops are continous
+            std::unordered_map<HashGrid const*,
+                               std::pair<StartCounter, StopCounter>>
+                transfer_counts;
 
-              std::size_t current_primitive_count =
-                  (*grid_it)->template get_count<PrimitiveType>();
+            auto const b = grid_list_.cbegin();
+            auto const e = grid_list_.cend();
 
-              if (current_primitive_count > 0) {
-                // 1. Allocate buffer for all pointers using a memory resource
-                // TODO NOTE : Since we know that the number of primitives in
-                // the simulation is constant for now, we can allocate a block
-                // of memory for pointers during the initialization step and
-                // keep on reusing it.
-                PrimitiveType** all_primitives_from_current_grid =
-                    new PrimitiveType*[current_primitive_count];
+            // 2. Populate the start and stop counts serially.
+            // Not using parallel execution here since the work is keeping track
+            // of counters.
+            tmpl::for_each<AdmissiblePrimitives>([&, b, e](auto p) {
+              using Primitive = tmpl::type_from<decltype(p)>;
 
-                // 2. Transfer all primitives to a buffer
-                std::size_t count_transferred = (*grid_it)->transfer_primitives(
-                    to, all_primitives_from_current_grid);
-
-                ELASTICA_ASSERT(count_transferred == current_primitive_count,
-                                "Wrong count!");
-
-                auto next_grid_it = std::next(grid_it);
-
-                // 3. Test all bodies stored in 'grid_it' against bodies
-                // stored in grids with larger sized cells.
-                for (; next_grid_it != grid_end; ++next_grid_it) {
-                  // TODO : Parallel
-                  //  This can be made parallel WLO correctness and performant
-                  //  (provided that contacts
-                  //  is a concurrent vector) since the grid and cells are not
-                  //  modified But to be sure, we should revisit the const
-                  //  correctness of the code to ensure that even the
-                  //  pointers/objects it points to cannot be modified
-                  (*next_grid_it)
-                      ->process_primitives_from_finer_grid(
-                          all_primitives_from_current_grid,
-                          current_primitive_count, contacts);
-                }
-
-                // 4. Delete any allocation
-                delete[] all_primitives_from_current_grid;
-              }
-            };
-
-            for (; grid_it != grid_end; ++grid_it) {
-              index_apply<get_number_of_primitives()>(
-                  [&inter_grid_collider](auto... Is) {
-                    EXPAND_PACK_LEFT_TO_RIGHT(inter_grid_collider(Is));
+              std::for_each(
+                  b, e, [&, start_idx = 0UL](HashGrid const* grid) mutable {
+                    auto& counts = transfer_counts[grid];
+                    std::size_t const current_primitive_count =
+                        cpp17::as_const(grid)
+                            ->template get_number_of_primitives<Primitive>();
+                    // primitive count may also be zero : we check this case
+                    // explicitly below
+                    // start index in buffer
+                    get<Primitive>(counts.first) = start_idx;
+                    start_idx += current_primitive_count;
+                    // stop index in buffer
+                    get<Primitive>(counts.second) = start_idx;
                   });
-            }
+            });
+
+            // For each grid,
+            const auto n_grids = grid_list_.size();
+            // We need access to grid iterators inside the lambda, so do it via
+            // counting instead
+            Exec::for_each(
+                make_counting_iterator(0UL), make_counting_iterator(n_grids),
+                [this, &contacts,
+                 &transfer_counts = cpp17::as_const(transfer_counts), b,
+                 e](auto const grid_idx) {
+                  auto const grid_it = std::next(b, long(grid_idx));
+                  auto* const grid = *grid_it;
+                  auto f_it = transfer_counts.find(grid);
+
+                  Expects(f_it != transfer_counts.end());
+
+                  // For each type of primitive in grid
+                  Exec::template for_each_type<AdmissiblePrimitives>(
+                      [&, grid, &counts = f_it->second](auto p) {
+                        using Primitive = tmpl::type_from<decltype(p)>;
+                        using ::elastica::collision::detection::coarse::get;
+                        auto const start_idx = get<Primitive>(counts.first);
+                        auto const stop_idx = get<Primitive>(counts.second);
+                        auto const n_idx = stop_idx - start_idx;
+
+                        // Check for case with no primitives
+                        if (stop_idx > start_idx) {
+                          // 1. Allocate buffer for all pointers using a memory
+                          // resource
+                          Primitive** buffer_all_primitives =
+                              get<Primitive>(transfer_cache_).data();
+                          Primitive** buffer_all_primitives_from_current_grid =
+                              buffer_all_primitives + start_idx;
+
+                          // 2. Transfer all primitives to a buffer
+                          std::size_t count_transferred =
+                              grid->transfer_primitives(
+                                  to, buffer_all_primitives_from_current_grid);
+
+                          Ensures(start_idx + count_transferred == stop_idx);
+                        }
+
+                        // 3. Collide the transferred primitives with all
+                        // primitives in higher grids This step is fused with
+                        // the transfer to hide the IO latency for copying
+                        // pointers by adding some computation in the same task.
+                        //
+                        // this seems like a bad pattern as we complete all
+                        // primitives from one grid before moving onto another.
+                        // Good : In each iteration of the grid the load is
+                        // expected to be evenly distributed between all the
+                        // primitives
+
+                        Exec::for_each(
+                            std::next(grid_it), e,
+                            [&](HashGrid const* const coarser_grid) {
+                              Primitive** buffer_all_primitives =
+                                  get<Primitive>(transfer_cache_).data();
+                              Primitive**
+                                  buffer_all_primitives_from_current_grid =
+                                      buffer_all_primitives + start_idx;
+
+                              coarser_grid->generate_contacts_from_finer_grid(
+                                  buffer_all_primitives_from_current_grid,
+                                  n_idx, contacts);
+                            });  // for each higher grid
+                      });        // for each primitive type
+                });              // for each grid
+
+            // TODO : make finite imposed primitives part of the HashGrids step.
 
             // Pairwise test (=> contact generation) for all primitives with
             // imposed bodies, which usually do not have a finite span
-            exhaustive_search.find_contacts_with_imposed_primitives(
-                contacts, PrimitiveImposedPrimitiveMatrix{});
-
+            exhaustive_search.process(primitives_collection,
+                                      imposed_primitives_collection, contacts);
           } else {
-            exhaustive_search.find_contacts(contacts);
-          }
-
-          // Serial
-          LOG_DEBUG_SECTION(log) {
-            if (contacts.empty())
-              log << "      no contacts found!";
-            else {
-              for (auto const& c : contacts) {
-                log << "      State of the contacts:\n";
-                log << "         Contact " << c->get_ID() << " ("
-                    << c->get_contact_type() << "):"
-                    << " pos = " << c->get_position()
-                    << " , n = " << c->get_normal()
-                    << " , dist = " << c->get_distance()
-                    << " , vrel = " << c->get_normal_relative_velocity()
-                    << " , cor = " << c->get_restitution() << "\n";
-              }
-            }
+            exhaustive_search(primitives_collection,
+                              imposed_primitives_collection, contacts);
           }
         }
+        //**********************************************************************
 
         //**********************************************************************
         /*!\brief Clears the coarse collision detector.
@@ -2479,3 +2700,12 @@ namespace elastica {
   }  // namespace collision
 
 }  // namespace elastica
+
+//! A heterogenoous collection of a vector of imposed
+//! primitive pointers
+// ImposedPrimitiveStorage = tuple<vector<Plane>, vector<Spline>>
+// NonGridPrimitiveStorage = tuple<vector<Plane*>, vector<Spline*>>
+// NOT POSSIBLE Complete logic for NonGridPrimitiveStorage
+//          using NonGridPrimitiveStorage =
+//              tmpl::transform<ImposedPrimitiveStorage,
+//                              std::add_pointer<tmpl::_1>>;

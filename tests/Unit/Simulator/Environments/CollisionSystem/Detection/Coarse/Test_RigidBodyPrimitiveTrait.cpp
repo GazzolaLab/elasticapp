@@ -65,7 +65,7 @@ namespace {
     testing.get_aabb()[4] = 0.9;
     testing.get_aabb()[5] = 0.8;
 
-    CHECK(testing.get_AABB_size() == approx(0.8));
+    CHECK(length(testing.get_aabb()) == approx(0.8));
   }
 
 }  // namespace

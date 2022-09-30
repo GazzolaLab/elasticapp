@@ -39,6 +39,7 @@
 //******************************************************************************
 
 #include <algorithm>
+#include <cmath>
 #include <ostream>
 #include <utility>
 
@@ -821,6 +822,24 @@ namespace elastica {
         template <::elastica::EulerianFrame::DirectionType Dir, typename Type>
         inline Type length_along(BoundingBox<Type> const& aabb) noexcept {
           return aabb.template length<Dir>();
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Returns the length of the longest side of the AABB of the
+         * rigid body.
+         * \ingroup coarse_collision_detection
+         *
+         * \param aabb Reference to an axis-aligned bounding box.
+         * \return The length of the longest side of the AABB of the rigid body.
+         */
+        template <typename Type>
+        inline Type length(BoundingBox<Type> const& aabb) noexcept {
+          using std::max;
+          const auto x_size = length_along<::elastica::EulerianFrame::X>(aabb);
+          const auto y_size = length_along<::elastica::EulerianFrame::Y>(aabb);
+          const auto z_size = length_along<::elastica::EulerianFrame::Z>(aabb);
+          return max(x_size, max(y_size, z_size));
         }
         //**********************************************************************
 

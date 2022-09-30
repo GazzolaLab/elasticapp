@@ -154,6 +154,15 @@ changing the coarse-detection algorithm.
           void operator()(PrimitivesCollection_&, ImposedPrimitivesCollection_&,
                           ContactsCache_&);
 
+          template <typename PrimitivesCollection_, typename ContactsCache_>
+          void process(PrimitivesCollection_&, ContactsCache_&);
+
+          template <typename PrimitivesCollection_,
+                    typename ImposedPrimitivesCollection_,
+                    typename ContactsCache_>
+          void process(PrimitivesCollection_&, ImposedPrimitivesCollection_&,
+                       ContactsCache_&);
+
          protected:
           template <typename FCP, typename SCP, typename Contacts>
           static void generate_contact(Contacts& contacts, FCP& first,
@@ -424,6 +433,55 @@ changing the coarse-detection algorithm.
         //**********************************************************************
 
         //**********************************************************************
+        /*!\brief Contact generation between a list of colliding primitives
+         */
+        template <typename C>  // Type of the configuration
+        template <typename PrimitivesCollection_,
+                  typename Contacts>  // Contact container type
+        inline void ExhaustiveSearch<C>::process(
+            PrimitivesCollection_& primitives_collection, Contacts& contacts) {
+          Exec::template pairwise_for_each<PrimitiveCombinations>(
+              [&](auto meta_p1, auto meta_p2) {
+                using elastica::collision::get_collection;
+                using P1 = tmpl::type_from<decltype(meta_p1)>;
+                using P2 = tmpl::type_from<decltype(meta_p2)>;
+                // auto& first_primitive_collection = get_collection<FCP>();
+                // auto& second_primitive_collection = get_collection<SCP>();
+                generate_contacts(contacts,
+                                  get_collection<P1>(primitives_collection),
+                                  get_collection<P2>(primitives_collection));
+              });
+        }
+        //**********************************************************************
+
+        //**********************************************************************
+        /*!\brief Contact generation between a primitive and imposed primitive
+         */
+        template <typename C>  // Type of the configuration
+        template <typename PrimitivesCollection_,
+                  typename ImposedPrimitivesCollection_,
+                  typename Contacts>  // Contact container type
+        inline void ExhaustiveSearch<C>::process(
+            PrimitivesCollection_& primitives_collection,
+            ImposedPrimitivesCollection_& imposed_primitives_collection,
+            Contacts& contacts) {
+          Exec::template pairwise_for_each<
+              PrimitiveImposedPrimitiveCombinations>([&](auto meta_p1,
+                                                         auto meta_p2) {
+            using elastica::collision::get_collection;
+            using P1 = tmpl::type_from<decltype(meta_p1)>;
+            using P2 = tmpl::type_from<decltype(meta_p2)>;
+            // These are always considered different as they have
+            // different semantics, even if the type system says otherwise
+            generate_contacts(contacts,
+                              get_collection<P1>(primitives_collection),
+                              get_collection<P2>(imposed_primitives_collection),
+                              tt::DifferentPrimitivesTag{});
+          });
+        }
+        //**********************************************************************
+
+        //**********************************************************************
         /*!\brief Contact generation between colliding rigid bodies.
          *
          * \details
@@ -442,37 +500,9 @@ changing the coarse-detection algorithm.
             PrimitivesCollection_& primitives_collection,
             ImposedPrimitivesCollection_& imposed_primitives_collection,
             Contacts& contacts) {
-          //********************************************************************
-          /*!Contact generation between a list of colliding primitives*/
-          //********************************************************************
-          Exec::template pairwise_for_each<PrimitiveCombinations>(
-              [&](auto meta_p1, auto meta_p2) {
-                using elastica::collision::get_collection;
-                using P1 = tmpl::type_from<decltype(meta_p1)>;
-                using P2 = tmpl::type_from<decltype(meta_p2)>;
-                // auto& first_primitive_collection = get_collection<FCP>();
-                // auto& second_primitive_collection = get_collection<SCP>();
-                generate_contacts(contacts,
-                                  get_collection<P1>(primitives_collection),
-                                  get_collection<P2>(primitives_collection));
-              });
-
-          //********************************************************************
-          /*!Contact generation between a primitive and imposed primitive*/
-          //********************************************************************
-          Exec::template pairwise_for_each<
-              PrimitiveImposedPrimitiveCombinations>([&](auto meta_p1,
-                                                         auto meta_p2) {
-            using elastica::collision::get_collection;
-            using P1 = tmpl::type_from<decltype(meta_p1)>;
-            using P2 = tmpl::type_from<decltype(meta_p2)>;
-            // These are always considered different as they have different
-            // semantics, even if the type system says otherwise
-            generate_contacts(contacts,
-                              get_collection<P1>(primitives_collection),
-                              get_collection<P2>(imposed_primitives_collection),
-                              tt::DifferentPrimitivesTag{});
-          });
+          process(primitives_collection, contacts);
+          process(primitives_collection, imposed_primitives_collection,
+                  contacts);
         }
         //**********************************************************************
 

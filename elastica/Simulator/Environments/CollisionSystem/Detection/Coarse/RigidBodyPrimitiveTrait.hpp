@@ -166,7 +166,6 @@ namespace elastica {
           //**Get functions*****************************************************
           /*!\name Get functions */
           //@{
-          inline real_t get_AABB_size() const noexcept;
           inline void* get_grid() const noexcept;
           inline std::size_t get_hash() const noexcept;
           inline std::size_t get_cell_ID() const noexcept;
@@ -234,42 +233,6 @@ namespace elastica {
               cell_ID_(0)  // The body's index in the body container of the grid
                            // cell this rigid body is currently assigned to
         {}
-        //**********************************************************************
-
-        //**********************************************************************
-        /*!\brief Returns the length of the longest side of the AABB of the
-         * rigid body.
-         *
-         * \return The length of the longest side of the AABB of the rigid body.
-         */
-        template <
-            // Type of the fine collision detection algorithm
-            typename FD,
-            // Type of the batch generation algorithm
-            template <typename> class BG,
-            // Type of the collision response algorithm
-            template <typename, typename, typename> class CR,
-            template <
-                // Template signature of the coarse collision detection
-                // algorithm
-                template <typename> class,
-                // Template signature of the fine collision detection algorithm
-                typename,
-                // Template signature of the batch generation algorithm
-                template <typename> class,
-                // Template signature of the collision response algorithm
-                template <typename, typename, typename> class>
-            class C>  // Type of the configuration
-        inline real_t RigidBodyPrimitiveTrait<
-            C<HashGrids, FD, BG, CR>>::get_AABB_size() const noexcept {
-          // real_t size = aabb_[3] - aabb_[0];
-          // real_t yDiff = aabb_[4] - aabb_[1];
-          // real_t zDiff = aabb_[5] - aabb_[2];
-          const auto x_size = length_along<::elastica::EulerianFrame::X>(aabb_);
-          const auto y_size = length_along<::elastica::EulerianFrame::Y>(aabb_);
-          const auto z_size = length_along<::elastica::EulerianFrame::Z>(aabb_);
-          return std::max(x_size, std::max(y_size, z_size));
-        }
         //**********************************************************************
 
         //**********************************************************************

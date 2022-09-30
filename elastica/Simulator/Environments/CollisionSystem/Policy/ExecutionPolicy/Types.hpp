@@ -30,6 +30,8 @@ namespace elastica {
       template <typename>
       class ForEachOp;
       template <typename>
+      class ForEachTypeOp;
+      template <typename>
       class OverPairsOp;
       /*! \endcond */
       //************************************************************************

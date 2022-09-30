@@ -174,7 +174,7 @@ namespace elastica {
        */
       template <typename F, typename PrimitiveList_, typename ContainerPolicy,
                 typename... Primitives>
-      inline auto for_each(
+      inline auto for_each_impl(
           PrimitivesCollection<PrimitiveList_, ContainerPolicy>& primitives,
           F func,
           tmpl::list<Primitives...> /*PrimitiveList*/ =
@@ -222,7 +222,8 @@ namespace elastica {
     inline auto for_each(
         PrimitivesCollection<PrimitiveList_, ContainerPolicy>& primitives,
         F func) noexcept -> F {
-      return detail::for_each(primitives, std::move(func), PrimitivesList{});
+      return detail::for_each_impl(primitives, std::move(func),
+                                   PrimitivesList{});
     }
     //**************************************************************************
 
@@ -246,7 +247,8 @@ namespace elastica {
     inline auto for_each(
         PrimitivesCollection<PrimitiveList_, ContainerPolicy>& primitives,
         F func) noexcept -> F {
-      return detail::for_each(primitives, std::move(func), PrimitiveList_{});
+      return detail::for_each_impl(primitives, std::move(func),
+                                   PrimitiveList_{});
     }
     //@}
     //**************************************************************************

@@ -676,13 +676,14 @@ namespace elastica {
         perform<TransferInfoFromSimulationStep>(elastica::collision::from,
                                                 simulator);
 
-        // 2. Add primitives to the coarse detector if it has some internal
+        // 2. For initialization, clearing all state to be safe
+        // Do it before adding all primitives to the coarse detector!
+        clear();
+
+        // 3. Add primitives to the coarse detector if it has some internal
         // state
         get_coarse_detector().add_all_primitives(elastica::collision::from,
                                                  simulator);
-
-        // 3. For initialization, clearing all contacts to be safe
-        clear();
 
         log<debug>([](auto const& log) {
           log << "Finished initialization of the CollisionSystem...\n";

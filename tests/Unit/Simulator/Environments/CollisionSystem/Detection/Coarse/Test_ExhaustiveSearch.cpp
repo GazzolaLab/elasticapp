@@ -23,6 +23,8 @@
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
+//
+#include "ContactCacheUtils.hpp"
 
 namespace elastica {
   // for this test alone, I don't want to overload it generally
@@ -92,25 +94,6 @@ namespace elastica {
 //   // report numbers for now
 //   return os;
 // }
-
-template <typename L, typename Strat1>
-auto collect_pairs(elastica::ContactCache<L, Strat1> const& lhs) {
-  using RT = std::set<std::pair<std::size_t, std::size_t>>;
-  RT rt{};
-  auto add_to_count = [&](auto const& vec) {
-    using std::begin;
-    using std::end;
-    // using prev(end()) segfaults
-    std::transform(begin(vec), end(vec), std::inserter(rt, begin(rt)),
-                   [&](auto const& ref_pair) {
-                     return std::make_pair(ref_pair.first.get().getSystemID(),
-                                           ref_pair.second.get().getSystemID());
-                   });
-  };
-  cpp17::apply([=](auto&... v) { EXPAND_PACK_LEFT_TO_RIGHT(add_to_count(v)); },
-               lhs.data());
-  return rt;
-}
 
 namespace {
   using namespace elastica::collision;

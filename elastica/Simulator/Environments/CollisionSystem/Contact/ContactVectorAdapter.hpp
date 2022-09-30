@@ -17,13 +17,14 @@
 // Includes
 //******************************************************************************
 
-#include <memory>
-#include <vector>
-
 #include "Simulator/Environments/CollisionSystem/Contact/Types.hpp"
 #include "Simulator/Environments/Primitives/Types.hpp"
 //
 #include "Utilities/Math/Vec3.hpp"
+//
+#include <iostream>
+#include <memory>
+#include <vector>
 
 namespace elastica {
 
@@ -230,6 +231,14 @@ namespace elastica {
                       dist  // Distance between the surfaces (negative distance
                             // means penetration)
       );
+    }
+    //**************************************************************************
+
+    template <typename C, typename Container>
+    inline ::std::ostream& operator<<(
+        ::std::ostream& os, ContactVectorAdapter<C, Container> const& c) {
+      os << c.data();
+      return os;
     }
     //**************************************************************************
 

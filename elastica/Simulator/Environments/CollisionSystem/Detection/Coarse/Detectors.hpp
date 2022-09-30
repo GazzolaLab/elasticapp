@@ -18,5 +18,4 @@
 //******************************************************************************
 
 #include "Simulator/Environments/CollisionSystem/Detection/Coarse/ExhaustiveSearch.hpp"
-// #include
-// "Simulator/Environments/CollisionSystem/Detection/Coarse/HashGrids.hpp"
+#include "Simulator/Environments/CollisionSystem/Detection/Coarse/HashGrids.hpp"
