@@ -10,6 +10,8 @@
 
 #include "Systems/States/Expressions/backends/blaze/SO3PrimitiveAddAssign/BaseTemplate.hpp"
 #include "Systems/States/Expressions/backends/blaze/Size.hpp"
+//
+#include "Utilities/Unroll.hpp"
 
 namespace elastica {
 
@@ -38,15 +40,15 @@ namespace elastica {
 
           for (std::size_t i_dof = index_start; i_dof < index_fin; ++i_dof) {
             // 1. load data into registers
-#pragma unroll 3UL
+            UNROLL_LOOP(3UL)
             for (std::size_t dim = 0UL; dim < 3UL; ++dim) {
               // bad access pattern
               u[dim] = rhs_vector_batch(dim, i_dof);
             }
 
-#pragma unroll 3UL  // needs to be timed
+            UNROLL_LOOP(3UL)  // Needs to be timed
             for (std::size_t k_dim = 0UL; k_dim < 3UL; ++k_dim) {
-#pragma unroll 3UL
+              UNROLL_LOOP(3UL)
               for (std::size_t j_dim = 0UL; j_dim < 3UL; ++j_dim) {
                 // bad access pattern
                 // convention according to SO3PrimitiveAssign
@@ -60,51 +62,37 @@ namespace elastica {
             // blaze dispatches to std
             const T theta = ::std::sqrt(u[0UL] * u[0UL] + u[1UL] * u[1UL] +
                                         u[2UL] * u[2UL]);
-            const T alpha = T(1.0) - ::std::cos(theta);
+            const T c_alpha = ::std::cos(theta);
+            const T alpha = T(1.0) - c_alpha;
             const T beta = ::std::sin(theta);
 
             // 3. normalize the axis of rotation
             /*Clang-Tidy: Use range-based for loop instead*/
-#pragma unroll 3UL
+            UNROLL_LOOP(3UL)
             for (std::size_t dim = 0UL; dim < 3UL; ++dim) { /* NOLINT */
               // bad access pattern
               u[dim] /= (theta + 1e-14);  // TODO : refactor magic number
             }
 
             /*Clang-Tidy: Use range-based for loop instead*/
-#pragma unroll 3UL
+            UNROLL_LOOP(3UL)
             for (std::size_t j_dim = 0UL; j_dim < 3UL; ++j_dim) { /* NOLINT */
+              const T com = q[j_dim] * u[0UL] + q[3UL + j_dim] * u[1UL] +
+                            q[6UL + j_dim] * u[2UL];
+
               lhs_matrix_batch(0UL, j_dim, i_dof) =
-                  alpha * (-(u[1UL] * u[1UL] + u[2UL] * u[2UL]) * q[j_dim] +
-                           u[0UL] * (q[3UL + j_dim] * u[1UL] +
-                                     q[6UL + j_dim] * u[2UL])) +
-                  beta * (q[3UL + j_dim] * u[2UL] - q[6UL + j_dim] * u[1UL]) +
-                  q[j_dim];
-            }
+                  c_alpha * q[j_dim] + alpha * u[0UL] * com +
+                  beta * (q[3UL + j_dim] * u[2UL] - q[6UL + j_dim] * u[1UL]);
 
-            /*Clang-Tidy: Use range-based for loop instead*/
-#pragma unroll 3UL
-            for (std::size_t j_dim = 0UL; j_dim < 3UL; ++j_dim) { /* NOLINT */
               lhs_matrix_batch(1UL, j_dim, i_dof) =
-                  alpha *
-                      (-(u[0UL] * u[0UL] + u[2UL] * u[2UL]) * q[3UL + j_dim] +
-                       u[1UL] * (q[j_dim] * u[0UL] + q[6UL + j_dim] * u[2UL])) +
-                  beta * (q[6UL + j_dim] * u[0UL] - q[j_dim] * u[2UL]) +
-                  q[3UL + j_dim];
-            }
+                  c_alpha * q[3UL + j_dim] + alpha * u[1UL] * com +
+                  beta * (q[6UL + j_dim] * u[0UL] - q[j_dim] * u[2UL]);
 
-            /*Clang-Tidy: Use range-based for loop instead*/
-#pragma unroll 3UL
-            for (std::size_t j_dim = 0UL; j_dim < 3UL; ++j_dim) { /* NOLINT */
               lhs_matrix_batch(2UL, j_dim, i_dof) =
-                  alpha *
-                      (-(u[0UL] * u[0UL] + u[1UL] * u[1UL]) * q[6UL + j_dim] +
-                       u[2UL] * (q[j_dim] * u[0UL] + q[3UL + j_dim] * u[1UL])) +
-                  beta * (q[j_dim] * u[1UL] - q[3UL + j_dim] * u[0UL]) +
-                  q[6UL + j_dim];
-            }
-
-          }  // i_dof
+                  c_alpha * q[6UL + j_dim] + alpha * u[2UL] * com +
+                  beta * (q[j_dim] * u[1UL] - q[3UL + j_dim] * u[0UL]);
+            }  // j_dim
+          }    // i_dof
         }
 
         template <typename T, typename RHSVectorBatch>

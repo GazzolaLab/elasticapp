@@ -18,6 +18,8 @@
 #include "Systems/States/Expressions/backends/blaze/Size.hpp"
 //
 #include "ErrorHandling/Assert.hpp"
+//
+#include "Utilities/Unroll.hpp"
 
 namespace elastica {
 
@@ -65,7 +67,7 @@ namespace elastica {
           // unrolling more probably wont help because of register pressure
           SIMDType q[9UL];
           SIMDType u[3UL];
-          SIMDType alpha, beta;
+          SIMDType c_alpha, alpha, beta;
 
 #if !(BLAZE_SVML_MODE || BLAZE_SLEEF_MODE)
           // a temporary aligned register to pipe contents into
@@ -79,13 +81,13 @@ namespace elastica {
               // 1. load data into registers
 
               // 1.1 load u
-#pragma unroll 3UL
+              UNROLL_LOOP(3UL)
               for (std::size_t dim = 0UL; dim < 3UL; ++dim) {
                 u[dim] = u_it[dim].load();
               }
 
               // 1.2 load q
-#pragma unroll 9UL
+              UNROLL_LOOP(9UL)
               for (std::size_t dim = 0UL; dim < 9UL; ++dim) {
                 q[dim] = q_it[dim].load();
               }
@@ -99,7 +101,7 @@ namespace elastica {
 
               // 3. normalize the axis of rotation
               /*Clang-Tidy: Use range-based for loop instead*/
-#pragma unroll 3UL
+              UNROLL_LOOP(3UL)
               for (std::size_t dim = 0UL; dim < 3UL; ++dim) { /* NOLINT */
                 // bad access pattern
                 // TODO : refactor magic number
@@ -109,16 +111,16 @@ namespace elastica {
 
               // compute trigonometric entities
 #if BLAZE_SVML_MODE || BLAZE_SLEEF_MODE
-              alpha = ::blaze::set(T(1.0)) - ::blaze::cos(beta);
+              c_alpha = ::blaze::cos(beta);
               beta = ::blaze::sin(beta);
 #else
               // no intrinsics, so we unpack the SIMD vector, compute sin and
               // cos on each via regular math functions and then repack it
 #pragma unroll SIMDSIZE
               for (std::size_t simd_idx = 0UL; simd_idx < SIMDSIZE; ++simd_idx)
-                temp[simd_idx] = T(1.0) - ::blaze::cos(beta[simd_idx]);
+                temp[simd_idx] = ::blaze::cos(beta[simd_idx]);
 
-              alpha = ::blaze::loada(temp);
+              c_alpha = ::blaze::loada(temp);
 
 #pragma unroll SIMDSIZE
               for (std::size_t simd_idx = 0UL; simd_idx < SIMDSIZE; ++simd_idx)
@@ -126,55 +128,42 @@ namespace elastica {
 
               beta = ::blaze::loada(temp);
 #endif
+              alpha = ::blaze::set(T(1.0)) - c_alpha;
             }
 
             {
               // 4. compute the rotated batch
               /*Clang-Tidy: Use range-based for loop instead*/
-#pragma unroll 3UL
+              UNROLL_LOOP(3UL)
               for (std::size_t j_dim = 0UL; j_dim < 3UL; ++j_dim) { /* NOLINT */
+                // Force evaluate it
+                const auto com = (q[j_dim] * u[0UL] + q[3UL + j_dim] * u[1UL] +
+                                  q[6UL + j_dim] * u[2UL])
+                                     .eval();
+
                 q_it[0UL + j_dim].stream(
-                    alpha * ((u[1UL] * u[1UL] + u[2UL] * u[2UL]) *
-                                 (SIMDType() - q[j_dim]) +
-                             u[0UL] * (q[3UL + j_dim] * u[1UL] +
-                                       q[6UL + j_dim] * u[2UL])) +
-                    beta * (q[3UL + j_dim] * u[2UL] - q[6UL + j_dim] * u[1UL]) +
-                    q[j_dim]);
-              }
+                    c_alpha * q[j_dim] + alpha * u[0UL] * com +
+                    beta * (q[3UL + j_dim] * u[2UL] - q[6UL + j_dim] * u[1UL]));
 
-              /*Clang-Tidy: Use range-based for loop instead*/
-#pragma unroll 3UL
-              for (std::size_t j_dim = 0UL; j_dim < 3UL; ++j_dim) { /* NOLINT */
                 q_it[3UL + j_dim].stream(
-                    alpha * ((u[0UL] * u[0UL] + u[2UL] * u[2UL]) *
-                                 (SIMDType() - q[3UL + j_dim]) +
-                             u[1UL] * (q[j_dim] * u[0UL] +
-                                       q[6UL + j_dim] * u[2UL])) +
-                    beta * (q[6UL + j_dim] * u[0UL] - q[j_dim] * u[2UL]) +
-                    q[3UL + j_dim]);
-              }
+                    c_alpha * q[3UL + j_dim] + alpha * u[1UL] * com +
+                    beta * (q[6UL + j_dim] * u[0UL] - q[j_dim] * u[2UL]));
 
-              /*Clang-Tidy: Use range-based for loop instead*/
-#pragma unroll 3UL
-              for (std::size_t j_dim = 0UL; j_dim < 3UL; ++j_dim) { /* NOLINT */
                 q_it[6UL + j_dim].stream(
-                    alpha * ((u[0UL] * u[0UL] + u[1UL] * u[1UL]) *
-                                 (SIMDType() - q[6UL + j_dim]) +
-                             u[2UL] * (q[j_dim] * u[0UL] +
-                                       q[3UL + j_dim] * u[1UL])) +
-                    beta * (q[j_dim] * u[1UL] - q[3UL + j_dim] * u[0UL]) +
-                    q[6UL + j_dim]);
-              }
+                    c_alpha * q[6UL + j_dim] + alpha * u[2UL] * com +
+                    beta * (q[j_dim] * u[1UL] - q[3UL + j_dim] * u[0UL]));
+
+              }  // jdim
             }
 
             {
               // 5. advance all the iterators to the next SIMD lane
               /*Clang-Tidy: Use range-based for loop instead*/
-#pragma unroll 3UL
+              UNROLL_LOOP(3UL)
               for (std::size_t dim = 0UL; dim < 3UL; ++dim) /* NOLINT */
                 u_it[dim] += SIMDSIZE;
 
-#pragma unroll 9UL
+              UNROLL_LOOP(9UL)
               for (std::size_t dim = 0UL; dim < 9UL; ++dim) /* NOLINT */
                 q_it[dim] += SIMDSIZE;
             }

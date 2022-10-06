@@ -85,6 +85,7 @@ elastica_target_headers(
         TMPL.hpp
         TMPLDebugging.hpp
         TypeTraits.hpp
+        Unroll.hpp
         WidthStream.hpp
         WrapText.hpp
 )
