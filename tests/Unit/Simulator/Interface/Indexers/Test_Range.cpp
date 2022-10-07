@@ -91,6 +91,15 @@ namespace {
       CHECK_THROWS_WITH(to_numeric(r, sys),
                         Catch::Contains("Number of degrees of freedom"));
     }
+    {
+      // No throw for an index with end (not incusive anyway)
+      auto r = range(2UL, end, 1);
+      auto numerical_indices = to_numeric(r, sys);
+      CHECK(numerical_indices.start_ == 2);
+      CHECK(numerical_indices.stop_ == 4);
+      // step will always be untouched
+      CHECK(numerical_indices.step_ == 1);
+    }
   }
 
 }  // namespace

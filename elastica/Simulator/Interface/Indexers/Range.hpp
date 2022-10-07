@@ -205,8 +205,11 @@ namespace elastica {
 
       s_stream << "[ start: ";
       const std::size_t start = check(index_range.start_);
+      // workaround to support ranges with last index : stop_ - 1 does not
+      // throw in check(), and once we have the numeric index, we add one to
+      // recover original index.
       s_stream << ", stop: ";
-      const std::size_t stop = check(index_range.stop_);
+      const std::size_t stop = check(index_range.stop_ - 1UL) + 1UL;
       s_stream << "]";
 
       if (failed) {
