@@ -25,19 +25,28 @@ struct InvRotateDivideTimingSetup {
   static auto setup(const std::size_t n_values) {
     R Q(3UL, 3UL, n_values);
 
-    const ::elastica::Vec3 axis{1.0, 0.0, 1.0};
     for (std::size_t k(0UL); k < n_values; ++k) {
+      const auto angle = ::elastica::real_t(k) * M_PI / 20.0;
       ::blaze::columnslice(Q, k) =
-          ::elastica::geometry::rotate_via_axis_angle(axis, k * M_PI / 20);
+          elastica::Rot3{{std::cos(angle), -std::sin(angle), 0.0},
+                         {std::sin(angle), std::cos(angle), 0.0},
+                         {0.0, 0.0, 1.0}};
     }
 
     Kappa kappa(3UL, n_values - 1UL);
 
     Length temp(n_values - 1UL);
-    blaze::randomize(temp);
-    Length w(temp * temp);
 
-    return std::make_tuple(std::move(Q), std::move(kappa), std::move(w));
+    std::random_device rd{};
+    std::mt19937 gen{rd()};
+    std::normal_distribution<::elastica::real_t> d{1.0, 0.1};
+
+    std::generate(temp.begin(), temp.end(), [&]() { return d(gen); });
+    // blaze::randomize(temp);
+
+    // Length w(temp * temp);
+
+    return std::make_tuple(std::move(Q), std::move(kappa), std::move(temp));
   };
 
   explicit InvRotateDivideTimingSetup(const std::size_t n_values = 256UL) {

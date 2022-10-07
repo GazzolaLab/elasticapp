@@ -10,6 +10,7 @@
 #include "Systems/CosseratRods/Traits/Operations/BlazeBackend/InvRotateDivide/BaseTemplate.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Restrict.hpp"
+#include "Utilities/Unroll.hpp"
 
 namespace elastica {
 
@@ -43,9 +44,9 @@ namespace elastica {
           T* ELASTICA_RESTRICT Q_next = q_second;
 
           {
-#pragma unroll 3UL  // needs to be timed
+            UNROLL_LOOP(3UL)  // needs to be timed
             for (std::size_t k_dim = 0UL; k_dim < 3UL; ++k_dim) {
-#pragma unroll 3UL
+              UNROLL_LOOP(3UL)  // needs to be timed
               for (std::size_t j_dim = 0UL; j_dim < 3UL; ++j_dim) {
                 // bad access pattern
                 // convention according to SO3PrimitiveAssign
@@ -61,9 +62,9 @@ namespace elastica {
 
             // load data for the next iteration
             {
-#pragma unroll 3UL  // needs to be timed
+              UNROLL_LOOP(3UL)  // needs to be timed
               for (std::size_t k_dim = 0UL; k_dim < 3UL; ++k_dim) {
-#pragma unroll 3UL
+                UNROLL_LOOP(3UL)  // needs to be timed
                 for (std::size_t j_dim = 0UL; j_dim < 3UL; ++j_dim) {
                   Q_next[3UL * k_dim + j_dim] =
                       rot_matrix(k_dim, j_dim, i_dof + 1UL);
@@ -77,11 +78,11 @@ namespace elastica {
              */
             // can be reduced but whatever
             T const rot_matrix_trace =
-                (Q_curr[0] * Q_next[0] + Q_curr[1] * Q_next[1] +
-                Q_curr[2] * Q_next[2]) + (Q_curr[3] * Q_next[3] +
-                Q_curr[4] * Q_next[4] + Q_curr[5] * Q_next[5]) +
-                (Q_curr[6] * Q_next[6] + Q_curr[7] * Q_next[7] +
-                Q_curr[8] * Q_next[8]);
+                Q_curr[0] * Q_next[0] + Q_curr[1] * Q_next[1] +
+                Q_curr[2] * Q_next[2] + Q_curr[3] * Q_next[3] +
+                Q_curr[4] * Q_next[4] + Q_curr[5] * Q_next[5] +
+                Q_curr[6] * Q_next[6] + Q_curr[7] * Q_next[7] +
+                Q_curr[8] * Q_next[8];
 
             constexpr T rest(T(0.5) + T(1e-10));
             T const theta = std::acos(T(0.5) * rot_matrix_trace - rest);

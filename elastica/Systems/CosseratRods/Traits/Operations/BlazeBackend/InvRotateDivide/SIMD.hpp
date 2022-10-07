@@ -17,6 +17,7 @@
 //
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/TypeTraits/Cpp17.hpp"
+#include "Utilities/Unroll.hpp"
 
 namespace elastica {
 
@@ -97,12 +98,12 @@ namespace elastica {
             // 1. load data into registers for the next iteration
             {
               // 1.1 load q0
-#pragma unroll 9UL
+              UNROLL_LOOP(9UL)
               for (std::size_t dim = 0UL; dim < 9UL; ++dim)
                 Q_curr[dim] = q_it[dim].load();  // TODO : check aligned
 
                 // 1.2 load q1
-#pragma unroll 9UL
+              UNROLL_LOOP(9UL)
               for (std::size_t dim = 0UL; dim < 9UL; ++dim)
                 // need to do an unaligned load here given its off by one
                 Q_next[dim] = (++q_it[dim]).loadu();
@@ -153,7 +154,7 @@ namespace elastica {
 
 // no intrinsics, so we unpack the SIMD vector, compute sin and
 // cos on each via regular math functions and then repack it
-#pragma unroll SIMDSIZE
+            UNROLL_LOOP(SIMDSIZE)
             for (std::size_t simd_idx = 0UL; simd_idx < SIMDSIZE; ++simd_idx) {
               // make clear the intent to compiler
               const T temp =
@@ -190,11 +191,11 @@ namespace elastica {
              * 5. advance all the iterators to the next SIMD lane
              */
             {
-#pragma unroll 3UL
+              UNROLL_LOOP(3UL)
               for (std::size_t dim = 0UL; dim < 3UL; ++dim) /* NOLINT */
                 u_it[dim] += SIMDSIZE;
 
-#pragma unroll 9UL
+              UNROLL_LOOP(9UL)
               for (std::size_t dim = 0UL; dim < 9UL; ++dim) /* NOLINT */
                 q_it[dim] +=
                     (SIMDSIZE - 1UL);  // because I already dim ++q_it[dim]
