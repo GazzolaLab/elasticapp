@@ -1,4 +1,5 @@
 # case-studies
+add_subdirectory(active_matter)
 add_subdirectory(axial_stretching)
 add_subdirectory(butterfly)
 add_subdirectory(dynamic_cantilever)
