@@ -28,8 +28,10 @@
  * configuration files. All available environments are added to the list
  * by default. This can be customized as needed in the client file.
  */
+#ifndef ELASTICA_DEFAULT_ADMISSIBLE_ENVIRONMENT_TAGS
 #define ELASTICA_DEFAULT_ADMISSIBLE_ENVIRONMENT_TAGS \
   tmpl::list<elastica::environments::tags::GravityField>
+#endif
 //******************************************************************************
 
 //******************************************************************************
@@ -48,7 +50,9 @@
  *
  * This list can be customized as needed in the client file.
  */
+#ifndef ELASTICA_DEFAULT_ADMISSIBLE_IMPOSED_PRIMITIVES
 #define ELASTICA_DEFAULT_ADMISSIBLE_IMPOSED_PRIMITIVES tmpl::list<>
+#endif
 //******************************************************************************
 
 //******************************************************************************
@@ -63,6 +67,8 @@
  *
  * This can be customized if needed in the client file.
  */
+#ifndef ELASTICA_DEFAULT_EXECUTION_POLICY_FOR_ENVIRONMENTS
 #define ELASTICA_DEFAULT_EXECUTION_POLICY_FOR_ENVIRONMENTS \
   ::elastica::configuration::sequential_policy
+#endif
 //******************************************************************************

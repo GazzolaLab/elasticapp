@@ -29,8 +29,10 @@
  * Consult the documentation page of elastica::PhysicalSystemPlugins for more
  * information. This can be customized as needed in the client file.
  */
+#ifndef ELASTICA_DEFAULT_ADMISSIBLE_PLUGINS_FOR_SYSTEMS
 #define ELASTICA_DEFAULT_ADMISSIBLE_PLUGINS_FOR_SYSTEMS \
   tmpl::list<elastica::cosserat_rod::CosseratRod>
+#endif
 //******************************************************************************
 
 //******************************************************************************
@@ -49,8 +51,10 @@
  * This can be customized if needed in the client file. More complicated
  * policies are also possible by composition
  */
+#ifndef ELASTICA_DEFAULT_BLOCKING_POLICY_FOR_SYSTEMS
 #define ELASTICA_DEFAULT_BLOCKING_POLICY_FOR_SYSTEMS \
   elastica::configuration::RestrictSizeAcrossBlockTypesPolicy
+#endif
 //******************************************************************************
 
 //******************************************************************************
@@ -78,8 +82,10 @@ constexpr std::size_t default_blocking_policy_size() { return 1024UL; }
  *
  * This can be customized if needed in the client file.
  */
+#ifndef ELASTICA_DEFAULT_ITERATION_POLICY_ACROSS_SYSTEM_TYPES
 #define ELASTICA_DEFAULT_ITERATION_POLICY_ACROSS_SYSTEM_TYPES \
   ::elastica::configuration::sequential_policy
+#endif
 //******************************************************************************
 
 //******************************************************************************
@@ -96,8 +102,10 @@ constexpr std::size_t default_blocking_policy_size() { return 1024UL; }
  *
  * This can be customized if needed in the client file.
  */
+#ifndef ELASTICA_DEFAULT_ITERATION_POLICY_FOR_EACH_SYSTEM_TYPE
 #define ELASTICA_DEFAULT_ITERATION_POLICY_FOR_EACH_SYSTEM_TYPE \
   ::elastica::configuration::sequential_policy
+#endif
 //******************************************************************************
 
 //******************************************************************************

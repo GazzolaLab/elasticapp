@@ -24,9 +24,13 @@
  *
  *   - LinearSpringDashpot
  *   - Hertzian
+ *
+ * This can be customized if needed in the client file.
  */
+#ifndef ELASTICA_DEFAULT_DEM_RESPONSE_MODEL
 #define ELASTICA_DEFAULT_DEM_RESPONSE_MODEL \
   elastica::collision::response::LinearSpringDashpot
+#endif
 //******************************************************************************
 
 //******************************************************************************

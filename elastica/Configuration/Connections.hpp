@@ -26,8 +26,10 @@
  *
  * This can be customized if needed in the client file.
  */
+#ifndef ELASTICA_DEFAULT_EXECUTION_POLICY_FOR_CONNECTIONS
 #define ELASTICA_DEFAULT_EXECUTION_POLICY_FOR_CONNECTIONS \
   ::elastica::configuration::sequential_policy
+#endif
 //******************************************************************************
 
 //******************************************************************************
@@ -40,5 +42,7 @@
  * runtime loading of custom connectivity data, or execution of custom
  * connectivity algorithms.
  */
+#ifndef ELASTICA_DEFAULT_REGISTRARS_FOR_CONNECTIONS
 #define ELASTICA_DEFAULT_REGISTRARS_FOR_CONNECTIONS tmpl::list<>
+#endif
 //******************************************************************************

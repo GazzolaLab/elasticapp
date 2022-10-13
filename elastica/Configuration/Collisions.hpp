@@ -38,9 +38,13 @@
  *   - elastica::collision::detection::coarse::ExhaustiveSearch
  *   - elastica::collision::detection::coarse::HashGrids
  *   - elastica::collision::detection::coarse::SweepAndPrune
+ *
+ * This can be customized if needed in the client file.
  */
+#ifndef ELASTICA_COARSE_COLLISION_DETECTOR
 #define ELASTICA_COARSE_COLLISION_DETECTOR \
   elastica::collision::detection::coarse::HashGrids
+#endif
 //******************************************************************************
 
 //******************************************************************************
@@ -53,9 +57,13 @@
  * detection:
  *
  *   - elastica::collision::detection::fine::MaxContacts
+ *
+ * This can be customized if needed in the client file.
  */
+#ifndef ELASTICA_FINE_COLLISION_DETECTOR
 #define ELASTICA_FINE_COLLISION_DETECTOR \
   elastica::collision::detection::fine::MaxContacts
+#endif
 //******************************************************************************
 
 //******************************************************************************
@@ -70,8 +78,12 @@
  *   - elastica::collision::batches::SingleBatch
  *   - elastica::collision::batches::UnionFind
  *   - elastica::collision::batches::HybridBatch
+ *
+ * This can be customized if needed in the client file.
  */
+#ifndef ELASTICA_BATCH_GENERATOR
 #define ELASTICA_BATCH_GENERATOR elastica::collision::batches::UnionFind
+#endif
 //******************************************************************************
 
 //******************************************************************************
@@ -83,6 +95,10 @@
  * between rigid bodies. The following solvers are available:
  *
  *   - elastica::collision::response::DEMSolver
+ *
+ * This can be customized if needed in the client file.
  */
+#ifndef ELASTICA_CONSTRAINT_SOLVER
 #define ELASTICA_CONSTRAINT_SOLVER elastica::collision::response::DEMSolver
+#endif
 //******************************************************************************

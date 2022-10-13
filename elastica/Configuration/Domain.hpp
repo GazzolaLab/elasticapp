@@ -25,7 +25,9 @@
  *
  * This can be customized if needed in the client file.
  */
+#ifndef ELASTICA_DEFAULT_BOUNDARY_TYPE_ALONG_X
 #define ELASTICA_DEFAULT_BOUNDARY_TYPE_ALONG_X ::elastica::IsUnbounded
+#endif
 //******************************************************************************
 
 //******************************************************************************
@@ -40,7 +42,9 @@
  *
  * This can be customized if needed in the client file.
  */
+#ifndef ELASTICA_DEFAULT_BOUNDARY_TYPE_ALONG_Y
 #define ELASTICA_DEFAULT_BOUNDARY_TYPE_ALONG_Y ::elastica::IsUnbounded
+#endif
 //******************************************************************************
 
 //******************************************************************************
@@ -55,5 +59,7 @@
  *
  * This can be customized if needed in the client file.
  */
+#ifndef ELASTICA_DEFAULT_BOUNDARY_TYPE_ALONG_Z
 #define ELASTICA_DEFAULT_BOUNDARY_TYPE_ALONG_Z ::elastica::IsUnbounded
+#endif
 //******************************************************************************

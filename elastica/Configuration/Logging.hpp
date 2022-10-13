@@ -32,5 +32,7 @@
  *
  * \see elastica::logging::LoggingLevel
  */
+#ifndef ELASTICA_LOG_LEVEL
 #define ELASTICA_LOG_LEVEL ::elastica::logging::info
+#endif
 //******************************************************************************

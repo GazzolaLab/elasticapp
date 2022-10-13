@@ -26,8 +26,10 @@
  *
  * This can be customized if needed in the client file.
  */
+#ifndef ELASTICA_DEFAULT_EXECUTION_POLICY_FOR_CONSTRAINTS
 #define ELASTICA_DEFAULT_EXECUTION_POLICY_FOR_CONSTRAINTS \
   ::elastica::configuration::sequential_policy
+#endif
 //******************************************************************************
 
 //******************************************************************************
@@ -40,5 +42,7 @@
  * runtime loading of custom constraint data, or execution of custom
  * constraint algorithms.
  */
+#ifndef ELASTICA_DEFAULT_REGISTRARS_FOR_CONSTRAINTS
 #define ELASTICA_DEFAULT_REGISTRARS_FOR_CONSTRAINTS tmpl::list<>
+#endif
 //******************************************************************************
