@@ -9,6 +9,7 @@ foreach (EXEC ${BENCHMARK};${PROFILE})
             PUBLIC
             Utilities
             ErrorHandling
+            ModuleSettings
             Blaze
             BlazeTensor
             Systems

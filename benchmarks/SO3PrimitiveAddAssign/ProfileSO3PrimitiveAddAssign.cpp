@@ -7,6 +7,7 @@
 
 #include "SO3PrimitiveAddAssignSetup.hpp"
 #include "Systems/States/Expressions/backends/blaze/SO3PrimitiveAssign.hpp"
+#include "ModuleSettings/Vectorization.hpp"
 
 int main() {
   using namespace elastica::states::detail;
@@ -17,8 +18,10 @@ int main() {
 
   SO3PrimitiveAddAssignBenchmarkSetup<SO3AddAssignKind::scalar> scalar_bench(
       n_values);
+#if ELASTICA_USE_VECTORIZATION
   //  SO3PrimitiveAddAssignBenchmarkSetup<SO3AddAssignKind::simd>
   //  simd_bench{n_values};
+#endif
 
   //  using H_mat = blaze::DynamicTensor<::elastica::real_t>;
   //  using DH_mat = blaze::DynamicMatrix<::elastica::real_t>;

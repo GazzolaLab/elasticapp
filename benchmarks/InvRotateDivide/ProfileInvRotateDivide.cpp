@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "InvRotateDivideSetup.hpp"
+#include "ModuleSettings/Vectorization.hpp"
 
 int main() {
   using namespace elastica::cosserat_rod::detail;
@@ -17,7 +18,9 @@ int main() {
   InvRotateDivideTimingSetup<InvRotateDivideKind::blaze> blaze_bench{n_values};
   InvRotateDivideTimingSetup<InvRotateDivideKind::scalar> scalar_bench{
       n_values};
+#if ELASTICA_USE_VECTORIZATION
   InvRotateDivideTimingSetup<InvRotateDivideKind::simd> simd_bench{n_values};
+#endif
 
   for (std::size_t i = 0; i < n_samples; ++i)
     scalar_bench.run();

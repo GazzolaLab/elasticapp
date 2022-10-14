@@ -8,6 +8,7 @@
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "catch.hpp"
 //
+#include "ModuleSettings/Vectorization.hpp"
 #include "SO3PrimitiveAddAssignSetup.hpp"
 #include "Systems/States/Expressions/backends/blaze/SO3PrimitiveAssign.hpp"
 
@@ -42,6 +43,7 @@ TEST_CASE("BenchmarkSO3PrimitiveAddAssign") {
     });
   };
 
+#if ELASTICA_USE_VECTORIZATION
   BENCHMARK_ADVANCED("Add assign SIMD")
   (Catch::Benchmark::Chronometer meter) {
     SO3PrimitiveAddAssignBenchmarkSetup<SO3AddAssignKind::simd> bench{n_values};
@@ -50,6 +52,7 @@ TEST_CASE("BenchmarkSO3PrimitiveAddAssign") {
       return bench.w_input;
     });
   };
+#endif
 }
 
 int main(int argc, char* argv[]) {

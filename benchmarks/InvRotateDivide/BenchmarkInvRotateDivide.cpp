@@ -5,6 +5,7 @@
 #define CATCH_CONFIG_ENABLE_BENCHMARKING  // benchmarking support
 //
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "ModuleSettings/Vectorization.hpp"
 #include "catch.hpp"
 //
 #include "InvRotateDivideSetup.hpp"
@@ -31,6 +32,7 @@ TEST_CASE("BenchmarkInvRotateDivide") {
     });
   };
 
+#if ELASTICA_USE_VECTORIZATION
   BENCHMARK_ADVANCED("Inv rotate SIMD")
   (Catch::Benchmark::Chronometer meter) {
     InvRotateDivideTimingSetup<InvRotateDivideKind::simd> bench{n_values};
@@ -39,6 +41,7 @@ TEST_CASE("BenchmarkInvRotateDivide") {
       return bench.kappa_output;
     });
   };
+#endif
 }
 
 int main(int argc, char* argv[]) {
