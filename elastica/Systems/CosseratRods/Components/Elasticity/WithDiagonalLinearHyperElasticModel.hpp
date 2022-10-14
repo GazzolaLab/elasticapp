@@ -248,31 +248,43 @@ namespace elastica {
     void compute_internal_modeled_torques_impl(
         component::detail::WithDiagonalLinearHyperElasticModelImpl<
             Traits, ComputationalBlock>& block_like) COSSERATROD_LIB_NOEXCEPT {
-      auto&& director(blocks::get<tags::Director>(block_like.self()));
-      auto&& omega(blocks::get<tags::AngularVelocity>(block_like.self()));
-      auto&& curvature(blocks::get<tags::Curvature>(block_like.self()));
-      auto&& tangent(blocks::get<tags::Tangent>(block_like.self()));
-      auto&& dilatation(
-          blocks::get<tags::ElementDilatation>(block_like.self()));
-      auto&& voronoi_dilatation(
-          blocks::get<tags::VoronoiDilatation>(block_like.self()));
+      // Immutable fields
+      auto&& director(
+          blocks::get<tags::Director>(cpp17::as_const(block_like).self()));
+      auto&& omega(blocks::get<tags::AngularVelocity>(
+          cpp17::as_const(block_like).self()));
+      auto&& velocity(
+          blocks::get<tags::Velocity>(cpp17::as_const(block_like).self()));
+      auto&& curvature(
+          blocks::get<tags::Curvature>(cpp17::as_const(block_like).self()));
+      auto&& tangent(
+          blocks::get<tags::Tangent>(cpp17::as_const(block_like).self()));
+      auto&& dilatation(blocks::get<tags::ElementDilatation>(
+          cpp17::as_const(block_like).self()));
+      auto&& voronoi_dilatation(blocks::get<tags::VoronoiDilatation>(
+          cpp17::as_const(block_like).self()));
+      auto&& bend_matrix(blocks::get<tags::BendingTwistRigidityMatrix>(
+          cpp17::as_const(block_like).self()));
+      auto&& reference_curvature(blocks::get<tags::ReferenceCurvature>(
+          cpp17::as_const(block_like).self()));
+      auto&& reference_voronoi_length(blocks::get<tags::ReferenceVoronoiLength>(
+          cpp17::as_const(block_like).self()));
+      auto&& reference_element_length(blocks::get<tags::ReferenceElementLength>(
+          cpp17::as_const(block_like).self()));
+      auto&& mass_SMOI(blocks::get<tags::MassSecondMomentOfInertia>(
+          cpp17::as_const(block_like).self()));
+
+      // Mutable fields
       auto&& internal_stress(
           blocks::get<tags::InternalStress>(block_like.self()));
       auto&& internal_couple(
           blocks::get<tags::InternalCouple>(block_like.self()));
       auto&& internal_torques(
           blocks::get<tags::InternalTorques>(block_like.self()));
-      auto&& bend_matrix(
-          blocks::get<tags::BendingTwistRigidityMatrix>(block_like.self()));
-      auto&& reference_curvature(
-          blocks::get<tags::ReferenceCurvature>(block_like.self()));
-      auto&& reference_voronoi_length(
-          blocks::get<tags::ReferenceVoronoiLength>(block_like.self()));
-      auto&& reference_element_length(
-          blocks::get<tags::ReferenceElementLength>(block_like.self()));
-      auto&& mass_SMOI(
-          blocks::get<tags::MassSecondMomentOfInertia>(block_like.self()));
-
+      auto&& element_length(
+          blocks::get<tags::ElementLength>(block_like.self()));
+      auto&& voronoi_length(
+          blocks::get<tags::VoronoiLength>(block_like.self()));
       auto&& dummy_elem_vector(
           blocks::get<tags::_DummyElementVector>(block_like.self()));
       auto&& dummy_elem_vector2(
@@ -291,10 +303,9 @@ namespace elastica {
       Traits::Operations::batch_matvec(internal_couple, bend_matrix,
                                        curvature - reference_curvature);
 
-      /* Compute dilatation rate */
-      auto&& dilatation_rate = get_dilatation_rate(block_like.self());
-
-      auto&& voronoi_dilatation_inv_cube =
+      /* Use voronoi length as a temporary storage */
+      auto& voronoi_dilatation_inv_cube(voronoi_length);
+      voronoi_dilatation_inv_cube =
           Traits::Operations::inverse_cube(voronoi_dilatation);
 
       /* Reset internal torque */
@@ -313,12 +324,15 @@ namespace elastica {
 
       // allocating temp container (3, n_elems) for temporary storage
       auto& bend_twist_couple_3D_batch(dummy_elem_vector);
+      // Multiply by ref length before expansion to save some redundant compute.
+      // Does not seem to cause appreciable change.
+      voronoi_dilatation_inv_cube *= reference_voronoi_length;
       Traits::Operations::quadrature_kernel(
           bend_twist_couple_3D_batch,
           curvature_cross_internal_couple_batch %
               Traits::Operations::transpose(
                   Traits::Operations::expand_for_broadcast(
-                      reference_voronoi_length * voronoi_dilatation_inv_cube)));
+                      voronoi_dilatation_inv_cube)));
       internal_torques += bend_twist_couple_3D_batch;
 
       // allocating temp container (3, n_elems) for temporary storage
@@ -353,15 +367,28 @@ namespace elastica {
       internal_torques += lagrangian_transport_batch;
 
       // unsteady_dilatation_batch
-      // auto dilatation_ratio = dilatation_rate /
-      // Traits::Operations::transpose(dilatation);
-      auto&& dilatation_ratio = dilatation_rate / dilatation;
+      /* Compute dilatation rate / e */
+      auto& delta_v(temp_vec);
+      delta_v = Traits::Operations::difference_kernel(velocity);
+
+      // Temporary
+      auto& dilatation_rate_by_dilatation(element_length);
+      dilatation_rate_by_dilatation =
+          Traits::Operations::batch_dot(tangent, temp_vec) /
+          // cannot use element_length here because it is being assigned to
+          // which triggers the blaze alias mechanism
+          (dilatation * reference_element_length);
+
       auto&& dilatation_ratio_expanded =
           Traits::Operations::expand_for_broadcast(
-              Traits::Operations::transpose(dilatation_ratio));
+              Traits::Operations::transpose(dilatation_rate_by_dilatation));
       auto&& unsteady_dilatation_batch =
           J_omega_upon_e_batch % dilatation_ratio_expanded;
       internal_torques += unsteady_dilatation_batch;
+
+      /*Reset lengths to original value*/
+      voronoi_length = voronoi_dilatation * reference_voronoi_length;
+      element_length = dilatation * reference_element_length;
     }
     //**************************************************************************
 

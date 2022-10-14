@@ -11,5 +11,5 @@ add_test_library(
         ${LIBRARY}
         "Systems/States/Expressions/SO3"
         "${LIBRARY_SOURCES}"
-        "Utilities;Systems"
+        "Utilities;Systems;ModuleSettings"
 )

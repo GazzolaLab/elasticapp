@@ -35,5 +35,6 @@ target_link_libraries(
         Utilities
         Blaze
         Frames
+        ModuleSettings
 )
 

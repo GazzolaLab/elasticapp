@@ -40,7 +40,8 @@ if (${ENABLE_WARNINGS})
 -Wstack-protector;\
 -Wswitch-default;\
 -Wunreachable-code;\
--Wwrite-strings" ElasticaWarnings)
+-Wwrite-strings;\
+-Werror=switch" ElasticaWarnings)
 endif ()
 # Disabled these two because of errors
 #-Wdocumentation;\

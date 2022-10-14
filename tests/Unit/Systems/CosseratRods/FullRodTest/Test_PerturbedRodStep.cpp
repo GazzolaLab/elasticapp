@@ -12,6 +12,7 @@
 #include "Simulator/Simulator.hpp"
 #include "Systems/Block.hpp"
 #include "Systems/CosseratRods.hpp"
+#include "Systems/CosseratRods/FullRodTest/Helpers.hpp"
 #include "Time/SimulationTime.hpp"
 #include "Time/SymplecticSteppers/Algorithms.hpp"
 #include "Time/SymplecticSteppers/SymplecticStepper.hpp"
@@ -119,11 +120,11 @@ namespace {
     blocks::get<elastica::tags::Tangent>(slicedrod_000) = ROD000_Tangent_REPLACED;
     blocks::get<elastica::tags::ElementDimension>(slicedrod_000) = ROD000_ElementDimension_REPLACED;
     blocks::get<elastica::tags::ElementVolume>(slicedrod_000) = ROD000_ElementVolume_REPLACED;
-    blocks::get<elastica::tags::ShearStretchRigidityMatrix>(slicedrod_000) = ROD000_ShearStretchRigidityMatrix_REPLACED;
-    blocks::get<elastica::tags::BendingTwistRigidityMatrix>(slicedrod_000) = ROD000_BendingTwistRigidityMatrix_REPLACED;
+    blocks::get<elastica::tags::ShearStretchRigidityMatrix>(slicedrod_000) = shrink_using_diagonal(ROD000_ShearStretchRigidityMatrix_REPLACED);
+    blocks::get<elastica::tags::BendingTwistRigidityMatrix>(slicedrod_000) = shrink_using_diagonal(ROD000_BendingTwistRigidityMatrix_REPLACED);
     blocks::get<elastica::tags::Mass>(slicedrod_000) = ROD000_Mass_REPLACED;
     blocks::get<elastica::tags::MassSecondMomentOfInertia>(slicedrod_000) = ROD000_MassSecondMomentOfInertia_REPLACED;
-    blocks::get<elastica::tags::InvMassSecondMomentOfInertia>(slicedrod_000) = ROD000_InvMassSecondMomentOfInertia_REPLACED;
+    blocks::get<elastica::tags::InvMassSecondMomentOfInertia>(slicedrod_000) = shrink_using_diagonal(ROD000_InvMassSecondMomentOfInertia_REPLACED);
     blocks::get<elastica::tags::InternalLoads>(slicedrod_000) = ROD000_InternalLoads_REPLACED;
     blocks::get<elastica::tags::InternalTorques>(slicedrod_000) = ROD000_InternalTorques_REPLACED;
     blocks::get<elastica::tags::InternalStress>(slicedrod_000) = ROD000_InternalStress_REPLACED;
@@ -213,13 +214,13 @@ namespace {
                                      blaze::evaluate(blaze::ravel(ROD000_MassSecondMomentOfInertia_PYEL)), \
                                      approx); \
         CHECK_ITERABLE_CUSTOM_APPROX(blaze::evaluate(blaze::ravel(ROD000_InvMassSecondMomentOfInertia)), \
-                                     blaze::evaluate(blaze::ravel(ROD000_InvMassSecondMomentOfInertia_PYEL)), \
+                                     blaze::evaluate(blaze::ravel(shrink_using_diagonal(ROD000_InvMassSecondMomentOfInertia_PYEL))), \
                                      approx); \
         CHECK_ITERABLE_CUSTOM_APPROX(blaze::evaluate(blaze::ravel(ROD000_ShearStretchRigidityMatrix)), \
-                                     blaze::evaluate(blaze::ravel(ROD000_ShearStretchRigidityMatrix_PYEL)), \
+                                     blaze::evaluate(blaze::ravel(shrink_using_diagonal(ROD000_ShearStretchRigidityMatrix_PYEL))), \
                                      approx); \
         CHECK_ITERABLE_CUSTOM_APPROX(blaze::evaluate(blaze::ravel(ROD000_BendingTwistRigidityMatrix)), \
-                                     blaze::evaluate(blaze::ravel(ROD000_BendingTwistRigidityMatrix_PYEL)), \
+                                     blaze::evaluate(blaze::ravel(shrink_using_diagonal(ROD000_BendingTwistRigidityMatrix_PYEL))), \
                                      approx); \
         CHECK_ITERABLE_CUSTOM_APPROX(ROD000_ElementVolume , ROD000_ElementVolume_PYEL , approx); \
         CHECK_ITERABLE_CUSTOM_APPROX(ROD000_Mass , ROD000_Mass_PYEL , approx); \
@@ -566,11 +567,11 @@ namespace {
     blocks::get<elastica::tags::Tangent>(slicedrod_000) = ROD000_Tangent_REPLACED;
     blocks::get<elastica::tags::ElementDimension>(slicedrod_000) = ROD000_ElementDimension_REPLACED;
     blocks::get<elastica::tags::ElementVolume>(slicedrod_000) = ROD000_ElementVolume_REPLACED;
-    blocks::get<elastica::tags::ShearStretchRigidityMatrix>(slicedrod_000) = ROD000_ShearStretchRigidityMatrix_REPLACED;
-    blocks::get<elastica::tags::BendingTwistRigidityMatrix>(slicedrod_000) = ROD000_BendingTwistRigidityMatrix_REPLACED;
+    blocks::get<elastica::tags::ShearStretchRigidityMatrix>(slicedrod_000) = shrink_using_diagonal(ROD000_ShearStretchRigidityMatrix_REPLACED);
+    blocks::get<elastica::tags::BendingTwistRigidityMatrix>(slicedrod_000) = shrink_using_diagonal(ROD000_BendingTwistRigidityMatrix_REPLACED);
     blocks::get<elastica::tags::Mass>(slicedrod_000) = ROD000_Mass_REPLACED;
     blocks::get<elastica::tags::MassSecondMomentOfInertia>(slicedrod_000) = ROD000_MassSecondMomentOfInertia_REPLACED;
-    blocks::get<elastica::tags::InvMassSecondMomentOfInertia>(slicedrod_000) = ROD000_InvMassSecondMomentOfInertia_REPLACED;
+    blocks::get<elastica::tags::InvMassSecondMomentOfInertia>(slicedrod_000) = shrink_using_diagonal(ROD000_InvMassSecondMomentOfInertia_REPLACED);
     blocks::get<elastica::tags::ReferenceVoronoiLength>(slicedrod_001) = ROD001_ReferenceVoronoiLength_REPLACED;
     blocks::get<elastica::tags::ElementLength>(slicedrod_001) = ROD001_ElementLength_REPLACED;
     blocks::get<elastica::tags::ElementDilatation>(slicedrod_001) = ROD001_ElementDilatation_REPLACED;
@@ -578,11 +579,11 @@ namespace {
     blocks::get<elastica::tags::Tangent>(slicedrod_001) = ROD001_Tangent_REPLACED;
     blocks::get<elastica::tags::ElementDimension>(slicedrod_001) = ROD001_ElementDimension_REPLACED;
     blocks::get<elastica::tags::ElementVolume>(slicedrod_001) = ROD001_ElementVolume_REPLACED;
-    blocks::get<elastica::tags::ShearStretchRigidityMatrix>(slicedrod_001) = ROD001_ShearStretchRigidityMatrix_REPLACED;
-    blocks::get<elastica::tags::BendingTwistRigidityMatrix>(slicedrod_001) = ROD001_BendingTwistRigidityMatrix_REPLACED;
+    blocks::get<elastica::tags::ShearStretchRigidityMatrix>(slicedrod_001) = shrink_using_diagonal(ROD001_ShearStretchRigidityMatrix_REPLACED);
+    blocks::get<elastica::tags::BendingTwistRigidityMatrix>(slicedrod_001) = shrink_using_diagonal(ROD001_BendingTwistRigidityMatrix_REPLACED);
     blocks::get<elastica::tags::Mass>(slicedrod_001) = ROD001_Mass_REPLACED;
     blocks::get<elastica::tags::MassSecondMomentOfInertia>(slicedrod_001) = ROD001_MassSecondMomentOfInertia_REPLACED;
-    blocks::get<elastica::tags::InvMassSecondMomentOfInertia>(slicedrod_001) = ROD001_InvMassSecondMomentOfInertia_REPLACED;
+    blocks::get<elastica::tags::InvMassSecondMomentOfInertia>(slicedrod_001) = shrink_using_diagonal(ROD001_InvMassSecondMomentOfInertia_REPLACED);
     blocks::get<elastica::tags::InternalLoads>(slicedrod_000) = ROD000_InternalLoads_REPLACED;
     blocks::get<elastica::tags::InternalTorques>(slicedrod_000) = ROD000_InternalTorques_REPLACED;
     blocks::get<elastica::tags::InternalStress>(slicedrod_000) = ROD000_InternalStress_REPLACED;
@@ -739,13 +740,13 @@ namespace {
                                    blaze::evaluate(blaze::ravel(ROD000_MassSecondMomentOfInertia_PYEL)),
                                    approx);
       CHECK_ITERABLE_CUSTOM_APPROX(blaze::evaluate(blaze::ravel(ROD000_InvMassSecondMomentOfInertia)),
-                                   blaze::evaluate(blaze::ravel(ROD000_InvMassSecondMomentOfInertia_PYEL)),
+                                   blaze::evaluate(blaze::ravel(shrink_using_diagonal(ROD000_InvMassSecondMomentOfInertia_PYEL))),
                                    approx);
       CHECK_ITERABLE_CUSTOM_APPROX(blaze::evaluate(blaze::ravel(ROD000_ShearStretchRigidityMatrix)),
-                                   blaze::evaluate(blaze::ravel(ROD000_ShearStretchRigidityMatrix_PYEL)),
+                                   blaze::evaluate(blaze::ravel(shrink_using_diagonal(ROD000_ShearStretchRigidityMatrix_PYEL))),
                                    approx);
       CHECK_ITERABLE_CUSTOM_APPROX(blaze::evaluate(blaze::ravel(ROD000_BendingTwistRigidityMatrix)),
-                                   blaze::evaluate(blaze::ravel(ROD000_BendingTwistRigidityMatrix_PYEL)),
+                                   blaze::evaluate(blaze::ravel(shrink_using_diagonal(ROD000_BendingTwistRigidityMatrix_PYEL))),
                                    approx);
       CHECK_ITERABLE_CUSTOM_APPROX(ROD000_ElementVolume , ROD000_ElementVolume_PYEL , approx);
       CHECK_ITERABLE_CUSTOM_APPROX(ROD000_Mass , ROD000_Mass_PYEL , approx);
@@ -804,13 +805,13 @@ namespace {
                                    blaze::evaluate(blaze::ravel(ROD001_MassSecondMomentOfInertia_PYEL)),
                                    approx);
       CHECK_ITERABLE_CUSTOM_APPROX(blaze::evaluate(blaze::ravel(ROD001_InvMassSecondMomentOfInertia)),
-                                   blaze::evaluate(blaze::ravel(ROD001_InvMassSecondMomentOfInertia_PYEL)),
+                                   blaze::evaluate(blaze::ravel(shrink_using_diagonal(ROD001_InvMassSecondMomentOfInertia_PYEL))),
                                    approx);
       CHECK_ITERABLE_CUSTOM_APPROX(blaze::evaluate(blaze::ravel(ROD001_ShearStretchRigidityMatrix)),
-                                   blaze::evaluate(blaze::ravel(ROD001_ShearStretchRigidityMatrix_PYEL)),
+                                   blaze::evaluate(blaze::ravel(shrink_using_diagonal(ROD001_ShearStretchRigidityMatrix_PYEL))),
                                    approx);
       CHECK_ITERABLE_CUSTOM_APPROX(blaze::evaluate(blaze::ravel(ROD001_BendingTwistRigidityMatrix)),
-                                   blaze::evaluate(blaze::ravel(ROD001_BendingTwistRigidityMatrix_PYEL)),
+                                   blaze::evaluate(blaze::ravel(shrink_using_diagonal(ROD001_BendingTwistRigidityMatrix_PYEL))),
                                    approx);
       CHECK_ITERABLE_CUSTOM_APPROX(ROD001_ElementVolume , ROD001_ElementVolume_PYEL , approx);
       CHECK_ITERABLE_CUSTOM_APPROX(ROD001_Mass , ROD001_Mass_PYEL , approx);

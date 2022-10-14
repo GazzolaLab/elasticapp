@@ -21,6 +21,12 @@ elastica_target_sources(
 add_subdirectory(InvRotateDivide)
 add_library(${LIBRARY}::InvRotateDivide ALIAS InvRotateDivideKernel)
 
+add_subdirectory(Calculus)
+add_library(${LIBRARY}::Calculus ALIAS CalculusKernels)
+
+add_subdirectory(LinearAlgebra)
+add_library(${LIBRARY}::LinearAlgebra ALIAS LinearAlgebraKernels)
+
 target_link_libraries(
         ${LIBRARY}
         INTERFACE
@@ -28,5 +34,8 @@ target_link_libraries(
         Blaze
         BlazeTensor
         InvRotateDivideKernel
+        CalculusKernels
+        LinearAlgebraKernels
+        ModuleSettings
 )
 

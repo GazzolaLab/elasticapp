@@ -123,3 +123,21 @@ constexpr std::size_t default_blocking_policy_size() { return 1024UL; }
  */
 #define ENV_ELASTICA_NO_SYSTEM_WARN "ELASTICA_NO_SYSTEM_WARN"
 //****************************************************************************
+
+//******************************************************************************
+/*!\brief Selection of the default index checking behavior within systems module
+ * \elastica systems
+ * \ingroup default_config
+ *
+ * This macro select the default behavior while slicing/viewing indices within
+ * a system. The following execution policies are available:
+ *
+ *   - checked (checks indices)
+ *   - unchecked (does not check indices)
+ *
+ * This can be customized if needed in the client file.
+ */
+#ifndef ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK
+#define ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK checked
+#endif
+//****************************************************************************

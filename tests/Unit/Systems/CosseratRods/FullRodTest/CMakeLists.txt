@@ -7,6 +7,13 @@ set(LIBRARY_SOURCES
         Test_RodAPI.cpp
         )
 
+add_library(FullRodTestHelpers Helpers.cpp)
+target_link_libraries(FullRodTestHelpers PRIVATE Blaze
+        PUBLIC
+        ElasticaFlags
+        )
+target_include_directories(FullRodTestHelpers PUBLIC ${PROJECT_SOURCE_DIR}/elastica)
+
 add_test_library(
         ${LIBRARY}
         "Systems/CosseratRods/FullRodTest"
@@ -14,5 +21,5 @@ add_test_library(
         # Simulator is required for integrated tests.
         # FIXME : https://github.com/tp5uiuc/elasticapp/issues/228
         # Sanitize
-        "Utilities;Systems;Simulator"
+        "Utilities;Systems;Simulator;FullRodTestHelpers"
 )

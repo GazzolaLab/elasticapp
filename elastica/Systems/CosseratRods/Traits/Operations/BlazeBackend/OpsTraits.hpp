@@ -4,19 +4,26 @@
 //******************************************************************************
 // Includes
 //******************************************************************************
-#include <blaze/Blaze.h>
-#include <blaze_tensor/Blaze.h>
-
-// Utils
-#include "Utilities/NonCreatable.hpp"
-
+#include "Configuration/Systems.hpp"  // For index checking
 /// Add BlazeBackend code here
 #include "ErrorHandling/Assert.hpp"
+//
+#include "ModuleSettings/Vectorization.hpp"
+//
+#include "Systems/CosseratRods/Traits/Operations/BlazeBackend/Calculus/Kernels.hpp"
 #include "Systems/CosseratRods/Traits/Operations/BlazeBackend/InvRotateDivide/SIMD.hpp"
+#include "Systems/CosseratRods/Traits/Operations/BlazeBackend/LinearAlgebra/Kernels.hpp"
 #include "Systems/CosseratRods/Traits/Operations/BlazeBackend/OptimizationLevel.hpp"
+//
 #include "Utilities/Math/BlazeDetail/BlazeCalculus.hpp"
 #include "Utilities/Math/BlazeDetail/BlazeLinearAlgebra.hpp"
 #include "Utilities/Math/BlazeDetail/BlazeRotation.hpp"
+#include "Utilities/NonCreatable.hpp"
+#include "Utilities/Unroll.hpp"
+//
+#include <blaze/Blaze.h>
+#include <blaze_tensor/Blaze.h>
+#include <blaze_tensor/math/expressions/DTensTransposer.h>
 
 namespace elastica {
 
@@ -86,9 +93,14 @@ namespace elastica {
       static inline auto expand_for_broadcast(const T& a) {
         return blaze::expand(a, 3UL);
       }
-      template <typename T>
-      static inline auto inverse_cube(const T& a) {
-        return blaze::pow(a, -3);
+
+      template <typename VT,  // Type of the dense vector
+                bool TF>      // Transpose flag
+      static inline auto inverse_cube(blaze::DenseVector<VT, TF> const& a) {
+        // Seems a bit faster
+        auto const& v = (*a);
+        return 1.0 / (v * v * v);
+        // return blaze::pow(v, -3);
       }
       template <typename T, typename A>
       static inline auto transpose(const T& tensor, const A& order) {
@@ -102,70 +114,109 @@ namespace elastica {
       //************************************************************************
       // Batch Operations
       // TODO: Documentation
-      template <typename MT1, typename MT2, typename VT>
-      static inline void batch_division_matvec(MT1& out_matrix,
-                                               const MT2& denominator,
-                                               const VT& numerator) {
-        // const std::size_t n_elems = denominator.columns();
-        auto tp_numerator = transpose(numerator);
-        blaze::row(out_matrix, 0UL) =
-            blaze::row(denominator, 0UL) / tp_numerator;
-        blaze::row(out_matrix, 1UL) =
-            blaze::row(denominator, 1UL) / tp_numerator;
-        blaze::row(out_matrix, 2UL) =
-            blaze::row(denominator, 2UL) / tp_numerator;
+      template <typename MT1, typename MT2, typename VT, bool SO, bool TF>
+      static inline void batch_division_matvec(
+          blaze::DenseMatrix<MT1, SO>& out,
+          blaze::DenseMatrix<MT2, SO> const& num,
+          blaze::DenseVector<VT, TF> const& den) {
+        using Op = VecScalarDivOp<backend_choice<VecScalarDivKind>()>;
+        Op::apply(*out, *num, *den);
+      }
+
+      template <typename MT1, typename MT2, typename VT, bool SO, bool TF>
+      static inline void batch_multiplication_matvec(
+          blaze::DenseMatrix<MT1, SO>& out,
+          blaze::DenseMatrix<MT2, SO> const& num,
+          blaze::DenseVector<VT, TF> const& den) {
+        using Op = VecScalarMultOp<backend_choice<VecScalarMultKind>()>;
+        Op::apply(*out, *num, *den);
       }
 
       // TODO: Documentation
-      template <typename VT1, typename MT, typename VT2>
-      static inline void batch_matvec(VT1& matvec_batch, const MT& matrix_batch,
-                                      const VT2& vector_batch) {
-        using ::elastica::batch_matvec;
-        batch_matvec(matvec_batch, matrix_batch, vector_batch);
+      template <typename MT1,  // blaze Matrix expression type 1
+                typename MT2,  // blaze Matrix expression type 2
+                typename TT,   // blaze Tensor type
+                bool SO>       // Storage order
+      static inline void batch_matvec(
+          blaze::DenseMatrix<MT1, SO>& matvec_batch,
+          blaze::DenseTensor<TT> const& matrix_batch,
+          blaze::DenseMatrix<MT2, SO> const& vector_batch) {
+        using Op = MatVecOp<backend_choice<MatVecKind>()>;
+        Op::apply(*matvec_batch, *matrix_batch, *vector_batch);
       }
+
+      // Overload for matvec when matrix is stored as a compressed, diagonal
+      // vector
+      template <typename MT1,  // blaze Matrix expression type 1
+                typename MT2,  // blaze Matrix expression type 2
+                typename MT3,  // blaze Tensor type
+                bool SO>       // Storage order
+      static inline void batch_matvec(
+          blaze::DenseMatrix<MT1, SO>& matvec_batch,
+          blaze::DenseMatrix<MT2, SO> const& compressed_matrix_batch,
+          blaze::DenseMatrix<MT3, SO> const& vector_batch) {
+        (*matvec_batch) = (*compressed_matrix_batch) % (*vector_batch);
+      }
+
+      template <typename MT1,  // blaze Matrix expression type 1
+                typename MT2,  // blaze Matrix expression type 2
+                typename TT,   // blaze Tensor type
+                bool SO>       // Storage order
+      static inline void batch_mattranspvec(
+          blaze::DenseMatrix<MT1, SO>& matvec_batch,
+          blaze::DenseTensor<TT> const& matrix_batch,
+          blaze::DenseMatrix<MT2, SO> const& vector_batch) {
+#ifdef ELASTICA_PATCH_DTENS_TRANSPOSER  // From upstream blaze tensor patch fix
+        batch_matvec(
+            *matvec_batch,
+            // Transpose pages and rows
+            blaze::DTensTransposer<const TT, 1UL, 0UL, 2UL>(*matrix_batch),
+            *vector_batch);
+#else
+        constexpr std::size_t dimension(3UL);
+        auto& out(*matvec_batch);
+        auto& mat(*matrix_batch);
+        auto& vec(*vector_batch);
+        for (std::size_t i(0UL); i < dimension; ++i) {
+          auto val = blaze::trans(blaze::rowslice(
+              mat, i, blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK));
+          blaze::row(out, i, blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK) =
+              blaze::sum<blaze::columnwise>(val % vec);
+        }
+#endif
+      }
+
       template <typename MT1,  // blaze Matrix expression type 1
                 typename TT,   // blaze Tensor expression type
-                typename MT2>  // blaze Matrix expression type 2
-      static inline void batch_mattranspvec(MT1& matvec_batch,
-                                            const TT& matrix_batch,
-                                            const MT2& vector_batch) {
-        constexpr std::size_t dimension(3UL);
-        for (std::size_t i(0UL); i < dimension; ++i) {
-          auto val = blaze::trans(blaze::rowslice(matrix_batch, i));
-          blaze::row(matvec_batch, i) =
-              blaze::sum<blaze::columnwise>(val % vector_batch);
-        }
-      }
-      template <typename MT1,  // blaze Matrix expression type 1
-          typename TT,   // blaze Tensor expression type
-          typename MT2,  // blaze Matrix expression type 2
-          typename VT>
+                typename MT2,  // blaze Matrix expression type 2
+                typename VT>
       static inline void batch_matvec_scale(MT1& matvec_batch,
                                             const TT& matrix_batch,
                                             const MT2& vector_batch,
                                             const VT& scale_batch) {
-        constexpr std::size_t dimension(3UL);
-        for (std::size_t i(0UL); i < dimension; ++i) {
-          blaze::row(matvec_batch, i) =
-              blaze::sum<blaze::columnwise>(blaze::pageslice(matrix_batch, i) %
-                                            vector_batch) * blaze::trans(scale_batch);
-        }
+        batch_matvec(matvec_batch, matrix_batch, vector_batch);
+        matvec_batch %= transpose(expand_for_broadcast(scale_batch));
+
+        //        constexpr std::size_t dimension(3UL);
+        //        for (std::size_t i(0UL); i < dimension; ++i) {
+        //          blaze::row(matvec_batch, i) =
+        //              blaze::sum<blaze::columnwise>(blaze::pageslice(matrix_batch,
+        //              i) %
+        //                                            vector_batch) *
+        //              blaze::trans(scale_batch);
+        //        }
       }
 
-      template <typename M1, typename M2, typename M3>
-      static inline void batch_matmul(M1& matmul_batch,
-                                      const M2& first_matrix_batch,
-                                      const M3& second_matrix_batch) {
-        using ::elastica::batch_matmul;
-        batch_matvec(matmul_batch, first_matrix_batch, second_matrix_batch);
-      }
-
-      template <typename VR, typename V1, typename V2>
-      static inline void batch_cross(VR& cross_batch,
-                                     const V1& first_vector_batch,
-                                     const V2& second_vector_batch) {
-        using ::elastica::batch_cross;
-        batch_cross(cross_batch, first_vector_batch, second_vector_batch);
+      template <typename MT1,  // blaze Matrix expression type 1
+                typename MT2,  // blaze Matrix expression type 2
+                typename MT3,  // blaze Vector type
+                bool SO>       // Storage order
+      static inline void batch_cross(
+          blaze::DenseMatrix<MT1, SO>& cross_batch,
+          blaze::DenseMatrix<MT2, SO> const& first_vector_batch,
+          blaze::DenseMatrix<MT3, SO> const& second_vector_batch) {
+        using Op = CrossProductOp<backend_choice<CrossProductKind>()>;
+        Op::apply(*cross_batch, *first_vector_batch, *second_vector_batch);
       }
 
       template <typename V1, typename V2>
@@ -191,10 +242,10 @@ namespace elastica {
       }
 
       template <typename MT1, typename MT2>
-      static inline void two_point_difference_kernel(MT1& input_vector,
-                                                     const MT2& output_vector) {
-        using ::elastica::two_point_difference_kernel;
-        two_point_difference_kernel(input_vector, output_vector);
+      static inline void two_point_difference_kernel(MT1& output_vector,
+                                                     const MT2& input_vector) {
+        using Op = DifferenceOp<backend_choice<DifferenceKind>()>;
+        Op::apply(output_vector, input_vector);
       }
 
       //************************************************************************
@@ -220,8 +271,8 @@ namespace elastica {
       template <typename MT1, typename MT2>
       static inline void quadrature_kernel(MT1& out_matrix,
                                            const MT2& in_matrix) {
-        using ::elastica::quadrature_kernel;
-        quadrature_kernel(out_matrix, in_matrix);
+        using Op = QuadratureOp<backend_choice<QuadratureKind>()>;
+        Op::apply(out_matrix, in_matrix);
       }
 
       //************************************************************************
@@ -271,15 +322,8 @@ namespace elastica {
             rot_axis_vector.columns() == normalize_vector.size(),
             "Invariance in number of dofs in voronoi-regions violated");
 
-#if defined(__APPLE__) && defined(__arm64__)
-        // SIMD instructions are not available in Apple silicon, so fall
-        // back to scalar instructions
-        constexpr auto backend = detail::InvRotateDivideKind::scalar;
-#else
-        constexpr auto backend = detail::InvRotateDivideKind::scalar;
-#endif
-
-        using Op = detail::InvRotateDivideOp<backend>;
+        using Op = detail::InvRotateDivideOp<
+            backend_choice<detail::InvRotateDivideKind>()>;
         Op::apply(rot_axis_vector, rot_matrix, normalize_vector);
       }
 
@@ -289,12 +333,14 @@ namespace elastica {
       template <typename MT>
       static inline void batch_subtract_z_unit(MT& matrix) {
         using ValueType = typename MT::ElementType;
-        blaze::row(matrix, 2UL) -= ValueType(1.0);
+        blaze::row(matrix, 2UL, blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK) -=
+            ValueType(1.0);
       }
       template <typename MT>
       static inline void batch_add_z_unit(MT& matrix) {
         using ValueType = typename MT::ElementType;
-        blaze::row(matrix, 2UL) += ValueType(1.0);
+        blaze::row(matrix, 2UL, blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK) +=
+            ValueType(1.0);
       }
     };
     /*! \endcond */

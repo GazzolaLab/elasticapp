@@ -139,13 +139,13 @@ class TestCosseratRodWithoutDamping(unittest.TestCase):
             )
             assert_is_elemental(
                 rod.get_shear_stretch_rigidity_matrix()
-            ) and assert_is_matrix(rod.get_shear_stretch_rigidity_matrix())
+            ) and assert_is_vector(rod.get_shear_stretch_rigidity_matrix())
             assert_is_voronoi(rod.get_internal_couple()) and assert_is_vector(
                 rod.get_internal_couple()
             )
             assert_is_voronoi(
                 rod.get_bending_twist_rigidity_matrix()
-            ) and assert_is_matrix(rod.get_bending_twist_rigidity_matrix())
+            ) and assert_is_vector(rod.get_bending_twist_rigidity_matrix())
 
             # dynamic variables
             assert_is_nodal(rod.get_acceleration()) and assert_is_vector(
@@ -175,7 +175,7 @@ class TestCosseratRodWithoutDamping(unittest.TestCase):
 
             assert_is_elemental(
                 rod.get_inv_mass_second_moment_of_inertia()
-            ) and assert_is_matrix(rod.get_inv_mass_second_moment_of_inertia())
+            ) and assert_is_elemental(rod.get_inv_mass_second_moment_of_inertia())
 
         crb = self.get_a_block()
 
@@ -286,11 +286,11 @@ class TestCosseratRodWithoutDamping(unittest.TestCase):
             is_well_formed(rod.volume)
             is_well_formed(rod.mass)
             is_well_formed(rod.mass_second_moment_of_inertia)
-            is_well_formed(rod.inverse_mass_second_moment_of_inertia)
+            is_well_formed(rod.inv_mass_second_moment_of_inertia)
             is_well_formed(rod.rest_voronoi_lengths)
             is_well_formed(rod.internal_forces)
             is_well_formed(rod.internal_torques)
-            is_well_formed(rod.external_loads)
+            is_well_formed(rod.external_forces)
             is_well_formed(rod.external_torques)
             is_well_formed(rod.lengths)
             is_well_formed(rod.tangents)

@@ -94,6 +94,13 @@ namespace elastica {
     //**************************************************************************
 
     //**************************************************************************
+    /*!\brief Tag indicating inverse mass of a physical system
+     * \ingroup system_tags
+     */
+    struct InvMass {};
+    //**************************************************************************
+
+    //**************************************************************************
     /*!\brief Tag indicating inverse mass second moment of inertia of a physical
      * system
      * \ingroup system_tags

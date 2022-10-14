@@ -17,6 +17,7 @@
 // Includes
 //******************************************************************************
 
+#include "Configuration/Systems.hpp"  // For index checking
 // assert
 #include "ErrorHandling/Assert.hpp"
 #include "Systems/CosseratRods/Traits/DataType/Protocols.hpp"
@@ -232,11 +233,13 @@ namespace elastica {
        */
       static inline auto slice(data_type& data, std::size_t start_index,
                                std::size_t size) -> slice_type {
-        return blaze::subvector(data, start_index, size);
+        return blaze::subvector(data, start_index, size,
+                                blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
       }
       static inline auto slice(slice_type& data, std::size_t start_index,
                                std::size_t size) -> slice_type {
-        return blaze::subvector(data, start_index, size);
+        return blaze::subvector(data, start_index, size,
+                                blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
       }
       //************************************************************************
 
@@ -256,7 +259,8 @@ namespace elastica {
       static inline auto slice(data_type const& data, std::size_t start_index,
                                std::size_t size) -> const_slice_type {
         // unaligned always
-        return blaze::subvector(data, start_index, size);
+        return blaze::subvector(data, start_index, size,
+                                blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
       }
       //************************************************************************
 

@@ -8,6 +8,8 @@
 #include "Framework/TestingFramework.hpp"
 //
 // needs to be included first
+#include "ModuleSettings/Vectorization.hpp"
+//
 #include "Systems/States/Expressions/backends/blaze/SO3PrimitiveAddAssign/BaseTemplate.hpp"
 #include "Systems/States/Expressions/backends/blaze/SO3PrimitiveAddAssign/SIMD.hpp"
 #include "Systems/States/Expressions/backends/blaze/SO3PrimitiveAddAssign/Scalar.hpp"
@@ -117,12 +119,10 @@ namespace {
     // TODO : Fix issue #7, #37
     SECTION("Add assign SIMD version") {
       auto input(temp_to_synch);
-#if defined(__APPLE__) && defined(__arm64__)
-      // SIMD instructions are not available in Apple silicon, so fall
-      // back to scalar instructions
-      constexpr auto backend = detail::SO3AddAssignKind::scalar;
-#else
+#if ELASTICA_USE_VECTORIZATION
       constexpr auto backend = detail::SO3AddAssignKind::simd;
+#else
+      constexpr auto backend = detail::SO3AddAssignKind::scalar;
 #endif
 
       detail::SO3AddAssign<backend>::apply(input, rhs_vector);

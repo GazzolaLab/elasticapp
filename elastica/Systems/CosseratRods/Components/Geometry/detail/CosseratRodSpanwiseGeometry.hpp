@@ -600,7 +600,7 @@ namespace elastica {
           blocks::get<tags::ReferenceVoronoiLength>(block_like.self()));
 
       // 1. Compute new lengths
-      auto position_diff(Traits::Operations::difference_kernel(position));
+      auto&& position_diff(Traits::Operations::difference_kernel(position));
       element_length = Traits::Operations::batch_norm(position_diff);
       // +1e-14; if want to match pyelastica
 

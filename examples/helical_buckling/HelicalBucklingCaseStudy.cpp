@@ -96,10 +96,11 @@ void HelicalBucklingCaseStudy::setup(InputTypes<This> const& input_parameters) {
             rod_ref.get());
     const auto sm = ::elastica::Material::get_shear_modulus(my_material);
     for (std::size_t i_elem = 0UL; i_elem < n_elem; ++i_elem) {
+#define SLICE(INDEX) INDEX
       // can be refactored but whatever
-      shear_matrix(0UL, 0UL, i_elem) = sm;
-      shear_matrix(1UL, 1UL, i_elem) = sm;
-      shear_matrix(2UL, 2UL, i_elem) = sm;
+      shear_matrix(SLICE(0UL), i_elem) = sm;
+      shear_matrix(SLICE(1UL), i_elem) = sm;
+      shear_matrix(SLICE(2UL), i_elem) = sm;
     }
   }
 
@@ -109,9 +110,10 @@ void HelicalBucklingCaseStudy::setup(InputTypes<This> const& input_parameters) {
             rod_ref.get());
     for (std::size_t i_elem = 0UL; i_elem < (n_elem - 1); ++i_elem) {
       // can be refactored but whatever
-      bend_matrix(0UL, 0UL, i_elem) = 1.345;
-      bend_matrix(1UL, 1UL, i_elem) = 1.345;
-      bend_matrix(2UL, 2UL, i_elem) = 0.789;
+      bend_matrix(SLICE(0UL), i_elem) = 1.345;
+      bend_matrix(SLICE(1UL), i_elem) = 1.345;
+      bend_matrix(SLICE(2UL), i_elem) = 0.789;
+#undef SLICE
     }
   }
 

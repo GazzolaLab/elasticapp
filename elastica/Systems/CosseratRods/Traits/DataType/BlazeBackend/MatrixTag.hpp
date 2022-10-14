@@ -17,6 +17,7 @@
 // Includes
 //******************************************************************************
 
+#include "Configuration/Systems.hpp"  // For index checking
 // assert
 #include "ErrorHandling/Assert.hpp"
 #include "Systems/CosseratRods/Traits/DataType/Protocols.hpp"
@@ -24,7 +25,7 @@
 
 // matrix types
 #include <blaze/math/DynamicMatrix.h>
-//#include <blaze/math/StaticMatrix.h>
+// #include <blaze/math/StaticMatrix.h>
 #include <blaze/math/AlignmentFlag.h>
 #include <blaze/math/views/Column.h>
 #include <blaze/math/views/Submatrix.h>
@@ -117,7 +118,8 @@ namespace elastica {
        * \param index Index of slicing
        */
       static inline decltype(auto) slice(data_type& data, std::size_t index) {
-        return blaze::column(data, index);
+        return blaze::column(data, index,
+                             blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
       }
       //************************************************************************
 
@@ -134,7 +136,8 @@ namespace elastica {
        */
       static inline decltype(auto) slice(data_type const& data,
                                          std::size_t index) {
-        return blaze::column(data, index);
+        return blaze::column(data, index,
+                             blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
       }
       //************************************************************************
 
@@ -150,7 +153,8 @@ namespace elastica {
        * \param index Index of slicing
        */
       static inline decltype(auto) slice(slice_type& slice, std::size_t index) {
-        return blaze::column(slice, index);
+        return blaze::column(slice, index,
+                             blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
       }
       //************************************************************************
 
@@ -168,7 +172,8 @@ namespace elastica {
        */
       static inline decltype(auto) slice(slice_type const& slice,
                                          std::size_t index) {
-        return blaze::column(slice, index);
+        return blaze::column(slice, index,
+                             blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
       }
       //************************************************************************
 
@@ -188,7 +193,8 @@ namespace elastica {
        */
       static inline decltype(auto) slice(slice_type&& slice,
                                          std::size_t index) {
-        return blaze::column(static_cast<slice_type&&>(slice), index);
+        return blaze::column(static_cast<slice_type&&>(slice), index,
+                             blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
       }
       //************************************************************************
 
@@ -205,7 +211,8 @@ namespace elastica {
        */
       static inline decltype(auto) slice(const_slice_type const& slice,
                                          std::size_t index) {
-        return blaze::column(slice, index);
+        return blaze::column(slice, index,
+                             blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
       }
       //************************************************************************
 
@@ -238,8 +245,8 @@ namespace elastica {
       static inline decltype(auto) slice(data_type& data,
                                          std::size_t start_index,
                                          std::size_t size) {
-        return blaze::submatrix(data, 0UL, start_index, Frames::Dimension,
-                                size);
+        return blaze::submatrix(data, 0UL, start_index, Frames::Dimension, size,
+                                blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
       }
       //************************************************************************
 
@@ -259,8 +266,8 @@ namespace elastica {
       static inline decltype(auto) slice(data_type const& data,
                                          std::size_t start_index,
                                          std::size_t size) {
-        return blaze::submatrix(data, 0UL, start_index, Frames::Dimension,
-                                size);
+        return blaze::submatrix(data, 0UL, start_index, Frames::Dimension, size,
+                                blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
       }
       //************************************************************************
 

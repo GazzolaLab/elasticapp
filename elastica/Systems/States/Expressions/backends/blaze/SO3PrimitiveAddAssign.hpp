@@ -17,11 +17,13 @@
 // Includes
 //******************************************************************************
 #include <blaze_tensor/math/DynamicTensor.h>
-
+//
 #include "Systems/States/Expressions/backends/Declarations.hpp"
+#include "Systems/States/Expressions/backends/blaze/SO3PrimitiveAddAssign/BaseTemplate.hpp"
+#include "Systems/States/Expressions/backends/blaze/SO3PrimitiveAddAssign/SIMD.hpp"
+#include "Systems/States/Expressions/backends/blaze/SO3PrimitiveAddAssign/Scalar.hpp"
 #include "Systems/States/Expressions/backends/blaze/SO3PrimitiveAssign.hpp"
 #include "Systems/States/Expressions/backends/blaze/Size.hpp"
-#include "Systems/States/Expressions/backends/blaze/SO3PrimitiveAddAssign/Scalar.hpp"
 
 namespace elastica {
 
@@ -40,16 +42,8 @@ namespace elastica {
       SO3_primitive_assign(lhs_matrix_batch, temp_to_synch, rhs_vector);
       */
 
-#if defined(__APPLE__) && defined(__arm64__)
-        // SIMD instructions are not available in Apple silicon, so fall
-        // back to scalar instructions
-        constexpr auto backend = detail::SO3AddAssignKind::scalar;
-#else
-        // Scalar chosen because it seems the fastest, for now
-        constexpr auto backend = detail::SO3AddAssignKind::scalar;
-#endif 
-
-      detail::SO3AddAssign<backend>::apply(lhs_matrix_batch, rhs_vector);
+      detail::SO3AddAssign<detail::backend_choice<detail::SO3AddAssignKind>()>::
+          apply(lhs_matrix_batch, rhs_vector);
     }
 
   }  // namespace states

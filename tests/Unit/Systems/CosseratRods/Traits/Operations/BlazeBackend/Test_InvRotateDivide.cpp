@@ -7,6 +7,8 @@
 #include "Framework/TestHelpers.hpp"
 #include "Framework/TestingFramework.hpp"
 // needs to be included first
+#include "ModuleSettings/Vectorization.hpp"
+//
 #include "Systems/CosseratRods/Traits/Operations/BlazeBackend/InvRotateDivide/BaseTemplate.hpp"
 #include "Systems/CosseratRods/Traits/Operations/BlazeBackend/InvRotateDivide/Blaze.hpp"
 #include "Systems/CosseratRods/Traits/Operations/BlazeBackend/InvRotateDivide/SIMD.hpp"
@@ -94,16 +96,13 @@ namespace {
     }
 
     SECTION("SIMD version") {
-#if defined(__APPLE__) && defined(__arm64__)
-        // SIMD instructions are not available in Apple silicon, so fall
-        // back to scalar instructions
-        constexpr auto backend = detail::InvRotateDivideKind::scalar;
+#if ELASTICA_USE_VECTORIZATION
+      constexpr auto backend = detail::InvRotateDivideKind::simd;
 #else
-        constexpr auto backend = detail::InvRotateDivideKind::simd;
-#endif 
+      constexpr auto backend = detail::InvRotateDivideKind::scalar;
+#endif
 
-      using TestOp =
-          detail::InvRotateDivideOp<backend>;
+      using TestOp = detail::InvRotateDivideOp<backend>;
 
       Vector::data_type test_rot_axis_vector_batch(dimension, n_elems - 1UL);
 

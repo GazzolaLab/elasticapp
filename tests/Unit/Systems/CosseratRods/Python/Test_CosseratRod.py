@@ -146,7 +146,7 @@ class TestCosseratRod(unittest.TestCase):
                 )
                 assert_is_elemental(
                     rod.get_shear_stretch_rigidity_matrix()
-                ) and assert_is_matrix(rod.get_shear_stretch_rigidity_matrix())
+                ) and assert_is_vector(rod.get_shear_stretch_rigidity_matrix())
                 assert_is_elemental(rod.get_torque_damping_rate()) and assert_is_scalar(
                     rod.get_torque_damping_rate()
                 )
@@ -155,7 +155,7 @@ class TestCosseratRod(unittest.TestCase):
                 )
                 assert_is_voronoi(
                     rod.get_bending_twist_rigidity_matrix()
-                ) and assert_is_matrix(rod.get_bending_twist_rigidity_matrix())
+                ) and assert_is_vector(rod.get_bending_twist_rigidity_matrix())
 
                 # dynamic variables
                 assert_is_nodal(rod.get_acceleration()) and assert_is_vector(
@@ -187,7 +187,7 @@ class TestCosseratRod(unittest.TestCase):
 
                 assert_is_elemental(
                     rod.get_inv_mass_second_moment_of_inertia()
-                ) and assert_is_matrix(rod.get_inv_mass_second_moment_of_inertia())
+                ) and assert_is_vector(rod.get_inv_mass_second_moment_of_inertia())
 
             return run_test
 
@@ -315,13 +315,13 @@ class TestCosseratRod(unittest.TestCase):
             is_well_formed(rod.volume)
             is_well_formed(rod.mass)
             is_well_formed(rod.mass_second_moment_of_inertia)
-            is_well_formed(rod.inverse_mass_second_moment_of_inertia)
+            is_well_formed(rod.inv_mass_second_moment_of_inertia)
             is_well_formed(rod.dissipation_constant_for_forces)
             is_well_formed(rod.dissipation_constant_for_torques)
             is_well_formed(rod.rest_voronoi_lengths)
             is_well_formed(rod.internal_forces)
             is_well_formed(rod.internal_torques)
-            is_well_formed(rod.external_loads)
+            is_well_formed(rod.external_forces)
             is_well_formed(rod.external_torques)
             is_well_formed(rod.lengths)
             is_well_formed(rod.tangents)

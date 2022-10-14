@@ -198,46 +198,31 @@ namespace {
 
     // Check RigidityMatrix
     // [0] element : stiff  * I_0
+    // Depdending on how we store bending matrix, we slice accordingly.
+#define SLICE(INDEX) [INDEX]  //
+    // #define SLICE(INDEX) (INDEX, INDEX)
 
     auto ssr_matrix = blocks::get<tags::ShearStretchRigidityMatrix>(model);
-    auto ssr_I0 = Traits::DataType::Matrix::slice(ssr_matrix, 2UL)(0UL, 0UL);
-    auto ssr_I1 = Traits::DataType::Matrix::slice(ssr_matrix, 2UL)(1UL, 1UL);
-    auto ssr_I2 = Traits::DataType::Matrix::slice(ssr_matrix, 2UL)(2UL, 2UL);
-    auto ssr_Id0 = Traits::DataType::Matrix::slice(ssr_matrix, 3UL)(0UL, 1UL);
-    auto ssr_Id1 = Traits::DataType::Matrix::slice(ssr_matrix, 3UL)(0UL, 2UL);
-    auto ssr_Id2 = Traits::DataType::Matrix::slice(ssr_matrix, 3UL)(1UL, 2UL);
-    auto ssr_Id3 = Traits::DataType::Matrix::slice(ssr_matrix, 4UL)(1UL, 0UL);
-    auto ssr_Id4 = Traits::DataType::Matrix::slice(ssr_matrix, 4UL)(2UL, 0UL);
-    auto ssr_Id5 = Traits::DataType::Matrix::slice(ssr_matrix, 4UL)(2UL, 1UL);
+    using DataType = Traits::DataType::Vector;
+
+    auto ssr_I0 = DataType::slice(ssr_matrix, 2UL) SLICE(0UL);
+    auto ssr_I1 = DataType::slice(ssr_matrix, 2UL) SLICE(1UL);
+    auto ssr_I2 = DataType::slice(ssr_matrix, 2UL) SLICE(2UL);
     CHECK(ssr_I0 == 4.0 * area * ref_shape_factor);
     CHECK(ssr_I1 == 4.0 * area * ref_shape_factor);
     CHECK(ssr_I2 == 4.0 * area);
-    CHECK(ssr_Id0 == 0.0);
-    CHECK(ssr_Id1 == 0.0);
-    CHECK(ssr_Id2 == 0.0);
-    CHECK(ssr_Id3 == 0.0);
-    CHECK(ssr_Id4 == 0.0);
-    CHECK(ssr_Id5 == 0.0);
 
     auto btr_matrix = blocks::get<tags::BendingTwistRigidityMatrix>(model);
-    auto btr_I0 = Traits::DataType::Matrix::slice(btr_matrix, 2UL)(0UL, 0UL);
-    auto btr_I1 = Traits::DataType::Matrix::slice(btr_matrix, 2UL)(1UL, 1UL);
-    auto btr_I2 = Traits::DataType::Matrix::slice(btr_matrix, 2UL)(2UL, 2UL);
-    auto btr_Id0 = Traits::DataType::Matrix::slice(btr_matrix, 3UL)(0UL, 1UL);
-    auto btr_Id1 = Traits::DataType::Matrix::slice(btr_matrix, 3UL)(0UL, 2UL);
-    auto btr_Id2 = Traits::DataType::Matrix::slice(btr_matrix, 3UL)(1UL, 2UL);
-    auto btr_Id3 = Traits::DataType::Matrix::slice(btr_matrix, 4UL)(1UL, 0UL);
-    auto btr_Id4 = Traits::DataType::Matrix::slice(btr_matrix, 4UL)(2UL, 0UL);
-    auto btr_Id5 = Traits::DataType::Matrix::slice(btr_matrix, 4UL)(2UL, 1UL);
+    using DataType = Traits::DataType::Vector;
+
+    auto btr_I0 = DataType::slice(btr_matrix, 2UL) SLICE(0UL);
+    auto btr_I1 = DataType::slice(btr_matrix, 2UL) SLICE(1UL);
+    auto btr_I2 = DataType::slice(btr_matrix, 2UL) SLICE(2UL);
+#undef SLICE
+
     CHECK(btr_I0 == approx(4.0 * I_0));
     CHECK(btr_I1 == approx(4.0 * I_0));
     CHECK(btr_I2 == approx(2.0 * 4.0 * I_0));
-    CHECK(btr_Id0 == 0.0);
-    CHECK(btr_Id1 == 0.0);
-    CHECK(btr_Id2 == 0.0);
-    CHECK(btr_Id3 == 0.0);
-    CHECK(btr_Id4 == 0.0);
-    CHECK(btr_Id5 == 0.0);
   }
 
 }  // namespace

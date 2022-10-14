@@ -32,6 +32,7 @@ elastica_target_sources(
 target_link_libraries(
         ${LIBRARY}
         INTERFACE
+        ModuleSettings
         Utilities
         Blaze
         BlazeTensor

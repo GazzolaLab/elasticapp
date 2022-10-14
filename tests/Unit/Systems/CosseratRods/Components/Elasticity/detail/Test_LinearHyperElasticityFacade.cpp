@@ -110,20 +110,22 @@ namespace {
     const double area = M_PI * 4.0 * 4.0;
     const double I_0 = area * area * 0.25 * M_1_PI;
     auto alpha = model.shape_factor();
-    Rot3 btrm_slice{{I_0, 0, 0}, {0, I_0, 0}, {0, 0, I_0 * 2}};
-    Rot3 ssrm_slice{{alpha * area, 0, 0}, {0, alpha * area, 0}, {0, 0, area}};
+    // Rot3 btrm_slice{{I_0, 0, 0}, {0, I_0, 0}, {0, 0, I_0 * 2}};
+    Vec3 btrm_slice{I_0, I_0, I_0 * 2};
+    Vec3 ssrm_slice{alpha * area, alpha * area, area};
 
     auto BTRM(blocks::get<elastica::tags::BendingTwistRigidityMatrix>(model));
     auto SSRM(blocks::get<elastica::tags::ShearStretchRigidityMatrix>(model));
     CHECK(BTRM.columns() == n_initializers - 1UL);
     CHECK(SSRM.columns() == n_initializers);
+    using DataType = Traits::DataType::Vector;
 
     for (size_t i = 0UL; i < n_initializers - 1; ++i) {
-      CHECK(blaze::columnslice(BTRM, i) == btrm_slice * (i + 1.5));
+      CHECK(DataType::slice(BTRM, i) == btrm_slice * (i + 1.5));
     }
 
     for (size_t i = 0UL; i < n_initializers; ++i) {
-      CHECK(blaze::columnslice(SSRM, i) == ssrm_slice * (i + 1.0));
+      CHECK(DataType::slice(SSRM, i) == ssrm_slice * (i + 1.0));
     }
   }
 

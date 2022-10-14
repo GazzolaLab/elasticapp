@@ -79,7 +79,7 @@ namespace elastica {
           struct BendingTwistRigidityMatrix
               : public Traits::template CosseratRodInitializedVariable<
                     ::elastica::tags::BendingTwistRigidityMatrix,  //
-                    typename Traits::DataType::Matrix,             //
+                    typename Traits::DataType::Vector,             //
                     typename Traits::Place::OnVoronoi> {};
           //********************************************************************
 
@@ -90,7 +90,7 @@ namespace elastica {
           struct ShearStretchRigidityMatrix
               : public Traits::template CosseratRodInitializedVariable<
                     ::elastica::tags::ShearStretchRigidityMatrix,  //
-                    typename Traits::DataType::Matrix,             //
+                    typename Traits::DataType::Vector,             //
                     typename Traits::Place::OnElement> {};
           //********************************************************************
 
@@ -275,7 +275,6 @@ namespace elastica {
               using Variable = BendingTwistRigidityMatrix;
               using ScalarVariable = typename Traits::DataType::Scalar;
               using Tag = blocks::parameter_t<Variable>;
-              using real_type = typename Traits::real_type;
 
               auto&& variable(blocks::get<Tag>(this_component.self()));
               auto&& stiffness_along_principal_directions_initializer =
@@ -302,12 +301,10 @@ namespace elastica {
                 MOI = this_component.self().get_second_moment_of_area(idx + 1);
                 len = ScalarVariable::slice(rest_length, idx + 1);
 
-                Variable::slice(variable, idx) = real_type(0.0);
-                Variable::diagonal_assign(
-                    variable, idx,
+                Variable::slice(variable, idx) =
                     (prev_len * prev_stiffness * prev_MOI +
                      len * stiffness * MOI) /
-                        (prev_len + len));
+                    (prev_len + len);
               }
             }
 
@@ -315,7 +312,6 @@ namespace elastica {
             {
               using Variable = ShearStretchRigidityMatrix;
               using Tag = blocks::parameter_t<Variable>;
-              using real_type = typename Traits::real_type;
 
               auto&& variable(blocks::get<Tag>(this_component.self()));
               auto&& stiffness_along_principal_directions_initializer =
@@ -324,12 +320,10 @@ namespace elastica {
               auto const dofs = Variable::get_dofs(n_elem);
               for (std::size_t idx = 0U; idx < dofs; ++idx) {
                 // (G, G, E) * (\alpha A, \alpha A, A)
-                Variable::slice(variable, idx) = real_type(0.0);
-                Variable::diagonal_assign(
-                    variable, idx,
+                Variable::slice(variable, idx) =
                     stiffness_along_principal_directions_initializer(idx) *
-                        compute_effective_area_along_principal_directions(
-                            this_component.self(), idx));
+                    compute_effective_area_along_principal_directions(
+                        this_component.self(), idx);
               }
             }
           }
@@ -352,7 +346,7 @@ namespace elastica {
     auto compute_effective_area_along_principal_directions(
         component::detail::LinearHyperElasticityFacade<
             Traits, ComputationalBlock>& block_like,
-        std::size_t i) COSSERATROD_LIB_NOEXCEPT -> Vec3 {
+        std::size_t i) COSSERATROD_LIB_NOEXCEPT->Vec3 {
       return Vec3{real_t(block_like.self().get_area(i) *
                          block_like.self().shape_factor()),
                   real_t(block_like.self().get_area(i) *
