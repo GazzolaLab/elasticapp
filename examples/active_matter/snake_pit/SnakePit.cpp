@@ -500,7 +500,8 @@ void SnakePit::run() {
    point exception on overflow, divide-by-zero, and invalid operations.
    NOTE : This won't get called if used from the python side!
   */
-  enable_floating_point_exceptions();
+  // Seems to be triggered even if no nans.
+  // enable_floating_point_exceptions();
   // const ::elastica::real_t final_time(1.0 * time_period::default_value());
   const auto n_steps = static_cast<std::size_t>(final_time / current_dt());
 
