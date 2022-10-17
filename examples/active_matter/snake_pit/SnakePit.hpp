@@ -51,8 +51,8 @@ struct SnakePitConfiguration {
 
     // use default force model of a linear spring damper
     auto collision_config =
-        ec::make_collision_configuration(EXEC,   // between each type
-                                         EXEC);  // across each type
+        ec::make_collision_configuration(EXEC,      // between each type
+                                         ec::seq);  // across each type (there is only one tpe)
     auto gravity_config =
         ec::make_gravity_configuration(::elastica::Vec3{0., 0., 0.});
 

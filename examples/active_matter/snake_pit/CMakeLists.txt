@@ -10,8 +10,9 @@ if (TARGET H5)
             Materials
             ElasticaFlags
             Activation
-            Parallel
             H5
+            PUBLIC
+            Parallel
             )
     # So that I can code up as <elastica/CaseStudy> rather than "CaseStudy"
     target_include_directories(SnakePit PRIVATE ${CMAKE_SOURCE_DIR})
