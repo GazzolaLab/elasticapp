@@ -513,9 +513,13 @@ void SnakePit::run() {
   ::elastica::io::H5Metadata metadata{};
 
   auto record_data = [&]() {
-    simulator->for_each_system_sequential(
-        metadata.write_at({this->get_current_time(), this->get_dt(),
-                           this->get_current_iteration()}));
+    auto writer = metadata.write_at({this->get_current_time(), this->get_dt(),
+                                     this->get_current_iteration()});
+    simulator->for_each_system_sequential([&](auto& slice) {
+      using Subset = tmpl::list<elastica::tags::Position>;
+      auto subset = blocks::cache<Subset>(slice);
+      writer(subset);
+    });
   };
   record_data();
 
