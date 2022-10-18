@@ -576,7 +576,7 @@ void MagneticMillipedesCaseStudy::step() {
 }
 
 void MagneticMillipedesCaseStudy::run() {
-  enable_floating_point_exceptions();
+  //enable_floating_point_exceptions();
 
   // Logging Configuration
   const ::elastica::real_t fps = 60;
