@@ -507,7 +507,7 @@ void SnakePit::run() {
 
   // Time period is 2,
   const std::size_t n_steps_in_one_period(elastica::real_t(2.0) / current_dt());
-  constexpr auto n_samples_per_period(4UL);
+  constexpr auto n_samples_per_period(32UL);
   const std::size_t write_interval(n_steps_in_one_period /
                                    n_samples_per_period);
   ::elastica::io::H5Metadata metadata{};
