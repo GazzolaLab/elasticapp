@@ -19,6 +19,7 @@ set(LIBRARY_SOURCES
         Protocols.hpp
         Types.hpp
         TypeTraits.hpp
+        VariableCache.hpp
         )
 
 elastica_target_headers(

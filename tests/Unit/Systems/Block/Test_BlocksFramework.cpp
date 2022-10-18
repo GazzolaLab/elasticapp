@@ -1646,6 +1646,114 @@ namespace {
           std::vector<int>{0, 3, 2});
   }
 
+  ELASTICA_TEST_CASE("Unit.Systems.Blocks.VariableCache", "[Systems][Unit]") {
+    using MyBlock = blocks::Block<FacadedIntermediateExamplePlugin>;
+    MyBlock block;
+    blocks::get<tags::ExampleInitializedPosition>(block).push_back(2);
+    blocks::get<tags::ExampleInitializedPosition>(block).push_back(3);
+    blocks::get<tags::ExampleInitializedPosition>(block).push_back(4);
+
+    blocks::get<tags::ExampleInitializedVelocity>(block).push_back(2.5F);
+    blocks::get<tags::ExampleInitializedVelocity>(block).push_back(3.5F);
+    blocks::get<tags::ExampleInitializedVelocity>(block).push_back(4.5F);
+
+    blocks::get<tags::ExampleAcceleration>(block).push_back(0);
+    blocks::get<tags::ExampleAcceleration>(block).push_back(1);
+    blocks::get<tags::ExampleAcceleration>(block).push_back(2);
+
+    {
+      auto block_slice = blocks::slice(block, 1UL);
+
+      auto block_cache = blocks::cache(block_slice);
+      CHECK(blocks::get<tags::ExampleInitializedPosition>(block_cache).at(0) ==
+            3);
+      CHECK(blocks::get<tags::ExampleInitializedVelocity>(block_cache).at(0) ==
+            approx(3.5F));
+      CHECK(blocks::get<tags::ExampleAcceleration>(block_cache).at(0) == 1);
+
+      using SubsetList = tmpl::list<tags::ExampleInitializedPosition,
+                                    tags::ExampleInitializedVelocity>;
+      auto block_subset_cache = blocks::cache<SubsetList>(block_slice);
+      CHECK(blocks::get<tags::ExampleInitializedPosition>(block_subset_cache)
+                .at(0) == 3);
+      CHECK(blocks::get<tags::ExampleInitializedVelocity>(block_subset_cache)
+                .at(0) == approx(3.5F));
+
+      // Check assignment etc.
+      blocks::get<tags::ExampleInitializedPosition>(block_subset_cache)
+          .at(0)
+          .get() = 2;
+      blocks::get<tags::ExampleInitializedVelocity>(block_subset_cache)
+          .at(0)
+          .get() = 2.5F;
+
+      CHECK(blocks::get<tags::ExampleInitializedPosition>(block_subset_cache)
+                .at(0) == 2);
+      CHECK(blocks::get<tags::ExampleInitializedVelocity>(block_subset_cache)
+                .at(0) == approx(2.5F));
+
+      blocks::get<tags::ExampleInitializedPosition>(block_subset_cache)
+          .at(0)
+          .get() = 3;
+      blocks::get<tags::ExampleInitializedVelocity>(block_subset_cache)
+          .at(0)
+          .get() = 3.5F;
+    }
+
+    {
+      auto block_slice = blocks::slice(block, 1UL, 3UL);
+
+      auto block_cache = blocks::cache(block_slice);
+      CHECK(blocks::get<tags::ExampleInitializedPosition>(block_cache).at(0) ==
+            3);
+      CHECK(blocks::get<tags::ExampleInitializedVelocity>(block_cache).at(0) ==
+            approx(3.5F));
+      CHECK(blocks::get<tags::ExampleAcceleration>(block_cache).at(0) == 1);
+
+      CHECK(blocks::get<tags::ExampleInitializedPosition>(block_cache).at(1) ==
+            4);
+      CHECK(blocks::get<tags::ExampleInitializedVelocity>(block_cache).at(1) ==
+            approx(4.5F));
+      CHECK(blocks::get<tags::ExampleAcceleration>(block_cache).at(1) == 2);
+
+      using SubsetList = tmpl::list<tags::ExampleInitializedPosition,
+                                    tags::ExampleInitializedVelocity>;
+      auto block_subset_cache = blocks::cache<SubsetList>(block_slice);
+      CHECK(blocks::get<tags::ExampleInitializedPosition>(block_subset_cache)
+                .at(0) == 3);
+      CHECK(blocks::get<tags::ExampleInitializedVelocity>(block_subset_cache)
+                .at(0) == approx(3.5F));
+
+      CHECK(blocks::get<tags::ExampleInitializedPosition>(block_subset_cache)
+                .at(1) == 4);
+      CHECK(blocks::get<tags::ExampleInitializedVelocity>(block_subset_cache)
+                .at(1) == approx(4.5F));
+
+      // Check assignment etc.
+      blocks::get<tags::ExampleInitializedPosition>(block_subset_cache)
+          .at(0)
+          .get() = 2;
+      blocks::get<tags::ExampleInitializedVelocity>(block_subset_cache)
+          .at(0)
+          .get() = 2.5F;
+      blocks::get<tags::ExampleInitializedPosition>(block_subset_cache)
+          .at(1)
+          .get() = 12;
+      blocks::get<tags::ExampleInitializedVelocity>(block_subset_cache)
+          .at(1)
+          .get() = 12.5F;
+
+      CHECK(blocks::get<tags::ExampleInitializedPosition>(block_subset_cache)
+                .at(0) == 2);
+      CHECK(blocks::get<tags::ExampleInitializedVelocity>(block_subset_cache)
+                .at(0) == approx(2.5F));
+      CHECK(blocks::get<tags::ExampleInitializedPosition>(block_subset_cache)
+                .at(1) == 12);
+      CHECK(blocks::get<tags::ExampleInitializedVelocity>(block_subset_cache)
+                .at(1) == approx(12.5F));
+    }
+  }
+
   ELASTICA_TEST_CASE("Unit.Systems.Blocks.metadata", "[Systems][Unit]") {
     using MyBlock = blocks::Block<FacadedIntermediateExamplePlugin>;
     MyBlock block;

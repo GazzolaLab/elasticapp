@@ -56,6 +56,10 @@ namespace blocks {
 
   template <typename /*Derived*/>
   class Sliceable;
+
+  template <typename BlockLike, typename... Tags>
+  struct VariableCache;
+
   /*! \endcond */
   //****************************************************************************
 

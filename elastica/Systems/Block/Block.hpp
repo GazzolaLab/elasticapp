@@ -28,6 +28,7 @@
 #include "Systems/Block/Block/BlockSlice.hpp"
 #include "Systems/Block/Block/BlockView.hpp"
 #include "Systems/Block/Block/Metadata.hpp"
+#include "Systems/Block/Block/VariableCache.hpp"
 // Variable implementations
 #include "BlockVariables/BlockInitializer.hpp"
 #include "BlockVariables/BlockVariables.hpp"

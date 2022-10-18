@@ -10,9 +10,8 @@
 
 namespace {
 
-  ELASTICA_TEST_CASE("Unit.Simulator.IO.H5.CosseratRodSlice",
+  ELASTICA_TEST_CASE("Unit.Simulator.IO.H5.CosseratRod",
                      "[Unit][Simulator][IO]") {
-    auto group = generate_h5("CosseratRodSlice");
     // Setup
     using CosseratRod = ::elastica::cosserat_rod::CosseratRod;
     using Block = ::elastica::cosserat_rod::detail::CosseratRodBlock;
@@ -34,10 +33,6 @@ namespace {
 
     auto slice = block.emplace(straight_initializer.initialize<CosseratRod>());
 
-    // Write and flush
-    elastica::io::write_data(group, slice, "data");
-    group.getFile().flush();
-
     // Clobber data
     Block another_block{};
     StraightInit another_straight_initializer{
@@ -55,16 +50,41 @@ namespace {
     auto another_slice = another_block.emplace(
         another_straight_initializer.initialize<CosseratRod>());
 
-    // Read data back
-    elastica::io::read_data(group, another_slice, "data");
+    SECTION("Slice") {
+      CHECK_FALSE(slice.data() == another_slice.data());
 
-    // Post check
-    CHECK(slice.data() == another_slice.data());
+      // Write and flush
+      auto group = generate_h5("CosseratRodSlice");
+      elastica::io::write_data(group, slice, "data");
+      group.getFile().flush();
+
+      // Read data back
+      elastica::io::read_data(group, another_slice, "data");
+
+      // Post check
+      CHECK(slice.data() == another_slice.data());
+    }
+    SECTION("VariableCache") {
+      // Write and flush
+      auto group = generate_h5("CosseratRodVariableCache");
+      using Subset = tmpl::list<elastica::tags::Position,
+                                elastica::tags::ElementDimension>;
+      auto subset = blocks::cache<Subset>(slice);
+      elastica::io::write_data(group, subset, "data");
+      group.getFile().flush();
+
+      // Read data back
+      auto another_subset = blocks::cache<Subset>(another_slice);
+      elastica::io::read_data(group, another_subset, "data");
+
+      // Post check
+      CHECK(subset.data() == another_subset.data());
+      CHECK_FALSE(slice.data() == another_slice.data());
+    }
   }
 
-  ELASTICA_TEST_CASE("Unit.Simulator.IO.H5.CosseratRodWithoutDampingSlice",
+  ELASTICA_TEST_CASE("Unit.Simulator.IO.H5.CosseratRodWithoutDamping",
                      "[Unit][Simulator][IO]") {
-    auto group = generate_h5();
     // Setup
     using CosseratRod = ::elastica::cosserat_rod::CosseratRodWithoutDamping;
     using Block =
@@ -85,10 +105,6 @@ namespace {
 
     auto slice = block.emplace(straight_initializer.initialize<CosseratRod>());
 
-    // Write and flush
-    elastica::io::write_data(group, slice, "data");
-    group.getFile().flush();
-
     // Clobber data
     Block another_block{};
     StraightInit another_straight_initializer{
@@ -104,11 +120,38 @@ namespace {
     auto another_slice = another_block.emplace(
         another_straight_initializer.initialize<CosseratRod>());
 
-    // Read data back
-    elastica::io::read_data(group, another_slice, "data");
+    SECTION("Slice") {
+      CHECK_FALSE(slice.data() == another_slice.data());
 
-    // Post check
-    CHECK(slice.data() == another_slice.data());
+      // Write and flush
+      auto group = generate_h5("CosseratRodWithoutDampingSlice");
+      elastica::io::write_data(group, slice, "data");
+      group.getFile().flush();
+
+      // Read data back
+      elastica::io::read_data(group, another_slice, "data");
+
+      // Post check
+      CHECK(slice.data() == another_slice.data());
+    }
+    SECTION("VariableCache") {
+      // Write and flush
+      auto group = generate_h5("CosseratRodWithoutDampingVariableCache");
+
+      using Subset = tmpl::list<elastica::tags::Position,
+                                elastica::tags::ElementDimension>;
+      auto subset = blocks::cache<Subset>(slice);
+      elastica::io::write_data(group, subset, "data");
+      group.getFile().flush();
+
+      // Read data back
+      auto another_subset = blocks::cache<Subset>(another_slice);
+      elastica::io::read_data(group, another_subset, "data");
+
+      // Post check
+      CHECK(subset.data() == another_subset.data());
+      CHECK_FALSE(slice.data() == another_slice.data());
+    }
   }
 
 }  // namespace
