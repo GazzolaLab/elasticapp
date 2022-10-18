@@ -57,6 +57,8 @@ namespace elastica {
       std::string file_name = get_file_name(std::move(formatted_id), *this);
       metadata_group.createExternalLink("data", file_name,
                                         /*root path within H5 file*/ "/");
+      // Flush metadata file so that it can be read in while its being written out.
+      metadata_file().flush();
       return file_name;
     }
 
