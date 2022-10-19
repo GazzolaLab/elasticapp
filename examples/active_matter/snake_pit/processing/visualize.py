@@ -13,9 +13,9 @@ from .stats import Stats, RodStats
 
 
 def run_snake_pit(
-        n_snakes: int = 1,
-        save_to_csv: bool = False,
-        save_figure: bool = False,
+    n_snakes: int = 1,
+    save_to_csv: bool = False,
+    save_figure: bool = False,
 ):
     """Run rod collison study"""
 
@@ -27,7 +27,8 @@ def run_snake_pit(
 
     sample_interval = 2500
 
-    n_elements = 10
+    # Snake parameter
+    n_elements = 2
 
     youngs_modulus = 1e6
     poisson_ratio = 0.5
@@ -45,16 +46,24 @@ def run_snake_pit(
     radius = length * 0.011
     damping = 2e-3
 
+    # Environment
     # Was 5e-1 and 5e-2 before
     contact_stiffness = 5e-2
     contact_damping = 5e-3
 
-    gravitational_acc = -9.80665
+    # gravitational_acc = -9.80665
     gravitational_acc = -0.1
     time_period = 2.0
     wave_length = 1.0
+    activation_start_time_nd = 5.0
 
+    # Initialization
+    packing_initial_vertical_span_ratio = 16.0
+    packing_initial_radial_span_ratio = 1.0
+
+    # Time and recording
     final_time = (12.0) * time_period
+    samples_per_period = 32
     time_interval = sample_interval * dt
     n_steps = int(final_time / time_interval)
 
@@ -71,10 +80,15 @@ def run_snake_pit(
         gravitational_acc=gravitational_acc,
         n_snakes=n_snakes,
         time_period=time_period,
+        activation_start_time_nd=activation_start_time_nd,
         wave_length=wave_length,
+        packing_initial_radial_span_ratio=packing_initial_radial_span_ratio,
+        packing_initial_vertical_span_ratio=packing_initial_vertical_span_ratio,
+        samples_per_period=samples_per_period,
         final_sim_time=final_time,
-        dt=dt
+        dt=dt,
     )
+    print(params)
 
     cs = SnakePit(params)
 
@@ -116,13 +130,13 @@ def run_snake_pit(
         primitive_lengths = []
 
         def collect_rod_stats(
-                depths,
-                rods,
-                contact_pair_ids,
-                primitive_pos,
-                primitive_ax,
-                primitive_r,
-                primitive_l,
+            depths,
+            rods,
+            contact_pair_ids,
+            primitive_pos,
+            primitive_ax,
+            primitive_r,
+            primitive_l,
         ):
             collect_statistics_backend_agnostic(depths, rods)
             contact_ids.append(contact_pair_ids)
@@ -142,18 +156,29 @@ def run_snake_pit(
 
     # initial
     collect_stats_from(cs)
-    if False:
+    if True:
         with plt.style.context("ggplot"):
             fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
             ax = plt.axes(projection="3d")  # fig.add_subplot(111)
-            ax.set_xlim(-0.4, 0.4)
-            ax.set_ylim(-0.4, 0.4)
-            ax.set_zlim(0.0, 0.8)
-            ax.set_box_aspect((1, 1, 1))
+            a = np.array([-1.05, 1.05]) * packing_initial_radial_span_ratio * length
+            ax.set_xlim(*a)
+            ax.set_ylim(*a)
+            ax.set_zlim(0.0, packing_initial_vertical_span_ratio * 1.05 * length)
+            ax.set_box_aspect(
+                (
+                    2.0,
+                    2.0,
+                    packing_initial_vertical_span_ratio
+                    / packing_initial_radial_span_ratio,
+                )
+            )
 
-            ax.set_xlabel('X')
-            ax.set_ylabel('Y')
-            ax.set_zlabel('Z')
+            ax.set_xlabel("X")
+            ax.set_ylabel("Y")
+            ax.set_zlabel("Z")
+            # https://stackoverflow.com/a/64849390
+            ax.azim = 0.0  # look from X
+            ax.elev = 0.0  # xy plane matches eye
 
             for r in total_stats.rod_stats:
                 position_of_rod = np.asarray(r.position)

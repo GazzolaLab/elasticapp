@@ -50,9 +50,9 @@ struct SnakePitConfiguration {
                 ec::iterate_over_systems_in(EXEC)));
 
     // use default force model of a linear spring damper
-    auto collision_config =
-        ec::make_collision_configuration(EXEC,      // between each type
-                                         ec::seq);  // across each type (there is only one tpe)
+    auto collision_config = ec::make_collision_configuration(
+        EXEC,      // between each type
+        ec::seq);  // across each type (there is only one tpe)
     auto gravity_config =
         ec::make_gravity_configuration(::elastica::Vec3{0., 0., 0.});
 
@@ -174,6 +174,32 @@ TODO
     static type default_value() { return 1.0; }
   };
 
+  struct activation_start_time_nd {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Non dimensional activation start time"};
+    static type default_value() { return 5.0; }
+  };
+
+  struct packing_initial_vertical_span_ratio {
+    using type = ::elastica::real_t;
+    static constexpr String help = {
+        "Ratio of Vertical span of the initialised packing to snake length"};
+    static type default_value() { return 1.0; }
+  };
+
+  struct packing_initial_radial_span_ratio {
+    using type = ::elastica::real_t;
+    static constexpr String help = {
+        "Ratio of Radial span of the initialised packing to snake length"};
+    static type default_value() { return 1.0; }
+  };
+
+  struct samples_per_period {
+    using type = std::size_t;
+    static constexpr String help = {"Number of samples per time-period"};
+    static type default_value() { return 32UL; }
+  };
+
   struct dt {
     using type = ::elastica::real_t;
     static constexpr String help = {"Time step of simulation"};
@@ -186,11 +212,12 @@ TODO
     static type default_value() { return 10.0 * time_period::default_value(); }
   };
 
-  using Parameters =
-      tmpl::list<n_elements, youngs_modulus, shear_modulus, density, radius,
-                 length, damping, contact_stiffness, contact_damping,
-                 gravitational_acc, n_snakes, time_period, wave_length,
-                 final_sim_time, dt>;
+  using Parameters = tmpl::list<
+      n_elements, youngs_modulus, shear_modulus, density, radius, length,
+      damping, contact_stiffness, contact_damping, gravitational_acc, n_snakes,
+      time_period, activation_start_time_nd, wave_length,
+      packing_initial_vertical_span_ratio, packing_initial_radial_span_ratio,
+      samples_per_period, final_sim_time, dt>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);
@@ -208,6 +235,8 @@ TODO
   using CosseratRodRefs = std::vector<CosseratRodRef>;
 
   ::elastica::real_t final_time;
+  ::elastica::real_t snake_time_period;
+  std::size_t n_samples_per_period;
   CosseratRodRefs cosserat_rod_refs;
 
   using ImposedHalfSpaceRef =

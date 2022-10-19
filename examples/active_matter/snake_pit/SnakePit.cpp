@@ -311,8 +311,12 @@ void SnakePit::setup(InputTypes<This> const& input_parameters) {
   auto random_initialization = [&]() {
     std::mt19937 mt(0);
     // const std::size_t n_layers = 10UL;
-    const elastica::real_t R = base_length;
-    const elastica::real_t H = base_length;
+    const elastica::real_t R =
+        ::elastica::get<packing_initial_radial_span_ratio>(input_parameters) *
+        base_length;
+    const elastica::real_t H =
+        ::elastica::get<packing_initial_vertical_span_ratio>(input_parameters) *
+        base_length;
     std::uniform_real_distribution<::elastica::real_t> dist_r(0.0, R);
     std::uniform_real_distribution<::elastica::real_t> dist_h(base_radius, H);
     // in-plane angle
@@ -384,6 +388,7 @@ void SnakePit::setup(InputTypes<This> const& input_parameters) {
   random_initialization();
 
   const auto T = ::elastica::get<time_period>(input_parameters);
+  snake_time_period = T;
   const auto lambda = ::elastica::get<wave_length>(input_parameters);
 
   // Numbers from pyelastica snake.
@@ -403,9 +408,9 @@ void SnakePit::setup(InputTypes<This> const& input_parameters) {
   activation::Sinusoid wave{omega, wavenumber, phase_shift};
   auto spline_activation(activation::mark_spatial_activation(
       activation::InterpolatingSpline(std::move(X), std::move(Y))));
-  // Start after 8 periods
-  auto ramp(activation::mark_temporal_activation(
-      elastica::make_sin_rampup(5.0 * T, T)));
+  // Start after Non-dimensional time periods
+  auto ramp(activation::mark_temporal_activation(elastica::make_sin_rampup(
+      ::elastica::get<activation_start_time_nd>(input_parameters) * T, T)));
 
   // copy it here (why not?)
   auto forcing_amplitude(activation::multiply(wave, spline_activation, ramp));
@@ -413,6 +418,8 @@ void SnakePit::setup(InputTypes<This> const& input_parameters) {
   auto forcing_func(
       [=, forcing_direction = normal](elastica::real_t s,
                                       elastica::real_t t) -> elastica::Vec3 {
+        // 0.5 is here from legacy reasons : technically there is no need for
+        // a 0.5 here, but keep it around to get the same results.
         return 0.5 * forcing_amplitude(s, t) * forcing_direction;
       });
 
@@ -487,6 +494,7 @@ void SnakePit::setup(InputTypes<This> const& input_parameters) {
 
   // Set the dt value
   final_time = ::elastica::get<final_sim_time>(input_parameters);
+  n_samples_per_period = ::elastica::get<samples_per_period>(input_parameters);
   set_dt(::elastica::get<dt>(input_parameters));
 }
 
@@ -505,9 +513,7 @@ void SnakePit::run() {
   // const ::elastica::real_t final_time(1.0 * time_period::default_value());
   const auto n_steps = static_cast<std::size_t>(final_time / current_dt());
 
-  // Time period is 2,
-  const std::size_t n_steps_in_one_period(elastica::real_t(2.0) / current_dt());
-  constexpr auto n_samples_per_period(32UL);
+  const std::size_t n_steps_in_one_period(snake_time_period / current_dt());
   const std::size_t write_interval(n_steps_in_one_period /
                                    n_samples_per_period);
   ::elastica::io::H5Metadata metadata{};
