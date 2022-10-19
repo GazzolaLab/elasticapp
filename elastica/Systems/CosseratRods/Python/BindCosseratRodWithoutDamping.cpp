@@ -48,8 +48,7 @@ namespace py_bindings {
     using UnwantedVariableTags =
         tmpl::list<::elastica::tags::_DummyElementVector,
                    ::elastica::tags::_DummyElementVector2,
-                   ::elastica::tags::_DummyVoronoiVector,
-                   ::elastica::tags::_DummyMatrix>;
+                   ::elastica::tags::_DummyVoronoiVector>;
 
     {
       using type =
