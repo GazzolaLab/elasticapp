@@ -60,7 +60,7 @@ namespace {
       interface.write_at(time_data);
 
       // check fidelity of file
-      auto group = interface.metadata_file().getGroup("000050");
+      auto group = interface.metadata_file().getGroup("0000000050");
 
       CHECK(group.getLinkType("data") == HighFive::LinkType::External);
 

@@ -56,7 +56,7 @@ namespace elastica {
         //! Character for padding
         char pad = '0';
         //! Length of padding the content with the above character
-        std::uint8_t padding_length = 6U;
+        std::uint8_t padding_length = 10U;
       } format{};
       //! Delimiter
       char delimiter = '_';
