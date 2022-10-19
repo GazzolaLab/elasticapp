@@ -6,11 +6,11 @@ from rich.progress import Progress
 
 
 def animate_snake(
-        total_stats: Stats,
-        video_name: str = "collision.mp4",
-        fps: PositiveInt = 15,
-        frame_skip: PositiveInt = 1,
-        save_figure: bool = False,
+    total_stats: Stats,
+    video_name: str = "collision.mp4",
+    fps: PositiveInt = 15,
+    frame_skip: PositiveInt = 1,
+    save_figure: bool = False,
 ) -> FuncAnimation:  # (time step, x/y/z, node)
     time = np.asarray(total_stats.time)
     step = np.asarray(total_stats.step)
@@ -26,18 +26,20 @@ def animate_snake(
         ax.set_ylim(-0.4, 0.4)
         ax.set_zlim(0.0, 0.8)
         ax.set_box_aspect((1, 1, 1))
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
+        ax.set_xlabel("X")
+        ax.set_ylabel("Y")
+        ax.set_zlabel("Z")
 
         for _ in range(len(total_stats.rod_stats)):
-            rod_lines.append(ax.plot(
-                [],
-                [],
-                [],
-                lw=2.0,
-                solid_capstyle="round",
-            )[0])
+            rod_lines.append(
+                ax.plot(
+                    [],
+                    [],
+                    [],
+                    lw=2.0,
+                    solid_capstyle="round",
+                )[0]
+            )
 
         text_step = ax.text2D(
             0.2,

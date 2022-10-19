@@ -14,9 +14,9 @@ from processing.visualize import run_snake_pit, SnakePit
 )
 @replace_docstring(SnakePit)
 def run_case_study(
-        snakes: int,
-        data: bool,
-        fig: bool,
+    snakes: int,
+    data: bool,
+    fig: bool,
 ):
     return run_snake_pit(snakes, data, fig)
 
