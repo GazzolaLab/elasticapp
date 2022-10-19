@@ -26,7 +26,7 @@
 // global is fine since its a cpp file
 using String = const char* const;
 namespace ec = elastica::configuration;
-using CosseratRod = ::elastica::cosserat_rod::CosseratRod;
+using CosseratRod = ::elastica::cosserat_rod::CosseratRodWithoutDamping;
 using ImposedHalfSpace = ::elastica::collision::ImposedHalfSpacePrimitive;
 
 struct SnakePitConfiguration {
