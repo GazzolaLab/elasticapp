@@ -60,6 +60,15 @@ namespace elastica {
         nodeStack.push(NodeType::StartObject);
       }
 
+      // Emitter's constructores are explicitly deleted
+      //      YAMLOutputArchive(YAMLOutputArchive&& other)
+      //          : OutputArchive<YAMLOutputArchive>(std::move(other)),
+      //            out(other.out),
+      //            nextName(other.nextName),
+      //            emitter(std::move(other.emitter)),
+      //            nameCounter(std::move(other.nameCounter)),
+      //            nodeStack(std::move(other.nodeStack)) {}
+
       ~YAMLOutputArchive() {
         if (nodeStack.top() == NodeType::InObject) {
           emitter << YAML::EndMap;

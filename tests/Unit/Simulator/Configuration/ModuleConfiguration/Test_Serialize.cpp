@@ -28,10 +28,10 @@ namespace {
 
       using Block = int;
       using single_size_types =
-          tmpl::list<RestrictSizeOf<Block>, LooselyRestrictSizeOf<Block>,
+          tmpl::list<RestrictSize<Block>, LooselyRestrictSize<Block>,
                      SerialBelow<Block>, AllSerialBelow,
-                     AcrossBlockTypes<RestrictSizeOf>,
-                     AcrossBlockTypes<LooselyRestrictSizeOf>,
+                     AcrossBlockTypes<RestrictSize>,
+                     AcrossBlockTypes<LooselyRestrictSize>,
                      AcrossBlockTypes<AlwaysNew>, AcrossBlockTypes<AlwaysSame>>;
 
       using Tup = tmpl::as_tuple<single_size_types>;
@@ -61,11 +61,12 @@ namespace {
       using SecondBlock = char;
       using ThirdBlock = float;
 
-      using F = LooselyRestrictSizeOf<FirstBlock>;
-      using S = LooselyRestrictSizeOf<SecondBlock>;
-      using T = RestrictSizeOf<ThirdBlock>;
+      using F = LooselyRestrictSize<FirstBlock>;
+      using S = LooselyRestrictSize<SecondBlock>;
+      using T = RestrictSize<ThirdBlock>;
       auto criterion = CompositeCriteria<F, S, T>(F{100UL}, S{20UL}, T{30UL});
-      auto bad_criterion = CompositeCriteria<F, S, T>(F{50UL}, S{10UL}, T{40UL});
+      auto bad_criterion =
+          CompositeCriteria<F, S, T>(F{50UL}, S{10UL}, T{40UL});
 
       std::stringstream ss;  // any stream can be used
 

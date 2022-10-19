@@ -1077,8 +1077,8 @@ reorganizing your code logic.
         // systems modules
         // the () functions return the dereferenced result which cannot be
         // assigned
-        SystemsModule::blocking_policy_id() =
-            std::make_unique<typename SimTraits::BlockingPolicy>(
+        SystemsModule::blocking_policy() =
+            ::elastica::configuration::virtualize(
                 std::move(traits).blocking_policy());
         SystemsModule::iteration_policy_id() =
             std::make_unique<typename SimTraits::IterationPolicy>(

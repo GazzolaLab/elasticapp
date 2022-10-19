@@ -26,6 +26,8 @@
 //
 #include <algorithm>
 #include <array>
+#include <iomanip>   // setw
+#include <iostream>  // operator <<
 #include <numeric>
 #include <string>
 

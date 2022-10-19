@@ -266,6 +266,6 @@ int main() {
    * documentation of make_blocking_policy
    */
   ::elastica::ignore_unused(
-      ec::make_blocking_policy(ec::RestrictSizeOf<CosseratRod>{50UL},
+      ec::make_blocking_policy(ec::RestrictSize<CosseratRod>{50UL},
                                ec::AlwaysNew<CosseratRodWithoutDamping>{}));
 }

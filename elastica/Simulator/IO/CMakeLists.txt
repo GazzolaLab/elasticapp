@@ -20,6 +20,20 @@ add_subdirectory(H5)
 if (TARGET H5)
     add_library(${LIBRARY}::H5 ALIAS H5)
     LIST(APPEND LIBRARY_SOURCES "H5.hpp")
+    target_link_libraries(
+            ${LIBRARY}
+            INTERFACE
+            H5)
+endif ()
+
+add_subdirectory(YAML)
+if (TARGET YAMLInterface)
+    add_library(${LIBRARY}::YAML ALIAS YAMLInterface)
+    LIST(APPEND LIBRARY_SOURCES "YAML.hpp")
+    target_link_libraries(
+            ${LIBRARY}
+            INTERFACE
+            YAMLInterface)
 endif ()
 
 elastica_target_headers(

@@ -16,6 +16,8 @@
 //******************************************************************************
 // Includes
 //******************************************************************************
+#include "Utilities/AppSupport/Helpers/ParamsHolder.hpp"
+//
 #include "Utilities/AsTaggedTuple.hpp"
 #include "Utilities/Invoke.hpp"
 #include "Utilities/NonCreatable.hpp"
@@ -174,27 +176,29 @@ namespace py_bindings {
     using ValueTypes = typename Initializer<CaseStudy>::ValueTypes;
     //! Parameter (tags) of the case study
     using Parameters = typename Initializer<CaseStudy>::Parameters;
+    //! Data type
+    using Data = decltype(::elastica::params_holder(std::declval<tags_list>()));
     //**************************************************************************
 
     //**************************************************************************
     //! Default constructor
-    Params() : data(){};
+    Params() : data_(){};
+    //! Dataholder constructor
+    explicit Params(Data inputs) : data_(std::move(inputs)) {}
     //! Parameter constructor
-    explicit Params(InputTypes inputs) : data(std::move(inputs)){};
+    explicit Params(InputTypes inputs) : data_(std::move(inputs)){};
     //**************************************************************************
 
     //**************************************************************************
-    /*!\brief Construction from tuple
-     */
-    static auto from_tuple(ValueTypes inputs) -> Params {
-      return Params(cpp17::apply(
-          [](auto... args) { return InputTypes(std::move(args)...); },
-          std::move(inputs)));
-    };
+    //! Data methods
+    auto data() const& noexcept -> typename Data::Data const& {
+      return data_.data;
+    }
+    auto data() & noexcept -> typename Data::Data& { return data_.data; }
     //**************************************************************************
 
     //! parameter data
-    InputTypes data;
+    Data data_;
   };
   //****************************************************************************
 
@@ -203,13 +207,7 @@ namespace py_bindings {
    */
   template <typename CaseStudy>
   std::ostream& operator<<(std::ostream& os, Params<CaseStudy> const& params) {
-    os << "(";
-    tmpl::for_each<typename Params<CaseStudy>::tags_list>([&](auto t) {
-      using T = tmpl::type_from<decltype(t)>;
-      os << pretty_type::name<T>() << ":" << tuples::get<T>(params.data);
-      os << ",";
-    });
-    return os << ")";
+    return os << params.data_; // ParamsHolder has an overloaded <<
   }
   //****************************************************************************
 

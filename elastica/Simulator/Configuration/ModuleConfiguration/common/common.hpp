@@ -19,10 +19,16 @@
 #include "Utilities/CRTP.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Overloader.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace elastica {
 
   namespace configuration {
+
+    //**************************************************************************
+    //! String type
+    using String = const char* const;
+    //**************************************************************************
 
     //==========================================================================
     //
@@ -66,12 +72,20 @@ namespace elastica {
       using CRTP = CRTPHelper<Policy, SingleSizePolicy>;
       //! CRTP methods
       using CRTP::self;
+      //! Size Argument
+      struct Size {
+        using type = std::size_t;
+        static constexpr String help = {"Size parameter of the policy"};
+      };
+      //! List of options
+      using options = tmpl::list<Size>;
       //************************************************************************
 
       //************************************************************************
-      /*!\brief deleted default constructor
+      /*!\brief Default constructor
+       * \note Default constructor is not deleted for options parsing
        */
-      SingleSizePolicy() = delete;
+      SingleSizePolicy() : SingleSizePolicy(0UL) {}
       //************************************************************************
 
       //************************************************************************
@@ -81,20 +95,6 @@ namespace elastica {
        */
       explicit ELASTICA_ALWAYS_INLINE SingleSizePolicy(const std::size_t limit)
           : max_dofs_per_block(limit){};
-      //************************************************************************
-
-      //************************************************************************
-      /*!\brief Copy constructor.
-       */
-      ELASTICA_ALWAYS_INLINE SingleSizePolicy(
-          SingleSizePolicy const&) noexcept = default;
-      //************************************************************************
-
-      //************************************************************************
-      /*!\brief Move constructor.
-       */
-      ELASTICA_ALWAYS_INLINE SingleSizePolicy(SingleSizePolicy&&) noexcept =
-          default;
       //************************************************************************
 
       //************************************************************************
@@ -108,14 +108,18 @@ namespace elastica {
       //**Value methods*********************************************************
       /*!\name Value methods*/
       //@{
-      inline auto value() -> std::size_t { return max_dofs_per_block; }
-      inline auto value() const -> std::size_t { return max_dofs_per_block; }
+      inline auto value() & noexcept -> std::size_t& {
+        return max_dofs_per_block;
+      }
+      inline auto value() const& noexcept -> std::size_t {
+        return max_dofs_per_block;
+      }
       //@}
       //************************************************************************
 
       //**Member variables******************************************************
       //! Maximum dofs before which another block is allocated
-      std::size_t const max_dofs_per_block;
+      std::size_t max_dofs_per_block;
       //************************************************************************
     };
     //**************************************************************************

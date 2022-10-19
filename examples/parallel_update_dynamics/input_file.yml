@@ -1,0 +1,17 @@
+ParallelUpdateDynamicsCaseStudy:
+  Parameters:
+    n_rods: 512
+    n_elements: 16
+    angle_of_inclination: 30
+    length: 1.0
+    dt: 0.000526316
+    n_threads: 1
+    BlockingPolicy:
+      # This can be one of these four types
+      # RestrictSizeAcrossBlockTypes:
+      # LooselyRestrictSizeAcrossBlockTypes:
+      # AlwaysSameAcrossBlockTypes:
+      # AlwaysNewAcrossBlockTypes:
+      LooselyRestrictSizeAcrossBlockTypes:
+        CriterionParameter:
+          Size: 128

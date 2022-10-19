@@ -1,0 +1,20 @@
+AxialStretchingCaseStudyWithBlocking:
+  Parameters:
+    n_elements: 19
+    damping_rate: 22.031241
+    youngs_modulus: 20000.0
+    applied_force: 2.0
+    radius: 0.025
+    length: 1.0
+    rampup_interval: 100.0
+    rampup_profile: linear
+    dt: 0.000526316
+    BlockingPolicy:
+      # This can be one of these four types
+      # RestrictSizeAcrossBlockTypes:
+      # LooselyRestrictSizeAcrossBlockTypes:
+      # AlwaysSameAcrossBlockTypes:
+      # AlwaysNewAcrossBlockTypes:
+      RestrictSizeAcrossBlockTypes:
+        CriterionParameter:
+          Size: 20

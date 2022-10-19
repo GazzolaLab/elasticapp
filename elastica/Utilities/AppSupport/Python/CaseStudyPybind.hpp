@@ -77,7 +77,7 @@ namespace py_bindings {
     // init taking Params argument
     py_bound_case_study.def(py::init([](Params<CaseStudy> const& params) {
                               CaseStudy caseStudy;
-                              caseStudy.setup(params.data);
+                              caseStudy.setup(params.data());
                               return caseStudy;
                             }),
                             "Initializes case-study with its parameters",
@@ -135,7 +135,7 @@ namespace py_bindings {
         [](auto... parameters) {
           // This is the actual function with compile-time fixed signature.
           return [](tmpl::type_from<decltype(parameters)> const&... t) -> P {
-            return P::from_tuple(std::make_tuple(t...));
+            return P(typename P::Data(t...));
           };
         },
         // tuple of tags
@@ -195,9 +195,9 @@ namespace py_bindings {
       using Parameter = tmpl::type_from<decltype(p)>;
       py_bound_case_study_parameters.def_property(
           pretty_type::name<Parameter>().c_str(),
-          +[](type& self) { return ::tuples::get<Parameter>(self.data); },
+          +[](type& self) { return ::tuples::get<Parameter>(self.data()); },
           +[](type& self, typename Parameter::type value) {
-            ::tuples::get<Parameter>(self.data) = value;
+            ::tuples::get<Parameter>(self.data()) = value;
           },
           // This hack is necessary to delay the symbols to python runtime
           std::string(Parameter::help).c_str());
@@ -208,7 +208,7 @@ namespace py_bindings {
           /* Return a tuple that fully encodes the state of the object */
           return tuples::apply(
               [](auto const&... args) { return py::make_tuple(args...); },
-              t.data);
+              t.data());
         },
         [](py::tuple t) {
           static constexpr std::size_t tags_size = type::InputTypes::size();
@@ -216,7 +216,7 @@ namespace py_bindings {
             throw std::runtime_error("Invalid state!");
 
           return index_apply<tags_size>([=](auto... Is) {
-            return type{typename type::InputTypes{
+            return type{typename type::Data{
                 t[Is]
                     .template cast<
                         tmpl::type_from<tmpl::at_c<Parameters, Is>>>()...}};

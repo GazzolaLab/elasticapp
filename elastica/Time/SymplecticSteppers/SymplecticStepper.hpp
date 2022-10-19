@@ -22,7 +22,6 @@
 #include "Time/SymplecticSteppers/Types.hpp"
 ///
 #include "Utilities/Invoke.hpp"
-#include "Utilities/NonCopyable.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace elastica {
@@ -59,7 +58,7 @@ namespace elastica {
        * \see PositionVerlet
        */
       template <class SymplecticAlgorithm>
-      class SymplecticStepper : public NonCopyable {
+      class SymplecticStepper {
        public:
         //**Type definitions****************************************************
         //! The category of the time-stepper
@@ -107,12 +106,6 @@ namespace elastica {
         /*!\brief Default constructor
          */
         SymplecticStepper() = default;
-        //**********************************************************************
-
-        //**********************************************************************
-        /*!\brief Move constructor
-         */
-        SymplecticStepper(SymplecticStepper&&) noexcept = default;
         //**********************************************************************
 
         //**********************************************************************

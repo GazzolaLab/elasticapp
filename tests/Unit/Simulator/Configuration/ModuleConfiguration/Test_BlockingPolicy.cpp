@@ -7,8 +7,11 @@
 
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Configuration/ModuleConfiguration/BlockingPolicy.hpp"
+#include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/Cpp17.hpp"
+//
+#include "Options/ParseOptions.hpp"
 
 namespace {
 
@@ -16,13 +19,13 @@ namespace {
 
   // clang-format off
   ELASTICA_TEST_CASE(
-      "Unit.Simulator.Configuration.ModuleConfiguration.Blocking.RestrictSizeOf",
+      "Unit.Simulator.Configuration.ModuleConfiguration.Blocking.RestrictSize",
       "[Unit][Simulator][Configuration]") {
     // clang-format on
 
     // anything with a valid size
     using Block = std::vector<int>;
-    RestrictSizeOf<Block> restricter{20UL};
+    RestrictSize<Block> restricter{20UL};
 
     Block b(10UL);
     // if size(vec) <, passes
@@ -34,12 +37,12 @@ namespace {
 
   // clang-format off
   ELASTICA_TEST_CASE(
-      "Unit.Simulator.Configuration.ModuleConfiguration.Blocking.LooselyRestrictSizeOf",
+      "Unit.Simulator.Configuration.ModuleConfiguration.Blocking.LooselyRestrictSize",
       "[Unit][Simulator][Configuration]") {
     // clang-format on
     // anything with a valid size
     using Block = std::vector<int>;
-    LooselyRestrictSizeOf<Block> restricter{20UL};
+    LooselyRestrictSize<Block> restricter{20UL};
 
     Block b(10UL);
     // if size(vec) <, passes
@@ -96,10 +99,10 @@ namespace {
 
   // clang-format off
   ELASTICA_TEST_CASE(
-      "Unit.Simulator.Configuration.ModuleConfiguration.Blocking.RestrictSizeOfAcrossBlockTypes",
+      "Unit.Simulator.Configuration.ModuleConfiguration.Blocking.RestrictSizeAcrossBlockTypes",
       "[Unit][Simulator][Configuration]") {
     // clang-format on
-    using Restricter = AcrossBlockTypes<RestrictSizeOf>;
+    using Restricter = AcrossBlockTypes<RestrictSize>;
 
     Restricter restricter{20UL};
 
@@ -120,10 +123,10 @@ namespace {
 
   // clang-format off
   ELASTICA_TEST_CASE(
-      "Unit.Simulator.Configuration.ModuleConfiguration.Blocking.LooselyRestrictSizeOfAcrossBlockTypes",
+      "Unit.Simulator.Configuration.ModuleConfiguration.Blocking.LooselyRestrictSizeAcrossBlockTypes",
       "[Unit][Simulator][Configuration]") {
     // clang-format on
-    using Restricter = AcrossBlockTypes<LooselyRestrictSizeOf>;
+    using Restricter = AcrossBlockTypes<LooselyRestrictSize>;
 
     Restricter restricter{20UL};
 
@@ -525,8 +528,8 @@ namespace {
     // only one unit for each last block
     // using namespace ::elastica::configuration;
     auto blocking_policy = ::elastica::configuration::make_blocking_policy(
-        ::elastica::configuration::RestrictSizeOf<FSBlock>{20UL},
-        ::elastica::configuration::LooselyRestrictSizeOf<SSBlock>{20UL},
+        ::elastica::configuration::RestrictSize<FSBlock>{20UL},
+        ::elastica::configuration::LooselyRestrictSize<SSBlock>{20UL},
         // argument is optional for both of these as they are not used
         ::elastica::configuration::AlwaysSame<TSBlock>{},
         ::elastica::configuration::AlwaysNew<LSBlock>{12UL});
@@ -540,6 +543,151 @@ namespace {
     CHECK(blocking_policy.criterion_(ssBlock, 20UL) == true);
     CHECK(blocking_policy.criterion_(tsBlock, 20UL) == true);
     CHECK(blocking_policy.criterion_(lsBlock, 10UL) == false);
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE(
+      "Unit.Simulator.Configuration.ModuleConfiguration.Blocking.virtualize",
+      "[Unit][Simulator][Configuration]") {
+    // clang-format on
+    struct FirstSystem {};
+    struct SecondSystem {};
+    struct ThirdSystem {};
+
+    using FSBlock = std::vector<FirstSystem>;
+    using SSBlock = std::vector<SecondSystem>;
+    using TSBlock = std::vector<ThirdSystem>;
+
+    auto blocking_policy = ::elastica::configuration::make_blocking_policy(
+        ::elastica::configuration::RestrictSize<FSBlock>{20UL},
+        ::elastica::configuration::LooselyRestrictSize<SSBlock>{20UL},
+        ::elastica::configuration::AlwaysSame<TSBlock>{});
+
+    auto runtime_polymorphic_blocking =
+        ::elastica::configuration::virtualize(blocking_policy);
+
+    // Verify if the current block is included
+    tmpl::for_each<tmpl::list<FSBlock, SSBlock, TSBlock>>([&](auto v) {
+      using Block = tmpl::type_from<decltype(v)>;
+      using Blocks = std::vector<Block>;
+
+      Block first(10UL), second(20UL), third(30UL);
+      Blocks b{first, second, third};
+
+      CHECK(b.size() == 3UL);
+      CHECK(runtime_polymorphic_blocking->get_iterator_to_block(b, 13UL) ==
+            blocking_policy.get_iterator_to_block(b, 13UL));
+      CHECK(runtime_polymorphic_blocking->get_iterator_to_block(b, 20UL) ==
+            blocking_policy.get_iterator_to_block(b, 20UL));
+      CHECK(runtime_polymorphic_blocking->get_iterator_to_block(b, 20UL) ==
+            blocking_policy.get_iterator_to_block(b, 20UL));
+    });
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE(
+      "Unit.Simulator.Configuration.ModuleConfiguration.Blocking.runtime_polymorphism",
+      "[Unit][Simulator][Configuration]") {
+    // clang-format on
+    struct FirstSystem {};
+    struct SecondSystem {};
+    struct ThirdSystem {};
+
+    using FSBlock = std::vector<FirstSystem>;
+    using SSBlock = std::vector<SecondSystem>;
+    using TSBlock = std::vector<ThirdSystem>;
+
+    // Always new policies here so that the failures inside check below are
+    // immediate and obvious
+    auto blocking_policy = ::elastica::configuration::make_blocking_policy(
+        ::elastica::configuration::AlwaysNew<FSBlock>{20UL},
+        ::elastica::configuration::AlwaysNew<SSBlock>{20UL},
+        ::elastica::configuration::AlwaysNew<TSBlock>{20UL});
+
+    // already tested
+    auto runtime_polymorphic_blocking =
+        ::elastica::configuration::virtualize(blocking_policy);
+
+    // The size parameter cannot be small, else it tries to create a new block
+    // everytime
+    auto const another_policy = ::elastica::configuration::make_blocking_policy(
+        ::elastica::configuration::RestrictSizeAcrossBlockTypes{30UL});
+
+    auto another_runtime =
+        ::elastica::configuration::virtualize(another_policy);
+    ::elastica::ignore_unused(another_runtime);
+
+    runtime_polymorphic_blocking = ::elastica::configuration::virtualize<
+        typename decltype(runtime_polymorphic_blocking)::element_type::
+            registrars>(another_policy);
+
+    tmpl::for_each<tmpl::list<FSBlock, SSBlock, TSBlock>>([&](auto v) {
+      using Block = tmpl::type_from<decltype(v)>;
+      using Blocks = std::vector<Block>;
+
+      Block first(10UL), second(20UL), third(30UL);
+      Blocks b{first, second, third};
+
+      CHECK(b.size() == 3UL);
+
+      CHECK(runtime_polymorphic_blocking->get_iterator_to_block(b, 13UL) ==
+            another_policy.get_iterator_to_block(b, 13UL));
+      CHECK(runtime_polymorphic_blocking->get_iterator_to_block(b, 13UL) !=
+            blocking_policy.get_iterator_to_block(b, 13UL));
+
+      CHECK(runtime_polymorphic_blocking->get_iterator_to_block(b, 20UL) ==
+            another_policy.get_iterator_to_block(b, 20UL));
+      CHECK(runtime_polymorphic_blocking->get_iterator_to_block(b, 20UL) !=
+            blocking_policy.get_iterator_to_block(b, 20UL));
+
+      // 25 < 30, the size of the other policy
+      CHECK(runtime_polymorphic_blocking->get_iterator_to_block(b, 25UL) ==
+            another_policy.get_iterator_to_block(b, 25UL));
+      CHECK(runtime_polymorphic_blocking->get_iterator_to_block(b, 25UL) !=
+            blocking_policy.get_iterator_to_block(b, 25UL));
+    });
+  }
+
+  struct OptionType {
+    using element_type = ::elastica::configuration::detail::BlockingPolicyBase<
+        ::elastica::configuration::detail::BlockingPolicyRegistrars>;
+    using type = std::unique_ptr<element_type>;
+    static constexpr Options::String help = {"The type of BlockingPolicy"};
+    // static std::unique_ptr<OptionTest> default_value() noexcept;
+  };
+
+  // clang-format off
+  ELASTICA_TEST_CASE(
+      "Unit.Simulator.Configuration.ModuleConfiguration.Blocking.Options",
+      "[Unit][Simulator][Configuration]") {
+    // clang-format on
+
+    auto get_name = [](auto* result) {
+      return call_with_dynamic_type<
+          std::string, typename OptionType::element_type::creatable_classes>(
+          result, [](auto* const blocking_policy) {
+            return pretty_type::name<decltype(blocking_policy->criterion_)>();
+          });
+    };
+
+    auto check_parsing = [=](std::string const& eman) {
+      Options::Parser<tmpl::list<OptionType>> opts("");
+      std::stringstream ss;
+      // clang-format off
+      ss << "OptionType:\n"
+            "  " << eman << ":\n"
+            "    CriterionParameter:\n"
+            "      Size: 20\n";
+      // clang-format on
+      opts.parse(ss.str());
+      auto a = opts.get<OptionType>();
+      CHECK(get_name(a.get()) == eman);
+    };
+
+    check_parsing("RestrictSizeAcrossBlockTypes");
+    check_parsing("LooselyRestrictSizeAcrossBlockTypes");
+    check_parsing("AlwaysSameAcrossBlockTypes");
+    check_parsing("AlwaysNewAcrossBlockTypes");
   }
 
 }  // namespace

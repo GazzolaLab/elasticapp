@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "ElasticappSweep"
+version = "0.0.1"
+description = "Parameter sweeping tool for elastica++ optimization."
+authors = ["Seung Hyun Kim <skim449@illinois.edu>"]
+packages=[{include="ElasticappSweep", from="src"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+ray = {extras = ["tune"], version = "1.13.0"}
+numpy = "^1.23.2"
+matplotlib = "^3.5.3"
+seaborn = "^0.11.2"
+jupyter = "^1.0.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.1.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.8"]
+build-backend = "poetry.core.masonry.api"

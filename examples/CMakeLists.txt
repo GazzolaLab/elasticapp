@@ -32,3 +32,9 @@ add_subdirectory(tutorial_casestudy_setup)
 if (IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/local")
     add_subdirectory(local)
 endif ()
+if (IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/parallel_update_dynamics")
+    add_subdirectory(parallel_update_dynamics)
+endif ()
+
+
+add_subdirectory(parallel_butterfly)

@@ -22,8 +22,8 @@
 #include <elastica/Utilities/DefineTypes.h>
 #include <elastica/Utilities/TMPL.hpp>
 //
-#include <tuple>  // make_tuple
-#include <string> // ramp
+#include <string>  // ramp
+#include <tuple>   // make_tuple
 
 // global is fine since its a cpp file
 using String = const char* const;
@@ -158,7 +158,13 @@ oscillations enables comparison with theory.
   }
 
   AxialStretchingCaseStudy() = default;
+  // Copy constructors are required for the options driver to work
+  AxialStretchingCaseStudy(AxialStretchingCaseStudy const&) = default;
   AxialStretchingCaseStudy(AxialStretchingCaseStudy&&) noexcept = default;
+  AxialStretchingCaseStudy& operator=(AxialStretchingCaseStudy const&) =
+      default;
+  AxialStretchingCaseStudy& operator=(AxialStretchingCaseStudy&&) noexcept =
+      default;
 
   decltype(Configuration::make_time_stepper()) time_stepper =
       Configuration::make_time_stepper();

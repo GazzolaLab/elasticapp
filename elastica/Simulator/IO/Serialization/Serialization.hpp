@@ -90,6 +90,12 @@ namespace elastica {
       OutputArchive() = default;
       //************************************************************************
 
+      //************************************************************************
+      /*!\brief Move constructor for the OutputArchive class.
+       */
+      OutputArchive(OutputArchive&&) noexcept = default;
+      //************************************************************************
+
       //@}
       //************************************************************************
 
@@ -219,6 +225,12 @@ namespace elastica {
       /*!\brief Default Constructor for the InputArchive class.
        */
       InputArchive() = default;
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Move constructor for the InputArchive class.
+       */
+      InputArchive(InputArchive&&) noexcept = default;
       //************************************************************************
 
       //@}

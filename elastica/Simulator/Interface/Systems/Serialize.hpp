@@ -60,7 +60,8 @@ namespace elastica {
         }
 
         // 1. save the policies blocking first
-        ar(systems_module.blocking_policy(), systems_module.iteration_policy());
+        ar(*systems_module.blocking_policy());
+        ar(systems_module.iteration_policy());
         // 2. save systems data
         ar(systems_module.get_system_collection_container());
       }
@@ -70,7 +71,8 @@ namespace elastica {
         // 0. save the n_systems first
         ar(systems_module.n_total_systems());
         // 1. save the policies blocking first
-        ar(systems_module.blocking_policy(), systems_module.iteration_policy());
+        ar(*systems_module.blocking_policy());
+        ar(systems_module.iteration_policy());
         // 2. save systems data
         ar(systems_module.get_system_collection_container());
       }

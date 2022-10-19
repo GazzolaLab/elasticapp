@@ -172,7 +172,7 @@ namespace elastica {
     //@}
     //**************************************************************************
 
-   protected:
+   public:
     //**************************************************************************
     /*!\name Internal inteface methods */
     //@{
@@ -209,19 +209,39 @@ namespace elastica {
     //**************************************************************************
     /*!\brief Gets the case-study simulation time-step
      */
-    inline auto get_dt() -> TimeDelta& { return dt_; }
+    inline auto get_dt() & -> TimeDelta& { return dt_; }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Gets the case-study simulation time-step
+     */
+    inline auto get_dt() const& -> TimeDelta const& { return dt_; }
     //**************************************************************************
 
     //**************************************************************************
     /*!\brief Gets the case-study simulation time
      */
-    inline auto get_current_time() -> Time& { return time_; };
+    inline auto get_current_time() & -> Time& { return time_; };
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Gets the case-study simulation time
+     */
+    inline auto get_current_time() const& -> Time const& { return time_; };
     //**************************************************************************
 
     //**************************************************************************
     /*!\brief Gets the case-study iteration
      */
-    inline auto get_current_iteration() -> TimeStepID& {
+    inline auto get_current_iteration() & -> TimeStepID& {
+      return current_iter_;
+    };
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Gets the case-study iteration
+     */
+    inline auto get_current_iteration() const& -> TimeStepID const& {
       return current_iter_;
     };
     //**************************************************************************
@@ -229,6 +249,7 @@ namespace elastica {
     //@}
     //**************************************************************************
 
+   protected:
     //**************************************************************************
     /*!\brief Default constructor of the CaseStudyInterface class.
      */

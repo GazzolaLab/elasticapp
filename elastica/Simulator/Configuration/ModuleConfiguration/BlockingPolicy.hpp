@@ -22,7 +22,11 @@
 
 #include "Simulator/Configuration/ModuleConfiguration/Types.hpp"
 #include "Simulator/Configuration/ModuleConfiguration/common/common.hpp"
+//
+#include "Utilities/FakeVirtual.hpp"
+#include "Utilities/Registration.hpp"
 #include "Utilities/Size.hpp"
+#include "Utilities/TMPL.hpp"
 
 //==============================================================================
 //
@@ -45,11 +49,98 @@ namespace elastica {
 
   namespace configuration {
 
+    namespace detail {
+
+      //************************************************************************
+      /*! \cond ELASTICA_INTERNAL */
+      /*!\brief Abstract class for storing blocking policies within \elastica
+       * \ingroup blocking
+       *
+       * \details
+       * ForcingBase is an abstract class to access blocking during
+       * runtime in \elastica.
+       *
+       * \tparam Registrars Registration parameter
+       */
+      template <typename BlockingPolicyRegistrars>
+      class BlockingPolicyBase {
+       public:
+        //**********************************************************************
+        //! Regisrars
+        using registrars = BlockingPolicyRegistrars;
+        //! All creatable (and callable) classes
+        using creatable_classes =
+            Registration::registrants<BlockingPolicyRegistrars>;
+        //**********************************************************************
+
+       protected:
+        //**Constructors********************************************************
+        /*!\name Constructors */
+        //@{
+
+        //**********************************************************************
+        /*!\brief The default constructor.
+         */
+        BlockingPolicyBase() noexcept = default;
+        //**********************************************************************
+
+        //@}
+        //**********************************************************************
+
+       public:
+        //**Destructor**********************************************************
+        /*!\name Destructor */
+        //@{
+        //**********************************************************************
+        /*!\brief Virtual destructor
+         */
+        virtual ~BlockingPolicyBase() = default;
+        //@}
+        //**********************************************************************
+
+        //**Blocking functions**************************************************
+        /*!\name Blocking functions */
+        //@{
+
+        //**********************************************************************
+        /*!\brief Gets an iterator to a block, onto which we add new systems to
+         *
+         * \param collection The collection of blocks::Block
+         * \param new_dofs The degrees of freedom of the new block to be added
+         * \return Iterator to a block element in \param collection
+         */
+        template <typename T>
+        auto get_iterator_to_block(std::vector<T>& collection,
+                                   std::size_t new_dofs) const {
+          return call_with_dynamic_type<typename std::vector<T>::iterator,
+                                        creatable_classes>(
+              this, [&collection, new_dofs](auto* const blocking_policy) {
+                return blocking_policy->get_iterator_to_block(collection,
+                                                              new_dofs);
+              });
+        }
+        //**********************************************************************
+        //@}
+        //**********************************************************************
+      };
+      /*! \endcond */
+      //************************************************************************
+
+    }  // namespace detail
+
     //==========================================================================
     //
     //  CLASS DEFINITION
     //
     //==========================================================================
+
+    namespace Registrars {
+      /// Registers the `LinearSolver::Serial::ExplicitInverse` linear solver
+      template <typename Criterion>
+      using BlockingPolicy =
+          Registration::Registrar<::elastica::configuration::BlockingPolicy,
+                                  Criterion>;
+    }  // namespace Registrars
 
     //**************************************************************************
     /*!\brief Policy class for blocking systems
@@ -57,18 +148,43 @@ namespace elastica {
      *
      * \details
      * BlockingPolicy is the policy class to determine how systems added to an
-     * \elastica simulator are to be distributed in blocks. Its intended use is
-     * as a template parameter in configuration::SystemsConfiguration.
+     * \elastica simulator are to be distributed in blocks. Its intended use
+     * is as a template parameter in configuration::SystemsConfiguration.
      *
      * \tparam Criterion_ The criterion used to select a new block
      *
      * \see make_blocking_policy() for idiomatic construction
      */
-    template <typename Criterion_>
-    struct BlockingPolicy {
+    template <typename Criterion_,
+              typename Registrars =
+                  tmpl::list<Registrars::BlockingPolicy<Criterion_>>>
+    struct BlockingPolicy : public detail::BlockingPolicyBase<Registrars> {
       //**Type definitions******************************************************
       //! Criterion type
       using Criterion = Criterion_;
+      //! Criteria argument
+      struct CriterionParameter {
+        using type = Criterion;
+        static constexpr String help = {"Policy criteria parameter"};
+      };
+      //! List of options
+      using options = tmpl::list<CriterionParameter>;
+      //! Help string
+      static constexpr String help = {"Blocking policy"};
+      //************************************************************************
+
+      //************************************************************************
+      static std::string name() {
+        // Ideally should use pretty_type::name<> but I didn't want to impose
+        // another dependency
+        return Criterion::name();
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Default constructor (used in options)
+       */
+      explicit BlockingPolicy() : criterion_() {}
       //************************************************************************
 
       //************************************************************************
@@ -158,9 +274,9 @@ The vector type passed in does not meet requirements of a Block!
      *
      * \see make_overloader
      */
-    template <class Criteria, typename C = Criteria>
+    template <class Criteria>
     constexpr decltype(auto) make_blocking_policy(Criteria criteria) {
-      using RT = BlockingPolicy<C>;
+      using RT = BlockingPolicy<Criteria>;
       return RT{std::move(criteria)};
     }
     /*! \endcond */
@@ -171,28 +287,26 @@ The vector type passed in does not meet requirements of a Block!
      * \ingroup blocking
      *
      * \details
-     * RestrictSizeOf restricts a block to have equal or slightly less than some
-     * maximum degrees of freedom
+     * RestrictSize restricts a block to have equal or slightly less than
+     * some maximum degrees of freedom
      *
      * \tparam Block A blocks::Block
      */
     template <typename Block>
-    struct RestrictSizeOf : public SingleSizePolicy<RestrictSizeOf<Block>> {
+    struct RestrictSize : public SingleSizePolicy<RestrictSize<Block>> {
       //**Type definitions******************************************************
       //! This type
-      using This = RestrictSizeOf<Block>;
+      using This = RestrictSize<Block>;
       //! Parent type
       using Parent = SingleSizePolicy<This>;
       //! Inherit value
       using Parent::value;
+      //! Inherit constructors
+      using Parent::Parent;
       //************************************************************************
 
       //************************************************************************
-      /*!\brief Policy constructor.
-       *
-       * \param limit Max size per block
-       */
-      explicit inline RestrictSizeOf(const std::size_t limit) : Parent(limit){};
+      static std::string name() { return "RestrictSize"; }
       //************************************************************************
 
       //************************************************************************
@@ -216,30 +330,28 @@ The vector type passed in does not meet requirements of a Block!
      * \ingroup blocking
      *
      * \details
-     * LooselyRestrictSizeOf loosely restricts a block to have equal or slightly
-     * more than some maximum degrees of freedom
+     * LooselyRestrictSizeOf loosely restricts a block to have equal or
+     * slightly more than some maximum degrees of freedom
      *
      * \tparam Block A blocks::Block
      */
     template <typename Block>
-    struct LooselyRestrictSizeOf
-        : public SingleSizePolicy<LooselyRestrictSizeOf<Block>> {
-      //**Type definitions******************************************************
+    struct LooselyRestrictSize
+        : public SingleSizePolicy<LooselyRestrictSize<Block>> {
+      //**Type
+      // definitions******************************************************
       //! This type
-      using This = LooselyRestrictSizeOf<Block>;
+      using This = LooselyRestrictSize<Block>;
       //! Parent type
       using Parent = SingleSizePolicy<This>;
       //! Inherit value
       using Parent::value;
+      //! Inherit constructors
+      using Parent::Parent;
       //************************************************************************
 
       //************************************************************************
-      /*!\brief Policy constructor.
-       *
-       * \param limit Max size per block
-       */
-      explicit inline LooselyRestrictSizeOf(const std::size_t limit)
-          : Parent(limit){};
+      static std::string name() { return "LooselyRestrictSize"; }
       //************************************************************************
 
       //************************************************************************
@@ -270,11 +382,21 @@ The vector type passed in does not meet requirements of a Block!
     template <typename Block>
     struct AlwaysNew {
       //************************************************************************
+      /*!\brief Default constructor.
+       */
+      explicit inline AlwaysNew(){};
+      //************************************************************************
+
+      //************************************************************************
       /*!\brief Policy constructor.
        *
        * \param limit Max size per block
        */
-      explicit inline AlwaysNew(const std::size_t = 0UL){};
+      explicit inline AlwaysNew(const std::size_t){};
+      //************************************************************************
+
+      //************************************************************************
+      static std::string name() { return "AlwaysNew"; }
       //************************************************************************
 
       //************************************************************************
@@ -305,11 +427,21 @@ The vector type passed in does not meet requirements of a Block!
     template <typename Block>
     struct AlwaysSame {
       //************************************************************************
+      /*!\brief Default constructor.
+       */
+      explicit inline AlwaysSame(){};
+      //************************************************************************
+
+      //************************************************************************
       /*!\brief Policy constructor.
        *
        * \param limit Max size per block, can be skipped
        */
-      explicit inline AlwaysSame(const std::size_t = 0UL){};
+      explicit inline AlwaysSame(const std::size_t){};
+      //************************************************************************
+
+      //************************************************************************
+      static std::string name() { return "AlwaysSame"; }
       //************************************************************************
 
       //************************************************************************
@@ -332,8 +464,8 @@ The vector type passed in does not meet requirements of a Block!
      * \ingroup blocking
      *
      * \details
-     * AcrossBlockTypes applies a policy template `SizeBasedRestriction` across
-     * all blocks within a simulator.
+     * AcrossBlockTypes applies a policy template `SizeBasedRestriction`
+     * across all blocks within a simulator.
      *
      * \tparam SizeBasedRestriction Policy template restricting blocks
      */
@@ -347,15 +479,16 @@ The vector type passed in does not meet requirements of a Block!
       using Parent = SingleSizePolicy<This>;
       //! Inherit value
       using Parent::value;
+      //! Inherit constructors
+      using Parent::Parent;
+      //! Help string for block types
+      static constexpr String help = {"Policy across block types"};
       //************************************************************************
 
       //************************************************************************
-      /*!\brief Policy constructor.
-       *
-       * \param limit Max size per block
-       */
-      explicit inline AcrossBlockTypes(const std::size_t limit)
-          : Parent(limit){};
+      static std::string name() {
+        return SizeBasedRestriction<int>::name() + "AcrossBlockTypes";
+      }
       //************************************************************************
 
       //************************************************************************
@@ -387,7 +520,7 @@ The vector type passed in does not meet requirements of a Block!
      *
      * \see RestrictSizeOf
      */
-    using RestrictSizeAcrossBlockTypes = AcrossBlockTypes<RestrictSizeOf>;
+    using RestrictSizeAcrossBlockTypes = AcrossBlockTypes<RestrictSize>;
     //**************************************************************************
 
     //**************************************************************************
@@ -399,14 +532,13 @@ The vector type passed in does not meet requirements of a Block!
     //**************************************************************************
 
     //**************************************************************************
-    /*!\brief Criterion for loosely restricting size to a maximum value, across
-     * all block types
-     * \ingroup blocking
+    /*!\brief Criterion for loosely restricting size to a maximum value,
+     * across all block types \ingroup blocking
      *
      * \see LooselyRestrictSizeOf
      */
     using LooselyRestrictSizeAcrossBlockTypes =
-        AcrossBlockTypes<LooselyRestrictSizeOf>;
+        AcrossBlockTypes<LooselyRestrictSize>;
     //**************************************************************************
 
     //**************************************************************************
@@ -418,8 +550,8 @@ The vector type passed in does not meet requirements of a Block!
     //**************************************************************************
 
     //**************************************************************************
-    /*!\brief Criterion for always requesting a new block across all block types
-     * \ingroup blocking
+    /*!\brief Criterion for always requesting a new block across all block
+     * types \ingroup blocking
      *
      * \see AlwaysNew
      */
@@ -450,6 +582,55 @@ The vector type passed in does not meet requirements of a Block!
      */
     using AlwaysSameAcrossBlockTypesPolicy =
         BlockingPolicy<AlwaysSameAcrossBlockTypes>;
+    //**************************************************************************
+
+    namespace detail {
+      //************************************************************************
+      using BlockingPolicyRegistrars = tmpl::list<
+          Registrars::BlockingPolicy<RestrictSizeAcrossBlockTypes>,
+          Registrars::BlockingPolicy<LooselyRestrictSizeAcrossBlockTypes>,
+          Registrars::BlockingPolicy<AlwaysNewAcrossBlockTypes>,
+          Registrars::BlockingPolicy<AlwaysSameAcrossBlockTypes>>;
+      //************************************************************************
+
+      template <typename SrcRegistrars, typename TargetRegistrars>
+      static constexpr bool contained =
+          (tmpl::size<
+               tmpl::list_difference<SrcRegistrars, TargetRegistrars>>::value ==
+           0U);
+
+    }  // namespace detail
+
+    //**************************************************************************
+    /*!\brief Make blocking policy to be runtime polymorphic using registrars
+     * \ingroup blocking
+     */
+    template <typename Registrars, class C, typename R>
+    auto virtualize(BlockingPolicy<C, R> policy)
+        -> std::unique_ptr<detail::BlockingPolicyBase<Registrars>> {
+      // policy registrars should be a subset of pointer registrars
+      // so {policy} - {pointer} = null set, whose size is always zero
+      static_assert(detail::contained<R, Registrars>,
+                    "Policy to be assigned needs to be registered by the "
+                    "Registrar mechanism!");
+      return std::make_unique<BlockingPolicy<C, Registrars>>(
+          std::move(policy.criterion_));
+    }
+    //**************************************************************************
+
+    //**************************************************************************
+    /*!\brief Make blocking policy to be runtime polymorphic using registrars
+     * \ingroup blocking
+     */
+    template <class C, typename R>
+    auto virtualize(BlockingPolicy<C, R> policy) {
+      // append if it does not exist
+      using registrars = tmpl::conditional_t<
+          detail::contained<R, detail::BlockingPolicyRegistrars>,
+          detail::BlockingPolicyRegistrars,
+          tmpl::append<R, detail::BlockingPolicyRegistrars>>;
+      return virtualize<registrars>(std::move(policy));
+    }
     //**************************************************************************
 
   }  // namespace configuration

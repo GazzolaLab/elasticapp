@@ -7,4 +7,9 @@ elastica_target_headers(_elastica_python_support
         HEADERS
         CaseStudyPybind.hpp
         PythonBindingHelpers.hpp)
-target_link_libraries(_elastica_python_support INTERFACE Utilities _elastica_case_study _elastica_case_study_interface)
+target_link_libraries(_elastica_python_support
+        INTERFACE
+        AppSupportHelpers
+        Utilities
+        _elastica_case_study
+        _elastica_case_study_interface)

@@ -1,0 +1,17 @@
+ParallelButterflyNoSyncCaseStudy:
+  Parameters:
+    n_rods: 20
+    n_elements: 16
+    angle_of_inclination: 30
+    length: 1.0
+    dt: 0.000526316
+    n_threads: 4
+    BlockingPolicy:
+      # This can be one of these four types
+      # RestrictSizeAcrossBlockTypes:
+      # LooselyRestrictSizeAcrossBlockTypes:
+      # AlwaysSameAcrossBlockTypes:
+      # AlwaysNewAcrossBlockTypes:
+      RestrictSizeAcrossBlockTypes:
+        CriterionParameter:
+          Size: 20

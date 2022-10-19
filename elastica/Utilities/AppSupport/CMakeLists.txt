@@ -30,3 +30,4 @@ target_link_libraries(_elastica_standalone_support INTERFACE Utilities _elastica
 # pybindings
 add_subdirectory(Helpers)
 add_subdirectory(Python)
+add_subdirectory(OptionsParser)

@@ -149,6 +149,10 @@ namespace elastica {
           typename SimTraits::ListOfAdmissibleSystemCollections;
       //! Policy type used for determining blocks
       using BlockingPolicy = typename SimTraits::BlockingPolicy;
+      //! Virtualized type of blocking policy
+      using RuntimeBlockingPolicy =
+          decltype(::elastica::configuration::virtualize(
+              std::declval<BlockingPolicy>()));
       //! Policy type used for determining iteration over and across systems
       using IterationPolicy = typename SimTraits::IterationPolicy;
       //************************************************************************
@@ -765,27 +769,23 @@ namespace elastica {
       //**Utility methods*******************************************************
       /*!\name Utility methods*/
       //@{
-     protected:
+     public:
       //************************************************************************
-      /*!\brief Access to the blocking, useful for serialization
+      /*!\brief Access to the blocking policy
+       *
+       * \note Stealing resources from the return type using std::move() will
+       * result in undefined behavior
        */
-      inline auto blocking_policy() const& noexcept -> BlockingPolicy const& {
-        return *blocking_policy_;
+      inline auto blocking_policy() & noexcept -> RuntimeBlockingPolicy& {
+        return blocking_policy_;
       }
-      inline auto blocking_policy() & noexcept -> BlockingPolicy /*const*/& {
-        return *blocking_policy_;
-      }
-      //************************************************************************
-
-      //************************************************************************
-      /*!\brief Sets the blocking policy, useful for initialization
-       */
-      inline auto blocking_policy_id() & noexcept
-          -> std::unique_ptr<BlockingPolicy /*const*/>& {
+      inline auto blocking_policy() const& noexcept
+          -> RuntimeBlockingPolicy const& {
         return blocking_policy_;
       }
       //************************************************************************
 
+     protected:
       //************************************************************************
       /*!\brief Access to the iteration, useful for serialization
        */
@@ -797,6 +797,7 @@ namespace elastica {
       }
       //************************************************************************
 
+     public:
       //************************************************************************
       /*!\brief Sets the iteration policy, useful for initialization
        */
@@ -901,7 +902,7 @@ the above type-list, using SystemsConfiguration.
       inline auto emplace_back_impl(Initializer&& initializer) {
         using Key = as_block<SystemPlugin>;
         auto& system_block_container = get_system_collection_container<Key>();
-        auto system_block_it = blocking_policy().get_iterator_to_block(
+        auto system_block_it = blocking_policy_->get_iterator_to_block(
             system_block_container,
             ::elastica::size(std::forward<Initializer>(initializer)));
 
@@ -1024,7 +1025,7 @@ the above type-list, using SystemsConfiguration.
       //// not marked const because we need serialization to work here and
       //// load up values
       //! Handle to blocking policy, initialized downstream!!
-      std::unique_ptr<BlockingPolicy /*const*/> blocking_policy_;
+      RuntimeBlockingPolicy blocking_policy_;
       //! Handle to iteration policy, initialized downstream!!
       std::unique_ptr<IterationPolicy /*const*/> iteration_policy_;
       //************************************************************************

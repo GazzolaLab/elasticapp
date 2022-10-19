@@ -26,7 +26,7 @@ namespace elastica {
     //**************************************************************************
     /*! \cond ELASTICA_INTERNAL */
     /// details, to nclude exexcution?
-    template <typename Criterion>
+    template <typename Criterion, typename Registrars>
     struct BlockingPolicy;
     template <typename ExecutionPolicyOverSystemTypes,
               typename ExecutionPolicyForEachSystemType, typename CriteriaIfAny>

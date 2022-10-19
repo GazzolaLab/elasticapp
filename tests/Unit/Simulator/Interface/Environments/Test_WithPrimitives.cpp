@@ -239,9 +239,8 @@ namespace mock {
                   std::tuple<This*, Traits const&>(this, traits)))),
           ////////////  This piece of code is copy-pasted yo
           is_final(arg_is_final) {
-      P::blocking_policy_id() =
-          std::make_unique<typename Traits::BlockingPolicy>(
-              std::move(traits).blocking_policy());
+      P::blocking_policy() = ::elastica::configuration::virtualize(
+          std::move(traits).blocking_policy());
       P::iteration_policy_id() =
           std::make_unique<typename Traits::IterationPolicy>(
               std::move(traits).iteration_policy());

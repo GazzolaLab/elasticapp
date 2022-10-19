@@ -219,9 +219,8 @@ namespace mock {
                   std::make_tuple(this, std::move(traits))))),
           ////////////  This piece of code is copy-pasted yo
           is_final(arg_is_final) {
-      P::blocking_policy_id() =
-          std::make_unique<typename Traits::BlockingPolicy>(
-              std::move(traits).blocking_policy());
+      P::blocking_policy() = ::elastica::configuration::virtualize(
+          std::move(traits).blocking_policy());
       P::iteration_policy_id() =
           std::make_unique<typename Traits::IterationPolicy>(
               std::move(traits).iteration_policy());
@@ -338,16 +337,19 @@ namespace elastica {
 
 namespace {
 
+  auto iteration_policy_for_testing(std::size_t parameter) {
+    return make_iteration_policy(iterate_across_system_types_in(seq),
+                                 // for testing iteration policy
+                                 iterate_over_systems_in(hybrid),
+                                 AllSerialBelow(parameter));
+  }
+
   template <typename ListOfSystems, typename Arg>
   inline decltype(auto) make_systems_simulator(Arg&& arg) {
     auto make_config = [&arg]() {
       return ::mock::make_systems_configuration<ListOfSystems>(
           // this does not matter
-          std::forward<Arg>(arg),
-          make_iteration_policy(iterate_across_system_types_in(seq),
-                                // for testing iteration policy
-                                iterate_over_systems_in(hybrid),
-                                AllSerialBelow(500UL)));
+          std::forward<Arg>(arg), iteration_policy_for_testing(500UL));
     };
     auto config = make_config();
     //
@@ -622,8 +624,8 @@ namespace {
     auto sim = make_systems_simulator<ListOfSystemPlugins>(
         // check if push back works in accordance with the blocking policy
         make_blocking_policy(
-            LooselyRestrictSizeOf<ECBlock>{2 * n_elements},
-            LooselyRestrictSizeOf<ECNamedBlock>{n_elements - 1UL}));
+            LooselyRestrictSize<ECBlock>{2 * n_elements},
+            LooselyRestrictSize<ECNamedBlock>{n_elements - 1UL}));
 
     CHECK(sim.template get_system_collection_container<ECBlock>().empty());
 
@@ -682,6 +684,54 @@ namespace {
     test_emplace_back_by_LooselyRestrictSizeAcrossBlockTypes();
     test_emplace_back_by_RestrictSizeAcrossBlockTypes();
     test_emplace_back_by_LooselyRestrictCustomizedToBlockTypes();
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Systems.Module.blocking_policy",
+                     "[Unit][Simulator][Interface][Systems]") {
+    // clang-format on
+    using ListOfSystemPlugins = tmpl::list<ECPlugin, ECNamedPlugin>;
+    auto sim = make_systems_simulator<ListOfSystemPlugins>(
+        make_blocking_policy(LooselyRestrictSizeAcrossBlockTypes{20UL}));
+    CHECK(sim.blocking_policy() != nullptr);
+    SECTION("same policy but different parameter") {
+      auto policy_with_higher_threshold =
+          make_blocking_policy(LooselyRestrictSizeAcrossBlockTypes{40UL});
+      // Don't need to set a registrar here since
+      // LooselyRestrictSizeAcrossBlockTypes is in the default list
+      sim.blocking_policy() = ::elastica::configuration::virtualize(
+          std::move(policy_with_higher_threshold));
+    }
+    SECTION("different policy") {
+      auto one = make_blocking_policy(RestrictSizeAcrossBlockTypes{40UL});
+      sim.blocking_policy() =
+          ::elastica::configuration::virtualize(std::move(one));
+
+      auto two = make_blocking_policy(AlwaysSameAcrossBlockTypes{40UL});
+      sim.blocking_policy() =
+          ::elastica::configuration::virtualize(std::move(two));
+
+      auto three = make_blocking_policy(AlwaysNewAcrossBlockTypes{40UL});
+      sim.blocking_policy() =
+          ::elastica::configuration::virtualize(std::move(three));
+    }
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE("Unit.Simulator.Interface.Systems.Module.iteration_policy_id",
+                     "[Unit][Simulator][Interface][Systems]") {
+    // clang-format on
+    using ListOfSystemPlugins = tmpl::list<ECPlugin, ECNamedPlugin>;
+    {
+      auto sim = make_systems_simulator<ListOfSystemPlugins>(
+          make_blocking_policy(LooselyRestrictSizeAcrossBlockTypes{20UL}));
+      CHECK(sim.iteration_policy_id() != nullptr);
+
+      auto policy_with_lower_threshold = iteration_policy_for_testing(100UL);
+      sim.iteration_policy_id() =
+          std::make_unique<decltype(policy_with_lower_threshold)>(
+              std::move(policy_with_lower_threshold));
+    }
   }
 
   ELASTICA_TEST_CASE("Unit.Simulator.Interface.Systems.Module.n_systems",
@@ -831,9 +881,9 @@ namespace {
     using ListOfSystemPlugins =
         tmpl::list<ECPlugin, ECNamedPlugin, AnotherECPlugin>;
     auto sim = make_systems_simulator<ListOfSystemPlugins>(make_blocking_policy(
-        LooselyRestrictSizeOf<ECBlock>{2 * n_elements},
-        LooselyRestrictSizeOf<ECNamedBlock>{n_elements - 1UL},
-        RestrictSizeOf<AnotherECBlock>{n_elements}));
+        LooselyRestrictSize<ECBlock>{2 * n_elements},
+        LooselyRestrictSize<ECNamedBlock>{n_elements - 1UL},
+        RestrictSize<AnotherECBlock>{n_elements}));
     // gives n_units / 2 blocks of ECBlock and n_units ECNamedBlock
     tmpl::for_each<ListOfSystemPlugins>([&](auto p) {
       using Plugin = tmpl::type_from<decltype(p)>;
@@ -1024,6 +1074,8 @@ namespace {
     using namespace elastica::io;
     // NOTHROW case
     {
+      // The simulator is setup with a composite blocking policy, which is
+      // intended  for testing serialization from a (runtime) dynamic type
       auto sim = setup_sim_with_state(20UL);
       std::stringstream ss;  // any stream can be used
       // std::size_t n_elements(16UL);
