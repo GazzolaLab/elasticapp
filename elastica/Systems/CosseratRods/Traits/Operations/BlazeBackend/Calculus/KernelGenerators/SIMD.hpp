@@ -58,16 +58,16 @@ namespace elastica {
       const std::size_t output_simd_idx(
           blaze::prevMultiple(n_outputs, SIMDSIZE));
 
-      if (UNLIKELY(output_simd_idx < scalar_simdpack_threshold * SIMDSIZE)) {
-        // Do scalar processing in this case
-        lazy_twopoint_kernel_scalar(std::move(op), out_matrix, in_matrix);
-        return;
-      }
-
       // We process n_packs_in_flight * SIMDSIZE elements at a time. We can use
       // this to figure out the number of trip counts
       constexpr std::size_t index_start_simd(start_simdpack_idx * SIMDSIZE);
       constexpr std::size_t n_elements_in_flight(n_packs_in_flight * SIMDSIZE);
+
+      if (UNLIKELY((output_simd_idx) < scalar_simdpack_threshold * SIMDSIZE) || UNLIKELY((output_simd_idx - index_start_simd) < scalar_simdpack_threshold * SIMDSIZE)) {
+        // Do scalar processing in this case
+        lazy_twopoint_kernel_scalar(std::move(op), out_matrix, in_matrix);
+        return;
+      }
 
       Expects((output_simd_idx - index_start_simd) % SIMDSIZE == 0);
       // n_packs that can fit in
@@ -95,7 +95,9 @@ namespace elastica {
       lazy_twopoint_kernel_scalar(op, out_matrix, in_matrix, 0UL,
                                   index_start_simd);
       // Right edge
-      lazy_twopoint_kernel_scalar(op, out_matrix, in_matrix, index_stop_simd,
+      // -1UL here because for cases with index_stop == n_outputs - 1, we will have
+      // an out of bound read from inputs
+      lazy_twopoint_kernel_scalar(op, out_matrix, in_matrix, index_stop_simd - 1UL,
                                   n_outputs);
 
       // Need to align the element [1] to alignment and not zero.

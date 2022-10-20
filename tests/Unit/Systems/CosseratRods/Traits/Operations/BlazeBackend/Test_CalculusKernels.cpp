@@ -27,8 +27,9 @@ namespace {
 
   template <QuadratureKind K>
   void run_quadrature_test_1(QuadratureOp<K> op) {
+	// We cannot have/test 1 elements here since we expect at least two distinct edge values
     for (std::size_t n_elems :
-         {1UL, 4UL, 32UL, 33UL, 34UL, 35UL, 36UL, 37UL, 38UL, 39UL}) {
+         {2UL, 4UL, 32UL, 33UL, 34UL, 35UL, 36UL, 37UL, 38UL, 39UL, 40UL, 41UL, 42UL}) {
       const std::size_t n_nodes = n_elems + 1UL;
       MT input_vector_batch(dimension, n_elems),
           test_vector_batch(dimension, n_nodes),
@@ -114,8 +115,9 @@ namespace {
 
   template <DifferenceKind K>
   void run_difference_test_1(DifferenceOp<K> op) {
+	// We cannot have/test 1 elements here since we expect at least two distinct edge values
     for (std::size_t n_elems :
-         {1UL, 4UL, 32UL, 33UL, 34UL, 35UL, 36UL, 37UL, 38UL, 39UL}) {
+         {2UL, 4UL, 32UL, 33UL, 34UL, 35UL, 36UL, 37UL, 38UL, 39UL, 40UL, 41UL, 42UL}) {
       //! [difference_kernel_example]
       const std::size_t n_nodes = n_elems + 1UL;
       MT input_vector_batch(dimension, n_elems),
