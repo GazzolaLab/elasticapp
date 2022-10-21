@@ -23,7 +23,7 @@
 
 ///
 #include "Simulator/Constraints/Constraint.hpp"
-//#include "Simulator/Constraints/InitialConditionsCache.hpp"
+// #include "Simulator/Constraints/InitialConditionsCache.hpp"
 ///
 #include "Simulator/Interface/Constraints/ConstrainerBase.hpp"
 #include "Simulator/Interface/Constraints/ConstraintUUID.hpp"
@@ -384,14 +384,13 @@ namespace elastica {
        */
       template <typename System, typename ConcreteConstraint, std::uint8_t N>
       inline auto make_constrainer(
-          ConstraintUUID id, System const& sys, ConcreteConstraint&& bc,
+          ConstraintUUID id, System const& sys, ConcreteConstraint bc,
           ::elastica::detail::numeric_at_t<N> at) /* noexcept */
           -> std::unique_ptr<ConstrainerBase> {
         return std::unique_ptr<ConstrainerBase>(
-            new Constrainer<System, std::decay_t<ConcreteConstraint>,
+            new Constrainer<System, ConcreteConstraint,
                             ::elastica::detail::numeric_at_t<N>>(
-                std::move(id), sys, std::forward<ConcreteConstraint>(bc),
-                std::move(at)));
+                std::move(id), sys, std::move(bc), std::move(at)));
       }
       /*! \endcond */
       //************************************************************************

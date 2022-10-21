@@ -215,12 +215,10 @@ namespace elastica {
       ConnectionDefaultedInTestModule(std::size_t some_arg = 23UL)
           : some_member{some_arg} {}
       // Needs to be properly defined for query to work
-      ConnectionDefaultedInTestModule(ConnectionDefaultedInTestModule &&) {}
+      // ConnectionDefaultedInTestModule(ConnectionDefaultedInTestModule &&) {}
       // If I do this, the counter doesn't work :/
-      /*
       ConnectionDefaultedInTestModule(ConnectionDefaultedInTestModule && other)
           : some_member{std::move(other.some_member)} {};
-          */
 
       ~ConnectionDefaultedInTestModule() = default;
       template <typename FirstSystem, typename SecondSystem>
@@ -394,16 +392,21 @@ namespace {
     using ::elastica::interface::pair;
     using ::mock::MockSystem;
     using ExampleConnection = ConnectionDefaultedInTestModule<>;
-    {
-      using first_system = MockSystem;
-      using second_system = MockSystem;
 
+    using first_system = MockSystem;
+    using second_system = MockSystem;
+
+    std::vector<first_system> systems_first(8UL, first_system{100UL});
+    std::vector<first_system> systems_second(8UL, second_system{100UL});
+
+    {
+      constexpr auto index(0UL);
       /// [connect_setup]
       // is a physical system, e.g. CosseratRod, with 100 degrees of freedom
-      first_system fsys{100UL};
+      auto fsys(std::ref(systems_first[index]));
       auto fs(std::ref(fsys));
       // is a physical system, e.g. CosseratRod, with 100 degrees of freedom
-      second_system ssys{100UL};
+      auto ssys(std::ref(systems_second[index]));
       auto ss(std::ref(ssys));
       std::string optional_connection_name = "ExampleConnection";
       // ExampleConnection is some elastica::connection satisfying the
@@ -428,13 +431,13 @@ namespace {
           pair(end - 2UL, end - 49UL));
       CHECK(sim.n_connections() == 4UL);
     }
-    {
-      using first_system = MockSystem;
-      using second_system = MockSystem;
 
-      first_system fsys{100UL};
+    {
+      constexpr auto index(1UL);
+
+      auto fsys(std::ref(systems_first[index]));
       auto fs(std::ref(fsys));
-      second_system ssys{100UL};
+      auto ssys(std::ref(systems_second[index]));
       auto ss(std::ref(ssys));
       std::string optional_connection_name = "ExampleConnection";
 
@@ -458,12 +461,11 @@ namespace {
       CHECK(sim.n_connections() == 8UL);
     }
     {
-      using first_system = MockSystem;
-      using second_system = MockSystem;
+      constexpr auto index(2UL);
 
-      first_system fsys{100UL};
+      auto fsys(std::ref(systems_first[index]));
       auto fs(std::ref(fsys));
-      second_system ssys{100UL};
+      auto ssys(std::ref(systems_second[index]));
       auto ss(std::ref(ssys));
       std::string optional_connection_name = "ExampleConnection";
 
@@ -490,11 +492,11 @@ namespace {
       CHECK(sim.n_connections() == 12UL);
     }
     {
-      using first_system = MockSystem;
-      using second_system = MockSystem;
-      first_system fsys{100UL};
+      constexpr auto index(3UL);
+
+      auto fsys(std::ref(systems_first[index]));
       auto fs(std::ref(fsys));
-      second_system ssys{100UL};
+      auto ssys(std::ref(systems_second[index]));
       auto ss(std::ref(ssys));
       std::string optional_connection_name = "ExampleConnection";
 
@@ -586,11 +588,11 @@ namespace {
       CHECK(sim.n_connections() == 24UL);
     }
     {
-      using first_system = MockSystem;
-      using second_system = MockSystem;
-      first_system fsys{100UL};
+      constexpr auto index(4UL);
+
+      auto fsys(std::ref(systems_first[index]));
       auto fs(std::ref(fsys));
-      second_system ssys{100UL};
+      auto ssys(std::ref(systems_second[index]));
       auto ss(std::ref(ssys));
       std::string optional_connection_name = "ExampleConnection";
 
@@ -613,11 +615,11 @@ namespace {
       CHECK(sim.n_connections() == 26UL);
     }
     {
-      using first_system = MockSystem;
-      using second_system = MockSystem;
-      first_system fsys{100UL};
+      constexpr auto index(5UL);
+
+      auto fsys(std::ref(systems_first[index]));
       auto fs(std::ref(fsys));
-      second_system ssys{100UL};
+      auto ssys(std::ref(systems_second[index]));
       auto ss(std::ref(ssys));
       std::string optional_connection_name = "ExampleConnection";
 
@@ -638,11 +640,11 @@ namespace {
       CHECK(sim.n_connections() == 28UL);
     }
     {
-      using first_system = MockSystem;
-      using second_system = MockSystem;
-      first_system fsys{100UL};
+      constexpr auto index(6UL);
+
+      auto fsys(std::ref(systems_first[index]));
       auto fs(std::ref(fsys));
-      second_system ssys{100UL};
+      auto ssys(std::ref(systems_second[index]));
       auto ss(std::ref(ssys));
       std::string optional_connection_name = "ExampleConnection";
 
@@ -665,11 +667,11 @@ namespace {
       CHECK(sim.n_connections() == 30UL);
     }
     {
-      using first_system = MockSystem;
-      using second_system = MockSystem;
-      first_system fsys{100UL};
+      constexpr auto index(7UL);
+
+      auto fsys(std::ref(systems_first[index]));
       auto fs(std::ref(fsys));
-      second_system ssys{100UL};
+      auto ssys(std::ref(systems_second[index]));
       auto ss(std::ref(ssys));
       std::string optional_connection_name = "ExampleConnection";
 
@@ -723,12 +725,13 @@ namespace {
     using ::mock::MockSystem;
     using ExampleConnection = ConnectionDefaultedInTestModule<>;
 
+    using first_system = MockSystem;
+    using second_system = MockSystem;
+    first_system fsys{100UL};
+    second_system ssys{100UL};
+
     {
-      using first_system = MockSystem;
-      using second_system = MockSystem;
-      first_system fsys{100UL};
       auto fs(std::ref(fsys));
-      second_system ssys{100UL};
       auto ss(std::ref(ssys));
       // oops i forgot indices
       sim.connect(fs, ss).with<ExampleConnection>();
@@ -939,11 +942,16 @@ namespace {
     using ExampleConnection = ConnectionDefaultedInTestModule<>;
     using ::elastica::end;
 
+    using first_system = MockSystem;
+    using second_system = MockSystem;
+    first_system fsys{100UL};
+    second_system ssys{100UL};
+
     // no throw case
     {
-      std::stringstream ss;  // any stream can be used
+      std::stringstream sstream;  // any stream can be used
       {
-        BinaryOutputArchive oarchive(ss);  //  Create an output archive
+        BinaryOutputArchive oarchive(sstream);  //  Create an output archive
 
         auto sim_config = mock::make_simulator_configuration(
             DefaultConnectionsConfiguration{});
@@ -954,11 +962,7 @@ namespace {
             sim_config, arg_all_registered, is_final);
 
         {  // add a bunch of connections
-          using first_system = MockSystem;
-          using second_system = MockSystem;
-          first_system fsys{100UL};
           auto fs(std::ref(fsys));
-          second_system ssys{100UL};
           auto ss(std::ref(ssys));
 
           for (std::size_t i = 0UL; i < 10UL; ++i)
@@ -972,7 +976,7 @@ namespace {
       }
 
       {
-        BinaryInputArchive iarchive(ss);  //  Create an output archive
+        BinaryInputArchive iarchive(sstream);  //  Create an output archive
 
         auto sim_config = mock::make_simulator_configuration(
             DefaultConnectionsConfiguration{});
@@ -983,11 +987,7 @@ namespace {
             sim_config, arg_all_registered, is_final);
 
         {  // add a bunch of connections
-          using first_system = MockSystem;
-          using second_system = MockSystem;
-          first_system fsys{100UL};
           auto fs(std::ref(fsys));
-          second_system ssys{100UL};
           auto ss(std::ref(ssys));
 
           for (std::size_t i = 0UL; i < 10UL; ++i)
@@ -1003,9 +1003,9 @@ namespace {
 
     // throwing case
     {
-      std::stringstream ss;  // any stream can be used
+      std::stringstream sstream;  // any stream can be used
       {
-        BinaryOutputArchive oarchive(ss);  //  Create an output archive
+        BinaryOutputArchive oarchive(sstream);  //  Create an output archive
 
         auto sim_config = mock::make_simulator_configuration(
             DefaultConnectionsConfiguration{});
@@ -1016,11 +1016,7 @@ namespace {
             sim_config, arg_all_registered, is_final);
 
         {  // add a bunch of connections
-          using first_system = MockSystem;
-          using second_system = MockSystem;
-          first_system fsys{100UL};
           auto fs(std::ref(fsys));
-          second_system ssys{100UL};
           auto ss(std::ref(ssys));
 
           for (std::size_t i = 0UL; i < 10UL; ++i)
@@ -1034,7 +1030,7 @@ namespace {
       }
 
       {
-        BinaryInputArchive iarchive(ss);  //  Create an output archive
+        BinaryInputArchive iarchive(sstream);  //  Create an output archive
 
         auto sim_config = mock::make_simulator_configuration(
             DefaultConnectionsConfiguration{});
@@ -1046,11 +1042,7 @@ namespace {
 
         {  // add a bunch of connections
           // added 5 less connections!
-          using first_system = MockSystem;
-          using second_system = MockSystem;
-          first_system fsys{100UL};
           auto fs(std::ref(fsys));
-          second_system ssys{100UL};
           auto ss(std::ref(ssys));
 
           for (std::size_t i = 0UL; i < 5UL; ++i)
@@ -1068,9 +1060,9 @@ namespace {
     // throwing case, but this time the number of connections are the same,
     // but some connections are different
     {
-      std::stringstream ss;  // any stream can be used
+      std::stringstream sstream;  // any stream can be used
       {
-        BinaryOutputArchive oarchive(ss);  //  Create an output archive
+        BinaryOutputArchive oarchive(sstream);  //  Create an output archive
 
         auto sim_config = mock::make_simulator_configuration(
             DefaultConnectionsConfiguration{});
@@ -1081,11 +1073,7 @@ namespace {
             sim_config, arg_all_registered, is_final);
 
         {  // add a bunch of connections
-          using first_system = MockSystem;
-          using second_system = MockSystem;
-          first_system fsys{100UL};
           auto fs(std::ref(fsys));
-          second_system ssys{100UL};
           auto ss(std::ref(ssys));
 
           for (std::size_t i = 0UL; i < 10UL; ++i)
@@ -1099,7 +1087,7 @@ namespace {
       }
 
       {
-        BinaryInputArchive iarchive(ss);  //  Create an output archive
+        BinaryInputArchive iarchive(sstream);  //  Create an output archive
 
         auto sim_config = mock::make_simulator_configuration(
             DefaultConnectionsConfiguration{});
@@ -1111,11 +1099,7 @@ namespace {
 
         {  // add a bunch of connections
           // added 5 less connections!
-          using first_system = MockSystem;
-          using second_system = MockSystem;
-          first_system fsys{100UL};
           auto fs(std::ref(fsys));
-          second_system ssys{100UL};
           auto ss(std::ref(ssys));
 
           for (std::size_t i = 0UL; i < 5UL; ++i)
@@ -1157,12 +1141,13 @@ namespace {
     using ::mock::MockSystem;
 
     using MemberConnection = ConnectionWithMember<>;
+    using first_system = MockSystem;
+    using second_system = MockSystem;
+    first_system first{100UL};
+    second_system second{100UL};
+
     {
-      using first_system = MockSystem;
-      using second_system = MockSystem;
-      first_system first{100UL};
       auto fs(std::ref(first));
-      second_system second{100UL};
       auto ss(std::ref(second));
       std::string optional_connection_name = "MyConnections";
 

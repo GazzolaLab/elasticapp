@@ -68,11 +68,11 @@ namespace {
 
       // Clobber data
       for (auto i = 0UL; i < total; ++i)
-        std::iota(matrix.begin(i), matrix.end(i), i - 200);
+        std::iota(matrix.begin(i), matrix.end(i), i + 200);
 
       for (auto i = start; i < stop; ++i) {
-        auto s = i - 200 + stride_start;
-        auto ss = i - 200 + stride_stop;
+        auto s = i + 200 + stride_start;
+        auto ss = i + 200 + stride_stop;
         CAPTURE(i, stride_start, stride_stop);
         CHECK(std::vector<int>(a.begin(i), a.end(i)) ==
               std::vector<int>(elastica::make_counting_iterator(s),
@@ -89,7 +89,7 @@ namespace {
       // is a paing
       for (auto i = stop; i < total; ++i)
         CHECK(std::equal(matrix.begin(i), matrix.end(i),
-                         elastica::make_counting_iterator(i - 200)));
+                         elastica::make_counting_iterator(i + 200)));
     };
 
     SECTION("Row major") {

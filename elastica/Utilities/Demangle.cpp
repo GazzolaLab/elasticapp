@@ -37,7 +37,7 @@ std::string demangle(char const* name) {
   // status == 0 is good
   std::string class_name(status ? name : demangled_name);
   // Be a good boy and free
-  delete[](demangled_name);  // NOLINT
+  std::free(demangled_name);  // NOLINT
   return class_name;
 }
 #else

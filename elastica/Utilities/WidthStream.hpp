@@ -39,10 +39,10 @@ namespace elastica {
     int_type overflow(int_type c) override;
 
    private:
-    std::size_t indent_width;
-    std::size_t def_width;
-    std::size_t width;
-    std::size_t count;
+    std::int32_t indent_width;
+    std::int32_t def_width;
+    std::int32_t width;
+    std::int32_t count;
     static const int tab_width = 8;
     string prefix;
 

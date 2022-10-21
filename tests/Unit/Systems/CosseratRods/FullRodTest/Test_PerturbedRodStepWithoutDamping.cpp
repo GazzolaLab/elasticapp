@@ -281,7 +281,7 @@ namespace {
       approx.epsilon(5e-14);
 
       std::size_t step = 1;
-      while (step--)
+      for (auto i = 0UL; i < step; ++i)
         simulator->step(time_stepper, time_v, time_delta);
 
       //**************************************************************************
@@ -323,7 +323,7 @@ namespace {
       approx.epsilon(6e-14);
 
       std::size_t step = 3;
-      while (step--)
+      for (auto i = 0UL; i < step; ++i)
         simulator->step(time_stepper, time_v, time_delta);
 
       //**************************************************************************
@@ -364,7 +364,7 @@ namespace {
       approx.epsilon(7e-14);
 
       std::size_t step = 5;
-      while (step--)
+      for (auto i = 0UL; i < step; ++i)
         simulator->step(time_stepper, time_v, time_delta);
 
       //**************************************************************************

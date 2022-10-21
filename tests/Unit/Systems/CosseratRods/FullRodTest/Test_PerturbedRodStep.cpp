@@ -282,7 +282,7 @@ namespace {
       approx.epsilon(4e-13);
 
       std::size_t step = 1;
-      while (step--)
+      for (auto i = 0UL; i < step; ++i)
         simulator->step(time_stepper, time_v, time_delta);
 
       //**************************************************************************
@@ -323,7 +323,7 @@ namespace {
       approx.epsilon(2e-12);
 
       std::size_t step = 2;
-      while (step--)
+      for (auto i = 0UL; i < step; ++i)
         simulator->step(time_stepper, time_v, time_delta);
       //**************************************************************************
       // clang-format off
@@ -363,7 +363,7 @@ namespace {
       approx.epsilon(2e-12);
 
       std::size_t step = 3;
-      while (step--)
+      for (auto i = 0UL; i < step; ++i)
         simulator->step(time_stepper, time_v, time_delta);
       //**************************************************************************
       // clang-format off
@@ -403,7 +403,7 @@ namespace {
       approx.epsilon(4e-12);
 
       std::size_t step = 5;
-      while (step--)
+      for (auto i = 0UL; i < step; ++i)
         simulator->step(time_stepper, time_v, time_delta);
       //**************************************************************************
       // clang-format off
@@ -675,7 +675,7 @@ namespace {
       approx.epsilon(3.2e-12);
 
       std::size_t step = 3;
-      while (step--)
+      for (auto i = 0UL; i < step; ++i)
         simulator->step(time_stepper, time_v, time_delta);
 
       //**************************************************************************

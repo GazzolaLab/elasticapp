@@ -102,7 +102,7 @@ include(SetupElasticaInlining)
 include(SetupMacOsx)
 include(SetOutputDirectory)
 include(SetupPic)
-# include(SetupBuildInfo) include(SetupCCache)
+include(SetupSanitizers)
 
 # after setting standard
 include(CheckBrokenArray0)

@@ -18,7 +18,10 @@ namespace elastica {
       width = def_width;
     } else {
       indent_width += w;
-      prefix = string(indent_width, space);
+      // Indent width is always positive, but check in case.
+      prefix = string(
+          indent_width > 0 ? static_cast<std::size_t>(indent_width) : 0UL,
+          space);
       width -= w;
     }
   }
@@ -32,7 +35,8 @@ namespace elastica {
         buffer += c;
         count = 0;
         sbuf->sputn(prefix.c_str(), indent_width);
-        int_type rc = sbuf->sputn(buffer.c_str(), buffer.size());
+        int_type rc =
+            sbuf->sputn(buffer.c_str(), std::streamsize(buffer.size()));
         buffer.clear();
         return rc;
       }
@@ -47,12 +51,12 @@ namespace elastica {
           size_t wpos = buffer.find_last_of(" \t");
           if (wpos != string::npos) {
             sbuf->sputn(prefix.c_str(), indent_width);
-            sbuf->sputn(buffer.c_str(), wpos);
+            sbuf->sputn(buffer.c_str(), std::streamsize(wpos));
             count = buffer.size() - wpos - 1;
             buffer = string(buffer, wpos + 1);
           } else {
             sbuf->sputn(prefix.c_str(), indent_width);
-            sbuf->sputn(buffer.c_str(), buffer.size());
+            sbuf->sputn(buffer.c_str(), std::streamsize(buffer.size()));
             buffer.clear();
             count = 0;
           }

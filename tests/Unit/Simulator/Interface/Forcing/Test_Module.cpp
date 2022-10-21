@@ -323,14 +323,15 @@ namespace {
     using ExampleForcing = ForcingDefaultedInTestModule<>;
 
     std::size_t expected_count = 0UL;
+    using System = MockSystem;
+    std::vector<System> systems(4UL, System{100UL});
 
     {
-      using System = MockSystem;
+      constexpr auto index(0UL);
 
       /// [force_setup]
       // is a physical system, e.g. CosseratRod, with 100 degrees of freedom
-      System system{100UL};
-      auto sys(mock::ref(system));
+      auto sys(mock::ref(systems.at(index)));
       std::string optional_forcing_name = "ExampleForcing";
       // ExampleForcing is some elastica::forcing satisfying the
       // forcing protocols
@@ -350,10 +351,9 @@ namespace {
       expected_count += 5UL;
     }
     {
-      using System = MockSystem;
+      constexpr auto index(1UL);
 
-      System system{100UL};
-      auto sys(mock::ref(system));
+      auto sys(mock::ref(systems.at(index)));
       std::string optional_forcing_name = "ExampleForcing";
 
       /// [force_eg_no_curry]
@@ -365,10 +365,9 @@ namespace {
       expected_count += 4UL;
     }
     {
-      using System = MockSystem;
+      constexpr auto index(2UL);
 
-      System system{100UL};
-      auto sys(mock::ref(system));
+      auto sys(mock::ref(systems.at(index)));
       std::string optional_forcing_name = "ExampleForcing";
 
       /// [force_eg_curry]
@@ -385,10 +384,9 @@ namespace {
       expected_count += 5UL;
     }
     {
-      using System = MockSystem;
+      constexpr auto index(3UL);
 
-      System system{100UL};
-      auto sys(mock::ref(system));
+      auto sys(mock::ref(systems.at(index)));
       std::string optional_forcing_name = "ExampleForcing";
       /// [force_eg_with_name]
       // order of with() and at() don't matter
@@ -446,9 +444,9 @@ namespace {
     using ::mock::MockSystem;
     using ExampleForcing = ForcingDefaultedInTestModule<>;
 
+    using System = MockSystem;
+    System system{100UL};
     {
-      using System = MockSystem;
-      System system{100UL};
       auto sys(mock::ref(system));
       // oops i forgot indices
       sim.force(sys).with<ExampleForcing>();
@@ -612,11 +610,14 @@ namespace {
     using ExampleForcing = ForcingDefaultedInTestModule<>;
     using ::elastica::end;
 
+    using System = MockSystem;
+    System system{100UL};
+
     // no throw case
     {
-      std::stringstream ss;  // any stream can be used
+      std::stringstream sstream;  // any stream can be used
       {
-        BinaryOutputArchive oarchive(ss);  //  Create an output archive
+        BinaryOutputArchive oarchive(sstream);  //  Create an output archive
 
         auto sim_config =
             mock::make_simulator_configuration(DefaultForcingConfiguration{});
@@ -627,8 +628,6 @@ namespace {
             sim_config, arg_all_registered, is_final);
 
         {  // add a bunch of forcings
-          using System = MockSystem;
-          System system{100UL};
           auto sys(mock::ref(system));
 
           for (std::size_t i = 0UL; i < 10UL; ++i)
@@ -642,7 +641,7 @@ namespace {
       }
 
       {
-        BinaryInputArchive iarchive(ss);  //  Create an output archive
+        BinaryInputArchive iarchive(sstream);  //  Create an output archive
 
         auto sim_config =
             mock::make_simulator_configuration(DefaultForcingConfiguration{});
@@ -653,8 +652,6 @@ namespace {
             sim_config, arg_all_registered, is_final);
 
         {  // add a bunch of forcings
-          using System = MockSystem;
-          System system{100UL};
           auto sys(mock::ref(system));
 
           for (std::size_t i = 0UL; i < 10UL; ++i)
@@ -670,9 +667,9 @@ namespace {
 
     // throwing case
     {
-      std::stringstream ss;  // any stream can be used
+      std::stringstream sstream;  // any stream can be used
       {
-        BinaryOutputArchive oarchive(ss);  //  Create an output archive
+        BinaryOutputArchive oarchive(sstream);  //  Create an output archive
 
         auto sim_config =
             mock::make_simulator_configuration(DefaultForcingConfiguration{});
@@ -683,8 +680,6 @@ namespace {
             sim_config, arg_all_registered, is_final);
 
         {  // add a bunch of forcings
-          using System = MockSystem;
-          System system{100UL};
           auto sys(mock::ref(system));
 
           for (std::size_t i = 0UL; i < 10UL; ++i)
@@ -698,7 +693,7 @@ namespace {
       }
 
       {
-        BinaryInputArchive iarchive(ss);  //  Create an output archive
+        BinaryInputArchive iarchive(sstream);  //  Create an output archive
 
         auto sim_config =
             mock::make_simulator_configuration(DefaultForcingConfiguration{});
@@ -710,8 +705,6 @@ namespace {
 
         {  // add a bunch of forcings
           // added 5 less forcings!
-          using System = MockSystem;
-          System system{100UL};
           auto sys(mock::ref(system));
 
           for (std::size_t i = 0UL; i < 5UL; ++i)
@@ -729,9 +722,9 @@ namespace {
     // throwing case, but this time the number of forcings are the same,
     // but some forcings are different
     {
-      std::stringstream ss;  // any stream can be used
+      std::stringstream sstream;  // any stream can be used
       {
-        BinaryOutputArchive oarchive(ss);  //  Create an output archive
+        BinaryOutputArchive oarchive(sstream);  //  Create an output archive
 
         auto sim_config =
             mock::make_simulator_configuration(DefaultForcingConfiguration{});
@@ -742,8 +735,6 @@ namespace {
             sim_config, arg_all_registered, is_final);
 
         {  // add a bunch of forcings
-          using System = MockSystem;
-          System system{100UL};
           auto sys(mock::ref(system));
 
           for (std::size_t i = 0UL; i < 10UL; ++i)
@@ -757,7 +748,7 @@ namespace {
       }
 
       {
-        BinaryInputArchive iarchive(ss);  //  Create an output archive
+        BinaryInputArchive iarchive(sstream);  //  Create an output archive
 
         auto sim_config =
             mock::make_simulator_configuration(DefaultForcingConfiguration{});
@@ -769,8 +760,6 @@ namespace {
 
         {  // add a bunch of forcings
           // added 5 less forcings!
-          using System = MockSystem;
-          System system{100UL};
           auto sys(mock::ref(system));
 
           for (std::size_t i = 0UL; i < 5UL; ++i)
@@ -811,9 +800,10 @@ namespace {
     using ::mock::MockSystem;
 
     using System = MockSystem;
+    System system{100UL};
+
     using MemberForcing = ForcingWithMember<>;
     {
-      System system{100UL};
       auto sys(mock::ref(system));
 
       std::string optional_forcing_name = "MyForcing";

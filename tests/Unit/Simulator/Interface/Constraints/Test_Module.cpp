@@ -316,15 +316,17 @@ namespace {
     using ::mock::MockSystem;
     using ExampleConstraint = ConstraintDefaultedInTestModule<>;
 
+    using System = MockSystem;
+    std::vector<System> systems(4UL, System{100UL});
+
     std::size_t expected_count = 0UL;
 
     {
-      using System = MockSystem;
+      constexpr auto index(0UL);
 
       /// [constrain_setup]
       // is a physical system, e.g. CosseratRod, with 100 degrees of freedom
-      System system{100UL};
-      auto sys(mock::ref(system));
+      auto sys(mock::ref(systems.at(index)));
       std::string optional_constraint_name = "ExampleConstraint";
       // ExampleConstraint is some elastica::constraint satisfying the
       // constraint protocols
@@ -344,10 +346,9 @@ namespace {
       expected_count += 5UL;
     }
     {
-      using System = MockSystem;
+      constexpr auto index(1UL);
 
-      System system{100UL};
-      auto sys(mock::ref(system));
+      auto sys(mock::ref(systems.at(index)));
       std::string optional_constraint_name = "ExampleConstraint";
 
       /// [constrain_eg_no_curry]
@@ -359,10 +360,9 @@ namespace {
       expected_count += 4UL;
     }
     {
-      using System = MockSystem;
+      constexpr auto index(2UL);
 
-      System system{100UL};
-      auto sys(mock::ref(system));
+      auto sys(mock::ref(systems.at(index)));
       std::string optional_constraint_name = "ExampleConstraint";
 
       /// [constrain_eg_curry]
@@ -379,10 +379,9 @@ namespace {
       expected_count += 5UL;
     }
     {
-      using System = MockSystem;
+      constexpr auto index(3UL);
 
-      System system{100UL};
-      auto sys(mock::ref(system));
+      auto sys(mock::ref(systems.at(index)));
       std::string optional_constraint_name = "ExampleConstraint";
       /// [constrain_eg_with_name]
       // order of with() and at() don't matter but put the with_name()
@@ -441,9 +440,9 @@ namespace {
     using ::mock::MockSystem;
     using ExampleConstraint = ConstraintDefaultedInTestModule<>;
 
+    using System = MockSystem;
+    System system{100UL};
     {
-      using System = MockSystem;
-      System system{100UL};
       auto sys(mock::ref(system));
       // oops i forgot indices
       sim.constrain(sys).with<ExampleConstraint>();
@@ -596,11 +595,14 @@ namespace {
     using ExampleConstraint = ConstraintDefaultedInTestModule<>;
     using ::elastica::end;
 
+    using System = MockSystem;
+    System system{100UL};
+
     // no throw case
     {
-      std::stringstream ss;  // any stream can be used
+      std::stringstream sstream;  // any stream can be used
       {
-        BinaryOutputArchive oarchive(ss);  //  Create an output archive
+        BinaryOutputArchive oarchive(sstream);  //  Create an output archive
 
         auto sim_config = mock::make_simulator_configuration(
             DefaultConstraintsConfiguration{});
@@ -611,8 +613,6 @@ namespace {
             sim_config, arg_all_registered, is_final);
 
         {  // add a bunch of constraints
-          using System = MockSystem;
-          System system{100UL};
           auto sys(mock::ref(system));
 
           for (std::size_t i = 0UL; i < 10UL; ++i)
@@ -626,7 +626,7 @@ namespace {
       }
 
       {
-        BinaryInputArchive iarchive(ss);  //  Create an output archive
+        BinaryInputArchive iarchive(sstream);  //  Create an output archive
 
         auto sim_config = mock::make_simulator_configuration(
             DefaultConstraintsConfiguration{});
@@ -637,8 +637,6 @@ namespace {
             sim_config, arg_all_registered, is_final);
 
         {  // add a bunch of constraints
-          using System = MockSystem;
-          System system{100UL};
           auto sys(mock::ref(system));
 
           for (std::size_t i = 0UL; i < 10UL; ++i)
@@ -654,9 +652,9 @@ namespace {
 
     // throwing case
     {
-      std::stringstream ss;  // any stream can be used
+      std::stringstream sstream;  // any stream can be used
       {
-        BinaryOutputArchive oarchive(ss);  //  Create an output archive
+        BinaryOutputArchive oarchive(sstream);  //  Create an output archive
 
         auto sim_config = mock::make_simulator_configuration(
             DefaultConstraintsConfiguration{});
@@ -667,8 +665,6 @@ namespace {
             sim_config, arg_all_registered, is_final);
 
         {  // add a bunch of constraints
-          using System = MockSystem;
-          System system{100UL};
           auto sys(mock::ref(system));
 
           for (std::size_t i = 0UL; i < 10UL; ++i)
@@ -682,7 +678,7 @@ namespace {
       }
 
       {
-        BinaryInputArchive iarchive(ss);  //  Create an output archive
+        BinaryInputArchive iarchive(sstream);  //  Create an output archive
 
         auto sim_config = mock::make_simulator_configuration(
             DefaultConstraintsConfiguration{});
@@ -694,8 +690,6 @@ namespace {
 
         {  // add a bunch of constraints
           // added 5 less constraints!
-          using System = MockSystem;
-          System system{100UL};
           auto sys(mock::ref(system));
 
           for (std::size_t i = 0UL; i < 5UL; ++i)
@@ -713,9 +707,9 @@ namespace {
     // throwing case, but this time the number of constraints are the same,
     // but some constraints are different
     {
-      std::stringstream ss;  // any stream can be used
+      std::stringstream sstream;  // any stream can be used
       {
-        BinaryOutputArchive oarchive(ss);  //  Create an output archive
+        BinaryOutputArchive oarchive(sstream);  //  Create an output archive
 
         auto sim_config = mock::make_simulator_configuration(
             DefaultConstraintsConfiguration{});
@@ -726,8 +720,6 @@ namespace {
             sim_config, arg_all_registered, is_final);
 
         {  // add a bunch of constraints
-          using System = MockSystem;
-          System system{100UL};
           auto sys(mock::ref(system));
 
           for (std::size_t i = 0UL; i < 10UL; ++i)
@@ -741,7 +733,7 @@ namespace {
       }
 
       {
-        BinaryInputArchive iarchive(ss);  //  Create an output archive
+        BinaryInputArchive iarchive(sstream);  //  Create an output archive
 
         auto sim_config = mock::make_simulator_configuration(
             DefaultConstraintsConfiguration{});
@@ -753,8 +745,6 @@ namespace {
 
         {  // add a bunch of constraints
           // added 5 less constraints!
-          using System = MockSystem;
-          System system{100UL};
           auto sys(mock::ref(system));
 
           for (std::size_t i = 0UL; i < 5UL; ++i)
@@ -795,9 +785,10 @@ namespace {
     using ::mock::MockSystem;
 
     using System = MockSystem;
+    System system{100UL};
+
     using MemberConstraint = ConstraintWithMember<>;
     {
-      System system{100UL};
       auto sys(mock::ref(system));
 
       std::string optional_constraint_name = "MyConstraints";
