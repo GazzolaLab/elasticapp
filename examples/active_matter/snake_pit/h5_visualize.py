@@ -1,8 +1,8 @@
 import click
 import numpy as np
 from elastica_pipelines import io
-from typing import NewType, List
-from dataclasses import dataclass, field
+from typing import NewType
+from dataclasses import dataclass
 from matplotlib import pyplot as plt
 from matplotlib.animation import FuncAnimation
 from rich.progress import Progress
@@ -204,17 +204,27 @@ def draw_large(snapshot_with_metadata, n_rods):
         plt.close("all")
 
 
-def draw_large_driver(total_stats, regions, section_id):
+def calculate_regions(total_work, section, frame_skip, num_cores):
+    work_per_section = total_work // num_cores
+    start = section * work_per_section
+    stop = start + work_per_section
+    skip = frame_skip
+    return start, stop, skip
+
+
+def draw_large_driver(metadata_fn, frame_skip, num_cores, section_id):
     from itertools import islice
 
-    for snapshot_with_metadata in islice(
-        total_stats.series.iterations(), *regions[section_id]
-    ):
+    total_stats = construct_stats(metadata_fn)
+    n_frames = len(total_stats.series)
+    region = calculate_regions(n_frames, section_id, frame_skip, num_cores)
+
+    for snapshot_with_metadata in islice(total_stats.series.iterations(), *region):
         draw_large(snapshot_with_metadata, total_stats.n_rods)
 
 
 def animate_large(
-    total_stats: Stats,
+    metadata_fn: str,
     video_name: str = "collision.mp4",
     fps: PositiveInt = 15,
     frame_skip: PositiveInt = 1,
@@ -224,21 +234,11 @@ def animate_large(
     from joblib import Parallel, delayed
     import multiprocessing
 
-    # num_cores = multiprocessing.cpu_count()
-    num_cores = 1
-    n_frames = len(total_stats.series)
+    num_cores = multiprocessing.cpu_count()
+    # num_cores = 1
 
-    def calculate_regions(section):
-        work_per_section = n_frames // num_cores
-        start = section * work_per_section
-        stop = start + work_per_section
-        skip = frame_skip
-        return start, stop, skip
-
-    regions = tuple(calculate_regions(section_id) for section_id in range(num_cores))
-
-    Parallel(n_jobs=num_cores, backend="sequential")(
-        delayed(draw_large_driver)(total_stats, regions, section_id)
+    Parallel(n_jobs=num_cores)(
+        delayed(draw_large_driver)(metadata_fn, frame_skip, num_cores, section_id)
         for section_id in (range(num_cores))
     )
 
@@ -252,18 +252,22 @@ def animate_large(
     return 1
 
 
-def analyze(metadata_fn: str, fps: PositiveInt):
+def construct_stats(metadata_fn: str):
     series = io.series(metadata=metadata_fn, transforms=io.transforms.ToArray())
 
     # Count number of rods, 0 is always available
     n_rods = len(series[0].rods())
-    stats = Stats(n_rods, series)
+    return Stats(n_rods, series)
 
+
+def analyze(metadata_fn: str, fps: PositiveInt):
+    stats = construct_stats(metadata_fn)
+    n_rods = len(stats.series[0].rods())
     if n_rods < 128:
         # Funcanimation leaks memory and closes before the files can be written down.
         ani = animate_snake(stats, frame_skip=5, fps=fps, save_figure=False)
     else:
-        ani = animate_large(stats, frame_skip=1, fps=fps, save_figure=False)
+        ani = animate_large(metadata_fn, frame_skip=1, fps=fps, save_figure=False)
     plt.show()
 
 
