@@ -134,10 +134,14 @@ void SnakePit::setup(InputTypes<This> const& input_parameters) {
           0UL, 0UL, true, half_space_anchor, Q, my_material),
       std::move(translations_buffer));
 
-  constexpr bool side_walls(true);
+  auto const side_wall_ratio =
+      ::elastica::get<wall_distance_ratio>(input_parameters);
+  bool side_walls(side_wall_ratio > 0.0);
+
   if (side_walls) {
     // normal
-    const elastica::real_t distance_between_walls = 2.0 * base_length;
+    const elastica::real_t distance_between_walls =
+        side_wall_ratio * base_length;
 
     // left wall
     {
@@ -308,7 +312,43 @@ void SnakePit::setup(InputTypes<This> const& input_parameters) {
       initialize_lattice_unit(lattice_idx);
   };
 
-  auto random_initialization = [&]() {
+  // Constraints return true if violated else false.
+  auto min_height_constraint = [](::elastica::Vec3 const& end_point,
+                                  ::elastica::real_t min_height) {
+    constexpr auto z_axis = 2UL;
+    return end_point[z_axis] < min_height;
+  };
+
+  auto with_cylinder_constraint = [](::elastica::Vec3 const& end_point,
+                                     ::elastica::real_t max_radius,
+                                     ::elastica::real_t max_height) -> bool {
+    constexpr auto x_axis = 0UL;
+    constexpr auto y_axis = 1UL;
+    constexpr auto z_axis = 2UL;
+
+    return (end_point[x_axis] * end_point[x_axis] +
+            end_point[y_axis] * end_point[y_axis]) > max_radius * max_radius ||
+           end_point[z_axis] > max_height;
+  };
+
+  auto with_cone_constraint = [](::elastica::Vec3 const& end_point,
+                                 ::elastica::real_t max_radius,
+                                 ::elastica::real_t max_height) -> bool {
+    constexpr auto x_axis = 0UL;
+    constexpr auto y_axis = 1UL;
+    constexpr auto z_axis = 2UL;
+
+    const auto h = end_point[z_axis];
+    const auto r = (max_height - h) * max_radius / max_height;
+
+    return (end_point[x_axis] * end_point[x_axis] +
+            end_point[y_axis] * end_point[y_axis]) > r * r ||
+           h > max_height;
+  };
+
+  auto random_initialization = [&](auto point_constraint) {
+    auto& origin_point_constraint(point_constraint);
+    auto& end_point_constraint(point_constraint);
     std::mt19937 mt(0);
     // const std::size_t n_layers = 10UL;
     const elastica::real_t R =
@@ -323,8 +363,21 @@ void SnakePit::setup(InputTypes<This> const& input_parameters) {
     std::uniform_real_distribution<::elastica::real_t> dist_alpha(0.0,
                                                                   2 * M_PI);
     // out-of-plane angle
-    std::uniform_real_distribution<::elastica::real_t> dist_beta(0.0,
-                                                                 0.2 * M_PI);
+    constexpr auto is_cylinder_configuration(
+        cpp17::is_same_v<decltype(point_constraint),
+                         decltype(with_cylinder_constraint)>);
+    // Code was non-symmetric distribution initially. Do not know if it matters
+    // for self-organization. Hence it is now parametrized.
+    // false definitely leads to self-organization, so we choose that for
+    // cylinder
+    constexpr auto symmetric_distribution(!is_cylinder_configuration);
+    constexpr auto limit = is_cylinder_configuration
+                               ? 0.2 * M_PI
+                               // cone constraint cannot be initialized with low
+                               // angles : lot of them go out of cone
+                               : 0.5 * M_PI;
+    std::uniform_real_distribution<::elastica::real_t> dist_beta(
+        symmetric_distribution ? -limit : 0.0, limit);
 
     cosserat_rod_refs.reserve(number_of_snakes);
 
@@ -339,12 +392,28 @@ void SnakePit::setup(InputTypes<This> const& input_parameters) {
         RodInitializer::ForceDampingRate{1e-10},
         RodInitializer::TorqueDampingRate{1e-10}};
 
+    constexpr auto x_axis = 0UL;
+    constexpr auto y_axis = 1UL;
+    constexpr auto z_axis = 2UL;
+
+    const auto is_violated = [](bool b) -> bool { return b; };
+
     for (std::size_t i = 0; i < number_of_snakes; ++i) {
-      const ::elastica::real_t origin_r = dist_r(mt);
-      const ::elastica::real_t origin_phi = dist_alpha(mt);
-      const ::elastica::real_t origin_h = dist_h(mt);
-      const ::elastica::Vec3 origin{origin_r * std::cos(origin_phi),
-                                    origin_r * std::sin(origin_phi), origin_h};
+      ::elastica::real_t origin_r = dist_r(mt);
+      ::elastica::real_t origin_phi = dist_alpha(mt);
+      ::elastica::real_t origin_h = dist_h(mt);
+
+      ::elastica::Vec3 origin{origin_r * std::cos(origin_phi),
+                              origin_r * std::sin(origin_phi), origin_h};
+
+      while (is_violated(origin_point_constraint(origin, R, H)) ||
+             is_violated(min_height_constraint(origin, base_radius))) {
+        origin_r = dist_r(mt);
+        origin_phi = dist_alpha(mt);
+        origin_h = dist_h(mt);
+        origin = ::elastica::Vec3{origin_r * std::cos(origin_phi),
+                                  origin_r * std::sin(origin_phi), origin_h};
+      }
 
       ::elastica::real_t alpha = dist_alpha(mt);
       ::elastica::real_t beta = dist_beta(mt);
@@ -354,13 +423,8 @@ void SnakePit::setup(InputTypes<This> const& input_parameters) {
           base_length * std::sin(beta)};
       ::elastica::Vec3 end_point = origin + relative_endpoint;
 
-      constexpr auto x_axis = 0UL;
-      constexpr auto y_axis = 1UL;
-      constexpr auto z_axis = 2UL;
-
-      while ((end_point[x_axis] * end_point[x_axis] +
-              end_point[y_axis] * end_point[y_axis]) > R * R ||
-             end_point[z_axis] < base_radius || end_point[z_axis] > H) {
+      while (is_violated(end_point_constraint(end_point, R, H)) ||
+             is_violated(min_height_constraint(end_point, base_radius))) {
         alpha = dist_alpha(mt);
         beta = dist_beta(mt);
         relative_endpoint =
@@ -385,7 +449,21 @@ void SnakePit::setup(InputTypes<This> const& input_parameters) {
     }
   };
 
-  random_initialization();
+  auto iequals = [](std::string const& a, std::string const& b) -> bool {
+    return std::equal(a.begin(), a.end(), b.begin(), b.end(),
+                      [](unsigned char a, unsigned char b) {
+                        return std::tolower(a) == std::tolower(b);
+                      });
+  };
+
+  if (iequals(::elastica::get<initialization_protocol>(input_parameters),
+              initialization_protocol::random_cylinder()))
+    random_initialization(with_cylinder_constraint);
+  else if (iequals(::elastica::get<initialization_protocol>(input_parameters),
+                   initialization_protocol::random_cone()))
+    random_initialization(with_cone_constraint);
+  else
+    lattice_initialization();
 
   const auto T = ::elastica::get<time_period>(input_parameters);
   snake_time_period = T;

@@ -50,6 +50,7 @@ def run_snake_pit(
     # Was 5e-1 and 5e-2 before
     contact_stiffness = 5e-2
     contact_damping = 5e-3
+    wall_distance_ratio = 2.0
 
     # gravitational_acc = -9.80665
     gravitational_acc = -0.1
@@ -58,8 +59,13 @@ def run_snake_pit(
     activation_start_time_nd = 5.0
 
     # Initialization
-    packing_initial_vertical_span_ratio = 4.0
-    packing_initial_radial_span_ratio = 1.0
+    initialization_protocol = "random-cone"
+    if initialization_protocol == "random-cylinder":
+        packing_initial_vertical_span_ratio = 4.0
+        packing_initial_radial_span_ratio = 1.0
+    elif initialization_protocol == "random-cone":
+        packing_initial_vertical_span_ratio = 1.5
+        packing_initial_radial_span_ratio = 1.0
 
     # Time and recording
     final_time = (12.0) * time_period
@@ -84,6 +90,8 @@ def run_snake_pit(
         wave_length=wave_length,
         packing_initial_radial_span_ratio=packing_initial_radial_span_ratio,
         packing_initial_vertical_span_ratio=packing_initial_vertical_span_ratio,
+        wall_distance_ratio=wall_distance_ratio,
+        initialization_protocol=initialization_protocol,
         samples_per_period=samples_per_period,
         final_sim_time=final_time,
         dt=dt,

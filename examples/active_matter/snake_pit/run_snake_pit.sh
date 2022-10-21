@@ -15,6 +15,8 @@
 --time_period 2.0 \
 --wave_length 1.0 \
 --activation_start_time_nd 5.0 \
+--wall_distance_ratio 2.0 \
+--initialization_protocol random-cylinder \
 --packing_initial_vertical_span_ratio 16 \
 --packing_initial_radial_span_ratio 1 \
 --samples_per_period 32 \

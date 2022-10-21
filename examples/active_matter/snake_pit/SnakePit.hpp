@@ -194,6 +194,24 @@ TODO
     static type default_value() { return 1.0; }
   };
 
+  struct wall_distance_ratio {
+    using type = ::elastica::real_t;
+    static constexpr String help = {
+        "Ratio of wall-wall distance to snake length"};
+    static type default_value() { return 2.0; }
+  };
+
+  struct initialization_protocol {
+    using type = std::string;
+    static constexpr String help = {"Initialization protocol"};
+
+    static type lattice() { return "lattice"; }
+    static type random_cone() { return "random-cone"; }
+    static type random_cylinder() { return "random-cylinder"; }
+
+    static type default_value() { return random_cylinder(); }
+  };
+
   struct samples_per_period {
     using type = std::size_t;
     static constexpr String help = {"Number of samples per time-period"};
@@ -217,7 +235,8 @@ TODO
       damping, contact_stiffness, contact_damping, gravitational_acc, n_snakes,
       time_period, activation_start_time_nd, wave_length,
       packing_initial_vertical_span_ratio, packing_initial_radial_span_ratio,
-      samples_per_period, final_sim_time, dt>;
+      wall_distance_ratio, initialization_protocol, samples_per_period,
+      final_sim_time, dt>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);
