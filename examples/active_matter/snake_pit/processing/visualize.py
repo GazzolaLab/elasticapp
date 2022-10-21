@@ -58,7 +58,7 @@ def run_snake_pit(
     activation_start_time_nd = 5.0
 
     # Initialization
-    packing_initial_vertical_span_ratio = 16.0
+    packing_initial_vertical_span_ratio = 4.0
     packing_initial_radial_span_ratio = 1.0
 
     # Time and recording
@@ -157,6 +157,20 @@ def run_snake_pit(
     # initial
     collect_stats_from(cs)
     if True:
+        # Print packing fraction
+        pf = (
+            n_snakes
+            * (radius * radius)
+            * length
+            / (
+                (packing_initial_radial_span_ratio * packing_initial_radial_span_ratio)
+                * packing_initial_vertical_span_ratio
+                * length
+                * length
+                * length
+            )
+        )
+        print(f"Occupancy : {pf}")
         with plt.style.context("ggplot"):
             fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
             ax = plt.axes(projection="3d")  # fig.add_subplot(111)
