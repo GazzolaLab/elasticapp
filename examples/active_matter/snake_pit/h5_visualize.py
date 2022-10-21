@@ -207,7 +207,7 @@ def draw_large(snapshot_with_metadata, n_rods):
 def calculate_regions(total_work, section, frame_skip, num_cores):
     work_per_section = total_work // num_cores
     start = section * work_per_section
-    stop = start + work_per_section
+    stop = total_work if section == (num_cores - 1) else start + work_per_section
     skip = frame_skip
     return start, stop, skip
 
