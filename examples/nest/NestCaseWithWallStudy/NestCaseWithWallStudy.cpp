@@ -234,27 +234,45 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
 
   // Moving Wall Configuration
   const ::elastica::real_t top_wall_speed(5.0);
-  const ::elastica::real_t final_height_high(80);
-  const ::elastica::real_t final_height_low(60);
+  const ::elastica::real_t final_height_high(95);
+  const ::elastica::real_t final_height_low(75);
   const ::elastica::real_t rectified_time(10.0);  // wait til
   const ::elastica::real_t duration((final_height_high - final_height_low) / top_wall_speed);
+  auto get_phase = [=](::elastica::real_t time_v) -> ::elastica::real_t {
+    auto const shifted_time = (time_v - rectified_time);
+    // duration is half-cycle : two durations is one cycle
+    auto const oscillation_count = static_cast<int>(shifted_time / duration);
+
+    bool const moving_upward(oscillation_count % 2);
+    bool const moving_downward = !moving_upward;
+
+    // 0.0 < phase < 1.0, phase within duration
+    auto const phase =
+        (shifted_time - (duration * ::elastica::real_t(oscillation_count))) /
+        duration;
+    // if moving downward return phase, else return 1.0 - phase
+    return ::elastica::real_t(moving_downward) * phase +
+           ::elastica::real_t(moving_upward) * (1.0 - phase);
+  };
+
   auto top_moving_wall_position =
-      [=](::elastica::real_t time) noexcept -> ::elastica::real_t {
-    bool rectified(time < rectified_time);
-    std::size_t oscillation_count = (time - rectified_time) / duration;
-    bool direction(oscillation_count % 2); // False: moving downward, True: moving upward
-
-    ::elastica::real_t loc = (time - rectified_time - (duration * oscillation_count)) / duration;
-    loc = !direction * loc + direction * (1.0-loc); // Reverse direction
-
-    return rectified * original_top_height + (!rectified) * (final_height_high - ((final_height_high - final_height_low) * loc));
+      [=](::elastica::real_t time_v) noexcept -> ::elastica::real_t {
+    bool const is_static(time_v < rectified_time);
+    // Discontinuity at time t = rectified_time
+    return is_static
+               ? original_top_height
+               : (final_height_high -
+                  ((final_height_high - final_height_low) * get_phase(time_v)));
   };
   auto top_moving_wall_velocity =
-      [=](::elastica::real_t time) noexcept -> ::elastica::real_t{
-    bool rectified(time < rectified_time);
-    std::size_t oscillation_count = (time - rectified_time) / duration;
-    bool direction(oscillation_count % 2); // False: moving downward, True: moving upward
-    return (direction + (-1 * !direction)) * top_wall_speed;
+      [=](::elastica::real_t time_v) noexcept -> ::elastica::real_t {
+    bool const is_static(time_v < rectified_time);
+    auto const shifted_time = (time_v - rectified_time);
+    // duration is half-cycle : two durations is one cycle
+    auto const oscillation_count = static_cast<int>(shifted_time / duration);
+    bool const moving_upward(oscillation_count % 2);
+
+    return is_static ? 0.0 : (moving_upward ? top_wall_speed : -top_wall_speed);
   };
 
   auto always_zero_ = [](::elastica::real_t) noexcept -> ::elastica::real_t {
@@ -362,13 +380,13 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
 void NestCaseWithWallStudy::step() {
   // Reduce contact detection interval
   /*
-  const std::uint64_t flag_iteration(5.0 / current_dt());
+  const std::uint64_t flag_iteration(10.0 / current_dt());
   if (get_current_iteration().step() == flag_iteration) {
     auto& collision_solver =
         simulator
             ->get_environment<elastica::environments::tags::CollisionSystem>();
     collision_solver->time_interval_between_detection() =
-        1000.0 * current_dt();  // anything > 0.0
+        10.0 * current_dt();  // anything > 0.0
                                 // set_dt(1.0e-6);
   }
 
