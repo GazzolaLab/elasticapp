@@ -452,8 +452,13 @@ void NestCaseWithWallStudy::run() {
                            study.get_current_iteration()})};
     using ::elastica::for_each;
     writer(::elastica::io::make_nvp("profiling", study.simulator->timers()));
+    auto& collision_system =
+        simulator
+            ->get_environment<elastica::environments::tags::CollisionSystem>();
+    writer(::elastica::io::make_nvp("collision_system_profiling", collision_system->timers()));
     // Reset after every write.
     for_each(study.simulator->timers(), [](auto& tim) { tim.reset(); });
+    for_each(collision_system->timers(), [](auto& tim) { tim.reset(); });
   };
   record_profiling_data(*this);
 
