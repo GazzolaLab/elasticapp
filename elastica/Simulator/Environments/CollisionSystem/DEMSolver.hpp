@@ -321,7 +321,7 @@ namespace elastica {
         using type = Transferer;
       };
       //! Empty
-      struct AllCollisionSystemSteps;
+      struct AllCollisionSystemSteps{};
       //************************************************************************
 
       //@}
