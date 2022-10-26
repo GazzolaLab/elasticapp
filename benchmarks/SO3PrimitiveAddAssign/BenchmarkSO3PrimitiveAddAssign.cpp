@@ -11,8 +11,10 @@
 #include "ModuleSettings/Vectorization.hpp"
 #include "SO3PrimitiveAddAssignSetup.hpp"
 #include "Systems/States/Expressions/backends/blaze/SO3PrimitiveAssign.hpp"
+#include "Utilities/DefineTypes.h"
 
 std::size_t n_values = 1UL;
+elastica::real_t inclination = 0.;
 
 TEST_CASE("BenchmarkSO3PrimitiveAddAssign") {
   using namespace elastica::states::detail;
@@ -26,30 +28,30 @@ TEST_CASE("BenchmarkSO3PrimitiveAddAssign") {
     blaze::randomize(Q_input);
     DH_mat w_input(3UL, n_values);
     blaze::randomize(w_input);
-
+    SO3PrimitiveAddAssignBenchmarkSetup<SO3AddAssignKind::scalar> bench(n_values, inclination);
     meter.measure([&] {
-      ::elastica::states::SO3_primitive_assign(Q_output, Q_input, w_input);
-      return w_input;
+      ::elastica::states::SO3_primitive_assign(bench.Q_input, bench.Q_input, bench.w_input);
+      return std::ref(bench.w_input);
     });
   };
 
   BENCHMARK_ADVANCED("Add assign scalar")
   (Catch::Benchmark::Chronometer meter) {
-    SO3PrimitiveAddAssignBenchmarkSetup<SO3AddAssignKind::scalar> bench{
-        n_values};
+    SO3PrimitiveAddAssignBenchmarkSetup<SO3AddAssignKind::scalar> bench(n_values, inclination);
     meter.measure([&] {
       bench.run();
-      return bench.w_input;
+      return std::ref(bench.w_input);
     });
   };
 
 #if ELASTICA_USE_VECTORIZATION
   BENCHMARK_ADVANCED("Add assign SIMD")
   (Catch::Benchmark::Chronometer meter) {
-    SO3PrimitiveAddAssignBenchmarkSetup<SO3AddAssignKind::simd> bench{n_values};
+    SO3PrimitiveAddAssignBenchmarkSetup<SO3AddAssignKind::simd> bench(
+        n_values, inclination);
     meter.measure([&] {
       bench.run();
-      return bench.w_input;
+      return std::ref(bench.w_input);
     });
   };
 #endif
@@ -65,7 +67,8 @@ int main(int argc, char* argv[]) {
   // Build a new parser on top of Catch2's
   using namespace Catch::clara;
   auto cli = session.cli()  // Get Catch2's command line parser
-             | Opt(n_values, "n")["--n_values"]("how many values?");
+             | Opt(n_values, "n")["--n_values"]("how many values?") |
+             Opt(inclination, "i")["--inclination"]("inclination");
   session.cli(cli);
 
   // Let Catch (using Clara) parse the command line

@@ -22,11 +22,12 @@ struct InvRotateDivideTimingSetup {
   using Length = blaze::DynamicVector<::elastica::real_t>;
 
   // can throw :(
-  static auto setup(const std::size_t n_values) {
+  static auto setup(const std::size_t n_values,
+                    ::elastica::real_t const inclination) {
     R Q(3UL, 3UL, n_values);
 
     for (std::size_t k(0UL); k < n_values; ++k) {
-      const auto angle = ::elastica::real_t(k) * M_PI / 20.0;
+      const auto angle = ::elastica::real_t(k) * inclination;
       ::blaze::columnslice(Q, k) =
           elastica::Rot3{{std::cos(angle), -std::sin(angle), 0.0},
                          {std::sin(angle), std::cos(angle), 0.0},
@@ -49,8 +50,11 @@ struct InvRotateDivideTimingSetup {
     return std::make_tuple(std::move(Q), std::move(kappa), std::move(temp));
   };
 
-  explicit InvRotateDivideTimingSetup(const std::size_t n_values = 256UL) {
-    std::tie(Q_input, kappa_output, length_input) = setup(n_values);
+  explicit InvRotateDivideTimingSetup(
+      std::size_t const n_values = 256UL,
+      ::elastica::real_t const inclination = 0.0) {
+    std::tie(Q_input, kappa_output, length_input) =
+        setup(n_values, inclination);
   }
 
   void run() noexcept {

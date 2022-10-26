@@ -12,8 +12,8 @@
 //
 #include <blaze/math/DynamicMatrix.h>
 #include <blaze_tensor/math/DynamicTensor.h>
-#include <tuple>
 #include <random>
+#include <tuple>
 
 template <::elastica::states::detail::SO3AddAssignKind K>
 struct SO3PrimitiveAddAssignBenchmarkSetup {
@@ -21,7 +21,8 @@ struct SO3PrimitiveAddAssignBenchmarkSetup {
   using DH_mat = blaze::DynamicMatrix<::elastica::real_t>;
 
   // can throw :(
-  static auto setup(const std::size_t n_values) {
+  static auto setup(const std::size_t n_values,
+                    ::elastica::real_t const inclination) {
     H_mat Q_input_fill(3UL, 3UL, n_values);
     DH_mat w_input_fill(3UL, n_values);
 
@@ -38,7 +39,7 @@ struct SO3PrimitiveAddAssignBenchmarkSetup {
     }
 
     for (auto idx = 0UL; idx < n_values; ++idx) {
-      const auto angle = d(gen) * M_PI / 3.0;  // around 6.0
+      const auto angle = d(gen) * inclination;  // around 6.0
       Q_input_fill(0UL, 0UL, idx) = std::cos(angle);
       Q_input_fill(0UL, 1UL, idx) = -std::sin(angle);
       Q_input_fill(0UL, 2UL, idx) = 0.0;
@@ -56,8 +57,9 @@ struct SO3PrimitiveAddAssignBenchmarkSetup {
   };
 
   explicit SO3PrimitiveAddAssignBenchmarkSetup(
-      const std::size_t n_values = 256UL) {
-    std::tie(Q_input, w_input) = setup(n_values);
+      const std::size_t n_values = 256UL,
+      ::elastica::real_t const inclination = 0.0) {
+    std::tie(Q_input, w_input) = setup(n_values, inclination);
   }
 
   void run() noexcept {
