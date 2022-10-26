@@ -19,7 +19,9 @@
 #include <chrono>
 #include <ctime>
 #include <elastica/ErrorHandling/FloatingPointExceptions.hpp>
+#include <elastica/Simulator/IO/YAML.hpp>
 #include <elastica/Simulator/Materials.hpp>
+#include <elastica/Simulator/Utilities/Serialize.hpp>
 #include <elastica/Utilities/Get.hpp>
 #include <elastica/Utilities/Size.hpp>
 #include <iomanip>
@@ -183,7 +185,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
       rotational_mode_damping_coeff(row_idx, column_idx) = std::pow(
           rotational_mode_damping_coeff(row_idx, column_idx),
           ::elastica::get<::elastica::tags::InvMassSecondMomentOfInertia>(rod)(
-              row_idx, row_idx, column_idx));
+              row_idx, column_idx));
     }
   }
   // setting analytical damper via constraint
@@ -237,7 +239,8 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   const ::elastica::real_t final_height_high(95);
   const ::elastica::real_t final_height_low(75);
   const ::elastica::real_t rectified_time(10.0);  // wait til
-  const ::elastica::real_t duration((final_height_high - final_height_low) / top_wall_speed);
+  const ::elastica::real_t duration((final_height_high - final_height_low) /
+                                    top_wall_speed);
   auto get_phase = [=](::elastica::real_t time_v) -> ::elastica::real_t {
     auto const shifted_time = (time_v - rectified_time);
     // duration is half-cycle : two durations is one cycle
@@ -284,7 +287,8 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
       ek::translate_along<elastica::EulerianFrame::Y>(
           ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
       ek::translate_along<elastica::EulerianFrame::Z>(
-          ek::mark_position(ImposedHalfSpace::anchor_to_com_p(top_moving_wall_position)),
+          ek::mark_position(
+              ImposedHalfSpace::anchor_to_com_p(top_moving_wall_position)),
           ek::mark_velocity(top_moving_wall_velocity)));
   imposed_half_space_top_ref = simulator->emplace_back<ImposedHalfSpace>(
       ::elastica::collision::HalfSpacePrimitive(
@@ -416,7 +420,8 @@ void NestCaseWithWallStudy::run() {
                               ::elastica::real_t, ::elastica::real_t>;
   std::vector<RodCoordinates> rod_coordinates;
   std::vector<Energies> energies;
-  using TimesAndForces = std::tuple<::elastica::real_t, ::elastica::Vec3, ::elastica::real_t>;
+  using TimesAndForces =
+      std::tuple<::elastica::real_t, ::elastica::Vec3, ::elastica::real_t>;
   std::vector<TimesAndForces> times_and_forces;
 
   //  explicitly get the system
@@ -437,6 +442,21 @@ void NestCaseWithWallStudy::run() {
   std::cout << std::fixed << std::setprecision(1);
   float current_progress = 0.0;
   auto stime = std::chrono::system_clock::now();
+
+  ::elastica::io::YAMLMetadata metadata{};
+
+  auto record_profiling_data = [&](auto& study) {
+    // This is a hack around YamlCPP deficiences
+    ::elastica::io::YAMLOutputArchive writer{
+        metadata.write_at({study.get_current_time(), study.get_dt(),
+                           study.get_current_iteration()})};
+    using ::elastica::for_each;
+    writer(::elastica::io::make_nvp("profiling", study.simulator->timers()));
+    // Reset after every write.
+    for_each(study.simulator->timers(), [](auto& tim) { tim.reset(); });
+  };
+  record_profiling_data(*this);
+
   for (std::size_t i = 0UL; i < n_steps; ++i) {
     // Progress Bar
     float progress = float(i) / float(n_steps);
@@ -467,8 +487,6 @@ void NestCaseWithWallStudy::run() {
 
     // Logging
     if (not(current_iteration() % write_interval)) {
-      // if (1) {
-
       // Record energy
       for (auto const& rod_ref : rod_refs) {
         energies.emplace_back(
@@ -513,7 +531,9 @@ void NestCaseWithWallStudy::run() {
 
       // record plane
       auto& imposed_plane = imposed_half_space_bottom_ref.get();
-      times_and_forces.emplace_back(current_time(), imposed_plane.get_force(), imposed_half_space_top_ref.get().get_position()[2UL]);
+      times_and_forces.emplace_back(
+          current_time(), imposed_plane.get_force(),
+          imposed_half_space_top_ref.get().get_position()[2UL]);
       sprintf(file_name, "data/imposed_plane_%010d.csv", i);
       std::ofstream nest_diagnostics_file;
       nest_diagnostics_file.open(file_name);
@@ -524,7 +544,7 @@ void NestCaseWithWallStudy::run() {
                               << "," << std::get<ForceVector>(tf)[x_axis] << ","
                               << std::get<ForceVector>(tf)[y_axis] << ","
                               << std::get<ForceVector>(tf)[z_axis] << ","
-                              << std::get<2UL>(tf) << "\n"; // Z-Position
+                              << std::get<2UL>(tf) << "\n";  // Z-Position
       }
       nest_diagnostics_file << std::endl;
       nest_diagnostics_file.close();
@@ -547,6 +567,8 @@ void NestCaseWithWallStudy::run() {
       }
       temporal_file.close();
       penetrations.clear();
+
+      record_profiling_data(*this);
     }
 
     // Actual STEP!!
