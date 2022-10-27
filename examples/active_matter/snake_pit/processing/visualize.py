@@ -66,6 +66,9 @@ def run_snake_pit(
     elif initialization_protocol == "random-cone":
         packing_initial_vertical_span_ratio = 1.5
         packing_initial_radial_span_ratio = 1.0
+    elif initialization_protocol == "random-cube":
+        packing_initial_vertical_span_ratio = 1.5
+        packing_initial_radial_span_ratio = 1.0
 
     # Time and recording
     final_time = (12.0) * time_period
@@ -165,19 +168,26 @@ def run_snake_pit(
     # initial
     collect_stats_from(cs)
     if True:
-        # Print packing fraction
-        pf = (
-            n_snakes
-            * (radius * radius)
-            * length
-            / (
-                (packing_initial_radial_span_ratio * packing_initial_radial_span_ratio)
-                * packing_initial_vertical_span_ratio
-                * length
-                * length
-                * length
-            )
+        initialization_volume = 0.0
+        volume_occupied_by_active_matter = np.pi * (
+            n_snakes * (radius * radius) * length
         )
+        volume_common = (
+            (packing_initial_radial_span_ratio * packing_initial_radial_span_ratio)
+            * packing_initial_vertical_span_ratio
+            * length
+            * length
+            * length
+        )
+        # Print packing fraction
+        if initialization_protocol == "random-cylinder":
+            initialization_volume = np.pi * volume_common
+        elif initialization_protocol == "random-cone":
+            initialization_volume = (np.pi / 3.0) * volume_common
+        elif initialization_protocol == "random-cube":
+            initialization_volume = 4.0 * volume_common  # side is 2R
+        pf = volume_occupied_by_active_matter / initialization_volume
+
         print(f"Occupancy : {pf}")
         with plt.style.context("ggplot"):
             fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
