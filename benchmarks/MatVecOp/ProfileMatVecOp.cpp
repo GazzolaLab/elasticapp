@@ -37,7 +37,7 @@ int main(const int argc, const char** argv) {
   MatVecOpTimingSetup<MatVecKind::blaze> blaze_bench(n_values);
   MatVecOpTimingSetup<MatVecKind::scalar> scalar_bench(n_values);
 #if ELASTICA_USE_VECTORIZATION
-  MatVecOpTimingSetup<MatVecOpKind::simd> simd_bench(n_values);
+  MatVecOpTimingSetup<MatVecKind::simd> simd_bench(n_values);
 #endif
 
   for (std::size_t i = 0; i < n_samples; ++i)
