@@ -504,13 +504,19 @@ void SnakePit::setup(InputTypes<This> const& input_parameters) {
       // want this. So we give considerable leeway here.
       return initial >> 3;
     };
+
+    // PARAMETER
+    const auto min_n_layers(8UL);
+
     auto is_height_ok = [&](elastica::real_t guess_height) {
       const auto max_n_layers(
           static_cast<std::size_t>(guess_height / (2.0 * base_radius)));
       const auto max_n_snakes_per_layer(
           static_cast<std::size_t>(4 * R * R / base_radius / base_length));
-      return ((max_n_layers * adjust_num_snakes_per_layer(
-                                  max_n_snakes_per_layer))) > number_of_snakes;
+      return ((max_n_layers *
+               adjust_num_snakes_per_layer(max_n_snakes_per_layer))) >
+                 number_of_snakes &&
+             (min_n_layers < max_n_layers);
     };
 
     // Double till we get a number that makes physical sense.
@@ -518,8 +524,9 @@ void SnakePit::setup(InputTypes<This> const& input_parameters) {
       adjusted_height *= 2.0;
     }
     const auto number_of_snakes_per_layer(
-        adjust_num_snakes_per_layer(static_cast<std::size_t>(
-            elastica::real_t(number_of_snakes) / adjusted_height)));
+        std::min(adjust_num_snakes_per_layer(static_cast<std::size_t>(
+                     elastica::real_t(number_of_snakes) / adjusted_height)),
+                 (number_of_snakes / min_n_layers)));
 
     const auto n_layers = (number_of_snakes / number_of_snakes_per_layer) + 1UL;
 

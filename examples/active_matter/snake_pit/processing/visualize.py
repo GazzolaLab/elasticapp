@@ -68,7 +68,7 @@ def run_snake_pit(
         packing_initial_radial_span_ratio = 1.0
     elif initialization_protocol == "random-cube":
         packing_initial_vertical_span_ratio = 1.5
-        packing_initial_radial_span_ratio = 1.0
+        packing_initial_radial_span_ratio = 0.5 * wall_distance_ratio
 
     # Time and recording
     final_time = (12.0) * time_period
@@ -189,6 +189,16 @@ def run_snake_pit(
         pf = volume_occupied_by_active_matter / initialization_volume
 
         print(f"Occupancy : {pf}")
+        with plt.style.context("ggplot"):
+            hfig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
+            hax = hfig.add_subplot(111)
+
+            z_pos = []
+            for r in total_stats.rod_stats:
+                position_of_rod = np.asarray(r.position)
+                z_pos.append(position_of_rod[0, 2][0])
+            hax.hist(np.array(z_pos), bins=np.arange(1, 19, 1) * radius)
+
         with plt.style.context("ggplot"):
             fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
             ax = plt.axes(projection="3d")  # fig.add_subplot(111)
