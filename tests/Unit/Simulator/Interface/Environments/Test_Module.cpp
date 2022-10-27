@@ -202,6 +202,39 @@ namespace {
 
   // clang-format off
   ELASTICA_TEST_CASE(
+      "Unit.Simulator.Interface.Environments.Module.timers",
+      "[Unit][Simulator][Interface][Environments]") {
+    // clang-format on
+
+    using EnvironmentTags = tmpl::list<MockFieldTag>;
+    auto env_config =
+        mock::make_environments_configuration_with_tags<EnvironmentTags>(
+            ::elastica::configuration::seq);
+    auto sim_config(mock::make_simulator_configuration(
+        env_config,
+        // needed for iteration policy
+        get_systems_configuration(), WithPrimitivesConfiguration{},
+        WithMockFieldConfiguration{}));
+
+    // check cases without an error first.
+    bool arg_all_registered = true;
+    bool is_final = false;
+    auto sim = mock::make_simulator<::mock::EnvironmentsModule>(
+        sim_config, arg_all_registered, is_final);
+    sim.finalize();
+
+    (void)(sim.environment_timers());
+    (void)(cpp17::as_const(sim).environment_timers());
+    CHECK(cpp17::as_const(sim).get_environment_timer<MockFieldTag>().counter() == 0UL);
+    sim.get_environment_timer<MockFieldTag>().start();
+    sim.get_environment_timer<MockFieldTag>().stop();
+    CHECK(sim.get_environment_timer<MockFieldTag>().counter() == 1UL);
+    sim.get_environment_timer<MockFieldTag>().get_counter() = 0UL; // mutate
+    CHECK(cpp17::as_const(sim).get_environment_timer<MockFieldTag>().counter() == 0UL);
+  }
+
+  // clang-format off
+  ELASTICA_TEST_CASE(
       "Unit.Simulator.Interface.Environments.Module.apply_environmental_forces",
       "[Unit][Simulator][Interface][Environments]") {
     // clang-format on
@@ -261,11 +294,15 @@ namespace {
     // which test is executed first. But we can check what its not
     CHECK_FALSE(std::get<0UL>(sim.environments())->status ==
                 FieldStatus::resetted);
+    sim.get_environment_timer<MockFieldTag>().start();
+    sim.get_environment_timer<MockFieldTag>().stop();
+    CHECK(sim.get_environment_timer<MockFieldTag>().counter() == 1UL);
 
     ::elastica::Time time_v{0.0};
     sim.reset_module(time_v);
 
     CHECK(std::get<0UL>(sim.environments())->status == FieldStatus::resetted);
+    CHECK(sim.get_environment_timer<MockFieldTag>().counter() == 0UL);
   }
 
 }  // namespace

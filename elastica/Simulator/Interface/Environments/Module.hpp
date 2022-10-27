@@ -36,6 +36,8 @@
 #include "Simulator/Interface/Environments/WithImposedPrimitives.hpp"
 #include "Simulator/Interface/Environments/WithPrimitives.hpp"
 ///
+///
+#include "Simulator/Utilities/Timers.hpp"
 /// Serialization support
 #include "Simulator/IO/Serialization/Types.hpp"
 /// Utilities
@@ -181,6 +183,15 @@ namespace elastica {
       friend struct ::elastica::io::Serialize<This>;
       //************************************************************************
 
+     protected:
+      //************************************************************************
+      /*!\name Profiler type definitions */
+      //@{
+      //! Cache for timers for profiling the code
+      using EnvTimers = ::elastica::Timers<AdmissibleEnvironmentTags>;
+      //@}
+      //************************************************************************
+
      private:
       //************************************************************************
       /*!\brief Instantiate singletons
@@ -206,7 +217,8 @@ namespace elastica {
       Environments()
           : ImposedPrimitivesInterface(),
             environments_(
-                This::instantiate_from(ListOfAdmissibleEnvironments{})) {
+                This::instantiate_from(ListOfAdmissibleEnvironments{})),
+            environment_timers_() {
         using namespace ::elastica::logging;
         log<info>([](auto const& log) {
           log << "Successfully initialized the Environments module";
@@ -222,7 +234,8 @@ namespace elastica {
        */
       Environments(Environments&& other) noexcept
           : ImposedPrimitivesInterface(std::move(other)),
-            environments_(std::move(other.environments_)) {}
+            environments_(std::move(other.environments_)),
+            environment_timers_(std::move(other.environment_timers_)) {}
       //************************************************************************
 
       //@}
@@ -315,6 +328,54 @@ namespace elastica {
       //@}
       //************************************************************************
 
+     public:
+      //**Profiling methods*****************************************************
+      /*!\name Profiling methods*/
+      //@{
+
+      //************************************************************************
+      /*!\name Timer functions */
+      //@{
+      /*!\brief Gets the registered timers.
+       *
+       * \note
+       * If elastica_profiling_mode() is disabled, the values within the timer
+       * may not be what is expected.
+       */
+      inline constexpr auto environment_timers() & noexcept -> EnvTimers& {
+        return environment_timers_;
+      }
+      inline constexpr auto environment_timers() const& noexcept
+          -> EnvTimers const& {
+        return environment_timers_;
+      }
+      //@}
+      //************************************************************************
+
+      //************************************************************************
+      /*!\name Timer functions */
+      //@{
+      /*!\brief Get a timer corresponding to an algorithm
+       *
+       * \tparam EnvironmentTag Tag for obtaining the environment
+       * \return Algorithm callable
+       */
+      template <typename EnvironmentTag>
+      inline constexpr decltype(auto) get_environment_timer() & noexcept {
+        using ::elastica::get_meter;
+        return get_meter<EnvironmentTag>(environment_timers());
+      }
+      template <typename EnvironmentTag>
+      inline constexpr decltype(auto) get_environment_timer() const& noexcept {
+        using ::elastica::get_meter;
+        return get_meter<EnvironmentTag>(environment_timers());
+      }
+      //@}
+      //************************************************************************
+
+      //@}
+      //************************************************************************
+
      protected:
       //************************************************************************
       /*!\brief The finalize method.
@@ -370,6 +431,9 @@ namespace elastica {
               EXPAND_PACK_LEFT_TO_RIGHT(reset(*environment, time_v));
             },
             environments());
+
+        using ::elastica::for_each;
+        for_each(environment_timers(), [](auto& meter) { meter.reset(); });
       }
       //************************************************************************
 
@@ -380,6 +444,8 @@ namespace elastica {
       //**Member variables******************************************************
       //! The cache for all admissible environments
       AdmissibleEnvironments environments_;
+      //! Timer caches
+      EnvTimers environment_timers_;
       //************************************************************************
     };
     //**************************************************************************

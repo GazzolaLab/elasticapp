@@ -17,6 +17,8 @@
 // Includes
 //******************************************************************************
 
+#include "ModuleSettings/Profiling.hpp"
+//
 #include "Simulator/Configuration/ModuleConfiguration/ExecutionPolicy.hpp"
 #include "Simulator/Configuration/ModuleConfiguration/Streams.hpp"  // string
 //
@@ -161,11 +163,22 @@ namespace elastica {
             module_handle.for_each_imposed_primitive(
                 [](auto& p) { p.reset_forces_and_torques(); });
 
-            cpp17::apply(
-                [time_v, &simulator = module_handle](auto const&... envs) {
-                  EXPAND_PACK_LEFT_TO_RIGHT((envs->resolve(simulator, time_v)));
-                },
-                module_handle.environments());
+            tmpl::for_each<typename TotalSimulator::AdmissibleEnvironmentTags>(
+                [this, time_v](auto v) {
+                  using T = tmpl::type_from<decltype(v)>;
+                  ELASTICA_PROFILING_SECTION {
+                    this->module_handle.template get_environment_timer<T>()
+                        .start();
+                  }
+
+                  ((this->module_handle).template get_environment<T>())
+                      ->resolve(this->module_handle, time_v);
+
+                  ELASTICA_PROFILING_SECTION {
+                    this->module_handle.template get_environment_timer<T>()
+                        .stop();
+                  }
+                });
           }
           //********************************************************************
 
@@ -242,11 +255,23 @@ namespace elastica {
             module_handle.for_each_imposed_primitive(
                 [](auto& p) { p.reset_forces_and_torques(); });
 
-            cpp17::apply(
-                [time_v, &simulator = module_handle](auto const&... envs) {
-                  EXPAND_PACK_LEFT_TO_RIGHT((envs->resolve(simulator, time_v)));
-                },
-                module_handle.environments());
+            // Unsure if parallel processing is safe-here.
+            tmpl::for_each<typename TotalSimulator::AdmissibleEnvironmentTags>(
+                [this, time_v](auto v) {
+                  using T = tmpl::type_from<decltype(v)>;
+                  ELASTICA_PROFILING_SECTION {
+                    this->module_handle.template get_environment_timer<T>()
+                        .start();
+                  }
+
+                  ((this->module_handle).template get_environment<T>())
+                      ->resolve(this->module_handle, time_v);
+
+                  ELASTICA_PROFILING_SECTION {
+                    this->module_handle.template get_environment_timer<T>()
+                        .stop();
+                  }
+                });
           }
           //********************************************************************
 

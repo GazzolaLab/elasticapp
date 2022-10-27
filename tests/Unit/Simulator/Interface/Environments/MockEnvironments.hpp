@@ -9,6 +9,7 @@
 #include "Simulator/Configuration/ModuleConfiguration/Environments.hpp"
 #include "Simulator/Interface/Environments/ExecutionPolicy.hpp"
 #include "Simulator/Interface/Environments/Module.hpp"
+#include "Simulator/Utilities/Timers.hpp"
 #include "Time/SimulationTime.hpp"
 #include "Utilities/NonCopyable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -111,7 +112,34 @@ namespace mock {
     inline constexpr auto environments() const& -> Container const& {
       return envs;
     }
+
+    using AdmissibleEnvironmentTags = tmpl::integral_list<std::size_t, 0, 1, 2>;
+    using Timers = elastica::Timers<AdmissibleEnvironmentTags>;
+
+    template <typename Tag>
+    inline constexpr auto get_environment() & -> Pointer& {
+      return std::get<Tag::value>(envs);
+    }
+
+    template <typename Tag>
+    inline constexpr auto get_environment() const& -> Pointer const& {
+      return std::get<Tag::value>(envs);
+    }
+
+    template <typename Tag>
+    inline constexpr decltype(auto) get_environment_timer() & {
+      using ::elastica::get_meter;
+      return get_meter<Tag>(timers);
+    }
+
+    template <typename Tag>
+    inline constexpr decltype(auto) get_environment_timer() const& {
+      using ::elastica::get_meter;
+      return get_meter<Tag>(timers);
+    }
+
     Container envs = {nullptr, nullptr, nullptr};
+    Timers timers;
   };
 
   struct EnvInternalTraits {
