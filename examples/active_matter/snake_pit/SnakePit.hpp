@@ -208,6 +208,7 @@ TODO
     static type lattice() { return "lattice"; }
     static type random_cone() { return "random-cone"; }
     static type random_cylinder() { return "random-cylinder"; }
+    static type random_cube() { return "random-cube"; }
 
     static type default_value() { return random_cylinder(); }
   };
