@@ -33,16 +33,17 @@
 
 // not advisable, but okay since Simulator is already tested
 using CosseratRod = ::elastica::cosserat_rod::CosseratRod;
+using CosseratRodWithoutDamping =
+    ::elastica::cosserat_rod::CosseratRodWithoutDamping;
 
 struct Configuration {
   static inline auto make_simulator_configuration() {
     namespace ec = elastica::configuration;
-    auto system_config =
-        ec::make_systems_configuration<tmpl::list<CosseratRod>>(
-            ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{50UL}),
-            ec::make_iteration_policy(
-                ec::iterate_across_system_types_in(ec::seq),
-                ec::iterate_over_systems_in(ec::seq)));
+    auto system_config = ec::make_systems_configuration<
+        tmpl::list<CosseratRod, CosseratRodWithoutDamping>>(
+        ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{50UL}),
+        ec::make_iteration_policy(ec::iterate_across_system_types_in(ec::seq),
+                                  ec::iterate_over_systems_in(ec::seq)));
 
     return ec::make_simulator_configuration(ec::DefaultDomainConfiguration{},
                                             system_config,
@@ -53,6 +54,31 @@ struct Configuration {
     return elastica::make_simulator<>(make_simulator_configuration());
   }
 };
+
+// See if overloadable
+
+using CosseratRodWithoutDampingBlock =
+    ::elastica::cosserat_rod::detail::CosseratRodWithoutDampingBlock;
+
+namespace elastica {
+
+  namespace environments {
+
+    //**************************************************************************
+    /*!\brief Resolves the forces from a gravity field
+     * \ingroup environments
+     *
+     * \param field Gravity field to be reset
+     * \param system System onto which gravity should be applied
+     */
+    template <typename Traits>
+    void resolve(::elastica::environments::GravityField<Traits> const& field,
+                 CosseratRodWithoutDampingBlock& system) {}
+    //**************************************************************************
+
+  }  // namespace environments
+
+}  // namespace elastica
 
 namespace {
   using namespace ::elastica::environments;
@@ -135,6 +161,9 @@ namespace {
     auto rod_ref = simulator->emplace_back<CosseratRod>(
         straight_initializer.initialize<CosseratRod>());
 
+    auto undamped_rod_ref = simulator->emplace_back<CosseratRodWithoutDamping>(
+        straight_initializer.initialize<CosseratRodWithoutDamping>());
+
     // Check for external tags
     auto to_vec = [](auto&& blaze_struct) -> std::vector<::elastica::real_t> {
       return std::vector<::elastica::real_t>(
@@ -144,16 +173,25 @@ namespace {
 
     auto actual =
         to_vec(::elastica::get<::elastica::tags::ExternalLoads>(rod_ref.get()));
+    auto actual_undamped =
+        to_vec(::elastica::get<::elastica::tags::ExternalLoads>(
+            undamped_rod_ref.get()));
     auto expected = std::vector<::elastica::real_t>(actual.size(), 0.0);
 
     CHECK_ITERABLE_APPROX(actual, expected);
+    CHECK_ITERABLE_APPROX(actual_undamped, expected);
 
     ::elastica::Time time_v{0.0};
     g->resolve(*simulator, time_v);
 
     actual =
         to_vec(::elastica::get<::elastica::tags::ExternalLoads>(rod_ref.get()));
-    CHECK_FALSE(actual == expected);
+    actual_undamped = to_vec(::elastica::get<::elastica::tags::ExternalLoads>(
+        undamped_rod_ref.get()));
+
+    CHECK_FALSE(actual == expected);  // actual is non-zero
+    CHECK_ITERABLE_APPROX(actual_undamped,
+                          expected);  // actual-undamped is zero
   }
 
 }  // namespace

@@ -38,6 +38,22 @@ namespace elastica {
 
   namespace environments {
 
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <typename Traits, typename System>
+    void resolve(elastica::environments::GravityField<Traits> const& field,
+                 System& simulator);
+    /*! \endcond */
+    //**************************************************************************
+
+  }  // namespace environments
+
+}  // namespace elastica
+
+namespace elastica {
+
+  namespace environments {
+
     //==========================================================================
     //
     //  CLASS DEFINITION
@@ -151,12 +167,9 @@ namespace elastica {
       void resolve(Simulator& simulator, TimeType) {
         // This kernel gets profiled as part of environments, so use the untimed
         // version of block
-        simulator.for_each_block_untimed([this](auto& system) {
-          using LoadTag = ::elastica::tags::ExternalLoads;
-          using MassTag = ::elastica::tags::Mass;
-          ::elastica::get<LoadTag>(system) =
-              blaze::outer(gravity_acc_, ::elastica::get<MassTag>(system));
-        });
+        using elastica::environments::resolve;
+        simulator.for_each_block_untimed(
+            [this](auto& system) { resolve(*this, system); });
       }
       //************************************************************************
 
@@ -170,12 +183,6 @@ namespace elastica {
       //************************************************************************
     };
     //**************************************************************************
-
-    //==========================================================================
-    //
-    //  FREE FUNCTIONS
-    //
-    //==========================================================================
 
     //**************************************************************************
     /*!\brief Resets a gravity field
@@ -205,6 +212,37 @@ namespace elastica {
         /*configuration::GravityFieldUserConfiguration*/ Configuration const&
             config) noexcept {
       field.gravity() = config.gravity();
+    }
+    //**************************************************************************
+
+  }  // namespace environments
+
+}  // namespace elastica
+
+namespace elastica {
+
+  namespace environments {
+
+    //==========================================================================
+    //
+    //  FREE FUNCTIONS
+    //
+    //==========================================================================
+
+    //**************************************************************************
+    /*!\brief Resolves the forces from a gravity field
+     * \ingroup environments
+     *
+     * \param field Gravity field to be reset
+     * \param system System onto which gravity should be applied
+     */
+    template <typename Traits, typename System>
+    void resolve(elastica::environments::GravityField<Traits> const& field,
+                 System& system) {
+      using LoadTag = ::elastica::tags::ExternalLoads;
+      using MassTag = ::elastica::tags::Mass;
+      ::elastica::get<LoadTag>(system) =
+          blaze::outer(field.gravity(), ::elastica::get<MassTag>(system));
     }
     //**************************************************************************
 
