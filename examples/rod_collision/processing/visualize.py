@@ -200,8 +200,17 @@ def run_rod_collision_case_study(
     if save_to_csv:
         import pandas as pd
 
-        # FIXME : DataFrame constructor not called properly
-        pd.DataFrame(first_cosserat_rod_stats).to_csv("first_cosserat_rod_states.csv")
-        pd.DataFrame(second_cosserat_rod_stats).to_csv("second_cosserat_rod_states.csv")
+        # Mutating the statistics is okay as they aren't need it anymore.
+        def exclude_mass(rod_stats):
+            d = vars(rod_stats)
+            d.pop("mass")
+            return d
+
+        pd.DataFrame(exclude_mass(first_cosserat_rod_stats)).to_csv(
+            "first_cosserat_rod_states.csv"
+        )
+        pd.DataFrame(exclude_mass(second_cosserat_rod_stats)).to_csv(
+            "second_cosserat_rod_states.csv"
+        )
 
     plt.show()

@@ -71,9 +71,8 @@ def run_example(
     if save_to_csv:
         import pandas as pd
 
-        # FIXME : DataFrame constructor not called properly
-        pd.DataFrame(first_rod_stats).to_csv("hinge_joint_first.csv")
-        pd.DataFrame(second_rod_stats).to_csv("hinge_joint_second.csv")
+        pd.DataFrame(vars(first_rod_stats)).to_csv("hinge_joint_first.csv")
+        pd.DataFrame(vars(second_rod_stats)).to_csv("hinge_joint_second.csv")
 
     plt.show()
 

@@ -7,7 +7,7 @@ from postprocess import plot_helicalbuckling_results as plot_results
 
 
 def run_example(
-    save_to_csv: bool = False,
+    save_to_disk: bool = False,
     save_figure: bool = False,
 ):
     n_elem = 100
@@ -42,12 +42,10 @@ def run_example(
 
     collect_stats_from(cs)
 
-    if save_to_csv:
-        # FIXME : Expected 1D or 2D array, got 3D array
-        np.savetxt(
-            "final_position_histories.csv",
-            np.asarray(position_histories),
-            delimiter=",",
+    if save_to_disk:
+        np.savez_compressed(
+            "final_position_histories.npz",
+            position_histories=np.asarray(position_histories),
         )
 
     plot_results(n_elem, base_length, position_histories.pop(), save_figure=save_figure)

@@ -26,9 +26,14 @@ def post_process_and_block(
     if save_to_csv:
         import pandas as pd
 
+        # Mutating the statistics' mass is okay as it isnt needed.
+        def as_serializable(rod_stats):
+            d = vars(rod_stats)
+            d.pop("mass")
+            return d
+
         for idx, rod_stats in enumerate(rod_collection_stats):
-            # FIXME : DataFrame constructor not called properly
-            pd.DataFrame(rod_stats).to_csv(f"rod_{idx}_states.csv")
+            pd.DataFrame(as_serializable(rod_stats)).to_csv(f"rod_{idx}_states.csv")
 
     run_on_debug_mode = True
     if run_on_debug_mode:

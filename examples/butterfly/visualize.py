@@ -9,7 +9,9 @@ import click
 
 
 @clickify(
-    click.option("--inclination", default=45.0, type=float, help="Inclination angle in degrees")
+    click.option(
+        "--inclination", default=45.0, type=float, help="Inclination angle in degrees"
+    )
 )
 @replace_docstring(ButterflyCaseStudy.__doc__)
 def run_example(
@@ -65,8 +67,7 @@ def run_example(
     if data:
         import pandas as pd
 
-        # FIXME : DataFrame constructor not called properly
-        pd.DataFrame(stats).to_csv("butterfly.csv")
+        pd.DataFrame(vars(stats)).to_csv("butterfly.csv")
 
     plt.show()
 
