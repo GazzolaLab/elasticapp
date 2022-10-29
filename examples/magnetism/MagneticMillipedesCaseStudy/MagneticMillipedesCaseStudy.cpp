@@ -322,12 +322,12 @@ void MagneticMillipedesCaseStudy::setup(
 
   // ************************************************** //
   /* Collision */
-  // set near-list update time
-  //  auto& collision_solver =
-  //      simulator
-  //          ->get_environment<elastica::environments::tags::CollisionSystem>();
-  //  collision_solver->time_interval_between_detection() =
-  //      1000.0 * dt;
+   set near-list update time
+    auto& collision_solver =
+        simulator
+            ->get_environment<elastica::environments::tags::CollisionSystem>();
+    collision_solver->time_interval_between_detection() =
+        1000.0 * dt;
 
   // ************************************************** //
   /* Gravity */
@@ -576,7 +576,7 @@ void MagneticMillipedesCaseStudy::step() {
 }
 
 void MagneticMillipedesCaseStudy::run() {
-  //enable_floating_point_exceptions();
+  enable_floating_point_exceptions();
 
   // Logging Configuration
   const ::elastica::real_t fps = 60;
