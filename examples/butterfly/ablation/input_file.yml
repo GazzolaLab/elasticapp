@@ -1,0 +1,16 @@
+ButterflyCaseStudy:
+  Parameters:
+    n_rods: 1024
+    n_elements: 16
+    angle_of_inclination: 0.175
+    length : 3.0
+    dt: 0.001875
+    final_sim_time : 40.0
+    BlockingPolicy:
+      # This can be one of these four types
+      RestrictSizeAcrossBlockTypes:
+      # LooselyRestrictSizeAcrossBlockTypes:
+      # AlwaysSameAcrossBlockTypes:
+      # AlwaysNewAcrossBlockTypes:
+        CriterionParameter:
+          Size: 256

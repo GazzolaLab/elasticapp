@@ -53,7 +53,7 @@ void ButterflyCaseStudy::setup(InputTypes<This> const& input_parameters) {
   const ::elastica::Vec3 origin{0.0, 0.0, 0.0};
   const ::elastica::real_t base_length{
       ::elastica::get<length>(input_parameters)};
-  const ::elastica::real_t dl = base_length / n_elem;
+  const ::elastica::real_t dl = base_length / ::elastica::real_t(n_elem);
   const std::size_t half_n_elem = n_elem / 2UL;
 
   const ::elastica::Vec3 horizontal_direction({0.0, 0.0, 1.0});
@@ -103,10 +103,17 @@ void ButterflyCaseStudy::setup(InputTypes<This> const& input_parameters) {
       Init::Director(std::move(director_profile)),
   };
 
-  rod_ref = simulator->emplace_back<CosseratRodWithoutDamping>(
-      initializer.initialize<CosseratRodWithoutDamping>());
+  const auto number_of_rods = ::elastica::get<n_rods>(input_parameters);
+  rod_refs.resize(number_of_rods,
+                  simulator->get_invalid_ref<CosseratRodWithoutDamping>());
+  std::generate(std::begin(rod_refs), std::end(rod_refs), [&]() {
+    return simulator->emplace_back<CosseratRodWithoutDamping>(
+        initializer.initialize<CosseratRodWithoutDamping>());
+  });
 
   simulator->finalize();
+
+  final_time = ::elastica::get<final_sim_time>(input_parameters);
 
   // Set the dt value
   set_dt(::elastica::get<dt>(input_parameters));
@@ -128,12 +135,17 @@ void ButterflyCaseStudy::run() {
                                       TranslationEnergy, RotationEnergy>;
   std::vector<TimesAndEnergies> stats;
 
-  const ::elastica::real_t final_time(40.0);
-
   const auto n_iterations = static_cast<std::size_t>(final_time / current_dt());
 
   constexpr std::size_t write_interval = 200UL;
   stats.reserve(n_iterations / write_interval);
+
+  auto collect_stats = [&]() {
+    stats.push_back(std::tuple_cat(std::make_tuple(current_time()),
+                                   compute_elastic_energy(),
+                                   compute_kinetic_energy()));
+  };
+  collect_stats();
 
   // you can use get_current_iteration() instead of current_iteration()
   // current_iteration() ensures const-correctness
@@ -141,28 +153,64 @@ void ButterflyCaseStudy::run() {
     step();
 
     if (not(current_iteration() % write_interval)) {
-      stats.push_back(std::tuple_cat(std::make_tuple(current_time()),
-                                     compute_elastic_energy(),
-                                     compute_kinetic_energy()));
+      collect_stats();
     }
   }
 
   // TODO : replace with a csv writer
-  std::ofstream my_file;
-  my_file.open("energies.csv");
-  constexpr auto temporal = 0UL;
-  constexpr auto bend_elastic_energy = 1UL;
-  constexpr auto shear_elastic_energy = 2UL;
-  constexpr auto translation_energy = 3UL;
-  constexpr auto rotation_energy = 4UL;
-  for (auto const& st : stats) {
-    my_file << std::setprecision(16)  //
-            << std::get<temporal>(st) << ","
-            << std::get<bend_elastic_energy>(st) << ","
-            << std::get<shear_elastic_energy>(st) << ", "
-            << std::get<translation_energy>(st) << ","
-            << std::get<rotation_energy>(st) << "\n";
+  {
+    std::ofstream my_file;
+    my_file.open("energies.csv");
+    constexpr auto temporal = 0UL;
+    constexpr auto bend_elastic_energy = 1UL;
+    constexpr auto shear_elastic_energy = 2UL;
+    constexpr auto translation_energy = 3UL;
+    constexpr auto rotation_energy = 4UL;
+    for (auto const& st : stats) {
+      const auto total_energy = std::get<bend_elastic_energy>(st) +
+                                std::get<shear_elastic_energy>(st) +
+                                std::get<translation_energy>(st) +
+                                std::get<rotation_energy>(st);
+      my_file << std::setprecision(16)  //
+              << std::get<temporal>(st) << ","
+              << std::get<translation_energy>(st) << ","
+              << std::get<rotation_energy>(st) << ","
+              << std::get<bend_elastic_energy>(st) << ","
+              << std::get<shear_elastic_energy>(st) << "," << total_energy
+              << "\n";
+    }
+    my_file << std::endl;
+    my_file.close();
   }
-  my_file << std::endl;
-  my_file.close();
+
+  // TODO : Replace with the YAML implementation from 371_sweep
+  {
+    std::ofstream my_file;
+    my_file.open("butterfly_profile.csv");
+
+    std::ofstream my_other_file;
+    my_other_file.open("butterfly_metadata.yml");
+
+    auto writer = make_overloader(
+        [&](::elastica::io::NameValuePair<std::size_t&> const& v) {
+          my_other_file << v.name << ": " << v.value << "\n";
+        },
+        // these are for timers in a separate file
+        [&](auto const& v) { my_file << v.value << "\n"; });
+
+    auto record_profiling_data = [&](auto& study) {
+      // This is a hack around YamlCPP deficiences
+      auto& container = study.simulator->get_system_collection_container();
+      std::size_t n_blocks = std::get<0UL>(container).size();
+      writer(::elastica::io::make_nvp("n_blocks", n_blocks));
+      writer(::elastica::io::make_nvp("profiling", study.simulator->timers()));
+    };
+    record_profiling_data(*this);
+
+    my_file << std::endl;
+    my_file.close();
+
+    my_other_file << std::endl;
+    my_other_file.close();
+  }
 }

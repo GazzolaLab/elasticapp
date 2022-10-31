@@ -94,9 +94,15 @@ This test case checks that the bending equations in our Cosserat rod are
 implemented correctly.
 )help"};
 
+  struct n_rods {
+    using type = std::size_t;
+    static constexpr String help = {"Number of rods"};
+    static type default_value() { return 1UL; }
+  };
+
   struct n_elements {
     using type = std::size_t;
-    static constexpr String help = {"Number of elements in the rod"};
+    static constexpr String help = {"Number of elements in one rod"};
     static type default_value() { return 2UL; }
   };
 
@@ -113,6 +119,12 @@ implemented correctly.
     static type default_value() { return 3.0; }
   };
 
+  struct final_sim_time {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Final simulation time"};
+    static type default_value() { return 40.0; }
+  };
+
   struct dt {
     using type = ::elastica::real_t;
     static constexpr String help = {"Time step of simulation"};
@@ -122,31 +134,33 @@ implemented correctly.
     }
   };
 
-  using Parameters = tmpl::list<n_elements, angle_of_inclination, length, dt>;
+  using Parameters = tmpl::list<n_rods, n_elements, angle_of_inclination,
+                                length, final_sim_time, dt>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);
   void step();
   void run();
 
+  inline auto communicate() const {
+    // only communicate the first slice, the rest are the same anyway.
+    return rod_refs[0UL].get();
+  }
+
   auto compute_elastic_energy() const noexcept {
-    auto slice = rod_ref.get();
+    auto slice = communicate();
     return std::make_tuple(::elastica::compute_bend_energy(slice),
                            ::elastica::compute_shear_energy(slice));
   }
 
   auto compute_kinetic_energy() const noexcept {
-    auto slice = rod_ref.get();
+    auto slice = communicate();
     return std::make_tuple(::elastica::compute_translational_energy(slice),
                            ::elastica::compute_rotational_energy(slice));
   }
 
-  inline auto communicate() {
-    return rod_ref.get();
-  }
-
   ButterflyCaseStudy() = default;
-  ButterflyCaseStudy(ButterflyCaseStudy&&) noexcept = default;
+  ButterflyCaseStudy(ButterflyCaseStudy const&) = default;
 
   decltype(Configuration::make_time_stepper()) time_stepper =
       Configuration::make_time_stepper();
@@ -154,7 +168,8 @@ implemented correctly.
       Configuration::make_simulator();
   using RodRef =
       decltype(simulator->get_invalid_ref<CosseratRodWithoutDamping>());
-  RodRef rod_ref = simulator->get_invalid_ref<CosseratRodWithoutDamping>();
+  std::vector<RodRef> rod_refs;
+  ::elastica::real_t final_time;
 };
 
 ELASTICA_REGISTER_CASE_STUDY(ButterflyCaseStudy);

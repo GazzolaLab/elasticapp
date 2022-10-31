@@ -4,7 +4,7 @@ from elasticapp.CaseStudies.PyButterflyCaseStudy import ButterflyCaseStudy
 from matplotlib import pyplot as plt
 
 from cli import track_simulation, replace_docstring, clickify
-from postprocess import Stats, plot_trajectory, plot_energies
+from postprocess import Stats, plot_trajectory, plot_energies, animate_trajectory
 import click
 
 
@@ -22,17 +22,20 @@ def run_example(
     np.set_printoptions(floatmode="unique")
     sample_interval = 20
 
+    n_rods = 1
     n_elem = 2
     base_length = 3.0
     dt = 0.01 * (base_length / n_elem)
-    final_time = 50.0
+    final_sim_time = 50.0
     time_interval = sample_interval * dt
-    n_steps = int(final_time / time_interval)
+    n_steps = int(final_sim_time / time_interval)
 
     params = ButterflyCaseStudy.params(
+        n_rods=n_rods,
         n_elements=n_elem,
         angle_of_inclination=np.deg2rad(inclination),
         length=base_length,
+        final_sim_time=final_sim_time,  # dummy parameter
         dt=dt,
     )
     cs = ButterflyCaseStudy(params)
@@ -61,8 +64,12 @@ def run_example(
 
         collect_stats_from(cs)
 
-    plot_trajectory(stats, save_figure=fig)
-    plot_energies(stats, save_figure=fig)
+    traj_plot = (
+        animate_trajectory(stats, save_figure=fig)
+        if False
+        else plot_trajectory(stats, save_figure=fig)
+    )
+    energy_plot = plot_energies(stats, save_figure=fig)
 
     if data:
         import pandas as pd

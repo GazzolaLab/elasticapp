@@ -25,3 +25,5 @@ add_elastica_case_study(PyButterflyCaseStudy
         )
 
 elastica_python_add_dependencies(PyButterflyCaseStudy PyCosseratRods)
+
+add_subdirectory(ablation)
