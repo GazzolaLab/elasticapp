@@ -54,6 +54,16 @@ namespace elastica {
               ::elastica::cosserat_rod::DefaultCosseratRodTraits,
               ::blocks::ConstBlockSlice,
               detail::MagnetizedCosseratRodWithoutDampingComponents>;
+      using MagnetizedCosseratRodWithoutDampingView =
+          ::elastica::cosserat_rod::CosseratRodPlugin<
+              ::elastica::cosserat_rod::DefaultCosseratRodTraits,
+              ::blocks::BlockView,
+              detail::MagnetizedCosseratRodWithoutDampingComponents>;
+      using MagnetizedCosseratRodWithoutDampingConstView =
+          ::elastica::cosserat_rod::CosseratRodPlugin<
+              ::elastica::cosserat_rod::DefaultCosseratRodTraits,
+              ::blocks::ConstBlockView,
+              detail::MagnetizedCosseratRodWithoutDampingComponents>;
 
       using MagnetizedCosseratRodWithoutDampingBlock =
           ::blocks::Block<MagnetizedCosseratRodWithoutDamping>;
@@ -62,6 +72,11 @@ namespace elastica {
       using MagnetizedCosseratRodWithoutDampingBlockConstSlice =
           ::blocks::ConstBlockSlice<
               MagnetizedCosseratRodWithoutDampingConstSlice>;
+      using MagnetizedCosseratRodWithoutDampingBlockView =
+          ::blocks::BlockView<MagnetizedCosseratRodWithoutDampingView>;
+      using MagnetizedCosseratRodWithoutDampingBlockConstView =
+          ::blocks::ConstBlockView<
+              MagnetizedCosseratRodWithoutDampingConstView>;
 
     }  // namespace detail
 
