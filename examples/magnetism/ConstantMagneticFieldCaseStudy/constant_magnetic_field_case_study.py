@@ -1,7 +1,7 @@
 from typing import Dict, Optional
 
 import numpy as np
-from elasticapp import Arrays  # noqa
+from elasticapp.Systems import MagnetizedCosseratRods  # noqa
 from elasticapp.CaseStudies.PyConstantMagneticFieldCaseStudy import (
     ConstantMagneticFieldCaseStudy,
 )
@@ -43,9 +43,10 @@ def run_constant_magnetic_field_case_study(
 
     def collect_stats(study):
         times.append(study.current_time())
-        comm = study.communicate()
-        _, _, v = comm[first_rod]
-        velocity_norms.append(np.linalg.norm(np.asarray(v)))
+        rods = study.communicate()
+        velocity_norms.append(
+            np.linalg.norm(np.asarray(rods[first_rod].get_velocity()))
+        )
 
     # first round
     collect_stats(cs)
@@ -68,12 +69,13 @@ def run_constant_magnetic_field_case_study(
     # last round
     collect_stats(cs)
 
-    comm = cs.communicate()
-    positions_after_last_step, tangents_after_last_step, _ = comm[first_rod]
+    rods = cs.communicate()
+    positions_after_last_step = np.copy(rods[first_rod].get_position())
+    tangents_after_last_step = np.copy(rods[first_rod].get_tangent())
 
     return (
-        np.asarray(positions_after_last_step),
-        np.asarray(tangents_after_last_step),
+        positions_after_last_step,
+        tangents_after_last_step,
         np.asarray(times),
         np.asarray(velocity_norms),
     )
