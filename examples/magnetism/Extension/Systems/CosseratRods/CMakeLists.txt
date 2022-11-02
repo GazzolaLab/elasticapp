@@ -34,3 +34,5 @@ target_link_libraries(
         MagnetismExtensionCosseratRodAliases
         MagnetismExtensionCosseratRodComponents
 )
+
+add_subdirectory(Python)
