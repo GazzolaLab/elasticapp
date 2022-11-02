@@ -129,6 +129,24 @@ namespace py_bindings {
   //****************************************************************************
 
   //****************************************************************************
+  /*!\brief Helps bind pyelastica rod interface to a \elastica CosseratRod
+   * \ingroup python_bindings
+   *
+   * \details
+   * \param rod Pybind11 class of a CosseratRod
+   */
+  template <typename UnwantedVariableTags, typename CRT, typename Tag,
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void bind_pyelastica_interface(
+      pybind11::class_<::blocks::BlockSlice<
+          ::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+              CRT, ::blocks::BlockSlice, Tag, Components...>>>& rod) {
+    detail::bind_pyelastica_interface<UnwantedVariableTags>(rod);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
   /*!\brief Helps bind pyelastica interface to a CosseratRod blockview in
    * \elastica
    * \ingroup python_bindings
@@ -146,6 +164,23 @@ namespace py_bindings {
   //****************************************************************************
 
   //****************************************************************************
+  /*!\brief Helps bind pyelastica interface to a CosseratRod blockview in
+   * \elastica
+   * \ingroup python_bindings
+   * \see bind_tags
+   */
+  template <typename UnwantedVariableTags, typename CRT, typename Tag,
+            template <typename /*CRT*/, typename /*InitializedBlockView*/>
+            class... Components>
+  void bind_pyelastica_interface(
+      pybind11::class_<
+          ::blocks::BlockView<::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+              CRT, ::blocks::BlockView, Tag, Components...>>>& rod) {
+    detail::bind_pyelastica_interface<UnwantedVariableTags>(rod);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
   /*!\brief Helps bind pyelastica interface to a CosseratRod block in \elastica
    * \ingroup python_bindings
    * \see bind_tags
@@ -157,6 +192,22 @@ namespace py_bindings {
       pybind11::class_<
           ::blocks::Block<::elastica::cosserat_rod::CosseratRodPlugin<
               CRT, ::blocks::Block, Components...>>>& rod) {
+    detail::bind_pyelastica_interface<UnwantedVariableTags>(rod);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Helps bind pyelastica interface to a CosseratRod block in \elastica
+   * \ingroup python_bindings
+   * \see bind_tags
+   */
+  template <typename UnwantedVariableTags, typename CRT, typename Tag,
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void bind_pyelastica_interface(
+      pybind11::class_<
+          ::blocks::Block<::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+              CRT, ::blocks::Block, Tag, Components...>>>& rod) {
     detail::bind_pyelastica_interface<UnwantedVariableTags>(rod);
   }
   //****************************************************************************

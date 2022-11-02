@@ -26,6 +26,54 @@
 
 namespace py_bindings {
 
+  namespace detail {
+
+    template <typename ModelsBlock>
+    void bind_energy_methods(pybind11::class_<ModelsBlock>& rod) {
+      constexpr const char* translational_mode_doc = R"doc(
+Computes translational mode energy of the cosserat_rod.
+)doc";
+      constexpr const char* rotational_mode_doc = R"doc(
+Computes rotational mode energy of the cosserat_rod.
+)doc";
+      constexpr const char* shearing_mode_doc = R"doc(
+Computes shearing mode energy of the cosserat_rod.
+)doc";
+      constexpr const char* bending_mode_doc = R"doc(
+Computes bending mode energy of the cosserat_rod.
+)doc";
+
+      using Arg = std::remove_reference_t<decltype(rod)>;
+      using type = typename Arg::type;
+
+      rod.def(
+          "compute_translational_energy",
+          +[](type const& self) {
+            return ::elastica::compute_translational_energy(self);
+          },
+          translational_mode_doc);
+      rod.def(
+          "compute_rotational_energy",
+          +[](type const& self) {
+            return ::elastica::compute_rotational_energy(self);
+          },
+          rotational_mode_doc);
+      rod.def(
+          "compute_shearing_energy",
+          +[](type const& self) {
+            return ::elastica::compute_shear_energy(self);
+          },
+          shearing_mode_doc);
+      rod.def(
+          "compute_bending_energy",
+          +[](type const& self) {
+            return ::elastica::compute_bend_energy(self);
+          },
+          bending_mode_doc);
+    }
+
+  }  // namespace detail
+
   //****************************************************************************
   /*!\brief Helps bind energy methods to a CosseratRod in \elastica
    * \ingroup python_bindings
@@ -42,45 +90,27 @@ namespace py_bindings {
       pybind11::class_<
           ::blocks::BlockSlice<::elastica::cosserat_rod::CosseratRodPlugin<
               CRT, ::blocks::BlockSlice, Components...>>>& rod) {
-    // TODO: this should be refactored internally
-    constexpr const char* translational_mode_doc = R"doc(
-Computes translational mode energy of the cosserat_rod.
-)doc";
-    constexpr const char* rotational_mode_doc = R"doc(
-Computes rotational mode energy of the cosserat_rod.
-)doc";
-    constexpr const char* shearing_mode_doc = R"doc(
-Computes shearing mode energy of the cosserat_rod.
-)doc";
-    constexpr const char* bending_mode_doc = R"doc(
-Computes bending mode energy of the cosserat_rod.
-)doc";
+    detail::bind_energy_methods(rod);
+  }
+  //****************************************************************************
 
-    using Arg = std::remove_reference_t<decltype(rod)>;
-    using type = typename Arg::type;
-
-    rod.def(
-        "compute_translational_energy",
-        +[](type const& self) {
-          return ::elastica::compute_translational_energy(self);
-        },
-        translational_mode_doc);
-    rod.def(
-        "compute_rotational_energy",
-        +[](type const& self) {
-          return ::elastica::compute_rotational_energy(self);
-        },
-        rotational_mode_doc);
-    rod.def(
-        "compute_shearing_energy",
-        +[](type const& self) {
-          return ::elastica::compute_shear_energy(self);
-        },
-        shearing_mode_doc);
-    rod.def(
-        "compute_bending_energy",
-        +[](type const& self) { return ::elastica::compute_bend_energy(self); },
-        bending_mode_doc);
+  //****************************************************************************
+  /*!\brief Helps bind energy methods to a CosseratRod in \elastica
+   * \ingroup python_bindings
+   *
+   * \details
+   * Adds methods to compute energies to the cosserat rod
+   *
+   * \param rod a Pybind11 class of a CosseratRod
+   */
+  template <typename CRT, typename Tag,
+            template <typename /*CRT*/, typename /*InitializedBlock*/>
+            class... Components>
+  void bind_energy_methods(
+      pybind11::class_<::blocks::BlockSlice<
+          ::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+              CRT, ::blocks::BlockSlice, Tag, Components...>>>& rod) {
+    detail::bind_energy_methods(rod);
   }
   //****************************************************************************
 
