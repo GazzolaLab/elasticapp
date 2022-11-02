@@ -322,12 +322,10 @@ void MagneticMillipedesCaseStudy::setup(
 
   // ************************************************** //
   /* Collision */
-   set near-list update time
-    auto& collision_solver =
-        simulator
-            ->get_environment<elastica::environments::tags::CollisionSystem>();
-    collision_solver->time_interval_between_detection() =
-        1000.0 * dt;
+  auto& collision_solver =
+      simulator
+          ->get_environment<elastica::environments::tags::CollisionSystem>();
+  collision_solver->time_interval_between_detection() = 1000.0 * dt;
 
   // ************************************************** //
   /* Gravity */
@@ -547,7 +545,7 @@ void MagneticMillipedesCaseStudy::add_analytical_damper(
       rotational_mode_damping_coeff(row_idx, column_idx) = std::pow(
           rotational_mode_damping_coeff(row_idx, column_idx),
           ::elastica::get<::elastica::tags::InvMassSecondMomentOfInertia>(rod)(
-              row_idx, row_idx, column_idx));
+              row_idx, column_idx));
     }
   }
   // setting analytical damper via constraint
