@@ -30,4 +30,4 @@ add_elastica_case_study(PyConstantMagneticFieldCaseStudy
         )
 #
 elastica_python_link_libraries(PyConstantMagneticFieldCaseStudy PRIVATE Blaze)
-elastica_python_add_dependencies(PyConstantMagneticFieldCaseStudy PyArrays)
+elastica_python_add_dependencies(PyConstantMagneticFieldCaseStudy PyMagnetizedCosseratRods)

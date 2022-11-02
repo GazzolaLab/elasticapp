@@ -176,12 +176,7 @@ for custom environments (magnetic field) as well as systems (magnetic rods).
   using RodRefs = std::vector<RodRef>;
   RodRefs rod_refs{1UL, simulator->get_invalid_ref<MagnetizedCosseratRod>()};
 
-  inline auto communicate_from(RodRef& ref) {
-    auto rod = ref.get();
-    return std::make_tuple(::elastica::position(rod),
-                           ::blocks::get<::elastica::tags::Tangent>(rod),
-                           ::elastica::velocity(rod));
-  }
+  inline auto communicate_from(RodRef& ref) { return ref.get(); }
   inline auto communicate() {
     // we dont have CTAD :(
     using CT = decltype(communicate_from(std::declval<RodRef&>()));
@@ -192,7 +187,6 @@ for custom environments (magnetic field) as well as systems (magnetic rods).
                    std::back_inserter(return_list), [this](RodRef& rod_ref) {
                      return this->communicate_from(rod_ref);
                    });
-    // return also the interpenetration here
     return return_list;
   }
 
