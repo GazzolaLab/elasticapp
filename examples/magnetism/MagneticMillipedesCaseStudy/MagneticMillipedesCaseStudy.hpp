@@ -35,6 +35,9 @@
 #include "Extension/Systems/CosseratRods.hpp"
 #include "FieldProfiles/OscillatoryMagneticField.hpp"  // customization
 #include "FieldProfiles/RampedAdapter.hpp"             // customization
+//
+#include "Customization.hpp"
+#include "Types.hpp"
 
 // global alias
 using String = const char* const;
@@ -43,7 +46,8 @@ using Rot3 = ::elastica::Rot3;
 using real_t = ::elastica::real_t;
 using MagnetizedCosseratRod =
     ::elastica::cosserat_rod::MagnetizedCosseratRodWithoutDamping;
-using CosseratRod = ::elastica::cosserat_rod::CosseratRodWithoutDamping;
+using ::elastica::cosserat_rod::detail::BackBoneCrissRod;
+using ::elastica::cosserat_rod::detail::BackBoneCrossRod;
 using MagneticRodInitializer = ::elastica::cosserat_rod::
     StraightUniformMagnetizedCosseratRodWithoutDampingInitializer;
 using RodInitializer =
@@ -56,7 +60,7 @@ namespace ec = elastica::configuration;
 struct MagneticMillipedesConfiguration {
   static inline auto make_simulator_configuration() {
     auto system_config = ec::make_systems_configuration<
-        tmpl::list<CosseratRod, MagnetizedCosseratRod>>(
+        tmpl::list<BackBoneCrissRod, BackBoneCrossRod, MagnetizedCosseratRod>>(
         ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{512UL}),
         ec::make_iteration_policy(ec::iterate_across_system_types_in(ec::seq),
                                   ec::iterate_over_systems_in(ec::seq)));
@@ -106,6 +110,25 @@ struct MagneticMillipedesConfiguration {
     return TimeStepper{};
   }
 };
+
+template <typename T>
+inline auto communicate_buffer(
+    std::vector<blocks::BlockSliceGenerator<T>> const& ref_generators) {
+  // we dont have CTAD :(
+  using SliceT =
+      decltype(std::declval<blocks::BlockSliceGenerator<T> const&>().get());
+  using ReturnT = std::vector<SliceT>;
+
+  ReturnT return_list;
+  return_list.reserve(ref_generators.size());
+  std::transform(std::cbegin(ref_generators), std::cend(ref_generators),
+                 std::back_inserter(return_list),
+                 [](blocks::BlockSliceGenerator<T> const& rod_ref) {
+                   return rod_ref.get();
+                 });
+
+  return return_list;
+}
 
 struct MagneticMillipedesCaseStudy
     : public ::elastica::CaseStudyInterface<MagneticMillipedesCaseStudy> {
@@ -211,9 +234,13 @@ Demonstrates an magnetic millipedes simulation.
       Configuration::make_time_stepper();
   decltype(Configuration::make_simulator()) simulator =
       Configuration::make_simulator();
-  using CRRef = decltype(simulator->get_invalid_ref<CosseratRod>());
+
+  using CrissRodRef = decltype(simulator->get_invalid_ref<BackBoneCrissRod>());
+  using CrossRodRef = decltype(simulator->get_invalid_ref<BackBoneCrossRod>());
   using MCRRef = decltype(simulator->get_invalid_ref<MagnetizedCosseratRod>());
-  std::vector<CRRef> backbone_rod_list, backbone_rod_second_layer_list;
+
+  std::vector<CrissRodRef> backbone_criss_rods;
+  std::vector<CrossRodRef> backbone_cross_rods;
   std::vector<MCRRef> magnetic_rod_list;
 
   // Plane (Bottom)
@@ -224,24 +251,10 @@ Demonstrates an magnetic millipedes simulation.
   ImposedHalfPlaneRef imposed_half_space_bottom_ref =
       simulator->get_invalid_ref<ImposedHalfSpace>();
 
-  inline auto communicate_from(CRRef& ref) {
-    auto rod = ref.get();
-    return std::make_tuple(::elastica::position(rod),
-                           ::elastica::velocity(rod));
-  }
   inline auto communicate() {
-    // we dont have CTAD :(
-    //    using CT = decltype(communicate_from(std::declval<CRRef&>()));
-    //    using RT = std::vector<CT>;
-    //    RT return_list;
-    //    return_list.reserve(rod_refs.size());
-    //    std::transform(std::begin(rod_refs), std::end(rod_refs),
-    //                   std::back_inserter(return_list), [this](CRRef& rod_ref)
-    //                   {
-    //                     return this->communicate_from(rod_ref);
-    //                   });
-    //    // return also the interpenetration here
-    //    return return_list;
+    return std::make_tuple(communicate_buffer(backbone_criss_rods),
+                           communicate_buffer(backbone_cross_rods),
+                           communicate_buffer(magnetic_rod_list));
   }
 
   MagneticMillipedesCaseStudy() = default;
