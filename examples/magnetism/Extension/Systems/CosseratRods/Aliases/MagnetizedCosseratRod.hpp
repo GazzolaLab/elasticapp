@@ -49,12 +49,25 @@ namespace elastica {
               ::elastica::cosserat_rod::DefaultCosseratRodTraits,
               ::blocks::ConstBlockSlice,
               detail::MagnetizedCosseratRodComponents>;
+      using MagnetizedCosseratRodView =
+          ::elastica::cosserat_rod::CosseratRodPlugin<
+              ::elastica::cosserat_rod::DefaultCosseratRodTraits,
+              ::blocks::BlockView, detail::MagnetizedCosseratRodComponents>;
+      using MagnetizedCosseratRodConstView =
+          ::elastica::cosserat_rod::CosseratRodPlugin<
+              ::elastica::cosserat_rod::DefaultCosseratRodTraits,
+              ::blocks::ConstBlockView,
+              detail::MagnetizedCosseratRodComponents>;
 
       using MagnetizedCosseratRodBlock = ::blocks::Block<MagnetizedCosseratRod>;
       using MagnetizedCosseratRodBlockSlice =
           ::blocks::BlockSlice<MagnetizedCosseratRodSlice>;
       using MagnetizedCosseratRodBlockConstSlice =
           ::blocks::ConstBlockSlice<MagnetizedCosseratRodConstSlice>;
+      using MagnetizedCosseratRodBlockView =
+          ::blocks::BlockView<MagnetizedCosseratRodView>;
+      using MagnetizedCosseratRodBlockConstView =
+          ::blocks::ConstBlockView<MagnetizedCosseratRodConstView>;
 
     }  // namespace detail
 
