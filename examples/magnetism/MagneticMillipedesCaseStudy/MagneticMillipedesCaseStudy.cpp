@@ -157,9 +157,9 @@ void MagneticMillipedesCaseStudy::setup(
         RodInitializer::Origin{start_back_bone},
         RodInitializer::Direction{direction_back_bone},
         RodInitializer::Normal{normal_back_bone}};
-    CRRef back_bone_rod = simulator->emplace_back<CosseratRod>(
-        rod_initializer.initialize<CosseratRod>());
-    backbone_rod_list.push_back(back_bone_rod);
+    auto back_bone_rod = simulator->emplace_back<BackBoneCrissRod>(
+        rod_initializer.initialize<BackBoneCrissRod>());
+    backbone_criss_rods.push_back(back_bone_rod);
 
     // Create magnetic rods
     const real_t base_area = M_PI * std::pow(base_radius_magnetic_rod, 2);
@@ -231,16 +231,16 @@ void MagneticMillipedesCaseStudy::setup(
   /* Create second set of backbones */
   const Vec3& direction_back_bone_second_layer = normal;
   const Vec3& normal_back_bone_second_layer = direction_back_bone;
-  const std::size_t n_elem_back_bone_second_layer = backbone_rod_list.size();
+  const std::size_t n_elem_back_bone_second_layer = backbone_criss_rods.size();
   for (std::size_t i(0UL); i < n_elem_back_bone; ++i) {
     const Vec3 start_back_bone_second_layer =
-        (0.5 * (backbone_rod_list[0UL].get().get_position(i) +
-                backbone_rod_list[0UL].get().get_position(i + 1)) +
+        (0.5 * (backbone_criss_rods[0UL].get().get_position(i) +
+                backbone_criss_rods[0UL].get().get_position(i + 1)) +
          direction * base_radius_backbone_rod * 2 -
          direction_back_bone_second_layer * base_radius_backbone_rod);
     const real_t back_bone_length =
-        (blaze::norm(backbone_rod_list.back().get().get_position(i) -
-                     backbone_rod_list.front().get().get_position(i)) +
+        (blaze::norm(backbone_criss_rods.back().get().get_position(i) -
+                     backbone_criss_rods.front().get().get_position(i)) +
          2 * base_radius_backbone_rod);
 
     RodInitializer rod_initializer{
@@ -252,33 +252,32 @@ void MagneticMillipedesCaseStudy::setup(
         RodInitializer::Origin{start_back_bone_second_layer},
         RodInitializer::Direction{direction_back_bone_second_layer},
         RodInitializer::Normal{normal_back_bone_second_layer}};
-    CRRef back_bone_rod = simulator->emplace_back<CosseratRod>(
-        rod_initializer.initialize<CosseratRod>());
-    backbone_rod_second_layer_list.push_back(back_bone_rod);
+    auto back_bone_rod = simulator->emplace_back<BackBoneCrossRod>(
+        rod_initializer.initialize<BackBoneCrossRod>());
+    backbone_cross_rods.push_back(back_bone_rod);
   }
 
   /* Connection: magnetic arm to backbones */
   // Orthogonal Connection
-  MagneticMillipedesCaseStudy::orthogonal_connection(backbone_rod_list,
+  MagneticMillipedesCaseStudy::orthogonal_connection(backbone_criss_rods,
                                                      magnetic_rod_list);
 
   /* Connection: Connect backbones */
   // Parallel Connection
-  MagneticMillipedesCaseStudy::group_parallel_connection(backbone_rod_list);
-  MagneticMillipedesCaseStudy::group_parallel_connection(
-      backbone_rod_second_layer_list);
+  MagneticMillipedesCaseStudy::group_parallel_connection(backbone_criss_rods);
+  MagneticMillipedesCaseStudy::group_parallel_connection(backbone_cross_rods);
 
   /* Connection: Connect first layer and second layer */
-  MagneticMillipedesCaseStudy::crisscross_connection(
-      backbone_rod_list, backbone_rod_second_layer_list);
+  MagneticMillipedesCaseStudy::crisscross_connection(backbone_criss_rods,
+                                                     backbone_cross_rods);
 
   // ************************************************** //
   /* Damper: Analytical Damper */
 
-  MagneticMillipedesCaseStudy::add_analytical_damper(backbone_rod_list,
+  MagneticMillipedesCaseStudy::add_analytical_damper(backbone_criss_rods,
                                                      input_parameters, dt);
-  MagneticMillipedesCaseStudy::add_analytical_damper(
-      backbone_rod_second_layer_list, input_parameters, dt);
+  MagneticMillipedesCaseStudy::add_analytical_damper(backbone_cross_rods,
+                                                     input_parameters, dt);
   MagneticMillipedesCaseStudy::add_analytical_damper(magnetic_rod_list,
                                                      input_parameters, dt);
 
@@ -592,9 +591,9 @@ void MagneticMillipedesCaseStudy::run() {
 
     // Logging
     if (not(i % write_interval)) {
-      log_rod_position(backbone_rod_list, i,
+      log_rod_position(backbone_criss_rods, i,
                        "data/backbone_rod_coordinates_%010d.csv");
-      log_rod_position(backbone_rod_second_layer_list, i,
+      log_rod_position(backbone_cross_rods, i,
                        "data/backbone_rod_second_layer_coordinates_%010d.csv");
       log_rod_position(magnetic_rod_list, i,
                        "data/magnetic_rod_coordinates_%010d.csv");
