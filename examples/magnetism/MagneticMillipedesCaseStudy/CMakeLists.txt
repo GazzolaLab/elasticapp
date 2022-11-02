@@ -24,10 +24,33 @@ add_elastica_case_study(example_magnetic_millipedes
         )
 target_include_directories(example_magnetic_millipedes PUBLIC ${PARENT_DIR})
 
+
+# Add python bindings to rods first
+set(LIBRARY "PyMagneticMillipedeCosseratRods")
+
+elastica_python_add_module(
+        MagneticMillipedeCosseratRods
+        MODULE_PATH "Systems/"
+        LIBRARY_NAME ${LIBRARY}
+        SOURCES
+        Bindings.cpp
+)
+
+elastica_python_link_libraries(
+        ${LIBRARY}
+        PRIVATE
+        CosseratRods
+        pybind11::module
+        PyGeneratorsCosseratRod
+        Blaze
+)
+
+elastica_python_add_dependencies(${LIBRARY} PyArrays PyTags)
+
 add_elastica_case_study(PyMagneticMillipedesCaseStudy
         FROM MagneticMillipedesCaseStudy
         AS elastica::python_object
         )
 #
 elastica_python_link_libraries(PyMagneticMillipedesCaseStudy PRIVATE Blaze)
-elastica_python_add_dependencies(PyMagneticMillipedesCaseStudy PyArrays)
+elastica_python_add_dependencies(PyMagneticMillipedesCaseStudy ${LIBRARY})
