@@ -376,8 +376,9 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   simulator->finalize();
   // Set the dt value
   set_dt(time_step);
-  std::size_t block_count(0UL);
-  simulator->for_each_block([&block_count](auto& block) { block_count++; });
+
+  auto& container = simulator->get_system_collection_container();
+  std::size_t block_count(std::get<0UL>(container).size());
   std::cout << "Block Count: " << block_count << '\n';
 }
 
