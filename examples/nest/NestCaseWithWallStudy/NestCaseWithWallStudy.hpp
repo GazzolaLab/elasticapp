@@ -12,10 +12,6 @@ Kim
 */
 //==============================================================================
 
-#if ELASTICA_TBB_PARALLEL_MODE
-#include <tbb/global_control.h>
-#endif
-
 #include <elastica/CaseStudy.hpp>
 #include <elastica/Simulator/Constraints.hpp>
 #include <elastica/Simulator/Environments.hpp>
@@ -190,12 +186,19 @@ TODO: Check stress strain curves!
     static type default_value() { return 1.0; }
   };
 
+  struct n_threads {
+    using type = std::size_t;
+    static constexpr String help = {"Number of threads to be used"};
+    static type default_value() { return 1; }
+  };
+
+
   using Parameters =
       tmpl::list<n_rods, n_elements, damping, youngs_modulus, shear_modulus,
                  gravitational_acc, radius, length, dt, contact_stiffness,
                  contact_damping_normal, contact_damping_tangential,
                  final_sim_time, packing_initial_vertical_span,
-                 packing_initial_radial_span>;
+                 packing_initial_radial_span, n_threads>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);
