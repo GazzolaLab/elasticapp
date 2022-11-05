@@ -112,7 +112,7 @@ def run_oscillating_field_magnetic_rod_case_study(
     )
 
     if save_to_csv:
-        pd.DataFrame(cosserat_rod_stats).to_csv("cosserat_rod_states.csv")
+        pd.DataFrame(vars(cosserat_rod_stats)).to_csv("cosserat_rod_states.csv")
 
     plt.show()
 
