@@ -124,8 +124,8 @@ def run_oscillatory_magnetic_cilia_carpet_case_study(
     )
 
     if save_to_csv:
-        for idx, rod_stats in carpet_stats:
-            pd.DataFrame(rod_stats).to_csv(f"rod_{idx}_states.csv")
+        for idx, rod_stats in enumerate(carpet_stats):
+            pd.DataFrame(vars(rod_stats)).to_csv(f"rod_{idx}_states.csv")
 
     plt.show()
 
