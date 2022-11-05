@@ -53,4 +53,4 @@ add_elastica_case_study(PyMagneticMillipedesCaseStudy
         )
 #
 elastica_python_link_libraries(PyMagneticMillipedesCaseStudy PRIVATE Blaze)
-elastica_python_add_dependencies(PyMagneticMillipedesCaseStudy ${LIBRARY})
+elastica_python_add_dependencies(PyMagneticMillipedesCaseStudy ${LIBRARY} PyMagnetizedCosseratRods)

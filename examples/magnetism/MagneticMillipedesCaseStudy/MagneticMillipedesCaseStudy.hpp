@@ -149,30 +149,86 @@ Demonstrates an magnetic millipedes simulation.
     static type default_value() { return 10UL; }
   };
 
-  struct radius {
+  struct radius_magnetic {
     using type = ::elastica::real_t;
-    static constexpr String help = {"Radius of the rod"};
+    static constexpr String help = {"Radius of the magnetic rod"};
     static type default_value() { return 0.15; }
   };
 
-  struct damping_constant {
+  struct radius_backbone {
     using type = ::elastica::real_t;
-    static constexpr String help = {"Analytical Damping Constant"};
+    static constexpr String help = {"Radius of the backbone rod"};
+    static type default_value() { return 0.15; }
+  };
+
+  struct length_magnetic {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Length of the magnetic rod"};
+    static type default_value() { return 3.0 / 4.0; }
+  };
+
+  struct damping_constant_magnetic {
+    using type = ::elastica::real_t;
+    static constexpr String help = {
+        "Analytical Damping Constant for magnetic rod"};
     static type default_value() { return 1.5; }
   };
 
-  struct length {
+  struct number_magnetic_rods_per_backbone {
+    // unsigned integer parameter
+    using type = std::size_t;
+    // documentation
+    static constexpr String help = {""};
+    static type default_value() { return 6UL; }
+  };
+
+  struct number_magnetic_rods_spanwise {
+    // unsigned integer parameter
+    using type = std::size_t;
+    // documentation
+    static constexpr String help = {""};
+    static type default_value() { return 4UL; }
+  };
+
+  struct number_backbone_rods_for_every_magnetic_rod {
+    // unsigned integer parameter
+    using type = std::size_t;
+    // documentation
+    static constexpr String help = {""};
+    static type default_value() { return 4UL; }
+  };
+
+  struct magnetic_rod_spacing_ratio {
     using type = ::elastica::real_t;
-    static constexpr String help = {"Length of the rod"};
-    static type default_value() { return 6.0; }
+    static constexpr String help = {"Spacing to length"};
+    static type default_value() { return 2.0; }
+  };
+
+  struct damping_constant_backbone {
+    using type = ::elastica::real_t;
+    static constexpr String help = {
+        "Analytical Damping Constant for backbone rod"};
+    static type default_value() { return 1.5; }
+  };
+
+  struct density_magnetic_to_backbone {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Density factor"};
+    static type default_value() { return 5.0; }
+  };
+
+  struct stiffness_magnetic_to_backbone {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Density factor"};
+    static type default_value() { return 1.0; }
   };
 
   struct dt {
     using type = ::elastica::real_t;
     static constexpr String help = {"Time step of simulation"};
     static type default_value() {
-      return type(0.01) *
-             (length::default_value() / type(n_elements::default_value()));
+      return type(0.01) * (length_magnetic::default_value() /
+                           type(n_elements::default_value()));
     }
   };
 
@@ -194,15 +250,49 @@ Demonstrates an magnetic millipedes simulation.
     static type default_value() { return 1e1; }
   };
 
+  struct acc_gravity {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Gravity acc."};
+    static type default_value() { return -9.8065 / 10.0; }
+  };
+
+  struct mag_strength {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Magnetic field strength."};
+    static type default_value() {
+      // 80mT
+      return 8e-2;
+    }
+  };
+
+  struct mag_angular_frequency {
+    using type = ::elastica::real_t;
+    static constexpr String help = {
+        "Angular frequency of the rotating magnetic field."};
+    static type default_value() { return 5.0 * M_PI / 180.0; }
+  };
+
+  struct friction_coeff {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Friction coeff."};
+    static type default_value() { return 0.2; }
+  };
+
   struct final_sim_time {
     using type = ::elastica::real_t;
     static constexpr String help = {"Final simulation time"};
     static type default_value() { return type(200.0); }
   };
 
-  using Parameters = tmpl::list<n_elements, length, radius, damping_constant,
-                                dt, contact_stiffness, contact_damping_normal,
-                                contact_damping_tangential, final_sim_time>;
+  using Parameters = tmpl::list<
+      n_elements, length_magnetic, radius_magnetic, radius_backbone,
+      number_magnetic_rods_per_backbone, number_magnetic_rods_spanwise,
+      number_backbone_rods_for_every_magnetic_rod, magnetic_rod_spacing_ratio,
+      damping_constant_magnetic, damping_constant_backbone,
+      density_magnetic_to_backbone, stiffness_magnetic_to_backbone, dt,
+      contact_stiffness, contact_damping_normal, contact_damping_tangential,
+      acc_gravity, mag_strength, mag_angular_frequency, friction_coeff,
+      final_sim_time>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);
@@ -217,7 +307,7 @@ Demonstrates an magnetic millipedes simulation.
 
   /* Features */
   template <typename RodType>
-  void add_analytical_damper(std::vector<RodType>&, InputTypes<This> const&,
+  void add_analytical_damper(std::vector<RodType>&, const real_t,
                              const real_t&);
   template <typename RodType>
   void group_parallel_connection(std::vector<RodType>&);
