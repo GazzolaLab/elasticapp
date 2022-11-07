@@ -37,6 +37,8 @@ struct NestConfiguration {
                 ec::iterate_across_system_types_in(ec::seq),
                 ec::iterate_over_systems_in(ec::par)));
 
+    auto constraints_config = ec::make_constraints_configuration(ec::par);
+
     auto gravity_config =
         ec::make_gravity_configuration(::elastica::Vec3{0., 0., 0.});
 
@@ -57,7 +59,7 @@ struct NestConfiguration {
     return ec::make_simulator_configuration(
         ec::DefaultDomainConfiguration{}, system_config,
         ec::DefaultParallelConfiguration{},
-        ec::DefaultConstraintsConfiguration{}, env_config);
+        constraints_config, env_config);
   }
 
   static inline auto make_simulator() {
