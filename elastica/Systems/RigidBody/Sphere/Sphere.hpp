@@ -52,10 +52,18 @@ namespace elastica {
       using SphereConstSlice = ::elastica::rigid_body::RigidBodyPlugin<
           ::elastica::rigid_body::DefaultRigidBodyTraits,
           ::blocks::ConstBlockSlice, SphereComponents>;
+      using SphereView = ::elastica::rigid_body::RigidBodyPlugin<
+          ::elastica::rigid_body::DefaultRigidBodyTraits, ::blocks::BlockView,
+          SphereComponents>;
+      using SphereConstView = ::elastica::rigid_body::RigidBodyPlugin<
+          ::elastica::rigid_body::DefaultRigidBodyTraits,
+          ::blocks::ConstBlockView, SphereComponents>;
 
       using SphereBlock = ::blocks::Block<Sphere>;
       using SphereBlockSlice = ::blocks::BlockSlice<SphereSlice>;
       using SphereBlockConstSlice = ::blocks::ConstBlockSlice<SphereConstSlice>;
+      using SphereBlockView = ::blocks::BlockView<SphereView>;
+      using SphereBlockConstView = ::blocks::ConstBlockView<SphereConstView>;
 
     }  // namespace detail
 

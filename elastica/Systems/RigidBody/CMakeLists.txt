@@ -52,3 +52,5 @@
          RigidBodyTraits
          Serialization
  )
+
+ add_subdirectory(Python)
