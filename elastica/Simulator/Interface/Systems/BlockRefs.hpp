@@ -147,8 +147,9 @@ namespace blocks {
       // The call to .get() does not return a temporary lvalue, so it is safe
       // to propogate.
       // This may throw for now, but can be refactored to not throw.
-      return blocks::slice(parent_.get(), region().start,
-                           region().start + region().size);
+      using blocks::slice;
+      return slice(parent_.get(), region().start,
+                   region().start + region().size);
     }
     inline std::size_t uuid() const { return parent_.uuid(); }
 
@@ -217,7 +218,8 @@ namespace blocks {
     inline auto get() const /* noexcept*/ -> type {
       // The call to .get() does not return a temporary lvalue, so it is safe
       // to propogate.
-      return blocks::slice(parent_.get(), slice_index_);
+      using blocks::slice;
+      return slice(parent_.get(), slice_index_);
     }
     inline std::size_t uuid() const { return parent_.uuid(); }
 

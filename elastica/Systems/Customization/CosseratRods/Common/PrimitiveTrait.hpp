@@ -25,6 +25,9 @@ namespace elastica {
 
   namespace customization {
 
+    // TODO : This should just be inferred from a free function rather than a
+    // trait class
+
     //**************************************************************************
     /*! \cond ELASTICA_INTERNAL */
     template <typename RBT,
@@ -74,6 +77,61 @@ namespace elastica {
             RBT, ::blocks::ConstBlockSlice, Components...>>>
         : public PrimitiveTrait<::elastica::cosserat_rod::CosseratRodPlugin<
               RBT, ::blocks::Block, Components...>> {};
+    /*! \endcond */
+    //**************************************************************************
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <typename RBT, typename Tag,
+              template <typename /*RBT*/, typename /* ComputationalBlock */>
+              class... Components>
+    struct PrimitiveTrait<::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+        RBT, ::blocks::Block, Tag, Components...>>
+        : public PrimitiveTrait<typename ::elastica::tt::GeometryComponentTrait<
+              ::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+                  RBT, ::blocks::Block, Tag, Components...>>::type> {};
+    /*! \endcond */
+    //**************************************************************************
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <typename RBT, typename Tag,
+              template <typename /*RBT*/, typename /* ComputationalBlock */>
+              class... Components>
+    struct PrimitiveTrait<
+        ::blocks::Block<::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+            RBT, ::blocks::Block, Tag, Components...>>>
+        : public PrimitiveTrait<
+              ::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+                  RBT, ::blocks::Block, Tag, Components...>> {};
+    /*! \endcond */
+    //**************************************************************************
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <typename RBT, typename Tag,
+              template <typename /*RBT*/, typename /* ComputationalBlock */>
+              class... Components>
+    struct PrimitiveTrait<
+        ::blocks::BlockSlice<::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+            RBT, ::blocks::BlockSlice, Tag, Components...>>>
+        : public PrimitiveTrait<
+              ::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+                  RBT, ::blocks::Block, Tag, Components...>> {};
+    /*! \endcond */
+    //**************************************************************************
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <typename RBT, typename Tag,
+              template <typename /*RBT*/, typename /* ComputationalBlock */>
+              class... Components>
+    struct PrimitiveTrait<::blocks::ConstBlockSlice<
+        ::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+            RBT, ::blocks::ConstBlockSlice, Tag, Components...>>>
+        : public PrimitiveTrait<
+              ::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+                  RBT, ::blocks::Block, Tag, Components...>> {};
     /*! \endcond */
     //**************************************************************************
 
