@@ -20,9 +20,12 @@ def animate_rods(
     fps: PositiveInt = 15,
     frame_skip: PositiveInt = 1,
     save_figure: bool = False,
+    **kwargs,
 ) -> FuncAnimation:  # (time step, x/y/z, node)
     time = np.asarray(rod_group_stats[0].time)
     num_rods = len(rod_group_stats)
+    sphere_stats = kwargs.get("sphere_stats", None)
+    num_spheres = len(sphere_stats) if sphere_stats else 0
 
     with plt.style.context("ggplot"):
         fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
@@ -48,7 +51,18 @@ def animate_rods(
                 solid_capstyle="round",
             )
             rod_line_list.append(rod_line)
+
         rod_line_list[0].set_label("rod")
+
+        sphere_scatter = ax.plot(
+            [],
+            [],
+            [],
+            linestyle="",
+            marker="o",
+            c=to_rgb("xkcd:bluish"),
+        )[0]
+
         text_time = ax.text2D(
             0.2,
             0.8,
@@ -78,8 +92,20 @@ def animate_rods(
                     position_of_rod[curr_frame, 0], position_of_rod[curr_frame, 1]
                 )
                 rod_line.set_3d_properties(position_of_rod[curr_frame, 2])
+
+            if num_spheres:
+                p = np.zeros((3, num_spheres))
+                for idx in range(num_spheres):
+                    p[:, idx] = np.asarray(sphere_stats[idx].position)[
+                        curr_frame
+                    ].reshape(
+                        -1,
+                    )
+                sphere_scatter.set_data(p[0], p[1])
+                sphere_scatter.set_3d_properties(p[2])
+
             progress.update(animation_task, advance=1, refresh=True)
-            return text_time, *rod_line_list
+            return text_time, *rod_line_list, sphere_scatter
 
         ani = FuncAnimation(
             fig, update, frames=range(0, n_frames, frame_skip), blit=True
