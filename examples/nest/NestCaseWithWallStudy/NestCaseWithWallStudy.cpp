@@ -81,7 +81,7 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
   const std::size_t n_elem = ::elastica::get<n_elements>(input_parameters);
   const std::size_t n_rod = ::elastica::get<n_rods>(input_parameters);
 
-  using StraightInit = ::elastica::cosserat_rod::StraightCosseratRodInitializer;
+  using StraightInit = ::elastica::cosserat_rod::StraightCosseratRodWithoutDampingInitializer;
   const ::elastica::real_t R = ::elastica::get<packing_initial_radial_span>(
       input_parameters);  // controls radial extent of rod origin initialisation
   const ::elastica::real_t H = ::elastica::get<packing_initial_vertical_span>(
@@ -148,8 +148,8 @@ void NestCaseWithWallStudy::setup(InputTypes<This> const& input_parameters) {
         //        StraightInit::TorqueDampingRate{
         //            ::elastica::get<damping>(input_parameters)},
         // TODO later refactor to use Cosserat rod without damping
-        StraightInit::ForceDampingRate{1e-10},
-        StraightInit::TorqueDampingRate{1e-10},
+        //StraightInit::ForceDampingRate{1e-10},
+        //StraightInit::TorqueDampingRate{1e-10},
     };
     RodRef rod_ref = simulator->emplace_back<CosseratRod>(
         straight_initializer.initialize<CosseratRod>());
