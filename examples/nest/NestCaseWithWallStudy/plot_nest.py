@@ -13,8 +13,8 @@ import glob
 base_paths = glob.glob("data/rod_coordinates_*.csv")
 base_paths.sort()
 
-def get_first_file_hash():
-    data = np.genfromtxt(base_paths[0], delimiter=",", )
+def get_first_file_hash(filepath):
+    data = np.genfromtxt(filepath, delimiter=",", )
     return hash(str(data))
 
 num_files = len(base_paths)
@@ -30,7 +30,7 @@ else:
 print(f"{n_rods=}")
     
 # Plotting geometry
-r_cyl = 75
+r_cyl = 220
 Hi = 400
 Hf = 50
 rect_time = 3.0
@@ -63,6 +63,18 @@ def get_force_history():
     assert data_col.shape[0] == num_files, f"{data_col.shape=}"
     return data_col
 
+def get_penetration_counts_history():
+    paths = glob.glob("data/penetrations_*.csv")
+    paths.sort()
+    num_files = len(paths)
+    data_col = []
+    for path in paths:
+        data = np.genfromtxt(path, delimiter=",", )
+        data_col.append(len(data))
+    data_col = np.array(data_col)
+    assert data_col.shape[0] == num_files, f"{data_col.shape=}"
+    return data_col
+
 def get_rmse(x, target, window):
     assert x.shape[0] >= window
     rmses = []
@@ -72,7 +84,7 @@ def get_rmse(x, target, window):
     ret[-len(rmses):] = np.array(rmses)
     return ret
 
-def plot_X(i, forces, rmses):
+def plot_X(i, forces, rmses, penetration_counts):
     if i == 0:
         time = 0
         zheight = None
@@ -95,6 +107,7 @@ def plot_X(i, forces, rmses):
     energies /= (energy_scale) # Rescale by EI
     energies = np.nan_to_num(energies, 0.0)
     bins = 20
+    """
     ax = fig.add_subplot(4,8,23)
     ax.hist(energies[:,0], bins=bins)
     ax.legend(["e.trans"])
@@ -122,6 +135,13 @@ def plot_X(i, forces, rmses):
     hist, _ = np.histogram(energies[:,3], bins=bins)
     ylim = np.median(hist) * 1.5 + 5
     ax.set_ylim([0,ylim])
+    """
+    # replace energy plot to penetration count plot
+    ax = fig.add_subplot(2,4,8)
+    ax.plot(forces[:,0], penetration_counts * 2 / num_rod)
+    ax.set_title("average contact per rod")
+    ax.set_xlabel("time")
+    ax.set_ylabel("Average contact per rod")
 
     # Get index of abnormal rod
     std_m = 2.5
@@ -129,11 +149,11 @@ def plot_X(i, forces, rmses):
     mask = np.any(energies > thresh, axis=1)
     
     #DEBUG: get index of rod escaped
-    x_mask_ind1 = np.where(np.any((data[:,0].reshape([450,9]) < -76), axis=1))[0]
-    x_mask_ind2 = np.where(np.any((data[:,0].reshape([450,9]) >  76), axis=1))[0]
-    y_mask_ind1 = np.where(np.any((data[:,1].reshape([450,9]) < -76), axis=1))[0]
-    y_mask_ind2 = np.where(np.any((data[:,1].reshape([450,9]) >  76), axis=1))[0]
-    z_mask_ind1 = np.where(np.any((data[:,2].reshape([450,9]) <   0), axis=1))[0]
+    x_mask_ind1 = np.where(np.any((data[:,0].reshape([n_rods,9]) < -76), axis=1))[0]
+    x_mask_ind2 = np.where(np.any((data[:,0].reshape([n_rods,9]) >  76), axis=1))[0]
+    y_mask_ind1 = np.where(np.any((data[:,1].reshape([n_rods,9]) < -76), axis=1))[0]
+    y_mask_ind2 = np.where(np.any((data[:,1].reshape([n_rods,9]) >  76), axis=1))[0]
+    z_mask_ind1 = np.where(np.any((data[:,2].reshape([n_rods,9]) <   0), axis=1))[0]
 
     mask[:] = False
     mask[x_mask_ind1] = True
@@ -201,7 +221,7 @@ def plot_X(i, forces, rmses):
     ax.axvline(x=r_cyl, color='r')
     ax.set_title("(red line: wall)")
     #ax.set_xlim(-r_cyl * 1.1, r_cyl * 1.1)
-    ax.set_ylim(0, 140)
+    ax.set_ylim(-2, 152)
     ax.set_xlabel("x")
     ax.set_ylabel("z")
 
@@ -254,11 +274,12 @@ def plot_X(i, forces, rmses):
     # Plot z-force plot
     l = min(forces.shape[0], 30)
     ax = fig.add_subplot(2,4,3)
-    ax.plot(forces[-l:,0], forces[-l:,3] / total_mass, label='z')
+    #ax.plot(forces[-l:,0], forces[-l:,3] / total_mass, label='z')
+    ax.plot(forces[:,0], forces[:,3] / total_mass, label='z')
     ax.legend()
     ax.set_xlabel("time")
     ax.set_ylabel("z-force (bottom plane)")
-    ax.set_ylim(0,1.5)
+    #ax.set_ylim(0,1.5)
 
     # Plot z-force RMSE convergence
     ax = fig.add_subplot(2,4,4)
@@ -291,11 +312,13 @@ def plot_X(i, forces, rmses):
     plt.clf()
     plt.close('all')
 
+
 if __name__ == "__main__":
-    unique_hash = get_first_file_hash()
+    unique_hash = get_first_file_hash(base_paths[0])
 
     # Precompute
     forces = get_force_history()
+    penetration_counts = get_penetration_counts_history()
     rmses = []
     for window in rmse_windows:
         rmses.append(get_rmse(forces[:,3]/total_mass, 1.0, window))
@@ -304,7 +327,7 @@ if __name__ == "__main__":
     # Run
     num_cores = multiprocessing.cpu_count()
     Parallel(n_jobs=num_cores)(
-        delayed(plot_X)(i, forces[:i], rmses[:,:i]) for i in tqdm(range(num_files))
+        delayed(plot_X)(i, forces[:i], rmses[:,:i], penetration_counts[:i]) for i in tqdm(range(num_files))
     )
     #for i in tqdm(range(num_files)):
     #    plot_X(i)
