@@ -20,4 +20,8 @@
 --packing_initial_vertical_span_ratio 16 \
 --packing_initial_radial_span_ratio 1 \
 --samples_per_period 32 \
---dt 5e-5
+--dt 5e-5 \ 
+--n_threads 1 \
+--steps_between_detection 0
+
+# n_threads is a dummy parameter.

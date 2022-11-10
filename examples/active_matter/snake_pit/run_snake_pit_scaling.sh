@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+../example_snake_pit_scaling \
+--final_sim_time 384.0 \
+--n_snakes 16384 \
+--n_elements 10 \
+--youngs_modulus 1e6 \
+--shear_modulus 666666.6666666666 \
+--density 1e3 \
+--radius 0.00385 \
+--length 0.35 \
+--damping 0.002 \
+--contact_stiffness 5e-2 \
+--contact_damping 5e-3 \
+--gravitational_acc -0.1 \
+--time_period 2.0 \
+--wave_length 1.0 \
+--activation_start_time_nd 5.0 \
+--wall_distance_ratio 8.0 \
+--initialization_protocol random-cube \
+--packing_initial_vertical_span_ratio 1.5 \
+--packing_initial_radial_span_ratio 4.0 \
+--samples_per_period 16 \
+--dt 5e-5 \
+--n_threads 1 \
+--steps_between_detection 10

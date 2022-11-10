@@ -23,6 +23,7 @@
 #include <utility>
 #include <vector>
 
+
 // global is fine since its a cpp file
 using String = const char* const;
 namespace ec = elastica::configuration;
@@ -231,13 +232,25 @@ TODO
     static type default_value() { return 10.0 * time_period::default_value(); }
   };
 
+  struct steps_between_detection {
+    using type = std::size_t;
+    static constexpr String help = {"Number of threads to be used"};
+    static type default_value() { return 0; }
+  };
+
+  struct n_threads {
+    using type = std::size_t;
+    static constexpr String help = {"Number of threads to be used"};
+    static type default_value() { return 1; }
+  };
+
   using Parameters = tmpl::list<
       n_elements, youngs_modulus, shear_modulus, density, radius, length,
       damping, contact_stiffness, contact_damping, gravitational_acc, n_snakes,
       time_period, activation_start_time_nd, wave_length,
       packing_initial_vertical_span_ratio, packing_initial_radial_span_ratio,
       wall_distance_ratio, initialization_protocol, samples_per_period,
-      final_sim_time, dt>;
+      final_sim_time, dt, steps_between_detection, n_threads>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);

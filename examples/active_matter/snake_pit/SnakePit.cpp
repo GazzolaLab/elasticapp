@@ -706,6 +706,10 @@ void SnakePit::setup(InputTypes<This> const& input_parameters) {
       simulator->get_environment<elastica::environments::tags::GravityField>();
   gravity_field->gravity() = gravity_acc_vector;
 
+  auto& collision_system =
+      simulator->get_environment<elastica::environments::tags::CollisionSystem>();
+  collision_system->time_interval_between_detection() = elastica::real_t(::elastica::get<steps_between_detection>(input_parameters)) * ::elastica::get<dt>(input_parameters);  
+
   simulator->finalize();
 
   // Set the dt value

@@ -98,6 +98,8 @@ def run_snake_pit(
         samples_per_period=samples_per_period,
         final_sim_time=final_time,
         dt=dt,
+        n_threads=1, # dummy parameter, only useful in scaling.
+        steps_between_detection=0,
     )
     print(params)
 

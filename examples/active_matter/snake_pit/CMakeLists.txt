@@ -31,4 +31,20 @@ if (TARGET H5)
     #
     elastica_python_link_libraries(PySnakePit PRIVATE Blaze Parallel)
     elastica_python_add_dependencies(PySnakePit PyCosseratRods)
+
+    add_executable(example_snake_pit_scaling scaling.cpp)
+	target_sources(example_snake_pit_scaling INTERFACE SnakePit.hpp)
+	if (NOT TARGET cxxopts::cxxopts)
+	    include(SetupCxxOpts)
+	endif ()
+
+	target_link_libraries(example_snake_pit_scaling
+		PRIVATE
+		SnakePit
+		Utilities
+		# Needed for taking in the input file
+		cxxopts::cxxopts
+		)
+
+	target_include_directories(example_snake_pit_scaling PRIVATE ${CMAKE_SOURCE_DIR})
 endif ()
