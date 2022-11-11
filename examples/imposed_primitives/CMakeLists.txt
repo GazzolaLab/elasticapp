@@ -24,4 +24,4 @@ add_elastica_case_study(PyImposedPrimitiveCaseStudy
         )
 #
 elastica_python_link_libraries(PyImposedPrimitiveCaseStudy PRIVATE Blaze)
-elastica_python_add_dependencies(PyImposedPrimitiveCaseStudy PyArrays)
+elastica_python_add_dependencies(PyImposedPrimitiveCaseStudy PyRigidBody)

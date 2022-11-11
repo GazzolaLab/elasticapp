@@ -90,7 +90,12 @@ void ImposedPrimitiveCaseStudy::setup(
   auto vz = always_zero_;
 
   auto z_translations = ek::translate_along<elastica::EulerianFrame::Z>(
-      ek::mark_position(pz), ek::mark_velocity(vz));
+#if USE_PLANE
+      ek::mark_position(pz),
+#else
+      ek::mark_position(ImposedGround::anchor_to_com_n(pz)),
+#endif
+      ek::mark_velocity(vz));
 
   auto translations_buffer = ek::make_translations(
       ek::translate_along<elastica::EulerianFrame::X>(
@@ -106,12 +111,20 @@ void ImposedPrimitiveCaseStudy::setup(
   auto plane_tangent = {1.0, 0.0, 0.0};
   // implicit convention
   ::elastica::Rot3 Q = {plane_normal, plane_binormal, plane_tangent};
-  using Spans = typename ImposedPlane::Spans;
-  imposed_plane_ref = simulator->emplace_back<ImposedPlane>(
+
+#if USE_PLANE
+  using Spans = typename ImposedGround::Spans;
+  imposed_ground_ref = simulator->emplace_back<ImposedGround>(
       ::elastica::collision::PlanePrimitive(0UL, 0UL, true, plane_position, Q,
                                             Spans{1e4, 1e4},  // plane extent
                                             my_material),
       std::move(translations_buffer));
+#else
+  imposed_ground_ref = simulator->emplace_back<ImposedGround>(
+      ::elastica::collision::HalfSpacePrimitive(0UL, 0UL, true, plane_position,
+                                                Q, my_material),
+      std::move(translations_buffer));
+#endif
 
   const ::elastica::Vec3 gravity_acc_vector{
       0.0, 0.0, ::elastica::get<gravitational_acc>(input_parameters)};

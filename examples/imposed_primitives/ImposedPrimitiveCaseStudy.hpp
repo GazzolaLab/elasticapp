@@ -32,7 +32,14 @@
 using String = const char* const;
 namespace ec = elastica::configuration;
 using Sphere = ::elastica::rigid_body::Sphere;
-using ImposedPlane = ::elastica::collision::ImposedPlanePrimitive;
+#define USE_PLANE 1
+
+using ImposedGround =
+#if USE_PLANE
+    ::elastica::collision::ImposedPlanePrimitive;
+#else
+    ::elastica::collision::ImposedHalfSpacePrimitive;
+#endif
 
 struct ImposedPrimitiveConfiguration {
   static inline auto make_simulator_configuration() {
@@ -45,7 +52,8 @@ struct ImposedPrimitiveConfiguration {
         tmpl::list<::elastica::environments::tags::GravityField,
                    ::elastica::environments::tags::CollisionSystem>;
     // Tag for bottom plane
-    using ImposedPrimitives = tmpl::list<ImposedPlane>;
+    using ImposedPrimitives = tmpl::list<ImposedGround>;
+
     auto collision_config =
         ec::make_collision_configuration(ec::seq,   // between each type
                                          ec::seq);  // across each type
@@ -76,8 +84,6 @@ struct ImposedPrimitiveCaseStudy
     : public ::elastica::CaseStudyInterface<ImposedPrimitiveCaseStudy> {
   using Configuration = ImposedPrimitiveConfiguration;
   using This = ImposedPrimitiveCaseStudy;
-  using ImposedPlane = ::elastica::collision::ImposedPrimitiveAdapter<
-      ::elastica::collision::PlanePrimitive>;
 
   static constexpr String help = {R"help(
 Imposed primitive test-case
@@ -151,30 +157,14 @@ Vibrating Table,” J. Sound Vib., 64(2), pp. 173–189.
   using SphereRefs = std::vector<SphereRef>;
   SphereRefs sphere_refs;
 
-  using ImposedPlaneRef = decltype(simulator->get_invalid_ref<ImposedPlane>());
-  ImposedPlaneRef imposed_plane_ref =
-      simulator->get_invalid_ref<ImposedPlane>();
+  using ImposedGroundRef =
+      decltype(simulator->get_invalid_ref<ImposedGround>());
+  ImposedGroundRef imposed_ground_ref =
+      simulator->get_invalid_ref<ImposedGround>();
 
-  template <typename Ref>
-  inline auto communicate_from(Ref& ref) {
-    auto const& sphere = ref.get();
-    return std::make_tuple(::elastica::position(sphere),
-                           ::elastica::velocity(sphere));
-  }
+  inline auto communicate_from(SphereRef const& ref) { return ref.get(); }
+
   inline auto communicate() {
-    // we dont have CTAD :(
-    using CT = decltype(communicate_from(sphere_refs[0UL]));
-    // using RT = std::vector<CT>;
-    // RT return_list;
-    // return_list.reserve(sphere_refs.size() + 1UL);
-    // std::transform(std::begin(sphere_refs), std::end(sphere_refs),
-    //                std::back_inserter(return_list),
-    //                [this](SphereRef& sphere_ref) {
-    //                  return this->communicate_from(sphere_ref);
-    //                });
-    // // return_list.push_back(
-    // //     std::make_tuple(::elastica::position(imposed_plane_ref.get()),
-    // //                     ::elastica::velocity(imposed_plane_ref.get())));
     // return also the interpenetration here
     auto& collision_system =
         simulator
@@ -184,8 +174,8 @@ Vibrating Table,” J. Sound Vib., 64(2), pp. 173–189.
         contacts.empty() ? 0.0 : -contacts[0].get_distance();
 
     using V = blaze::DynamicVector<::elastica::real_t>;
-    V pp{::elastica::position(imposed_plane_ref.get())};
-    V pv{::elastica::velocity(imposed_plane_ref.get())};
+    V pp{::elastica::position(imposed_ground_ref.get())};
+    V pv{::elastica::velocity(imposed_ground_ref.get())};
     return std::make_tuple(penetration_depth,
                            communicate_from(sphere_refs[0UL]),
                            std::make_tuple(std::move(pp), std::move(pv)));

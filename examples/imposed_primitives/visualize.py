@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from elasticapp import Arrays  # noqa
+from elasticapp.Systems import RigidBody  # noqa
 from elasticapp.CaseStudies.PyImposedPrimitiveCaseStudy import (
     ImposedPrimitiveCaseStudy,
 )
@@ -62,7 +62,9 @@ def run_example(
         collect_global_stats_from(cas)
         collected = cas.communicate()
         stats.penetration_depth.append(collected[0])
-        collect_stats(stats.sphere, *(collected[1]))
+        collect_stats(
+            stats.sphere, collected[1].get_position(), collected[1].get_velocity()
+        )
         collect_stats(stats.plane, *(collected[2]))
 
     # initial
