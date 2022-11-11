@@ -22,30 +22,11 @@
 #include <elastica/Systems/CosseratRods/Utility.hpp>
 #include <elastica/Utilities/Get.hpp>
 #include <elastica/Utilities/Size.hpp>
+#include <elastica/Utilities/StdHelpers.hpp>
 #include <elastica/Utilities/TMPL.hpp>
 
-#include "CustomConnection.cpp"
-
-namespace elastica {
-
-  namespace environments {
-
-    //**************************************************************************
-    /*! \cond ELASTICA_INTERNAL */
-    template <typename Traits>
-    void resolve(elastica::environments::GravityField<Traits> const&,
-                 elastica::cosserat_rod::detail::BackBoneCrissRodBlock&) {
-      // FIXME : does CRTP work here?
-    }
-    template <typename Traits>
-    void resolve(elastica::environments::GravityField<Traits> const&,
-                 elastica::cosserat_rod::detail::BackBoneCrossRodBlock&) {}
-    /*! \endcond */
-    //**************************************************************************
-
-  }  // namespace environments
-
-}  // namespace elastica
+#include "CustomConnection.hpp"
+#include "IsotropicFrictionPlane.hpp"
 
 void MagneticMillipedesCaseStudy::setup(
     InputTypes<This> const& input_parameters) {
@@ -94,20 +75,22 @@ void MagneticMillipedesCaseStudy::setup(
       friction_coefficient);
   elastica::MaterialID backbone_material = elastica::create_material(
       // material density
-      density / ::elastica::get<density_magnetic_to_backbone>(input_parameters),  // kg/m3, pyelastica values
+      density / ::elastica::get<density_magnetic_to_backbone>(
+                    input_parameters),  // kg/m3, pyelastica values
       // coefficient of restitution
       0.24,
       // Young's modulus
-      E / ::elastica::get<stiffness_magnetic_to_backbone>(input_parameters),  // Pa
+      E / ::elastica::get<stiffness_magnetic_to_backbone>(
+              input_parameters),  // Pa
       // Shear modulus
       shear_modulus,  // Pa
       // <!-- Properties below don't matter -->
-      // Contact stiffness
-      200,
+      // Contact stiffness, intentionally small so that the ball does not move
+      1e4,
       // normal contact damping
-      1e-10,
+      10.0,
       // tangent contact damping
-      1e-10,
+      10.0,
       // coefficient of static friction
       0.1,
       // coefficient of dynamic friction
@@ -132,10 +115,34 @@ void MagneticMillipedesCaseStudy::setup(
       // coefficient of dynamic friction
       friction_coefficient);
 
-  const Vec3 direction{0.0, 0.0, 1.0};
+#if SPHERES_INCLUDED
+  elastica::MaterialID sphere_material = elastica::create_material(
+      // material density
+      density * ::elastica::get<density_sphere_to_magnetic>(
+                    input_parameters),  // kg/m3, pyelastica values
+      // coefficient of restitution
+      0.24,
+      // Young's modulus
+      E,  // Pa
+      // Shear modulus
+      shear_modulus,  // Pa
+      // Contact stiffness
+      ::elastica::get<contact_stiffness>(input_parameters),
+      // normal contact damping
+      ::elastica::get<contact_damping_normal>(input_parameters),
+      // tangent contact damping
+      ::elastica::get<contact_damping_tangential>(input_parameters),
+      // coefficient of static friction
+      1.5 * friction_coefficient,
+      // coefficient of dynamic friction
+      friction_coefficient);
+#endif
+
   const Vec3 normal{0.0, 1.0, 0.0};
-  const Vec3 binormal{1.0, 0.0, 0.0};
-  const Vec3& spacing_direction_btw_magnetic_rods_in_one_backbone = binormal;
+  const Vec3 binormal{-1.0, 0.0, 0.0};
+  const Vec3 direction{0.0, 0.0, 1.0};
+
+  const Vec3& spacing_direction_btw_magnetic_rods_in_one_backbone = -binormal;
   const Vec3& spacing_direction_btw_backbone_rods = normal;
 
   const std::size_t n_magnetic_rod_per_backbone(
@@ -147,7 +154,9 @@ void MagneticMillipedesCaseStudy::setup(
           input_parameters));
   // First and last are alwyas attached
   const std::size_t n_backbone_rods =
-      (n_magnetic_rods_spanwise - 1UL) * n_backbone_rods_for_every_magnetic_rod + 1;
+      (n_magnetic_rods_spanwise - 1UL) *
+          n_backbone_rods_for_every_magnetic_rod +
+      1;
 
   const std::size_t n_elem_magnetic_rod(
       ::elastica::get<n_elements>(input_parameters));
@@ -162,7 +171,8 @@ void MagneticMillipedesCaseStudy::setup(
       ::elastica::get<radius_magnetic>(input_parameters);  // m
 
   const real_t spacing_btw_magnetic_rods_in_one_backbone =
-      base_length_magnetic_rods * ::elastica::get<magnetic_rod_spacing_ratio>(input_parameters);  // following Gu2020
+      base_length_magnetic_rods * ::elastica::get<magnetic_rod_spacing_ratio>(
+                                      input_parameters);  // following Gu2020
   const real_t spacing_btw_backbone_rods = 2 * base_radius_backbone_rod;
 
   real_t base_length_back_bone = (n_magnetic_rod_per_backbone - 1) *
@@ -173,7 +183,8 @@ void MagneticMillipedesCaseStudy::setup(
       static_cast<real_t>(n_elem_back_bone) * 2.0 * base_radius_backbone_rod;
 
   const Vec3& normal_back_bone = direction;
-  const Vec3& direction_back_bone = binormal;
+  const Vec3& direction_back_bone =
+      spacing_direction_btw_magnetic_rods_in_one_backbone;
 
   blaze::DynamicMatrix<real_t> start_collection_magnetic_rods(
       3UL, n_magnetic_rod_per_backbone);
@@ -294,8 +305,8 @@ void MagneticMillipedesCaseStudy::setup(
   }
 
   /* Create second set of backbones */
-  const Vec3& direction_back_bone_second_layer = normal;  // FIXME : revisit.
-
+  const Vec3& direction_back_bone_second_layer =
+      blaze::cross(normal_back_bone, direction_back_bone);
   const Vec3& normal_back_bone_second_layer = direction_back_bone;
   const std::size_t n_elem_back_bone_second_layer = backbone_criss_rods.size();
 #if defined(CROSS_RODS)
@@ -325,6 +336,64 @@ void MagneticMillipedesCaseStudy::setup(
   }
 #endif
 
+#if SPHERES_INCLUDED
+  {
+    auto initialize_sphere = [=](::elastica::Vec3 origin,
+                                 ::elastica::real_t rad) {
+      return ::blocks::initialize_block<Sphere>(
+          ::blocks::initialize<::elastica::tags::Position>(
+              [=]() { return origin; }),
+          ::blocks::initialize<::elastica::tags::Director>(
+              []() { return ::elastica::identity3(); }),
+          ::blocks::initialize<::elastica::tags::Radius>([=]() { return rad; }),
+          ::blocks::initialize<::elastica::tags::Velocity>([&]() {
+            return ::elastica::Vec3{0.0, 0.0, 0.0};
+          }),
+          ::blocks::initialize<::elastica::tags::AngularVelocity>(
+              []() { return ::elastica::Vec3{}; }),
+          ::blocks::initialize<::elastica::tags::Acceleration>(
+              []() { return ::elastica::Vec3{}; }),
+          ::blocks::initialize<::elastica::tags::AngularAcceleration>(
+              []() { return ::elastica::Vec3{}; }),
+          ::blocks::initialize<::elastica::tags::Material>(
+              [=]() { return sphere_material; }));
+    };
+    auto const sphere_radius =
+        ::elastica::get<sphere_radius_to_length_ratio>(input_parameters) *
+        base_length_magnetic_rods;
+    auto const sphere_offset =
+        ::elastica::get<sphere_offset_to_length_ratio>(input_parameters) *
+        base_length_magnetic_rods;
+
+    elastica::Vec3 sphere_origin{
+        // spanwise middle
+        real_t(n_backbone_rods / 2) * spacing_btw_backbone_rods *
+            spacing_direction_btw_backbone_rods +
+        // put to end along which the bot moves forward
+        (base_length_back_bone + sphere_offset) *
+            spacing_direction_btw_magnetic_rods_in_one_backbone +
+        // displace up from ground
+        sphere_radius * direction};
+    spheres_list.push_back(simulator->template emplace_back<Sphere>(
+        initialize_sphere(sphere_origin, sphere_radius)));
+
+    // Reduce velocity of sphere explicitly so that there is a damping force
+    // acting on it
+    namespace eco = ::elastica::constraints;
+    auto sphere_constraint = eco::make_constraint(
+        eco::make_value_constraint(
+            [](auto /*time*/, auto& /*rod_system*/, std::size_t /*index*/) {}),
+        eco::make_rate_constraint(
+            [translational_damping_coeff = std::exp(-elastica::get<damping_constant_backbone>(input_parameters) * dt)](
+                auto /*time*/, auto& rod_system, std::size_t) {
+              ::elastica::velocity(rod_system) *=
+                  translational_damping_coeff;
+            }));
+    simulator->constrain(spheres_list.back()).at(0UL).with(sphere_constraint());
+  }
+
+#endif
+
   /* Connection: magnetic arm to backbones */
   // Orthogonal Connection
 #if defined(CRISS_RODS)
@@ -335,10 +404,15 @@ void MagneticMillipedesCaseStudy::setup(
   /* Connection: Connect backbones */
   // Parallel Connection
 
-#if defined(CRISS_RODS) && defined(CROSS_RODS)
+#if defined(CRISS_RODS)
   MagneticMillipedesCaseStudy::group_parallel_connection(backbone_criss_rods);
-  MagneticMillipedesCaseStudy::group_parallel_connection(backbone_cross_rods);
+#endif
 
+#if defined(CROSS_RODS)
+  MagneticMillipedesCaseStudy::group_parallel_connection(backbone_cross_rods);
+#endif
+
+#if defined(CRISS_RODS) && defined(CROSS_RODS)
   /* Connection: Connect first layer and second layer */
   MagneticMillipedesCaseStudy::crisscross_connection(backbone_criss_rods,
                                                      backbone_cross_rods);
@@ -364,6 +438,7 @@ void MagneticMillipedesCaseStudy::setup(
 
   // ************************************************** //
 
+#if MAGNETIC_FIELD_ON
   /* Field: Magnetic field object */
   auto& magnetic_field =
       simulator
@@ -384,13 +459,31 @@ void MagneticMillipedesCaseStudy::setup(
       ::elastica::Vec3{0.0, M_PI_2, M_PI_2};
 
   // can be parametrized if needed
-  magnetic_field->profile().rampup_profile().start_time() =
-      0.5 * field_time_period;  // FIXME : revisit
+  magnetic_field->profile().rampup_profile().start_time() = -2.0;
+  // 0.5 * field_time_period;  // FIXME : revisit
   magnetic_field->profile().rampup_profile().interval() = 0.01;
+#endif
 
   // ************************************************** //
   /* Half space: Bottom Plane */
   // Set the bottom plane at (0, 0, 0) and with normal along Z+
+  namespace ek = elastica::kinematics;
+
+  auto always_zero_ = [](::elastica::real_t) noexcept -> ::elastica::real_t {
+    return 0.0;
+  };
+
+  auto translations_buffer = ek::make_translations(
+      ek::translate_along<elastica::EulerianFrame::X>(
+          ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
+      ek::translate_along<elastica::EulerianFrame::Y>(
+          ek::mark_position(always_zero_), ek::mark_velocity(always_zero_)),
+      ek::translate_along<elastica::EulerianFrame::Z>(
+          // The COM along z axis is not at 0 (the anchor position), but rather
+          // inside the halfspace, so we displace it by anchor_to_com.
+          ek::mark_position(ImposedHalfSpace::anchor_to_com_n(always_zero_)),
+          ek::mark_velocity(always_zero_)));
+
   const ::elastica::Vec3 plane_position_bottom{0.0, 0.0, 0.0};
   auto plane_normal_bottom = {0.0, 0.0, 1.0};
   auto plane_binormal_bottom = {0.0, 1.0, 0.0};
@@ -400,7 +493,13 @@ void MagneticMillipedesCaseStudy::setup(
                                plane_tangent_bottom};
   imposed_half_space_bottom_ref = simulator->emplace_back<ImposedHalfSpace>(
       ::elastica::collision::HalfSpacePrimitive(
-          0UL, 0UL, true, plane_position_bottom, Q_bottom, wall_material));
+          0UL, 0UL, true, plane_position_bottom, Q_bottom, wall_material),
+      std::move(translations_buffer));
+
+  //  std::cout << "Pos" << imposed_half_space_bottom_ref.get().get_position()
+  //  << std::endl; std::cout << "Normal" <<
+  //  imposed_half_space_bottom_ref.get().get_normal() << std::endl; std::cout
+  //  << "aABB" << imposed_half_space_bottom_ref.get().get_AABB() << std::endl;
 
   // ************************************************** //
   /* Collision */
@@ -408,7 +507,7 @@ void MagneticMillipedesCaseStudy::setup(
   //      simulator
   //          ->get_environment<elastica::environments::tags::CollisionSystem>();
   //  collision_solver->time_interval_between_detection() =
-  //      10.0 * dt;  // FIXME : revisit
+  //      10.0 * dt;
 
   // ************************************************** //
   /* Gravity */
@@ -419,6 +518,35 @@ void MagneticMillipedesCaseStudy::setup(
 
   // ************************************************** //
 
+  namespace efo = ::elastica::forcing;
+
+  auto force_generator = [=]() {
+    elastica::real_t const k = 1e3;
+    elastica::real_t const nu = 0.1;
+    elastica::Vec3 const plane_origin = plane_position_bottom;
+    elastica::Vec3 const plane_normal = plane_normal_bottom;
+    elastica::real_t const surface_tol = 1e-4;
+    elastica::real_t const slip_velocity_tol = 1e-8;
+    elastica::real_t period = 1.0;
+    elastica::real_t froude = 0.1;
+    elastica::real_t const mumu =
+        base_length_back_bone / (period * period * (9.80665) * froude) / 40.0;
+    elastica::real_t const kinetic_mu = mumu;
+    elastica::real_t const static_mu = mumu * 1.5;
+
+    return efo::make_forcing(
+        efo::make_force([=](auto, auto& rod_system, std::size_t) {
+          calculate_force(rod_system, k, nu, plane_origin, plane_normal,
+                          surface_tol, slip_velocity_tol, kinetic_mu,
+                          static_mu);
+        }),
+        efo::make_torque([](auto /*time*/, auto&, std::size_t) {}))();
+  };
+
+  for (auto mag_rod : magnetic_rod_list) {
+    simulator->force(mag_rod).at(0UL).with(force_generator());
+  }
+
   // Finalize simulation configuration
   final_time = ::elastica::get<final_sim_time>(input_parameters);
   simulator->finalize();
@@ -428,14 +556,13 @@ void MagneticMillipedesCaseStudy::setup(
 
   // Thread-safe version
   auto& container = simulator->get_system_collection_container();
-  auto const block_count = cpp17::apply(
-      [](auto&... cont) {
-        std::size_t block_count(0UL);
-        EXPAND_PACK_LEFT_TO_RIGHT((block_count += cont.size()));
-        return block_count;
-      },
-      container);
-  std::cout << "Block Count: " << block_count << '\n';
+  auto const block_counts = cpp17::apply(
+      [](auto&... cont) { return std::make_tuple(cont.size()...); }, container);
+  std::cout << "Block Count: " << block_counts << '\n';
+
+#if BACKBONE_CONNECTIONS
+  std::cout << "Connection Count: " << simulator->n_connections() << '\n';
+#endif
 }
 
 template <typename RodTypeOne, typename RodTypeTwo>
@@ -481,22 +608,26 @@ void MagneticMillipedesCaseStudy::orthogonal_connection(
       const std::size_t back_bone_rod_connection_index =
           blaze::argmin(distance_btw_rods);
 
-      Vec3 rod_one_direction_vec_in_material_frame;
-      Vec3 rod_two_direction_vec_in_material_frame;
-      real_t offset_btw_rods;
-      std::tie(rod_one_direction_vec_in_material_frame,
-               rod_two_direction_vec_in_material_frame, offset_btw_rods) =
+      auto const connection_info =
           OrthogonalConnection::get_connection_vector_for_perpendicular_rods(
               back_bone_rod, magnetic_rod, back_bone_rod_connection_index,
               magnetic_rod_connection_index);
 
+      //      std::cout << "---------------------------------------" <<
+      //      std::endl; std::cout << back_bone_rod_connection_index <<
+      //      std::endl; std::cout << magnetic_rod_connection_index <<
+      //      std::endl; std::cout << rod_one_direction_vec_in_material_frame <<
+      //      std::endl; std::cout << rod_two_direction_vec_in_material_frame <<
+      //      std::endl; std::cout << offset_btw_rods << std::endl;
+
       auto connection_generator =
           OrthogonalConnection::perpendicular_connection_generator(
-              k, nu, k_repulsive, kt, rod_one_direction_vec_in_material_frame,
-              rod_two_direction_vec_in_material_frame, offset_btw_rods);
+              k, nu, k_repulsive, kt, connection_info);
+#if BACKBONE_CONNECTIONS
       simulator->connect(back_bone_rod_ref, at(back_bone_rod_connection_index))
           .to(magnetic_rod_ref, at(magnetic_rod_connection_index))
           .with(connection_generator());
+#endif
     }
   }
 }
@@ -540,9 +671,11 @@ void MagneticMillipedesCaseStudy::crisscross_connection(
                 blaze::column(rod_one_direction_vec_in_material_frame, 0),
                 blaze::column(rod_two_direction_vec_in_material_frame, 0),
                 offset_btw_rods[0]);
+#if BACKBONE_CONNECTIONS
         simulator->connect(rod_list_one[rod_one_idx], at(rod_two_idx))
             .to(rod_list_two[rod_two_idx], at(i))
             .with(connection_generator());
+#endif
       }
     }
 }
@@ -550,20 +683,25 @@ void MagneticMillipedesCaseStudy::crisscross_connection(
 template <typename RodType>
 void MagneticMillipedesCaseStudy::group_parallel_connection(
     std::vector<RodType>& rod_list) {
-  const std::size_t size = rod_list.size();
+  const std::size_t n_rods = rod_list.size();
   /* connection configuration */
   const real_t k = 1e5;
   const real_t nu = 0.1;
   const real_t k_repulsive = 1e6;
 
-  for (std::size_t rod_one_idx(0UL); rod_one_idx < size; ++rod_one_idx)
-    for (std::size_t rod_two_idx(rod_one_idx + 1); rod_two_idx < size;
+#define LINE_BY_LINE 0
+
+#if LINE_BY_LINE
+  for (std::size_t rod_one_idx(0UL); rod_one_idx < n_rods; ++rod_one_idx)
+    for (std::size_t rod_two_idx(rod_one_idx + 1); rod_two_idx < n_rods;
          ++rod_two_idx) {
       auto rod_one = rod_list[rod_one_idx].get();
       auto rod_two = rod_list[rod_two_idx].get();
 
       // Backbone rods do not have same number of elements
-      assert(rod_one.size() != rod_two.size());
+      if (rod_one.size() != rod_two.size()) {
+        throw std::runtime_error("What size no match");
+      }
 
       const std::size_t n_elem = rod_one.size();
       blaze::DynamicMatrix<real_t> rod_one_direction_vec_in_material_frame(
@@ -589,62 +727,134 @@ void MagneticMillipedesCaseStudy::group_parallel_connection(
                 blaze::column(rod_one_direction_vec_in_material_frame, e),
                 blaze::column(rod_two_direction_vec_in_material_frame, e),
                 offset_btw_rods[e]);
+
+#if BACKBONE_CONNECTIONS
         simulator->connect(rod_list[rod_one_idx], at(e))
             .to(rod_list[rod_two_idx], at(e))
             .with(connection_generator());
+#endif
       }
     }
+#else
+  // Assume single block for now to not lose sanity
+  const bool same_block_constraint_satisfied =
+      std::all_of(rod_list.cbegin(), rod_list.cend(),
+                  [b = rod_list[0].parent()](auto& rod_ref) {
+                    return rod_ref.parent() == b;
+                  });
+  if (not same_block_constraint_satisfied) {
+    throw std::runtime_error("Not same block");
+  }
+
+  const bool same_size_constraint_satisfied =
+      std::all_of(rod_list.cbegin(), rod_list.cend(),
+                  [s = cpp17::size(rod_list[0].get())](auto& rod_ref) {
+                    return cpp17::size(rod_ref.get()) == s;
+                  });
+  if (not same_size_constraint_satisfied) {
+    throw std::runtime_error("Not same size");
+  }
+
+  auto parent_ref = rod_list[0].parent();
+  auto v_one_ref = blocks::slice(parent_ref, 0UL, n_rods - 1UL);
+  auto v_two_ref = blocks::slice(parent_ref, 1UL, n_rods);
+
+  auto rod_one = v_one_ref.get();
+  auto rod_two = v_two_ref.get();
+
+  const std::size_t n_dofs = cpp17::size(rod_one);
+
+  blaze::DynamicMatrix<real_t> rod_one_direction_vec_in_material_frame(3UL,
+                                                                       n_dofs);
+  blaze::DynamicMatrix<real_t> rod_two_direction_vec_in_material_frame(3UL,
+                                                                       n_dofs);
+  blaze::DynamicVector<real_t> offset_btw_rods(n_dofs);
+  std::tie(rod_one_direction_vec_in_material_frame,
+           rod_two_direction_vec_in_material_frame, offset_btw_rods) =
+      ParallelConnection::get_connection_vector_straight_straight_rod(
+          rod_one, rod_two, 0, n_dofs, 0, n_dofs);
+
+  //  for (std::size_t idx = 0UL; idx < n_dofs; ++idx){
+  //    std::cout << blaze::column(rod_one_direction_vec_in_material_frame, idx)
+  //    << std::endl; std::cout <<
+  //    blaze::column(rod_two_direction_vec_in_material_frame, idx) <<
+  //    std::endl; std::cout << offset_btw_rods[idx] << std::endl;
+  //  }
+
+  auto connection_generator = ParallelConnection::parallel_connection_generator(
+      0, n_dofs, k, nu, k_repulsive, rod_one_direction_vec_in_material_frame,
+      rod_two_direction_vec_in_material_frame, offset_btw_rods);
+#if BACKBONE_CONNECTIONS
+  simulator->connect(v_one_ref)
+      .to(v_two_ref)
+      .with(connection_generator())
+      .at(elastica::interface::pair(elastica::defer, elastica::defer));
+#endif
+
+#endif
 }
 
 template <typename RodType>
 void MagneticMillipedesCaseStudy::add_analytical_damper(
     std::vector<RodType>& rod_list, real_t damping_coeff, const real_t& dt) {
-  // Since all rods are same we create this once and reuse for all rods
-  // ===========ANALYTICAL DAMPING CODE START============================
-  const real_t translational_mode_damping_coeff =
-      blaze::exp(-damping_coeff * dt);
-
-  auto rod = rod_list[0UL].get();
-  auto&& mass = ::elastica::get<elastica::tags::Mass>(rod);
-  blaze::DynamicVector<real_t> elemental_mass =
-      Traits::Operations::average_kernel(mass);
-  // correct elemental mass at ends
-  elemental_mass[0UL] += 0.5 * mass[0UL];
-  elemental_mass[::elastica::cosserat_rod::get_batch_elems(elemental_mass) -
-                 1UL] +=
-      0.5 * mass[::elastica::cosserat_rod::get_batch_elems(mass) - 1UL];
-  blaze::DynamicMatrix<real_t> rotational_mode_damping_coeff = blaze::exp(
-      Traits::Operations::transpose(Traits::Operations::expand_for_broadcast(
-          elemental_mass * -damping_coeff * dt)));
-  constexpr std::size_t dim{3UL};
-  for (std::size_t row_idx = 0; row_idx < dim; row_idx++) {
-    for (std::size_t column_idx = 0;
-         column_idx < ::elastica::cosserat_rod::get_batch_elems(elemental_mass);
-         column_idx++) {
-      rotational_mode_damping_coeff(row_idx, column_idx) = std::pow(
-          rotational_mode_damping_coeff(row_idx, column_idx),
-          ::elastica::get<::elastica::tags::InvMassSecondMomentOfInertia>(rod)(
-              row_idx, column_idx));
-    }
-  }
   // setting analytical damper via constraint
   namespace eco = ::elastica::constraints;
-  auto analytical_linear_damper = eco::make_constraint(
-      eco::make_value_constraint(
-          [](auto /*time*/, auto& /*rod_system*/, std::size_t /*index*/) {}),
-      eco::make_rate_constraint(
-          [translational_mode_damping_coeff, rotational_mode_damping_coeff](
-              auto /*time*/, auto& rod_system, std::size_t index) {
-            ::elastica::velocity(rod_system) =
-                ::elastica::velocity(rod_system) *
-                translational_mode_damping_coeff;
-            ::elastica::angular_velocity(rod_system) =
-                ::elastica::angular_velocity(rod_system) %
-                rotational_mode_damping_coeff;
-          }));
+
+  // Since all rods are same we create this once and reuse for all rods
+  // ===========ANALYTICAL DAMPING CODE START============================
+  auto analytical_linear_damper = [=](auto rod) {
+    const real_t translational_mode_damping_coeff =
+        blaze::exp(-damping_coeff * dt);
+    constexpr std::size_t dim{3UL};
+    const auto n_elem(cpp17::size(rod));
+
+    auto&& mass = ::elastica::get<elastica::tags::Mass>(rod);
+    blaze::DynamicVector<real_t> elemental_mass =
+        Traits::Operations::average_kernel(mass);
+    // correct elemental mass at ends
+    elemental_mass[0UL] += 0.5 * mass[0UL];
+    elemental_mass[n_elem - 1UL] += 0.5 * mass[n_elem];
+
+    blaze::DynamicMatrix<real_t> rotational_mode_damping_coeff(dim, n_elem);
+
+    for (std::size_t row_idx = 0; row_idx < dim; row_idx++) {
+      for (std::size_t column_idx = 0; column_idx < n_elem; column_idx++) {
+        rotational_mode_damping_coeff(row_idx, column_idx) = std::exp(
+            -damping_coeff * dt * elemental_mass[column_idx] *
+            ::elastica::get<::elastica::tags::InvMassSecondMomentOfInertia>(
+                rod)(row_idx, column_idx));
+      }
+    }
+
+    return eco::make_constraint(
+        eco::make_value_constraint(
+            [](auto /*time*/, auto& /*rod_system*/, std::size_t /*index*/) {}),
+        eco::make_rate_constraint([translational_mode_damping_coeff,
+                                   rotational_mode_damping_coeff](
+                                      auto /*time*/, auto& rod_system,
+                                      std::size_t) {
+          ::elastica::velocity(rod_system) *= translational_mode_damping_coeff;
+          // Easier to encode as powers
+          auto const n_elem(cpp17::size(rod_system));
+          auto&& omega = ::elastica::angular_velocity(rod_system);
+          auto&& dil =
+              ::blocks::get<elastica::tags::ElementDilatation>(rod_system);
+
+          for (auto idx_elem = 0UL; idx_elem < n_elem; ++idx_elem) {
+            omega(0UL, idx_elem) *= std::pow(
+                rotational_mode_damping_coeff(0UL, idx_elem), dil[idx_elem]);
+            omega(1UL, idx_elem) *= std::pow(
+                rotational_mode_damping_coeff(1UL, idx_elem), dil[idx_elem]);
+            omega(2UL, idx_elem) *= std::pow(
+                rotational_mode_damping_coeff(2UL, idx_elem), dil[idx_elem]);
+          }
+        }))();
+  };
   // ===========ANALYTICAL DAMPING CODE END============================
+
   for (auto& rod_ref : rod_list)
-    simulator->constrain(rod_ref).at(0UL).with(analytical_linear_damper());
+    simulator->constrain(rod_ref).at(0UL).with(
+        analytical_linear_damper(rod_ref.get()));
 }
 
 void MagneticMillipedesCaseStudy::step() {
@@ -677,7 +887,7 @@ void MagneticMillipedesCaseStudy::run() {
                        "data/backbone_rod_second_layer_coordinates_%010d.csv");
       log_rod_position(magnetic_rod_list, i,
                        "data/magnetic_rod_coordinates_%010d.csv");
-      log_penetration(i);
+      //      log_penetration(i);
     }
 
     // Iterate
@@ -766,6 +976,7 @@ inline void MagneticMillipedesCaseStudy::log_rod_position(
   rod_coordinates.clear();
 }
 
+/*
 inline void MagneticMillipedesCaseStudy::log_penetration(const int i) {
   // Record Interpenetration
   auto& collision_system =
@@ -790,3 +1001,4 @@ inline void MagneticMillipedesCaseStudy::log_penetration(const int i) {
   temporal_file.close();
   penetrations.clear();
 }
+*/

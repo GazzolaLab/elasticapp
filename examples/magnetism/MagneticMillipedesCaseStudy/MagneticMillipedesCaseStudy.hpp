@@ -18,6 +18,22 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+#define MAGNETIC_FIELD_ON 1
+#define BACKBONE_CONNECTIONS 1
+#define SPHERES_INCLUDED 0
+#define COLLISION_ON SPHERES_INCLUDED
+
+#if SPHERES_INCLUDED
+#include <elastica/Systems/RigidBody.hpp>
+#endif
+//
+#include "Customization.hpp"
+#include "Types.hpp"
+//
+#include "Extension/Simulator/Environments.hpp"
+#include "Extension/Systems/CosseratRods.hpp"
+#include "FieldProfiles/OscillatoryMagneticField.hpp"  // customization
+#include "FieldProfiles/RampedAdapter.hpp"             // customization
 //
 #include <elastica/CaseStudy.hpp>
 //
@@ -30,14 +46,6 @@
 #include <elastica/Utilities/DefineTypes.h>
 #include <elastica/Utilities/Geometry/Angles.hpp>
 #include <elastica/Utilities/TMPL.hpp>
-//
-#include "Extension/Simulator/Environments.hpp"
-#include "Extension/Systems/CosseratRods.hpp"
-#include "FieldProfiles/OscillatoryMagneticField.hpp"  // customization
-#include "FieldProfiles/RampedAdapter.hpp"             // customization
-//
-#include "Customization.hpp"
-#include "Types.hpp"
 
 // global alias
 using String = const char* const;
@@ -53,22 +61,37 @@ using MagneticRodInitializer = ::elastica::cosserat_rod::
 using RodInitializer =
     ::elastica::cosserat_rod::StraightCosseratRodWithoutDampingInitializer;
 
+#if SPHERES_INCLUDED
+using Sphere = ::elastica::rigid_body::Sphere;
+#endif
+
 using ::elastica::interface::at;
 using Traits = ::elastica::cosserat_rod::DefaultCosseratRodTraits;
 
 namespace ec = elastica::configuration;
+
 struct MagneticMillipedesConfiguration {
   static inline auto make_simulator_configuration() {
     auto system_config = ec::make_systems_configuration<
-        tmpl::list<BackBoneCrissRod, BackBoneCrossRod, MagnetizedCosseratRod>>(
+        tmpl::list<BackBoneCrissRod, BackBoneCrossRod, MagnetizedCosseratRod
+#if SPHERES_INCLUDED
+                   ,
+                   Sphere
+#endif
+                   >>(
         ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{512UL}),
         ec::make_iteration_policy(ec::iterate_across_system_types_in(ec::seq),
                                   ec::iterate_over_systems_in(ec::seq)));
 
-    using EnvironmentTags =
-        tmpl::list<::elastica::environments::tags::MagneticFieldTag,
-                   ::elastica::environments::tags::GravityField,
-                   ::elastica::environments::tags::CollisionSystem>;
+    // Order of fields important here?
+    using EnvironmentTags = tmpl::list<
+#if MAGNETIC_FIELD_ON
+        ::elastica::environments::tags::MagneticFieldTag,
+#endif
+#if COLLISION_ON
+        ::elastica::environments::tags::CollisionSystem,
+#endif
+        ::elastica::environments::tags::GravityField>;
 
     auto gravity_config =
         ec::make_gravity_configuration(::elastica::Vec3{0., 0., 0.});
@@ -84,24 +107,44 @@ struct MagneticMillipedesConfiguration {
             ::elastica::environments::OscillatoryMagneticField(),
             // I initialize some parameter values here, but these can
             // be modified later on
-            ::elastica::make_linear_rampup(0.0, 200.0)));
+            ::elastica::make_constant_rampup(0.0, 200.0)));
 
     auto env_config =
         ec::make_environments_configuration<EnvironmentTags, ImposedPrimitives>(
             // process environments in sequence
-            ec::seq, magnetic_config, gravity_config, collision_config);
+            ec::seq, gravity_config
+#if MAGNETIC_FIELD_ON
+            ,
+            magnetic_config
+#endif
+#if COLLISION_ON
+            ,
+            collision_config
+#endif
+        );
+
+    auto forcing_config = ec::make_forcing_configuration(ec::par);
 
     return ec::make_simulator_configuration(
         ec::DefaultDomainConfiguration{}, system_config,
         ec::DefaultParallelConfiguration{},
         ec::DefaultConstraintsConfiguration{},
-        ec::DefaultConnectionsConfiguration{}, env_config);
+#if BACKBONE_CONNECTIONS
+        ec::DefaultConnectionsConfiguration{},
+#endif
+        env_config, forcing_config);
   }
 
   static inline auto make_simulator() {
     return elastica::make_simulator<::elastica::modules::Constraints,
+#if BACKBONE_CONNECTIONS
                                     ::elastica::modules::Connections,
-                                    ::elastica::modules::Environments>(
+#endif
+                                    ::elastica::modules::Environments,
+                                    // Important : forcing contains locomotive
+                                    // friction that needs to happen after all
+                                    // forces are applied.
+                                    ::elastica::modules::Forcing>(
         make_simulator_configuration());
   }
 
@@ -278,6 +321,24 @@ Demonstrates an magnetic millipedes simulation.
     static type default_value() { return 0.2; }
   };
 
+  struct sphere_radius_to_length_ratio {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Radius to length ratio."};
+    static type default_value() { return 1.0; }
+  };
+
+  struct sphere_offset_to_length_ratio {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Offset of sphere from front."};
+    static type default_value() { return 2.0; }
+  };
+
+  struct density_sphere_to_magnetic {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Density sphere to magnetic."};
+    static type default_value() { return 0.1; }
+  };
+
   struct final_sim_time {
     using type = ::elastica::real_t;
     static constexpr String help = {"Final simulation time"};
@@ -292,7 +353,8 @@ Demonstrates an magnetic millipedes simulation.
       density_magnetic_to_backbone, stiffness_magnetic_to_backbone, dt,
       contact_stiffness, contact_damping_normal, contact_damping_tangential,
       acc_gravity, mag_strength, mag_angular_frequency, friction_coeff,
-      final_sim_time>;
+      sphere_radius_to_length_ratio, sphere_offset_to_length_ratio,
+      density_sphere_to_magnetic, final_sim_time>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);
@@ -303,7 +365,7 @@ Demonstrates an magnetic millipedes simulation.
   template <typename RodRefType>
   inline void log_rod_position(std::vector<RodRefType>&, const int,
                                const char*);
-  inline void log_penetration(const int);
+  //  inline void log_penetration(const int);
 
   /* Features */
   template <typename RodType>
@@ -333,6 +395,12 @@ Demonstrates an magnetic millipedes simulation.
   std::vector<CrossRodRef> backbone_cross_rods;
   std::vector<MCRRef> magnetic_rod_list;
 
+#if SPHERES_INCLUDED
+  using SphereRef = decltype(simulator->get_invalid_ref<Sphere>());
+  using SphereRefs = std::vector<SphereRef>;
+  SphereRefs spheres_list;
+#endif
+
   // Plane (Bottom)
   using ImposedHalfSpace = ::elastica::collision::ImposedPrimitiveAdapter<
       ::elastica::collision::HalfSpacePrimitive>;
@@ -342,9 +410,26 @@ Demonstrates an magnetic millipedes simulation.
       simulator->get_invalid_ref<ImposedHalfSpace>();
 
   inline auto communicate() {
+#if COLLISION_ON
+    auto& collision_system =
+        simulator
+            ->get_environment<elastica::environments::tags::CollisionSystem>();
+    auto& contacts = collision_system->contacts();
+    ::elastica::real_t penetration_depth =
+        contacts.empty() ? 0.0 : -contacts[0].get_distance();
+#else
+    ::elastica::real_t penetration_depth = 0.0;
+#endif
+
     return std::make_tuple(communicate_buffer(backbone_criss_rods),
                            communicate_buffer(backbone_cross_rods),
-                           communicate_buffer(magnetic_rod_list));
+                           communicate_buffer(magnetic_rod_list)
+#if SPHERES_INCLUDED
+                               ,
+                           communicate_buffer(spheres_list)
+#endif
+                               ,
+                           penetration_depth);
   }
 
   MagneticMillipedesCaseStudy() = default;
