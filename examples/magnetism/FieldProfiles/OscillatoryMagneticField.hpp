@@ -78,8 +78,10 @@ namespace elastica {
       /*!\name Function methods */
       //@{
       inline auto operator()(::elastica::Time time_v) const noexcept {
-        return field_amplitude_ * blaze::sin(time_v * field_angular_frequency_ +
-                                             field_phase_difference_);
+        return field_amplitude_ *
+               blaze::sin(static_cast<elastica::real_t>(time_v) *
+                              field_angular_frequency_ +
+                          field_phase_difference_);
       }
       //@}
       //************************************************************************
