@@ -38,6 +38,7 @@
 #include "Utilities/CRTP.hpp"
 #include "Utilities/Invoke.hpp"
 #include "Utilities/Logging.hpp"
+#include "Utilities/NoSuchType.hpp"
 #include "Utilities/NonCopyable.hpp"
 #include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
@@ -67,8 +68,11 @@ namespace elastica {
        public:
         //**Type definitions****************************************************
         //! Typelist of admissible primitives
-        using AdmissiblePrimitives = tmpl::remove_duplicates<tmpl::transform<
-            SC, ::elastica::collision::tt::PrimitiveTrait<tmpl::_1>>>;
+        // Can be made lazy : any primitives marked with NoSuchType are removed
+        using AdmissiblePrimitives = tmpl::remove_duplicates<tmpl::remove<
+            tmpl::transform<
+                SC, ::elastica::collision::tt::PrimitiveTrait<tmpl::_1>>,
+            NoSuchType>>;
         //**********************************************************************
       };
       /*! \endcond */

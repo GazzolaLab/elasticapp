@@ -18,7 +18,102 @@
 //
 #include "Simulator/Environments/Transfer/Transferer.hpp"
 #include "Utilities/CountingIterator.hpp"
+#include "Utilities/Overloader.hpp"
+#include "Utilities/NoSuchType.hpp"
 #include "Utilities/TMPL.hpp"
+
+// Type customization to test transfer mechanism does no-op for NoSuchType.
+namespace elastica {
+
+  namespace cosserat_rod {
+
+    namespace detail {
+
+      struct NoCollisionTag {};
+      using NoCollisionRod = ::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+          ::elastica::cosserat_rod::DefaultCosseratRodTraits, ::blocks::Block,
+          NoCollisionTag, CosseratRodWithoutDampingComponents>;
+      using NoCollisionRodSlice =
+          ::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+              ::elastica::cosserat_rod::DefaultCosseratRodTraits,
+              ::blocks::BlockSlice, NoCollisionTag,
+              CosseratRodWithoutDampingComponents>;
+      using NoCollisionRodConstSlice =
+          ::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+              ::elastica::cosserat_rod::DefaultCosseratRodTraits,
+              ::blocks::ConstBlockSlice, NoCollisionTag,
+              CosseratRodWithoutDampingComponents>;
+      using NoCollisionRodView =
+          ::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+              ::elastica::cosserat_rod::DefaultCosseratRodTraits,
+              ::blocks::BlockView, NoCollisionTag,
+              CosseratRodWithoutDampingComponents>;
+      using NoCollisionRodConstView =
+          ::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+              ::elastica::cosserat_rod::DefaultCosseratRodTraits,
+              ::blocks::ConstBlockView, NoCollisionTag,
+              CosseratRodWithoutDampingComponents>;
+
+      using NoCollisionRodBlock = ::blocks::Block<NoCollisionRod>;
+      using NoCollisionRodBlockSlice =
+          ::blocks::BlockSlice<NoCollisionRodSlice>;
+      using NoCollisionRodBlockConstSlice =
+          ::blocks::ConstBlockSlice<NoCollisionRodConstSlice>;
+      using NoCollisionRodBlockView = ::blocks::BlockView<NoCollisionRodView>;
+      using NoCollisionRodBlockConstView =
+          ::blocks::ConstBlockView<NoCollisionRodConstView>;
+
+    }  // namespace detail
+
+  }  // namespace cosserat_rod
+
+}  // namespace elastica
+
+namespace elastica {
+
+  namespace customization {
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <>
+    struct PrimitiveTrait<::elastica::cosserat_rod::detail::NoCollisionRod> {
+      using type = NoSuchType;
+    };
+    /*! \endcond */
+    //**************************************************************************
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <>
+    struct PrimitiveTrait<::elastica::cosserat_rod::detail::NoCollisionRodBlock>
+        : public PrimitiveTrait<
+              ::elastica::cosserat_rod::detail::NoCollisionRod> {};
+    /*! \endcond */
+    //**************************************************************************
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <>
+    struct PrimitiveTrait<
+        ::elastica::cosserat_rod::detail::NoCollisionRodBlockSlice>
+        : public PrimitiveTrait<
+              ::elastica::cosserat_rod::detail::NoCollisionRod> {};
+    /*! \endcond */
+    //**************************************************************************
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <>
+    struct PrimitiveTrait<
+        ::elastica::cosserat_rod::detail::NoCollisionRodBlockConstSlice>
+        : public PrimitiveTrait<
+              ::elastica::cosserat_rod::detail::NoCollisionRod> {};
+    /*! \endcond */
+    //**************************************************************************
+
+  }  // namespace customization
+
+}  // namespace elastica
 
 namespace {
 
@@ -51,6 +146,7 @@ namespace {
     using Systems =
         tmpl::list<::elastica::cosserat_rod::CosseratRod,
                    ::elastica::cosserat_rod::CosseratRodWithoutDamping,
+                   ::elastica::cosserat_rod::detail::NoCollisionRod,
                    ::elastica::rigid_body::Sphere>;
     return elastica::make_simulator<::elastica::modules::Environments,
                                     ::elastica::modules::EnableReset>(
@@ -103,8 +199,28 @@ namespace {
     }
 
     {
+      using Plugin = ::elastica::cosserat_rod::detail::NoCollisionRod;
+
+      using Init = ::elastica::cosserat_rod::
+          StraightCosseratRodWithoutDampingInitializer;
+
+      for (auto i = 0UL; i < n_units; ++i) {
+        Init initializer{Init::NElement{n_elements_per_slice},
+                         Init::Material{::elastica::iron},
+                         Init::Radius{0.2},
+                         Init::Length{1.0},
+                         Init::Origin{::elastica::Vec3{0.0, 0.0, 0.0}},
+                         Init::Direction{::elastica::Vec3{0.0, 0.0, 1.0}},
+                         Init::Normal{::elastica::Vec3{1.0, 0.0, 0.0}}};
+
+        sim->template emplace_back<Plugin>(initializer.initialize<Plugin>());
+      }
+    }
+
+    {
       using Plugin = ::elastica::rigid_body::Sphere;
-      // this will result in 2 blocks with the Restrictionpolcy we have in place
+      // this will result in 2 blocks with the Restrictionpolcy we have in
+      // place
 
       std::for_each(
           elastica::make_counting_iterator(0UL),
@@ -164,8 +280,8 @@ namespace {
     CHECK(::elastica::size(sp) == 0UL);
 
     sim->finalize();
-    // because the environments do not need support for primitives, they are not
-    // initialized, so we initialize them
+    // because the environments do not need support for primitives, they are
+    // not initialized, so we initialize them
     if (sim->primitives_are_required()) {
       // it takes care of populating it
     } else {
@@ -238,10 +354,17 @@ namespace {
         CHECK(::blocks::get<::elastica::tags::ExternalLoads>(m) == 0.0);
         CHECK(::blocks::get<::elastica::tags::ExternalTorques>(m) == 0.0);
       };
-      auto post_transfer_check_block = [](auto& m) {
-        CHECK_FALSE(::blocks::get<::elastica::tags::ExternalLoads>(m) == 0.0);
-        CHECK_FALSE(::blocks::get<::elastica::tags::ExternalTorques>(m) == 0.0);
-      };
+      auto post_transfer_check_block = make_overloader(
+          [](auto& m) {
+            CHECK_FALSE(::blocks::get<::elastica::tags::ExternalLoads>(m) ==
+                        0.0);
+            CHECK_FALSE(::blocks::get<::elastica::tags::ExternalTorques>(m) ==
+                        0.0);
+          },
+          // For rod not taking part in collision detection, there is no change.
+          [=](::elastica::cosserat_rod::detail::NoCollisionRodBlock& m) {
+            pre_transfer_check_block(m);
+          });
 
       //
       sim->for_each_block([=](auto& m) { pre_transfer_check_block(m); });

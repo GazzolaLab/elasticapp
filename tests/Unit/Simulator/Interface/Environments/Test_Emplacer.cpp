@@ -16,6 +16,7 @@
 //
 #include "Utilities/CRTP.hpp"
 #include "Utilities/CountingIterator.hpp"
+#include "Utilities/NoSuchType.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
@@ -176,6 +177,21 @@ namespace {
     }
   };
 
+  template <typename T, typename B>
+  struct NoCollisionComponent
+      : public AlwaysNeededComponent<T, B>,
+        public elastica::GeometryComponent<NoCollisionComponent<T, B>> {
+    using P = AlwaysNeededComponent<T, B>;
+    using InitializedVariables = tmpl::list<>;
+    using typename P::ComputedVariables;
+    using Variables = ComputedVariables;
+
+    template <class DownstreamBlock, class CosseratInitializer>
+    static void initialize(DownstreamBlock& db, CosseratInitializer&&) {
+      db.get_material() = ::elastica::iron;
+    }
+  };
+
 }  // namespace
 //.......................................... copied from module test
 
@@ -198,10 +214,12 @@ namespace {
   using ECPlugin = GenerateCRPlugin<EmptyComponent>;
   using ECNamedPlugin = GenerateCRPlugin<EmptyComponentButWithADifferentName>;
   using RBPlugin = GenerateCRPlugin<RigidBodyEmptyComponent>;
+  using NCPlugin = GenerateCRPlugin<NoCollisionComponent>;
 
   using ECBlock = GenerateBlock<ECPlugin>;
   using ECNamedBlock = GenerateBlock<ECNamedPlugin>;
   using RBBlock = GenerateBlock<RBPlugin>;
+  using NCBlock = GenerateBlock<NCPlugin>;
 
 }  // namespace
 
@@ -222,15 +240,22 @@ namespace elastica {
       using type = ::elastica::collision::SpherePrimitive;
     };
 
+    template <typename T, typename B>
+    struct PrimitiveTrait<NoCollisionComponent<T, B>> {
+      using type = NoSuchType;
+    };
+
   }  // namespace customization
 
 }  // namespace elastica
 
 namespace {
 
-  template <
-      typename ListOfPlugins = tmpl::list<ECPlugin, ECNamedPlugin, RBPlugin>,
-      typename T, typename U>
+  // NCPLugin has no such type : improper use in emplacer would trigger
+  // compilation error.
+  template <typename ListOfPlugins =
+                tmpl::list<ECPlugin, ECNamedPlugin, RBPlugin, NCPlugin>,
+            typename T, typename U>
   inline auto make_configuration(T across, U over) {
     using namespace ::elastica::configuration;
     using ListOfImposedPrimitives = tmpl::list<>;
@@ -372,12 +397,116 @@ namespace {
     });
   }
 
+}  // namespace
+
+// Type customization to test transfer mechanism does no-op for NoSuchType.
+namespace elastica {
+
+  namespace cosserat_rod {
+
+    namespace detail {
+
+      struct NoCollisionEmplacerTag {};
+      using NoCollisionEmplacerRod =
+          ::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+              ::elastica::cosserat_rod::DefaultCosseratRodTraits,
+              ::blocks::Block, NoCollisionEmplacerTag,
+              CosseratRodWithoutDampingComponents>;
+      using NoCollisionEmplacerRodSlice =
+          ::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+              ::elastica::cosserat_rod::DefaultCosseratRodTraits,
+              ::blocks::BlockSlice, NoCollisionEmplacerTag,
+              CosseratRodWithoutDampingComponents>;
+      using NoCollisionEmplacerRodConstSlice =
+          ::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+              ::elastica::cosserat_rod::DefaultCosseratRodTraits,
+              ::blocks::ConstBlockSlice, NoCollisionEmplacerTag,
+              CosseratRodWithoutDampingComponents>;
+      using NoCollisionEmplacerRodView =
+          ::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+              ::elastica::cosserat_rod::DefaultCosseratRodTraits,
+              ::blocks::BlockView, NoCollisionEmplacerTag,
+              CosseratRodWithoutDampingComponents>;
+      using NoCollisionEmplacerRodConstView =
+          ::elastica::cosserat_rod::TaggedCosseratRodPlugin<
+              ::elastica::cosserat_rod::DefaultCosseratRodTraits,
+              ::blocks::ConstBlockView, NoCollisionEmplacerTag,
+              CosseratRodWithoutDampingComponents>;
+
+      using NoCollisionEmplacerRodBlock =
+          ::blocks::Block<NoCollisionEmplacerRod>;
+      using NoCollisionEmplacerRodBlockSlice =
+          ::blocks::BlockSlice<NoCollisionEmplacerRodSlice>;
+      using NoCollisionEmplacerRodBlockConstSlice =
+          ::blocks::ConstBlockSlice<NoCollisionEmplacerRodConstSlice>;
+      using NoCollisionEmplacerRodBlockView =
+          ::blocks::BlockView<NoCollisionEmplacerRodView>;
+      using NoCollisionEmplacerRodBlockConstView =
+          ::blocks::ConstBlockView<NoCollisionEmplacerRodConstView>;
+
+    }  // namespace detail
+
+  }  // namespace cosserat_rod
+
+}  // namespace elastica
+
+namespace elastica {
+
+  namespace customization {
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <>
+    struct PrimitiveTrait<
+        ::elastica::cosserat_rod::detail::NoCollisionEmplacerRod> {
+      using type = NoSuchType;
+    };
+    /*! \endcond */
+    //**************************************************************************
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <>
+    struct PrimitiveTrait<
+        ::elastica::cosserat_rod::detail::NoCollisionEmplacerRodBlock>
+        : public PrimitiveTrait<
+              ::elastica::cosserat_rod::detail::NoCollisionEmplacerRod> {};
+    /*! \endcond */
+    //**************************************************************************
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <>
+    struct PrimitiveTrait<
+        ::elastica::cosserat_rod::detail::NoCollisionEmplacerRodBlockSlice>
+        : public PrimitiveTrait<
+              ::elastica::cosserat_rod::detail::NoCollisionEmplacerRod> {};
+    /*! \endcond */
+    //**************************************************************************
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <>
+    struct PrimitiveTrait<
+        ::elastica::cosserat_rod::detail::NoCollisionEmplacerRodBlockConstSlice>
+        : public PrimitiveTrait<
+              ::elastica::cosserat_rod::detail::NoCollisionEmplacerRod> {};
+    /*! \endcond */
+    //**************************************************************************
+
+  }  // namespace customization
+
+}  // namespace elastica
+
+namespace {
+
   template <typename... Args>
   inline decltype(auto) make_integrated_simulator(Args... args) {
     //
     using Systems =
         tmpl::list<::elastica::cosserat_rod::CosseratRod,
                    ::elastica::cosserat_rod::CosseratRodWithoutDamping,
+                   ::elastica::cosserat_rod::detail::NoCollisionEmplacerRod,
                    ::elastica::rigid_body::Sphere>;
     return elastica::make_simulator<::elastica::modules::Environments,
                                     ::elastica::modules::EnableReset>(
@@ -418,6 +547,26 @@ namespace {
           StraightCosseratRodWithoutDampingInitializer;
 
       const std::size_t n_elements_per_slice = 16UL;
+
+      for (auto i = 0UL; i < n_units; ++i) {
+        Init initializer{Init::NElement{n_elements_per_slice},
+                         Init::Material{::elastica::iron},
+                         Init::Radius{0.2},
+                         Init::Length{1.0},
+                         Init::Origin{::elastica::Vec3{0.0, 0.0, 0.0}},
+                         Init::Direction{::elastica::Vec3{0.0, 0.0, 1.0}},
+                         Init::Normal{::elastica::Vec3{1.0, 0.0, 0.0}}};
+
+        sim->template emplace_back<Plugin>(initializer.initialize<Plugin>());
+      }
+    }
+
+    {
+      using Plugin = ::elastica::cosserat_rod::detail::NoCollisionEmplacerRod;
+
+      using Init = ::elastica::cosserat_rod::
+          StraightCosseratRodWithoutDampingInitializer;
+      const std::size_t n_elements_per_slice = 8UL;
 
       for (auto i = 0UL; i < n_units; ++i) {
         Init initializer{Init::NElement{n_elements_per_slice},

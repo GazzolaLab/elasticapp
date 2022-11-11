@@ -22,6 +22,7 @@
 #include "Simulator/Environments/Primitives/TypeTraits.hpp"
 //
 #include "Simulator/Utilities/Offsets.hpp"
+#include "Utilities/NoSuchType.hpp"
 #include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -41,6 +42,27 @@ namespace elastica {
       template <typename SliceType>
       inline static constexpr auto block_t(SliceType volatile const&) noexcept
           -> typename SliceType::ParentBlock;
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Reset primitive dispatch : generic primitive version
+       */
+      template <typename PrimitiveType, typename System, typename Buffer>
+      static void reserve_primitives_dispatch(
+          tmpl::type_<PrimitiveType> /*dispatch*/, System const& system,
+          Buffer& reserve_buffer) {
+        using ::elastica::get_offset;
+        get_offset<PrimitiveType>(reserve_buffer) += ::elastica::size(system);
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Reset primitive dispatch : no primitive version
+       */
+      template <typename System, typename Buffer>
+      static void reserve_primitives_dispatch(
+          tmpl::type_<NoSuchType> /*dispatch*/, System const&,
+          Buffer&) noexcept {}
       //************************************************************************
 
       //************************************************************************
@@ -70,8 +92,9 @@ namespace elastica {
         // timing is not necessary since it is a part of the environments module
         simulator.for_each_system_untimed([&](auto const& system) noexcept {
           std::lock_guard<std::mutex> guard(reserve_buffer_mutex);
-          get_offset<PrimitiveTrait_t<decltype(block_t(system))>>(
-              reserve_buffer) += ::elastica::size(system);
+          reserve_primitives_dispatch(
+              tmpl::type_<PrimitiveTrait_t<decltype(block_t(system))>>{},
+              system, reserve_buffer);
         });
 
         // 2. actually reserve size
@@ -87,6 +110,57 @@ namespace elastica {
               EXPAND_PACK_LEFT_TO_RIGHT(reserve(primitive_container));
             },
             simulator.primitives().data());
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Adds primitive dispatch generic primitive version
+       */
+      template <typename PrimitiveType, typename BlockType, typename P,
+                typename O>
+      static void add_primitives_dispatch(
+          tmpl::type_<PrimitiveType> /*dispatch*/, BlockType& block,
+          P& primitives, O& offsets) {
+        using ::elastica::get_offset;
+        using ::elastica::collision::get_collection;
+
+        // 0. Get reference to a vector of primitives
+        auto& primitive_collection = get_collection<PrimitiveType>(primitives);
+
+        // 2. Store the number of currently referenced primitives to the
+        // offset indices for indexing next
+        get_offset<BlockType>(offsets)[&block] =
+            ::elastica::size(primitive_collection);
+
+        std::size_t sid_base = get_offset<BlockType>(offsets)[&block];
+
+        // slice can be copied for now
+        for (auto slice : block) {
+          std::size_t const end_idx = ::elastica::size(slice);
+
+          for (std::size_t idx = 0UL; idx < end_idx; ++idx) {
+            id_t sid = sid_base + idx;
+            id_t uid = idx;  // user id, not important, we allocate it to
+            // subslice for now
+            const bool finite(true);
+
+            // 2. Create primitives, no need to transfer yet (achieved in
+            // first simulation step) needs to be pliable to future change
+            primitive_collection.emplace_back(sid, uid, finite,
+                                              slice.get_material(idx));
+          }
+          sid_base += end_idx;
+        }
+      }
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Adds primitives dispatch no primitive version
+       */
+      template <typename BlockType, typename P, typename O>
+      static void add_primitives_dispatch(tmpl::type_<NoSuchType> /*dispatch*/,
+                                          BlockType&, P&, O&) {
+        // Don't do any work if the primitives required are no such primitive.
       }
       //************************************************************************
 
@@ -112,37 +186,9 @@ namespace elastica {
               std::lock_guard<std::mutex> guard(primitive_buffer_mutex);
 
               using BlockType = cpp20::remove_cvref_t<decltype(block)>;
-
               using PrimitiveType = PrimitiveTrait_t<BlockType>;
-
-              // 0. Get reference to a vector of primitives
-              auto& primitive_collection =
-                  get_collection<PrimitiveType>(primitives);
-
-              // 2. Store the number of currently referenced primitives to the
-              // offset indices for indexing next
-              get_offset<BlockType>(offsets)[&block] =
-                  ::elastica::size(primitive_collection);
-
-              std::size_t sid_base = get_offset<BlockType>(offsets)[&block];
-
-              // slice can be copied for now
-              for (auto slice : block) {
-                std::size_t const end_idx = ::elastica::size(slice);
-
-                for (std::size_t idx = 0UL; idx < end_idx; ++idx) {
-                  id_t sid = sid_base + idx;
-                  id_t uid = idx;  // user id, not important, we allocate it to
-                                   // subslice for now
-                  const bool finite(true);
-
-                  // 2. Create primitives, no need to transfer yet (achieved in
-                  // first simulation step) needs to be pliable to future change
-                  primitive_collection.emplace_back(sid, uid, finite,
-                                                    slice.get_material(idx));
-                }
-                sid_base += end_idx;
-              }
+              add_primitives_dispatch(tmpl::type_<PrimitiveType>{}, block,
+                                      primitives, offsets);
             });
       }
       //************************************************************************
