@@ -25,7 +25,13 @@
 namespace elastica {
 
   namespace customization {
+// Assume for Millipede case study that transfer is not required as the primitive
+// is no such type. This behavior is encoded for the MagneticFieldMillipede case
+// in its customization file.
 
+#define CONTACT_REQUIRED_FOR_MAGNETIC_RODS 0
+
+#if CONTACT_REQUIRED_FOR_MAGNETIC_RODS
     //**************************************************************************
     /*! \cond ELASTICA_INTERNAL */
     template <>
@@ -113,6 +119,9 @@ namespace elastica {
     };
     /*! \endcond */
     //**************************************************************************
+#endif
+
+#undef CONTACT_REQUIRED_FOR_MAGNETIC_RODS
 
   }  // namespace customization
 
