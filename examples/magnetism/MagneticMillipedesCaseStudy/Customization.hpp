@@ -17,6 +17,7 @@
 // Includes
 //******************************************************************************
 
+#include <elastica/Simulator/Environments/GravityField.hpp>       // refactor
 #include <elastica/Simulator/Environments/Transfer/Transfer.hpp>  // refactor
 //
 #include <elastica/Simulator/Environments/Primitives/CapsuleFromRodPrimitive.hpp>  // refactor
@@ -27,7 +28,59 @@
 //
 #include <elastica/Systems/CosseratRods/Block.hpp>
 //
+#include <elastica/Utilities/NoSuchType.hpp>
+//
+#include "Extension/Systems/CosseratRods.hpp"
 #include "Types.hpp"
+
+namespace elastica {
+
+  namespace customization {
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <>
+    struct PrimitiveTrait<
+        ::elastica::cosserat_rod::detail::MagnetizedCosseratRodWithoutDamping> {
+      using type = NoSuchType;
+    };
+    /*! \endcond */
+    //**************************************************************************
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <>
+    struct PrimitiveTrait<::elastica::cosserat_rod::detail::
+                              MagnetizedCosseratRodWithoutDampingBlock>
+        : public PrimitiveTrait<::elastica::cosserat_rod::detail::
+                                    MagnetizedCosseratRodWithoutDamping> {};
+    /*! \endcond */
+    //**************************************************************************
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <>
+    struct PrimitiveTrait<::elastica::cosserat_rod::detail::
+                              MagnetizedCosseratRodWithoutDampingBlockSlice>
+        : public PrimitiveTrait<::elastica::cosserat_rod::detail::
+                                    MagnetizedCosseratRodWithoutDamping> {};
+    /*! \endcond */
+    //**************************************************************************
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <>
+    struct PrimitiveTrait<
+        ::elastica::cosserat_rod::detail::
+            MagnetizedCosseratRodWithoutDampingBlockConstSlice>
+        : public PrimitiveTrait<::elastica::cosserat_rod::detail::
+                                    MagnetizedCosseratRodWithoutDamping> {};
+    /*! \endcond */
+    //**************************************************************************
+
+  }  // namespace customization
+
+}  // namespace elastica
 
 namespace elastica {
 
@@ -120,5 +173,24 @@ namespace elastica {
     //**************************************************************************
 
   }  // namespace customization
+
+}  // namespace elastica
+
+namespace elastica {
+
+  namespace environments {
+
+    //**************************************************************************
+    /*! \cond ELASTICA_INTERNAL */
+    template <typename Traits>
+    void resolve(elastica::environments::GravityField<Traits> const&,
+                 elastica::cosserat_rod::detail::BackBoneCrissRodBlock&) {}
+    template <typename Traits>
+    void resolve(elastica::environments::GravityField<Traits> const&,
+                 elastica::cosserat_rod::detail::BackBoneCrossRodBlock&) {}
+    /*! \endcond */
+    //**************************************************************************
+
+  }  // namespace environments
 
 }  // namespace elastica
