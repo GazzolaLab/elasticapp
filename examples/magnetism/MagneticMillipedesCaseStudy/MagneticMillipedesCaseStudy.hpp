@@ -107,7 +107,7 @@ struct MagneticMillipedesConfiguration {
             ::elastica::environments::OscillatoryMagneticField(),
             // I initialize some parameter values here, but these can
             // be modified later on
-            ::elastica::make_constant_rampup(0.0, 200.0)));
+            ::elastica::make_step_rampup(0.0, 200.0)));
 
     auto env_config =
         ec::make_environments_configuration<EnvironmentTags, ImposedPrimitives>(
