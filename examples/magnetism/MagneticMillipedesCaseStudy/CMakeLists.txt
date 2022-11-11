@@ -1,5 +1,5 @@
 add_library(MagneticMillipedesCaseStudy STATIC MagneticMillipedesCaseStudy.cpp)
-target_sources(MagneticMillipedesCaseStudy INTERFACE MagneticMillipedesCaseStudy.hpp CustomConnection.cpp)
+target_sources(MagneticMillipedesCaseStudy INTERFACE MagneticMillipedesCaseStudy.hpp CustomConnection.hpp IsotropicFrictionPlane.hpp)
 
 target_link_libraries(MagneticMillipedesCaseStudy
         PRIVATE
@@ -53,4 +53,4 @@ add_elastica_case_study(PyMagneticMillipedesCaseStudy
         )
 #
 elastica_python_link_libraries(PyMagneticMillipedesCaseStudy PRIVATE Blaze)
-elastica_python_add_dependencies(PyMagneticMillipedesCaseStudy ${LIBRARY} PyMagnetizedCosseratRods)
+elastica_python_add_dependencies(PyMagneticMillipedesCaseStudy ${LIBRARY} PyMagnetizedCosseratRods PyRigidBody)
