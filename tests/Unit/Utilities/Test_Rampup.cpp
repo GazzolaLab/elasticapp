@@ -8,6 +8,16 @@
 
 namespace {
 
+  ELASTICA_TEST_CASE("Unit.Utilities.Rampup.StepProfile",
+                     "[Unit][Utilities]") {
+    using Real = double;
+    using namespace elastica::rampup;
+    StepProfile<Real> step;
+    CHECK(step(4.0, 0.0, 2.0) == approx(1.0));
+    CHECK(step(5.0, 0.0, 2.0) == approx(1.0));
+    CHECK(step(5.0, -1.0, 2.0) == approx(1.0));
+  }
+
   ELASTICA_TEST_CASE("Unit.Utilities.Rampup.LinearProfile",
                      "[Unit][Utilities]") {
     using Real = double;
@@ -29,6 +39,38 @@ namespace {
     // sanity check two values outside range
     CHECK(sinp(-2.0, 0.0, 2.0) == approx(-1.0));
     CHECK(sinp(4.0, 0.0, 2.0) == approx(2.0));
+  }
+
+  ELASTICA_TEST_CASE("Unit.Utilities.Rampup.make_step_rampup",
+                     "[Unit][Utilities]") {
+    SECTION("canonical") {
+      /// [make_step_rampup_eg]
+      using Real = double;
+      Real start = 0.0, interval = 1.0;
+      auto step = elastica::make_step_rampup(start, interval);
+      CHECK(step(start) == approx(1.0));
+      /// [make_step_rampup_eg]
+
+      for (auto val : {0.0, 0.2, 0.5, 0.8, 1.0, 1.2}) {
+        CHECK(step(val) == 1.0);
+      }
+    }
+
+    SECTION("shifted") {
+      using Real = double;
+      Real start = -2.0, interval = 4.0;
+
+      auto step = elastica::make_step_rampup(start, interval);
+      CHECK(step(-2.5) == approx(0.0));
+      CHECK(step(start) == approx(1.0));
+
+      CHECK(step(start + 0.3 * interval) == approx(1.0));
+      CHECK(step(start + 0.5 * interval) == approx(1.0));
+      CHECK(step(start + 0.7 * interval) == approx(1.0));
+
+      CHECK(step(start + interval) == approx(1.0));
+      CHECK(step(start + 1.5 * interval) == approx(1.0));
+    }
   }
 
   ELASTICA_TEST_CASE("Unit.Utilities.Rampup.make_linear_rampup",

@@ -52,6 +52,33 @@ namespace elastica {
     //==========================================================================
 
     //**************************************************************************
+    /*!\brief Implements a step ramp profile
+     * \ingroup rampup
+     *
+     * \warning
+     * The activation is not C-0 continuous!
+     *
+     * \tparam Real_ The real number type
+     */
+    template <typename Real_>
+    struct StepProfile {
+      //**Type definitions******************************************************
+      using Real = Real_;
+      //************************************************************************
+
+      //************************************************************************
+      /*!\brief Operator to apply ramping
+       *
+       * \param val Current value
+       * \param start Start value of ramp
+       * \param interval Interval of ramp
+       */
+      Real operator()(Real, Real, Real) const noexcept { return 1.0; }
+      //************************************************************************
+    };
+    //**************************************************************************
+
+    //**************************************************************************
     /*!\brief Implements a linear ramp profile
      * \ingroup rampup
      *
@@ -225,6 +252,29 @@ namespace elastica {
     using rampup::Rampup;
     return Rampup<Real_, F>(std::move(start), std::move(interval),
                             std::move(profile));
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  /*!\brief Idiomatically makes a step rampup
+   * \ingroup rampup
+   *
+   * \example
+   * \snippet Test_Rampup.cpp make_step_rampup_eg
+   *
+   * \param start Start time of ramp
+   * \param interval Interval of ramp
+   *
+   * \note
+   * start and interval need to be of the same type, and should be a floating
+   * point value or explicitly convertible to floating point value.
+   *
+   * \see elastica::make_rampup
+   */
+  template <typename Real_>
+  auto make_step_rampup(Real_ start, Real_ interval) noexcept {
+    return make_rampup(std::move(start), std::move(interval),
+                       rampup::StepProfile<Real_>{});
   }
   //****************************************************************************
 
