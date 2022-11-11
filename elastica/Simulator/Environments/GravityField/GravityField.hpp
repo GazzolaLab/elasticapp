@@ -241,7 +241,7 @@ namespace elastica {
                  System& system) {
       using LoadTag = ::elastica::tags::ExternalLoads;
       using MassTag = ::elastica::tags::Mass;
-      ::elastica::get<LoadTag>(system) =
+      ::elastica::get<LoadTag>(system) +=
           blaze::outer(field.gravity(), ::elastica::get<MassTag>(system));
     }
     //**************************************************************************
