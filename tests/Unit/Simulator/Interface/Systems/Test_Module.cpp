@@ -401,6 +401,26 @@ namespace {
           CHECK(aref.uuid() == aref.uuid());
           CHECK(aref.uuid() != bref.uuid());
         }
+
+        // Comparison operators
+        {
+          blocks::BlockRefGenerator<Plugin> aref(vs, 1UL);
+          blocks::BlockRefGenerator<Plugin> bref(vs, 1UL);
+          blocks::BlockRefGenerator<Plugin> cref(vs, 2UL);
+          CHECK(aref == aref);
+          CHECK(aref == bref);
+          CHECK(aref != cref);
+
+          CHECK(aref < cref);
+
+          CHECK(cref > bref);
+
+          CHECK(aref <= bref);
+          CHECK(aref <= cref);
+
+          CHECK(cref >= aref);
+          CHECK(cref >= bref);
+        }
       }
 
       SECTION("BlockViewGenerator") {
@@ -433,6 +453,9 @@ namespace {
           auto bref_sl1 =
               blocks::slice(bref, 1, ::elastica::end - 1);  // 1, 2, 3
           check_view(bref_sl1);
+        }
+        {
+          auto bref_sl1 = blocks::slice(bref);  // 0, 1, 2, 3
         }
       }
 
@@ -467,7 +490,7 @@ namespace {
           check_slice(aref_sl);
 
           auto another_aref_view =
-              blocks::slice(aref, 1UL, elastica::end);           // 1UL, 2
+              blocks::slice(aref, 1UL, elastica::end);  // 1UL, 2
           auto another_aref_sl = blocks::slice(another_aref_view, 1UL);  // 0UL
           CHECK(another_aref_sl.index() == 2UL);
         }
