@@ -99,6 +99,44 @@ namespace blocks {
     return (lhs.source() == rhs.source()) and (lhs.index() == rhs.index());
   }
 
+  template <class Plugin>
+  inline constexpr auto operator!=(
+      BlockRefGenerator<Plugin> const& lhs,
+      BlockRefGenerator<Plugin> const& rhs) noexcept -> bool {
+    return not(lhs == rhs);
+  }
+  template <class Plugin>
+  inline constexpr auto operator<(BlockRefGenerator<Plugin> const& lhs,
+                                  BlockRefGenerator<Plugin> const& rhs) noexcept
+      -> bool {
+    // https://stackoverflow.com/a/9086675
+    // Relational ordering for std::less always returns the right result
+    return std::less_equal<typename BlockRefGenerator<Plugin>::Pointer>{}(
+               lhs.source(), rhs.source()) and
+           (lhs.index() < rhs.index());
+  }
+
+  template <class Plugin>
+  inline constexpr auto operator>(BlockRefGenerator<Plugin> const& lhs,
+                                  BlockRefGenerator<Plugin> const& rhs) noexcept
+      -> bool {
+    return (rhs < lhs);
+  }
+
+  template <class Plugin>
+  inline constexpr auto operator<=(
+      BlockRefGenerator<Plugin> const& lhs,
+      BlockRefGenerator<Plugin> const& rhs) noexcept -> bool {
+    return not(lhs > rhs);
+  }
+
+  template <class Plugin>
+  inline constexpr auto operator>=(
+      BlockRefGenerator<Plugin> const& lhs,
+      BlockRefGenerator<Plugin> const& rhs) noexcept -> bool {
+    return not(lhs < rhs);
+  }
+
   template <typename Plugin>
   class BlockViewGenerator : public Spannable<BlockViewGenerator<Plugin>> {
    private:
@@ -184,6 +222,13 @@ namespace blocks {
     return (lhs.parent() == rhs.parent()) and (lhs.region() == rhs.region());
   }
 
+  template <class Plugin>
+  inline constexpr auto operator!=(
+      BlockViewGenerator<Plugin> const& lhs,
+      BlockViewGenerator<Plugin> const& rhs) noexcept -> bool {
+    return not(lhs == rhs);
+  }
+
   template <typename Plugin>
   class BlockSliceGenerator {
    public:  // in case some metavariables are needed.
@@ -233,6 +278,13 @@ namespace blocks {
       BlockSliceGenerator<Plugin> const& lhs,
       BlockSliceGenerator<Plugin> const& rhs) noexcept -> bool {
     return (lhs.parent() == rhs.parent()) and (lhs.index() == rhs.index());
+  }
+
+  template <class Plugin>
+  inline constexpr auto operator!=(
+      BlockSliceGenerator<Plugin> const& lhs,
+      BlockSliceGenerator<Plugin> const& rhs) noexcept -> bool {
+    return not(lhs == rhs);
   }
 
   //============================================================================
@@ -344,6 +396,45 @@ namespace blocks {
   //  SLICE FUNCTIONS
   //
   //============================================================================
+
+  //**Slice support*************************************************************
+  /*!\name Whole block slice */
+  //@{
+
+  //****************************************************************************
+  /*!\brief Slice operator for an entire block ref generator
+   * \ingroup blocks
+   *
+   * \details
+   * Gets a view into the entire block ref generator
+   *
+   * \param block_like A ref generator
+   *
+   * \example
+   * Given a block ref `b`, we can slice it using
+   * \code
+   * auto b_slice = block::slice(b); // Generates a view into the block
+   * \endcode
+   *
+   * \note
+   * not marked noexcept because we can have out of range indices
+   */
+  template <typename Plugin>
+  inline constexpr decltype(auto) slice(BlockRefGenerator<Plugin>& block_like) {
+    return slice(block_like, 0UL, ::elastica::end);
+  }
+  //****************************************************************************
+
+  //****************************************************************************
+  template <typename Plugin>
+  inline constexpr decltype(auto) slice(
+      BlockRefGenerator<Plugin> const& block_like) {
+    return slice(block_like, 0UL, ::elastica::end);
+  }
+  //****************************************************************************
+
+  // @}
+  //****************************************************************************
 
   //****************************************************************************
   /*! \cond ELASTICA_INTERNAL */
