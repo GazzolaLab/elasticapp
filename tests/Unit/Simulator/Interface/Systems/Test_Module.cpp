@@ -393,6 +393,7 @@ namespace {
           CHECK(&ref.parent() == &ref);
           CHECK(ref.index() == 1UL);
           CHECK(&ref.get() == &vs[1UL]);
+          CHECK(&blocks::generate_from(ref) == &vs[1UL]);
         }
 
         {
@@ -430,6 +431,9 @@ namespace {
           CHECK(bref_sl1.uuid() == bref.uuid());
           CHECK(blocks::get<::elastica::tags::NElement>(bref_sl1.get()).at(0) ==
                 5);
+          CHECK(blocks::get<::elastica::tags::NElement>(
+                    blocks::generate_from(bref_sl1))
+                    .at(0) == 5);
           CHECK(blocks::get<::elastica::tags::NElement>(bref_sl1.get()).at(1) ==
                 6);
           CHECK(blocks::get<::elastica::tags::NElement>(bref_sl1.get()).at(2) ==
@@ -467,6 +471,9 @@ namespace {
           CHECK(aref_sl.uuid() == aref.uuid());
           CHECK(blocks::get<::elastica::tags::NElement>(aref_sl.get()).at(0) ==
                 3);
+          CHECK(blocks::get<::elastica::tags::NElement>(
+                    blocks::generate_from(aref_sl))
+                    .at(0) == 3);
         };
         {
           auto aref_sl = blocks::slice(aref, 0);
