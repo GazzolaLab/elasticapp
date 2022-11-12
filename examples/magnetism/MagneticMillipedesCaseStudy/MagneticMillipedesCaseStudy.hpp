@@ -368,9 +368,9 @@ Demonstrates an magnetic millipedes simulation.
   //  inline void log_penetration(const int);
 
   /* Features */
-  template <typename RodType>
-  void add_analytical_damper(std::vector<RodType>&, const real_t,
-                             const real_t&);
+  template <typename Plugin>
+  void add_analytical_damper(
+      std::vector<blocks::BlockSliceGenerator<Plugin>> const&, real_t, real_t);
   template <typename RodType>
   void group_parallel_connection(std::vector<RodType>&);
   template <typename RodTypeOne, typename RodTypeTwo>
