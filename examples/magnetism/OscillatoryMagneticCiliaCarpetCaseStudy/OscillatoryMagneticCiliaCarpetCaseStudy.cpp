@@ -20,16 +20,17 @@
 #include <elastica/Utilities/Get.hpp>
 #include <set>
 
+template <template <typename> class ViewOrSliceGenerator>
 auto make_damping_constraint(
-    blocks::BlockViewGenerator<
-        elastica::cosserat_rod::MagnetizedCosseratRodWithoutDamping>
-        view_generator,
+    blocks::BlockGenerator<ViewOrSliceGenerator<
+        elastica::cosserat_rod::MagnetizedCosseratRodWithoutDamping>> const&
+        generator,
     elastica::real_t damping_coeff_dt) {
   // setting analytical damper via constraint
   namespace eco = ::elastica::constraints;
   using elastica::real_t;
 
-  auto rod = view_generator.get();
+  auto rod = blocks::generate_from(generator);
   const real_t translational_mode_damping_coeff = std::exp(-damping_coeff_dt);
   constexpr std::size_t dim{3UL};
   const auto n_elem(cpp17::size(rod));
@@ -226,7 +227,6 @@ void OscillatoryMagneticCiliaCarpetCaseStudy::setup(
           .at(0UL)
           .with(make_damping_constraint(block_ref_view, coeff));
     }
-
 
     auto& container = simulator->get_system_collection_container();
     auto const block_count = cpp17::apply(
