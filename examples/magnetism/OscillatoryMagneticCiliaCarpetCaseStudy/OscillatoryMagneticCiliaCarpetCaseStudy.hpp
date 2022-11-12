@@ -32,7 +32,7 @@
 // global is fine since its a cpp file
 using String = const char* const;
 namespace ec = elastica::configuration;
-using MagnetizedCosseratRod = ::elastica::cosserat_rod::MagnetizedCosseratRod;
+using MagnetizedCosseratRod = ::elastica::cosserat_rod::MagnetizedCosseratRodWithoutDamping;
 
 struct OscillatoryMagneticCiliaCarpetConfiguration {
   static inline auto make_simulator_configuration() {
