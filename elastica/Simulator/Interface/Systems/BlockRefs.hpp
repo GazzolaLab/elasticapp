@@ -29,15 +29,41 @@ namespace blocks {
     return (a + b) * (a + b + 1) / 2 + a;
   }
 
-  // TODO : Add sliceable, viewable semantics
+  template <typename GeneratorLike>
+  class BlockGenerator
+      : public elastica::CRTPHelper<GeneratorLike, BlockGenerator> {
+   private:
+    //**Type definitions********************************************************
+    //! CRTP Type
+    using CRTP = elastica::CRTPHelper<GeneratorLike, BlockGenerator>;
+    //**************************************************************************
+
+   public:
+    //**Self methods************************************************************
+    //! CRTP methods
+    using CRTP::self;
+    //**************************************************************************
+  };
+
+  //**************************************************************************
+  template <typename GeneratorLike>
+  decltype(auto) generate_from(
+      BlockGenerator<GeneratorLike> const& generator) /*noexcept*/ {
+    return generator.self().get();
+  }
+  //**************************************************************************
+
   template <typename Plugin>
-  class BlockRefGenerator : public Spannable<BlockRefGenerator<Plugin>> {
+  class BlockRefGenerator : public Spannable<BlockRefGenerator<Plugin>>,
+                            public BlockGenerator<BlockRefGenerator<Plugin>> {
    private:
     //**Type definitions********************************************************
     //! Type of this
     using This = BlockRefGenerator<Plugin>;
     //! Type of sliceable
     using SpanAffordance = Spannable<This>;
+    //! Type of generator
+    using GeneratorAffordance = BlockGenerator<This>;
     //**************************************************************************
 
    public:
@@ -48,11 +74,12 @@ namespace blocks {
 
     BlockRefGenerator()
         : SpanAffordance(),
+          GeneratorAffordance(),
           src_(nullptr),
           index_(std::numeric_limits<std::size_t>::max()) {}
 
     BlockRefGenerator(Source& v, std::size_t index)
-        : SpanAffordance(), src_(&v), index_(index){};
+        : SpanAffordance(), GeneratorAffordance(), src_(&v), index_(index){};
 
     auto source() const noexcept -> Pointer { return src_; }
     auto index() const noexcept -> std::size_t { return index_; }
@@ -138,13 +165,16 @@ namespace blocks {
   }
 
   template <typename Plugin>
-  class BlockViewGenerator : public Spannable<BlockViewGenerator<Plugin>> {
+  class BlockViewGenerator : public Spannable<BlockViewGenerator<Plugin>>,
+                             public BlockGenerator<BlockViewGenerator<Plugin>> {
    private:
     //**Type definitions********************************************************
     //! Type of this
     using This = BlockViewGenerator<Plugin>;
     //! Type of sliceable
     using SpanAffordance = Spannable<This>;
+    //! Type of generator
+    using GeneratorAffordance = BlockGenerator<This>;
     //**************************************************************************
 
    public:  // in case some metavariables are needed.
@@ -153,6 +183,7 @@ namespace blocks {
 
     BlockViewGenerator()
         : SpanAffordance(),
+          GeneratorAffordance(),
           parent_(),
           region_{std::numeric_limits<std::size_t>::max(),
                   std::numeric_limits<std::size_t>::max()} {}
@@ -160,6 +191,7 @@ namespace blocks {
     BlockViewGenerator(Parent parent, std::size_t slice_index,
                        std::size_t slice_size)
         : SpanAffordance(),
+          GeneratorAffordance(),
           parent_(std::move(parent)),
           region_{slice_index, slice_size} {};
 
@@ -230,16 +262,29 @@ namespace blocks {
   }
 
   template <typename Plugin>
-  class BlockSliceGenerator {
+  class BlockSliceGenerator
+      : public BlockGenerator<BlockSliceGenerator<Plugin>> {
+   private:
+    //**Type definitions********************************************************
+    //! Type of this
+    using This = BlockSliceGenerator<Plugin>;
+    //! Type of generator
+    using GeneratorAffordance = BlockGenerator<This>;
+    //**************************************************************************
+
    public:  // in case some metavariables are needed.
     using Parent = BlockRefGenerator<Plugin>;
     using BlockType = typename Parent::BlockType;
 
     BlockSliceGenerator()
-        : parent_(), slice_index_(std::numeric_limits<std::size_t>::max()) {}
+        : GeneratorAffordance(),
+          parent_(),
+          slice_index_(std::numeric_limits<std::size_t>::max()) {}
 
     BlockSliceGenerator(Parent parent, std::size_t slice_index)
-        : parent_(std::move(parent)), slice_index_(slice_index){};
+        : GeneratorAffordance(),
+          parent_(std::move(parent)),
+          slice_index_(slice_index){};
 
     BlockSliceGenerator(BlockSliceGenerator const& other) = default;
     //
