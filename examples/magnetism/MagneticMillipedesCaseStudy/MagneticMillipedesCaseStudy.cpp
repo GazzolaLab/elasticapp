@@ -14,7 +14,6 @@
 
 #include "MagneticMillipedesCaseStudy.hpp"
 
-#include <cmath>
 #include <elastica/ErrorHandling/FloatingPointExceptions.hpp>
 #include <elastica/Simulator/Materials.hpp>
 #include <elastica/Simulator/Simulator.hpp>
@@ -27,6 +26,101 @@
 
 #include "CustomConnection.hpp"
 #include "IsotropicFrictionPlane.hpp"
+//
+#include <cmath>
+#include <set>
+
+template <typename Traits, template <typename> class ComputationalBlock,
+          template <typename /*CRT*/, typename /*InitializedBlock*/>
+          class... Components>
+auto make_damping_constraint(
+    elastica::cosserat_rod::CosseratRodPlugin<Traits, ComputationalBlock,
+                                              Components...> const& rod_like,
+    elastica::real_t damping_coeff_dt) {
+  // setting analytical damper via constraint
+  namespace eco = ::elastica::constraints;
+  using elastica::real_t;
+  auto const& rod = rod_like.self();
+
+  const real_t translational_mode_damping_coeff = std::exp(-damping_coeff_dt);
+  constexpr std::size_t dim{3UL};
+  const auto n_elem(cpp17::size(rod));
+
+  auto&& mass = ::elastica::get<elastica::tags::Mass>(rod);
+
+  blaze::DynamicMatrix<real_t> rotational_mode_damping_coeff(dim, n_elem);
+
+  for (std::size_t row_idx = 0; row_idx < dim; row_idx++) {
+    for (std::size_t column_idx = 0; column_idx < n_elem; column_idx++) {
+      real_t elemental_mass = 0.5 * (mass[column_idx] + mass[column_idx + 1]);
+      if (column_idx == 0)
+        elemental_mass += 0.5 * mass[column_idx];
+      if (column_idx == (n_elem - 1))
+        elemental_mass += 0.5 * mass[column_idx + 1];
+
+      rotational_mode_damping_coeff(row_idx, column_idx) = std::exp(
+          -damping_coeff_dt * elemental_mass *
+          ::elastica::get<::elastica::tags::InvMassSecondMomentOfInertia>(rod)(
+              row_idx, column_idx));
+    }
+  }
+
+  return eco::make_constraint(
+      eco::make_value_constraint(
+          [](auto /*time*/, auto& /*rod_system*/, std::size_t /*index*/) {}),
+      eco::make_rate_constraint(
+          [translational_mode_damping_coeff, rotational_mode_damping_coeff](
+              auto /*time*/, auto& rod_system, std::size_t) {
+            ::elastica::velocity(rod_system) *=
+                translational_mode_damping_coeff;
+            // Easier to encode as powers
+            auto const n_elem(cpp17::size(rod_system));
+            auto&& omega = ::elastica::angular_velocity(rod_system);
+            auto&& dil =
+                ::blocks::get<elastica::tags::ElementDilatation>(rod_system);
+
+            for (auto idx_elem = 0UL; idx_elem < n_elem; ++idx_elem) {
+              omega(0UL, idx_elem) *= std::pow(
+                  rotational_mode_damping_coeff(0UL, idx_elem), dil[idx_elem]);
+              omega(1UL, idx_elem) *= std::pow(
+                  rotational_mode_damping_coeff(1UL, idx_elem), dil[idx_elem]);
+              omega(2UL, idx_elem) *= std::pow(
+                  rotational_mode_damping_coeff(2UL, idx_elem), dil[idx_elem]);
+            }
+          }))();
+}
+
+#if SPHERES_INCLUDED
+template <typename Traits, template <typename> class ComputationalBlock,
+          template <typename /*CRT*/, typename /*InitializedBlock*/>
+          class... Components>
+auto make_damping_constraint(
+    elastica::rigid_body::RigidBodyPlugin<Traits, ComputationalBlock,
+                                          Components...> const&,
+    elastica::real_t damping_coeff_dt) {
+  // setting analytical damper via constraint
+  namespace eco = ::elastica::constraints;
+  using elastica::real_t;
+
+  const real_t translational_mode_damping_coeff = std::exp(-damping_coeff_dt);
+  return eco::make_constraint(
+      eco::make_value_constraint(
+          [](auto /*time*/, auto& /*rod_system*/, std::size_t /*index*/) {}),
+      eco::make_rate_constraint([translational_mode_damping_coeff](
+                                    auto /*time*/, auto& sphere_system,
+                                    std::size_t) {
+        ::elastica::velocity(sphere_system) *= translational_mode_damping_coeff;
+      }))();
+}
+#endif
+
+template <class ViewOrSliceGenerator>
+auto make_damping_constraint(
+    blocks::BlockGenerator<ViewOrSliceGenerator> const& generator,
+    elastica::real_t damping_coeff_dt) {
+  return make_damping_constraint(blocks::generate_from(generator),
+                                 damping_coeff_dt);
+}
 
 void MagneticMillipedesCaseStudy::setup(
     InputTypes<This> const& input_parameters) {
@@ -379,17 +473,9 @@ void MagneticMillipedesCaseStudy::setup(
 
     // Reduce velocity of sphere explicitly so that there is a damping force
     // acting on it
-    namespace eco = ::elastica::constraints;
-    auto sphere_constraint = eco::make_constraint(
-        eco::make_value_constraint(
-            [](auto /*time*/, auto& /*rod_system*/, std::size_t /*index*/) {}),
-        eco::make_rate_constraint(
-            [translational_damping_coeff = std::exp(-elastica::get<damping_constant_backbone>(input_parameters) * dt)](
-                auto /*time*/, auto& rod_system, std::size_t) {
-              ::elastica::velocity(rod_system) *=
-                  translational_damping_coeff;
-            }));
-    simulator->constrain(spheres_list.back()).at(0UL).with(sphere_constraint());
+    add_analytical_damper(
+        spheres_list,
+        elastica::get<damping_constant_backbone>(input_parameters), dt);
   }
 
 #endif
@@ -794,67 +880,29 @@ void MagneticMillipedesCaseStudy::group_parallel_connection(
 #endif
 }
 
-template <typename RodType>
+template <typename Plugin>
 void MagneticMillipedesCaseStudy::add_analytical_damper(
-    std::vector<RodType>& rod_list, real_t damping_coeff, const real_t& dt) {
+    std::vector<blocks::BlockSliceGenerator<Plugin>> const& generators,
+    real_t damping_rate, real_t dt) {
   // setting analytical damper via constraint
   namespace eco = ::elastica::constraints;
 
-  // Since all rods are same we create this once and reuse for all rods
-  // ===========ANALYTICAL DAMPING CODE START============================
-  auto analytical_linear_damper = [=](auto rod) {
-    const real_t translational_mode_damping_coeff =
-        blaze::exp(-damping_coeff * dt);
-    constexpr std::size_t dim{3UL};
-    const auto n_elem(cpp17::size(rod));
+  auto const coeff = damping_rate * dt;
 
-    auto&& mass = ::elastica::get<elastica::tags::Mass>(rod);
-    blaze::DynamicVector<real_t> elemental_mass =
-        Traits::Operations::average_kernel(mass);
-    // correct elemental mass at ends
-    elemental_mass[0UL] += 0.5 * mass[0UL];
-    elemental_mass[n_elem - 1UL] += 0.5 * mass[n_elem];
+  std::set<blocks::BlockRefGenerator<Plugin>> block_refs;
+  std::transform(std::cbegin(generators), std::cend(generators),
+                 std::inserter(block_refs, std::begin(block_refs)),
+                 [](blocks::BlockSliceGenerator<Plugin> const& ref) {
+                   return ref.parent();
+                 });
 
-    blaze::DynamicMatrix<real_t> rotational_mode_damping_coeff(dim, n_elem);
-
-    for (std::size_t row_idx = 0; row_idx < dim; row_idx++) {
-      for (std::size_t column_idx = 0; column_idx < n_elem; column_idx++) {
-        rotational_mode_damping_coeff(row_idx, column_idx) = std::exp(
-            -damping_coeff * dt * elemental_mass[column_idx] *
-            ::elastica::get<::elastica::tags::InvMassSecondMomentOfInertia>(
-                rod)(row_idx, column_idx));
-      }
-    }
-
-    return eco::make_constraint(
-        eco::make_value_constraint(
-            [](auto /*time*/, auto& /*rod_system*/, std::size_t /*index*/) {}),
-        eco::make_rate_constraint([translational_mode_damping_coeff,
-                                   rotational_mode_damping_coeff](
-                                      auto /*time*/, auto& rod_system,
-                                      std::size_t) {
-          ::elastica::velocity(rod_system) *= translational_mode_damping_coeff;
-          // Easier to encode as powers
-          auto const n_elem(cpp17::size(rod_system));
-          auto&& omega = ::elastica::angular_velocity(rod_system);
-          auto&& dil =
-              ::blocks::get<elastica::tags::ElementDilatation>(rod_system);
-
-          for (auto idx_elem = 0UL; idx_elem < n_elem; ++idx_elem) {
-            omega(0UL, idx_elem) *= std::pow(
-                rotational_mode_damping_coeff(0UL, idx_elem), dil[idx_elem]);
-            omega(1UL, idx_elem) *= std::pow(
-                rotational_mode_damping_coeff(1UL, idx_elem), dil[idx_elem]);
-            omega(2UL, idx_elem) *= std::pow(
-                rotational_mode_damping_coeff(2UL, idx_elem), dil[idx_elem]);
-          }
-        }))();
-  };
-  // ===========ANALYTICAL DAMPING CODE END============================
-
-  for (auto& rod_ref : rod_list)
-    simulator->constrain(rod_ref).at(0UL).with(
-        analytical_linear_damper(rod_ref.get()));
+  // Do it view-level rather than slice level.
+  for (auto& block_ref : block_refs) {
+    auto block_ref_view = blocks::slice(block_ref);
+    simulator->constrain(block_ref_view)
+        .at(0UL)
+        .with(make_damping_constraint(block_ref_view, coeff));
+  }
 }
 
 void MagneticMillipedesCaseStudy::step() {
