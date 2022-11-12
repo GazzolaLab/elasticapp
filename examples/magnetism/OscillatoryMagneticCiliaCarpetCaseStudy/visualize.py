@@ -42,10 +42,10 @@ def run_oscillatory_magnetic_cilia_carpet_case_study(
     n_elem = 20
     base_length = 1.5  # m
     base_radius = 0.15  # m
-    base_area = np.pi * base_radius ** 2
+    base_area = np.pi * base_radius**2
     volume = base_area * base_length
-    moment_of_inertia = np.pi / 4 * base_radius ** 4
-    damping_rate = 1.0
+    moment_of_inertia = np.pi / 4 * base_radius**4
+    damping_rate = 0.5
     spacing_between_rods = base_length  # following Gu2020
     carpet_length_along_x = spacing_between_rods * (n_rods_along_x - 1)
     carpet_length_along_y = spacing_between_rods * (n_rods_along_y - 1)
@@ -62,8 +62,8 @@ def run_oscillatory_magnetic_cilia_carpet_case_study(
         / (volume * in_plane_magnetic_field_strength * base_length)
     )
     dl = base_length / n_elem
-    dt = 0.01 * dl
-    sample_interval = 1e3
+    dt = 0.1 * dl
+    sample_interval = 1e2
     time_interval = sample_interval * dt
     num_periods = 3
     final_time = num_periods * (2 * np.pi / angular_frequency)
