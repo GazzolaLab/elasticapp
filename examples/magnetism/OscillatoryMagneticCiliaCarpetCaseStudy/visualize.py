@@ -69,7 +69,7 @@ def run_oscillatory_magnetic_cilia_carpet_case_study(
     final_time = num_periods * (2 * np.pi / angular_frequency)
     n_steps = int(final_time / time_interval)
 
-    cs = OscillatoryMagneticCiliaCarpetCaseStudy(
+    params = OscillatoryMagneticCiliaCarpetCaseStudy.params(
         n_rods_along_x=n_rods_along_x,
         n_rods_along_y=n_rods_along_y,
         n_elements=n_elem,
@@ -90,6 +90,7 @@ def run_oscillatory_magnetic_cilia_carpet_case_study(
         dt=dt,
         final_sim_time=final_time,
     )
+    cs = OscillatoryMagneticCiliaCarpetCaseStudy(params)
 
     carpet_stats = [Stats() for _ in range(n_rods)]
 
@@ -124,8 +125,12 @@ def run_oscillatory_magnetic_cilia_carpet_case_study(
     )
 
     if save_to_csv:
-        for idx, rod_stats in enumerate(carpet_stats):
-            pd.DataFrame(vars(rod_stats)).to_csv(f"rod_{idx}_states.csv")
+        time = np.asarray(carpet_stats[0].time)
+        position_history = np.asarray(list(map(lambda x: x.position, carpet_stats)))
+
+        save_dict = {"time": time, "position_history": position_history}
+
+        np.savez("oscillatory_cilia.npz", **save_dict)
 
     plt.show()
 
