@@ -1,0 +1,6 @@
+*.png
+*.mp4
+*.csv
+*.npz
+# Comparison scripts
+compare*.py
