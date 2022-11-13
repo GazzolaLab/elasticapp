@@ -3,6 +3,8 @@
 set(LIBRARY MagnetismExtensionCosseratRodComponents)
 add_elastica_library(${LIBRARY} INTERFACE)
 
+add_subdirectory(Names)
+
 elastica_target_headers(
         ${LIBRARY}
         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -18,6 +20,7 @@ elastica_target_sources(
         INTERFACE
         helpers.hpp
         Magnetism.hpp
+        Names.hpp
         Tags.hpp
         Types.hpp
 )

@@ -21,6 +21,7 @@
 ///
 #include "Extension/Systems/CosseratRods/Components/Tags.hpp"
 #include "Extension/Systems/CosseratRods/Components/helpers/Types.hpp"
+#include "Extension/Systems/CosseratRods/Components/Names/Types.hpp"
 
 namespace elastica {
 
