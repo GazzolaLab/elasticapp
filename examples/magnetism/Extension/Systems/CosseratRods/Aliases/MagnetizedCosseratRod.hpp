@@ -22,6 +22,7 @@
 #include <elastica/Systems/common/Types.hpp>
 
 #include "Extension/Systems/CosseratRods/Types.hpp"
+#include "Extension/Systems/CosseratRods/Components/Names/MagnetizedCosseratRod.hpp"
 
 namespace elastica {
 
@@ -35,7 +36,9 @@ namespace elastica {
           ::elastica::cosserat_rod::component::
               WithExplicitlyDampedDiagonalLinearHyperElasticModel,
           ::elastica::cosserat_rod::component::WithRodKinematics,
-          ::elastica::cosserat_rod::component::WithMagnetization>;
+          ::elastica::cosserat_rod::component::WithMagnetization,
+          ::elastica::cosserat_rod::component::
+              MagnetizedCosseratRodNameAdapted>;
 
       using MagnetizedCosseratRod = ::elastica::cosserat_rod::CosseratRodPlugin<
           ::elastica::cosserat_rod::DefaultCosseratRodTraits, ::blocks::Block,

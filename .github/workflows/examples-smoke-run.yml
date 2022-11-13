@@ -52,6 +52,7 @@ jobs:
             example_axial_stretching \
             example_butterfly \
             example_free_nest \
+            example_oscillatory_magnetic_field \
             example_timoshenko \
             --parallel
 
@@ -73,6 +74,12 @@ jobs:
         run: |
           mkdir -p data
           ./bin/example_free_nest --final_sim_time 0.05
+
+      - name: Run Oscillatory Magnetic Field
+        shell: bash
+        working-directory: build
+        run: |
+          ./bin/example_oscillatory_magnetic_field --final_sim_time 0.01
 
       - name: Run Timoshenko
         shell: bash
