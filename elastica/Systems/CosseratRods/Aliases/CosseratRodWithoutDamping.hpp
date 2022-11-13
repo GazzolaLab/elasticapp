@@ -22,6 +22,7 @@
 #include "Systems/Block/Types.hpp"
 // cosserat rod components
 #include "Systems/CosseratRods/_Types.hpp"
+#include "Systems/CosseratRods/Components/Names/CosseratRodWithoutDamping.hpp"
 
 namespace elastica {
 
