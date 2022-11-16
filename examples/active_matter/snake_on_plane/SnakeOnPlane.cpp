@@ -85,6 +85,56 @@ auto make_damping_constraint(
           }))();
 }
 
+// Is unused.
+template <typename Traits, template <typename> class ComputationalBlock,
+          template <typename /*CRT*/, typename /*InitializedBlock*/>
+          class... Components>
+auto make_damping_constraint_outdated(
+    elastica::cosserat_rod::CosseratRodPlugin<Traits, ComputationalBlock,
+                                              Components...> const& rod_like,
+    elastica::real_t damping_coeff_dt) {
+  // setting analytical damper via constraint
+  namespace eco = ::elastica::constraints;
+  using elastica::real_t;
+  auto const& rod = rod_like.self();
+
+  const real_t translational_mode_damping_coeff = std::exp(-damping_coeff_dt);
+  constexpr std::size_t dim{3UL};
+  const auto n_elem(cpp17::size(rod));
+
+  auto&& mass = ::elastica::get<elastica::tags::Mass>(rod);
+
+  blaze::DynamicMatrix<real_t> rotational_mode_damping_coeff(dim, n_elem);
+
+  for (std::size_t row_idx = 0; row_idx < dim; row_idx++) {
+    for (std::size_t column_idx = 0; column_idx < n_elem; column_idx++) {
+      real_t elemental_mass = 0.5 * (mass[column_idx] + mass[column_idx + 1]);
+      if (column_idx == 0)
+        elemental_mass += 0.5 * mass[column_idx];
+      if (column_idx == (n_elem - 1))
+        elemental_mass += 0.5 * mass[column_idx + 1];
+
+      rotational_mode_damping_coeff(row_idx, column_idx) = std::pow(
+          std::exp(-damping_coeff_dt * elemental_mass),
+          ::elastica::get<::elastica::tags::InvMassSecondMomentOfInertia>(rod)(
+              row_idx, column_idx));
+    }
+  }
+
+  return eco::make_constraint(
+      eco::make_value_constraint(
+          [](auto /*time*/, auto& /*rod_system*/, std::size_t /*index*/) {}),
+      eco::make_rate_constraint(
+          [translational_mode_damping_coeff, rotational_mode_damping_coeff](
+              auto /*time*/, auto& rod_system, std::size_t) {
+            ::elastica::velocity(rod_system) *=
+                translational_mode_damping_coeff;
+            // Easier to encode as powers
+            ::elastica::angular_velocity(rod_system) %=
+                rotational_mode_damping_coeff;
+          }))();
+}
+
 template <class ViewOrSliceGenerator>
 decltype(auto) make_damping_constraint(
     blocks::BlockGenerator<ViewOrSliceGenerator> const& generator,
@@ -202,7 +252,8 @@ void SnakeOnPlane::setup(InputTypes<This> const& input_parameters) {
 
   // Damp them
   // maybe needs to be scaled later
-  add_analytical_damper(cosserat_rod_refs, ::elastica::get<damping_rate>(input_parameters),
+  add_analytical_damper(cosserat_rod_refs,
+                        ::elastica::get<damping_rate>(input_parameters),
                         ::elastica::get<dt>(input_parameters));
 
   const ::elastica::Vec3 gravity_acc_vector =
