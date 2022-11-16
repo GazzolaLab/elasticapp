@@ -14,9 +14,9 @@ from processing.visualize import run_snake_on_plane, SnakeOnPlane
 )
 @replace_docstring(SnakeOnPlane)
 def run_case_study(
-        snakes: int,
-        data: bool,
-        fig: bool,
+    snakes: int,
+    data: bool,
+    fig: bool,
 ):
     return run_snake_on_plane(snakes, data, fig)
 

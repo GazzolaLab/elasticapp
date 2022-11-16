@@ -6,16 +6,14 @@ from elasticapp.CaseStudies.PySnakeOnPlane import (
 from elasticapp.Systems import CosseratRods  # noqa
 from matplotlib import pyplot as plt
 
-from .animate import (
-    animate_snake,
-)
+from .animate import animate_snake, plot_com_trajectory
 from .stats import Stats, RodStats
 
 
 def run_snake_on_plane(
-        n_snakes: int = 1,
-        save_to_csv: bool = False,
-        save_figure: bool = False,
+    n_snakes: int = 1,
+    save_to_csv: bool = False,
+    save_figure: bool = False,
 ):
     """Run rod collison study"""
 
@@ -40,7 +38,7 @@ def run_snake_on_plane(
     contact_stiffness = 1e0
     contact_damping = 1e-2
 
-    gravitational_acc = -9.80665 # Causes initial bounce!
+    gravitational_acc = -9.80665  # Causes initial bounce!
     gravitational_acc = -1.00
     time_period = 2.0
     wave_length = 1.0
@@ -62,7 +60,7 @@ def run_snake_on_plane(
         n_snakes=n_snakes,
         time_period=time_period,
         wave_length=wave_length,
-        dt=dt
+        dt=dt,
     )
 
     cs = SnakeOnPlane(params)
@@ -105,13 +103,13 @@ def run_snake_on_plane(
         primitive_lengths = []
 
         def collect_rod_stats(
-                depths,
-                rods,
-                contact_pair_ids,
-                primitive_pos,
-                primitive_ax,
-                primitive_r,
-                primitive_l,
+            depths,
+            rods,
+            contact_pair_ids,
+            primitive_pos,
+            primitive_ax,
+            primitive_r,
+            primitive_l,
         ):
             collect_statistics_backend_agnostic(depths, rods)
             contact_ids.append(contact_pair_ids)
@@ -136,6 +134,7 @@ def run_snake_on_plane(
         cs.run_for(additional_time=time_interval)
         collect_stats_from(cs)
 
+    traj = plot_com_trajectory(total_stats, save_figure=save_figure, frame_skip=5)
     animation = animate_snake(
         total_stats,
         save_figure=save_figure,

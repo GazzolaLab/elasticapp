@@ -5,12 +5,35 @@ from .stats import Stats, PositiveInt, RodStats
 from rich.progress import Progress
 
 
+def plot_com_trajectory(
+    total_stats: Stats,
+    frame_skip: PositiveInt = 1,
+    save_figure: bool = False,
+) -> plt.Figure:  # (time step, x/y/z, node)
+    with plt.style.context("ggplot"):
+        fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
+        ax = fig.add_subplot(111)
+        ax.set_aspect("equal")
+        # ax.set_xlim(-0.2, 0.2)
+        # ax.set_ylim(-0.15, 0.65)
+
+        ax.set_xlabel("Tangent")
+        ax.set_ylabel("Normal")
+
+        r = total_stats.rod_stats[0]
+        position_of_rod = np.asarray(r.position)
+        com_position = np.mean(position_of_rod, axis=-1)
+        ax.plot(com_position[:, 2], com_position[:, 0])
+
+    return fig
+
+
 def animate_snake(
-        total_stats: Stats,
-        video_name: str = "collision.mp4",
-        fps: PositiveInt = 15,
-        frame_skip: PositiveInt = 1,
-        save_figure: bool = False,
+    total_stats: Stats,
+    video_name: str = "collision.mp4",
+    fps: PositiveInt = 15,
+    frame_skip: PositiveInt = 1,
+    save_figure: bool = False,
 ) -> FuncAnimation:  # (time step, x/y/z, node)
     time = np.asarray(total_stats.time)
     step = np.asarray(total_stats.step)
@@ -23,20 +46,22 @@ def animate_snake(
         ax.set_ylim(-0.15, 0.65)
         ax.set_zlim(-0.4, 0.4)
 
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
+        ax.set_xlabel("X")
+        ax.set_ylabel("Y")
+        ax.set_zlabel("Z")
 
         ax.set_box_aspect((1, 2, 2))
 
         for _ in range(len(total_stats.rod_stats)):
-            rod_lines.append(ax.plot(
-                [],
-                [],
-                [],
-                lw=2.0,
-                solid_capstyle="round",
-            )[0])
+            rod_lines.append(
+                ax.plot(
+                    [],
+                    [],
+                    [],
+                    lw=2.0,
+                    solid_capstyle="round",
+                )[0]
+            )
 
         text_step = ax.text2D(
             0.2,
