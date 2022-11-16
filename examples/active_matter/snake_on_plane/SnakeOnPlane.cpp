@@ -25,6 +25,74 @@
 //
 #include <cmath>
 
+template <typename Traits, template <typename> class ComputationalBlock,
+          template <typename /*CRT*/, typename /*InitializedBlock*/>
+          class... Components>
+auto make_damping_constraint(
+    elastica::cosserat_rod::CosseratRodPlugin<Traits, ComputationalBlock,
+                                              Components...> const& rod_like,
+    elastica::real_t damping_coeff_dt) {
+  // setting analytical damper via constraint
+  namespace eco = ::elastica::constraints;
+  using elastica::real_t;
+  auto const& rod = rod_like.self();
+
+  const real_t translational_mode_damping_coeff = std::exp(-damping_coeff_dt);
+  constexpr std::size_t dim{3UL};
+  const auto n_elem(cpp17::size(rod));
+
+  auto&& mass = ::elastica::get<elastica::tags::Mass>(rod);
+
+  blaze::DynamicMatrix<real_t> rotational_mode_damping_coeff(dim, n_elem);
+
+  for (std::size_t row_idx = 0; row_idx < dim; row_idx++) {
+    for (std::size_t column_idx = 0; column_idx < n_elem; column_idx++) {
+      real_t elemental_mass = 0.5 * (mass[column_idx] + mass[column_idx + 1]);
+      if (column_idx == 0)
+        elemental_mass += 0.5 * mass[column_idx];
+      if (column_idx == (n_elem - 1))
+        elemental_mass += 0.5 * mass[column_idx + 1];
+
+      rotational_mode_damping_coeff(row_idx, column_idx) = std::exp(
+          -damping_coeff_dt * elemental_mass *
+          ::elastica::get<::elastica::tags::InvMassSecondMomentOfInertia>(rod)(
+              row_idx, column_idx));
+    }
+  }
+
+  return eco::make_constraint(
+      eco::make_value_constraint(
+          [](auto /*time*/, auto& /*rod_system*/, std::size_t /*index*/) {}),
+      eco::make_rate_constraint(
+          [translational_mode_damping_coeff, rotational_mode_damping_coeff](
+              auto /*time*/, auto& rod_system, std::size_t) {
+            ::elastica::velocity(rod_system) *=
+                translational_mode_damping_coeff;
+            // Easier to encode as powers
+            auto const n_elem(cpp17::size(rod_system));
+            auto&& omega = ::elastica::angular_velocity(rod_system);
+            auto&& dil =
+                ::blocks::get<elastica::tags::ElementDilatation>(rod_system);
+
+            for (auto idx_elem = 0UL; idx_elem < n_elem; ++idx_elem) {
+              omega(0UL, idx_elem) *= std::pow(
+                  rotational_mode_damping_coeff(0UL, idx_elem), dil[idx_elem]);
+              omega(1UL, idx_elem) *= std::pow(
+                  rotational_mode_damping_coeff(1UL, idx_elem), dil[idx_elem]);
+              omega(2UL, idx_elem) *= std::pow(
+                  rotational_mode_damping_coeff(2UL, idx_elem), dil[idx_elem]);
+            }
+          }))();
+}
+
+template <class ViewOrSliceGenerator>
+decltype(auto) make_damping_constraint(
+    blocks::BlockGenerator<ViewOrSliceGenerator> const& generator,
+    elastica::real_t damping_coeff_dt) {
+  return make_damping_constraint(blocks::generate_from(generator),
+                                 damping_coeff_dt);
+}
+
 void SnakeOnPlane::setup(InputTypes<This> const& input_parameters) {
   elastica::MaterialID my_material = elastica::create_material(
       // material density
@@ -64,15 +132,16 @@ void SnakeOnPlane::setup(InputTypes<This> const& input_parameters) {
   const std::size_t n_elem(::elastica::get<n_elements>(input_parameters));
 
   using RodInitializer =
-      ::elastica::cosserat_rod::StraightCosseratRodInitializer;
+      ::elastica::cosserat_rod::StraightCosseratRodWithoutDampingInitializer;
   RodInitializer straight_initializer{
-      RodInitializer::NElement{n_elem}, RodInitializer::Material{my_material},
+      RodInitializer::NElement{n_elem},
+      RodInitializer::Material{my_material},
       RodInitializer::Radius{::elastica::get<radius>(input_parameters)},
-      RodInitializer::Length{base_length}, RodInitializer::Origin{anchor},
-      RodInitializer::Direction{direction}, RodInitializer::Normal{normal},
-      // maybe needs to be scaled later
-      RodInitializer::ForceDampingRate{0.1},
-      RodInitializer::TorqueDampingRate{0.1}};
+      RodInitializer::Length{base_length},
+      RodInitializer::Origin{anchor},
+      RodInitializer::Direction{direction},
+      RodInitializer::Normal{normal},
+  };
 
   cosserat_rod_refs.resize(number_of_snakes,
                            simulator->get_invalid_ref<CosseratRod>());
@@ -130,6 +199,11 @@ void SnakeOnPlane::setup(InputTypes<This> const& input_parameters) {
         .at(::elastica::interface::range(0UL, n_elem))
         .with(snake_forcing_gen());
   }
+
+  // Damp them
+  // maybe needs to be scaled later
+  add_analytical_damper(cosserat_rod_refs, ::elastica::get<damping_rate>(input_parameters),
+                        ::elastica::get<dt>(input_parameters));
 
   const ::elastica::Vec3 gravity_acc_vector =
       ::elastica::get<gravitational_acc>(input_parameters) * normal;
@@ -199,6 +273,31 @@ void SnakeOnPlane::setup(InputTypes<This> const& input_parameters) {
 
   // Set the dt value
   set_dt(::elastica::get<dt>(input_parameters));
+}
+
+template <typename Plugin>
+void SnakeOnPlane::add_analytical_damper(
+    std::vector<blocks::BlockSliceGenerator<Plugin>> const& generators,
+    elastica::real_t damping_rate, elastica::real_t dt) {
+  // setting analytical damper via constraint
+  namespace eco = ::elastica::constraints;
+
+  auto const coeff = damping_rate * dt;
+
+  std::set<blocks::BlockRefGenerator<Plugin>> block_refs;
+  std::transform(std::cbegin(generators), std::cend(generators),
+                 std::inserter(block_refs, std::begin(block_refs)),
+                 [](blocks::BlockSliceGenerator<Plugin> const& ref) {
+                   return ref.parent();
+                 });
+
+  // Do it view-level rather than slice level.
+  for (auto& block_ref : block_refs) {
+    auto block_ref_view = blocks::slice(block_ref);
+    simulator->constrain(block_ref_view)
+        .at(0UL)
+        .with(make_damping_constraint(block_ref_view, coeff));
+  }
 }
 
 void SnakeOnPlane::step() {

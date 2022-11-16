@@ -23,17 +23,18 @@ def run_snake_on_plane(
     if run_on_debug_mode:
         np.set_printoptions(floatmode="unique")
 
-    sample_interval = 1e3
+    sample_interval = 1e2
 
     n_elements = 20
     youngs_modulus = 1e6
     poisson_ratio = 0.5
     shear_modulus = youngs_modulus / (poisson_ratio + 1.0)
+    damping_rate = 0.01  # Keeping it low acheives convergence
     density = 1e3
     length = 0.35
     radius = length * 0.011
 
-    dt = 1e-5
+    dt = 1e-4
     # These numbers seem very low.
     contact_stiffness = 1e0
     contact_damping = 1e-2
@@ -43,8 +44,9 @@ def run_snake_on_plane(
     time_period = 2.0
     wave_length = 1.0
 
-    final_time = (5.0) * time_period
-    time_interval = sample_interval * dt
+    final_time = (3.0) * time_period
+    samples_per_period = 32
+    time_interval = time_period / samples_per_period
     n_steps = int(final_time / time_interval)
 
     params = SnakeOnPlane.params(
@@ -52,6 +54,7 @@ def run_snake_on_plane(
         youngs_modulus=youngs_modulus,
         shear_modulus=shear_modulus,
         density=density,
+        damping_rate=damping_rate,
         radius=radius,
         length=length,
         contact_stiffness=contact_stiffness,
@@ -134,7 +137,7 @@ def run_snake_on_plane(
         cs.run_for(additional_time=time_interval)
         collect_stats_from(cs)
 
-    traj = plot_com_trajectory(total_stats, save_figure=save_figure, frame_skip=5)
+    traj = plot_com_trajectory(total_stats, save_figure=save_figure, frame_skip=1)
     animation = animate_snake(
         total_stats,
         save_figure=save_figure,
@@ -142,6 +145,14 @@ def run_snake_on_plane(
     )
 
     if save_to_csv:
-        pass
+        time = np.asarray(total_stats.time)
+        position_history = np.asarray(
+            list(map(lambda x: x.position, total_stats.rod_stats))
+        )
+        save_dict = {
+            "time": time,
+            "position_history": position_history,
+        }
+        np.savez("snake_dynamics.npz", **save_dict)
 
     plt.show()

@@ -8,6 +8,7 @@
 //
 #include <elastica/CaseStudy.hpp>
 //
+#include <elastica/Simulator/Constraints.hpp>
 #include <elastica/Simulator/Environments.hpp>
 #include <elastica/Simulator/Forcing.hpp>
 #include <elastica/Simulator/Simulator.hpp>
@@ -24,7 +25,7 @@
 // global is fine since its a cpp file
 using String = const char* const;
 namespace ec = elastica::configuration;
-using ::elastica::cosserat_rod::CosseratRod;
+using CosseratRod = ::elastica::cosserat_rod::CosseratRodWithoutDamping;
 using ImposedHalfSpace = ::elastica::collision::ImposedHalfSpacePrimitive;
 
 struct SnakeOnPlaneConfiguration {
@@ -33,6 +34,13 @@ struct SnakeOnPlaneConfiguration {
         tmpl::list<::elastica::environments::tags::GravityField,
                    ::elastica::environments::tags::CollisionSystem>;
     using ImposedPrimitives = tmpl::list<ImposedHalfSpace>;
+
+    auto systems_config =
+        ec::make_systems_configuration<tmpl::list<CosseratRod>>(
+            ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{128}),
+            ec::make_iteration_policy(
+                ec::iterate_across_system_types_in(ec::seq),
+                ec::iterate_over_systems_in(ec::seq)));
 
     // use default force model of a linear spring damper
     auto collision_config =
@@ -47,13 +55,14 @@ struct SnakeOnPlaneConfiguration {
             ec::seq, gravity_config, collision_config);
 
     return ec::make_simulator_configuration(
-        ec::DefaultDomainConfiguration{}, ec::DefaultSystemsConfiguration{},
+        ec::DefaultDomainConfiguration{}, systems_config,
         ec::DefaultParallelConfiguration{}, ec::DefaultForcingConfiguration{},
-        environment_config);
+        ec::DefaultConstraintsConfiguration{}, environment_config);
   }
 
   static inline auto make_simulator() {
     return elastica::make_simulator<::elastica::modules::Forcing,
+                                    ::elastica::modules::Constraints,
                                     ::elastica::modules::Environments>(
         make_simulator_configuration());
   }
@@ -148,6 +157,12 @@ TODO
     static type default_value() { return 1.0; }
   };
 
+  struct damping_rate {
+    using type = ::elastica::real_t;
+    static constexpr String help = {"Analytical Damping rate for snake"};
+    static type default_value() { return 0.01; }
+  };
+
   struct dt {
     using type = ::elastica::real_t;
     static constexpr String help = {"Time step of simulation"};
@@ -155,14 +170,19 @@ TODO
   };
 
   using Parameters =
-      tmpl::list<n_elements, youngs_modulus, shear_modulus, density, radius,
-                 length, contact_stiffness, contact_damping, gravitational_acc,
-                 n_snakes, time_period, wave_length, dt>;
+      tmpl::list<n_elements, youngs_modulus, shear_modulus, density,
+                 damping_rate, radius, length, contact_stiffness,
+                 contact_damping, gravitational_acc, n_snakes, time_period,
+                 wave_length, dt>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);
   void step();
   void run();
+  template <typename Plugin>
+  void add_analytical_damper(
+      std::vector<blocks::BlockSliceGenerator<Plugin>> const&,
+      elastica::real_t damping_rate, elastica::real_t dt);
 
   SnakeOnPlane() = default;
   SnakeOnPlane(SnakeOnPlane&&) noexcept = default;
