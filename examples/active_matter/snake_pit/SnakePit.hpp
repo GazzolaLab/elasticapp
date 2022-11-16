@@ -8,7 +8,6 @@
 //
 #include <elastica/CaseStudy.hpp>
 //
-#include <elastica/ModuleSettings/Parallel.hpp>
 #include <elastica/Simulator/Constraints.hpp>
 #include <elastica/Simulator/Environments.hpp>
 #include <elastica/Simulator/Forcing.hpp>
@@ -23,7 +22,6 @@
 #include <utility>
 #include <vector>
 
-
 // global is fine since its a cpp file
 using String = const char* const;
 namespace ec = elastica::configuration;
@@ -37,23 +35,19 @@ struct SnakePitConfiguration {
                    ::elastica::environments::tags::CollisionSystem>;
     using ImposedPrimitives = tmpl::list<ImposedHalfSpace>;
 
-#if ELASTICA_TBB_PARALLEL_MODE
-#define EXEC ec::par
-#else
-#define EXEC ec::seq
-#endif
+#define SNAKE_PIT_EXEC_MODE ec::par
 
     auto system_config =
         ec::make_systems_configuration<tmpl::list<CosseratRod>>(
             ec::make_blocking_policy(ec::RestrictSizeAcrossBlockTypes{128UL}),
             ec::make_iteration_policy(
                 ec::iterate_across_system_types_in(ec::seq),
-                ec::iterate_over_systems_in(EXEC)));
+                ec::iterate_over_systems_in(SNAKE_PIT_EXEC_MODE)));
 
     // use default force model of a linear spring damper
     auto collision_config = ec::make_collision_configuration(
-        EXEC,      // between each type
-        ec::seq);  // across each type (there is only one tpe)
+        SNAKE_PIT_EXEC_MODE,  // between each type
+        ec::seq);             // across each type (there is only one tpe)
     auto gravity_config =
         ec::make_gravity_configuration(::elastica::Vec3{0., 0., 0.});
 
@@ -62,14 +56,15 @@ struct SnakePitConfiguration {
             // iteration, currently unused
             ec::seq, gravity_config, collision_config);
 
-    auto constraints_config = ec::make_constraints_configuration<>(EXEC);
-    auto forcing_config = ec::make_forcing_configuration<>(EXEC);
+    auto constraints_config =
+        ec::make_constraints_configuration<>(SNAKE_PIT_EXEC_MODE);
+    auto forcing_config = ec::make_forcing_configuration<>(SNAKE_PIT_EXEC_MODE);
 
     return ec::make_simulator_configuration(
         ec::DefaultDomainConfiguration{}, system_config,
         ec::DefaultParallelConfiguration{}, constraints_config, forcing_config,
         environment_config);
-#undef EXEC
+#undef SNAKE_PIT_EXEC_MODE
   }
 
   static inline auto make_simulator() {
