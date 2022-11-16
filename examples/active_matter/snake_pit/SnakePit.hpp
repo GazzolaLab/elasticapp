@@ -256,6 +256,10 @@ TODO
   void setup(InputTypes<This> const& input_parameters);
   void step();
   void run();
+  template <typename Plugin>
+  void add_analytical_damper(
+      std::vector<blocks::BlockSliceGenerator<Plugin>> const&,
+      elastica::real_t damping_rate, elastica::real_t dt);
 
   SnakePit() = default;
   SnakePit(SnakePit&&) noexcept = default;
