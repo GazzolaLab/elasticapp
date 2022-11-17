@@ -601,11 +601,13 @@ void SnakePit::setup(InputTypes<This> const& input_parameters) {
 
     RodInitializer straight_initializer{
         // RodInitializerialization Wrapper
-        RodInitializer::NElement{n_elem}, RodInitializer::Material{my_material},
+        RodInitializer::NElement{n_elem},
+        RodInitializer::Material{my_material},
         RodInitializer::Radius{base_radius},
         RodInitializer::Length{base_length},
         RodInitializer::Origin{elastica::Vec3{0., 0., 0.}},
-        RodInitializer::Direction{direction}, RodInitializer::Normal{normal},
+        RodInitializer::Direction{direction},
+        RodInitializer::Normal{normal},
     };
 
     constexpr auto x_axis = 0UL;
@@ -701,6 +703,94 @@ void SnakePit::setup(InputTypes<This> const& input_parameters) {
     }
   };
 
+  auto random_xyz_initialization = [&](auto point_constraint) {
+    auto& origin_point_constraint(point_constraint);
+    auto& end_point_constraint(point_constraint);
+    std::mt19937 mt(0);
+    // const std::size_t n_layers = 10UL;
+    const elastica::real_t R =
+        ::elastica::get<packing_initial_radial_span_ratio>(input_parameters) *
+        base_length;
+    const elastica::real_t H =
+        ::elastica::get<packing_initial_vertical_span_ratio>(input_parameters) *
+        base_length;
+    std::uniform_real_distribution<::elastica::real_t> dist_x(-R, R);
+    std::uniform_real_distribution<::elastica::real_t> dist_y(-R, R);
+    std::uniform_real_distribution<::elastica::real_t> dist_z(base_radius, H);
+    // in-plane angle
+    std::uniform_real_distribution<::elastica::real_t> dist_alpha(0.0,
+                                                                  2 * M_PI);
+    constexpr auto limit = 0.5 * M_PI;
+    std::uniform_real_distribution<::elastica::real_t> dist_beta(-limit, limit);
+
+    cosserat_rod_refs.reserve(number_of_snakes);
+
+    RodInitializer straight_initializer{
+        // RodInitializerialization Wrapper
+        RodInitializer::NElement{n_elem},
+        RodInitializer::Material{my_material},
+        RodInitializer::Radius{base_radius},
+        RodInitializer::Length{base_length},
+        RodInitializer::Origin{elastica::Vec3{0., 0., 0.}},
+        RodInitializer::Direction{direction},
+        RodInitializer::Normal{normal},
+    };
+
+    constexpr auto x_axis = 0UL;
+    constexpr auto y_axis = 1UL;
+    constexpr auto z_axis = 2UL;
+
+    const auto is_violated = [](bool b) -> bool { return b; };
+
+    for (std::size_t i = 0; i < number_of_snakes; ++i) {
+      ::elastica::real_t origin_x = dist_x(mt);
+      ::elastica::real_t origin_y = dist_y(mt);
+      ::elastica::real_t origin_z = dist_z(mt);
+
+      ::elastica::Vec3 origin{origin_x, origin_y, origin_z};
+
+      while (is_violated(origin_point_constraint(origin, R, H)) ||
+             is_violated(min_height_constraint(origin, base_radius))) {
+        origin_x = dist_x(mt);
+        origin_y = dist_y(mt);
+        origin_z = dist_z(mt);
+        origin = ::elastica::Vec3{origin_x, origin_y, origin_z};
+      }
+
+      ::elastica::real_t alpha = dist_alpha(mt);
+      ::elastica::real_t beta = dist_beta(mt);
+      ::elastica::Vec3 relative_endpoint{
+          base_length * std::cos(beta) * std::cos(alpha),
+          base_length * std::cos(beta) * std::sin(alpha),
+          base_length * std::sin(beta)};
+      ::elastica::Vec3 end_point = origin + relative_endpoint;
+
+      while (is_violated(end_point_constraint(end_point, R, H)) ||
+             is_violated(min_height_constraint(end_point, base_radius))) {
+        alpha = dist_alpha(mt);
+        beta = dist_beta(mt);
+        relative_endpoint =
+            ::elastica::Vec3{base_length * std::cos(beta) * std::cos(alpha),
+                             base_length * std::cos(beta) * std::sin(alpha),
+                             base_length * std::sin(beta)};
+        end_point = origin + relative_endpoint;
+      }
+      const ::elastica::Vec3 rod_direction{std::cos(beta) * std::cos(alpha),
+                                           std::cos(beta) * std::sin(alpha),
+                                           std::sin(beta)};
+      const ::elastica::Vec3 normal_vector{
+          rod_direction[z_axis], rod_direction[z_axis],
+          (-rod_direction[x_axis] - rod_direction[y_axis])};
+      const ::elastica::Vec3 rod_normal = ::elastica::normalize(normal_vector);
+      cosserat_rod_refs.push_back(simulator->emplace_back<CosseratRod>(
+          straight_initializer
+              .but_with(RodInitializer::Origin{origin},
+                        RodInitializer::Direction{rod_direction},
+                        RodInitializer::Normal{rod_normal})
+              .initialize<CosseratRod>()));
+    }
+  };
+
   auto iequals = [](std::string const& a, std::string const& b) -> bool {
     return std::equal(a.begin(), a.end(), b.begin(), b.end(),
                       [](unsigned char a, unsigned char b) {
@@ -717,6 +807,9 @@ void SnakePit::setup(InputTypes<This> const& input_parameters) {
   else if (iequals(::elastica::get<initialization_protocol>(input_parameters),
                    initialization_protocol::random_cube()))
     random_layered_initialization(with_cube_constraint);
+  else if (iequals(::elastica::get<initialization_protocol>(input_parameters),
+                   initialization_protocol::random_cube_v2()))
+    random_xyz_initialization(with_cube_constraint);
   else
     lattice_initialization();
 

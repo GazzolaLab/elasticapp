@@ -59,7 +59,7 @@ def run_snake_pit(
     activation_start_time_nd = 5.0
 
     # Initialization
-    initialization_protocol = "random-cone"
+    initialization_protocol = "random-cube"
     if initialization_protocol == "random-cylinder":
         packing_initial_vertical_span_ratio = 4.0
         packing_initial_radial_span_ratio = 1.0
@@ -68,6 +68,9 @@ def run_snake_pit(
         packing_initial_radial_span_ratio = 1.0
     elif initialization_protocol == "random-cube":
         packing_initial_vertical_span_ratio = 1.5
+        packing_initial_radial_span_ratio = 0.5 * wall_distance_ratio
+    elif initialization_protocol == "random-cube-v2":
+        packing_initial_vertical_span_ratio = 1.0
         packing_initial_radial_span_ratio = 0.5 * wall_distance_ratio
 
     # Time and recording
@@ -98,7 +101,7 @@ def run_snake_pit(
         samples_per_period=samples_per_period,
         final_sim_time=final_time,
         dt=dt,
-        n_threads=1, # dummy parameter, only useful in scaling.
+        n_threads=1,  # dummy parameter, only useful in scaling.
         steps_between_detection=0,
     )
     print(params)
@@ -187,6 +190,8 @@ def run_snake_pit(
         elif initialization_protocol == "random-cone":
             initialization_volume = (np.pi / 3.0) * volume_common
         elif initialization_protocol == "random-cube":
+            initialization_volume = 4.0 * volume_common  # side is 2R
+        elif initialization_protocol == "random-cube-v2":
             initialization_volume = 4.0 * volume_common  # side is 2R
         pf = volume_occupied_by_active_matter / initialization_volume
 
