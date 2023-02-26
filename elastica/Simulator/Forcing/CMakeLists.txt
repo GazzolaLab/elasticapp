@@ -6,6 +6,7 @@ add_elastica_library(${LIBRARY} INTERFACE)
 
 set(LIBRARY_SOURCES
         Forcing.hpp
+        InternalTorquesAdapter.hpp
         MakeForcing.hpp
         Protocols.hpp
         Registration.hpp

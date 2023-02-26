@@ -1,0 +1,122 @@
+from matplotlib import pyplot as plt
+from matplotlib.animation import FuncAnimation
+import numpy as np
+from .stats import Stats, PositiveInt, RodStats
+from rich.progress import Progress
+
+
+def plot_com_trajectory(
+    total_stats: Stats,
+    frame_skip: PositiveInt = 1,
+    save_figure: bool = False,
+) -> plt.Figure:  # (time step, x/y/z, node)
+    with plt.style.context("ggplot"):
+        fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
+        ax = fig.add_subplot(111)
+        ax.set_aspect("equal")
+        # ax.set_xlim(-0.2, 0.2)
+        # ax.set_ylim(-0.15, 0.65)
+
+        ax.set_xlabel("Tangent")
+        ax.set_ylabel("Normal")
+
+        r = total_stats.rod_stats[0]
+        position_of_rod = np.asarray(r.position)
+        com_position = np.mean(position_of_rod, axis=-1)
+        ax.plot(com_position[:, 2], com_position[:, 0])
+
+    return fig
+
+
+def animate_snake(
+    total_stats: Stats,
+    video_name: str = "collision.mp4",
+    fps: PositiveInt = 15,
+    frame_skip: PositiveInt = 1,
+    save_figure: bool = False,
+) -> FuncAnimation:  # (time step, x/y/z, node)
+    time = np.asarray(total_stats.time)
+    step = np.asarray(total_stats.step)
+    rod_lines = []
+
+    with plt.style.context("ggplot"):
+        fig = plt.figure(figsize=(5, 4), frameon=True, dpi=150)
+        ax = plt.axes(projection="3d")  # fig.add_subplot(111)
+        ax.set_xlim(-0.2, 0.2)
+        ax.set_ylim(-0.15, 0.65)
+        ax.set_zlim(-0.4, 0.4)
+
+        ax.set_xlabel("X")
+        ax.set_ylabel("Y")
+        ax.set_zlabel("Z")
+
+        ax.set_box_aspect((1, 2, 2))
+
+        for _ in range(len(total_stats.rod_stats)):
+            rod_lines.append(
+                ax.plot(
+                    [],
+                    [],
+                    [],
+                    lw=2.0,
+                    solid_capstyle="round",
+                )[0]
+            )
+
+        text_step = ax.text2D(
+            0.2,
+            0.9,
+            " ",
+            color="k",
+            horizontalalignment="center",
+            verticalalignment="center",
+            transform=ax.transAxes,
+        )
+        text_time = ax.text2D(
+            0.2,
+            0.8,
+            " ",
+            color="k",
+            horizontalalignment="center",
+            verticalalignment="center",
+            transform=ax.transAxes,
+        )
+        fig.tight_layout()
+
+    n_frames = len(time)
+    with Progress() as progress:
+        animation_task = progress.add_task(
+            "[magenta] Animating...", total=n_frames // frame_skip, visible=False
+        )
+
+        def update(curr_frame):
+            curr_time = time[curr_frame]
+            curr_step = step[curr_frame]
+            text_step.set_text(f"Step : {curr_step:04d}")
+            text_time.set_text(f"Time : {curr_time:.2f}")
+            for l, r in zip(rod_lines, total_stats.rod_stats):
+                position_of_rod = np.asarray(r.position)
+                # Tangent is along z
+                l.set_data(
+                    position_of_rod[curr_frame, 0], position_of_rod[curr_frame, 1]
+                )
+                l.set_3d_properties(position_of_rod[curr_frame, 2])
+
+            progress.update(animation_task, advance=1, refresh=True)
+            return text_time, text_step, *rod_lines
+
+        ani = FuncAnimation(
+            fig, update, frames=range(0, n_frames, frame_skip), blit=True
+        )
+        if save_figure:
+            progress.console.print(
+                "[red]Rendering animation to file. It will be displayed on-screen once completed."
+            )
+            progress.update(animation_task, visible=True)
+            ani.save(
+                video_name,
+                fps=fps,
+                extra_args=["-vcodec", "h264", "-pix_fmt", "yuv420p"],
+            )
+
+    return ani
