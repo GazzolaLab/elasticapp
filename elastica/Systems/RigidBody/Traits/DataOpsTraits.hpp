@@ -27,7 +27,7 @@
 //#include "Systems/RigidBody/Traits/DataType/ScalarTag.hpp"
 ///
 
-#include "Systems/CosseratRods/Traits/DataType/BlazeBackend/DataTypeTraits.hpp"
+#include "Systems/common/Traits/DataType/BlazeBackend/DataTypeTraits.hpp"
 #include "Systems/CosseratRods/Traits/Operations/BlazeBackend/OpsTraits.hpp"
 #include "Systems/CosseratRods/Traits/Operations/BlazeBackend/OptimizationLevel.hpp"
 ///

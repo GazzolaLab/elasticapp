@@ -9,7 +9,7 @@
 #include "Systems/CosseratRods/Traits/Operations/BlazeBackend/InvRotateDivide/SIMD.hpp"
 #include "Systems/CosseratRods/Traits/Operations/BlazeBackend/InvRotateDivide/Scalar.hpp"
 //
-#include "Systems/CosseratRods/Traits/DataType/BlazeBackend/DataTypeTraits.hpp"
+#include "Systems/common/Traits/DataType/BlazeBackend/DataTypeTraits.hpp"
 #include "Utilities/DefineTypes.h"
 #include "Utilities/Geometry/AxisAngleRotation.hpp"
 #include "Utilities/Math/Sqrt.hpp"

@@ -1,3 +1,2 @@
-add_subdirectory(DataTraits)
 add_subdirectory(Operations)
 add_subdirectory(PlacementTraits)

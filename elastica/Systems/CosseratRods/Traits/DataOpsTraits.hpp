@@ -21,17 +21,13 @@
 #include "Systems/CosseratRods/Traits/Types.hpp"
 #include "Utilities/DefineTypes.h"
 ///
-//#include "Systems/CosseratRods/Traits/DataTraits/Rank.hpp"
-// Not used, since we directly use blaze's implementation of a vector
-//#include "Systems/CosseratRods/Traits/DataType/ScalarTag.hpp"
-///
 
 #define ELASTICA_USE_BLAZE 1  // todo : from CMAKE
 
 #if defined(ELASTICA_USE_BLAZE)
-#include "DataType/BlazeBackend/DataTypeTraits.hpp"
 #include "Operations/BlazeBackend/OpsTraits.hpp"
 #include "Operations/BlazeBackend/OptimizationLevel.hpp"
+#include "Systems/common/Traits/DataType/BlazeBackend/DataTypeTraits.hpp"
 #endif  // ELASTICA_USE_BLAZE
 
 ///

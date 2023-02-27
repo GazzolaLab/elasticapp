@@ -20,7 +20,7 @@
 #include "Systems/Block/TypeTraits.hpp"
 #include "Systems/CosseratRods/BlockSlice.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
-#include "Systems/CosseratRods/Traits/DataType/Rank.hpp"
+#include "Systems/common/Traits/DataType/Rank.hpp"
 #include "Systems/CosseratRods/Traits/PlacementTraits/PlacementTraits.hpp"
 //
 #include "Systems/CosseratRods/Python/Generators/BoundChecks.hpp"
