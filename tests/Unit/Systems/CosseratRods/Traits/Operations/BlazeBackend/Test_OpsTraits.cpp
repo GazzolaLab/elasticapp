@@ -3,7 +3,7 @@
 //
 
 #include "Framework/TestingFramework.hpp"
-#include "Systems/CosseratRods/Traits/DataType/BlazeBackend/DataTypeTraits.hpp"
+#include "Systems/common/Traits/DataType/BlazeBackend/DataTypeTraits.hpp"
 // #include "elastica/Systems/CosseratRods/Traits/Operations/Protocols.hpp"
 #include <blaze/Blaze.h>
 #include <blaze_tensor/Blaze.h>

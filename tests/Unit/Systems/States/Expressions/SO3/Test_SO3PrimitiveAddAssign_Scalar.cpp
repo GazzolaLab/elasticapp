@@ -13,7 +13,7 @@
 //#include "Systems/States/Expressions/backends/blaze/SO3PrimitiveAddAssign/SIMD.hpp"
 #include "Systems/States/Expressions/backends/blaze/SO3PrimitiveAddAssign/Scalar.hpp"
 //
-#include "Systems/CosseratRods/Traits/DataType/BlazeBackend/DataTypeTraits.hpp"
+#include "Systems/common/Traits/DataType/BlazeBackend/DataTypeTraits.hpp"
 //
 #include "Systems/States/Expressions/SO3.hpp"
 #include "Utilities/DefineTypes.h"

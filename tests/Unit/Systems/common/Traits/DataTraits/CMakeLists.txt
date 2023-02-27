@@ -1,6 +1,6 @@
 add_subdirectory(BlazeBackend)
 
-set(LIBRARY "Test_CosseratRod_Traits_DataTraits")
+set(LIBRARY "Test_SystemsCommon_Traits_DataTraits")
 
 set(LIBRARY_SOURCES
         Test_Protocols.cpp
@@ -8,7 +8,7 @@ set(LIBRARY_SOURCES
 
 add_test_library(
         ${LIBRARY}
-        "Systems/CosseratRods/Traits/DataTraits"
+        "Systems/common/Traits/DataTraits"
         "${LIBRARY_SOURCES}"
         "ErrorHandling;Utilities;Systems"
 )

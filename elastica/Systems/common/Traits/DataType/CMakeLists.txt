@@ -1,6 +1,6 @@
 # Distributed under the MIT License. See LICENSE.txt for details.
 
-set(LIBRARY CosseratRodDataTraits)
+set(LIBRARY SystemsCommonDataTraits)
 
 add_elastica_library(${LIBRARY} INTERFACE)
 

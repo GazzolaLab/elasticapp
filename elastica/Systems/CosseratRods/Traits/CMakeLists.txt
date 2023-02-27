@@ -22,9 +22,6 @@ elastica_target_sources(
         Types.hpp
 )
 
-add_subdirectory(DataType)
-add_library(${LIBRARY}::DataTraits ALIAS CosseratRodDataTraits)
-
 add_subdirectory(PlacementTraits)
 add_library(${LIBRARY}::PlacementTraits ALIAS CosseratRodPlacementTraits)
 
@@ -34,7 +31,7 @@ add_library(${LIBRARY}::OperationTraits ALIAS CosseratRodOperationTraits)
 target_link_libraries(
         ${LIBRARY}
         INTERFACE
-        CosseratRodDataTraits
+        SystemsCommonTraits
         CosseratRodPlacementTraits
         CosseratRodOperationTraits
 )

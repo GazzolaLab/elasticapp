@@ -2,7 +2,7 @@
 // Created by Tejaswin Parthasarathy on 5/11/21.
 //
 
-#include "Systems/CosseratRods/Traits/DataType/Protocols.hpp"
+#include "Systems/common/Traits/DataType/Protocols.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Systems/CosseratRods/Mocks/CosseratRodTraits.hpp"
 

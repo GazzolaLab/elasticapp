@@ -20,8 +20,8 @@
 #include "Configuration/Systems.hpp"  // For index checking
 // assert
 #include "ErrorHandling/Assert.hpp"
-#include "Systems/CosseratRods/Traits/DataType/Protocols.hpp"
-#include "Systems/CosseratRods/Traits/DataType/Rank.hpp"
+#include "Systems/common/Traits/DataType/Protocols.hpp"
+#include "Systems/common/Traits/DataType/Rank.hpp"
 
 // matrix types
 #include <blaze/math/DynamicMatrix.h>

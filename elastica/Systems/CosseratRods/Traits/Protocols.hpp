@@ -17,5 +17,5 @@
 // Includes
 //******************************************************************************
 
-#include "Systems/CosseratRods/Traits/DataType/Protocols.hpp"
 #include "Systems/CosseratRods/Traits/PlacementTraits/Protocols.hpp"
+#include "Systems/common/Traits/Protocols.hpp"

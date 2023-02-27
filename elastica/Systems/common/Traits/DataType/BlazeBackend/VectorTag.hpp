@@ -1,7 +1,7 @@
 //==============================================================================
 /*!
 //  \file
-//  \brief Tag indicating a Rank 3 tensor for Cosserat Rods within \elastica
+//  \brief Tag indicating a vector (Rank 1) for Cosserat Rods within \elastica
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
@@ -18,26 +18,17 @@
 //******************************************************************************
 
 #include "Configuration/Systems.hpp"  // For index checking
-
 // assert
 #include "ErrorHandling/Assert.hpp"
+#include "Systems/common/Traits/DataType/Protocols.hpp"
+#include "Systems/common/Traits/DataType/Rank.hpp"
 
-// Rank
-#include "Systems/CosseratRods/Traits/DataType/Protocols.hpp"
-#include "Systems/CosseratRods/Traits/DataType/Rank.hpp"
-
-// Tensor types
+// Vector types
 #include <blaze/math/AlignmentFlag.h>
-#include <blaze/math/views/Submatrix.h>
-#include <blaze_tensor/math/DynamicTensor.h>
-#include <blaze_tensor/math/StaticTensor.h>
-#include <blaze_tensor/math/Subtensor.h>
-#include <blaze_tensor/math/views/ColumnSlice.h>
+#include <blaze/math/DynamicVector.h>
+#include <blaze/math/StaticVector.h>
+#include <blaze/math/views/Subvector.h>
 
-// this comes from the simulator module, which seems like an anti-pattern
-// should be in Systems instead
-#include "Simulator/Frames.hpp"
-#include "Utilities/Math/Vec3.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 
 namespace elastica {
@@ -51,52 +42,43 @@ namespace elastica {
     //==========================================================================
 
     //**************************************************************************
-    /*!\brief Tag for a Rank 3 tensor within Cosserat rods in \elastica
+    /*!\brief Tag for a Rank 1 tensor within Cosserat rods in \elastica
      * \ingroup cosserat_rod_traits
      *
      * \details
-     * TensorTag is used within the Cosserat rod components of \elastica to
-     * indicate a tensor.
+     * VectorTag is used within the Cosserat rod components of \elastica to
+     * indicate a vector.
      *
      * \tparam Real a floating point type
      */
     template <typename Real>
-    struct TensorTag : public ::tt::ConformsTo<protocols::DataTrait> {
+    struct VectorTag : public ::tt::ConformsTo<protocols::DataTrait> {
       //**Type definitions******************************************************
       //! The main type for a TaggedTuple
-      using type = blaze::DynamicTensor<Real>;
+      /*
+       */
+      using type =
+          blaze::DynamicVector<Real, blaze::columnVector,
+                               blaze::AlignedAllocator<Real> /*, TagType*/>;
       //! Data type for better readability
       using data_type = type;
       //! The type of slice for the data type
-      using slice_type = blaze::Subtensor_<data_type, blaze::unaligned>;
-      //! The type of const slice for the data type
+      using slice_type = blaze::Subvector_<data_type, blaze::unaligned>;
+      //! The type of a const slice for the data type
       using const_slice_type =
-          const blaze::Subtensor_<const data_type, blaze::unaligned>;
-      /*
-       * Developer note:
-       *   Blaze tensor cant initialize with a matrix type
-       *   so the ghosts for now are tensor types which involve
-       *   more work than necessary
-       *
-       * using ghost_type = blaze::DynamicMatrix<real_t, blaze::rowMajor>;
-       *        blaze::StaticMatrix<real_t, 3UL, 3UL, blaze::rowMajor>;
-       */
+          const blaze::Subvector_<const data_type, blaze::unaligned>;
       //! The type of a ghost element for the data type
-      using ghost_type =
-          blaze::StaticMatrix<Real, Frames::Dimension, Frames::Dimension>;
+      using ghost_type = Real;
       //! The type of a reference to the underlying data type
-      using reference_type = blaze::ColumnSlice_<data_type>;
+      using reference_type = Real&;
       //! The type of const reference to the underlying data type
-      using const_reference_type = const blaze::ColumnSlice_<const data_type>;
+      using const_reference_type = Real const&;
       //! The type of reference to the slice type
-      using reference_slice_type =
-          blaze::Submatrix_<blaze::ColumnSlice_<data_type>, blaze::unaligned>;
+      using reference_slice_type = Real&;
       //! The type of const reference to the slice type
-      using const_reference_slice_type =
-          const blaze::Submatrix_<const blaze::ColumnSlice_<const data_type>,
-                                  blaze::unaligned>;
+      using const_reference_slice_type = Real const&;
       //! The rank of the data type
-      using rank = Rank<3U>;
+      using rank = Rank<1U>;
       //************************************************************************
 
       //**Utility functions*****************************************************
@@ -113,27 +95,10 @@ namespace elastica {
        * that particular value) but rather a ghost_type object (like a matrix
        * for example)
        */
-      static inline auto ghost_value() noexcept -> ghost_type {
-        // cannot be constexpr as it involves allocation :/
-        constexpr Real zero(0.0);
-        constexpr Real identity(1.0);
-        return ghost_type{{{identity}, {zero}, {zero}},
-                          {{zero}, {identity}, {zero}},
-                          {{zero}, {zero}, {identity}}};
+      static inline constexpr auto ghost_value() noexcept -> ghost_type {
+        return ghost_type(0.0);
       }
       //************************************************************************
-
-      // should really be in the Slice Tag class, but it ends up being
-      // confusing as what we are really doing is taking a slice of a
-      // slice but its abstracted away
-      //        template <typename MT>
-      //        static inline constexpr decltype(auto) slice(MT& matrix,
-      //                                                     std::size_t i)
-
-      // TODO decltype expression is same as SliceType
-      // TODO This is internal function, need not be exposed
-      //
-      //
 
       //************************************************************************
       /*!\brief Obtain slice of the data type at a given index
@@ -146,9 +111,9 @@ namespace elastica {
        * \param data  Slice to be further sliced
        * \param index Index of slicing
        */
-      static inline decltype(auto) slice(data_type& data, std::size_t index) {
-        return blaze::columnslice(data, index,
-                                  blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
+      static inline auto slice(data_type& data, std::size_t index)
+          -> reference_type {
+        return data[index];
       }
       //************************************************************************
 
@@ -163,10 +128,9 @@ namespace elastica {
        * \param data  Slice to be further sliced
        * \param index Index of slicing
        */
-      static inline decltype(auto) slice(data_type const& data,
-                                         std::size_t index) {
-        return blaze::columnslice(data, index,
-                                  blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
+      static inline auto slice(data_type const& data, std::size_t index)
+          -> const_reference_type {
+        return data[index];
       }
       //************************************************************************
 
@@ -181,30 +145,26 @@ namespace elastica {
        * \param slice Slice to be further sliced
        * \param index Index of slicing
        */
-      static inline decltype(auto) slice(slice_type& slice, std::size_t index) {
-        return blaze::columnslice(slice, index,
-                                  blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
-        // return blaze::subtensor(slice, 0UL, 0UL, index, Frames::Dimension,
-        // Frames::Dimension, 1UL);
+      static inline auto slice(slice_type& slice, std::size_t index)
+          -> reference_type {
+        return slice[index];
       }
       //************************************************************************
 
       //************************************************************************
-      /*!\brief Obtain a sub-const slice of the const slice at a given index
+      /*!\brief Obtain a sub-slice of the const slice at a given index
        *
        * \details
-       * Overload to obtain a subslice of const slice at `index`.
-       *
+       * Overload to obtain a slice of data at `index`.
        * It is sometimes needed in a Plugin where the context is const, but the
        * data of the underlying structure may well be modified.
        *
-       * \param slice Slice to be further const sliced
+       * \param slice Slice to be further sliced
        * \param index Index of slicing
        */
-      static inline decltype(auto) slice(slice_type const& slice,
-                                         std::size_t index) {
-        return blaze::columnslice(slice, index,
-                                  blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
+      static inline auto slice(slice_type const& slice, std::size_t index)
+          -> const_reference_type {
+        return slice[index];
       }
       //************************************************************************
 
@@ -224,8 +184,7 @@ namespace elastica {
        */
       static inline decltype(auto) slice(slice_type&& slice,
                                          std::size_t index) {
-        return blaze::columnslice(static_cast<slice_type&&>(slice), index,
-                                  blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
+        return static_cast<slice_type&&>(slice)[index];
       }
       //************************************************************************
 
@@ -242,8 +201,7 @@ namespace elastica {
        */
       static inline decltype(auto) slice(const_slice_type const& slice,
                                          std::size_t index) {
-        return blaze::columnslice(slice, index,
-                                  blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
+        return slice[index];
       }
       //************************************************************************
 
@@ -254,11 +212,9 @@ namespace elastica {
        * \param new_size New size of data
        */
       static inline void resize(data_type& data, std::size_t new_size) {
-        ELASTICA_ASSERT(data.columns() <= new_size,
+        ELASTICA_ASSERT(data.size() <= new_size,
                         "Contract violation, block shrinks");
-        // (o, m, n)
-        return data.resize(Frames::Dimension, Frames::Dimension, new_size,
-                           true);
+        return data.resize(new_size, true);
       }
       //************************************************************************
 
@@ -269,19 +225,20 @@ namespace elastica {
        * Overload to obtain a slice of `size` amount from data at `start`.
        * This is typically used in the block to generate slices that are to be
        * filled in by the class hierarchies, when filling in a block
-       * incrementally. With the default size, it is typically used in the
-       * block to generate slices that are to be filled in by ghost values.
+       * incrementally.
        *
        * \param data        Data to be sliced
        * \param start_index Start index
        * \param size        Size of the data
        */
-      static inline decltype(auto) slice(data_type& data,
-                                         std::size_t start_index,
-                                         std::size_t size) {
-        // (page, row, column), (o, m, n)
-        return blaze::subtensor(data, 0UL, 0UL, start_index, Frames::Dimension,
-                                Frames::Dimension, size,
+      static inline auto slice(data_type& data, std::size_t start_index,
+                               std::size_t size) -> slice_type {
+        return blaze::subvector(data, start_index, size,
+                                blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
+      }
+      static inline auto slice(slice_type& data, std::size_t start_index,
+                               std::size_t size) -> slice_type {
+        return blaze::subvector(data, start_index, size,
                                 blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
       }
       //************************************************************************
@@ -293,46 +250,19 @@ namespace elastica {
        * Overload to obtain a slice of `size` amount from const data at `start`.
        * This is typically used in the block to generate slices that are to be
        * filled in by the class hierarchies, when filling in a block
-       * incrementally. With the default size, it is typically used in the
-       * block to generate slices that are to be filled in by ghost values.
+       * incrementally.
        *
        * \param data        Data to be sliced
        * \param start_index Start index
        * \param size        Size of the data
        */
-      static inline decltype(auto) slice(data_type const& data,
-                                         std::size_t start_index,
-                                         std::size_t size) {
-        // (page, row, column), (o, m, n)
-        return blaze::subtensor(data, 0UL, 0UL, start_index, Frames::Dimension,
-                                Frames::Dimension, size,
+      static inline auto slice(data_type const& data, std::size_t start_index,
+                               std::size_t size) -> const_slice_type {
+        // unaligned always
+        return blaze::subvector(data, start_index, size,
                                 blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
       }
       //************************************************************************
-
-      //************************************************************************
-      /*!\brief Assign diagonal elements
-       *
-       * @return
-       */
-      //************************************************************************
-      static inline void diagonal_assign(slice_type& data, std::size_t index,
-                                         Vec3 const& diag) {
-        auto submatrix = blaze::columnslice(
-            data, index, blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
-        submatrix(0UL, 0UL) = static_cast<Real>(diag[0UL]);
-        submatrix(1UL, 1UL) = static_cast<Real>(diag[1UL]);
-        submatrix(2UL, 2UL) = static_cast<Real>(diag[2UL]);
-      }
-
-      static inline void diagonal_assign(data_type& data, std::size_t index,
-                                         Vec3 const& diag) {
-        auto submatrix = blaze::columnslice(
-            data, index, blaze::ELASTICA_DEFAULT_SYSTEM_INDEX_CHECK);
-        submatrix(0UL, 0UL) = static_cast<Real>(diag[0UL]);
-        submatrix(1UL, 1UL) = static_cast<Real>(diag[1UL]);
-        submatrix(2UL, 2UL) = static_cast<Real>(diag[2UL]);
-      }
 
       //@}
       //************************************************************************
