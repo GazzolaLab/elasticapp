@@ -19,13 +19,13 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/Cpp17.hpp"
 
-namespace {
+namespace unique {
   using namespace elastica;
   using namespace elastica::cosserat_rod;
   using namespace elastica::cosserat_rod::detail;
 }  // namespace
 
-namespace {
+namespace unique {
 
   template <typename Plugin>
   class TestBlock : public blocks::Block<Plugin> {
@@ -77,7 +77,7 @@ namespace {
 
 }  // namespace
 
-namespace {
+namespace unique {
 
   template <template <typename, typename> class... T>
   using GenerateTestPlugin =
@@ -131,7 +131,7 @@ namespace {
 
 }  // namespace
 
-namespace {
+namespace unique {
 
   template <typename, typename>
   struct EmptyComponent {
@@ -147,15 +147,15 @@ namespace {
 // before doing anything lets test if the test plugin works well.
 
 namespace testing {
-  using TestPlugin = GenerateTestPlugin<EmptyComponent>;
-  using Model = GenerateBlock<TestPlugin>;
+  using TestPlugin = ::unique::GenerateTestPlugin<::unique::EmptyComponent>;
+  using Model = ::unique::GenerateBlock<TestPlugin>;
 
   // before running other tests see if there is no problem in type definitions
   // etc.
   using ModelAlias = decltype(Model{});
 }  // namespace testing
 
-namespace {
+namespace unique {
 
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.Block.plugin_members",
                      "[Systems][Unit]") {
@@ -748,7 +748,7 @@ namespace test_tags {
   struct VarOnVoronoi;
 }  // namespace test_tags
 
-namespace {
+namespace unique {
 
   template <typename CRT>
   struct VectorComponentVariables {
@@ -831,15 +831,15 @@ namespace {
 }  // namespace
 
 namespace testing {
-  using TestVectorPlugin = GenerateTestPlugin<VectorComponent>;
-  using VectorModel = GenerateBlock<TestVectorPlugin>;
+  using TestVectorPlugin = ::unique::GenerateTestPlugin<::unique::VectorComponent>;
+  using VectorModel = ::unique::GenerateBlock<TestVectorPlugin>;
 
   // before running other tests see if there is no problem in type definitions
   // etc.
   using VectorModelAlias = decltype(VectorModel{});
 }  // namespace testing
 
-namespace {
+namespace unique {
 
   ELASTICA_TEST_CASE(
       "Unit.Systems.CosseratRods.Block.all_placement_members.functions",
@@ -2002,7 +2002,7 @@ namespace {
 
 // begin testing CosseratRodPlugin with actual Traits of blaze
 
-namespace {
+namespace unique {
   using ::elastica::cosserat_rod::DefaultCosseratRodTraits;
 
   template <template <typename, typename> class... T>
@@ -2025,15 +2025,15 @@ namespace {
 
 namespace testing {
   using TestVectorPluginDefaultTraits =
-      GenerateTestPluginDefaultTraits<VectorComponent>;
-  using VectorModelDefaultTraits = GenerateBlock<TestVectorPluginDefaultTraits>;
+      ::unique::GenerateTestPluginDefaultTraits<::unique::VectorComponent>;
+  using VectorModelDefaultTraits = ::unique::GenerateBlock<TestVectorPluginDefaultTraits>;
 
   // before running other tests see if there is no problem in type definitions
   // etc.
   using VectorModelDefaultTraitsAlias = decltype(VectorModelDefaultTraits{});
 }  // namespace testing
 
-namespace {
+namespace unique {
 
   ELASTICA_TEST_CASE(
       "Unit.Systems.CosseratRods.Block.with_default_traits.functions",

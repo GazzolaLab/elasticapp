@@ -46,7 +46,7 @@ namespace HighFive {
       // We force non-trivially copyable since a submatrix may not have
       // contiguous elements which can be copied into a buffer of data
       static constexpr bool is_trivially_copyable = false;
-      static constexpr auto column_major = blaze::IsColumnMajorMatrix<MT>{};
+      static constexpr bool column_major = blaze::IsColumnMajorMatrix<MT>::value;
 
       template <typename T>
       static auto get_stride(T&& val) -> std::size_t {
@@ -126,6 +126,16 @@ namespace HighFive {
                     val.data(trip));
       }
     };
+
+    /*
+    // https://stackoverflow.com/a/22414046
+    template <typename MT,              // Type of the matrix
+              blaze::AlignmentFlag AF,  // Alignment flag
+              bool SO,                  // Storage Order
+              bool DF,                  // Density flag
+              size_t... CSAs>           // Compile time submatrix arguments
+    constexpr bool inspector<blaze::Submatrix<MT, AF, SO, DF, CSAs...>>::column_major;
+    */
 
   }  // namespace details
 
