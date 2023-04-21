@@ -56,7 +56,7 @@ int main(const int argc, const char** argv) {
   };
 
 #if ELASTICA_USE_VECTORIZATION
-  MatVecOpTimingSetup<MatVecKind::simd> simd_benches;
+  std::vector<MatVecOpTimingSetup<MatVecKind::simd>> simd_benches;
 
   for (auto i = 0UL; i < n_objects; ++i)
     simd_benches.emplace_back(n_values);
