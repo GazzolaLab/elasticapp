@@ -11,13 +11,13 @@
 #include "Systems/CosseratRods/Serialize.hpp"
 
 // copy pasted from Test_Block.cpp, can be refactored
-namespace {
+namespace unique {
   using namespace elastica;
   using namespace elastica::cosserat_rod;
   using namespace elastica::cosserat_rod::detail;
 }  // namespace
 
-namespace {
+namespace unique {
 
   template <typename Plugin>
   class TestBlock : public blocks::Block<Plugin> {
@@ -66,7 +66,7 @@ namespace {
 
 }  // namespace
 
-namespace {
+namespace unique {
 
   template <template <typename, typename> class... T>
   using GenerateTestPlugin =
@@ -80,7 +80,7 @@ namespace {
 
 }  // namespace
 
-namespace {
+namespace unique {
 
   template <typename, typename>
   struct EmptyComponent {
@@ -93,7 +93,7 @@ namespace {
   };
 }  // namespace
 
-namespace {
+namespace unique {
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.serialize.empty_component",
                      "[Systems][Unit]") {
     using TestPlugin = GenerateTestPlugin<EmptyComponent>;
@@ -133,7 +133,7 @@ namespace {
 
 }  // namespace
 
-namespace {
+namespace unique {
 
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.serialize.non_empty_component",
                      "[Systems][Unit]") {

@@ -35,11 +35,15 @@
 #include "Utilities/RepeatAsTuple.hpp"
 #include "Utilities/Size.hpp"
 
-namespace {
+// FIXME : While using anonymous namespaces is the recommended approach, // for some reason GCC gives a linker error similar to the following
+// if the namespaces are left unnamed. So WAR by unique-ing the namespace.
+// `_ZTSN12_GLOBAL__N_114EmptyComponentIN8elastica12cosserat_rod24DefaultCosseratRodTraitsEN6blocks5BlockINS2_17CosseratRodPluginIS3_S5_JS0_EEEEEEE' referenced in section `.data.rel.local' of ../../lib/libTest_CosseratRod.a(Test_Tagged.cpp.o): defined in discarded section `.rodata._ZTSN12_GLOBAL__N_114EmptyComponentIN8elastica12cosserat_rod24DefaultCosseratRodTraitsEN6blocks5BlockINS2_17CosseratRodPluginIS3_S5_JS0_EEEEEEE[_ZTIN8elastica12cosserat_rod17CosseratRodPluginINS0_24DefaultCosseratRodTraitsEN6blocks5BlockEJN12_GLOBAL__N_114EmptyComponentEEEE]' of ../../lib/libTest_CosseratRod.a(Test_Tagged.cpp.o)
+
+namespace unique {
   using namespace ::elastica::configuration;
 }  // namespace
 
-namespace {
+namespace unique {
 
   //////// The following code block is copy pasted from another source
   template <typename Traits, typename Block>
@@ -134,6 +138,7 @@ namespace {
     using Variables = ComputedVariables;
 
     template <class DownstreamBlock, class CosseratInitializer>
+    __attribute__((__used__))
     static void initialize(DownstreamBlock&, CosseratInitializer&&) {}
   };
 
@@ -146,6 +151,7 @@ namespace {
     using Variables = ComputedVariables;
 
     template <class DownstreamBlock, class CosseratInitializer>
+    __attribute__((__used__))
     static void initialize(DownstreamBlock&, CosseratInitializer&&) {}
   };
 
@@ -158,12 +164,13 @@ namespace {
     using Variables = ComputedVariables;
 
     template <class DownstreamBlock, class CosseratInitializer>
+    __attribute__((__used__))
     static void initialize(DownstreamBlock&, CosseratInitializer&&) {}
   };
 
 }  // namespace
 
-namespace {
+namespace unique {
 
   template <template <typename, typename> class... T>
   using GenerateTestPlugin = ::elastica::cosserat_rod::CosseratRodPlugin<
@@ -335,7 +342,7 @@ namespace elastica {
 
 }  // namespace elastica
 
-namespace {
+namespace unique {
 
   auto iteration_policy_for_testing(std::size_t parameter) {
     return make_iteration_policy(iterate_across_system_types_in(seq),

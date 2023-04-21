@@ -13,14 +13,16 @@
 #include "Systems/CosseratRods/CosseratRodTraits.hpp"
 #include "Utilities/AsConst.hpp"
 
+// Unique namespace to avoid GCC linker errors, see Test_Module.cpp
+
 // copy pasted from Test_Block.cpp, can be refactored
-namespace {
+namespace unique {
   using namespace elastica;
   using namespace elastica::cosserat_rod;
   using namespace elastica::cosserat_rod::detail;
 }  // namespace
 
-namespace {
+namespace unique {
 
   struct TestTag;
 
@@ -50,7 +52,7 @@ namespace {
 
 }  // namespace
 
-namespace {
+namespace unique {
 
   template <typename, typename>
   struct EmptyComponent {
@@ -61,9 +63,10 @@ namespace {
     template <class DownstreamBlock, class CosseratInitializer>
     static void initialize(DownstreamBlock&, CosseratInitializer&&) {}
   };
+
 }  // namespace
 
-namespace {
+namespace unique {
 
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.tagged.empty_component",
                      "[Systems][Unit]") {
