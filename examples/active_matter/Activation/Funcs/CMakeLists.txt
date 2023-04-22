@@ -26,7 +26,6 @@ elastica_target_sources(
         InterpolatingSpline.cpp
 )
 
-include(SetupSpline)
 target_link_libraries(${LIBRARY}
         INTERFACE
         Utilities

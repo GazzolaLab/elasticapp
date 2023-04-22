@@ -3,7 +3,7 @@
 
 log_info("Finding Spline")
 
-find_package(Spline REQUIRED)
+find_package(Spline)
 
 log_debug("Spline include: ${SPLINE_INCLUDE_DIR}")
 
