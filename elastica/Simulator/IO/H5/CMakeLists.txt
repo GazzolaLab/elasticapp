@@ -1,6 +1,6 @@
 # Distributed under the MIT License. See LICENSE.txt for details.
 
-if (HIGHFIVE_FOUND)
+if (TARGET HighFive)
     set(LIBRARY H5)
     add_elastica_library(${LIBRARY} INTERFACE)
     target_compile_definitions(${LIBRARY} INTERFACE ELASTICA_USE_H5)
