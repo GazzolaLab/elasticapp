@@ -128,6 +128,7 @@ include(SetupSMP)
 include(SetupStl)
 include(SetupYamlCpp)
 include(SetupFilesystem)
+include(SetupSpline) # Optional for active matter cases
 
 if (ELASTICA_BUILD_DOCUMENTATION)
     include(SetupDoxygen)
