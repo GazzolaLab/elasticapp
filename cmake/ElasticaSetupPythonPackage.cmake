@@ -7,6 +7,8 @@ option(PY_DEV_MODE "Enable development mode for the Python package, meaning \
 that Python files are symlinked rather than copied to the build directory" OFF)
 function(configure_or_symlink_py_file SOURCE_FILE TARGET_FILE)
     if (PY_DEV_MODE)
+        get_filename_component(_TARGET_FILE_DIR ${TARGET_FILE} DIRECTORY)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${_TARGET_FILE_DIR})
         execute_process(COMMAND
                 ${CMAKE_COMMAND} -E create_symlink ${SOURCE_FILE} ${TARGET_FILE})
     else ()
@@ -23,11 +25,10 @@ get_filename_component(
         "${ELASTICA_PYTHON_PREFIX}/.." ABSOLUTE)
 
 # Create the root __init__.py file
-if (NOT EXISTS "${ELASTICA_PYTHON_PREFIX}/__init__.py")
-    file(WRITE
-            "${ELASTICA_PYTHON_PREFIX}/__init__.py"
-            "__all__ = []")
-endif ()
+configure_or_symlink_py_file(
+        "${CMAKE_SOURCE_DIR}/elastica/PythonBindings/__init__.py"
+        "${ELASTICA_PYTHON_PREFIX}/__init__.py"
+)
 
 # Create the root __main__.py entry point
 configure_or_symlink_py_file(
@@ -46,6 +47,18 @@ file(COPY "${CMAKE_BINARY_DIR}/tmp/elastica"
         GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
 # Write configuration files for installing the Python modules
+file(STRINGS
+  ${CMAKE_SOURCE_DIR}/elastica/PythonBindings/requirements.txt
+  ELASTICA_PY_DEPS)
+file(STRINGS
+  ${CMAKE_SOURCE_DIR}/elastica/PythonBindings/dev_requirements.txt
+  ELASTICA_PY_DEV_DEPS)
+list(FILTER ELASTICA_PY_DEPS EXCLUDE REGEX "^#")
+list(FILTER ELASTICA_PY_DEV_DEPS EXCLUDE REGEX "^#")
+list(REMOVE_ITEM ELASTICA_PY_DEPS "")
+list(REMOVE_ITEM ELASTICA_PY_DEV_DEPS "")
+list(JOIN ELASTICA_PY_DEPS "\n    " ELASTICA_PY_DEPS_OUTPUT)
+list(JOIN ELASTICA_PY_DEV_DEPS "\n    " ELASTICA_PY_DEV_DEPS_OUTPUT)
 configure_or_symlink_py_file(
         "${CMAKE_SOURCE_DIR}/elastica/PythonBindings/pyproject.toml"
         "${ELASTICA_PYTHON_PREFIX_PARENT}/pyproject.toml")
