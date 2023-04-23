@@ -1,0 +1,7 @@
+numpy
+scipy
+matplotlib
+rich
+pandas
+pybind11
+click

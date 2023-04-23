@@ -1,8 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-ELASTICA_VERSION = "@elastica_VERSION@"
-
+import elasticapp
 
 def main():
     import argparse
@@ -13,11 +12,11 @@ def main():
 
     parser = argparse.ArgumentParser(
         prog='elastica',
-        description="elastica version: {}".format(ELASTICA_VERSION),
+        description="elastica version: {}".format(elasticapp.__version__),
         formatter_class=HelpFormatter)
 
     # Version endpoint
-    parser.add_argument('--version', action='version', version=ELASTICA_VERSION)
+    parser.add_argument('--version', action='version', version=elasticapp.__version__)
 
     parser.parse_args()
     raise NotImplementedError("No subprograms are implemented yet.")
