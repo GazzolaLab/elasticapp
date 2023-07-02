@@ -145,10 +145,11 @@ namespace py_bindings {
      * \details
      * Takes value as a sink because unpack<> makes a copy anyway!
      */
-    static CaseStudy setup(ValueTypes inputs) {
-      CaseStudy caseStudy;
+    static auto setup(ValueTypes inputs) {
+      // Heap allocation to prevent copies in pybind, see #580.
+      auto caseStudy = std::make_unique<CaseStudy>();
       // tuples -> tagged tuple needed here
-      caseStudy.setup(cpp17::apply(
+      caseStudy->setup(cpp17::apply(
           [](auto&&... input_parameter) {
             return InputTypes(std::move(input_parameter)...);
           },

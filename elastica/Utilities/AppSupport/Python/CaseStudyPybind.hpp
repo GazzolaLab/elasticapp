@@ -76,8 +76,10 @@ namespace py_bindings {
 
     // init taking Params argument
     py_bound_case_study.def(py::init([](Params<CaseStudy> const& params) {
-                              CaseStudy caseStudy;
-                              caseStudy.setup(params.data());
+                              // Heap allocation to prevent copies in
+                              // pybind, see #580.
+                              auto caseStudy = std::make_unique<CaseStudy>();
+                              caseStudy->setup(params.data());
                               return caseStudy;
                             }),
                             "Initializes case-study with its parameters",
