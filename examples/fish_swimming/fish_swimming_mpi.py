@@ -6,7 +6,12 @@ import sopht.utils as spu
 from sopht_mpi.simulator import UnboundedFlowSimulator3D
 
 import vtkh5py as vh5
-from utils import FishSurfaceForcingGrid, FishFlowInteractionMPI, VTKHDFImageDataWriter
+from utils import (
+    FishSurfaceForcingGrid,
+    FishFlowInteractionMPI,
+    VTKHDFImageDataWriter,
+    FishDataLogger,
+)
 
 
 def get_data_path(path: str | None) -> str:
@@ -164,6 +169,12 @@ def run_fish_swimming(
             grid_data.add_point_data(grid_velocity=grid_velocity.T)
             fish_writers.append(vh5.VH5BlockWriter(grid_data))
 
+        fish_logger = FishDataLogger(
+            rods=elastic_fish_list,
+            n_elem=n_elem,
+            flow_forces=flow_forces,
+        )
+
     flow_writer = VTKHDFImageDataWriter(
         mpi_comm=flow_sim.mpi_construct.grid,
         dx=flow_sim.dx,
@@ -203,6 +214,8 @@ def run_fish_swimming(
                             f"grid{i}_{int(cs.current_time() * 1000):04d}.vtkhdf",
                         )
                     )
+                fish_logger.log_data(flow_sim.time)
+
             flow_writer.write_to_file(
                 filename=os.path.join(
                     data_dir, f"flow_{int(flow_sim.time * 1000):04d}.vtkhdf"
@@ -225,12 +238,12 @@ def run_fish_swimming(
                 flow_interaction.compute_flow_forces_and_torques()
 
                 if flow_sim.mpi_construct.rank == master_rank:
-                    flow_forces[
-                        :, j * n_node : (j + 1) * n_node
-                    ] = flow_interaction.body_flow_forces
-                    flow_torques[
-                        :, j * n_elem : (j + 1) * n_elem
-                    ] = flow_interaction.body_flow_torques
+                    flow_forces[:, j * n_node : (j + 1) * n_node] = (
+                        flow_interaction.body_flow_forces
+                    )
+                    flow_torques[:, j * n_elem : (j + 1) * n_elem] = (
+                        flow_interaction.body_flow_torques
+                    )
 
                 flow_interaction.time_step(dt=local_rod_dt)
 
@@ -255,6 +268,9 @@ def run_fish_swimming(
     )
     if flow_sim.mpi_construct.rank == master_rank:
         print(f"Simulation completed in {sim_time:.2f} seconds.")
+        fish_logger.write_to_file(
+            os.path.join(data_dir, "fish_data.npz"),
+        )
 
 
 if __name__ == "__main__":
@@ -263,7 +279,7 @@ if __name__ == "__main__":
     grid_size = (nx // 8, nx * 3 // 8, nx)
     n_max = n_elements // 4
     run_fish_swimming(
-        non_dim_final_time=6.0,
+        non_dim_final_time=0.1,
         n_elem=n_elements,
         grid_size=grid_size,
         surface_grid_density_for_largest_element=n_max,
@@ -271,5 +287,4 @@ if __name__ == "__main__":
         mass_ratio=1.0,
         non_dim_bending_stiffness=0.2818696433126077,
         actuation_reynolds_number=7142.857142857143,
-        data_dir="data",
     )
