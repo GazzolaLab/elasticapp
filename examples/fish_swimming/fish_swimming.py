@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 
-from utils import FishSurfaceForcingGrid, FishFlowInteraction
+from utils import FishSurfaceForcingGrid, FishFlowInteraction, FishDataLogger
 import vtkh5py as vh5
 import sopht.simulator as sps
 import sopht.utils as spu
@@ -171,6 +171,12 @@ def run_fish_swimming(
     )
     flow_writer = vh5.VH5BlockWriter(flow_data)
 
+    fish_logger = FishDataLogger(
+        rods=elastic_fish_list,
+        n_elem=n_elem,
+        flow_forces=flow_forces,
+    )
+
     # ================ Simulation ================
     final_time = non_dim_final_time * period
     data_timer_limit = period / 20.0
@@ -194,6 +200,7 @@ def run_fish_swimming(
             flow_writer.write_to_file(
                 os.path.join(data_dir, f"flow_{int(flow_sim.time * 1000):04d}.vtkhdf")
             )
+            fish_logger.log_data(flow_sim.time)
 
         # Compute time steps
         flow_dt = min(flow_sim.compute_stable_timestep(dt_prefac=0.25), rod_dt * 100)
@@ -226,6 +233,7 @@ def run_fish_swimming(
         data_timer += flow_dt
 
     print(f"Simulation completed in {time() - start_time:.2f} seconds.")
+    fish_logger.write_to_file(os.path.join(data_dir, "fish_data.npz"))
 
 
 if __name__ == "__main__":
