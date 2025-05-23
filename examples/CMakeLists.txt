@@ -14,6 +14,7 @@ add_subdirectory(rod_plane_collision)
 add_subdirectory(nest)
 
 add_subdirectory(magnetism)
+add_subdirectory(fish_swimming)
 
 # examples
 include(ElasticaAddExamples)
