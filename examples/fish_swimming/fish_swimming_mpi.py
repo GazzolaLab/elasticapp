@@ -194,7 +194,7 @@ def run_fish_swimming(
                 print(
                     f"{flow_sim.time / final_time * 100:.2f}%, "
                     f"fish_head: {np.asarray(elastic_fish_list[0].position_collection)[:, 0].T}",
-                    flush=True
+                    flush=True,
                 )
                 for i, fish_writer in enumerate(fish_writers):
                     fish_writer.write_to_file(
@@ -225,12 +225,12 @@ def run_fish_swimming(
                 flow_interaction.compute_flow_forces_and_torques()
 
                 if flow_sim.mpi_construct.rank == master_rank:
-                    flow_forces[:, j * n_node : (j + 1) * n_node] = (
-                        flow_interaction.body_flow_forces
-                    )
-                    flow_torques[:, j * n_elem : (j + 1) * n_elem] = (
-                        flow_interaction.body_flow_torques
-                    )
+                    flow_forces[
+                        :, j * n_node : (j + 1) * n_node
+                    ] = flow_interaction.body_flow_forces
+                    flow_torques[
+                        :, j * n_elem : (j + 1) * n_elem
+                    ] = flow_interaction.body_flow_torques
 
                 flow_interaction.time_step(dt=local_rod_dt)
 
@@ -249,6 +249,7 @@ def run_fish_swimming(
 
     sim_time = time() - start_time
     from mpi4py import MPI
+
     sim_time = flow_sim.mpi_construct.grid.reduce(
         sim_time, op=MPI.MIN, root=master_rank
     )

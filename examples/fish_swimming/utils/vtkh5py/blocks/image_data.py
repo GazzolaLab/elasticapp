@@ -18,12 +18,12 @@ class VH5ImageData(VH5Block):
 
         assert len(origin) == 3, f"origin must be of length 3, but got {len(origin)}"
         assert len(spacing) == 3, f"spacing must be of length 3, but got {len(spacing)}"
-        assert len(whole_extent) == 6, (
-            f"whole_extent must be of length 6, but got {len(whole_extent)}"
-        )
-        assert len(direction) == 9, (
-            f"direction must be of length 9, but got {len(direction)}"
-        )
+        assert (
+            len(whole_extent) == 6
+        ), f"whole_extent must be of length 6, but got {len(whole_extent)}"
+        assert (
+            len(direction) == 9
+        ), f"direction must be of length 9, but got {len(direction)}"
 
         # Number of grid points in each direction
         self.dims = (

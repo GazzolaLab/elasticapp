@@ -60,16 +60,16 @@ class VTKHDFImageDataWriter:
             point_data_group = image_data_group.create_group(name="PointData")
             # cell_data_group = image_data_group.create_group(name="CellData")
             # field_data_group = image_data_group.create_group(name="FieldData")
-            
+
             for key, value in kwargs.items():
                 if not isinstance(value, np.ndarray):
                     warn(f"Value for {key} is not a numpy array. Skipped.")
                     continue
-                
+
                 if len(value.shape) != 3 and len(value.shape) != 4:
                     warn(f"Value for {key} is not a 3D or 4D array. Skipped.")
                     continue
-                    
+
                 if len(value.shape) == 3:
                     if value.shape != self.local_size_with_ghost:
                         warn(
@@ -83,16 +83,18 @@ class VTKHDFImageDataWriter:
                         shape=self.global_grid_size,
                         dtype=np.float64,
                     )
-                    data_to_fill[self.slice[:-1]] = value[self.no_ghost_slice[1:]].copy()
-                    
+                    data_to_fill[self.slice[:-1]] = value[
+                        self.no_ghost_slice[1:]
+                    ].copy()
+
                 if len(value.shape) == 4:
-                    if value.shape != (3, ) + self.local_size_with_ghost:
+                    if value.shape != (3,) + self.local_size_with_ghost:
                         warn(
                             f"Value for {key} has shape {value.shape} "
                             f"but expected {(3,) + self.local_size_with_ghost}. Skipped."
                         )
                         continue
-                
+
                     data_to_fill = point_data_group.create_dataset(
                         name=key,
                         shape=(*self.global_grid_size, 3),

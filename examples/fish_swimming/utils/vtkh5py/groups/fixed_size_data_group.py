@@ -23,9 +23,9 @@ class VH5FixedSizeDataGroup(VH5Group):
         self.fixed_dim = len(data_shape)
 
     def set_dataset(self, data_name: str, data_value: np.ndarray):
-        assert isinstance(data_value, np.ndarray), (
-            f"Dataset type ({type(data_value)}) must be numpy array"
-        )
+        assert isinstance(
+            data_value, np.ndarray
+        ), f"Dataset type ({type(data_value)}) must be numpy array"
         assert data_value.shape[: self.fixed_dim] == self.data_shape, (
             f"{data_name} does not conform to fixed shape\n",
             f"Expected outer dimension: {self.data_shape}, but got {data_value.shape}",

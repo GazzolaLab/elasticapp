@@ -24,9 +24,9 @@ class VH5Group:
         self.attributes[attr_name] = attr_value
 
     def set_dataset(self, data_name: str, data_value: np.ndarray) -> None:
-        assert isinstance(data_value, np.ndarray), (
-            f"dataset type ({type(data_value)}) must be numpy array"
-        )
+        assert isinstance(
+            data_value, np.ndarray
+        ), f"dataset type ({type(data_value)}) must be numpy array"
         self.datasets[data_name] = data_value.view()
 
     def add_subgroup(self, subgroup: Self) -> Self:
