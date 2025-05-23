@@ -142,9 +142,9 @@ class FishSurfaceForcingGrid(ImmersedBodyForcingGrid):
             # self.grid_point_dilatation[self.start_idx[i] : self.end_idx[i]] = (
             #     self.dilatation[i]
             # )
-            self.position_field[:, self.start_idx[i] : self.end_idx[i]] = (
-                self.rod_element_position[:, i : i + 1]
-            )
+            self.position_field[
+                :, self.start_idx[i] : self.end_idx[i]
+            ] = self.rod_element_position[:, i : i + 1]
 
         # Compute the moment arm or distance from the element center
         # for each grid point.
@@ -170,12 +170,12 @@ class FishSurfaceForcingGrid(ImmersedBodyForcingGrid):
 
         # Broadcast rod properties to the grid points.
         for i in range(self.n_elements):
-            self.grid_point_omega[:, self.start_idx[i] : self.end_idx[i]] = (
-                self.rod_element_global_frame_omega[:, i : i + 1]
-            )
-            self.velocity_field[:, self.start_idx[i] : self.end_idx[i]] = (
-                self.rod_element_velocity[:, i : i + 1]
-            )
+            self.grid_point_omega[
+                :, self.start_idx[i] : self.end_idx[i]
+            ] = self.rod_element_global_frame_omega[:, i : i + 1]
+            self.velocity_field[
+                :, self.start_idx[i] : self.end_idx[i]
+            ] = self.rod_element_velocity[:, i : i + 1]
 
         # v_elem + omega X moment_arm
         self.velocity_field += _batch_cross(self.grid_point_omega, self.moment_arm)

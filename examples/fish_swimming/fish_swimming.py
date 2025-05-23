@@ -206,12 +206,12 @@ def run_fish_swimming(
                 flow_interaction.compute_flow_forces_and_torques()
                 flow_interaction.time_step(dt=local_rod_dt)
 
-                flow_forces[:, j * n_node : (j + 1) * n_node] = (
-                    flow_interaction.body_flow_forces
-                )
-                flow_torques[:, j * n_elem : (j + 1) * n_elem] = (
-                    flow_interaction.body_flow_torques
-                )
+                flow_forces[
+                    :, j * n_node : (j + 1) * n_node
+                ] = flow_interaction.body_flow_forces
+                flow_torques[
+                    :, j * n_elem : (j + 1) * n_elem
+                ] = flow_interaction.body_flow_torques
 
             cs.step_with(updated_dt=local_rod_dt)
 

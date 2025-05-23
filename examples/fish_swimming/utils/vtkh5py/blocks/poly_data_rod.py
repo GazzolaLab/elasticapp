@@ -47,10 +47,7 @@ class VH5PolyDataRod(VH5Block):
         self._setup_connectivities()
 
     def set_points(self, points: np.ndarray) -> None:
-        assert points.shape == (
-            self.num_points,
-            3,
-        ), (
+        assert points.shape == (self.num_points, 3,), (
             f"Point array shape incompatible. Expected: "
             f"{(self.num_points, 3)}, but got {points.shape}"
         )
