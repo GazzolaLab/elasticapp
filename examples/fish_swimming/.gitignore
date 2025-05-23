@@ -1,2 +1,3 @@
 *.vtkhdf
 *.pvsm
+*.egg-info/
