@@ -5,8 +5,8 @@ import numpy as np
 import sopht.utils as spu
 from sopht_mpi.simulator import UnboundedFlowSimulator3D
 
+import vtkh5py as vh5
 from utils import FishSurfaceForcingGrid, FishFlowInteractionMPI, VTKHDFImageDataWriter
-from utils import vtkh5py as vh5
 
 
 def get_data_path(path: str | None) -> str:
@@ -263,12 +263,13 @@ if __name__ == "__main__":
     grid_size = (nx // 8, nx * 3 // 8, nx)
     n_max = n_elements // 4
     run_fish_swimming(
-        non_dim_final_time=0.1,
+        non_dim_final_time=6.0,
         n_elem=n_elements,
         grid_size=grid_size,
         surface_grid_density_for_largest_element=n_max,
-        slenderness_ratio=23.288900389583265,
+        slenderness_ratio=15.76526845062869,
         mass_ratio=1.0,
-        non_dim_bending_stiffness=0.08743905731285707,
+        non_dim_bending_stiffness=0.2818696433126077,
         actuation_reynolds_number=7142.857142857143,
+        data_dir="data",
     )

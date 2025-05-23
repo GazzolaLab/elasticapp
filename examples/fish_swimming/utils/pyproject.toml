@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vtkh5py"
+version = "0.0.1"
+description = "Lightweight Python library for generating vtkhdf files"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+  "numpy",
+  "vtk",
+  "h5py",
+  "typing-extensions"
+]
+
+[tool.setuptools]
+packages = ["vtkh5py"]

@@ -3,7 +3,7 @@ import os
 import numpy as np
 
 from utils import FishSurfaceForcingGrid, FishFlowInteraction
-from utils import vtkh5py as vh5
+import vtkh5py as vh5
 import sopht.simulator as sps
 import sopht.utils as spu
 
@@ -234,7 +234,7 @@ if __name__ == "__main__":
     grid_size = (nx // 8, nx // 2, nx)
     n_max = n_elements // 4
     run_fish_swimming(
-        non_dim_final_time=0.5,
+        non_dim_final_time=6.0,
         n_elem=n_elements,
         grid_size=grid_size,
         surface_grid_density_for_largest_element=n_max,
