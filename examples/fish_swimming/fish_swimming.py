@@ -37,8 +37,7 @@ def get_data_path(path: str | None) -> str:
     if path[0] == "/":  # absolute path
         return create_path(path)
 
-    if path[0] != "/":  # relative path
-        return create_path(os.path.join(parent_path, path))
+    return create_path(os.path.join(parent_path, path))
 
 
 def run_fish_swimming(
@@ -91,8 +90,8 @@ def run_fish_swimming(
     # origins[2, :] = 0.5 * z_range
 
     origin = np.array(
-        [0.85 * x_range - 0.5 * base_length, 0.5 * y_range, 0.5 * z_range]
-    ).reshape(3, 1)
+        [0.65 * x_range - 0.5 * base_length, 0.5 * y_range, 0.5 * z_range]
+    ).reshape(3, -1)
 
     from elasticapp.Systems import FishModel
     from elasticapp.CaseStudies.PyFishCaseStudy import FishCaseStudy
@@ -242,12 +241,12 @@ if __name__ == "__main__":
     grid_size = (nx // 8, nx // 2, nx)
     n_max = n_elements // 4
     run_fish_swimming(
-        non_dim_final_time=6.0,
+        non_dim_final_time=0.1,
         n_elem=n_elements,
         grid_size=grid_size,
         surface_grid_density_for_largest_element=n_max,
-        slenderness_ratio=23.288900389583265,
+        slenderness_ratio=12.500535121608523,
         mass_ratio=1.0,
-        non_dim_bending_stiffness=0.08743905731285707,
+        non_dim_bending_stiffness=0.565414058870102,
         actuation_reynolds_number=7142.857142857143,
     )
