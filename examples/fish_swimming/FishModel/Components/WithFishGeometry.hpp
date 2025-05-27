@@ -6,8 +6,8 @@
 #include <elastica/Systems/CosseratRods/Components/Geometry/detail/CosseratRodCrossSectionInterface.hpp>
 #include <elastica/Systems/CosseratRods/Components/helpers.hpp>
 //
-#include <elastica/Utilities/Math/Vec3.hpp>
 #include <elastica/Utilities/Math/Sqrt.hpp>
+#include <elastica/Utilities/Math/Vec3.hpp>
 //
 #include <examples/fish_swimming/FishModel/Tags.hpp>
 
@@ -91,7 +91,7 @@ namespace fish {
                            std::forward<CosseratInitializer>(initializer));
 
         // 2. Initialize required variables
-        initialize_component<InitializedVariables>(
+        ::elastica::cosserat_rod::initialize_component<InitializedVariables>(
             this_component.self(),
             std::forward<CosseratInitializer>(initializer));
 
@@ -141,7 +141,8 @@ namespace fish {
               this_component.self()));
           volumes =
               M_PI * semi_major_axis * semi_minor_axis * reference_lengths;
-          element_dimensions = ::elastica::sqrt(volumes / reference_lengths / M_PI);
+          element_dimensions =
+              ::elastica::sqrt(volumes / reference_lengths / M_PI);
         }
       }
 
