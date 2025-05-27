@@ -177,12 +177,7 @@ def run_fish_swimming(
                 )
             )
 
-    for idx, flow_interaction in enumerate(flow_interactions):
-        if flow_interaction.is_empty():
-            string = "empty"
-        else:
-            string = "not empty"
-        print(f"Rank: {mpi_rank}, IBI: {idx}, {string}")
+    print(f"Rank: {mpi_rank}, Number of fish: {num_fish_per_rank[mpi_rank]}")
 
     # ================ IO ================
     if has_fish:
@@ -311,7 +306,7 @@ if __name__ == "__main__":
     grid_size = (nx // 8, nx // 2, nx)
     n_max = n_elements // 4
     run_fish_swimming(
-        non_dim_final_time=0.05,
+        non_dim_final_time=1.0,
         n_elem=n_elements,
         grid_size=grid_size,
         surface_grid_density_for_largest_element=n_max,
@@ -319,5 +314,4 @@ if __name__ == "__main__":
         mass_ratio=1.0,
         non_dim_bending_stiffness=0.565414058870102,
         actuation_reynolds_number=7142.857142857143,
-        data_dir="tmp",
     )
