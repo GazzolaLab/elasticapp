@@ -71,7 +71,7 @@ namespace elastica {
   // adapters for easier and persistent manipulation of width buf
 
   struct Indent {
-    Indent(widthstream& os, int tw) : os_(os), tab_width(tw){};
+    Indent(widthstream& os, int tw) : os_(os), tab_width(tw) {};
     ~Indent() = default;
 
     template <typename F>
@@ -86,7 +86,7 @@ namespace elastica {
   };
 
   struct Paragraph {
-    explicit Paragraph(widthstream& os) : os_(os){};
+    explicit Paragraph(widthstream& os) : os_(os) {};
     ~Paragraph() = default;
 
     template <typename F>
