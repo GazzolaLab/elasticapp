@@ -94,7 +94,7 @@ def run_fish_swimming(
     origins = np.array(
         [0.65 * x_range - 0.5 * base_length, 0.5 * y_range, 0.5 * z_range]
     ).reshape(3, -1)
-    origins = np.tile(origins, (1, 6))
+    # origins = np.tile(origins, (1, 6))
 
     # ================ Flow simulator ================
     kinematic_viscosity = base_length * vel_scale / actuation_reynolds_number
@@ -261,8 +261,8 @@ def run_fish_swimming(
         # Rod + IBM steps
         for i in range(rod_time_steps):
             for j, flow_interaction in enumerate(flow_interactions):
+                flow_interaction.compute_flow_forces_and_torques()
                 if has_fish and j >= index[mpi_rank] and j < index[mpi_rank + 1]:
-                    flow_interaction.compute_flow_forces_and_torques()
                     k = j - index[mpi_rank]
                     flow_forces[
                         :, k * n_node : (k + 1) * n_node
@@ -298,6 +298,7 @@ def run_fish_swimming(
         fish_logger.write_to_file(
             os.path.join(data_dir, "fish_data.npz"),
         )
+    MPI.Finalize()
 
 
 if __name__ == "__main__":
