@@ -31,7 +31,7 @@ class VH5PartitionedDataset(VH5Block):
         sub_group = self.group.add_subgroup(block.group)
 
         # PDC requires indexing on the blocks
-        sub_group.attributes["index"] = self.num_blocks
+        sub_group.attributes["Index"] = self.num_blocks
         self.num_blocks += 1
 
         # Add (sub_group.name, sub_group) as a key-value pair
