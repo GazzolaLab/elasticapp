@@ -94,7 +94,7 @@ def run_fish_swimming(
     origins = np.array(
         [0.65 * x_range - 0.5 * base_length, 0.5 * y_range, 0.5 * z_range]
     ).reshape(3, -1)
-    # origins = np.tile(origins, (1, 6))
+    origins = np.tile(origins, (1, 6))
 
     # ================ Flow simulator ================
     kinematic_viscosity = base_length * vel_scale / actuation_reynolds_number
@@ -150,6 +150,10 @@ def run_fish_swimming(
         elastic_fish_list, _, flow_forces, flow_torques = cs.communicate()
         flow_forces = np.asarray(flow_forces)
         flow_torques = np.asarray(flow_torques)
+    else:
+        elastic_fish_list = []
+        flow_forces = None
+        flow_torques = None
 
     # ============== Immersed boundary ===============
     flow_interactions = []
@@ -157,6 +161,7 @@ def run_fish_swimming(
     # Each rank has flow_interaction objects for all fishes
     # But the only functional ones are those that corresponds to the fish
     # on this rank.
+    auto_ghosting = True
     for rank_idx in range(mpi_size):
         for fish_idx in range(num_fish_per_rank[rank_idx]):
             rod = elastic_fish_list[fish_idx] if mpi_rank == rank_idx else n_elem
@@ -174,8 +179,10 @@ def run_fish_swimming(
                     forcing_grid_cls=FishSurfaceForcingGrid,
                     surface_grid_density_for_largest_element=surface_grid_density_for_largest_element,
                     master_rank=rank_idx,
+                    auto_ghosting=auto_ghosting,
                 )
             )
+            auto_ghosting = False  # Velocity communication needs to be done only once
 
     print(f"Rank: {mpi_rank}, Number of fish: {num_fish_per_rank[mpi_rank]}")
 
