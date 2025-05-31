@@ -19,7 +19,7 @@ class VH5BlockWriter:
 
     @staticmethod
     def _write_group(src_group: h5py.Group, vh_group: VH5Group):
-        sub_group = src_group.create_group(np.bytes_(vh_group.name))
+        sub_group = src_group.create_group(np.bytes_(vh_group.name), track_order=True)
 
         for sub_vh_group in vh_group.subgroups:
             VH5BlockWriter._write_group(sub_group, sub_vh_group)
