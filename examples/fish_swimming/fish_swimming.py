@@ -43,7 +43,7 @@ def get_data_path(path: str | None) -> str:
 def run_fish_swimming(
     non_dim_final_time: float,
     n_elem: int,
-    grid_size: tuple[int, int, int],
+    grid_size_x: int,
     surface_grid_density_for_largest_element: int,
     slenderness_ratio: float,
     mass_ratio: float,
@@ -57,14 +57,14 @@ def run_fish_swimming(
 ) -> None:
     # ================ Global parameters ================
     grid_dim = 3
-    grid_size_z, grid_size_y, grid_size_x = grid_size
     real_t = spu.get_real_t(precision)
     rho_f = 1.0
     base_length = 1.0
     n_node = n_elem + 1
-    x_range = 4 * base_length
-    y_range = grid_size_y / grid_size_x * x_range
-    z_range = grid_size_z / grid_size_x * x_range
+    x_range, y_range, z_range = (12.0, 8.0, 8.0)
+    dx = x_range / grid_size_x
+    grid_size_y = int(np.ceil(y_range / dx))
+    grid_size_z = int(np.ceil(z_range / dx))
 
     # ================ Fish parameters ================
     period = 1.0
@@ -83,15 +83,8 @@ def run_fish_swimming(
     )
 
     # ================ Fish simulator ================
-    num_fish = 1
-    # origins = np.zeros((3, num_fish), dtype=real_t)
-    # origins[0, :] = 0.85 * x_range - 0.5 * base_length
-    # origins[1, :] = [0.3 * y_range, 0.5 * y_range, 0.7 * y_range]
-    # origins[2, :] = 0.5 * z_range
-
-    origin = np.array(
-        [0.65 * x_range - 0.5 * base_length, 0.5 * y_range, 0.5 * z_range]
-    ).reshape(3, -1)
+    origins = np.loadtxt("fish_head_positions.txt", delimiter=",")
+    num_fish = origins.shape[1]
 
     from elasticapp.Systems import FishModel
     from elasticapp.CaseStudies.PyFishCaseStudy import FishCaseStudy
@@ -99,7 +92,7 @@ def run_fish_swimming(
 
     cs = FishCaseStudy(
         num_fish=num_fish,
-        origins=Matrix(origin),
+        origins=Matrix(origins),
         n_elements=n_elem,
         density=rho_s,
         length=base_length,
@@ -115,7 +108,7 @@ def run_fish_swimming(
     # ================ Flow simulator ================
     kinematic_viscosity = base_length * vel_scale / actuation_reynolds_number
     flow_sim = sps.UnboundedFlowSimulator3D(
-        grid_size=grid_size,
+        grid_size=(grid_size_z, grid_size_y, grid_size_x),
         x_range=x_range,
         kinematic_viscosity=kinematic_viscosity,
         flow_type="navier_stokes_with_forcing",
@@ -146,18 +139,21 @@ def run_fish_swimming(
 
     # ================ IO ================
     data_dir = get_data_path(data_dir)
-    fish_writers = []
-    for flow_interaction in flow_interactions:
+    vh5_fish_data = vh5.VH5PartitionedDataset()
+    for idx, flow_interaction in enumerate(flow_interactions):
         forcing_grid = flow_interaction.forcing_grid
         grid_position = forcing_grid.position_field.view()
         grid_velocity = forcing_grid.velocity_field.view()
 
         grid_data = vh5.VH5PolyDataRod(
+            block_name=f"fish_grid_{idx}",
             number_of_points=grid_position.shape[1],
         )
         grid_data.set_points(grid_position.T)
         grid_data.add_point_data(grid_velocity=grid_velocity.T)
-        fish_writers.append(vh5.VH5BlockWriter(grid_data))
+        vh5_fish_data.add_block(block=grid_data, parent="/Assembly")
+    
+    fish_writer = vh5.VH5BlockWriter(vh5_fish_data)
 
     flow_data = vh5.VH5ImageData(
         spacing=(flow_sim.dx,) * 3,
@@ -190,12 +186,11 @@ def run_fish_swimming(
         # Save data
         if data_timer == 0.0 or data_timer > data_timer_limit:
             data_timer = 0.0
-            for i, fish_writer in enumerate(fish_writers):
-                fish_writer.write_to_file(
-                    os.path.join(
-                        data_dir, f"grid{i}_{int(cs.current_time() * 1000):04d}.vtkhdf"
-                    )
+            fish_writer.write_to_file(
+                os.path.join(
+                    data_dir, f"fish_{int(cs.current_time() * 1000):04d}.vtkhdf"
                 )
+            )
             flow_writer.write_to_file(
                 os.path.join(data_dir, f"flow_{int(flow_sim.time * 1000):04d}.vtkhdf")
             )
@@ -236,17 +231,17 @@ def run_fish_swimming(
 
 
 if __name__ == "__main__":
-    nx = 128
-    n_elements = nx // 4
-    grid_size = (nx // 8, nx // 2, nx)
+    nx = 432
+    n_elements = nx // 12
     n_max = n_elements // 4
     run_fish_swimming(
-        non_dim_final_time=0.1,
+        non_dim_final_time=6.0,
         n_elem=n_elements,
-        grid_size=grid_size,
+        grid_size_x=nx,
         surface_grid_density_for_largest_element=n_max,
         slenderness_ratio=12.500535121608523,
         mass_ratio=1.0,
         non_dim_bending_stiffness=0.565414058870102,
         actuation_reynolds_number=7142.857142857143,
+        data_dir="tmp"
     )
