@@ -53,7 +53,7 @@ def get_data_path(path: str | None) -> str:
 def run_fish_swimming(
     non_dim_final_time: float,
     n_elem: int,
-    grid_size: tuple[int, int, int],
+    grid_size_x: int,
     surface_grid_density_for_largest_element: int,
     slenderness_ratio: float,
     mass_ratio: float,
@@ -67,14 +67,14 @@ def run_fish_swimming(
 ) -> None:
     # ================ Global parameters ================
     grid_dim = 3
-    grid_size_z, grid_size_y, grid_size_x = grid_size
     real_t = spu.get_real_t(precision)
     rho_f = 1.0
     base_length = 1.0
     n_node = n_elem + 1
-    x_range = 4 * base_length
-    y_range = grid_size_y / grid_size_x * x_range
-    z_range = grid_size_z / grid_size_x * x_range
+    x_range, y_range, z_range = (12.0, 8.0, 8.0)
+    dx = x_range / grid_size_x
+    grid_size_y = int(np.ceil(y_range / dx))
+    grid_size_z = int(np.ceil(z_range / dx))
 
     # ================ Fish parameters ================
     period = 1.0
@@ -91,15 +91,16 @@ def run_fish_swimming(
         * base_diameter
         / moment_of_inertia
     )
-    origins = np.array(
-        [0.65 * x_range - 0.5 * base_length, 0.5 * y_range, 0.5 * z_range]
-    ).reshape(3, -1)
-    origins = np.tile(origins, (1, 6))
+    # origins = np.array(
+    #     [0.65 * x_range - 0.5 * base_length, 0.5 * y_range, 0.5 * z_range]
+    # ).reshape(3, -1)
+    # origins = np.tile(origins, (1, 6))
+    origins = np.loadtxt("fish_head_positions.txt", delimiter=",")
 
     # ================ Flow simulator ================
     kinematic_viscosity = base_length * vel_scale / actuation_reynolds_number
     flow_sim = UnboundedFlowSimulator3D(
-        grid_size=grid_size,
+        grid_size=(grid_size_z, grid_size_y, grid_size_x),
         x_range=x_range,
         kinematic_viscosity=kinematic_viscosity,
         flow_type="navier_stokes_with_forcing",
@@ -309,14 +310,13 @@ def run_fish_swimming(
 
 
 if __name__ == "__main__":
-    nx = 128
-    n_elements = nx // 4
-    grid_size = (nx // 8, nx // 2, nx)
+    nx = 432
+    n_elements = nx // 12
     n_max = n_elements // 4
     run_fish_swimming(
         non_dim_final_time=1.0,
         n_elem=n_elements,
-        grid_size=grid_size,
+        grid_size_x=nx,
         surface_grid_density_for_largest_element=n_max,
         slenderness_ratio=12.500535121608523,
         mass_ratio=1.0,
