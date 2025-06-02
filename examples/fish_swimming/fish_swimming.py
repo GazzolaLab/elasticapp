@@ -152,7 +152,7 @@ def run_fish_swimming(
         grid_data.set_points(grid_position.T)
         grid_data.add_point_data(grid_velocity=grid_velocity.T)
         vh5_fish_data.add_block(block=grid_data, parent="/Assembly")
-    
+
     fish_writer = vh5.VH5BlockWriter(vh5_fish_data)
 
     flow_data = vh5.VH5ImageData(
@@ -235,7 +235,7 @@ if __name__ == "__main__":
     n_elements = nx // 12
     n_max = n_elements // 4
     run_fish_swimming(
-        non_dim_final_time=6.0,
+        non_dim_final_time=1.0,
         n_elem=n_elements,
         grid_size_x=nx,
         surface_grid_density_for_largest_element=n_max,
@@ -243,5 +243,4 @@ if __name__ == "__main__":
         mass_ratio=1.0,
         non_dim_bending_stiffness=0.565414058870102,
         actuation_reynolds_number=7142.857142857143,
-        data_dir="tmp"
     )
