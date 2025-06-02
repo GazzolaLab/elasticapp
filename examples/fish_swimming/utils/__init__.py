@@ -1,5 +1,5 @@
-from .fish_grid import FishSurfaceForcingGrid
-from .fish_flow_interaction import FishFlowInteraction
+from .fish_grid import FishSurfaceForcingGrid, MultiFishSurfaceForcingGrid
+from .fish_flow_interaction import FishFlowInteraction, MultiFishFlowInteraction
 from .fish_flow_interaction_mpi import FishFlowInteractionMPI
 from .vtkhdf_imagedata_writer import VTKHDFImageDataWriter
 from .fish_data_logging import FishDataLogger
