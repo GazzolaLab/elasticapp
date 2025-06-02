@@ -3,6 +3,7 @@ from sopht.simulator.immersed_body import ImmersedBodyForcingGrid
 from elasticapp.Systems.FishModel._PyFishModel import Fish
 
 import numpy as np
+from numba import njit
 
 
 class FishSurfaceForcingGrid(ImmersedBodyForcingGrid):
@@ -113,7 +114,7 @@ class FishSurfaceForcingGrid(ImmersedBodyForcingGrid):
 
         self.grid_point_director_transpose = np.zeros((3, 3, self.num_lag_nodes))
         self.grid_point_radius = np.zeros((self.num_lag_nodes))
-        # self.grid_point_dilatation = np.zeros((self.num_lag_nodes))
+        self.grid_point_dilatation = np.zeros((self.num_lag_nodes))
         self.grid_point_omega = np.zeros_like(self.position_field)
         self.lag_grid_torque_field = np.zeros_like(self.position_field)
 
@@ -139,9 +140,9 @@ class FishSurfaceForcingGrid(ImmersedBodyForcingGrid):
             self.grid_point_director_transpose[
                 :, :, self.start_idx[i] : self.end_idx[i]
             ] = self.rod_director_collection_transpose[:, :, i : i + 1]
-            # self.grid_point_dilatation[self.start_idx[i] : self.end_idx[i]] = (
-            #     self.dilatation[i]
-            # )
+            self.grid_point_dilatation[
+                self.start_idx[i] : self.end_idx[i]
+            ] = self.dilatation[i]
             self.position_field[
                 :, self.start_idx[i] : self.end_idx[i]
             ] = self.rod_element_position[:, i : i + 1]
@@ -220,3 +221,85 @@ class FishSurfaceForcingGrid(ImmersedBodyForcingGrid):
                 self.circumference / self.surface_grid_density_for_largest_element,
             ]
         )
+
+
+class MultiFishSurfaceForcingGrid(ImmersedBodyForcingGrid):
+    def __init__(
+        self,
+        grid_dim: int,
+        fish_list: list[Fish],
+        surface_grid_density_for_largest_element: int,
+    ) -> None:
+        self.num_fish = len(fish_list)
+        if self.num_fish == 0:
+            raise ValueError("No fish provided to the MultiFishSurfaceForcingGrid.")
+
+        self.sub_grids = [
+            FishSurfaceForcingGrid(
+                grid_dim=grid_dim,
+                cosserat_rod=fish,
+                surface_grid_density_for_largest_element=surface_grid_density_for_largest_element,
+            )
+            for fish in fish_list
+        ]
+
+        num_lag_nodes = 0
+        for sub_grid in self.sub_grids:
+            num_lag_nodes += sub_grid.num_lag_nodes
+
+        super().__init__(grid_dim, num_lag_nodes)
+
+        start = 0
+
+        for i, sub_grid in enumerate(self.sub_grids):
+            end = start + sub_grid.num_lag_nodes
+
+            self.position_field[:, start:end] = sub_grid.position_field
+            self.velocity_field[:, start:end] = sub_grid.velocity_field
+
+            del sub_grid.position_field
+            del sub_grid.velocity_field
+
+            sub_grid.position_field = self.position_field[:, start:end].view()
+            sub_grid.velocity_field = self.velocity_field[:, start:end].view()
+
+            start = end
+
+    def compute_lag_grid_position_field(self) -> None:
+        for sub_grid in self.sub_grids:
+            sub_grid.compute_lag_grid_position_field()
+
+    def compute_lag_grid_velocity_field(self) -> None:
+        for sub_grid in self.sub_grids:
+            sub_grid.compute_lag_grid_velocity_field()
+
+    def transfer_forcing_from_grid_to_body(
+        self,
+        body_flow_forces: np.ndarray,
+        body_flow_torques: np.ndarray,
+        lag_grid_forcing_field: np.ndarray,
+    ) -> None:
+        start_elem = start_node = start_lag = 0
+        for sub_grid in self.sub_grids:
+            end_elem = start_elem + sub_grid.n_elements
+            end_node = start_node + sub_grid.n_elements + 1
+            end_lag = start_lag + sub_grid.num_lag_nodes
+            sub_grid.transfer_forcing_from_grid_to_body(
+                body_flow_forces=body_flow_forces[:, start_node:end_node].view(),
+                body_flow_torques=body_flow_torques[:, start_elem:end_elem].view(),
+                lag_grid_forcing_field=lag_grid_forcing_field[
+                    :, start_lag:end_lag
+                ].view(),
+            )
+            start_elem = end_elem
+            start_node = end_node
+            start_lag = end_lag
+
+    def get_maximum_lagrangian_grid_spacing(self) -> float:
+        max_spacing = 0.0
+        for sub_grid in self.sub_grids:
+            max_spacing = max(
+                max_spacing, sub_grid.get_maximum_lagrangian_grid_spacing()
+            )
+
+        return max_spacing
