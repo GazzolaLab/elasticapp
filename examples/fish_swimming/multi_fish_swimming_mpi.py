@@ -158,7 +158,7 @@ def run_fish_swimming(
     # ================ IO ================
     if mpi_rank == 0:
         skip = flow_interaction.forcing_grid.num_lag_nodes // num_fish
-        fish_writers = []
+        vh5_fish_data = vh5.VH5PartitionedDataset()
         for i in range(num_fish):
             forcing_grid = flow_interaction.forcing_grid
             grid_position = forcing_grid.position_field[
@@ -169,11 +169,13 @@ def run_fish_swimming(
             ].view()
 
             grid_data = vh5.VH5PolyDataRod(
+                block_name=f"fish_grid_{i}",
                 number_of_points=grid_position.shape[1],
             )
             grid_data.set_points(grid_position.T)
             grid_data.add_point_data(grid_velocity=grid_velocity.T)
-            fish_writers.append(vh5.VH5BlockWriter(grid_data))
+            vh5_fish_data.add_block(block=grid_data, parent="/Assembly")
+        fish_writer = vh5.VH5BlockWriter(vh5_fish_data)
 
         fish_logger = FishDataLogger(
             rods=elastic_fish_list,
@@ -211,13 +213,11 @@ def run_fish_swimming(
             if mpi_rank == 0:
                 print(f"{cs.current_time() / final_time * 100:.2f}%", flush=True)
 
-                for i, fish_writer in enumerate(fish_writers):
-                    fish_writer.write_to_file(
-                        os.path.join(
-                            data_dir,
-                            f"grid{i}_{int(cs.current_time() * 1000):04d}.vtkhdf",
-                        )
+                fish_writer.write_to_file(
+                    os.path.join(
+                        data_dir, f"fish_{int(cs.current_time() * 1000):04d}.vtkhdf"
                     )
+                )
                 fish_logger.log_data(flow_sim.time)
 
             # Log flow data for all ranks (HDF5-MPI)
