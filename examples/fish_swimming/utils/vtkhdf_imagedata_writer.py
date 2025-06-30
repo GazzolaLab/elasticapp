@@ -82,8 +82,6 @@ class VTKHDFImageDataWriter:
                         name=key,
                         shape=self.global_grid_size,
                         dtype=np.float64,
-                        compression="gzip",
-                        compression_opts=9,
                     )
                     data_to_fill[self.slice[:-1]] = value[
                         self.no_ghost_slice[1:]
@@ -109,6 +107,7 @@ class VTKHDFImageDataWriter:
 
 if __name__ == "__main__":
     # Example usage of VTKHDFImageDataWriter
+    # mpiexec -np 4 python vtkhdf_imagedata_writer.py
     grid_size = (32, 64, 128)  # z-y-x
     from sopht_mpi.simulator import UnboundedFlowSimulator3D
 
