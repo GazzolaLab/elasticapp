@@ -82,6 +82,8 @@ class VTKHDFImageDataWriter:
                         name=key,
                         shape=self.global_grid_size,
                         dtype=np.float64,
+                        compression="gzip",
+                        compression_opts=9,
                     )
                     data_to_fill[self.slice[:-1]] = value[
                         self.no_ghost_slice[1:]
