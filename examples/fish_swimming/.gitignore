@@ -1,3 +1,6 @@
 *.vtkhdf
 *.pvsm
 *.egg-info/
+build/
+dist/
+*.egg
