@@ -13,6 +13,6 @@ dependencies = [
   "typing-extensions"
 ]
 
-[tool.setuptools]
-packages = ["fish_utils", "vtkh5py"]
-package-dir = {"fish_utils" = "utils", "vtkh5py" = "utils/io/vtkh5py"}
+[tool.setuptools.package-dir]
+"fish_utils" = "utils"
+"vtkh5py" = "utils/io/vtkh5py"
