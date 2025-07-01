@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fish_swimming_utils"
+version = "0.0.1"
+description = "Python utilities for fish swimming simulations"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy",
+  "h5py",
+  "typing-extensions"
+]
+
+[tool.setuptools]
+packages = ["fish_utils", "vtkh5py"]
+package-dir = {"fish_utils" = "utils", "vtkh5py" = "utils/io/vtkh5py"}

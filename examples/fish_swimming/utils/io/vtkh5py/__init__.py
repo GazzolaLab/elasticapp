@@ -2,4 +2,4 @@
 from .groups import *  # NOQA
 from .blocks import *  # NOQA
 from .io import *  # NOQA
-from .config import *
+from .config import *  # NOQA
