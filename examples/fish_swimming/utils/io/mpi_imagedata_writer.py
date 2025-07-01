@@ -6,7 +6,7 @@ import h5py
 from mpi4py.MPI import Intracomm
 
 
-class VTKHDFImageDataWriter:
+class MPIImageDataWriter:
     def __init__(
         self,
         mpi_comm: Intracomm,
@@ -103,7 +103,8 @@ class VTKHDFImageDataWriter:
                     data_to_fill[self.slice] = np.transpose(
                         value[self.no_ghost_slice], (1, 2, 3, 0)
                     ).copy()
-
+                
+        
 
 if __name__ == "__main__":
     # Example usage of VTKHDFImageDataWriter
@@ -127,7 +128,7 @@ if __name__ == "__main__":
         * np.sin(3 * np.pi * sim.position_field[2, :, :, :])
     )
 
-    writer = VTKHDFImageDataWriter(
+    writer = MPIImageDataWriter(
         mpi_comm=sim.mpi_construct.grid,
         dx=sim.dx,
         global_grid_size=sim.grid_size,
