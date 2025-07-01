@@ -3,6 +3,7 @@ import os
 import numpy as np
 
 import fish_utils as fu
+import fish_utils.io as fuio
 import vtkh5py as vh5
 import sopht.simulator as sps
 import sopht.utils as spu
@@ -54,6 +55,7 @@ def run_fish_swimming(
     num_threads: int = 4,
     precision: str = "double",
     data_dir: str | None = None,
+    fish_head_positions_file="fish_init_data/fish_head_positions.txt",
 ) -> None:
     # ================ Global parameters ================
     grid_dim = 3
@@ -83,7 +85,7 @@ def run_fish_swimming(
     )
 
     # ================ Fish simulator ================
-    origins = np.loadtxt("fish_init_data/fish_head_positions.txt", delimiter=",")
+    origins = np.loadtxt(fish_head_positions_file, delimiter=",")
     num_fish = origins.shape[1]
 
     from elasticapp.Systems import FishModel
@@ -166,7 +168,7 @@ def run_fish_swimming(
     )
     flow_writer = vh5.VH5BlockWriter(flow_data)
 
-    fish_logger = fu.io.FishDataLogger(
+    fish_logger = fuio.FishDataLogger(
         rods=elastic_fish_list,
         n_elem=n_elem,
         flow_forces=flow_forces,
@@ -244,4 +246,5 @@ if __name__ == "__main__":
         non_dim_bending_stiffness=0.565414058870102,
         actuation_reynolds_number=7142.857142857143,
         data_dir="fish_data_no_mpi",
+        fish_head_positions_file="fish_init_data/fish_head_positions.txt",
     )
