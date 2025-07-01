@@ -4,7 +4,6 @@ from .fish_flow_interaction_mpi import (
     FishFlowInteractionMPI,
     MultiFishFlowInteractionMPI,
 )
-from . import io
 
 __all__ = [
     "FishSurfaceForcingGrid",
@@ -13,5 +12,4 @@ __all__ = [
     "MultiFishFlowInteraction",
     "FishFlowInteractionMPI",
     "MultiFishFlowInteractionMPI",
-    "io",
 ]
