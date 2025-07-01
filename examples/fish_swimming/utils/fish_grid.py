@@ -3,7 +3,6 @@ from sopht.simulator.immersed_body import ImmersedBodyForcingGrid
 from elasticapp.Systems.FishModel._PyFishModel import Fish
 
 import numpy as np
-from numba import njit
 
 
 class FishSurfaceForcingGrid(ImmersedBodyForcingGrid):
