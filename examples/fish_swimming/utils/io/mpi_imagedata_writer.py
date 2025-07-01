@@ -103,8 +103,7 @@ class MPIImageDataWriter:
                     data_to_fill[self.slice] = np.transpose(
                         value[self.no_ghost_slice], (1, 2, 3, 0)
                     ).copy()
-                
-        
+
 
 if __name__ == "__main__":
     # Example usage of VTKHDFImageDataWriter

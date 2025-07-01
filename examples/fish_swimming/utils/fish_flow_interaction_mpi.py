@@ -118,7 +118,7 @@ class MultiFishFlowInteractionMPI(ImmersedBodyFlowInteractionMPI):
                 fish_list=fish_list,
                 **forcing_grid_kwargs,
             )
-            
+
         else:
             self.forcing_grid = EmptyForcingGrid(grid_dim=grid_dim)
 
