@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 
-from utils import FishSurfaceForcingGrid, FishFlowInteraction, FishDataLogger
+import fish_utils as fu
 import vtkh5py as vh5
 import sopht.simulator as sps
 import sopht.utils as spu
@@ -83,7 +83,7 @@ def run_fish_swimming(
     )
 
     # ================ Fish simulator ================
-    origins = np.loadtxt("fish_head_positions.txt", delimiter=",")
+    origins = np.loadtxt("fish_init_data/fish_head_positions.txt", delimiter=",")
     num_fish = origins.shape[1]
 
     from elasticapp.Systems import FishModel
@@ -122,7 +122,7 @@ def run_fish_swimming(
     flow_interactions = []
     for i in range(num_fish):
         flow_interactions.append(
-            FishFlowInteraction(
+            fu.FishFlowInteraction(
                 cosserat_rod=elastic_fish_list[i],
                 eul_grid_forcing_field=flow_sim.eul_grid_forcing_field,
                 eul_grid_velocity_field=flow_sim.velocity_field,
@@ -132,7 +132,7 @@ def run_fish_swimming(
                 grid_dim=grid_dim,
                 real_t=real_t,
                 num_threads=num_threads,
-                forcing_grid_cls=FishSurfaceForcingGrid,
+                forcing_grid_cls=fu.FishSurfaceForcingGrid,
                 surface_grid_density_for_largest_element=surface_grid_density_for_largest_element,
             )
         )
@@ -166,7 +166,7 @@ def run_fish_swimming(
     )
     flow_writer = vh5.VH5BlockWriter(flow_data)
 
-    fish_logger = FishDataLogger(
+    fish_logger = fu.io.FishDataLogger(
         rods=elastic_fish_list,
         n_elem=n_elem,
         flow_forces=flow_forces,
@@ -207,12 +207,12 @@ def run_fish_swimming(
                 flow_interaction.compute_flow_forces_and_torques()
                 flow_interaction.time_step(dt=local_rod_dt)
 
-                flow_forces[
-                    :, j * n_node : (j + 1) * n_node
-                ] = flow_interaction.body_flow_forces
-                flow_torques[
-                    :, j * n_elem : (j + 1) * n_elem
-                ] = flow_interaction.body_flow_torques
+                flow_forces[:, j * n_node : (j + 1) * n_node] = (
+                    flow_interaction.body_flow_forces
+                )
+                flow_torques[:, j * n_elem : (j + 1) * n_elem] = (
+                    flow_interaction.body_flow_torques
+                )
 
             cs.step_with(updated_dt=local_rod_dt)
 
@@ -231,7 +231,7 @@ def run_fish_swimming(
 
 
 if __name__ == "__main__":
-    nx = 432
+    nx = 96
     n_elements = nx // 12
     n_max = n_elements // 4
     run_fish_swimming(
@@ -243,4 +243,5 @@ if __name__ == "__main__":
         mass_ratio=1.0,
         non_dim_bending_stiffness=0.565414058870102,
         actuation_reynolds_number=7142.857142857143,
+        data_dir="fish_data_no_mpi",
     )
