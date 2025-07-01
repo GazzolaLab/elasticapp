@@ -1,7 +1,7 @@
 import numpy as np
 import h5py
 
-from mpi4py.MPI import Intracomm, MAX
+from mpi4py.MPI import Intracomm
 
 from elasticapp.Systems.FishModel._PyFishModel import Fish
 
