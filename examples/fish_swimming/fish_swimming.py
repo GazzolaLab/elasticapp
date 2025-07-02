@@ -55,7 +55,7 @@ def run_fish_swimming(
     num_threads: int = 4,
     precision: str = "double",
     data_dir: str | None = None,
-    fish_head_positions_file="fish_init_data/fish_head_positions.txt",
+    fish_head_positions_file="assets/fish_head_positions.txt",
 ) -> None:
     # ================ Global parameters ================
     grid_dim = 3
@@ -237,7 +237,7 @@ if __name__ == "__main__":
     n_elements = nx // 12
     n_max = n_elements // 4
     run_fish_swimming(
-        non_dim_final_time=1.0,
+        non_dim_final_time=0.1,
         n_elem=n_elements,
         grid_size_x=nx,
         surface_grid_density_for_largest_element=n_max,
@@ -246,5 +246,5 @@ if __name__ == "__main__":
         non_dim_bending_stiffness=0.565414058870102,
         actuation_reynolds_number=7142.857142857143,
         data_dir="fish_data_no_mpi",
-        fish_head_positions_file="fish_init_data/fish_head_positions.txt",
+        fish_head_positions_file="assets/fish_head_positions.txt",
     )
