@@ -7,7 +7,7 @@ from mpi4py.MPI import Intracomm
 from elasticapp.Systems.FishModel._PyFishModel import Fish
 
 
-class MPIImageDataWriter:
+class MPIImageDataIO:
     def __init__(
         self,
         mpi_comm: Intracomm,
@@ -31,7 +31,7 @@ class MPIImageDataWriter:
             local_grid_size[i] + 2 * ghost_size for i in range(3)
         )
 
-    def write_to_file(self, filename: str, **kwargs) -> None:
+    def write_to_file(self, filename: str, time: float | np.float64, **kwargs) -> None:
         with h5py.File(filename, "w", driver="mpio", comm=self.mpi_comm) as f:
             image_data_group = f.create_group(name="VTKHDF")
             image_data_group.attrs["Version"] = (2, 2)
@@ -60,7 +60,15 @@ class MPIImageDataWriter:
 
             point_data_group = image_data_group.create_group(name="PointData")
             # cell_data_group = image_data_group.create_group(name="CellData")
-            # field_data_group = image_data_group.create_group(name="FieldData")
+            field_data_group = image_data_group.create_group(name="FieldData")
+
+            time_data = field_data_group.create_dataset(
+                name="Time",
+                shape=(1,),
+                dtype=np.float64,
+            )
+            if self.mpi_comm.Get_rank() == 0:
+                time_data[0] = np.float64(time)
 
             for key, value in kwargs.items():
                 if not isinstance(value, np.ndarray):
@@ -105,8 +113,52 @@ class MPIImageDataWriter:
                         value[self.no_ghost_slice], (1, 2, 3, 0)
                     ).copy()
 
+    def read_from_file(self, filename: str, **kwargs) -> np.float64:
+        time = np.float64(-1.0)
+        with h5py.File(filename, "r", driver="mpio", comm=self.mpi_comm) as f:
+            try:
+                time = f["/VTKHDF/FieldData/Time"][0]
+            except KeyError:
+                msg = (
+                    f"Process {self.mpi_comm.Get_rank()}: "
+                    f"Time not found in FiledData of file {filename}"
+                )
+                raise KeyError(msg)
 
-class MPIFishWriter:
+            for field_name, field_view in kwargs.items():
+                path = "/VTKHDF/PointData/" + field_name
+                try:
+                    dataset = f[path]
+                except KeyError:
+                    msg = (
+                        f"Process {self.mpi_comm.Get_rank()}: "
+                        f"Dataset '{field_name}' not found in PointData of file {filename}"
+                    )
+                    raise KeyError(msg)
+
+                if dataset.shape != self.global_grid_size and dataset.shape != (
+                    *self.global_grid_size,
+                    3,
+                ):
+                    msg = (
+                        f"Process {self.mpi_comm.Get_rank()}: "
+                        f"Dataset '{field_name}' has shape {dataset.shape} "
+                        f"but expected {self.global_grid_size} or (*{self.global_grid_size}, 3)."
+                    )
+                    raise ValueError(msg)
+
+                if len(dataset.shape) == 3:
+                    field_view[self.no_ghost_slice[1:]] = dataset[self.slice[:-1]]
+
+                elif len(dataset.shape) == 4:
+                    field_view[self.no_ghost_slice] = np.transpose(
+                        dataset[self.slice], (3, 0, 1, 2)
+                    )
+
+        return time
+
+
+class MPIFishIO:
     def __init__(
         self,
         mpi_comm: Intracomm,
@@ -136,9 +188,17 @@ class MPIFishWriter:
                 }
             )
 
-    def write_to_file(self, filename: str) -> None:
+    def write_to_file(self, filename: str, time: float | np.float64) -> None:
         with h5py.File(filename, "w", driver="mpio", comm=self.mpi_comm) as f:
             root = f.create_group("root")
+            time_data = root.create_dataset(
+                name="Time",
+                shape=(1,),
+                dtype=np.float64,
+            )
+            if self.mpi_comm.Get_rank() == 0:
+                time_data[0] = np.float64(time)
+
             for i in range(self.global_num_fish):
                 group = root.create_group(f"fish_{i}")
                 group.create_dataset(
@@ -164,6 +224,42 @@ class MPIFishWriter:
 
             for fish_dict in self.fish_dicts:
                 for key, value in fish_dict.items():
-                    if key != "name":
+                    if key != "name" and key != "global_index":
                         path = "/root/" + fish_dict["name"] + "/" + key
                         root[path][...] = value
+
+    def read_from_file(self, filename: str) -> np.float64:
+        time = np.float64(-1.0)
+        with h5py.File(filename, "r", driver="mpio", comm=self.mpi_comm) as f:
+            try:
+                time = f["/root/Time"][0]
+            except KeyError:
+                msg = (
+                    f"Process {self.mpi_comm.Get_rank()}: "
+                    f"Time not found in file {filename} at /root/Time"
+                )
+                raise KeyError(msg)
+
+            for fish_dict in self.fish_dicts:
+                path = "/root/" + fish_dict["name"]
+                try:
+                    group = f[path]
+                except KeyError:
+                    msg = (
+                        f"Process {self.mpi_comm.Get_rank()}: "
+                        f"Group '{fish_dict['name']}' not found in file {filename} at {path}"
+                    )
+                    raise KeyError(msg)
+
+                for key, value in fish_dict.items():
+                    if key != "name":
+                        try:
+                            value[...] = group[key]
+                        except KeyError:
+                            msg = (
+                                f"Process {self.mpi_comm.Get_rank()}: "
+                                f"Dataset '{key}' not found in group in file {filename} at {path}/{key}"
+                            )
+                            raise KeyError(msg)
+
+        return time
