@@ -1,6 +1,5 @@
 from .fish_data_logging import FishDataLogger
-from .mpi_imagedata_writer import MPIImageDataWriter
-from .mpi_polydata_writer import MPIFishWriter
+from .mpi_hdf5_writer import MPIImageDataWriter, MPIFishWriter
 
 __all__ = [
     "FishDataLogger",
