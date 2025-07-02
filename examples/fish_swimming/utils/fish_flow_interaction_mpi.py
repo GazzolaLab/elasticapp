@@ -142,3 +142,6 @@ class MultiFishFlowInteractionMPI(ImmersedBodyFlowInteractionMPI):
             assume_data_locality=assume_data_locality,
             auto_ghosting=auto_ghosting,
         )
+
+    def is_empty(self) -> bool:
+        return isinstance(self.forcing_grid, EmptyForcingGrid)
