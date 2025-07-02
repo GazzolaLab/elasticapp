@@ -2,8 +2,9 @@ from warnings import warn
 
 import numpy as np
 import h5py
-
 from mpi4py.MPI import Intracomm
+
+from elasticapp.Systems.FishModel._PyFishModel import Fish
 
 
 class MPIImageDataWriter:
@@ -105,33 +106,64 @@ class MPIImageDataWriter:
                     ).copy()
 
 
-if __name__ == "__main__":
-    # Example usage of VTKHDFImageDataWriter
-    # mpiexec -np 4 python vtkhdf_imagedata_writer.py
-    grid_size = (32, 64, 128)  # z-y-x
-    from sopht_mpi.simulator import UnboundedFlowSimulator3D
+class MPIFishWriter:
+    def __init__(
+        self,
+        mpi_comm: Intracomm,
+        fish_list: list[Fish],
+        index_list: list[int],
+        num_fish_element: int,
+        global_num_fish: int,
+    ) -> None:
+        self.local_num_fish = len(fish_list)
+        if self.local_num_fish != len(index_list):
+            msg = "index_list must have the same length as fish_list."
+            raise ValueError(msg)
 
-    sim = UnboundedFlowSimulator3D(
-        grid_size=grid_size,
-        x_range=1.0,
-        kinematic_viscosity=0.1,
-        flow_type="navier_stokes_with_forcing",
-        real_t=np.float64,
-        rank_distribution=(1, 2, 2),
-        filter_vorticity=False,
-        ghost_size=2,
-    )
-    sim.velocity_field[0, :, :, :] = (
-        np.sin(np.pi * sim.position_field[0, :, :, :])
-        * np.sin(2 * np.pi * sim.position_field[1, :, :, :])
-        * np.sin(3 * np.pi * sim.position_field[2, :, :, :])
-    )
+        self.mpi_comm = mpi_comm
+        self.local_num_fish_element = num_fish_element
+        self.global_num_fish = global_num_fish
 
-    writer = MPIImageDataWriter(
-        mpi_comm=sim.mpi_construct.grid,
-        dx=sim.dx,
-        global_grid_size=sim.grid_size,
-        local_grid_size=sim.mpi_construct.local_grid_size,
-        ghost_size=sim.ghost_size,
-    )
-    writer.write_to_file("test_flow_io.vtkhdf", velocity=sim.velocity_field)
+        self.fish_dicts = []
+        for fish, idx in zip(fish_list, index_list):
+            self.fish_dicts.append(
+                {
+                    "name": f"fish_{idx}",
+                    "position": np.asarray(fish.position_collection),
+                    "director": np.asarray(fish.director_collection),
+                    "velocity": np.asarray(fish.velocity_collection),
+                    "angular_velocity": np.asarray(fish.omega_collection),
+                }
+            )
+
+    def write_to_file(self, filename: str) -> None:
+        with h5py.File(filename, "w", driver="mpio", comm=self.mpi_comm) as f:
+            root = f.create_group("root")
+            for i in range(self.global_num_fish):
+                group = root.create_group(f"fish_{i}")
+                group.create_dataset(
+                    name="position",
+                    shape=(3, self.local_num_fish_element + 1),
+                    dtype=np.float64,
+                )
+                group.create_dataset(
+                    name="director",
+                    shape=(3, 3, self.local_num_fish_element),
+                    dtype=np.float64,
+                )
+                group.create_dataset(
+                    name="velocity",
+                    shape=(3, self.local_num_fish_element + 1),
+                    dtype=np.float64,
+                )
+                group.create_dataset(
+                    name="angular_velocity",
+                    shape=(3, self.local_num_fish_element),
+                    dtype=np.float64,
+                )
+
+            for fish_dict in self.fish_dicts:
+                for key, value in fish_dict.items():
+                    if key != "name":
+                        path = "/root/" + fish_dict["name"] + "/" + key
+                        root[path][...] = value
