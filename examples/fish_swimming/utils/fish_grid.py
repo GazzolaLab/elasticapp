@@ -4,7 +4,7 @@ from elastica._linalg import _batch_cross, _batch_matvec, _batch_matrix_transpos
 from sopht.simulator.immersed_body import ImmersedBodyForcingGrid
 from elasticapp.Systems.FishModel._PyFishModel import Fish
 
-from fish_utils import FishGridHelper
+from ._fish_grid_helper import FishGridHelper
 
 
 class FishSurfaceForcingGrid(ImmersedBodyForcingGrid):
@@ -333,8 +333,10 @@ class MultiFishForcingGrid(ImmersedBodyForcingGrid):
 
         super().__init__(
             grid_dim=grid_dim,
-            num_lag_nodes=self.helper.get_num_lag_nodes(),
+            num_lag_nodes=int(self.helper.get_num_lag_nodes()),
         )
+        self.compute_lag_grid_position_field()
+        self.compute_lag_grid_velocity_field()
 
     def compute_lag_grid_position_field(self) -> None:
         self.helper.compute_lag_grid_position_field(self.position_field)

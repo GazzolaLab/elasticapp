@@ -96,7 +96,7 @@ struct FishGridHelper {
     }
   }
 
-  py::size_t get_num_lag_nodes() const { return num_lag_nodes_; }
+  py::size_t get_num_lag_nodes() const { return num_fish_ * num_lag_nodes_; }
 
   void set_element_length(double length) {
     max_grid_size_ = std::max(max_grid_size_, length);
