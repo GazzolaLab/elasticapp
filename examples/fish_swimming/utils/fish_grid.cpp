@@ -98,6 +98,10 @@ struct FishGridHelper {
 
   py::size_t get_num_lag_nodes() const { return num_lag_nodes_; }
 
+  void set_element_length(double length) {
+    max_grid_size_ = std::max(max_grid_size_, length);
+  }
+
   void compute_lag_grid_position_field(py::array_t<double> lag_positions) {
     auto lag_pos = lag_positions.mutable_unchecked<2>();
     compute_moment_arms_();
@@ -201,14 +205,14 @@ struct FishGridHelper {
     }  // fi
   }
 
-  double get_maximum_lagrangian_grid_spacing(py::list lengths) {
-    for (unsigned fi = 0; fi < num_fish_; ++fi) {
-      auto lengths_unchecked =
-          lengths[fi].cast<py::array_t<double>>().unchecked<1>();
-      for (unsigned i = 0; i < num_elements_; ++i) {
-        max_grid_size_ = std::max(max_grid_size_, lengths_unchecked[i]);
-      }
-    }
+  double get_maximum_lagrangian_grid_spacing() {
+    // for (unsigned fi = 0; fi < num_fish_; ++fi) {
+    //   auto lengths_unchecked =
+    //       lengths[fi].cast<py::array_t<double>>().unchecked<1>();
+    //   for (unsigned i = 0; i < num_elements_; ++i) {
+    //     max_grid_size_ = std::max(max_grid_size_, lengths_unchecked[i]);
+    //   }
+    // }
     return max_grid_size_;
   }
 
@@ -244,6 +248,7 @@ PYBIND11_MODULE(_fish_grid_helper, m) {
       .def(py::init<py::list, py::list, py::list, py::list, py::size_t,
                     py::array_t<double>, py::array_t<double>>())
       .def("get_num_lag_nodes", &FishGridHelper::get_num_lag_nodes)
+      .def("set_element_length", &FishGridHelper::set_element_length)
       .def("compute_lag_grid_position_field",
            &FishGridHelper::compute_lag_grid_position_field)
       .def("compute_lag_grid_velocity_field",

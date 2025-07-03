@@ -1,8 +1,10 @@
+import numpy as np
+
 from elastica._linalg import _batch_cross, _batch_matvec, _batch_matrix_transpose
 from sopht.simulator.immersed_body import ImmersedBodyForcingGrid
 from elasticapp.Systems.FishModel._PyFishModel import Fish
 
-import numpy as np
+from fish_utils import FishGridHelper
 
 
 class FishSurfaceForcingGrid(ImmersedBodyForcingGrid):
@@ -139,12 +141,12 @@ class FishSurfaceForcingGrid(ImmersedBodyForcingGrid):
             self.grid_point_director_transpose[
                 :, :, self.start_idx[i] : self.end_idx[i]
             ] = self.rod_director_collection_transpose[:, :, i : i + 1]
-            self.grid_point_dilatation[
-                self.start_idx[i] : self.end_idx[i]
-            ] = self.dilatation[i]
-            self.position_field[
-                :, self.start_idx[i] : self.end_idx[i]
-            ] = self.rod_element_position[:, i : i + 1]
+            self.grid_point_dilatation[self.start_idx[i] : self.end_idx[i]] = (
+                self.dilatation[i]
+            )
+            self.position_field[:, self.start_idx[i] : self.end_idx[i]] = (
+                self.rod_element_position[:, i : i + 1]
+            )
 
         # Compute the moment arm or distance from the element center
         # for each grid point.
@@ -170,12 +172,12 @@ class FishSurfaceForcingGrid(ImmersedBodyForcingGrid):
 
         # Broadcast rod properties to the grid points.
         for i in range(self.n_elements):
-            self.grid_point_omega[
-                :, self.start_idx[i] : self.end_idx[i]
-            ] = self.rod_element_global_frame_omega[:, i : i + 1]
-            self.velocity_field[
-                :, self.start_idx[i] : self.end_idx[i]
-            ] = self.rod_element_velocity[:, i : i + 1]
+            self.grid_point_omega[:, self.start_idx[i] : self.end_idx[i]] = (
+                self.rod_element_global_frame_omega[:, i : i + 1]
+            )
+            self.velocity_field[:, self.start_idx[i] : self.end_idx[i]] = (
+                self.rod_element_velocity[:, i : i + 1]
+            )
 
         # v_elem + omega X moment_arm
         self.velocity_field += _batch_cross(self.grid_point_omega, self.moment_arm)
@@ -302,3 +304,53 @@ class MultiFishSurfaceForcingGrid(ImmersedBodyForcingGrid):
             )
 
         return max_spacing
+
+
+class MultiFishForcingGrid(ImmersedBodyForcingGrid):
+    def __init__(
+        self,
+        grid_dim: int,
+        fish_list: list[Fish],
+        surface_grid_density_for_largest_element: int,
+    ) -> None:
+        position_list = [np.asarray(fish.position_collection) for fish in fish_list]
+        velocity_list = [np.asarray(fish.velocity_collection) for fish in fish_list]
+        director_list = [np.asarray(fish.director_collection) for fish in fish_list]
+        omega_list = [np.asarray(fish.omega_collection) for fish in fish_list]
+        widths = np.asarray(fish_list[0].semi_minor_axis)
+        heights = np.asarray(fish_list[0].semi_major_axis)
+
+        self.helper = FishGridHelper(
+            position_list,
+            velocity_list,
+            director_list,
+            omega_list,
+            surface_grid_density_for_largest_element,
+            widths,
+            heights,
+        )
+        self.helper.set_element_length(np.asarray(fish_list[0].lengths)[0])
+
+        super().__init__(
+            grid_dim=grid_dim,
+            num_lag_nodes=self.helper.get_num_lag_nodes(),
+        )
+
+    def compute_lag_grid_position_field(self) -> None:
+        self.helper.compute_lag_grid_position_field(self.position_field)
+
+    def compute_lag_grid_velocity_field(self) -> None:
+        self.helper.compute_lag_grid_velocity_field(self.velocity_field)
+
+    def transfer_forcing_from_grid_to_body(
+        self, body_flow_forces, body_flow_torques, lag_grid_forcing_field
+    ):
+        body_flow_forces[...] = 0.0
+        body_flow_torques[...] = 0.0
+
+        self.helper.transfer_forcing_from_grid_to_body(
+            body_flow_forces, body_flow_torques, lag_grid_forcing_field
+        )
+
+    def get_maximum_lagrangian_grid_spacing(self) -> float:
+        return self.helper.get_maximum_lagrangian_grid_spacing()
