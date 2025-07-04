@@ -165,28 +165,57 @@ class MPIFishIO:
         fish_list: list[Fish],
         index_list: list[int],
         num_fish_element: int,
+        num_lag_nodes: int,
         global_num_fish: int,
+        **lag_fields: dict[str, np.ndarray],
     ) -> None:
         self.local_num_fish = len(fish_list)
         if self.local_num_fish != len(index_list):
             msg = "index_list must have the same length as fish_list."
             raise ValueError(msg)
 
+        for _, lag_field in lag_fields.items():
+            if lag_field.shape != (3, self.local_num_fish * num_lag_nodes):
+                msg = (
+                    f"Incompatible lag field shape: {lag_field.shape}. "
+                    f"Expected shape: (3, {self.local_num_fish * num_lag_nodes})."
+                )
+                raise ValueError(msg)
+
         self.mpi_comm = mpi_comm
         self.local_num_fish_element = num_fish_element
         self.global_num_fish = global_num_fish
+        self.num_lag_nodes = num_lag_nodes
 
         self.fish_dicts = []
-        for fish, idx in zip(fish_list, index_list):
+        for i in range(self.local_num_fish):
             self.fish_dicts.append(
                 {
-                    "name": f"fish_{idx}",
-                    "position": np.asarray(fish.position_collection),
-                    "director": np.asarray(fish.director_collection),
-                    "velocity": np.asarray(fish.velocity_collection),
-                    "angular_velocity": np.asarray(fish.omega_collection),
+                    "name": f"fish_{index_list[i]}",
+                    "position": np.asarray(fish_list[i].position_collection),
+                    "director": np.asarray(fish_list[i].director_collection),
+                    "velocity": np.asarray(fish_list[i].velocity_collection),
+                    "angular_velocity": np.asarray(fish_list[i].omega_collection),
                 }
             )
+            for key, value in lag_fields.items():
+                if key in [
+                    "name",
+                    "position",
+                    "director",
+                    "velocity",
+                    "angular_velocity",
+                ]:
+                    warn(
+                        f"Lagrangian field '{key}' is already used in fish_dict. Skipped."
+                    )
+
+                else:
+                    self.fish_dicts[-1][key] = value[
+                        :, i * num_lag_nodes : (i + 1) * num_lag_nodes
+                    ].view()
+
+        self.lag_field_names = list(lag_fields.keys())
 
     def write_to_file(self, filename: str, time: float | np.float64) -> None:
         with h5py.File(filename, "w", driver="mpio", comm=self.mpi_comm) as f:
@@ -221,10 +250,15 @@ class MPIFishIO:
                     shape=(3, self.local_num_fish_element),
                     dtype=np.float64,
                 )
+                for lag_field_name in self.lag_field_names:
+                    group.create_dataset(
+                        name=lag_field_name,
+                        shape=(3, self.num_lag_nodes),
+                    )
 
             for fish_dict in self.fish_dicts:
                 for key, value in fish_dict.items():
-                    if key != "name" and key != "global_index":
+                    if key != "name":
                         path = "/root/" + fish_dict["name"] + "/" + key
                         root[path][...] = value
 
