@@ -130,8 +130,7 @@ namespace py_bindings {
              py::arg("updated_dt"),
              "Step forward the simulation one iteration with a custom dt "
              "value. The stability of the simulation is not guaranteed when "
-             "using this method.");
-             "Resets the current case study")
+             "using this method.")
         .def("set_current_time", &CaseStudy::set_current_time,
              "Sets the case-study simulation time to a given value");
   }
