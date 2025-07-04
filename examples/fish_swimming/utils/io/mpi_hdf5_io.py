@@ -163,6 +163,7 @@ class MPIFishIO:
         self,
         mpi_comm: Intracomm,
         fish_list: list[Fish],
+        virtual_fish_list: list[Fish],
         index_list: list[int],
         num_fish_element: int,
         num_lag_nodes: int,
@@ -172,6 +173,9 @@ class MPIFishIO:
         self.local_num_fish = len(fish_list)
         if self.local_num_fish != len(index_list):
             msg = "index_list must have the same length as fish_list."
+            raise ValueError(msg)
+        if self.local_num_fish != len(virtual_fish_list):
+            msg = "virtual_fish_list must have the same length as fish_list."
             raise ValueError(msg)
 
         for _, lag_field in lag_fields.items():
@@ -196,6 +200,10 @@ class MPIFishIO:
                     "director": np.asarray(fish_list[i].director_collection),
                     "velocity": np.asarray(fish_list[i].velocity_collection),
                     "angular_velocity": np.asarray(fish_list[i].omega_collection),
+                    "v_position": np.asarray(virtual_fish_list[i].position_collection),
+                    "v_director": np.asarray(virtual_fish_list[i].director_collection),
+                    "v_velocity": np.asarray(virtual_fish_list[i].velocity_collection),
+                    "v_angular_velocity": np.asarray(virtual_fish_list[i].omega_collection),
                 }
             )
             for key, value in lag_fields.items():
@@ -205,6 +213,10 @@ class MPIFishIO:
                     "director",
                     "velocity",
                     "angular_velocity",
+                    "v_position",
+                    "v_director",
+                    "v_velocity",
+                    "v_angular_velocity",
                 ]:
                     warn(
                         f"Lagrangian field '{key}' is already used in fish_dict. Skipped."
@@ -250,6 +262,27 @@ class MPIFishIO:
                     shape=(3, self.local_num_fish_element),
                     dtype=np.float64,
                 )
+                group.create_dataset(
+                    name="v_position",
+                    shape=(3, self.local_num_fish_element + 1),
+                    dtype=np.float64,
+                )
+                group.create_dataset(
+                    name="v_director",
+                    shape=(3, 3, self.local_num_fish_element),
+                    dtype=np.float64,
+                )
+                group.create_dataset(
+                    name="v_velocity",
+                    shape=(3, self.local_num_fish_element + 1),
+                    dtype=np.float64,
+                )
+                group.create_dataset(
+                    name="v_angular_velocity",
+                    shape=(3, self.local_num_fish_element),
+                    dtype=np.float64,
+                )
+                
                 for lag_field_name in self.lag_field_names:
                     group.create_dataset(
                         name=lag_field_name,
