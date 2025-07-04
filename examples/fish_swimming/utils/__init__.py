@@ -9,6 +9,7 @@ from .fish_flow_interaction_mpi import (
     MultiFishFlowInteractionMPI,
 )
 from ._fish_grid_helper import FishGridHelper
+from .path_utils import get_data_path, get_most_recent_data_file
 
 __all__ = [
     "FishSurfaceForcingGrid",
@@ -19,4 +20,6 @@ __all__ = [
     "FishFlowInteractionMPI",
     "MultiFishFlowInteractionMPI",
     "FishGridHelper",
+    "get_data_path",
+    "get_most_recent_data_file",
 ]
