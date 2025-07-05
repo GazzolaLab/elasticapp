@@ -287,6 +287,7 @@ class MPIFishIO:
                     group.create_dataset(
                         name=lag_field_name,
                         shape=(3, self.num_lag_nodes),
+                        dtype=np.float64,
                     )
 
             for fish_dict in self.fish_dicts:
