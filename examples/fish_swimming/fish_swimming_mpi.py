@@ -46,7 +46,7 @@ def distribute_fish(
     num_fish_total: int,
     mode: str = "kz",
 ) -> tuple[list, list]:
-    if mode == "even":
+    if mode.lower() == "even":
         num_fish_per_rank = np.ones((mpi_size,), np.int32) * (
             num_fish_total // mpi_size
         )
@@ -54,7 +54,7 @@ def distribute_fish(
         num_fish_per_rank[:rem] += 1
         indices = np.insert(np.cumsum(num_fish_per_rank), 0, 0)
         return num_fish_per_rank, list(range(indices[mpi_rank], indices[mpi_rank + 1]))
-    elif mode == "kz":
+    elif mode.lower() == "kz":
         num_fish_per_rank = [0] * mpi_size
         num_fish_per_rank[0] = num_fish_total
         index = list(range(num_fish_total)) if mpi_rank == 0 else []
