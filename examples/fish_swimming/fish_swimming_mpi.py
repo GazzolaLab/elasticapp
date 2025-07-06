@@ -1,56 +1,147 @@
 import os
+import click
+from time import time
 from typing import Optional
 
 import numpy as np
-import sopht.utils as spu
+from mpi4py import MPI
+from sopht.utils import get_real_t
 from sopht_mpi.simulator import UnboundedFlowSimulator3D
+from sopht_mpi.simulator.immersed_body import ImmersedBodyFlowInteractionMPI
 
-import vtkh5py as vh5
-from utils import (
-    FishSurfaceForcingGrid,
-    FishFlowInteractionMPI,
-    VTKHDFImageDataWriter,
-    FishDataLogger,
-)
+import fish_utils as fu
+import fish_utils.io as fuio
 
-from elasticapp.Systems import FishModel
+from elasticapp.Systems import FishModel  # noqa: F401
 from elasticapp.CaseStudies.PyFishCaseStudy import FishCaseStudy
 from elasticapp.Arrays._PyArrays import Matrix
 
 
-def get_data_path(path: str | None) -> str:
-    script_path = os.path.abspath(__file__)
-    parent_path = os.path.dirname(script_path)
-    default_path = parent_path + "/data_mpi"
-
-    def create_path(path: str) -> str:
-        if not os.path.exists(path):
-            from warnings import warn
-
-            warn(f"Path {path} does not exist. Trying to create it.")
-            try:
-                os.makedirs(path)
-                return path
-            except OSError as e:
-                warn(f"Failed to create directory {path}: {e}")
-                os.makedirs(default_path)
-                return default_path
-
-        return path
-
-    if path is None:  # default path
-        return create_path(default_path)
-
-    while path[-1] == "/":  # strip trailing slashes
-        path = path[:-1]
-
-    if path[0] == "/":  # absolute path
-        return create_path(path)
-
-    return create_path(os.path.join(parent_path, path))
+def reload_flow_interaction(
+    flow_interaction: ImmersedBodyFlowInteractionMPI, time: float
+) -> None:
+    flow_interaction.time = time
+    flow_interaction.forcing_grid.compute_lag_grid_position_field()
+    flow_interaction.forcing_grid.compute_lag_grid_velocity_field()
+    flow_interaction.mpi_lagrangian_field_communicator.map_lagrangian_nodes_based_on_position(
+        flow_interaction.forcing_grid.position_field
+    )
+    flow_interaction.local_num_lag_nodes = (
+        flow_interaction.mpi_lagrangian_field_communicator.local_num_lag_nodes
+    )
+    flow_interaction._init_local_buffers(flow_interaction.local_num_lag_nodes)
+    flow_interaction.mpi_lagrangian_field_communicator.scatter_global_field(
+        local_lag_field=flow_interaction.local_lag_grid_position_mismatch_field,
+        global_lag_field=flow_interaction.global_lag_grid_position_mismatch_field,
+    )
+    flow_interaction.mpi_lagrangian_field_communicator.scatter_global_field(
+        local_lag_field=flow_interaction.local_lag_grid_velocity_mismatch_field,
+        global_lag_field=flow_interaction.global_lag_grid_velocity_mismatch_field,
+    )
 
 
-def run_fish_swimming(
+@click.command()
+@click.option(
+    "--non-dim-final-time",
+    "-t",
+    type=float,
+    default=1.0,
+    help="Non-dimensional final time of the simulation. Scaled by the period.",
+)
+@click.option(
+    "--n-elem", "-n", type=int, default=16, help="Number of elements per fish."
+)
+@click.option(
+    "--grid-size-x",
+    "-g",
+    type=int,
+    default=192,
+    help="Number of flow grid points in the x-direction.",
+)
+@click.option(
+    "--surface-grid-density-for-largest-element",
+    "-s",
+    type=int,
+    default=4,
+    help="Surface grid density for the largest element.",
+)
+@click.option(
+    "--slenderness-ratio",
+    "-r",
+    type=float,
+    default=12.5,
+    help="Slenderness ratio of the fish.",
+)
+@click.option(
+    "--mass_ratio",
+    "-m",
+    type=float,
+    default=1.0,
+    help="Mass ratio of the fish to the fluid.",
+)
+@click.option(
+    "--non-dim-bending-stiffness",
+    "-b",
+    type=float,
+    default=0.565414058870102,
+    help="Non-dimensional bending stiffness of the fish.",
+)
+@click.option(
+    "--actuation-reynolds-number",
+    "-a",
+    type=float,
+    default=7142.857142857143,
+    help="Actuation Reynolds number for the fish.",
+)
+@click.option(
+    "--coupling-stiffness",
+    "-k",
+    type=float,
+    default=-32000.0,
+    help="Coupling stiffness for the immersed boundary method.",
+)
+@click.option(
+    "--coupling-damping",
+    "-d",
+    type=float,
+    default=-32.0,
+    help="Coupling damping for the immersed boundary method.",
+)
+@click.option(
+    "--precision",
+    "-p",
+    type=str,
+    default="double",
+    help="Precision of the simulation (single or double).",
+)
+@click.option(
+    "--rank-distribution",
+    "-R",
+    nargs=3,
+    type=(int, int, int),
+    default=None,
+    help="Rank distribution for MPI.",
+)
+@click.option(
+    "--restart/--no-restart",
+    default=False,
+    help="Flag to restart the simulation from the last saved data in data_dir.",
+)
+@click.option(
+    "--data-dir",
+    "-d",
+    type=str,
+    default=None,
+    help="Directory to save (and load) the simulation data.",
+)
+@click.option(
+    "--fish-head-positions-file",
+    "-h",
+    type=str,
+    default="assets/fish_head_positions.txt",
+    help="File containing the fish head positions.",
+)
+def run_fish_swimming_mpi(
     non_dim_final_time: float,
     n_elem: int,
     grid_size_x: int,
@@ -63,14 +154,15 @@ def run_fish_swimming(
     coupling_damping: float = -32.0,
     precision: str = "double",
     rank_distribution: Optional[tuple[int, int, int]] = None,
+    restart: bool = False,
     data_dir: str | None = None,
+    fish_head_positions_file: str = "assets/fish_head_positions.txt",
 ) -> None:
     # ================ Global parameters ================
     grid_dim = 3
-    real_t = spu.get_real_t(precision)
+    real_t = get_real_t(precision)
     rho_f = 1.0
     base_length = 1.0
-    n_node = n_elem + 1
     x_range, y_range, z_range = (12.0, 8.0, 8.0)
     dx = x_range / grid_size_x
     grid_size_y = int(np.ceil(y_range / dx))
@@ -91,11 +183,7 @@ def run_fish_swimming(
         * base_diameter
         / moment_of_inertia
     )
-    # origins = np.array(
-    #     [0.65 * x_range - 0.5 * base_length, 0.5 * y_range, 0.5 * z_range]
-    # ).reshape(3, -1)
-    # origins = np.tile(origins, (1, 6))
-    origins = np.loadtxt("fish_head_positions.txt", delimiter=",")
+    origins = np.loadtxt(fish_head_positions_file, delimiter=",")
 
     # ================ Flow simulator ================
     kinematic_viscosity = base_length * vel_scale / actuation_reynolds_number
@@ -114,7 +202,7 @@ def run_fish_swimming(
 
     # Get the data directory and broadcast
     if mpi_rank == 0:
-        data_dir = get_data_path(data_dir)
+        data_dir = fu.get_data_path(data_dir)
     else:
         data_dir = None
 
@@ -134,6 +222,7 @@ def run_fish_swimming(
         origin = Matrix(tmp)
 
     has_fish = num_fish_per_rank[mpi_rank] > 0
+    num_proc_with_fish = np.count_nonzero(num_fish_per_rank)
 
     # Initialize the case study only if there are fishes on this rank
     if has_fish:
@@ -148,11 +237,14 @@ def run_fish_swimming(
             dt_scale=5e-4,
             period=period,
         )
-        elastic_fish_list, _, flow_forces, flow_torques = cs.communicate()
+        elastic_fish_list, virtual_fish_list, flow_forces, flow_torques = (
+            cs.communicate()
+        )
         flow_forces = np.asarray(flow_forces)
         flow_torques = np.asarray(flow_torques)
     else:
         elastic_fish_list = []
+        virtual_fish_list = []
         flow_forces = None
         flow_torques = None
 
@@ -163,52 +255,71 @@ def run_fish_swimming(
     # But the only functional ones are those that corresponds to the fish
     # on this rank.
     auto_ghosting = True
-    for rank_idx in range(mpi_size):
-        for fish_idx in range(num_fish_per_rank[rank_idx]):
-            rod = elastic_fish_list[fish_idx] if mpi_rank == rank_idx else n_elem
-            flow_interactions.append(
-                FishFlowInteractionMPI(
-                    mpi_construct=flow_sim.mpi_construct,
-                    mpi_ghost_exchange_communicator=flow_sim.mpi_ghost_exchange_communicator,
-                    cosserat_rod=rod,
-                    eul_grid_forcing_field=flow_sim.eul_grid_forcing_field,
-                    eul_grid_velocity_field=flow_sim.velocity_field,
-                    virtual_boundary_stiffness_coeff=coupling_stiffness,
-                    virtual_boundary_damping_coeff=coupling_damping,
-                    dx=flow_sim.dx,
-                    grid_dim=grid_dim,
-                    forcing_grid_cls=FishSurfaceForcingGrid,
-                    surface_grid_density_for_largest_element=surface_grid_density_for_largest_element,
-                    master_rank=rank_idx,
-                    auto_ghosting=auto_ghosting,
-                )
+    for rank_idx in range(num_proc_with_fish):
+        flow_interactions.append(
+            fu.MultiFishFlowInteractionMPI(
+                mpi_construct=flow_sim.mpi_construct,
+                mpi_ghost_exchange_communicator=flow_sim.mpi_ghost_exchange_communicator,
+                fish_list=elastic_fish_list,
+                num_fish=num_fish_per_rank[rank_idx],
+                n_elem_per_fish=n_elem,
+                eul_grid_forcing_field=flow_sim.eul_grid_forcing_field,
+                eul_grid_velocity_field=flow_sim.velocity_field,
+                virtual_boundary_stiffness_coeff=coupling_stiffness,
+                virtual_boundary_damping_coeff=coupling_damping,
+                dx=flow_sim.dx,
+                grid_dim=grid_dim,
+                forcing_grid_cls=fu.MultiFishForcingGrid,
+                surface_grid_density_for_largest_element=surface_grid_density_for_largest_element,
+                master_rank=rank_idx,
+                auto_ghosting=auto_ghosting,
             )
-            auto_ghosting = False  # Velocity communication needs to be done only once
+        )
+        auto_ghosting = False
+    for idx, flow_interaction in enumerate(flow_interactions):
+        if idx == mpi_rank:
+            assert not flow_interaction.is_empty()
+        else:
+            assert flow_interaction.is_empty()
 
     print(f"Rank: {mpi_rank}, Number of fish: {num_fish_per_rank[mpi_rank]}")
 
     # ================ IO ================
     if has_fish:
-        fish_writers = []
-        for i in np.arange(index[mpi_rank], index[mpi_rank + 1]):
-            forcing_grid = flow_interactions[i].forcing_grid
-            grid_position = forcing_grid.position_field.view()
-            grid_velocity = forcing_grid.velocity_field.view()
-
-            grid_data = vh5.VH5PolyDataRod(
-                number_of_points=grid_position.shape[1],
-            )
-            grid_data.set_points(grid_position.T)
-            grid_data.add_point_data(grid_velocity=grid_velocity.T)
-            fish_writers.append(vh5.VH5BlockWriter(grid_data))
-
-        fish_logger = FishDataLogger(
-            rods=elastic_fish_list,
-            n_elem=n_elem,
-            flow_forces=flow_forces,
+        num_lag_node_per_fish = (
+            flow_interactions[mpi_rank].forcing_grid.num_lag_nodes
+            // num_fish_per_rank[mpi_rank]
         )
+        lag_fields = {
+            "position_mismatch": flow_interactions[
+                mpi_rank
+            ].global_lag_grid_position_mismatch_field,
+            "velocity_mismatch": flow_interactions[
+                mpi_rank
+            ].global_lag_grid_velocity_mismatch_field,
+        }
+    else:
+        num_lag_node_per_fish = 0
+        lag_fields = {
+            "position_mismatch": None,
+            "velocity_mismatch": None,
+        }
 
-    flow_writer = VTKHDFImageDataWriter(
+    num_lag_node_per_fish = flow_sim.mpi_construct.grid.bcast(
+        num_lag_node_per_fish, root=0
+    )
+    fish_writer = fuio.MPIFishIO(
+        mpi_comm=flow_sim.mpi_construct.grid,
+        fish_list=elastic_fish_list,
+        virtual_fish_list=virtual_fish_list,
+        index_list=list(range(index[mpi_rank], index[mpi_rank + 1])),
+        num_fish_element=n_elem,
+        num_lag_nodes=num_lag_node_per_fish,
+        global_num_fish=num_fish_total,
+        **lag_fields,
+    )
+
+    flow_writer = fuio.MPIImageDataIO(
         mpi_comm=flow_sim.mpi_construct.grid,
         dx=flow_sim.dx,
         global_grid_size=flow_sim.grid_size,
@@ -216,6 +327,24 @@ def run_fish_swimming(
         ghost_size=flow_sim.ghost_size,
     )
 
+    if restart:
+        fish_file = fu.get_most_recent_data_file(data_dir, "fish_*.h5")
+        flow_file = fu.get_most_recent_data_file(data_dir, "flow_*.vtkhdf")
+        fish_time = fish_writer.read_from_file(fish_file)
+        flow_sim.time = flow_writer.read_from_file(
+            flow_file,
+            velocity=flow_sim.velocity_field,
+            vorticity=flow_sim.vorticity_field,
+        )
+        if has_fish:
+            cs.set_current_time(fish_time)
+        if mpi_rank == 0:
+            print("Loaded fish data from ", fish_file)
+            print("Loaded flow data from ", flow_file)
+        
+        for flow_interaction in flow_interactions:
+            reload_flow_interaction(flow_interaction, fish_time)
+            
     # ================ Simulation ================
     final_time = non_dim_final_time * period
     data_timer_limit = period / 20.0
@@ -227,7 +356,10 @@ def run_fish_swimming(
 
     rod_dt = flow_sim.mpi_construct.grid.bcast(rod_dt, root=0)
 
-    from time import time
+    flow_time = 0.0
+    rod_time = 0.0
+    fsi_time = 0.0
+    io_time = 0.0
 
     start_time = time()
     while flow_sim.time < final_time:
@@ -236,27 +368,31 @@ def run_fish_swimming(
 
             # Print progress only on rank 0
             if mpi_rank == 0:
-                print(f"{flow_sim.time / final_time * 100:.2f}%", flush=True)
+                # print(f"{flow_sim.time / final_time * 100:.2f}%", flush=True)
+                print(flow_sim.time, io_time, flow_time, rod_time, fsi_time, flush=True)
 
-            # Log fish data only for ranks with fish
-            if has_fish:
-                for i, fish_writer in enumerate(fish_writers):
-                    fish_writer.write_to_file(
-                        os.path.join(
-                            data_dir,
-                            f"grid{i + index[mpi_rank]}_{int(cs.current_time() * 1000):04d}.vtkhdf",
-                        )
-                    )
-                fish_logger.log_data(flow_sim.time)
+            a = time()
+
+            # Log fish data (Not VTKHDF. Post-processing required)
+            fish_time = cs.current_time() if has_fish else 0.0
+            fish_time = flow_sim.mpi_construct.grid.bcast(fish_time, root=0)
+            fish_writer.write_to_file(
+                filename=os.path.join(
+                    data_dir, f"fish_{int(flow_sim.time * 1000):04d}.h5"
+                ),
+                time=fish_time,
+            )
 
             # Log flow data for all ranks (HDF5-MPI)
             flow_writer.write_to_file(
                 filename=os.path.join(
                     data_dir, f"flow_{int(flow_sim.time * 1000):04d}.vtkhdf"
                 ),
+                time=flow_sim.time,
                 velocity=flow_sim.velocity_field,
                 vorticity=flow_sim.vorticity_field,
             )
+            io_time += time() - a
 
         # Compute time steps
         flow_dt = min(
@@ -267,59 +403,53 @@ def run_fish_swimming(
         local_rod_dt = flow_dt / rod_time_steps
 
         # Rod + IBM steps
-        for i in range(rod_time_steps):
-            for j, flow_interaction in enumerate(flow_interactions):
+        for _ in range(rod_time_steps):
+            a = time()
+            for flow_interaction in flow_interactions:
                 flow_interaction.compute_flow_forces_and_torques()
-                if has_fish and j >= index[mpi_rank] and j < index[mpi_rank + 1]:
-                    k = j - index[mpi_rank]
-                    flow_forces[:, k * n_node : (k + 1) * n_node] = (
-                        flow_interaction.body_flow_forces
-                    )
-                    flow_torques[:, k * n_elem : (k + 1) * n_elem] = (
-                        flow_interaction.body_flow_torques
-                    )
-
-                flow_interaction.time_step(dt=local_rod_dt)
+            # if has_fish:
+            #     flow_forces[...] = flow_interactions[mpi_rank].body_flow_forces
+            #     flow_torques[...] = flow_interactions[mpi_rank].body_flow_torques
+            flow_interaction.time_step(dt=local_rod_dt)
+            fsi_time += time() - a
 
             if has_fish:
+                a = time()
                 cs.step_with(updated_dt=local_rod_dt)
+                rod_time += time() - a
 
         # Update IBM grid
+        a = time()
         for flow_interaction in flow_interactions:
             flow_interaction()
+            flow_interaction.update_buffers(
+                flow_interaction.forcing_grid.position_field
+            )
+        fsi_time += time() - a
 
         # Flow step
-        flow_sim.time_step(dt=flow_dt, free_stream_velocity=None)
+        a = time()
+        # flow_sim.time_step(dt=flow_dt, free_stream_velocity=None)
+        flow_sim.time += flow_dt
+        flow_time += time() - a
 
         # Update data timer
         data_timer += flow_dt
 
+        flow_time = flow_sim.mpi_construct.grid.allreduce(flow_time, op=MPI.MAX)
+        rod_time = flow_sim.mpi_construct.grid.allreduce(rod_time, op=MPI.MAX)
+        fsi_time = flow_sim.mpi_construct.grid.allreduce(fsi_time, op=MPI.MAX)
+        io_time = flow_sim.mpi_construct.grid.allreduce(io_time, op=MPI.MAX)
+
     # Finalize the simulation
     sim_time = time() - start_time
-    from mpi4py import MPI
 
-    sim_time = flow_sim.mpi_construct.grid.reduce(sim_time, op=MPI.MIN, root=0)
+    sim_time = flow_sim.mpi_construct.grid.reduce(sim_time, op=MPI.MAX, root=0)
     if mpi_rank == 0:
         print(f"Simulation completed in {sim_time:.2f} seconds.")
 
-    if has_fish:
-        fish_logger.write_to_file(
-            os.path.join(data_dir, "fish_data.npz"),
-        )
     MPI.Finalize()
 
 
 if __name__ == "__main__":
-    nx = 432
-    n_elements = nx // 12
-    n_max = n_elements // 4
-    run_fish_swimming(
-        non_dim_final_time=1.0,
-        n_elem=n_elements,
-        grid_size_x=nx,
-        surface_grid_density_for_largest_element=n_max,
-        slenderness_ratio=12.500535121608523,
-        mass_ratio=1.0,
-        non_dim_bending_stiffness=0.565414058870102,
-        actuation_reynolds_number=7142.857142857143,
-    )
+    run_fish_swimming_mpi()
