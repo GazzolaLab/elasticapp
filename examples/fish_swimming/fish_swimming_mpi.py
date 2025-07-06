@@ -1,3 +1,4 @@
+from ast import mod
 import os
 import click
 from time import time
@@ -38,6 +39,29 @@ def reload_flow_interaction(
         local_lag_field=flow_interaction.local_lag_grid_velocity_mismatch_field,
         global_lag_field=flow_interaction.global_lag_grid_velocity_mismatch_field,
     )
+
+
+def distribute_fish(
+    mpi_size: int,
+    mpi_rank: int,
+    num_fish_total: int,
+    mode: str = "kz",
+) -> tuple[list, list]:
+    if mode == "even":
+        num_fish_per_rank = np.ones((mpi_size,), np.int32) * (
+            num_fish_total // mpi_size
+        )
+        rem = num_fish_total % mpi_size
+        num_fish_per_rank[:rem] += 1
+        indices = np.insert(np.cumsum(num_fish_per_rank), 0, 0)
+        return num_fish_per_rank, list(range(indices[mpi_rank], indices[mpi_rank + 1]))
+    elif mode == "kz":
+        num_fish_per_rank = [0] * mpi_size
+        num_fish_per_rank[0] = num_fish_total
+        index = list(range(num_fish_total)) if mpi_rank == 0 else []
+        return num_fish_per_rank, index
+    else:
+        raise ValueError("Invalid mode. Use 'even' or 'kz'.")
 
 
 @click.command()
@@ -123,6 +147,13 @@ def reload_flow_interaction(
     help="Rank distribution for MPI.",
 )
 @click.option(
+    "--distribution-mode",
+    "-D",
+    type=click.Choice(["even", "kz"], case_sensitive=False),
+    default="kz",
+    help="Distribution mode for the fish across MPI ranks.",
+)
+@click.option(
     "--restart/--no-restart",
     default=False,
     help="Flag to restart the simulation from the last saved data in data_dir.",
@@ -154,6 +185,7 @@ def run_fish_swimming_mpi(
     coupling_damping: float = -32.0,
     precision: str = "double",
     rank_distribution: Optional[tuple[int, int, int]] = None,
+    distribution_mode: str = "kz",
     restart: bool = False,
     data_dir: str | None = None,
     fish_head_positions_file: str = "assets/fish_head_positions.txt",
@@ -211,14 +243,16 @@ def run_fish_swimming_mpi(
     # ================ Fish simulator ================
     # Distribute fishes evenly across MPI ranks
     num_fish_total = origins.shape[1]
-    num_fish_per_rank = np.ones((mpi_size,), np.int32) * (num_fish_total // mpi_size)
-    rem = num_fish_total % mpi_size
-    num_fish_per_rank[:rem] += 1
-    index = np.insert(np.cumsum(num_fish_per_rank), 0, 0)
+    num_fish_per_rank, index = distribute_fish(
+        mpi_size=mpi_size,
+        mpi_rank=mpi_rank,
+        num_fish_total=num_fish_total,
+        mode=distribution_mode,
+    )
     if mpi_size == 1:
         origin = Matrix(origins)
     else:
-        tmp = origins[:, index[mpi_rank] : index[mpi_rank + 1]].copy()
+        tmp = origins[:, index].copy()
         origin = Matrix(tmp)
 
     has_fish = num_fish_per_rank[mpi_rank] > 0
@@ -312,7 +346,7 @@ def run_fish_swimming_mpi(
         mpi_comm=flow_sim.mpi_construct.grid,
         fish_list=elastic_fish_list,
         virtual_fish_list=virtual_fish_list,
-        index_list=list(range(index[mpi_rank], index[mpi_rank + 1])),
+        index_list=index,
         num_fish_element=n_elem,
         num_lag_nodes=num_lag_node_per_fish,
         global_num_fish=num_fish_total,
@@ -341,10 +375,10 @@ def run_fish_swimming_mpi(
         if mpi_rank == 0:
             print("Loaded fish data from ", fish_file)
             print("Loaded flow data from ", flow_file)
-        
+
         for flow_interaction in flow_interactions:
             reload_flow_interaction(flow_interaction, fish_time)
-            
+
     # ================ Simulation ================
     final_time = non_dim_final_time * period
     data_timer_limit = period / 20.0
@@ -429,8 +463,7 @@ def run_fish_swimming_mpi(
 
         # Flow step
         a = time()
-        # flow_sim.time_step(dt=flow_dt, free_stream_velocity=None)
-        flow_sim.time += flow_dt
+        flow_sim.time_step(dt=flow_dt, free_stream_velocity=None)
         flow_time += time() - a
 
         # Update data timer
