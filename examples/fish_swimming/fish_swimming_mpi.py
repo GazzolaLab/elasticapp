@@ -125,7 +125,7 @@ def distribute_fish(
 )
 @click.option(
     "--coupling-damping",
-    "-d",
+    "-c",
     type=float,
     default=-32.0,
     help="Coupling damping for the immersed boundary method.",
