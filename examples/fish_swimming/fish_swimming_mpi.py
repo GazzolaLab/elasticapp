@@ -407,9 +407,9 @@ def run_fish_swimming_mpi(
             a = time()
             for flow_interaction in flow_interactions:
                 flow_interaction.compute_flow_forces_and_torques()
-            # if has_fish:
-            #     flow_forces[...] = flow_interactions[mpi_rank].body_flow_forces
-            #     flow_torques[...] = flow_interactions[mpi_rank].body_flow_torques
+            if has_fish:
+                flow_forces[...] = flow_interactions[mpi_rank].body_flow_forces
+                flow_torques[...] = flow_interactions[mpi_rank].body_flow_torques
             flow_interaction.time_step(dt=local_rod_dt)
             fsi_time += time() - a
 
