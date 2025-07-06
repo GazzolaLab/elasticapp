@@ -179,7 +179,10 @@ class MPIFishIO:
             raise ValueError(msg)
 
         for _, lag_field in lag_fields.items():
-            if lag_field.shape != (3, self.local_num_fish * num_lag_nodes):
+            if self.local_num_fish > 0 and lag_field.shape != (
+                3,
+                self.local_num_fish * num_lag_nodes,
+            ):
                 msg = (
                     f"Incompatible lag field shape: {lag_field.shape}. "
                     f"Expected shape: (3, {self.local_num_fish * num_lag_nodes})."
@@ -203,7 +206,9 @@ class MPIFishIO:
                     "v_position": np.asarray(virtual_fish_list[i].position_collection),
                     "v_director": np.asarray(virtual_fish_list[i].director_collection),
                     "v_velocity": np.asarray(virtual_fish_list[i].velocity_collection),
-                    "v_angular_velocity": np.asarray(virtual_fish_list[i].omega_collection),
+                    "v_angular_velocity": np.asarray(
+                        virtual_fish_list[i].omega_collection
+                    ),
                 }
             )
             for key, value in lag_fields.items():
@@ -282,7 +287,7 @@ class MPIFishIO:
                     shape=(3, self.local_num_fish_element),
                     dtype=np.float64,
                 )
-                
+
                 for lag_field_name in self.lag_field_names:
                     group.create_dataset(
                         name=lag_field_name,
