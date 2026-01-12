@@ -181,7 +181,7 @@ namespace elastica {
     Singleton() {
       // Fill with instances
       // idiomatic but need to use shared_ptr
-      cpp17::apply(
+      std::apply(
           [](auto&... dependency) {
             auto assign = [](auto& dep) {
               // ref -> type
@@ -194,7 +194,7 @@ namespace elastica {
           dependencies_);
 
       static_assert(
-          cpp17::conjunction_v<tt::IsSingleton<T>, tt::IsSingleton<Deps>...>,
+          std::conjunction_v<tt::IsSingleton<T>, tt::IsSingleton<Deps>...>,
           "Type does not derive from Singleton");
       static_assert(!tt::has_cyclic_dependency<Deps...>,
                     "Cyclic dependency detected!");

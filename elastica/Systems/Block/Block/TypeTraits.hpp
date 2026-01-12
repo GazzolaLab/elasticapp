@@ -48,7 +48,7 @@ namespace blocks {
    * \endcode
    *
    * \metareturns
-   * cpp17::bool_constant
+   * std::bool_constant
    *
    * \semantics
    * If the type `B` is an instantiation of elastica::Block, then
@@ -108,7 +108,7 @@ namespace blocks {
    * \endcode
    *
    * \metareturns
-   * cpp17::bool_constant
+   * std::bool_constant
    *
    * \semantics
    * If the type `B` is an instantiation of elastica::BlockSlice, then
@@ -168,7 +168,7 @@ namespace blocks {
    * \endcode
    *
    * \metareturns
-   * cpp17::bool_constant
+   * std::bool_constant
    *
    * \semantics
    * If the type `B` is an instantiation of elastica::ConstBlockSlice, then
@@ -228,7 +228,7 @@ namespace blocks {
    * \endcode
    *
    * \metareturns
-   * cpp17::bool_constant
+   * std::bool_constant
    *
    * \semantics
    * If the type `B` is an instantiation of elastica::BlockView, then
@@ -288,7 +288,7 @@ namespace blocks {
    * \endcode
    *
    * \metareturns
-   * cpp17::bool_constant
+   * std::bool_constant
    *
    * \semantics
    * If the type `B` is an instantiation of elastica::ConstBlockView, then
@@ -348,7 +348,7 @@ namespace blocks {
    * \endcode
    *
    * \metareturns
-   * cpp17::bool_constant
+   * std::bool_constant
    *
    * \semantics
    * If the type `P` is marked as a Plugin by inheriting from
@@ -410,7 +410,7 @@ namespace blocks {
    * \endcode
    *
    * \metareturns
-   * cpp17::bool_constant
+   * std::bool_constant
    *
    * \semantics
    * If the type `B` is an instantiation of either a blocks::Block or a blocks
@@ -432,7 +432,7 @@ namespace blocks {
    */
   template <typename B>
   struct ModelsBlockConcept
-      : ::cpp17::disjunction<IsBlock<B>, IsBlockSlice<B>, IsConstBlockSlice<B>,
+      : ::std::disjunction<IsBlock<B>, IsBlockSlice<B>, IsConstBlockSlice<B>,
                              IsBlockView<B>, IsConstBlockView<B>> {};
   //****************************************************************************
 

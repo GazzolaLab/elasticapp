@@ -399,7 +399,7 @@ namespace elastica {
         PrimitivesInterface::finalize(time_v);
 
         // needs access to the domain() member here
-        cpp17::apply(
+        std::apply(
             [&](auto const&... envs) {
               // let all be pointers for a uniform interface
               EXPAND_PACK_LEFT_TO_RIGHT(
@@ -425,7 +425,7 @@ namespace elastica {
       void reset_module(TimeType time_v) {
         ImposedPrimitivesInterface::reset_module(time_v);
         PrimitivesInterface::reset_module(time_v);
-        cpp17::apply(
+        std::apply(
             [time_v](auto&... environment) {
               using ::elastica::environments::reset;
               EXPAND_PACK_LEFT_TO_RIGHT(reset(*environment, time_v));

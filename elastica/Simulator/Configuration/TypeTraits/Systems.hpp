@@ -48,7 +48,7 @@ namespace elastica {
      * \endcode
      *
      * \metareturns
-     * cpp17::bool_constant
+     * std::bool_constant
      *
      * \semantics
      * If the type `SC` publicly inherits from
@@ -109,7 +109,7 @@ namespace elastica {
      * \endcode
      *
      * \metareturns
-     * cpp17::bool_constant
+     * std::bool_constant
      *
      * \semantics
      * If the type `SC` strictly conforms to
@@ -170,11 +170,11 @@ namespace elastica {
 //      */
 //      template <typename SystemTag>
 //      struct IsSystemTag
-//          : public cpp17::conjunction<
+//          : public std::conjunction<
 //                ::tt::is_detected<primitive_type_t, SystemTag>,
 //                ::tt::is_detected<system_type_t, SystemTag>,
-//                cpp17::negation<::tt::is_cvref_t<system_type_t<SystemTag>>>,
-//                cpp17::negation<::tt::is_cvref_t<primitive_type_t<SystemTag>>>>
+//                std::negation<::tt::is_cvref_t<system_type_t<SystemTag>>>,
+//                std::negation<::tt::is_cvref_t<primitive_type_t<SystemTag>>>>
 //
 //      {};
 //      /*! \endcond */

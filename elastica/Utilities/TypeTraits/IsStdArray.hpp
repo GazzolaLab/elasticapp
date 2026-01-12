@@ -41,11 +41,11 @@ namespace tt {
   /// \semantics
   /// If `T` is a std::array then
   /// \code
-  /// typename result::type = cpp17::bool_constant<true>;
+  /// typename result::type = std::bool_constant<true>;
   /// \endcode
   /// otherwise
   /// \code
-  /// typename result::type = cpp17::bool_constant<false>;
+  /// typename result::type = std::bool_constant<false>;
   /// \endcode
   ///
   /// \example

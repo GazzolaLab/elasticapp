@@ -33,13 +33,13 @@ namespace {
                       decltype(sequential_connections)>::value,
                   "meta failure!");
     static_assert(
-        cpp17::is_same_v<decltype(sequential_connections),
+        std::is_same_v<decltype(sequential_connections),
                          ConnectionsConfiguration<
                              sequential_policy,
                              ELASTICA_DEFAULT_REGISTRARS_FOR_CONNECTIONS>>,
         "meta failure");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(sequential_connections),
             ConnectionsConfiguration<sequential_policy, CustomRegistrars>>,
         "meta failure");
@@ -61,13 +61,13 @@ namespace {
                       decltype(parallel_connections)>::value,
                   "meta failure!");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(parallel_connections),
             ConnectionsConfiguration<
                 parallel_policy, ELASTICA_DEFAULT_REGISTRARS_FOR_CONNECTIONS>>,
         "meta failure");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(parallel_connections),
             ConnectionsConfiguration<parallel_policy, CustomRegistrars>>,
         "meta failure");
@@ -85,13 +85,13 @@ namespace {
                       decltype(hybrid_connections)>::value,
                   "meta failure!");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(hybrid_connections),
             ConnectionsConfiguration<
                 hybrid_policy, ELASTICA_DEFAULT_REGISTRARS_FOR_CONNECTIONS>>,
         "meta failure");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(hybrid_connections),
             ConnectionsConfiguration<hybrid_policy, CustomRegistrars>>,
         "meta failure");

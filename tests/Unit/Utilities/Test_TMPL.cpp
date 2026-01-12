@@ -48,21 +48,21 @@ static_assert(not tmpl::list_contains_v<
               "Failed testing list_contains");
 
 static_assert(
-    cpp17::is_same_v<
+    std::is_same_v<
         tmpl::list_difference<tmpl::list<Templated<int>, Templated<double>>,
                               tmpl::list<double>>,
         tmpl::list<Templated<int>, Templated<double>>>,
     "Failed testing list_difference");
 
 static_assert(
-    cpp17::is_same_v<
+    std::is_same_v<
         tmpl::list_difference<tmpl::list<Templated<int>, Templated<double>>,
                               tmpl::list<Templated<double>>>,
         tmpl::list<Templated<int>>>,
     "Failed testing list_difference");
 
 static_assert(
-    cpp17::is_same_v<
+    std::is_same_v<
         tmpl::list_difference<tmpl::list<>, tmpl::list<Templated<double>>>,
         tmpl::list<>>,
     "Failed testing list_difference");

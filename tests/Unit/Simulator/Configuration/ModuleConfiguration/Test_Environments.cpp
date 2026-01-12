@@ -33,14 +33,14 @@ namespace {
     /// [seq_eg]
 
     static_assert(
-        cpp17::is_same_v<decltype(sequential_environments_config),
+        std::is_same_v<decltype(sequential_environments_config),
                          EnvironmentsConfiguration<
                              ELASTICA_DEFAULT_ADMISSIBLE_ENVIRONMENT_TAGS,
                              ELASTICA_DEFAULT_ADMISSIBLE_IMPOSED_PRIMITIVES,
                              sequential_policy>>,
         "meta failure");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(sequential_environments_config_with_custom_environments),
             EnvironmentsConfiguration<
                 CustomEnvironmentTags,
@@ -48,7 +48,7 @@ namespace {
                 sequential_policy>>,
         "meta failure");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(sequential_environments_config_with_custom_environments_and_imposed),
             EnvironmentsConfiguration<CustomEnvironmentTags,
                                       CustomImposedPrimitives,
@@ -78,14 +78,14 @@ namespace {
     /// [par_eg]
 
     static_assert(
-        cpp17::is_same_v<decltype(parallel_environments_config),
+        std::is_same_v<decltype(parallel_environments_config),
                          EnvironmentsConfiguration<
                              ELASTICA_DEFAULT_ADMISSIBLE_ENVIRONMENT_TAGS,
                              ELASTICA_DEFAULT_ADMISSIBLE_IMPOSED_PRIMITIVES,
                              parallel_policy>>,
         "meta failure");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(parallel_environments_config_with_custom_environments),
             EnvironmentsConfiguration<
                 CustomEnvironmentTags,
@@ -93,7 +93,7 @@ namespace {
                 parallel_policy>>,
         "meta failure");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(parallel_environments_config_with_custom_environments_and_imposed),
             EnvironmentsConfiguration<CustomEnvironmentTags,
                                       CustomImposedPrimitives,

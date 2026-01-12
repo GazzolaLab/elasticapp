@@ -73,7 +73,7 @@ namespace tt {
   /// \usage
   /// For any set of templated types `template <...> Ti`,
   /// \code
-  /// using result = cpp17::void_t<T0, T1, T2, T3>;
+  /// using result = std::void_t<T0, T1, T2, T3>;
   /// \endcode
   ///
   /// \metareturns
@@ -155,7 +155,7 @@ namespace tt {
 
   template <template <typename...> class Base, typename Derived>
   using is_templated_base_of_t =
-      cpp17::bool_constant<is_templated_base_of_v<Base, Derived>>;
+      std::bool_constant<is_templated_base_of_v<Base, Derived>>;
 
   // @{
   /// \ingroup type_traits
@@ -172,7 +172,7 @@ namespace tt {
   /// \endcode
   ///
   /// \metareturns
-  /// cpp17::bool_constant
+  /// std::bool_constant
   ///
   /// \semantics
   /// If the type `T` has operator<<(`S`, `T`) defined for stream `S`, then
@@ -191,7 +191,7 @@ namespace tt {
   /// \tparam T the type we want to know if it has operator<<
   namespace detail {
     template <typename T>
-    struct is_cvref : cpp17::conjunction<std::is_const<T>, std::is_reference<T>,
+    struct is_cvref : std::conjunction<std::is_const<T>, std::is_reference<T>,
                                          std::is_volatile<T>> {};
   }  // namespace detail
 

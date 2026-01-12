@@ -156,7 +156,7 @@ namespace elastica {
           explicit ConstrainPrimitivesOp(
               std::tuple<ConstraintsModule*, ConstraintsTraits const&> args)
               : ConstrainPrimitivesOp(
-                    cpp17::make_from_tuple<ConstrainPrimitivesOp>(
+                    std::make_from_tuple<ConstrainPrimitivesOp>(
                         std::move(args))) {}
           //********************************************************************
 
@@ -217,7 +217,7 @@ namespace elastica {
           explicit ConstrainPrimitivesOp(
               std::tuple<ConstraintsModule*, ConstraintsTraits const&> args)
               : ConstrainPrimitivesOp(
-                    cpp17::make_from_tuple<ConstrainPrimitivesOp>(
+                    std::make_from_tuple<ConstrainPrimitivesOp>(
                         std::move(args))) {}
           //********************************************************************
 
@@ -286,7 +286,7 @@ namespace elastica {
           explicit ConstrainPrimitivesOp(
               std::tuple<ConstraintsModule*, ConstraintsTraits const&> args)
               : ConstrainPrimitivesOp(
-                    cpp17::make_from_tuple<ConstrainPrimitivesOp>(
+                    std::make_from_tuple<ConstrainPrimitivesOp>(
                         std::move(args))) {}
           //********************************************************************
 
@@ -362,7 +362,7 @@ namespace elastica {
           explicit ConstrainRatesOp(
               std::tuple<ConstraintsModule*, ConstraintsTraits const&> args)
               : ConstrainRatesOp(
-                    cpp17::make_from_tuple<ConstrainRatesOp>(std::move(args))) {
+                    std::make_from_tuple<ConstrainRatesOp>(std::move(args))) {
           }
           //********************************************************************
 
@@ -423,7 +423,7 @@ namespace elastica {
           explicit ConstrainRatesOp(
               std::tuple<ConstraintsModule*, ConstraintsTraits const&> args)
               : ConstrainRatesOp(
-                    cpp17::make_from_tuple<ConstrainRatesOp>(std::move(args))) {
+                    std::make_from_tuple<ConstrainRatesOp>(std::move(args))) {
           }
           //********************************************************************
 
@@ -492,7 +492,7 @@ namespace elastica {
           explicit ConstrainRatesOp(
               std::tuple<ConstraintsModule*, ConstraintsTraits const&> args)
               : ConstrainRatesOp(
-                    cpp17::make_from_tuple<ConstrainRatesOp>(std::move(args))) {
+                    std::make_from_tuple<ConstrainRatesOp>(std::move(args))) {
           }
           //********************************************************************
 

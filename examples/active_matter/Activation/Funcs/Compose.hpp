@@ -30,7 +30,7 @@ namespace elastica {
 
         auto operator()(real_t s, real_t t) const {
           using ::elastica::forcing::activation::identity_element;
-          return cpp17::apply(
+          return std::apply(
               [=](F const&... funcs) {
                 auto v = identity_element(op);
                 EXPAND_PACK_LEFT_TO_RIGHT((v = op(v, funcs(s, t))));

@@ -86,7 +86,7 @@ namespace elastica {
       // can have a static assert here for this case ST \neq SO3<Type,
       // Primitive>
       static_assert(
-          cpp17::is_same_v<tt::order_t<ST2>,
+          std::is_same_v<tt::order_t<ST2>,
                            tags::internal::DerivativeMultipliedByTimeTag>,
           R"error(
 We can only add a primitive to a derivative scaled by time in the time-stepping
@@ -159,7 +159,7 @@ algorithm! Specifically, adding a primitive to a primitive is forbidden.
     inline decltype(auto) operator+(SO3RotRotAddExpr<ST1, ST2> const& lhs,
                                     SO3Base<ST3> const& rhs) {
       static_assert(
-          cpp17::is_same_v<tt::order_t<ST3>,
+          std::is_same_v<tt::order_t<ST3>,
                            tags::internal::DerivativeMultipliedByTimeTag>,
           R"error(
 We can only add a primitive to a derivative scaled by time in the time-stepping

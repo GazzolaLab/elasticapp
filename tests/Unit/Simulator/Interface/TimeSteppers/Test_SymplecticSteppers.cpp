@@ -169,7 +169,7 @@ namespace mock {
     SystemsSimulator(Traits traits, bool arg_is_final = false)
         : P(),
           ////////////  This piece of code is copy-pasted yo
-          algorithms(cpp17::apply(
+          algorithms(std::apply(
               [](auto&&... initializer_as_a_tuple) noexcept {
                 return Algorithms(
                     std::forward<decltype(initializer_as_a_tuple)>(

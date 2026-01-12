@@ -339,7 +339,7 @@ namespace elastica {
               std::forward<CosseratInitializer>(initializer));
 
           auto const n_elem = blocks::get<elastica::tags::NElement>(
-              cpp17::as_const(initializer))();
+              std::as_const(initializer))();
 
           /* mass second moment of inertia */
           {
@@ -689,19 +689,19 @@ namespace elastica {
         COSSERATROD_LIB_NOEXCEPT {
       // Immutable
       auto&& inv_mass(
-          blocks::get<tags::InvMass>(cpp17::as_const(block_like).self()));
+          blocks::get<tags::InvMass>(std::as_const(block_like).self()));
       auto&& dilatation(blocks::get<tags::ElementDilatation>(
-          cpp17::as_const(block_like).self()));
+          std::as_const(block_like).self()));
       auto&& inv_mass_SMOI(blocks::get<tags::InvMassSecondMomentOfInertia>(
-          cpp17::as_const(block_like).self()));
+          std::as_const(block_like).self()));
       auto&& internal_loads(
-          blocks::get<tags::InternalLoads>(cpp17::as_const(block_like).self()));
+          blocks::get<tags::InternalLoads>(std::as_const(block_like).self()));
       auto&& internal_torques(blocks::get<tags::InternalTorques>(
-          cpp17::as_const(block_like).self()));
+          std::as_const(block_like).self()));
       auto&& external_loads(
-          blocks::get<tags::ExternalLoads>(cpp17::as_const(block_like).self()));
+          blocks::get<tags::ExternalLoads>(std::as_const(block_like).self()));
       auto&& external_torques(blocks::get<tags::ExternalTorques>(
-          cpp17::as_const(block_like).self()));
+          std::as_const(block_like).self()));
 
       // Mutable
       auto&& acceleration(blocks::get<tags::Acceleration>(block_like.self()));

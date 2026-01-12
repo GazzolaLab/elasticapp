@@ -26,7 +26,7 @@ namespace {
 
     auto run_matrix_test = [&](auto& matrix) {
       static constexpr auto column_major =
-          blaze::IsColumnMajorMatrix<cpp20::remove_cvref_t<decltype(matrix)>>{};
+          blaze::IsColumnMajorMatrix<std::remove_cvref_t<decltype(matrix)>>{};
 
       const auto total =
           get_extent(column_major, matrix.columns(), matrix.rows());

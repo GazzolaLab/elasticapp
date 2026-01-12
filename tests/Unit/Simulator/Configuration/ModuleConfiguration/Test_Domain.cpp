@@ -33,13 +33,13 @@ namespace {
     /// [unbounded_eg]
 
     static_assert(
-        ::elastica::tt::IsValidDomainConfiguration<cpp20::remove_cvref_t<
+        ::elastica::tt::IsValidDomainConfiguration<std::remove_cvref_t<
             decltype(unbounded_domain_configuration)>>::value,
         "meta failure!");
 
     static_assert(
-        cpp17::is_same_v<
-            cpp20::remove_cvref_t<decltype(unbounded_domain_configuration)>,
+        std::is_same_v<
+            std::remove_cvref_t<decltype(unbounded_domain_configuration)>,
             DomainConfiguration<elastica::IsUnbounded, elastica::IsUnbounded,
                                 elastica::IsUnbounded>>,
         "meta failure");
@@ -61,12 +61,12 @@ namespace {
     /// [periodic_eg]
 
     static_assert(
-        ::elastica::tt::IsValidDomainConfiguration<cpp20::remove_cvref_t<
+        ::elastica::tt::IsValidDomainConfiguration<std::remove_cvref_t<
             decltype(periodic_domain_configuration)>>::value,
         "meta failure!");
     static_assert(
-        cpp17::is_same_v<
-            cpp20::remove_cvref_t<decltype(periodic_domain_configuration)>,
+        std::is_same_v<
+            std::remove_cvref_t<decltype(periodic_domain_configuration)>,
             DomainConfiguration<elastica::IsPeriodic, elastica::IsPeriodic,
                                 elastica::IsPeriodic>>,
         "meta failure");
@@ -88,11 +88,11 @@ namespace {
 
     static_assert(
         ::elastica::tt::IsValidDomainConfiguration<
-            cpp20::remove_cvref_t<decltype(mixed_domain_configuration)>>::value,
+            std::remove_cvref_t<decltype(mixed_domain_configuration)>>::value,
         "meta failure!");
     static_assert(
-        cpp17::is_same_v<
-            cpp20::remove_cvref_t<decltype(mixed_domain_configuration)>,
+        std::is_same_v<
+            std::remove_cvref_t<decltype(mixed_domain_configuration)>,
             DomainConfiguration<elastica::IsUnbounded, elastica::IsPeriodic,
                                 elastica::IsUnbounded>>,
         "meta failure");

@@ -46,7 +46,7 @@ namespace elastica {
      * \endcode
      *
      * \metareturns
-     * cpp17::bool_constant
+     * std::bool_constant
      *
      * \semantics
      * If the type `DC` publicly inherits from
@@ -107,7 +107,7 @@ namespace elastica {
      * \endcode
      *
      * \metareturns
-     * cpp17::bool_constant
+     * std::bool_constant
      *
      * \semantics
      * If the type `DC` strictly conforms to

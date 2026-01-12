@@ -20,7 +20,7 @@ namespace {
       "[Unit][Simulator][Configuration]") {
     SSP ssp{5UL};
     CHECK(ssp.value() == 5UL);
-    CHECK(cpp17::as_const(ssp).value() == 5UL);
+    CHECK(std::as_const(ssp).value() == 5UL);
   }
 
   // clang-format off

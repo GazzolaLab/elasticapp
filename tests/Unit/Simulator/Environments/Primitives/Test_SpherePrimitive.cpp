@@ -57,7 +57,7 @@ namespace {
     real_t radius(4.0);
     SpherePrimitive sphere(0UL, 0UL, true, position, radius, iron);
     ::testing::check_access_API(sphere);  // only const
-    ::testing::check_access_API(cpp17::as_const(sphere));
+    ::testing::check_access_API(std::as_const(sphere));
   }
 
   ELASTICA_TEST_CASE("Unit.Environments.Primitives.SpherePrimitive.support",

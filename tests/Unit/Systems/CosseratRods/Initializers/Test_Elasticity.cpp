@@ -48,17 +48,17 @@ namespace {
 
     CHECK(std::get<nelement_initializer>(required_params).get()(dummy_index) ==
           20UL);
-    static_assert(cpp17::is_same_v<decltype(std::get<material_initializer>(
+    static_assert(std::is_same_v<decltype(std::get<material_initializer>(
                                                 required_params)
                                                 .get()(dummy_index)),
                                    ::elastica::MaterialID>,
                   "Failure");
-    static_assert(cpp17::is_same_v<decltype(std::get<bend_twist_initializer>(
+    static_assert(std::is_same_v<decltype(std::get<bend_twist_initializer>(
                                                 required_params)
                                                 .get()(dummy_index)),
                                    Vec3>,
                   "Failure");
-    static_assert(cpp17::is_same_v<decltype(std::get<shear_stretch_initializer>(
+    static_assert(std::is_same_v<decltype(std::get<shear_stretch_initializer>(
                                                 required_params)
                                                 .get()(dummy_index)),
                                    Vec3>,
@@ -112,12 +112,12 @@ namespace {
           20UL);
     CHECK(std::get<material_initializer>(required_params).get()(dummy_index) ==
           ::elastica::iron);
-    static_assert(cpp17::is_same_v<decltype(std::get<bend_twist_initializer>(
+    static_assert(std::is_same_v<decltype(std::get<bend_twist_initializer>(
                                                 required_params)
                                                 .get()(dummy_index)),
                                    Vec3>,
                   "Failure");
-    static_assert(cpp17::is_same_v<decltype(std::get<shear_stretch_initializer>(
+    static_assert(std::is_same_v<decltype(std::get<shear_stretch_initializer>(
                                                 required_params)
                                                 .get()(dummy_index)),
                                    Vec3>,

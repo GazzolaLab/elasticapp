@@ -164,8 +164,8 @@ namespace elastica {
 
       //! 32 bit signed long saving to current node
       template <class T,
-                Requires<cpp17::conjunction_v<
-                    cpp17::bool_constant<sizeof(T) == sizeof(std::int32_t)>,
+                Requires<std::conjunction_v<
+                    std::bool_constant<sizeof(T) == sizeof(std::int32_t)>,
                     std::is_signed<T>>> = nullptr>
       inline void saveLong(T l) {
         saveValue(static_cast<std::int32_t>(l));
@@ -173,8 +173,8 @@ namespace elastica {
 
       //! non 32 bit signed long saving to current node
       template <class T,
-                Requires<cpp17::conjunction_v<
-                    cpp17::bool_constant<sizeof(T) != sizeof(std::int32_t)>,
+                Requires<std::conjunction_v<
+                    std::bool_constant<sizeof(T) != sizeof(std::int32_t)>,
                     std::is_signed<T>>> = nullptr>
       inline void saveLong(T l) {
         saveValue(static_cast<std::int64_t>(l));
@@ -182,8 +182,8 @@ namespace elastica {
 
       //! 32 bit unsigned long saving to current node
       template <class T,
-                Requires<cpp17::conjunction_v<
-                    cpp17::bool_constant<sizeof(T) == sizeof(std::int32_t)>,
+                Requires<std::conjunction_v<
+                    std::bool_constant<sizeof(T) == sizeof(std::int32_t)>,
                     std::is_unsigned<T>>> = nullptr>
       inline void saveLong(T lu) {
         saveValue(static_cast<std::uint32_t>(lu));
@@ -191,8 +191,8 @@ namespace elastica {
 
       //! non 32 bit unsigned long saving to current node
       template <class T,
-                Requires<cpp17::conjunction_v<
-                    cpp17::bool_constant<sizeof(T) != sizeof(std::int32_t)>,
+                Requires<std::conjunction_v<
+                    std::bool_constant<sizeof(T) != sizeof(std::int32_t)>,
                     std::is_unsigned<T>>> = nullptr>
       inline void saveLong(T lu) {
         saveValue(static_cast<std::uint64_t>(lu));
@@ -205,20 +205,20 @@ namespace elastica {
 #else   // _MSC_VER
       //! Serialize a long if it would not be caught otherwise
       template <class T,
-                Requires<cpp17::conjunction_v<
+                Requires<std::conjunction_v<
                     std::is_same<T, long>,
-                    cpp17::negation<std::is_same<T, std::int32_t>>,
-                    cpp17::negation<std::is_same<T, std::int64_t>>>> = nullptr>
+                    std::negation<std::is_same<T, std::int32_t>>,
+                    std::negation<std::is_same<T, std::int64_t>>>> = nullptr>
       inline void saveValue(T t) {
         saveLong(t);
       }
 
       //! Serialize an unsigned long if it would not be caught otherwise
       template <class T,
-                Requires<cpp17::conjunction_v<
+                Requires<std::conjunction_v<
                     std::is_same<T, unsigned long>,
-                    cpp17::negation<std::is_same<T, std::uint32_t>>,
-                    cpp17::negation<std::is_same<T, std::uint64_t>>>> = nullptr>
+                    std::negation<std::is_same<T, std::uint32_t>>,
+                    std::negation<std::is_same<T, std::uint64_t>>>> = nullptr>
       inline void saveValue(T t) {
         saveLong(t);
       }
@@ -229,12 +229,12 @@ namespace elastica {
        * distinct), and long double */
       template <
           class T,
-          Requires<cpp17::conjunction_v<
-              std::is_arithmetic<T>, cpp17::negation<std::is_same<T, long>>,
-              cpp17::negation<std::is_same<T, unsigned long>>,
-              cpp17::negation<std::is_same<T, std::int64_t>>,
-              cpp17::negation<std::is_same<T, std::uint64_t>>,
-              cpp17::bool_constant<(sizeof(T) >= sizeof(long double) ||
+          Requires<std::conjunction_v<
+              std::is_arithmetic<T>, std::negation<std::is_same<T, long>>,
+              std::negation<std::is_same<T, unsigned long>>,
+              std::negation<std::is_same<T, std::int64_t>>,
+              std::negation<std::is_same<T, std::uint64_t>>,
+              std::bool_constant<(sizeof(T) >= sizeof(long double) ||
                                     sizeof(T) >= sizeof(long long))>>> =
               nullptr>
       inline void saveValue(T const& t) {
@@ -507,9 +507,9 @@ namespace elastica {
       //! Loads a value from the current node - small signed overload
       template <
           class T,
-          Requires<cpp17::conjunction_v<
+          Requires<std::conjunction_v<
               std::is_signed<T>,
-              cpp17::bool_constant<sizeof(T) < sizeof(int64_t)>>> = nullptr>
+              std::bool_constant<sizeof(T) < sizeof(int64_t)>>> = nullptr>
       inline void loadValue(T& val) {
         search();
 
@@ -518,10 +518,10 @@ namespace elastica {
       }
 
       //! Loads a value from the current node - small unsigned overload
-      template <class T, Requires<cpp17::conjunction_v<
+      template <class T, Requires<std::conjunction_v<
                              std::is_unsigned<T>,
-                             cpp17::bool_constant<sizeof(T) < sizeof(uint64_t)>,
-                             cpp17::negation<std::is_same<bool, T>>>> = nullptr>
+                             std::bool_constant<sizeof(T) < sizeof(uint64_t)>,
+                             std::negation<std::is_same<bool, T>>>> = nullptr>
       inline void loadValue(T& val) {
         search();
 
@@ -654,12 +654,12 @@ namespace elastica {
       //! overloads
       template <
           class T,
-          Requires<cpp17::conjunction_v<
-              std::is_arithmetic<T>, cpp17::negation<std::is_same<T, long>>,
-              cpp17::negation<std::is_same<T, unsigned long>>,
-              cpp17::negation<std::is_same<T, std::int64_t>>,
-              cpp17::negation<std::is_same<T, std::uint64_t>>,
-              cpp17::bool_constant<(sizeof(T) >= sizeof(long double) ||
+          Requires<std::conjunction_v<
+              std::is_arithmetic<T>, std::negation<std::is_same<T, long>>,
+              std::negation<std::is_same<T, unsigned long>>,
+              std::negation<std::is_same<T, std::int64_t>>,
+              std::negation<std::is_same<T, std::uint64_t>>,
+              std::bool_constant<(sizeof(T) >= sizeof(long double) ||
                                     sizeof(T) >= sizeof(long long))>>> =
               nullptr>
       inline void loadValue(T& val) {

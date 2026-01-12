@@ -118,7 +118,7 @@ namespace elastica {
          private:
           //**Compile time checks***********************************************
           /*! \cond ELASTICA_INTERNAL */
-          static_assert(not cpp17::is_same_v<DomainType, PeriodicDomain>,
+          static_assert(not std::is_same_v<DomainType, PeriodicDomain>,
                         R"error(
 The exhaustive search algorithm cannot be used with a periodic domain. Consider
 changing the coarse-detection algorithm.
@@ -360,12 +360,12 @@ changing the coarse-detection algorithm.
            * FineDetector::collide stores pointers to the primitives involved in
            * the collision
            */
-          static_assert(cpp17::is_same_v<FCCollection, SCCollection>,
+          static_assert(std::is_same_v<FCCollection, SCCollection>,
                         "Exhaustive-search Meta failure!");
 
           // Colliding local rigid bodies
           // auto& collection = get_collection<FCP>();
-          const auto s = cpp17::size(collection);
+          const auto s = std::size(collection);
 
           // unfortunately here we need to do it over indices here
           // so using a counting iterator
@@ -407,7 +407,7 @@ changing the coarse-detection algorithm.
             tt::DifferentPrimitivesTag /* meta */
         ) {
           /*
-          static_assert(cpp17::is_same_v<FCP, SCP>,
+          static_assert(std::is_same_v<FCP, SCP>,
                         "Exhaustive-search Meta failure!");
           */
           // auto& first_primitive_collection = get_collection<FCP>();

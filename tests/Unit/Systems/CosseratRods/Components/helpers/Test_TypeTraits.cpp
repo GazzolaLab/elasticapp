@@ -61,14 +61,14 @@ template <typename T>
 using ElasticityComponentTrait =
     ::elastica::cosserat_rod::component::tt::ElasticityComponentTrait<T>;
 
-static_assert(cpp17::is_same_v<typename ElasticityComponentTrait<Test1>::type,
+static_assert(std::is_same_v<typename ElasticityComponentTrait<Test1>::type,
                                NoSuchType>,
               "Component type traits failure!");
 static_assert(
-    cpp17::is_same_v<typename ElasticityComponentTrait<Test5>::type, Test5>,
+    std::is_same_v<typename ElasticityComponentTrait<Test5>::type, Test5>,
     "Component type traits failure!");
 static_assert(
-    cpp17::is_same_v<
+    std::is_same_v<
         typename ElasticityComponentTrait<DerivedElasticityComponent>::type,
         Test5>,
     "Component type traits failure!");

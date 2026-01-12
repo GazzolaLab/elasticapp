@@ -177,7 +177,7 @@ namespace elastica {
           //**Compile time checks***********************************************
           /*! \cond ELASTICA_INTERNAL */
           static_assert(
-              cpp17::is_same_v<typename Config::DomainType, DomainType>,
+              std::is_same_v<typename Config::DomainType, DomainType>,
               "Meta-failure in hashgrids, please contact the developers!");
           /*! \endcond */
           //********************************************************************
@@ -1178,7 +1178,7 @@ namespace elastica {
                 [](std::size_t sum, Cell* cell) {
                   auto ptr = cell->template get_handle_to<Primitive>();
                   Expects(ptr != nullptr);
-                  sum += cpp17::size(*ptr);
+                  sum += std::size(*ptr);
                   return sum;
                 });
             auto const expected = this->get_count_of<Primitive>();
@@ -1564,7 +1564,7 @@ namespace elastica {
             //      to be removed and remove after the step
             auto& occupied_cells = get_cells_occupied_by<Primitive>();
             const std::size_t occupied_cellID =
-                cpp17::as_const(cell)->template occupied_cellID<Primitive>();
+                std::as_const(cell)->template occupied_cellID<Primitive>();
 
             if (occupied_cellID == occupied_cells.size() - 1) {
               occupied_cells.pop_back();
@@ -1740,7 +1740,7 @@ namespace elastica {
                 EXPAND_PACK_LEFT_TO_RIGHT(reinserter(Is));
               });
 
-          cpp17::apply(
+          std::apply(
               [](auto&... prim) {
                 // delete a bunch of pointers we allpcated
                 EXPAND_PACK_LEFT_TO_RIGHT(delete[](prim));
@@ -1779,7 +1779,7 @@ namespace elastica {
             tt::SamePrimitivesTag /*meta*/) const {
           // FCPCollection and SCPCollection are contiguous collections of
           // pointers by design
-          static_assert(cpp17::is_same_v<FCPCollection, SCPCollection>,
+          static_assert(std::is_same_v<FCPCollection, SCPCollection>,
                         "Hashgrids Meta failure!");
 
           // Its const, so no need to bother extracting it :/
@@ -1830,7 +1830,7 @@ namespace elastica {
           // intent?
 
           /*
-          static_assert(cpp17::is_same_v<FCPCollection, SCPCollection>,
+          static_assert(std::is_same_v<FCPCollection, SCPCollection>,
                         "Hashgrids Meta failure!");
           */
 
@@ -2582,7 +2582,7 @@ namespace elastica {
                   b, e, [&, start_idx = 0UL](HashGrid const* grid) mutable {
                     auto& counts = transfer_counts[grid];
                     std::size_t const current_primitive_count =
-                        cpp17::as_const(grid)
+                        std::as_const(grid)
                             ->template get_number_of_primitives<Primitive>();
                     // primitive count may also be zero : we check this case
                     // explicitly below
@@ -2601,7 +2601,7 @@ namespace elastica {
             Exec::for_each(
                 make_counting_iterator(0UL), make_counting_iterator(n_grids),
                 [this, &contacts,
-                 &transfer_counts = cpp17::as_const(transfer_counts), b,
+                 &transfer_counts = std::as_const(transfer_counts), b,
                  e](auto const grid_idx) {
                   auto const grid_it = std::next(b, long(grid_idx));
                   auto* const grid = *grid_it;

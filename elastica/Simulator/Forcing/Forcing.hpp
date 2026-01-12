@@ -512,7 +512,7 @@ can act on the given System (second template parameter)
        * \tparam TimeType Type of time
        * \tparam System Type of system
        *
-       * \metareturns cpp17::bool_constant
+       * \metareturns std::bool_constant
       */
       template <typename TimeType, typename System>
       static inline constexpr auto derived_has_apply_forces() noexcept {
@@ -528,7 +528,7 @@ can act on the given System (second template parameter)
        * \tparam TimeType Type of time
        * \tparam System Type of system
        *
-       * \metareturns cpp17::bool_constant
+       * \metareturns std::bool_constant
        *
        * \see derived_has_apply_forces
        */
@@ -539,7 +539,7 @@ can act on the given System (second template parameter)
         //            decltype(
         //                &ConcreteForcing::template apply_forces<TimeType,
         //                System>)>{};
-        return cpp17::negation<
+        return std::negation<
             decltype(derived_has_apply_forces<TimeType, System>())>{};
       }
       //************************************************************************
@@ -560,7 +560,7 @@ can act on the given System (second template parameter)
        * \tparam TimeType Type of time
        * \tparam System Type of system
        *
-       * \metareturns cpp17::bool_constant
+       * \metareturns std::bool_constant
        */
       template <typename TimeType, typename System>
       static inline constexpr auto derived_has_apply_torques() noexcept {
@@ -576,13 +576,13 @@ can act on the given System (second template parameter)
        * \tparam TimeType Type of time
        * \tparam System Type of system
        *
-       * \metareturns cpp17::bool_constant
+       * \metareturns std::bool_constant
        *
        * \see derived_has_apply_torques
        */
       template <typename TimeType, typename System>
       static inline constexpr auto derived_has_no_apply_torques() noexcept {
-        return cpp17::negation<
+        return std::negation<
             decltype(derived_has_apply_torques<TimeType, System>())>{};
       }
       //************************************************************************
@@ -609,7 +609,7 @@ can act on the given System (second template parameter)
        * \tparam TimeType Type of time
        * \tparam System Type of system
        *
-       * \metareturns cpp17::bool_constant
+       * \metareturns std::bool_constant
        */
       template <typename TimeType, typename System>
       static inline constexpr auto
@@ -626,14 +626,14 @@ can act on the given System (second template parameter)
        * \tparam TimeType Type of time
        * \tparam System Type of system
        *
-       * \metareturns cpp17::bool_constant
+       * \metareturns std::bool_constant
        *
        * \see derived_has_apply_forces_on_range
        */
       template <typename TimeType, typename System>
       static inline constexpr auto
       derived_has_no_apply_forces_on_range() noexcept {
-        return cpp17::negation<
+        return std::negation<
             decltype(derived_has_apply_forces_on_range<TimeType, System>())>{};
       }
       //************************************************************************
@@ -654,7 +654,7 @@ can act on the given System (second template parameter)
        * \tparam TimeType Type of time
        * \tparam System Type of system
        *
-       * \metareturns cpp17::bool_constant
+       * \metareturns std::bool_constant
        */
       template <typename TimeType, typename System>
       static inline constexpr auto
@@ -671,14 +671,14 @@ can act on the given System (second template parameter)
        * \tparam TimeType Type of time
        * \tparam System Type of system
        *
-       * \metareturns cpp17::bool_constant
+       * \metareturns std::bool_constant
        *
        * \see derived_has_apply_torques_on_range
        */
       template <typename TimeType, typename System>
       static inline constexpr auto
       derived_has_no_apply_torques_on_range() noexcept {
-        return cpp17::negation<
+        return std::negation<
             decltype(derived_has_apply_torques_on_range<TimeType, System>())>{};
       }
       //************************************************************************

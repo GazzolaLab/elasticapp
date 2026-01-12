@@ -413,7 +413,7 @@ that can act on the given System (second template parameter)
        * \tparam TimeType Type of time
        * \tparam System Type of system
        *
-       * \metareturns cpp17::bool_constant
+       * \metareturns std::bool_constant
        */
       template <typename TimeType, typename System>
       static inline constexpr auto derived_has_constrain_primitives() noexcept {
@@ -429,14 +429,14 @@ that can act on the given System (second template parameter)
        * \tparam TimeType Type of time
        * \tparam System Type of system
        *
-       * \metareturns cpp17::bool_constant
+       * \metareturns std::bool_constant
        *
        * \see derived_has_constrain_primitives()
        */
       template <typename TimeType, typename System>
       static inline constexpr auto
       derived_has_no_constrain_primitives() noexcept {
-        return cpp17::negation<
+        return std::negation<
             decltype(derived_has_constrain_primitives<TimeType, System>())>{};
       }
       //************************************************************************
@@ -457,7 +457,7 @@ that can act on the given System (second template parameter)
        * \tparam TimeType Type of time
        * \tparam System Type of system
        *
-       * \metareturns cpp17::bool_constant
+       * \metareturns std::bool_constant
        */
       template <typename TimeType, typename System>
       static inline constexpr auto derived_has_constrain_rates() noexcept {
@@ -473,13 +473,13 @@ that can act on the given System (second template parameter)
        * \tparam TimeType Type of time
        * \tparam System Type of system
        *
-       * \metareturns cpp17::bool_constant
+       * \metareturns std::bool_constant
        *
        * \see derived_has_constrain_rates()
        */
       template <typename TimeType, typename System>
       static inline constexpr auto derived_has_no_constrain_rates() noexcept {
-        return cpp17::negation<
+        return std::negation<
             decltype(derived_has_constrain_rates<TimeType, System>())>{};
       }
       //************************************************************************

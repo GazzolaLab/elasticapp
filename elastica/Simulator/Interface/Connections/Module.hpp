@@ -301,7 +301,7 @@ namespace elastica {
         };
 
         (finalize_check(),
-         cpp17::apply(
+         std::apply(
              [registration_check =
                   std::move(registration_check)](auto const&... systems) {
                EXPAND_PACK_LEFT_TO_RIGHT(registration_check(systems));
@@ -338,7 +338,7 @@ namespace elastica {
        */
       template <typename FirstSystem, typename SecondSystem
                 // Requires
-                // <cpp17::conjunction_v<tt::is_block_slice<FirstSystem>,
+                // <std::conjunction_v<tt::is_block_slice<FirstSystem>,
                 // tt::is_block_slice<SecondSystem>>> = nullptr
                 >
       inline auto connect(FirstSystem const& first_system,

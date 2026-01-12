@@ -338,7 +338,7 @@ namespace elastica {
           auto&& variable(blocks::get<Tag>(this_component.self()));
           // this automatically is deduced to 1
           constexpr index_type index_of_rod = 0UL;
-          auto const n_elem = blocks::get<Tag>(cpp17::as_const(initializer))();
+          auto const n_elem = blocks::get<Tag>(std::as_const(initializer))();
           ELASTICA_ASSERT(
               Variable::slice(variable, index_of_rod) == n_elem,
               "Invariant violation detected, contact the developers!");
@@ -652,7 +652,7 @@ namespace elastica {
 //            class... Components>
 //  inline constexpr decltype(auto) get(
 //      B<elastica::CosseratRodPlugin<CRT, B, Components...>>& blk) noexcept {
-//    using Block_t = cpp20::remove_cvref_t<decltype(blk)>;
+//    using Block_t = std::remove_cvref_t<decltype(blk)>;
 //    using BlockVar = typename Block_t::template var_from<Tag>;
 //    return blk.template get<BlockVar>();
 //  }
@@ -664,7 +664,7 @@ namespace elastica {
 //  inline constexpr decltype(auto) get(
 //      B<elastica::CosseratRodPlugin<CRT, B, Components...>> const&
 //          blk) noexcept {
-//    using Block_t = cpp20::remove_cvref_t<decltype(blk)>;
+//    using Block_t = std::remove_cvref_t<decltype(blk)>;
 //    using BlockVar = typename Block_t::template var_from<Tag>;
 //    return blk.template get<BlockVar>();
 //  }
@@ -675,7 +675,7 @@ namespace elastica {
 //            class... Components>
 //  inline constexpr decltype(auto) get(
 //      B<elastica::CosseratRodPlugin<CRT, B, Components...>>&& blk) noexcept {
-//    using Block_t = cpp20::remove_cvref_t<decltype(blk)>;
+//    using Block_t = std::remove_cvref_t<decltype(blk)>;
 //    using BlockVar = typename Block_t::template var_from<Tag>;
 //    return static_cast<Block_t&&>(blk).template get<BlockVar>();
 //  }
@@ -687,7 +687,7 @@ namespace elastica {
 //  inline constexpr decltype(auto) get(
 //      B<elastica::CosseratRodPlugin<CRT, B, Components...>> const&&
 //          blk) noexcept {
-//    using Block_t = cpp20::remove_cvref_t<decltype(blk)>;
+//    using Block_t = std::remove_cvref_t<decltype(blk)>;
 //    using BlockVar = typename Block_t::template var_from<Tag>;
 //    return static_cast<Block_t const&&>(blk).template get<BlockVar>();
 //  }

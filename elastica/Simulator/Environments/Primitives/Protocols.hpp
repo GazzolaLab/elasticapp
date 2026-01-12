@@ -75,7 +75,7 @@ namespace elastica {
                            .support_contact_threshold(std::declval<Vec3>()));
 
           // Check the return type of the `support` member function
-          static_assert(cpp17::is_same_v<support_return_type, Vec3>,
+          static_assert(std::is_same_v<support_return_type, Vec3>,
                         R"error(
 Not a conforming primitive, doesn't properly implement function
 `Vec3 support(const Vec3&)`)error");
@@ -83,7 +83,7 @@ Not a conforming primitive, doesn't properly implement function
           // Check the return type of the `support_contact_threshold` member
           // function
           static_assert(
-              cpp17::is_same_v<support_contact_threshold_return_type, Vec3>,
+              std::is_same_v<support_contact_threshold_return_type, Vec3>,
               R"error(
 Not a conforming primitive, doesn't properly implement function
 `Vec3 support_contact_threshold(const Vec3&)`)error");

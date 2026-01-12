@@ -44,7 +44,7 @@ namespace tt {
      \endcode
   //
   // \metareturns
-  // cpp17::bool_constant
+  // std::bool_constant
   //
   // \semantics
   // If the type `T` is callable, then

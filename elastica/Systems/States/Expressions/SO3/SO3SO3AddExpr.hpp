@@ -73,7 +73,7 @@ namespace elastica {
       using Order = tt::common_order_t<STL, STR>;
       //! Vectorized Dispatch type
       using is_vectorized =
-          cpp17::conjunction<tt::IsVectorized<STL>, tt::IsVectorized<STR>>;
+          std::conjunction<tt::IsVectorized<STL>, tt::IsVectorized<STR>>;
       //************************************************************************
 
       //**Constructor***********************************************************
@@ -190,7 +190,7 @@ namespace elastica {
      */
     template <typename STL,  // Type of the left-hand state expression
               typename STR,  // Type of the right-hand state expression
-              Requires<cpp17::conjunction_v<tt::IsNotPrimitive<STL>,
+              Requires<std::conjunction_v<tt::IsNotPrimitive<STL>,
                                             tt::IsNotPrimitive<STR>>> = nullptr>
     inline decltype(auto) operator+(SO3Base<STL> const& lhs,
                                     SO3Base<STR> const& rhs) {

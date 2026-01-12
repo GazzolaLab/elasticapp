@@ -48,7 +48,7 @@ namespace elastica {
       struct non_arithmetic_tag {};
 
       using specialized_type = std::conditional_t<
-          cpp17::is_same_v<T, bool>, bool_tag,
+          std::is_same_v<T, bool>, bool_tag,
           std::conditional_t<std::is_arithmetic<T>::value, arithmetic_tag,
                              non_arithmetic_tag>>;
 

@@ -49,7 +49,7 @@ namespace elastica {
      * \endcode
      *
      * \metareturns
-     * cpp17::bool_constant
+     * std::bool_constant
      *
      * \semantics
      * If the type `C` is derived from Component<C>, then
@@ -88,7 +88,7 @@ namespace elastica {
      * \endcode
      *
      * \metareturns
-     * cpp17::bool_constant
+     * std::bool_constant
      *
      * \semantics
      * If the type `C` is derived from GeometryComponent<C>, then
@@ -128,7 +128,7 @@ namespace elastica {
      * \endcode
      *
      * \metareturns
-     * cpp17::bool_constant
+     * std::bool_constant
      *
      * \semantics
      * If the type `C` is derived from KinematicsComponent<C>, then

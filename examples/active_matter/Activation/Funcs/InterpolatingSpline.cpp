@@ -16,7 +16,7 @@ namespace elastica {
 
       auto get_interpolating_points(std::vector<real_t> spline_y)
           -> std::tuple<std::vector<real_t>, std::vector<real_t>> {
-        auto const syze = cpp17::size(spline_y);
+        auto const syze = std::size(spline_y);
         Expects(syze > 2UL);
         auto const nsyze = syze;
 

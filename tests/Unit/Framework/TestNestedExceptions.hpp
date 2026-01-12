@@ -29,7 +29,7 @@ void full_exception_stack_to_stream(
         CHECK_THAT(full_exception_stack_stream_buffer.str(),                 \
                    Catch::Contains(to_be_matched));                          \
       };                                                                     \
-      cpp17::invoke(                                                         \
+      std::invoke(                                                         \
           [&](auto const&... test_strings) {                                 \
             (void)std::initializer_list<char>{                               \
                 ((void)(match_against_stream(test_strings)), '0')...};       \

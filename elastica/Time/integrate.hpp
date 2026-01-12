@@ -61,7 +61,7 @@ namespace timestepper {
 
   template <typename T>
   using timestepper_step_size_strategy_t =
-      typename traits::TimeStepperStepSizeStrategyTrait<cpp17::disjunction_v<
+      typename traits::TimeStepperStepSizeStrategyTrait<std::disjunction_v<
           traits::IsExplicitTimeStepper<T>::value,
           traits::IsExplicitFSALTimeStepper<T>::value,
           traits::IsSymplecticTimeStepper<T>::value>>::type;

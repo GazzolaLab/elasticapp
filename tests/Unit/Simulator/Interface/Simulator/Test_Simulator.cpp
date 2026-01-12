@@ -149,13 +149,13 @@ namespace {
     EMPTY_TEST();
 
     auto& simulator = make_test_simulator<>();
-    (void)(cpp17::as_const(simulator).domain());
+    (void)(std::as_const(simulator).domain());
 
     (void)(simulator.algorithms());
-    (void)(cpp17::as_const(simulator).algorithms());
+    (void)(std::as_const(simulator).algorithms());
 
     (void)(simulator.batching_algorithms());
-    (void)(cpp17::as_const(simulator).batching_algorithms());
+    (void)(std::as_const(simulator).batching_algorithms());
   }
 
   // clang-format off

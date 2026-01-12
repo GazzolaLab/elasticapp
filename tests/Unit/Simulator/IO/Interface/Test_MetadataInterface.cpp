@@ -21,9 +21,9 @@ namespace {
     interface.naming_convention().format.pad = '9';
 
     // getters
-    CHECK(cpp17::as_const(interface).cwd().working_directory == "../");
-    CHECK(cpp17::as_const(interface).naming_convention().delimiter == '-');
-    CHECK(cpp17::as_const(interface).naming_convention().format.pad == '9');
+    CHECK(std::as_const(interface).cwd().working_directory == "../");
+    CHECK(std::as_const(interface).naming_convention().delimiter == '-');
+    CHECK(std::as_const(interface).naming_convention().format.pad == '9');
 
     (void)(format("abc", interface));
     (void)(get_file_name("abc", interface));

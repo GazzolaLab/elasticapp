@@ -669,8 +669,8 @@ namespace elastica {
         });
 
         // 0. Initialize the domain, may not be needed
-        DomainPolicyType::domain_ = &cpp17::as_const(simulator).domain();
-        get_coarse_detector().domain() = &cpp17::as_const(simulator).domain();
+        DomainPolicyType::domain_ = &std::as_const(simulator).domain();
+        get_coarse_detector().domain() = &std::as_const(simulator).domain();
 
         // 1. Transfer body contents to primitives
         perform<TransferInfoFromSimulationStep>(elastica::collision::from,
@@ -724,7 +724,7 @@ namespace elastica {
 
         {
           contacts().clear();
-          perform<FineDetectionStep>(cpp17::as_const(contact_cache()),
+          perform<FineDetectionStep>(std::as_const(contact_cache()),
                                      contacts());
         }
 
@@ -737,7 +737,7 @@ namespace elastica {
         {
           // TODO : Figure out passing max_overlap to time-step limiters in
           //        explicit algorithms
-          perform<ContactResolutionStep>(cpp17::as_const(batches()));
+          perform<ContactResolutionStep>(std::as_const(batches()));
         }
 
         {

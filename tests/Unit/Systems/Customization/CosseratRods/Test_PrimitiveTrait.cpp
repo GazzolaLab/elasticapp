@@ -12,43 +12,43 @@ namespace {
   using ::elastica::collision::tt::PrimitiveTrait_t;
 
   static_assert(
-      cpp17::is_same_v<
+      std::is_same_v<
           ::elastica::collision::tt::PrimitiveTrait_t<detail::CosseratRod>,
           ::elastica::collision::CapsuleFromRodPrimitive>,
       "Meta-failure");
   static_assert(
-      cpp17::is_same_v<
+      std::is_same_v<
           ::elastica::collision::tt::PrimitiveTrait_t<detail::CosseratRodBlock>,
           ::elastica::collision::CapsuleFromRodPrimitive>,
       "Meta-failure");
   static_assert(
-      cpp17::is_same_v< ::elastica::collision::tt::PrimitiveTrait_t<
+      std::is_same_v< ::elastica::collision::tt::PrimitiveTrait_t<
                             detail::CosseratRodBlockSlice>,
                         ::elastica::collision::CapsuleFromRodPrimitive>,
       "Meta-failure");
   static_assert(
-      cpp17::is_same_v< ::elastica::collision::tt::PrimitiveTrait_t<
+      std::is_same_v< ::elastica::collision::tt::PrimitiveTrait_t<
                             detail::CosseratRodBlockConstSlice>,
                         ::elastica::collision::CapsuleFromRodPrimitive>,
       "Meta-failure");
 
   static_assert(
-      cpp17::is_same_v< ::elastica::collision::tt::PrimitiveTrait_t<
+      std::is_same_v< ::elastica::collision::tt::PrimitiveTrait_t<
                             detail::CosseratRodWithoutDamping>,
                         ::elastica::collision::CapsuleFromRodPrimitive>,
       "Meta-failure");
   static_assert(
-      cpp17::is_same_v< ::elastica::collision::tt::PrimitiveTrait_t<
+      std::is_same_v< ::elastica::collision::tt::PrimitiveTrait_t<
                             detail::CosseratRodWithoutDampingBlock>,
                         ::elastica::collision::CapsuleFromRodPrimitive>,
       "Meta-failure");
   static_assert(
-      cpp17::is_same_v< ::elastica::collision::tt::PrimitiveTrait_t<
+      std::is_same_v< ::elastica::collision::tt::PrimitiveTrait_t<
                             detail::CosseratRodWithoutDampingBlockSlice>,
                         ::elastica::collision::CapsuleFromRodPrimitive>,
       "Meta-failure");
   static_assert(
-      cpp17::is_same_v< ::elastica::collision::tt::PrimitiveTrait_t<
+      std::is_same_v< ::elastica::collision::tt::PrimitiveTrait_t<
                             detail::CosseratRodWithoutDampingBlockConstSlice>,
                         ::elastica::collision::CapsuleFromRodPrimitive>,
       "Meta-failure");

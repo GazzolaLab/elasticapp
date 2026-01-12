@@ -200,7 +200,7 @@ namespace elastica {
       using as_blocks = tmpl::wrap<PluginsList, as_block_wrapper>;
       //! Metafunction to check if a plugin is valid
       template <typename Plugin>
-      using an_admissible = cpp17::bool_constant<
+      using an_admissible = std::bool_constant<
           // brigand's bool constant does not have constexpr bool() operator
           tmpl::list_contains<AdmissibleSystemPlugins, Plugin>::value>;
       //@}
@@ -413,7 +413,7 @@ namespace elastica {
 
         return std::find_if(
                    begin_, end_,
-                   [&parent = cpp17::as_const(system_ref.get().parent())](
+                   [&parent = std::as_const(system_ref.get().parent())](
                        Parent const& parent_in_collection) {
                      // compare references themselves
                      return &parent == &parent_in_collection;
@@ -1005,7 +1005,7 @@ the above type-list, using SystemsConfiguration.
       void reset_module(TimeType /*time_v*/) {
         std::fill(std::begin(n_total_systems()), std::end(n_total_systems()),
                   0UL);
-        cpp17::apply(
+        std::apply(
             [](auto&... system_container) {
               EXPAND_PACK_LEFT_TO_RIGHT(system_container.clear());
             },

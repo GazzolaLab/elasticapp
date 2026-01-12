@@ -292,7 +292,7 @@ namespace elastica {
     // \param ...indices Other integral/end-integral indices
     */
     template <typename T, typename... Indices,
-              Requires<cpp17::conjunction_v<
+              Requires<std::conjunction_v<
                   tt::IsAdmissibleIndex<std::decay_t<T>>,
                   tt::IsAdmissibleIndex<std::decay_t<Indices>>...>> = nullptr>
     constexpr auto at(T&& x, Indices&&... indices) noexcept {

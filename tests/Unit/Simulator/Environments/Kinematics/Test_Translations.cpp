@@ -139,19 +139,19 @@ namespace {
 
     static_assert(elastica::detail::cast_along(
                       elastica::kinematics::detail::get_kinematics<
-                          elastica::EulerianFrame::X>(cpp17::as_const(g))
+                          elastica::EulerianFrame::X>(std::as_const(g))
                           .Direction) ==
                       elastica::detail::cast_along(elastica::EulerianFrame::X),
                   "Meta-failure");
     static_assert(elastica::detail::cast_along(
                       elastica::kinematics::detail::get_kinematics<
-                          elastica::EulerianFrame::Y>(cpp17::as_const(g))
+                          elastica::EulerianFrame::Y>(std::as_const(g))
                           .Direction) ==
                       elastica::detail::cast_along(elastica::EulerianFrame::Y),
                   "Meta-failure");
     static_assert(elastica::detail::cast_along(
                       elastica::kinematics::detail::get_kinematics<
-                          elastica::EulerianFrame::Z>(cpp17::as_const(g))
+                          elastica::EulerianFrame::Z>(std::as_const(g))
                           .Direction) ==
                       elastica::detail::cast_along(elastica::EulerianFrame::Z),
                   "Meta-failure");
@@ -186,13 +186,13 @@ namespace {
                   time_v) == 4);
       };
       check_access(g);
-      check_access(cpp17::as_const(g));
+      check_access(std::as_const(g));
       check_access(tg);
-      check_access(cpp17::as_const(tg));
+      check_access(std::as_const(tg));
       check_access(atg);
-      check_access(cpp17::as_const(atg));
+      check_access(std::as_const(atg));
       check_access(another_atg);
-      check_access(cpp17::as_const(another_atg));
+      check_access(std::as_const(another_atg));
     }
 
     SECTION("Compute velocities") {
@@ -206,13 +206,13 @@ namespace {
                   time_v) == 0);
       };
       check_access(g);
-      check_access(cpp17::as_const(g));
+      check_access(std::as_const(g));
       check_access(tg);
-      check_access(cpp17::as_const(tg));
+      check_access(std::as_const(tg));
       check_access(atg);
-      check_access(cpp17::as_const(atg));
+      check_access(std::as_const(atg));
       check_access(another_atg);
-      check_access(cpp17::as_const(another_atg));
+      check_access(std::as_const(another_atg));
     }
   }
 
@@ -285,7 +285,7 @@ namespace {
                 time_v) == 0.2);
     };
     check_access(translations);
-    check_access(cpp17::as_const(translations));
+    check_access(std::as_const(translations));
   }
 
 }  // namespace

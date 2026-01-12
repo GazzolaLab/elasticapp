@@ -52,7 +52,7 @@ namespace {
     span[span.max_idx] = 11.2;
 
     // const subscript
-    auto&& const_span = cpp17::as_const(span);
+    auto&& const_span = std::as_const(span);
     CHECK(const_span[const_span.min_idx] == approx(-4.0));
     CHECK(const_span[const_span.max_idx] == approx(11.2));
 
@@ -75,12 +75,12 @@ namespace {
     auto new_span = elastica::make_span(5.6, -2.0);
     /// [make_span_eg]
 
-    static_assert(cpp17::is_same_v<decltype(span), elastica::Span<double>>,
+    static_assert(std::is_same_v<decltype(span), elastica::Span<double>>,
                   "meta failure");
     CHECK(span[span.min_idx] == approx(-2.0));
     CHECK(span[span.max_idx] == approx(5.6));
 
-    static_assert(cpp17::is_same_v<decltype(new_span), elastica::Span<double>>,
+    static_assert(std::is_same_v<decltype(new_span), elastica::Span<double>>,
                   "meta failure");
     CHECK(new_span[new_span.min_idx] == approx(-2.0));
     CHECK(new_span[new_span.max_idx] == approx(5.6));

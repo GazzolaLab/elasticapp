@@ -59,7 +59,7 @@ namespace tt {
   // \ingroup type_traits_group
   */
   template <typename Default, template <typename...> class OP, typename... Ts>
-  struct Detector<Default, cpp17::void_t<OP<Ts...> >, OP, Ts...> {
+  struct Detector<Default, std::void_t<OP<Ts...> >, OP, Ts...> {
     using value_type = std::true_type;
     using type = OP<Ts...>;
   };
@@ -95,7 +95,7 @@ namespace tt {
   // \see detected_or_t
   */
   template <typename Default, template <typename...> class Op, typename... Ts>
-  using detected_or = Detector<Default, cpp17::void_t<>, Op, Ts...>;
+  using detected_or = Detector<Default, std::void_t<>, Op, Ts...>;
   //****************************************************************************
 
   //****************************************************************************
@@ -175,7 +175,7 @@ namespace tt {
      \endcode
   //
   // \metareturns
-  // cpp17::bool_constant
+  // std::bool_constant
   //
   // \semantics
   // For any template type `Op` that can potentially be evaluated with the

@@ -30,7 +30,7 @@ namespace {
                                  elastica::IsPeriodic>(50.0, -50.0);
     /// [periodic_eg]
 
-    static_assert(cpp17::is_same_v<cpp20::remove_cvref_t<decltype(x_boundary)>,
+    static_assert(std::is_same_v<std::remove_cvref_t<decltype(x_boundary)>,
                                    elastica::detail::BoundaryAlongWrapper<
                                        elastica::EulerianFrame::X,
                                        elastica::IsPeriodic, elastica::real_t>>,
@@ -38,7 +38,7 @@ namespace {
     CHECK(x_boundary[x_boundary.min_idx] == approx(-5.0));
     CHECK(x_boundary[x_boundary.max_idx] == approx(5.0));
 
-    static_assert(cpp17::is_same_v<cpp20::remove_cvref_t<decltype(y_boundary)>,
+    static_assert(std::is_same_v<std::remove_cvref_t<decltype(y_boundary)>,
                                    elastica::detail::BoundaryAlongWrapper<
                                        elastica::EulerianFrame::Y,
                                        elastica::IsPeriodic, elastica::real_t>>,
@@ -46,7 +46,7 @@ namespace {
     CHECK(y_boundary[y_boundary.min_idx] == approx(-50.0));
     CHECK(y_boundary[y_boundary.max_idx] == approx(50.0));
 
-    static_assert(cpp17::is_same_v<cpp20::remove_cvref_t<decltype(z_boundary)>,
+    static_assert(std::is_same_v<std::remove_cvref_t<decltype(z_boundary)>,
                                    elastica::detail::BoundaryAlongWrapper<
                                        elastica::EulerianFrame::Z,
                                        elastica::IsPeriodic, elastica::real_t>>,
@@ -72,19 +72,19 @@ namespace {
     /// [unbounded_eg]
 
     static_assert(
-        cpp17::is_same_v<cpp20::remove_cvref_t<decltype(x_boundary)>,
+        std::is_same_v<std::remove_cvref_t<decltype(x_boundary)>,
                          elastica::detail::BoundaryAlongWrapper<
                              elastica::EulerianFrame::X, elastica::IsUnbounded,
                              elastica::real_t>>,
         "meta failure");
     static_assert(
-        cpp17::is_same_v<cpp20::remove_cvref_t<decltype(y_boundary)>,
+        std::is_same_v<std::remove_cvref_t<decltype(y_boundary)>,
                          elastica::detail::BoundaryAlongWrapper<
                              elastica::EulerianFrame::Y, elastica::IsUnbounded,
                              elastica::real_t>>,
         "meta failure");
     static_assert(
-        cpp17::is_same_v<cpp20::remove_cvref_t<decltype(z_boundary)>,
+        std::is_same_v<std::remove_cvref_t<decltype(z_boundary)>,
                          elastica::detail::BoundaryAlongWrapper<
                              elastica::EulerianFrame::Z, elastica::IsUnbounded,
                              elastica::real_t>>,

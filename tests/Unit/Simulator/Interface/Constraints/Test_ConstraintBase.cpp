@@ -93,14 +93,14 @@ namespace {
       CHECK(cb.concrete_system_type().empty());
     }
     {
-      CHECK(cpp17::as_const(cb).concrete_constraint_type().empty());
-      CHECK(cpp17::as_const(cb).concrete_system_type().empty());
+      CHECK(std::as_const(cb).concrete_constraint_type().empty());
+      CHECK(std::as_const(cb).concrete_system_type().empty());
     }
     {
       cb.set_concrete_constraint_type() = "Boo";
       cb.set_concrete_system_type() = "As";
-      CHECK_FALSE(cpp17::as_const(cb).concrete_constraint_type().empty());
-      CHECK_FALSE(cpp17::as_const(cb).concrete_system_type().empty());
+      CHECK_FALSE(std::as_const(cb).concrete_constraint_type().empty());
+      CHECK_FALSE(std::as_const(cb).concrete_system_type().empty());
     }
   }
 

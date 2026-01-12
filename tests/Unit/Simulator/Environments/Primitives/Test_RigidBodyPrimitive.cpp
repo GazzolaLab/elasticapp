@@ -42,7 +42,7 @@ namespace {
 
     auto rb(get_rigid_primitive());
     ::testing::check_access_API(rb);
-    ::testing::check_access_API(cpp17::as_const(rb));
+    ::testing::check_access_API(std::as_const(rb));
   }
 
   // clang-format off

@@ -22,16 +22,16 @@ namespace {
   using ::elastica::collision::SpherePrimitive;
   using ::elastica::collision::tt::PrimitiveTrait;
   using ::elastica::collision::tt::PrimitiveTrait_t;
-  static_assert(cpp17::is_same_v<typename PrimitiveTrait<SpherePrimitive>::type,
+  static_assert(std::is_same_v<typename PrimitiveTrait<SpherePrimitive>::type,
                                  SpherePrimitive>,
                 "Meta failure!");
   static_assert(
-      cpp17::is_same_v<PrimitiveTrait_t<SpherePrimitive>, SpherePrimitive>,
+      std::is_same_v<PrimitiveTrait_t<SpherePrimitive>, SpherePrimitive>,
       "Meta failure!");
 
   using ImposedSphere = ImposedPrimitiveAdapter<SpherePrimitive>;
   static_assert(
-      cpp17::is_same_v<PrimitiveTrait_t<ImposedSphere>, SpherePrimitive>,
+      std::is_same_v<PrimitiveTrait_t<ImposedSphere>, SpherePrimitive>,
       "Meta failure!");
   /// [primitive_trait_eg]
 
@@ -55,6 +55,6 @@ namespace elastica {
 }  // namespace elastica
 
 // Doesn't compile!
-// static_assert(cpp17::is_same_v<PrimitiveTrait_t<C>, int>, "Meta failure!");
-static_assert(cpp17::is_same_v<PrimitiveTrait_t<D>, int>, "Meta failure!");
+// static_assert(std::is_same_v<PrimitiveTrait_t<C>, int>, "Meta failure!");
+static_assert(std::is_same_v<PrimitiveTrait_t<D>, int>, "Meta failure!");
 /// [primitive_trait_custom_eg]

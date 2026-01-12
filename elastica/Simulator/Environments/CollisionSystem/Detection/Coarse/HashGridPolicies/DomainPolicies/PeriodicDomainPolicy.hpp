@@ -67,7 +67,7 @@ namespace elastica {
             //**Compile time checks*********************************************
             /*! \cond ELASTICA_INTERNAL */
             static_assert(
-                cpp17::is_same_v<typename SimulatorConfig::DomainType,
+                std::is_same_v<typename SimulatorConfig::DomainType,
                                  DomainType>,
                 "This should not be reached, please contact the developers!");
             /*! \endcond */

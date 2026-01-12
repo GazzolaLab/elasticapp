@@ -21,7 +21,7 @@ namespace {
   template <typename Resolver>
   void run_resolver_test(Resolver& resolver) {
     // whatever
-    CHECK(cpp17::as_const(resolver).max_overlap() == approx(0.0));
+    CHECK(std::as_const(resolver).max_overlap() == approx(0.0));
 
     using namespace elastica::collision;
     using elastica::identity3;
@@ -80,7 +80,7 @@ namespace {
 
     resolver(batched_contact_vectors);
 
-    CHECK(cpp17::as_const(resolver).max_overlap() == approx(0.6));
+    CHECK(std::as_const(resolver).max_overlap() == approx(0.6));
     CHECK_FALSE(::elastica::length(first_sphere.get_force()) == approx(0.0));
     CHECK_FALSE(::elastica::length(capsule.get_force()) == approx(0.0));
   }

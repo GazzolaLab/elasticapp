@@ -87,14 +87,14 @@ namespace elastica {
           using size_type = typename commons::size_type;  // std::size_t
           using dofs_return_type =
               decltype(ConformingType::get_dofs(std::declval<size_type>()));
-          static_assert(cpp17::is_same_v<dofs_return_type, size_type>,
+          static_assert(std::is_same_v<dofs_return_type, size_type>,
                         R"error(
 Not a conforming placement trait, doesn't properly implement static function
 `commons::size_type get_dofs(commons::size_type)`
 )error");
 
           using n_ghosts_return_type = decltype(ConformingType::n_ghosts());
-          static_assert(cpp17::is_same_v<n_ghosts_return_type, size_type>,
+          static_assert(std::is_same_v<n_ghosts_return_type, size_type>,
                         R"error(
 Not a conforming placement trait, doesn't properly implement static function
 `commons::size_type n_ghosts()`

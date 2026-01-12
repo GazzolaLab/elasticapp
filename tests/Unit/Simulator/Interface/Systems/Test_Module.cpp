@@ -216,7 +216,7 @@ namespace mock {
     SystemsSimulator(Traits traits, bool arg_is_final = false)
         : P(),
           ////////////  This piece of code is copy-pasted yo
-          algorithms(cpp17::apply(
+          algorithms(std::apply(
               [](auto&&... initializer_as_a_tuple) noexcept {
                 return Algorithms(
                     std::forward<decltype(initializer_as_a_tuple)>(
@@ -538,28 +538,28 @@ namespace unique {
     static_assert(Sim::get_number_of_system_collections() == 2,
                   "Systems meta-failure!");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             typename Sim::SystemCollections,
             std::tuple<std::vector<ECBlock>, std::vector<ECNamedBlock>>>,
         "Systems meta-failure!");
     Sim::check_if_admissible<ECBlock>();
     Sim::check_if_admissible<ECNamedBlock>();
 
-    static_assert(cpp17::is_same_v<typename Sim::as_block<ECPlugin>, ECBlock>,
+    static_assert(std::is_same_v<typename Sim::as_block<ECPlugin>, ECBlock>,
                   "Systems meta-failure!");
     static_assert(
-        cpp17::is_same_v<typename Sim::as_block<ECNamedPlugin>, ECNamedBlock>,
+        std::is_same_v<typename Sim::as_block<ECNamedPlugin>, ECNamedBlock>,
         "Systems meta-failure!");
 
     using ListOfSystems = tmpl::list<ECBlock, ECNamedBlock>;
-    static_assert(cpp17::is_same_v<typename Sim::as_blocks<ListOfSystemPlugins>,
+    static_assert(std::is_same_v<typename Sim::as_blocks<ListOfSystemPlugins>,
                                    ListOfSystems>,
                   "Systems meta-failure!");
 
     (void)(sim.blocking_policy());
-    (void)(cpp17::as_const(sim).blocking_policy());
+    (void)(std::as_const(sim).blocking_policy());
     (void)(sim.iteration_policy());
-    (void)(cpp17::as_const(sim).iteration_policy());
+    (void)(std::as_const(sim).iteration_policy());
     elastica::ignore_unused(sim);
   }
 
@@ -883,7 +883,7 @@ namespace unique {
               blocks::initialize<::elastica::tags::NElement>(
                   [=](...) { return n_elements; }))));
       // Check that the plugin is actually what we want.
-      static_assert(cpp17::is_same_v<decltype(sliced_ref),
+      static_assert(std::is_same_v<decltype(sliced_ref),
                                      ::blocks::BlockSliceGenerator<Plugin>>,
                     "Metafailure");
       CHECK(sim.check_if_registered(sliced_ref));

@@ -104,7 +104,7 @@ namespace mock {
           is_final(arg_is_final),
           all_registered(arg_all_registered),
           ////////////  This piece of code is copy-pasted yo
-          algorithms(cpp17::apply(
+          algorithms(std::apply(
               [](auto&&... initializer_as_a_tuple) noexcept {
                 return Algorithms(
                     std::forward<decltype(initializer_as_a_tuple)>(
@@ -113,7 +113,7 @@ namespace mock {
               repeat_as_tuple<n_algorithms>(std::make_tuple(this, traits)))),
           ////////////  This piece of code is copy-pasted yo
           ////////////  This piece of code is copy-pasted yo
-          batching_algorithms(cpp17::apply(
+          batching_algorithms(std::apply(
               [](auto&&... initializer_as_a_tuple) noexcept {
                 return BatchingAlgorithms(
                     std::forward<decltype(initializer_as_a_tuple)>(

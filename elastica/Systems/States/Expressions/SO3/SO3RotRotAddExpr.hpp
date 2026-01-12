@@ -71,7 +71,7 @@ namespace elastica {
       using Order = tags::PrimitiveTag;
       //! Vectorized dispatch type
       using is_vectorized =
-          cpp17::conjunction<tt::IsVectorized<STL>, tt::IsVectorized<STR>>;
+          std::conjunction<tt::IsVectorized<STL>, tt::IsVectorized<STR>>;
       //************************************************************************
 
       //**Constructor***********************************************************
@@ -190,7 +190,7 @@ std::invalid_argument
 //        typename STL,  // Type of the left-hand state expression
 //        typename STR,  // Type of the right-hand state expression
 //        typename TDT,  // Type of the right-hand time-delta value
-//        Requires<cpp17::conjunction_v<IsPrimitive<order_t<STL>>,
+//        Requires<std::conjunction_v<IsPrimitive<order_t<STL>>,
 //                                      IsDerivative<order_t<STR>>>> =
 //                                      nullptr>
 //    inline decltype(auto) operator+(SO3Base<STL>& lhs,
@@ -226,7 +226,7 @@ std::invalid_argument
 //        typename STL,  // Type of the left-hand state expression
 //        typename TDT,  // Type of the left-hand time-delta value
 //        typename STR,  // Type of the right-hand state expression
-//        Requires<cpp17::conjunction_v<IsPrimitive<tag_type_t<STR>>,
+//        Requires<std::conjunction_v<IsPrimitive<tag_type_t<STR>>,
 //                                      IsDerivative<tag_type_t<STL>>>> =
 //                                      nullptr>
 //    inline decltype(auto) operator+(SO3TimeDeltaMultExpr<STL, TDT>& lhs,

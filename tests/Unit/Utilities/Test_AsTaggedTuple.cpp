@@ -25,17 +25,17 @@ namespace {
 
   using type_list = tmpl::list<A, B, C>;
   using first_ = tmpl::as_tagged_tuple<type_list>;
-  static_assert(cpp17::is_same_v<first_, correct_type>,
+  static_assert(std::is_same_v<first_, correct_type>,
                 "AsTaggedTuple meta-failure!");
 
   using tuple_list = std::tuple<A, B, C>;
   using second_ = tmpl::as_tagged_tuple<tuple_list>;
-  static_assert(cpp17::is_same_v<second_, correct_type>,
+  static_assert(std::is_same_v<second_, correct_type>,
                 "AsTaggedTuple meta-failure!");
 
   using tagged_tuple_list = tuples::TaggedTuple<A, B, C>;
   using third_ = tmpl::as_tagged_tuple<tagged_tuple_list>;
-  static_assert(cpp17::is_same_v<third_, correct_type>,
+  static_assert(std::is_same_v<third_, correct_type>,
                 "AsTaggedTuple meta-failure!");
   /// [as_tagged_tuple_eg]
 

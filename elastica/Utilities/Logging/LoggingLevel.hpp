@@ -85,11 +85,11 @@ namespace elastica {
     /*!\brief Compile-time check for determining if a level should be logged
      *
      * \tparam LoggingLevel level of logging
-     * \metareturns cpp17::bool_constant
+     * \metareturns std::bool_constant
      */
     template <LoggingLevel L>
     inline constexpr auto to_be_logged() {
-      return cpp17::bool_constant<(log_level >= L)>{};
+      return std::bool_constant<(log_level >= L)>{};
     }
     //**************************************************************************
 
@@ -97,13 +97,13 @@ namespace elastica {
     /*!\brief Compile-time check for determining if a level should not be logged
      *
      * \tparam LoggingLevel level of logging
-     * \metareturns cpp17::bool_constant
+     * \metareturns std::bool_constant
      *
      * \see to_be_logged()
      */
     template <LoggingLevel L>
     inline constexpr auto to_not_be_logged() {
-      return cpp17::negation<decltype(to_be_logged<L>())>{};
+      return std::negation<decltype(to_be_logged<L>())>{};
     }
     //**************************************************************************
 

@@ -449,7 +449,7 @@ namespace {
       using ExpectedViewType = tmpl::type_from<decltype(evt)>;
       static_assert(
           std::is_same<ExpectedViewType,
-                       cpp20::remove_cvref_t<decltype(block_subview)>>::value,
+                       std::remove_cvref_t<decltype(block_subview)>>::value,
           "Block subview logic failure!");
       // checking contents of block[1]
       check_slice_at_1(block_subview);
@@ -459,7 +459,7 @@ namespace {
       using ExpectedSliceType = tmpl::type_from<decltype(est)>;
       static_assert(
           std::is_same<ExpectedSliceType,
-                       cpp20::remove_cvref_t<decltype(block_slice)>>::value,
+                       std::remove_cvref_t<decltype(block_slice)>>::value,
           "Block slice logic failure!");
       check_slice_at_1(block_slice);
     };
@@ -527,12 +527,12 @@ namespace {
       // Check slabbing a block view,
       auto subview = blocks::slice(block_view, 0UL, 1UL);
       check_subview_from_view(subview);
-      check_subview_from_view(cpp17::as_const(subview));
+      check_subview_from_view(std::as_const(subview));
 
       auto another_subview =
-          blocks::slice(cpp17::as_const(block_view), 0UL, 1UL);
+          blocks::slice(std::as_const(block_view), 0UL, 1UL);
       check_subview_from_constview(another_subview);
-      check_subview_from_constview(cpp17::as_const(another_subview));
+      check_subview_from_constview(std::as_const(another_subview));
 
       check_subview_from_view(blocks::slice(block_view, 0UL, 1UL));
       check_subview_from_view(
@@ -563,11 +563,11 @@ namespace {
       // Check slicing a block view
       auto subslice = blocks::slice(block_view, 0UL);
       check_slice_from_view(subslice);
-      check_slice_from_view(cpp17::as_const(subslice));
+      check_slice_from_view(std::as_const(subslice));
 
-      auto another_subslice = blocks::slice(cpp17::as_const(block_view), 0UL);
+      auto another_subslice = blocks::slice(std::as_const(block_view), 0UL);
       check_slice_from_constview(another_subslice);
-      check_slice_from_constview(cpp17::as_const(another_subslice));
+      check_slice_from_constview(std::as_const(another_subslice));
 
       check_slice_from_view(blocks::slice(block_view, 0UL));
       check_slice_from_view(blocks::slice(block_view, ::elastica::end - 2UL));
@@ -1789,8 +1789,8 @@ namespace {
     run_test(block);
     run_test(blocks::slice(block, 0UL));
     run_test(blocks::slice(block, 0UL, 2UL));
-    run_test(blocks::slice(cpp17::as_const(block), 0UL));
-    run_test(blocks::slice(cpp17::as_const(block), 0UL, 2UL));
+    run_test(blocks::slice(std::as_const(block), 0UL));
+    run_test(blocks::slice(std::as_const(block), 0UL, 2UL));
   }
 
 }  // namespace

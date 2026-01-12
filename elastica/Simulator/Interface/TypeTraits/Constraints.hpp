@@ -56,7 +56,7 @@ namespace elastica {
      * \endcode
      *
      * \metareturns
-     * cpp17::bool_constant
+     * std::bool_constant
      *
      * \semantics
      * If the type \c CM conforms to protocols::Constraints, then

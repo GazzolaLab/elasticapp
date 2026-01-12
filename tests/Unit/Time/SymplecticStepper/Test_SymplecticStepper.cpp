@@ -75,7 +75,7 @@ namespace {
             update, [](...) {},
             [&](auto const& time_update) { time_v += time_update(dt); });
       });
-      CHECK(cpp17::as_const(time_v).value() == approx(2.0));
+      CHECK(std::as_const(time_v).value() == approx(2.0));
     });
   }
 
@@ -109,7 +109,7 @@ namespace {
           apply_substeps_of(time_stepper, [&, dt = dt](auto const& update) {
             dispatch_based_on(
                 update,
-                [&, &time_v = cpp17::as_const(time_v),
+                [&, &time_v = std::as_const(time_v),
                  dt = dt](auto const& system_update) {
                   system_update(system, time_v, dt);
                 },
@@ -119,7 +119,7 @@ namespace {
           });
         }
 
-        CHECK(cpp17::as_const(time_v) >= approx(cpp17::as_const(final_time_v)));
+        CHECK(std::as_const(time_v) >= approx(std::as_const(final_time_v)));
 
         typename System::Type::ValueType analytical_primitive,
             analytical_derivative;

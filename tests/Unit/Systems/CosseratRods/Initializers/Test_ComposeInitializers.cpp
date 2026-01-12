@@ -59,13 +59,13 @@ namespace {
         TestComposeInitializers::Material{::elastica::iron},
         TestComposeInitializers::Radius{0.5}};
     static_assert(
-        cpp17::is_same_v<typename TestComposeInitializers::RequiredParameters,
+        std::is_same_v<typename TestComposeInitializers::RequiredParameters,
                          tmpl::list<TestComposeInitializers::NElement,
                                     TestComposeInitializers::Material,
                                     TestComposeInitializers::Radius>>,
         "!");
     static_assert(
-        cpp17::is_same_v<typename TestComposeInitializers::DefaultParameters,
+        std::is_same_v<typename TestComposeInitializers::DefaultParameters,
                          tmpl::list<VelocityDefaultParameter>>,
         "!");
 
@@ -129,14 +129,14 @@ namespace {
         AnotherTestComposeInitializers::Material{::elastica::iron},
         AnotherTestComposeInitializers::Radius{0.5}};
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             typename AnotherTestComposeInitializers::RequiredParameters,
             tmpl::list<AnotherTestComposeInitializers::NElement,
                        AnotherTestComposeInitializers::Material,
                        AnotherTestComposeInitializers::Radius>>,
         "!");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             typename AnotherTestComposeInitializers::DefaultParameters,
             tmpl::list<>>,
         "!");

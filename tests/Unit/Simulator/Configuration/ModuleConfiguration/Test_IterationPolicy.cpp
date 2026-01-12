@@ -72,7 +72,7 @@ namespace {
       /// [seq_eg]
 
       static_assert(
-          cpp17::is_same_v<
+          std::is_same_v<
               decltype(iteration_policy),
               IterationPolicy<sequential_policy, sequential_policy, void>>,
           "Meta failure!");
@@ -83,7 +83,7 @@ namespace {
       auto iteration_policy = make_iteration_policy(
           iterate_across_system_types_in(par), iterate_over_systems_in(seq));
       static_assert(
-          cpp17::is_same_v<
+          std::is_same_v<
               decltype(iteration_policy),
               IterationPolicy<parallel_policy, sequential_policy, void>>,
           "Meta failure!");
@@ -94,7 +94,7 @@ namespace {
       auto iteration_policy = make_iteration_policy(
           iterate_across_system_types_in(par), iterate_over_systems_in(par));
       static_assert(
-          cpp17::is_same_v<
+          std::is_same_v<
               decltype(iteration_policy),
               IterationPolicy<parallel_policy, parallel_policy, void>>,
           "Meta failure!");
@@ -109,7 +109,7 @@ namespace {
       /// [mixed_eg]
 
       static_assert(
-          cpp17::is_same_v<
+          std::is_same_v<
               decltype(iteration_policy),
               IterationPolicy<sequential_policy, parallel_policy, void>>,
           "Meta failure!");
@@ -128,7 +128,7 @@ namespace {
                                 iterate_over_systems_in(hybrid), Criteria{20});
       /// [hybrid_eg]
       static_assert(
-          cpp17::is_same_v<
+          std::is_same_v<
               decltype(iteration_policy),
               IterationPolicy<sequential_policy, hybrid_policy, Criteria>>,
           "Meta failure!");
@@ -143,7 +143,7 @@ namespace {
           iterate_across_system_types_in(seq), iterate_over_systems_in(hybrid),
           AllCriteria{20});
       static_assert(
-          cpp17::is_same_v<
+          std::is_same_v<
               decltype(another_iteration_policy),
               IterationPolicy<sequential_policy, hybrid_policy, AllCriteria>>,
           "Meta failure!");
@@ -163,7 +163,7 @@ namespace {
           iterate_across_system_types_in(seq), iterate_over_systems_in(hybrid),
           IntCriteria{20UL}, CharCriteria{40UL});
       static_assert(
-          cpp17::is_same_v<
+          std::is_same_v<
               decltype(iteration_policy),
               IterationPolicy<sequential_policy, hybrid_policy,
                               CompositeCriteria<IntCriteria, CharCriteria>>>,

@@ -89,7 +89,7 @@ namespace py_bindings {
         using Parameter = decltype(input_parameter);
         return pretty_type::name<Parameter>();
       };
-      return cpp17::apply(
+      return std::apply(
           [generate_arg_metadata_for](auto... input_parameter) {
             return std::make_tuple(
                 generate_arg_metadata_for(input_parameter)...);
@@ -125,7 +125,7 @@ namespace py_bindings {
         return std::string("Initializes the ") + pretty_type::name<CaseStudy>();
       };
 
-      return cpp17::apply(
+      return std::apply(
           [generate_header,
            generate_docstring_for](auto... input_parameter) mutable {
             std::ostringstream docstream;
@@ -149,7 +149,7 @@ namespace py_bindings {
       // Heap allocation to prevent copies in pybind, see #580.
       auto caseStudy = std::make_unique<CaseStudy>();
       // tuples -> tagged tuple needed here
-      caseStudy->setup(cpp17::apply(
+      caseStudy->setup(std::apply(
           [](auto&&... input_parameter) {
             return InputTypes(std::move(input_parameter)...);
           },

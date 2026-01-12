@@ -495,7 +495,7 @@ act on the given systems FirstSystem (second template parameter) and SecondSyste
        * \tparam FirstSystem Type of first system
        * \tparam SecondSystem Type of second system
        *
-       * \metareturns ::cpp17::bool_constant
+       * \metareturns ::std::bool_constant
        */
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       static inline constexpr auto derived_has_apply_forces() noexcept {
@@ -513,13 +513,13 @@ act on the given systems FirstSystem (second template parameter) and SecondSyste
        * \tparam FirstSystem Type of first system
        * \tparam SecondSystem Type of second system
        *
-       * \metareturns cpp17::bool_constant
+       * \metareturns std::bool_constant
        *
        * \see derived_has_apply_forces()
        */
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       static inline constexpr auto derived_has_no_apply_forces() noexcept {
-        return cpp17::negation<
+        return std::negation<
             decltype(derived_has_apply_forces<TimeType, FirstSystem,
                                               SecondSystem>())>{};
       }
@@ -542,7 +542,7 @@ act on the given systems FirstSystem (second template parameter) and SecondSyste
        * \tparam FirstSystem Type of first system
        * \tparam SecondSystem Type of second system
        *
-       * \metareturns cpp17::bool_constant
+       * \metareturns std::bool_constant
        */
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       static inline constexpr auto derived_has_apply_torques() noexcept {
@@ -560,13 +560,13 @@ act on the given systems FirstSystem (second template parameter) and SecondSyste
        * \tparam FirstSystem Type of first system
        * \tparam SecondSystem Type of second system
        *
-       * \metareturns cpp17::bool_constant
+       * \metareturns std::bool_constant
        *
        * \see derived_has_apply_torques()
        */
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       static inline constexpr auto derived_has_no_apply_torques() noexcept {
-        return cpp17::negation<
+        return std::negation<
             decltype(derived_has_apply_torques<TimeType, FirstSystem,
                                                SecondSystem>())>{};
       }
@@ -589,7 +589,7 @@ act on the given systems FirstSystem (second template parameter) and SecondSyste
        * \tparam FirstSystem Type of first system
        * \tparam SecondSystem Type of second system
        *
-       * \metareturns ::cpp17::bool_constant
+       * \metareturns ::std::bool_constant
        */
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       static inline constexpr auto
@@ -608,14 +608,14 @@ act on the given systems FirstSystem (second template parameter) and SecondSyste
        * \tparam FirstSystem Type of first system
        * \tparam SecondSystem Type of second system
        *
-       * \metareturns cpp17::bool_constant
+       * \metareturns std::bool_constant
        *
        * \see derived_has_deferred_apply_forces()
        */
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       static inline constexpr auto
       derived_has_no_deferred_apply_forces() noexcept {
-        return cpp17::negation<
+        return std::negation<
             decltype(derived_has_deferred_apply_forces<TimeType, FirstSystem,
                                                        SecondSystem>())>{};
       }
@@ -638,7 +638,7 @@ act on the given systems FirstSystem (second template parameter) and SecondSyste
        * \tparam FirstSystem Type of first system
        * \tparam SecondSystem Type of second system
        *
-       * \metareturns cpp17::bool_constant
+       * \metareturns std::bool_constant
        */
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       static inline constexpr auto
@@ -657,14 +657,14 @@ act on the given systems FirstSystem (second template parameter) and SecondSyste
        * \tparam FirstSystem Type of first system
        * \tparam SecondSystem Type of second system
        *
-       * \metareturns cpp17::bool_constant
+       * \metareturns std::bool_constant
        *
        * \see derived_has_deferred_apply_torques()
        */
       template <typename TimeType, typename FirstSystem, typename SecondSystem>
       static inline constexpr auto
       derived_has_no_deferred_apply_torques() noexcept {
-        return cpp17::negation<
+        return std::negation<
             decltype(derived_has_deferred_apply_torques<TimeType, FirstSystem,
                                                         SecondSystem>())>{};
       }

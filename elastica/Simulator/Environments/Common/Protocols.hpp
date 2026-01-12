@@ -116,7 +116,7 @@ Not a conforming Environment, doesn't have typedef
           using resolve_return_type =
               decltype(std::declval<ConformingType&>().resolve(
                   std::declval<SimulatorType&>(), std::declval<TimeType>()));
-          static_assert(cpp17::is_same_v<initialize_return_type, void>,
+          static_assert(std::is_same_v<initialize_return_type, void>,
                         R"error(
 Not a conforming Environment, doesn't properly implement function
 `
@@ -127,7 +127,7 @@ void initialize(Simulator& simulator){
 `
 )error");
 
-          static_assert(cpp17::is_same_v<resolve_return_type, void>,
+          static_assert(std::is_same_v<resolve_return_type, void>,
                         R"error(
 Not a conforming Environment, doesn't properly implement function
 `

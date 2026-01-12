@@ -45,7 +45,7 @@ namespace blocks {
    * \endcode
    *
    * \metareturns
-   * cpp17::bool_constant
+   * std::bool_constant
    *
    * \semantics
    * If the type `Var` inherits from protocols::Variable, then
@@ -84,7 +84,7 @@ namespace blocks {
    * \endcode
    *
    * \metareturns
-   * cpp17::bool_constant
+   * std::bool_constant
    *
    * \semantics
    * If the type `B` is an instantiation of elastica::BlockInitializer, then

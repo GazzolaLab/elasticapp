@@ -443,7 +443,7 @@ namespace elastica {
           explicit InvokeOverPrimitivesOp(
               std::tuple<PrimitivesModule*, PrimitivesTraits const&>&& args)
               : InvokeOverPrimitivesOp(
-                    cpp17::make_from_tuple<InvokeOverPrimitivesOp>(
+                    std::make_from_tuple<InvokeOverPrimitivesOp>(
                         std::move(args))) {}
           //********************************************************************
 
@@ -495,7 +495,7 @@ namespace elastica {
               F func, tmpl::list<PrimitivesBlocks...>) const noexcept -> F {
             // TODO : Whats the performance impact of std::ref, since this
             // is going to be a tight loop?
-            (void)cpp17::apply(
+            (void)std::apply(
                 invoke_over_primitives(for_each_primitive(std::ref(func))),
                 std::tie(
                     module_handle.template primitives<PrimitivesBlocks>()...));
@@ -526,7 +526,7 @@ namespace elastica {
           inline auto operator()(F func) const noexcept -> F {
             // TODO : Whats the performance impact of std::ref, since this
             // is going to be a tight loop?
-            (void)cpp17::apply(
+            (void)std::apply(
                 invoke_over_primitives(for_each_primitive(std::ref(func))),
                 module_handle.primitives().data());
             return func;

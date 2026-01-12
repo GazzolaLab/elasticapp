@@ -423,7 +423,7 @@ namespace Options {
     // Any actual warnings will be printed by later calls to get or
     // apply, but it is not clear how to determine in those functions
     // whether this message should be printed.
-    if (cpp17::is_same_v<Group, NoSuchType> and context_.top_level) {
+    if (std::is_same_v<Group, NoSuchType> and context_.top_level) {
       //      Parallel::printf_error(
       //          "The following options differ from their suggested
       //          values:\n");
@@ -457,7 +457,7 @@ namespace Options {
           Requires<Options_detail::has_suggested<LocalTag>::value> = nullptr>
       static void check_suggested_value(const typename LocalTag::type&,
                                         const Parser<OptionList, Group>& opts) {
-        static_assert(cpp17::is_same_v<decltype(LocalTag::suggested_value()),
+        static_assert(std::is_same_v<decltype(LocalTag::suggested_value()),
                                        typename LocalTag::type>,
                       "Suggested value is not of the same type as the option.");
 
@@ -583,7 +583,7 @@ namespace Options {
             Requires<Options_detail::has_lower_bound_on_size<T>::value>>
   void Parser<OptionList, Group>::check_lower_bound_on_size(
       const typename T::type& t, const Context& context) const {
-    static_assert(cpp17::is_same_v<decltype(T::lower_bound_on_size()), size_t>,
+    static_assert(std::is_same_v<decltype(T::lower_bound_on_size()), size_t>,
                   "lower_bound_on_size() is not a size_t.");
     if (t.size() < T::lower_bound_on_size()) {
       PARSE_ERROR(context, "Value must have at least "
@@ -598,7 +598,7 @@ namespace Options {
             Requires<Options_detail::has_upper_bound_on_size<T>::value>>
   void Parser<OptionList, Group>::check_upper_bound_on_size(
       const typename T::type& t, const Context& context) const {
-    static_assert(cpp17::is_same_v<decltype(T::upper_bound_on_size()), size_t>,
+    static_assert(std::is_same_v<decltype(T::upper_bound_on_size()), size_t>,
                   "upper_bound_on_size() is not a size_t.");
     if (t.size() > T::upper_bound_on_size()) {
       PARSE_ERROR(context, "Value must have at most "
@@ -613,9 +613,9 @@ namespace Options {
   inline void Parser<OptionList, Group>::check_lower_bound(
       const typename T::type& t, const Context& context) const {
     static_assert(
-        cpp17::is_same_v<decltype(T::lower_bound()), typename T::type>,
+        std::is_same_v<decltype(T::lower_bound()), typename T::type>,
         "Lower bound is not of the same type as the option.");
-    static_assert(not cpp17::is_same_v<typename T::type, bool>,
+    static_assert(not std::is_same_v<typename T::type, bool>,
                   "Cannot set a lower bound for a bool.");
     if (t < T::lower_bound()) {
       PARSE_ERROR(context, "Value " << (MakeString{} << t)
@@ -631,9 +631,9 @@ namespace Options {
   inline void Parser<OptionList, Group>::check_upper_bound(
       const typename T::type& t, const Context& context) const {
     static_assert(
-        cpp17::is_same_v<decltype(T::upper_bound()), typename T::type>,
+        std::is_same_v<decltype(T::upper_bound()), typename T::type>,
         "Upper bound is not of the same type as the option.");
-    static_assert(not cpp17::is_same_v<typename T::type, bool>,
+    static_assert(not std::is_same_v<typename T::type, bool>,
                   "Cannot set an upper bound for a bool.");
     if (t > T::upper_bound()) {
       PARSE_ERROR(context, "Value " << (MakeString{} << t)
@@ -679,14 +679,14 @@ namespace Options {
   }
 
   namespace Options_detail {
-    template <typename T, typename Metavariables, typename = cpp17::void_t<>>
+    template <typename T, typename Metavariables, typename = std::void_t<>>
     struct get_options_list {
       using type = typename T::template options<Metavariables>;
     };
 
     template <typename T, typename Metavariables>
     struct get_options_list<T, Metavariables,
-                            cpp17::void_t<typename T::options>> {
+                            std::void_t<typename T::options>> {
       using type = typename T::options;
     };
   }  // namespace Options_detail

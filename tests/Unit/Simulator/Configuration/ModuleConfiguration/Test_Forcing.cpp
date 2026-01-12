@@ -31,13 +31,13 @@ namespace {
                       decltype(sequential_forcing)>::value,
                   "meta failure!");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(sequential_forcing),
             ForcingConfiguration<sequential_policy,
                                  ELASTICA_DEFAULT_REGISTRARS_FOR_FORCING>>,
         "meta failure");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(sequential_forcing),
             ForcingConfiguration<sequential_policy, CustomRegistrars>>,
         "meta failure");
@@ -57,12 +57,12 @@ namespace {
                       decltype(parallel_forcing)>::value,
                   "meta failure!");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(parallel_forcing),
             ForcingConfiguration<parallel_policy,
                                  ELASTICA_DEFAULT_REGISTRARS_FOR_FORCING>>,
         "meta failure");
-    static_assert(cpp17::is_same_v<
+    static_assert(std::is_same_v<
                       decltype(parallel_forcing),
                       ForcingConfiguration<parallel_policy, CustomRegistrars>>,
                   "meta failure");
@@ -81,13 +81,13 @@ namespace {
                   "meta failure!");
 
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(hybrid_forcing),
             ForcingConfiguration<hybrid_policy,
                                  ELASTICA_DEFAULT_REGISTRARS_FOR_FORCING>>,
         "meta failure");
     static_assert(
-        cpp17::is_same_v<decltype(hybrid_forcing),
+        std::is_same_v<decltype(hybrid_forcing),
                          ForcingConfiguration<hybrid_policy, CustomRegistrars>>,
         "meta failure");
 

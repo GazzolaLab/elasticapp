@@ -49,7 +49,7 @@ namespace elastica {
 
    public:
     Offsets() noexcept
-        : offsets_(cpp17::apply(
+        : offsets_(std::apply(
               [](auto... values) { return Offsets_(values...); },
               repeat_as_tuple<tuples::tuple_size<Offsets_>::value>(0UL))) {}
     ~Offsets() = default;

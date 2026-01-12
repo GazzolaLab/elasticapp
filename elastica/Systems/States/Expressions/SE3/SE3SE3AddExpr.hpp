@@ -71,7 +71,7 @@ namespace elastica {
       using Order = tt::common_order_t<STL, STR>;
       //! Vectorized Dispatch type
       using is_vectorized =
-          cpp17::conjunction<tt::IsVectorized<STL>, tt::IsVectorized<STR>>;
+          std::conjunction<tt::IsVectorized<STL>, tt::IsVectorized<STR>>;
       //************************************************************************
 
       //**Constructor***********************************************************

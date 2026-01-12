@@ -15,7 +15,7 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Utilities.as_const", "[Unit][Utilities]") {
     // [as_const_eg]
     std::string mutableString = "Hello World!";
-    auto&& constRef = cpp17::as_const(mutableString);
+    auto&& constRef = std::as_const(mutableString);
 
     // OK
     // mutableString.clear();
@@ -25,14 +25,14 @@ namespace {
     // constRef.clear();
 
     CHECK(&constRef == &mutableString);
-    CHECK(&cpp17::as_const(mutableString) == &mutableString);
+    CHECK(&std::as_const(mutableString) == &mutableString);
 
     using ExprType =
-        std::remove_reference_t<decltype(cpp17::as_const(mutableString))>;
+        std::remove_reference_t<decltype(std::as_const(mutableString))>;
 
-    static_assert(cpp17::is_same_v<std::remove_const_t<ExprType>, std::string>,
+    static_assert(std::is_same_v<std::remove_const_t<ExprType>, std::string>,
                   "ExprType should be some kind of string.");
-    static_assert(!cpp17::is_same_v<ExprType, std::string>,
+    static_assert(!std::is_same_v<ExprType, std::string>,
                   "ExprType shouldn't be a mutable string.");
     // [as_const_eg]
   }

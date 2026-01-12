@@ -34,20 +34,20 @@ namespace {
 
     // primary template handles types that have no nested ::ForceModel
     // member:
-    template <class, class = cpp17::void_t<>>
+    template <class, class = std::void_t<>>
     struct HasValidForceModelMember : std::false_type {};
 
     // specialization recognizes types that do have a nested ::ForceModel
     // member:
     template <class T>
-    struct HasValidForceModelMember<T, cpp17::void_t<typename T::ForceModel>>
+    struct HasValidForceModelMember<T, std::void_t<typename T::ForceModel>>
         : std::true_type {};
 
   }  // namespace detail
 
   template <class T>
   constexpr bool has_valid_force_model_member_v =
-      detail::HasValidForceModelMember<cpp20::remove_cvref_t<T>>::value;
+      detail::HasValidForceModelMember<std::remove_cvref_t<T>>::value;
 
   template <typename Traits>
   struct MockField : public elastica::Singleton<MockField<Traits>>
@@ -484,7 +484,7 @@ namespace {
             ::elastica::configuration::seq, ::elastica::configuration::seq,
             Model{});
         initialize_parameters(*solver, config);
-        // CHECK(cpp17::as_const(solver)->get_response_solver().force_model() ==
+        // CHECK(std::as_const(solver)->get_response_solver().force_model() ==
         // my_gravity);
         reset(*solver, ::elastica::Time{0.0});
       }
@@ -507,7 +507,7 @@ namespace {
           (void)sol->reset(::elastica::Time{0.0});
         };
         check_member_API(solver);
-        check_member_API(cpp17::as_const(solver));
+        check_member_API(std::as_const(solver));
       }
     }
 

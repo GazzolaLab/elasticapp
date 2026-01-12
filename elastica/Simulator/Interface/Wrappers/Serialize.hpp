@@ -76,7 +76,7 @@ namespace elastica {
 
       template <typename InArchive>
       static inline void load(InArchive& ar, type& uuid_map) {
-        using L = decltype(cpp17::as_const(uuid_map).as_vectors());
+        using L = decltype(std::as_const(uuid_map).as_vectors());
         L loader;
         ar(loader);
         uuid_map.from_vectors(std::move(loader));

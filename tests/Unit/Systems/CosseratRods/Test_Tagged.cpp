@@ -96,7 +96,7 @@ namespace unique {
     {
       auto first_slice = blocks::slice(model, 0UL);
       static_assert(
-          cpp17::is_same_v<
+          std::is_same_v<
               decltype(first_slice),
               blocks::BlockSlice<GenerateTestPluginSlice<EmptyComponent>>>,
           "Tagged plugin failure!");
@@ -106,10 +106,10 @@ namespace unique {
     }
 
     {
-      auto&& const_model = cpp17::as_const(model);
+      auto&& const_model = std::as_const(model);
       auto second_slice = blocks::slice(const_model, 1UL);
       static_assert(
-          cpp17::is_same_v<decltype(second_slice),
+          std::is_same_v<decltype(second_slice),
                            blocks::ConstBlockSlice<
                                GenerateTestPluginConstSlice<EmptyComponent>>>,
           "Tagged plugin failure!");
@@ -129,7 +129,7 @@ namespace unique {
     {
       auto some_view = blocks::slice(model, 0UL, 2UL);
       static_assert(
-          cpp17::is_same_v<
+          std::is_same_v<
               decltype(some_view),
               blocks::BlockView<GenerateTestPluginView<EmptyComponent>>>,
           "Tagged plugin failure!");
@@ -139,9 +139,9 @@ namespace unique {
     }
 
     {
-      auto some_view = blocks::slice(cpp17::as_const(model), 0UL, 2UL);
+      auto some_view = blocks::slice(std::as_const(model), 0UL, 2UL);
       static_assert(
-          cpp17::is_same_v<decltype(some_view),
+          std::is_same_v<decltype(some_view),
                            blocks::ConstBlockView<
                                GenerateTestPluginConstView<EmptyComponent>>>,
           "Tagged plugin failure!");

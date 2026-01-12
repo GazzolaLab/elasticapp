@@ -48,15 +48,15 @@ namespace {
   using U = elastica::IsUnbounded;
 
   using PPP = elastica::tt::SimulationDomainType<P, P, P>;
-  static_assert(cpp17::is_same_v<PPP, elastica::PeriodicDomain>,
+  static_assert(std::is_same_v<PPP, elastica::PeriodicDomain>,
                 "Domain meta failure");
 
   using PUP = elastica::tt::SimulationDomainType<P, U, P>;
-  static_assert(cpp17::is_same_v<PUP, elastica::PeriodicDomain>,
+  static_assert(std::is_same_v<PUP, elastica::PeriodicDomain>,
                 "Domain meta failure");
 
   using UUU = elastica::tt::SimulationDomainType<U, U, U>;
-  static_assert(cpp17::is_same_v<UUU, elastica::UnboundedDomain>,
+  static_assert(std::is_same_v<UUU, elastica::UnboundedDomain>,
                 "Domain meta failure");
   /// [SimulationDomainType_eg]
 

@@ -65,7 +65,7 @@ namespace {
 
     using Sim = tmpl::type_from<decltype(sim_type)>;
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             typename Sim::Algorithm,
             typename Sim::ApplyEnvironmentForcesOp<sequential_policy>>,
         "Algorithm meta-failure!");
@@ -80,7 +80,7 @@ namespace {
     elastica::ignore_unused(sim_type);
 
     using Sim = tmpl::type_from<decltype(sim_type)>;
-    static_assert(cpp17::is_same_v<
+    static_assert(std::is_same_v<
                       typename Sim::Algorithm,
                       typename Sim::ApplyEnvironmentForcesOp<parallel_policy>>,
                   "Algorithm meta-failure!");

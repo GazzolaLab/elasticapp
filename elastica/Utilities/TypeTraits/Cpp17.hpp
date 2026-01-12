@@ -41,7 +41,7 @@ namespace cpp17 {
   // \usage
   // For any bool `B`
      \code
-     using result = cpp17::bool_constant<B>;
+     using result = std::bool_constant<B>;
      \endcode
   //
   // \see std::bool_constant std::integral_constant std::true_type
@@ -56,35 +56,35 @@ namespace cpp17 {
   // \ingroup type_traits_group
   //
   // \details
-  // Given a list of cpp17::bool_constant template parameters computes their
+  // Given a list of std::bool_constant template parameters computes their
   // logical AND. If the result is `true` then derive off of std::true_type,
   // otherwise derive from std::false_type. See the documentation for
   // std::conjunction for more details.
   //
   // \usage
-  // For any set of types `Ti` that are cpp17::bool_constant like
+  // For any set of types `Ti` that are std::bool_constant like
      \code
-     using result = cpp17::conjunction<T0, T1, T2>;
+     using result = std::conjunction<T0, T1, T2>;
      \endcode
   // \pre For all types `Ti`, `Ti::value` is a `bool`
   //
   // \metareturns
-  // cpp17::bool_constant
+  // std::bool_constant
   //
   // \semantics
   // If `T::value != false` for all `Ti`, then
      \code
-     using result = cpp17::bool_constant<true>;
+     using result = std::bool_constant<true>;
      \endcode
   // otherwise
      \code
-     using result = cpp17::bool_constant<false>;
+     using result = std::bool_constant<false>;
      \endcode
   //
   // \example
   // \snippet TypeTraits/Test_Cpp17.cpp conjunction_example
   //
-  // \tparam B... A set of cpp17::bool_constant
+  // \tparam B... A set of std::bool_constant
   //
   // \see std::conjunction, disjunction, std::disjunction
   */
@@ -104,7 +104,7 @@ namespace cpp17 {
   //****************************************************************************
 
   //****************************************************************************
-  /*!\brief Auxiliary variable template for eager check of `cpp17::conjunction`
+  /*!\brief Auxiliary variable template for eager check of `std::conjunction`
   // \ingroup type_traits_group
   //
   // \details
@@ -112,14 +112,14 @@ namespace cpp17 {
   // access the nested value `value` of `conjunction`, used as follows.
   //
   // \usage
-  // Given two `cpp17::bool_constant` `B1` and `B2` the following two statements
+  // Given two `std::bool_constant` `B1` and `B2` the following two statements
   // are identical:
      \code
-     constexpr bool value1 = cpp17::conjunction<B1, B2>::value;
-     constexpr bool value2 = cpp17::conjunction_v<B1, B2>;
+     constexpr bool value1 = std::conjunction<B1, B2>::value;
+     constexpr bool value2 = std::conjunction_v<B1, B2>;
      \endcode
   //
-  // \tparam B... A set of cpp17::bool_constant
+  // \tparam B... A set of std::bool_constant
   //
   // \see conjunction
   */
@@ -132,35 +132,35 @@ namespace cpp17 {
   // \ingroup type_traits_group
   //
   // \details
-  // Given a list of cpp17::bool_constant template parameters computes their
+  // Given a list of std::bool_constant template parameters computes their
   // logical OR. If the result is `true` then derive off of std::true_type,
   // otherwise derive from std::false_type. See the documentation for
   // std::conjunction for more details.
   //
   // \usage
-  // For any set of types `Ti` that are cpp17::bool_constant like
+  // For any set of types `Ti` that are std::bool_constant like
      \code
-     using result = cpp17::disjunction<T0, T1, T2>;
+     using result = std::disjunction<T0, T1, T2>;
      \endcode
   // \pre For all types `Ti`, `Ti::value` is a `bool`
   //
   // \metareturns
-  // cpp17::bool_constant
+  // std::bool_constant
   //
   // \semantics
   // If `T::value == true` for any `Ti`, then
      \code
-     using result = cpp17::bool_constant<true>;
+     using result = std::bool_constant<true>;
      \endcode
   // otherwise
      \code
-     using result = cpp17::bool_constant<false>;
+     using result = std::bool_constant<false>;
      \endcode
   //
   // \example
   // \snippet TypeTraits/Test_Cpp17.cpp disjunction_example
   //
-  // \tparam B... A set of cpp17::bool_constant
+  // \tparam B... A set of std::bool_constant
   //
   // \see std::disjunction, conjunction, std::conjunction
   */
@@ -180,7 +180,7 @@ namespace cpp17 {
   //****************************************************************************
 
   //****************************************************************************
-  /*!\brief Auxiliary variable template for eager check of `cpp17::disjunction`
+  /*!\brief Auxiliary variable template for eager check of `std::disjunction`
   // \ingroup type_traits_group
   //
   // \details
@@ -188,14 +188,14 @@ namespace cpp17 {
   // access the nested value `value` of `disjunction`, used as follows.
   //
   // \usage
-  // Given two cpp17::bool_constant `B1` and `B2` the following two statements
+  // Given two std::bool_constant `B1` and `B2` the following two statements
   // are identical:
      \code
-     constexpr bool value1 = cpp17::disjunction<B1, B2>::value;
-     constexpr bool value2 = cpp17::disjunction_v<B1, B2>;
+     constexpr bool value1 = std::disjunction<B1, B2>::value;
+     constexpr bool value2 = std::disjunction_v<B1, B2>;
      \endcode
   //
-  // \tparam B... A set of cpp17::bool_constant
+  // \tparam B... A set of std::bool_constant
   //
   // \see disjunction
   */
@@ -204,7 +204,7 @@ namespace cpp17 {
   //****************************************************************************
 
   //****************************************************************************
-  /*!\brief Negate a cpp17::bool_constant
+  /*!\brief Negate a std::bool_constant
   // \ingroup type_traits_group
   //
   // \details
@@ -213,7 +213,7 @@ namespace cpp17 {
   // \usage
   // For a ::bool_constant `B`
      \code
-     using result = cpp17::negate<B>;
+     using result = std::negate<B>;
      \endcode
   //
   // \metareturns
@@ -222,7 +222,7 @@ namespace cpp17 {
   // \semantics
   // If `B::value == true` then
      \code
-     using result = cpp17::bool_constant<false>;
+     using result = std::bool_constant<false>;
      \endcode
   //
   // \example
@@ -241,14 +241,14 @@ namespace cpp17 {
   // \ingroup type_traits_group
   //
   // \details
-  // The cpp17::is_same_v variable template provides a convenient shortcut to
+  // The std::is_same_v variable template provides a convenient shortcut to
   // access the nested value `value` of `std::is_same`, used as follows.
   //
   // \usage
   // Given two types `T1` and `T2` the following two statements are identical:
      \code
      constexpr bool value1 = std::is_same<T1, T2>::value;
-     constexpr bool value2 = cpp17::is_same_v<T1, T2>;
+     constexpr bool value2 = std::is_same_v<T1, T2>;
      \endcode
   //
   // \example

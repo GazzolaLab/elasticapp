@@ -123,19 +123,19 @@ Z direction
           /// [expected_functions]
           // Try calling the `ConformingType::domain` templated member
           // function
-          using const_lvalue_domain_return_type = cpp20::remove_cvref_t<
+          using const_lvalue_domain_return_type = std::remove_cvref_t<
               decltype(std::declval<ConformingType const&>().domain())>;
           static_assert(
-              cpp17::is_same_v<const_lvalue_domain_return_type, domain_type>,
+              std::is_same_v<const_lvalue_domain_return_type, domain_type>,
               R"error(
 Not a conforming Domain configuration, doesn't properly implement function
 `domain_type const& domain() const&`
 )error");
 
-          using rvalue_domain_return_type = cpp20::remove_cvref_t<
+          using rvalue_domain_return_type = std::remove_cvref_t<
               decltype(std::declval<ConformingType&&>().domain())>;
           static_assert(
-              cpp17::is_same_v<rvalue_domain_return_type, domain_type>,
+              std::is_same_v<rvalue_domain_return_type, domain_type>,
               R"error(
 Not a conforming Domain configuration, doesn't properly implement function
 `domain_type&& domain() &&`

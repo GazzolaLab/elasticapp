@@ -86,7 +86,7 @@ namespace elastica {
       //**Type definitions******************************************************
       //! Tags of admissible systems in the default simulation
       using AdmissibleSystemPlugins =
-          tmpl::transform<SystemPlugins, cpp20::remove_cvref<tmpl::_1>>;
+          tmpl::transform<SystemPlugins, std::remove_cvref<tmpl::_1>>;
       //! Should we check the system plugins for conformance
       using check_plugins_for_conformance = std::true_type;
       //! Policy for blocking

@@ -87,14 +87,14 @@ namespace elastica {
               decltype(std::declval<Type const&>()
                            .connections_parallelism_threshold());
           using parallelism_threshold_return_type = std::conditional_t<
-              cpp17::is_same_v<ExecutionPolicy, hybrid_policy>,
+              std::is_same_v<ExecutionPolicy, hybrid_policy>,
               // delay instantation for conforming type
               // because even if ExecutionPolicy is serial, this call needs
               // to be well formed
               ::tt::detected_t<return_type, ConformingType>, size>;
 
           static_assert(
-              cpp17::is_same_v<size, parallelism_threshold_return_type>,
+              std::is_same_v<size, parallelism_threshold_return_type>,
               R"error(
 Not a conforming hybrid Connections configuration, doesn't properly implement function
 `std::size_t connections_parallelism_threshold() const`)error");

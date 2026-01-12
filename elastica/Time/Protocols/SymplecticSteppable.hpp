@@ -68,7 +68,7 @@ namespace elastica {
               decltype(std::declval<ConformingType const&>().template step(
                   std::declval<SymplecticStepper<PositionVerlet> const&>(),
                   std::declval<Time&>(), std::declval<TimeDelta const>()));
-          static_assert(cpp17::is_same_v<span_return_type, void>,
+          static_assert(std::is_same_v<span_return_type, void>,
                         R"error(
 Not a conforming SymplecticSteppable class, doesn't properly implement function
 `template <typename SymplecticAlgorithm>

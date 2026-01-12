@@ -49,7 +49,7 @@ namespace elastica {
         // defined and a multiplication operator with a double.
         template <typename T>
         using type_supports_vectorized_operations =
-            cpp17::void_t<addable<T>,
+            std::void_t<addable<T>,
                           // for some reason add assignabliity fails with blaze
                           // types add_assignable<T>,
                           left_multiplicable<T>, right_multiplicable<T>>;
@@ -70,7 +70,7 @@ namespace elastica {
        * \endcode
        *
        * \metareturns
-       * cpp17::bool_constant
+       * std::bool_constant
        *
        * \semantics
        * If the type `T` supports vectorization, then

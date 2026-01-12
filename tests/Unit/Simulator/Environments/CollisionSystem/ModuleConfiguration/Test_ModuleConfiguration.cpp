@@ -21,7 +21,7 @@ namespace {
     (void)make_collision_configuration(par, seq);
     (void)make_collision_configuration(par, par);
 
-    static_assert(cpp17::is_same_v<typename decltype(a)::ForceModel,
+    static_assert(std::is_same_v<typename decltype(a)::ForceModel,
                                    ELASTICA_DEFAULT_DEM_RESPONSE_MODEL>,
                   "Meta-failure");
   }

@@ -123,7 +123,7 @@ namespace standalone_bindings {
                 options);
     };
 
-    cpp17::apply(
+    std::apply(
         [register_each_](auto&&... input_parameter) {
           EXPAND_PACK_LEFT_TO_RIGHT(register_each_(input_parameter));
         },
@@ -153,7 +153,7 @@ namespace standalone_bindings {
       return result[pretty_type::name<Parameter>()].template as<Value>();
     };
 
-    return cpp17::apply(
+    return std::apply(
         [parse_each_](auto... input_parameter) {
           return RT(parse_each_(input_parameter)...);
         },

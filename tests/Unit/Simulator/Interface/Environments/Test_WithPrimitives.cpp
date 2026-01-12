@@ -228,7 +228,7 @@ namespace mock {
     WithPrimitivesSimulator(Traits traits, bool arg_is_final = false)
         : P(),
           ////////////  This piece of code is copy-pasted yo
-          algorithms(cpp17::apply(
+          algorithms(std::apply(
               [](auto&&... initializer_as_a_tuple) noexcept {
                 return Algorithms(
                     std::forward<decltype(initializer_as_a_tuple)>(
@@ -393,7 +393,7 @@ namespace {
     static_assert(Sim::get_number_of_system_collections() == 2,
                   "Systems meta-failure!");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             typename Sim::SystemCollections,
             std::tuple<std::vector<ECBlock>, std::vector<ECNamedBlock>>>,
         "Systems meta-failure!");
@@ -402,8 +402,8 @@ namespace {
 
     (void)(sim.primitives());
     (void)(sim.offsets());
-    (void)(cpp17::as_const(sim).primitives());
-    (void)(cpp17::as_const(sim).offsets());
+    (void)(std::as_const(sim).primitives());
+    (void)(std::as_const(sim).offsets());
     elastica::ignore_unused(sim);
   }
 
@@ -574,7 +574,7 @@ namespace {
       auto check_size = [](auto& container) { CHECK_FALSE(container.empty()); };
       // auto check_offset = [](std::size_t value) { CHECK_FALSE(value == 0); };
 
-      cpp17::apply(
+      std::apply(
           [=](auto&... containers) {
             EXPAND_PACK_LEFT_TO_RIGHT(check_size(containers));
           },
@@ -594,7 +594,7 @@ namespace {
       auto check_size = [](auto& container) { CHECK(container.empty()); };
       // auto check_offset = [](std::size_t value) { CHECK(value == 0); };
 
-      cpp17::apply(
+      std::apply(
           [=](auto&... containers) {
             EXPAND_PACK_LEFT_TO_RIGHT(check_size(containers));
           },

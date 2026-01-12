@@ -154,7 +154,7 @@ namespace elastica {
      * auto const& update_step = std::get<UpdateStep>(updates);
      *
      * dispatch(update_step,
-     * [&time = cpp20::as_const<>, dt](auto&& update){
+     * [&time = std::as_const<>, dt](auto&& update){
      * tmpl::for_each<Systems>([this, time, dt](auto s){
      *  using System = tmpl::type_from<decltype(s)>;
      *  update_step(this->get_systems<System>(), time, dt);

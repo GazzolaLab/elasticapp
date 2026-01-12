@@ -121,7 +121,7 @@ namespace elastica {
              * Workaround to initialize environments from traits.
              * Here the "algorithm" initializes whats required
              */
-            cpp17::apply(
+            std::apply(
                 [&](auto&... envs) {
                   using ::elastica::environments::initialize_parameters;
                   EXPAND_PACK_LEFT_TO_RIGHT(
@@ -137,7 +137,7 @@ namespace elastica {
           explicit ApplyEnvironmentForcesOp(
               std::tuple<TotalSimulator*, EnvironmentsTraits const&> args)
               : ApplyEnvironmentForcesOp(
-                    cpp17::make_from_tuple<ApplyEnvironmentForcesOp>(
+                    std::make_from_tuple<ApplyEnvironmentForcesOp>(
                         std::move(args))) {}
           //********************************************************************
 
@@ -217,7 +217,7 @@ namespace elastica {
              * Workaround to initialize environments from traits.
              * Here the "algorithm" initializes whats required
              */
-            cpp17::apply(
+            std::apply(
                 [&](auto&... envs) {
                   using ::elastica::environments::initialize_parameters;
                   EXPAND_PACK_LEFT_TO_RIGHT(
@@ -233,7 +233,7 @@ namespace elastica {
           explicit ApplyEnvironmentForcesOp(
               std::tuple<TotalSimulator*, EnvironmentsTraits const&> args)
               : ApplyEnvironmentForcesOp(
-                    cpp17::make_from_tuple<ApplyEnvironmentForcesOp>(
+                    std::make_from_tuple<ApplyEnvironmentForcesOp>(
                         std::move(args))) {}
           //********************************************************************
 

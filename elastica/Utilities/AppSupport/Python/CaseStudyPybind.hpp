@@ -65,7 +65,7 @@ namespace py_bindings {
         std::string(CaseStudy::help).c_str());
 
     // init taking POD arguments
-    cpp17::apply(
+    std::apply(
         [&py_bound_case_study](auto... arg_name) {
           py_bound_case_study.def(
               py::init(UnpackedInitializer{}),
@@ -133,7 +133,7 @@ namespace py_bindings {
   // Constructs parameters of a case-study from pod types
   template <typename P>
   static auto from_parameters() {
-    return cpp17::apply(
+    return std::apply(
         [](auto... parameters) {
           // This is the actual function with compile-time fixed signature.
           return [](tmpl::type_from<decltype(parameters)> const&... t) -> P {
@@ -175,7 +175,7 @@ namespace py_bindings {
     py_bound_case_study_parameters.def(py::init<>());
     // Initializer for all types
     {
-      cpp17::apply(
+      std::apply(
           [&](auto... arg_name) {
             py_bound_case_study_parameters.def(
                 pybind11::init(from_parameters<type>()),

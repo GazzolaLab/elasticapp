@@ -366,11 +366,11 @@ constexpr decltype(auto) get_first_argument(T&& t, Ts&&... /*rest*/) noexcept {
 //
 //    template <typename Sequence, typename Predicate>
 //    using empty_find =
-//        cpp17::bool_constant<find_size<Sequence, Predicate>::value == 0>;
+//        std::bool_constant<find_size<Sequence, Predicate>::value == 0>;
 //
 //    template <typename Sequence, typename Predicate>
 //    using non_empty_find =
-//        cpp17::bool_constant<find_size<Sequence, Predicate>::value != 0>;
+//        std::bool_constant<find_size<Sequence, Predicate>::value != 0>;
 //  }  // namespace detail
 //
 //  // Utility meta-function to check if something was found

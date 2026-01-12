@@ -29,10 +29,10 @@ namespace elastica {
       tk::spline generate_spline(std::vector<real_t> spline_x,
                                  std::vector<real_t> spline_y,
                                  SplineArgs&&... spline_args) {
-        Expects(cpp17::size(spline_x) > 2UL);
-        Expects(cpp17::size(spline_y) > 2UL);
+        Expects(std::size(spline_x) > 2UL);
+        Expects(std::size(spline_y) > 2UL);
         Expects(spline_x[0UL] > real_t(0.0));
-        Expects(spline_x[cpp17::size(spline_x) - 1UL] <= real_t(1.0));
+        Expects(spline_x[std::size(spline_x) - 1UL] <= real_t(1.0));
 
         // Second order derivative boundary condition. Okay for now.
         return tk::spline(std::move(spline_x), std::move(spline_y),

@@ -96,7 +96,7 @@ namespace elastica {
           // Function prototypes needing no arguments
           using ghost_value_return_type =
               decltype(ConformingType::ghost_value());
-          static_assert(cpp17::is_same_v<ghost_type, ghost_value_return_type>,
+          static_assert(std::is_same_v<ghost_type, ghost_value_return_type>,
                         R"error(
 Not a conforming data trait, doesn't properly implement static function
 `ghost_type ghost_value()`)error");
@@ -106,7 +106,7 @@ Not a conforming data trait, doesn't properly implement static function
           using slice_at_index_return_type = decltype(ConformingType::slice(
               std::declval<data_type&>(), std::declval<index>()));
           static_assert(
-              cpp17::is_same_v<slice_at_index_return_type, reference_type>,
+              std::is_same_v<slice_at_index_return_type, reference_type>,
               R"error(
 Not a conforming data trait, doesn't properly implement static function
 `auto slice(data_type& data, std::size_t index)`
@@ -115,7 +115,7 @@ Not a conforming data trait, doesn't properly implement static function
           using const_slice_at_index_return_type =
               decltype(ConformingType::slice(std::declval<data_type const&>(),
                                              std::declval<index>()));
-          static_assert(cpp17::is_same_v<const_slice_at_index_return_type,
+          static_assert(std::is_same_v<const_slice_at_index_return_type,
                                          const_reference_type>,
                         R"error(
 Not a conforming data trait, doesn't properly implement static function
@@ -125,7 +125,7 @@ Not a conforming data trait, doesn't properly implement static function
           using slice_of_slice_at_index_return_type =
               decltype(ConformingType::slice(std::declval<slice_type&>(),
                                              std::declval<index>()));
-          static_assert(cpp17::is_same_v<slice_of_slice_at_index_return_type,
+          static_assert(std::is_same_v<slice_of_slice_at_index_return_type,
                                          reference_slice_type>,
                         R"error(
 Not a conforming data trait, doesn't properly implement static function
@@ -136,7 +136,7 @@ Not a conforming data trait, doesn't properly implement static function
               decltype(ConformingType::slice(std::declval<slice_type const&>(),
                                              std::declval<index>()));
           static_assert(
-              cpp17::is_same_v<slice_of_const_slice_at_index_return_type,
+              std::is_same_v<slice_of_const_slice_at_index_return_type,
                                const_reference_slice_type>,
               R"error(
 Not a conforming data trait, doesn't properly implement static function
@@ -148,7 +148,7 @@ Not a conforming data trait, doesn't properly implement static function
                   std::declval<const_slice_type const&>(),
                   std::declval<index>()));
           static_assert(
-              cpp17::is_same_v<const_slice_of_const_slice_at_index_return_type,
+              std::is_same_v<const_slice_of_const_slice_at_index_return_type,
                                const_reference_slice_type>,
               R"error(
 Not a conforming data trait, doesn't properly implement static function
@@ -158,7 +158,7 @@ Not a conforming data trait, doesn't properly implement static function
           using new_dofs = std::size_t;
           using resize_return_type = decltype(ConformingType::resize(
               std::declval<data_type&>(), std::declval<new_dofs>()));
-          static_assert(cpp17::is_same_v<void, resize_return_type>,
+          static_assert(std::is_same_v<void, resize_return_type>,
                         R"error(
 Not a conforming data trait, doesn't properly implement static function
 `void resize(data_type& data, std::size_t new_dofs)`)error");
@@ -169,7 +169,7 @@ Not a conforming data trait, doesn't properly implement static function
           using slice_return_type = decltype(ConformingType::slice(
               std::declval<data_type&>(), std::declval<start>(),
               std::declval<size>()));
-          static_assert(cpp17::is_same_v<slice_type, slice_return_type>,
+          static_assert(std::is_same_v<slice_type, slice_return_type>,
                         R"error(
 Not a conforming data trait, doesn't properly implement static function
 `slice_type slice(data_type& data, std::size_t start, std::size_t size)`)error");
@@ -178,7 +178,7 @@ Not a conforming data trait, doesn't properly implement static function
               std::declval<data_type const&>(), std::declval<start>(),
               std::declval<size>()));
           static_assert(
-              cpp17::is_same_v<const_slice_type, const_slice_return_type>,
+              std::is_same_v<const_slice_type, const_slice_return_type>,
               R"error(
 Not a conforming data trait, doesn't properly implement static function
 `const_slice_type slice(data_type const& data, std::size_t start, std::size_t size)`)error");

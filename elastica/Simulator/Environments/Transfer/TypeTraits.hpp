@@ -59,7 +59,7 @@ namespace elastica {
        * \endcode
        *
        * \metareturns
-       * cpp17::bool_constant
+       * std::bool_constant
        *
        * \semantics
        * If the type \c T has the following signature
@@ -79,7 +79,7 @@ namespace elastica {
        * \tparam T the \system type to check
        */
       template <typename T,                  // SystemType
-                typename = cpp17::void_t<>>  // Restricting condition
+                typename = std::void_t<>>  // Restricting condition
       struct IsSystemDefaultTransferable : std::false_type {};
       //************************************************************************
 
@@ -91,7 +91,7 @@ namespace elastica {
        */
       template <typename T>  // SystemType
       struct IsSystemDefaultTransferable<
-          T, cpp17::void_t<
+          T, std::void_t<
                  /// [expected_system_signatures]
                  decltype(std::declval<T const&>().get_dimensions(
                      std::declval<std::size_t>())),
@@ -137,7 +137,7 @@ namespace elastica {
        * \endcode
        *
        * \metareturns
-       * cpp17::bool_constant
+       * std::bool_constant
        *
        * \semantics
        * If the type \c T is a rigid primitive and has the following member
@@ -158,7 +158,7 @@ namespace elastica {
        * \tparam T the \primitive type to check
        */
       template <typename T,                  // PrimitiveType
-                typename = cpp17::void_t<>>  // Restricting condition
+                typename = std::void_t<>>  // Restricting condition
       struct IsPrimitiveDefaultTransferable : std::false_type {};
       //************************************************************************
 
@@ -174,7 +174,7 @@ namespace elastica {
        */
       template <typename T>
       struct IsPrimitiveDefaultTransferable<
-          T, cpp17::void_t<
+          T, std::void_t<
                  /// [primitive_transfer_signature]
                  decltype(&T::transfer)
                  /// [primitive_transfer_signature]
@@ -197,7 +197,7 @@ namespace elastica {
        * \endcode
        *
        * \metareturns
-       * cpp17::bool_constant
+       * std::bool_constant
        *
        * \semantics
        * If the type `Sys` satisfies IsSystemDefaultTransferable and its
@@ -219,7 +219,7 @@ namespace elastica {
        */
       template <typename Sys>
       struct IsDefaultTransferable
-          : public cpp17::conjunction<
+          : public std::conjunction<
                 tt::IsSystemDefaultTransferable<
                     typename TransferTraits<Sys>::SystemType>,
                 tt::IsPrimitiveDefaultTransferable<
@@ -242,7 +242,7 @@ namespace elastica {
            \endcode
         //
         // \metareturns
-        // cpp17::bool_constant
+        // std::bool_constant
         //
         // \semantics
         // For a tag type \c T

@@ -42,19 +42,19 @@ namespace {
       contacts.add_vertex_face_contact(&first, &second, Vec3{0., 0., 0.5},
                                        Vec3{0., 0., 1.}, 0.5);
 
-      CHECK(cpp17::as_const(contacts[0UL]).get_index() == 0);
-      CHECK(cpp17::as_const(contacts[0UL]).get_first_body() == &first);
-      CHECK(cpp17::as_const(contacts[0UL]).get_second_body() == &second);
-      CHECK(cpp17::as_const(contacts[0UL]).get_position() == Vec3{0., 0., 0.5});
-      CHECK(cpp17::as_const(contacts[0UL]).get_normal() == Vec3{0., 0., 1.0});
-      CHECK(cpp17::as_const(contacts[0UL]).get_distance() == approx(0.5));
+      CHECK(std::as_const(contacts[0UL]).get_index() == 0);
+      CHECK(std::as_const(contacts[0UL]).get_first_body() == &first);
+      CHECK(std::as_const(contacts[0UL]).get_second_body() == &second);
+      CHECK(std::as_const(contacts[0UL]).get_position() == Vec3{0., 0., 0.5});
+      CHECK(std::as_const(contacts[0UL]).get_normal() == Vec3{0., 0., 1.0});
+      CHECK(std::as_const(contacts[0UL]).get_distance() == approx(0.5));
       // how to test?
       // check const access
-      CHECK(cpp17::as_const(contacts)[0UL].get_restitution() >= 0.0);
-      CHECK(cpp17::as_const(contacts)[0UL].get_stiffness() > 0.0);
-      CHECK(cpp17::as_const(contacts)[0UL].get_normal_damping() > 0.0);
-      CHECK(cpp17::as_const(contacts)[0UL].get_tangential_damping() > 0.0);
-      CHECK(cpp17::as_const(contacts)[0UL].get_friction() > 0.0);
+      CHECK(std::as_const(contacts)[0UL].get_restitution() >= 0.0);
+      CHECK(std::as_const(contacts)[0UL].get_stiffness() > 0.0);
+      CHECK(std::as_const(contacts)[0UL].get_normal_damping() > 0.0);
+      CHECK(std::as_const(contacts)[0UL].get_tangential_damping() > 0.0);
+      CHECK(std::as_const(contacts)[0UL].get_friction() > 0.0);
     }
 
     {
@@ -64,38 +64,38 @@ namespace {
                                      Vec3{0., 1., 0.}, Vec3{0., 0., 1.},
                                      Vec3{0., 0., 1.}, 0.6);
 
-      CHECK(cpp17::as_const(contacts[1UL]).get_index() == 0);
-      CHECK(cpp17::as_const(contacts[1UL]).get_first_body() == &first);
-      CHECK(cpp17::as_const(contacts[1UL]).get_second_body() == &second);
-      CHECK(cpp17::as_const(contacts[1UL]).get_position() == Vec3{0., 0.5, 0.});
-      CHECK(cpp17::as_const(contacts[1UL]).get_normal() == Vec3{0., 1., 0.});
-      CHECK(cpp17::as_const(contacts[1UL]).get_distance() == approx(0.6));
+      CHECK(std::as_const(contacts[1UL]).get_index() == 0);
+      CHECK(std::as_const(contacts[1UL]).get_first_body() == &first);
+      CHECK(std::as_const(contacts[1UL]).get_second_body() == &second);
+      CHECK(std::as_const(contacts[1UL]).get_position() == Vec3{0., 0.5, 0.});
+      CHECK(std::as_const(contacts[1UL]).get_normal() == Vec3{0., 1., 0.});
+      CHECK(std::as_const(contacts[1UL]).get_distance() == approx(0.6));
       // how to test?
       // check const access
-      CHECK(cpp17::as_const(contacts)[1UL].get_restitution() >= 0.0);
+      CHECK(std::as_const(contacts)[1UL].get_restitution() >= 0.0);
       // are not used i think
-      //      CHECK(cpp17::as_const(contacts)[1UL].get_stiffness() > 0.0);
-      //      CHECK(cpp17::as_const(contacts)[1UL].get_normal_damping() > 0.0);
-      //      CHECK(cpp17::as_const(contacts)[1UL].get_tangential_damping() >
+      //      CHECK(std::as_const(contacts)[1UL].get_stiffness() > 0.0);
+      //      CHECK(std::as_const(contacts)[1UL].get_normal_damping() > 0.0);
+      //      CHECK(std::as_const(contacts)[1UL].get_tangential_damping() >
       //      0.0);
-      CHECK(cpp17::as_const(contacts)[1UL].get_friction() > 0.0);
+      CHECK(std::as_const(contacts)[1UL].get_friction() > 0.0);
 
       // also check the previous
-      CHECK(cpp17::as_const(contacts[0UL]).get_index() == 0);
+      CHECK(std::as_const(contacts[0UL]).get_index() == 0);
       // Don't have the references no more, technically UB
-      //      CHECK(cpp17::as_const(contacts[0UL]).get_first_body() == &first);
-      //      CHECK(cpp17::as_const(contacts[0UL]).get_second_body() ==
+      //      CHECK(std::as_const(contacts[0UL]).get_first_body() == &first);
+      //      CHECK(std::as_const(contacts[0UL]).get_second_body() ==
       //      &second);
-      CHECK(cpp17::as_const(contacts[0UL]).get_position() == Vec3{0., 0., 0.5});
-      CHECK(cpp17::as_const(contacts[0UL]).get_normal() == Vec3{0., 0., 1.0});
-      CHECK(cpp17::as_const(contacts[0UL]).get_distance() == approx(0.5));
+      CHECK(std::as_const(contacts[0UL]).get_position() == Vec3{0., 0., 0.5});
+      CHECK(std::as_const(contacts[0UL]).get_normal() == Vec3{0., 0., 1.0});
+      CHECK(std::as_const(contacts[0UL]).get_distance() == approx(0.5));
       // how to test?
       // check const access
-      CHECK(cpp17::as_const(contacts)[0UL].get_restitution() >= 0.0);
-      CHECK(cpp17::as_const(contacts)[0UL].get_stiffness() > 0.0);
-      CHECK(cpp17::as_const(contacts)[0UL].get_normal_damping() > 0.0);
-      CHECK(cpp17::as_const(contacts)[0UL].get_tangential_damping() > 0.0);
-      CHECK(cpp17::as_const(contacts)[0UL].get_friction() > 0.0);
+      CHECK(std::as_const(contacts)[0UL].get_restitution() >= 0.0);
+      CHECK(std::as_const(contacts)[0UL].get_stiffness() > 0.0);
+      CHECK(std::as_const(contacts)[0UL].get_normal_damping() > 0.0);
+      CHECK(std::as_const(contacts)[0UL].get_tangential_damping() > 0.0);
+      CHECK(std::as_const(contacts)[0UL].get_friction() > 0.0);
     }
 
     contacts.clear();

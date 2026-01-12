@@ -125,7 +125,7 @@ namespace blocks {
       detail::tag_metadata::is_not_a_block_variable /* meta*/
       ) noexcept {
     // parent is always & or const&
-    using ParentBlock = cpp20::remove_cvref_t<
+    using ParentBlock = std::remove_cvref_t<
         decltype(std::forward<BlockLike>(block_like).parent())>;
     using VariableTag =
         typename ParentBlock::VariableMap::template variable_from<Tag>;

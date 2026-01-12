@@ -302,7 +302,7 @@ namespace {
              there_are_only_few_batches());  // more robust test
 
     REQUIRE_FALSE(baseline_batches.empty());
-    //      REQUIRE(cpp17::size(baseline_batches) == 4UL);
+    //      REQUIRE(std::size(baseline_batches) == 4UL);
 
     // Now run all other algorithms and check against the baseline cache
     using Configuration =

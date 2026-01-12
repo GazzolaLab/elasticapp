@@ -48,7 +48,7 @@ namespace py_bindings {
       // Wrapper for basic type operations
       auto py_rigid_body =
           py::class_<type>(m, "Sphere")
-              .def("__len__", [](const type& t) { return cpp17::size(t); })
+              .def("__len__", [](const type& t) { return std::size(t); })
               .def(
                   "__str__",
                   +[](const type& /*meta*/) { return std::string("Sphere"); });
@@ -61,7 +61,7 @@ namespace py_bindings {
       // Wrapper for basic type operations
       auto py_rigid_body =
           py::class_<type>(m, "SphereView")
-              .def("__len__", [](const type& t) { return cpp17::size(t); })
+              .def("__len__", [](const type& t) { return std::size(t); })
               .def(
                   "__str__",
                   +[](const type& /*meta*/) {

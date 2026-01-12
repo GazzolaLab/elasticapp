@@ -56,7 +56,7 @@ namespace mock {
     WithImposedPrimitivesSimulator(Traits traits, bool arg_is_final = false)
         : P(),
           ////////////  This piece of code is copy-pasted yo
-          algorithms(cpp17::apply(
+          algorithms(std::apply(
               [](auto&&... initializer_as_a_tuple) noexcept {
                 return Algorithms(
                     std::forward<decltype(initializer_as_a_tuple)>(
@@ -174,7 +174,7 @@ namespace {
                   "Systems meta-failure!");
     // can be another type
     // static_assert(
-    //     cpp17::is_same_v<typename Sim::ImposedPrimitives,
+    //     std::is_same_v<typename Sim::ImposedPrimitives,
     //                      std::tuple<std::vector<MockImposedPrimitiveOne>,
     //                                 std::vector<MockImposedPrimitiveTwo>>>,
     //     "Systems meta-failure!");
@@ -219,9 +219,9 @@ namespace {
 
       CHECK(std::get<int>(imposed_primitive_ref.get()) == -1);
       CHECK(std::get<std::uint16_t>(imposed_primitive_ref.get()) == 127U);
-      CHECK(std::get<int>(cpp17::as_const(imposed_primitive_ref).get()) == -1);
+      CHECK(std::get<int>(std::as_const(imposed_primitive_ref).get()) == -1);
       CHECK(std::get<std::uint16_t>(
-                cpp17::as_const(imposed_primitive_ref).get()) == 127U);
+                std::as_const(imposed_primitive_ref).get()) == 127U);
 
       another_imposed_primitive_ref =
           sim.emplace_back<MockImposedPrimitiveTwo>('a', 4.525);
@@ -229,9 +229,9 @@ namespace {
       CHECK(std::get<double>(another_imposed_primitive_ref.get()) ==
             approx(4.525));
       CHECK(std::get<char>(
-                cpp17::as_const(another_imposed_primitive_ref).get()) == 'a');
+                std::as_const(another_imposed_primitive_ref).get()) == 'a');
       CHECK(std::get<double>(
-                cpp17::as_const(another_imposed_primitive_ref).get()) ==
+                std::as_const(another_imposed_primitive_ref).get()) ==
             approx(4.525));
 
       // check to see if setting is possible
@@ -240,7 +240,7 @@ namespace {
             approx(2.0));
 
       // doesn't work as expected
-      // std::get<double>(cpp17::as_const(another_imposed_primitive_ref).get())
+      // std::get<double>(std::as_const(another_imposed_primitive_ref).get())
       // =
       //     4.525;
     }
@@ -465,7 +465,7 @@ namespace {
         CHECK_FALSE(container.empty());
       };
 
-      cpp17::apply(
+      std::apply(
           [=](auto const&... container) {
             EXPAND_PACK_LEFT_TO_RIGHT(check_container(container));
           },
@@ -481,7 +481,7 @@ namespace {
         CHECK(container.empty());
       };
 
-      cpp17::apply(
+      std::apply(
           [=](auto const&... container) {
             EXPAND_PACK_LEFT_TO_RIGHT(check_container(container));
           },

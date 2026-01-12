@@ -143,8 +143,8 @@ namespace {
       auto sys(mock::ref(system));
       auto&& constraint = sim.constrain(sys);
       static_assert(
-          cpp17::is_same_v<
-              cpp20::remove_cvref_t<decltype(constraint)>,
+          std::is_same_v<
+              std::remove_cvref_t<decltype(constraint)>,
               Constraint<mock::reference_wrapper<system_type>, tmpl::list<>>>,
           "Constraint meta failure!");
     }

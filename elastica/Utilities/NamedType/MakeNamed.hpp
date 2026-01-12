@@ -90,7 +90,7 @@ namespace named_type {
             // without the function signature when its templated. Hence we
             // comment it out for now. Fixed with trait is_callable.
             ,
-            Requires<cpp17::conjunction_v<typename Traits<
+            Requires<std::conjunction_v<typename Traits<
                 Affordances>::template type<std::decay_t<T>>...>> = nullptr>
   constexpr decltype(auto) make_named(T&& value) noexcept(
       noexcept(make_named<R>(std::forward<T>(value)))) {

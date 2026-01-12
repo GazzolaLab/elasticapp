@@ -115,12 +115,12 @@ namespace {
     elastica::ignore_unused(sim_type);
 
     using Sim = tmpl::type_from<decltype(sim_type)>;
-    static_assert(cpp17::is_same_v<
+    static_assert(std::is_same_v<
                       typename Sim::PrimitiveAlgorithm,
                       typename Sim::ConstrainPrimitivesOp<sequential_policy>>,
                   "Algorithm meta-failure!");
     static_assert(
-        cpp17::is_same_v<typename Sim::RateAlgorithm,
+        std::is_same_v<typename Sim::RateAlgorithm,
                          typename Sim::ConstrainRatesOp<sequential_policy>>,
         "Algorithm meta-failure!");
   }
@@ -135,11 +135,11 @@ namespace {
 
     using Sim = tmpl::type_from<decltype(sim_type)>;
     static_assert(
-        cpp17::is_same_v<typename Sim::PrimitiveAlgorithm,
+        std::is_same_v<typename Sim::PrimitiveAlgorithm,
                          typename Sim::ConstrainPrimitivesOp<parallel_policy>>,
         "Algorithm meta-failure!");
     static_assert(
-        cpp17::is_same_v<typename Sim::RateAlgorithm,
+        std::is_same_v<typename Sim::RateAlgorithm,
                          typename Sim::ConstrainRatesOp<parallel_policy>>,
         "Algorithm meta-failure!");
   }
@@ -154,11 +154,11 @@ namespace {
 
     using Sim = tmpl::type_from<decltype(sim_type)>;
     static_assert(
-        cpp17::is_same_v<typename Sim::PrimitiveAlgorithm,
+        std::is_same_v<typename Sim::PrimitiveAlgorithm,
                          typename Sim::ConstrainPrimitivesOp<hybrid_policy>>,
         "Algorithm meta-failure!");
     static_assert(
-        cpp17::is_same_v<typename Sim::RateAlgorithm,
+        std::is_same_v<typename Sim::RateAlgorithm,
                          typename Sim::ConstrainRatesOp<hybrid_policy>>,
         "Algorithm meta-failure!");
   }

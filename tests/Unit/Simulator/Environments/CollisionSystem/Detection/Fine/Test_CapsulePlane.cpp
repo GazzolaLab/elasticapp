@@ -186,7 +186,7 @@ namespace {
                     get_unit_vector_along(LagrangianFrame::Normal),
                     angle_between_capsule_and_plane_normal, false);
                 const Rot3 tiltedR =
-                    R * cpp17::as_const(first_capsule).get_rotation_matrix();
+                    R * std::as_const(first_capsule).get_rotation_matrix();
 
                 const Vec3 rotated_axis{
                     tiltedR(cast_along(LagrangianFrame::Tangent),
@@ -252,7 +252,7 @@ namespace {
                       get_unit_vector_along(LagrangianFrame::Normal),
                       angle_between_capsule_and_plane_normal, false);
                   const Rot3 tiltedR =
-                      R * cpp17::as_const(first_capsule).get_rotation_matrix();
+                      R * std::as_const(first_capsule).get_rotation_matrix();
 
                   const Vec3 rotated_axis{
                       tiltedR(cast_along(LagrangianFrame::Tangent),
@@ -317,7 +317,7 @@ namespace {
                           -plane_side * plane_normal, iron);
                       // plane in middle
                       const Rot3 planeR =
-                          cpp17::as_const(second_plane).get_rotation_matrix();
+                          std::as_const(second_plane).get_rotation_matrix();
                       const Vec3 plane_span_tangent{
                           planeR(cast_along(LagrangianFrame::Tangent),
                                  cast_along(EulerianFrame::X)),
@@ -386,7 +386,7 @@ namespace {
             do_collide(first_capsule, second_plane, contacts);
 
             CHECK_FALSE(contacts.empty());
-            REQUIRE(cpp17::size(contacts) == 2UL);
+            REQUIRE(std::size(contacts) == 2UL);
 
             // negative distances are interpenetrating so stick with the
             // sign convention
@@ -410,7 +410,7 @@ namespace {
           };
 
           const Rot3 capR =
-              cpp17::as_const(first_capsule).get_rotation_matrix();
+              std::as_const(first_capsule).get_rotation_matrix();
 
           SECTION("plane normal == capsule normal") {
             const Vec3 plane_normal{capR(cast_along(LagrangianFrame::Normal),

@@ -111,7 +111,7 @@ namespace {
     }
     auto re_config = make_config();
     Algorithm algorithm(
-        std::forward_as_tuple(&sim, cpp17::as_const(re_config)));
+        std::forward_as_tuple(&sim, std::as_const(re_config)));
 
     auto check_counter_for_correctness = [&sim](auto& counter) {
       return [&](auto v) {
@@ -217,7 +217,7 @@ namespace {
 
     using Sim = tmpl::type_from<decltype(sim_type)>;
     static_assert(
-        cpp17::is_same_v<typename Sim::Algorithm,
+        std::is_same_v<typename Sim::Algorithm,
                          typename Sim::InvokeOverSystemsOp<sequential_policy,
                                                            sequential_policy>>,
         "Algorithm meta-failure!");
@@ -235,7 +235,7 @@ namespace {
 
     using Sim = tmpl::type_from<decltype(sim_type)>;
     static_assert(
-        cpp17::is_same_v<typename Sim::Algorithm,
+        std::is_same_v<typename Sim::Algorithm,
                          typename Sim::InvokeOverSystemsOp<parallel_policy,
                                                            sequential_policy>>,
         "Algorithm meta-failure!");
@@ -254,7 +254,7 @@ namespace {
 
     using Sim = tmpl::type_from<decltype(sim_type)>;
     static_assert(
-        cpp17::is_same_v<typename Sim::Algorithm,
+        std::is_same_v<typename Sim::Algorithm,
                          typename Sim::InvokeOverSystemsOp<hybrid_policy,
                                                            sequential_policy>>,
         "Algorithm meta-failure!");
@@ -272,7 +272,7 @@ namespace {
 
     using Sim = tmpl::type_from<decltype(sim_type)>;
     static_assert(
-        cpp17::is_same_v<typename Sim::Algorithm,
+        std::is_same_v<typename Sim::Algorithm,
                          typename Sim::InvokeOverSystemsOp<sequential_policy,
                                                            parallel_policy>>,
         "Algorithm meta-failure!");
@@ -290,7 +290,7 @@ namespace {
 
     using Sim = tmpl::type_from<decltype(sim_type)>;
     static_assert(
-        cpp17::is_same_v<typename Sim::Algorithm,
+        std::is_same_v<typename Sim::Algorithm,
                          typename Sim::InvokeOverSystemsOp<parallel_policy,
                                                            parallel_policy>>,
         "Algorithm meta-failure!");
@@ -309,7 +309,7 @@ namespace {
 
     using Sim = tmpl::type_from<decltype(sim_type)>;
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             typename Sim::Algorithm,
             typename Sim::InvokeOverSystemsOp<hybrid_policy, parallel_policy>>,
         "Algorithm meta-failure!");

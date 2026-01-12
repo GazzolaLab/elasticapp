@@ -40,7 +40,7 @@ namespace {
 
         CHECK(approx(n.get()) == val);
         static_assert(
-            cpp17::is_same_v<basic_type, typename decltype(n)::UnderlyingType>,
+            std::is_same_v<basic_type, typename decltype(n)::UnderlyingType>,
             "Oops!");
       }
     });
@@ -60,10 +60,10 @@ namespace {
         auto n = make_named<parameter_type, Gettable>(val);
         CHECK(approx(n.get()) == val);
         static_assert(
-            cpp17::is_same_v<basic_type, typename decltype(n)::UnderlyingType>,
+            std::is_same_v<basic_type, typename decltype(n)::UnderlyingType>,
             "Oops!");
         static_assert(
-            cpp17::is_same_v<parameter_type, typename decltype(n)::TagType>,
+            std::is_same_v<parameter_type, typename decltype(n)::TagType>,
             "Oops!");
       }
     });
@@ -92,9 +92,9 @@ namespace {
         auto n = make_named_with_default<Gettable>(val);
         CHECK(approx(n.get()) == val);
         static_assert(
-            cpp17::is_same_v<basic_type, typename decltype(n)::UnderlyingType>,
+            std::is_same_v<basic_type, typename decltype(n)::UnderlyingType>,
             "Oops!");
-        static_assert(cpp17::is_same_v<_DefaultNamedTypeParameterTag_,
+        static_assert(std::is_same_v<_DefaultNamedTypeParameterTag_,
                                        typename decltype(n)::TagType>,
                       "Oops!");
       }

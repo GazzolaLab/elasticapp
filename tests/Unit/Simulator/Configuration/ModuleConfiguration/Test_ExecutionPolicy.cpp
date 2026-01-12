@@ -66,18 +66,18 @@ namespace {
 
     auto seq_made = make_executed<ToBeMade, T>(seq);
     static_assert(
-        cpp17::is_same_v<decltype(seq_made), ToBeMade<sequential_policy, int>>,
+        std::is_same_v<decltype(seq_made), ToBeMade<sequential_policy, int>>,
         "meta failure");
 
     auto par_made = make_executed<ToBeMade, T>(par);
     static_assert(
-        cpp17::is_same_v<decltype(par_made), ToBeMade<parallel_policy, int>>,
+        std::is_same_v<decltype(par_made), ToBeMade<parallel_policy, int>>,
         "meta failure");
 
     // passes 5UL into the constructor
     auto hybrid_made = make_executed<ToBeMade, T>(hybrid, 5UL);
     static_assert(
-        cpp17::is_same_v<decltype(hybrid_made), ToBeMade<hybrid_policy, int>>,
+        std::is_same_v<decltype(hybrid_made), ToBeMade<hybrid_policy, int>>,
         "meta failure");
 
     elastica::ignore_unused(seq_made, par_made, hybrid_made);

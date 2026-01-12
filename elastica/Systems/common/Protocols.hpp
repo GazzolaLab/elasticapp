@@ -134,7 +134,7 @@ namespace elastica {
         using expected_return_type = std::size_t;
 
         static_assert(
-            cpp17::is_same_v<detail::Signatures::index_check_from_start_result<
+            std::is_same_v<detail::Signatures::index_check_from_start_result<
                                  ConformingType>,
                              expected_return_type>,
             R"error(
@@ -142,7 +142,7 @@ Not a conforming PhysicalSystem, doesn't have a free-function
 `std::size_t index_check(ConformingType const&, std::size_t index_from_start)`
 )error");
         static_assert(
-            cpp17::is_same_v<
+            std::is_same_v<
                 detail::Signatures::index_check_from_end_result<ConformingType>,
                 expected_return_type>,
             R"error(

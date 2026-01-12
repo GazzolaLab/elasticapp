@@ -121,15 +121,15 @@ namespace {
       EMPTY_TEST();
 
       check_member_API(cosserat_rod);
-      check_member_API(cpp17::as_const(cosserat_rod));
+      check_member_API(std::as_const(cosserat_rod));
     }
     SECTION("Slice API") {
       EMPTY_TEST();
 
       check_member_API(first_it);
-      check_member_API(cpp17::as_const(first_it));
+      check_member_API(std::as_const(first_it));
       check_member_API(second_it);
-      check_member_API(cpp17::as_const(second_it));
+      check_member_API(std::as_const(second_it));
     }
 
     CHECK(true);
@@ -188,15 +188,15 @@ namespace {
       EMPTY_TEST();
 
       check_free_API(cosserat_rod);
-      check_free_API(cpp17::as_const(cosserat_rod));
+      check_free_API(std::as_const(cosserat_rod));
     }
     SECTION("Slice API") {
       EMPTY_TEST();
 
       check_free_API(first_it);
-      check_free_API(cpp17::as_const(first_it));
+      check_free_API(std::as_const(first_it));
       check_free_API(second_it);
-      check_free_API(cpp17::as_const(second_it));
+      check_free_API(std::as_const(second_it));
     }
   }
 

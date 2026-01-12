@@ -127,7 +127,7 @@ namespace elastica {
                          ImposedPrimitivesTraits const&>
                   args)
               : UpdateImposedPrimitiveKinematicsOp(
-                    cpp17::make_from_tuple<UpdateImposedPrimitiveKinematicsOp>(
+                    std::make_from_tuple<UpdateImposedPrimitiveKinematicsOp>(
                         std::move(args))) {}
           //********************************************************************
 
@@ -196,7 +196,7 @@ namespace elastica {
                          ImposedPrimitivesTraits const&>
                   args)
               : UpdateImposedPrimitiveDynamicsOp(
-                    cpp17::make_from_tuple<UpdateImposedPrimitiveDynamicsOp>(
+                    std::make_from_tuple<UpdateImposedPrimitiveDynamicsOp>(
                         std::move(args))) {}
           //********************************************************************
 

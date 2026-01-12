@@ -154,7 +154,7 @@ namespace elastica {
     const int named_width = std::max(
         30UL, std::accumulate(std::cbegin(names), std::cend(names), 0UL,
                               [](std::size_t accum, std::string const& name) {
-                                return std::max(accum, cpp17::size(name));
+                                return std::max(accum, std::size(name));
                               }));
     constexpr auto field_width = 10;
     auto const delimiter = ",";  // ?

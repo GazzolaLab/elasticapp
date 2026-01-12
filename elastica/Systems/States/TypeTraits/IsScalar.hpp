@@ -79,7 +79,7 @@ namespace elastica {
        * \endcode
        *
        * \metareturns
-       * cpp17::bool_constant
+       * std::bool_constant
        *
        * \semantics
        * If the state type `T` is a scalar in the ODE system i.e. neither a
@@ -100,7 +100,7 @@ namespace elastica {
       // We using De Morgan's laws here : not (A or B) = not A and not B;
       template <typename T>
       struct IsScalar
-          : public cpp17::negation<cpp17::disjunction<
+          : public std::negation<std::disjunction<
                 HasOrder<T>, std::is_pointer<T>, std::is_reference<T>>> {};
       //************************************************************************
 

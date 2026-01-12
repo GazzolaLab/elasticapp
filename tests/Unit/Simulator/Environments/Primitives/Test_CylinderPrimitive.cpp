@@ -53,7 +53,7 @@ namespace {
     CylinderPrimitive cylinder(0UL, 0UL, true, position, Vec3{1.0, 1.1, 1.2},
                                radius, length, iron);
     ::testing::check_access_API(cylinder);
-    ::testing::check_access_API(cpp17::as_const(cylinder));
+    ::testing::check_access_API(std::as_const(cylinder));
   }
 
   ELASTICA_TEST_CASE(

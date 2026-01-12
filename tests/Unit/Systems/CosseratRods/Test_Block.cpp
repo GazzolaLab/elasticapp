@@ -280,7 +280,7 @@ namespace unique {
               [=](...) { return new_n_elements; })));
 
       auto sliced_model = model.emplace(std::move(initializer));
-      static_assert(cpp17::is_same_v<decltype(sliced_model), ExpectedSlice>,
+      static_assert(std::is_same_v<decltype(sliced_model), ExpectedSlice>,
                     "Block slice failure with Cosserat Rods!");
 
       // check the base model
@@ -440,7 +440,7 @@ namespace unique {
               [=](...) { return second_n_elements; })));
 
       auto sliced_model = model.emplace(std::move(second_initializer));
-      static_assert(cpp17::is_same_v<decltype(sliced_model), ExpectedSlice>,
+      static_assert(std::is_same_v<decltype(sliced_model), ExpectedSlice>,
                     "Block slice failure with Cosserat Rods!");
 
       // check the base model
@@ -609,7 +609,7 @@ namespace unique {
               [=](...) { return third_n_elements; })));
 
       auto sliced_model = model.emplace(std::move(third_initializer));
-      static_assert(cpp17::is_same_v<decltype(sliced_model), ExpectedSlice>,
+      static_assert(std::is_same_v<decltype(sliced_model), ExpectedSlice>,
                     "Block slice failure with Cosserat Rods!");
 
       // check the base model
@@ -1043,7 +1043,7 @@ namespace unique {
               [](std::size_t i) { return 1.0 + static_cast<double>(i); })));
 
       auto sliced_model = model.emplace(std::move(initializer));
-      static_assert(cpp17::is_same_v<decltype(sliced_model), ExpectedSlice>,
+      static_assert(std::is_same_v<decltype(sliced_model), ExpectedSlice>,
                     "Block slice failure with Cosserat Rods!");
 
       // A. Base model
@@ -1460,7 +1460,7 @@ namespace unique {
               [](std::size_t) { return 3.0; })));
 
       auto sliced_model = model.emplace(std::move(initializer));
-      static_assert(cpp17::is_same_v<decltype(sliced_model), ExpectedSlice>,
+      static_assert(std::is_same_v<decltype(sliced_model), ExpectedSlice>,
                     "Block slice failure with Cosserat Rods!");
 
       // A. Base model
@@ -2258,7 +2258,7 @@ namespace unique {
               [](std::size_t i) { return 1.0 + static_cast<double>(i); })));
 
       auto sliced_model = model.emplace(std::move(initializer));
-      static_assert(cpp17::is_same_v<decltype(sliced_model), ExpectedSlice>,
+      static_assert(std::is_same_v<decltype(sliced_model), ExpectedSlice>,
                     "Block slice failure with Cosserat Rods!");
 
       // A. Base model
@@ -2851,7 +2851,7 @@ namespace unique {
               0UL, 2UL) == (expected_view_n_elements - 1UL));
 
     auto model_view = blocks::slice(model, 0UL, 2UL);
-    static_assert(cpp17::is_same_v<decltype(model_view), ExpectedView>,
+    static_assert(std::is_same_v<decltype(model_view), ExpectedView>,
                   "Block slice meta-failure");
 
     // Extra ghosts are not included.

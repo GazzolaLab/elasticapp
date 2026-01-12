@@ -24,7 +24,7 @@ namespace elastica {
       // This is a primitive type meant for continuous deformable
       // media like a Cosserat rod
       template <class PT,
-                Requires<cpp17::conjunction_v<
+                Requires<std::conjunction_v<
                     tt::IsRigidPrimitive<PT>,
                     ::tt::conforms_to<PT, protocols::ConvexPrimitive>>> =
                     nullptr>

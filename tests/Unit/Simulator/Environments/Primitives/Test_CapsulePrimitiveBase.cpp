@@ -55,7 +55,7 @@ namespace {
     CapsulePrimitiveBase capsule(0UL, 0UL, true, position, Vec3{1.0, 1.1, 1.2},
                                  radius, length, iron);
     ::testing::check_access_API(capsule);
-    ::testing::check_access_API(cpp17::as_const(capsule));
+    ::testing::check_access_API(std::as_const(capsule));
   }
 
   // clang-format off

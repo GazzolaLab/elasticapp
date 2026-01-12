@@ -66,7 +66,7 @@ namespace {
                         FirstProbe, char>;
   static_assert(typename FirstProbeResult::value_type{}, "Meta-failure");
   // The first type is a feedback to user
-  static_assert(cpp17::is_same_v<typename FirstProbeResult::type::type,
+  static_assert(std::is_same_v<typename FirstProbeResult::type::type,
                                  HasIntEmplaceBack>,
                 "Meta-failure");
 
@@ -75,7 +75,7 @@ namespace {
       ChooseOverloadFor<has_emplace_back_t, PossibleEmplaceBackOverloads,
                         SecondProbe, char>;
   // The first type is a feedback to user
-  static_assert(cpp17::is_same_v<typename SecondProbeResult::type::type,
+  static_assert(std::is_same_v<typename SecondProbeResult::type::type,
                                  HasFloatEmplaceBack>,
                 "Meta-failure");
 
@@ -84,7 +84,7 @@ namespace {
       ChooseOverloadFor<has_emplace_back_t, PossibleEmplaceBackOverloads,
                         ThirdProbe, char>;
   // The first type is a feedback to user
-  static_assert(cpp17::is_same_v<typename ThirdProbeResult::type::type, Custom>,
+  static_assert(std::is_same_v<typename ThirdProbeResult::type::type, Custom>,
                 "Meta-failure");
   /// [choose_overload_for_eg]
 

@@ -36,14 +36,14 @@ namespace elastica {
 
           // primary template handles types that have no nested ::ForceModel
           // member:
-          template <class, class = cpp17::void_t<>>
+          template <class, class = std::void_t<>>
           struct HasValidForceModelMember : std::false_type {};
 
           // specialization recognizes types that do have a nested ::ForceModel
           // member:
           template <class T>
           struct HasValidForceModelMember<T,
-                                        cpp17::void_t<typename T::ForceModel>>
+                                        std::void_t<typename T::ForceModel>>
               : std::true_type {};
 
         }  // namespace detail

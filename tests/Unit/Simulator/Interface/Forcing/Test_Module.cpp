@@ -141,8 +141,8 @@ namespace {
       auto sys(mock::ref(system));
       auto&& forcing = sim.force(sys);
       static_assert(
-          cpp17::is_same_v<
-              cpp20::remove_cvref_t<decltype(forcing)>,
+          std::is_same_v<
+              std::remove_cvref_t<decltype(forcing)>,
               Forcing<mock::reference_wrapper<system_type>, tmpl::list<>>>,
           "Forcing meta failure!");
     }

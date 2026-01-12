@@ -170,38 +170,38 @@ The blocking policy found is not valid. Please ensure that its instantiated by
           /// [expected_types]
 
           /// [expected_functions]
-          using const_lvalue_b_return_type = cpp20::remove_cvref_t<
+          using const_lvalue_b_return_type = std::remove_cvref_t<
               decltype(std::declval<ConformingType const&>()
                            .blocking_policy())>;
           static_assert(
-              cpp17::is_same_v<const_lvalue_b_return_type, blocking_policy>,
+              std::is_same_v<const_lvalue_b_return_type, blocking_policy>,
               R"error(
 Not a conforming Systems configuration, doesn't properly implement function
 `blocking_policy const& blocking_policy() const&`
 )error");
 
-          using rvalue_b_return_type = cpp20::remove_cvref_t<
+          using rvalue_b_return_type = std::remove_cvref_t<
               decltype(std::declval<ConformingType&&>().blocking_policy())>;
-          static_assert(cpp17::is_same_v<rvalue_b_return_type, blocking_policy>,
+          static_assert(std::is_same_v<rvalue_b_return_type, blocking_policy>,
                         R"error(
 Not a conforming Systems configuration, doesn't properly implement function
 `blocking_policy && blocking_policy() &&`
 )error");
 
-          using const_lvalue_i_return_type = cpp20::remove_cvref_t<
+          using const_lvalue_i_return_type = std::remove_cvref_t<
               decltype(std::declval<ConformingType const&>()
                            .iteration_policy())>;
           static_assert(
-              cpp17::is_same_v<const_lvalue_i_return_type, iteration_policy>,
+              std::is_same_v<const_lvalue_i_return_type, iteration_policy>,
               R"error(
 Not a conforming Systems configuration, doesn't properly implement function
 `iteration_policy const& iteration_policy() const&`
 )error");
 
-          using rvalue_i_return_type = cpp20::remove_cvref_t<
+          using rvalue_i_return_type = std::remove_cvref_t<
               decltype(std::declval<ConformingType&&>().iteration_policy())>;
           static_assert(
-              cpp17::is_same_v<rvalue_i_return_type, iteration_policy>,
+              std::is_same_v<rvalue_i_return_type, iteration_policy>,
               R"error(
 Not a conforming Systems configuration, doesn't properly implement function
 `iteration_policy && iteration_policy() &&`

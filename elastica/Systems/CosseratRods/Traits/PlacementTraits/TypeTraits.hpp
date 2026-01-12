@@ -65,7 +65,7 @@ namespace elastica {
          * using result = IsOnNode<Var>;
          * \endcode
          * \metareturns
-         * cpp17::bool_constant
+         * std::bool_constant
          *
          * \semantics
          * If the type `Var` is placed `OnNode` (achieved by inheritance), then
@@ -101,7 +101,7 @@ namespace elastica {
          * using result = IsOnElement<Var>;
          * \endcode
          * \metareturns
-         * cpp17::bool_constant
+         * std::bool_constant
          *
          * \semantics
          * If the type `Var` is placed `OnElement` (achieved by inheritance),
@@ -138,7 +138,7 @@ namespace elastica {
          * using result = IsOnVoronoi<Var>;
          * \endcode
          * \metareturns
-         * cpp17::bool_constant
+         * std::bool_constant
          *
          * \semantics
          * If the type `Var` is placed `OnVoronoi` (achieved by inheritance),
@@ -175,7 +175,7 @@ namespace elastica {
          * using result = IsOnRod<Var>;
          * \endcode
          * \metareturns
-         * cpp17::bool_constant
+         * std::bool_constant
          *
          * \semantics
          * If the type `Var` is placed `OnRod` (achieved by inheritance),

@@ -153,7 +153,7 @@ ELASTICA_TEST_CASE(
       second_type s{};
       auto&& connection = sim.connect(f, s);
       static_assert(
-          cpp17::is_same_v<cpp20::remove_cvref_t<decltype(connection)>,
+          std::is_same_v<std::remove_cvref_t<decltype(connection)>,
                            Connection<first_type, second_type, tmpl::list<>>>,
           "Connection meta failure!");
     }

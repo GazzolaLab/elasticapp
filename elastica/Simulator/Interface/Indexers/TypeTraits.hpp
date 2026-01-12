@@ -48,7 +48,7 @@ namespace elastica {
       */
       template <typename T>
       struct IsAdmissibleIndex
-          : cpp17::disjunction<std::is_integral<T>, std::is_same<from_end, T>> {
+          : std::disjunction<std::is_integral<T>, std::is_same<from_end, T>> {
       };
       /*! \endcond */
       //************************************************************************

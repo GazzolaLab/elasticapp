@@ -73,7 +73,7 @@ auto collect_pairs(elastica::ContactCache<L, Strat1> const& lhs) {
     rt.insert(std::make_move_iterator(begin(results)),
               std::make_move_iterator(end(results)));
   };
-  cpp17::apply(
+  std::apply(
       [=](auto&... v) { EXPAND_PACK_LEFT_TO_RIGHT(add_to_collection(v)); },
       lhs.data());
   return rt;

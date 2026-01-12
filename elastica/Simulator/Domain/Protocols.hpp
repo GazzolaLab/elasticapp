@@ -76,7 +76,7 @@ namespace elastica {
                          .template get_lower_bound<ConformingType::Y>()),
             decltype(std::declval<ConformingType const&>()
                          .template get_lower_bound<ConformingType::Z>())>::type;
-        static_assert(cpp17::is_same_v<lower_domain_return_type, bound_type>,
+        static_assert(std::is_same_v<lower_domain_return_type, bound_type>,
                       R"error(
 Not a conforming Domain, doesn't properly implement function
 `template <DirectionType Direction>
@@ -91,7 +91,7 @@ bound_type get_lower_bound() const`)error");
                          .template get_upper_bound<ConformingType::Y>()),
             decltype(std::declval<ConformingType const&>()
                          .template get_upper_bound<ConformingType::Z>())>::type;
-        static_assert(cpp17::is_same_v<upper_domain_return_type, bound_type>,
+        static_assert(std::is_same_v<upper_domain_return_type, bound_type>,
                       R"error(
 Not a conforming Domain, doesn't properly implement function
 `template <DirectionType Direction>
@@ -105,7 +105,7 @@ bound_type get_upper_bound() const`)error");
                          .template get_span<ConformingType::Y>()),
             decltype(std::declval<ConformingType const&>()
                          .template get_span<ConformingType::Z>())>::type;
-        static_assert(cpp17::is_same_v<span_return_type, bound_type>,
+        static_assert(std::is_same_v<span_return_type, bound_type>,
                       R"error(
 Not a conforming Domain, doesn't properly implement function
 `template <DirectionType Direction>

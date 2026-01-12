@@ -101,17 +101,17 @@ namespace {
       CHECK(cb.second_concrete_system_type().empty());
     }
     {
-      CHECK(cpp17::as_const(cb).concrete_connection_type().empty());
-      CHECK(cpp17::as_const(cb).first_concrete_system_type().empty());
-      CHECK(cpp17::as_const(cb).second_concrete_system_type().empty());
+      CHECK(std::as_const(cb).concrete_connection_type().empty());
+      CHECK(std::as_const(cb).first_concrete_system_type().empty());
+      CHECK(std::as_const(cb).second_concrete_system_type().empty());
     }
     {
       cb.set_concrete_connection_type() = "Boo";
       cb.set_first_concrete_system_type() = "As";
       cb.set_second_concrete_system_type() = "If";
-      CHECK_FALSE(cpp17::as_const(cb).concrete_connection_type().empty());
-      CHECK_FALSE(cpp17::as_const(cb).first_concrete_system_type().empty());
-      CHECK_FALSE(cpp17::as_const(cb).second_concrete_system_type().empty());
+      CHECK_FALSE(std::as_const(cb).concrete_connection_type().empty());
+      CHECK_FALSE(std::as_const(cb).first_concrete_system_type().empty());
+      CHECK_FALSE(std::as_const(cb).second_concrete_system_type().empty());
     }
   }
 

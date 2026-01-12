@@ -59,37 +59,37 @@ namespace {
      * std::decay results in std::reference_wrapper<X> for some type X, in
      * which case the deduced type is X&.
      */
-    //      CHECK(cpp17::as_const(cache).data<A, B>()[0] ==
+    //      CHECK(std::as_const(cache).data<A, B>()[0] ==
     //            std::make_pair(std::ref(a1), std::ref(b1)));
-    CHECK(cpp17::as_const(cache).data<A, B>()[0].first == std::ref(a1));
-    CHECK(cpp17::as_const(cache).data<A, B>()[0].second == std::ref(b1));
+    CHECK(std::as_const(cache).data<A, B>()[0].first == std::ref(a1));
+    CHECK(std::as_const(cache).data<A, B>()[0].second == std::ref(b1));
 
-    CHECK(cpp17::as_const(cache).data<A, B>()[1].first == std::ref(a1));
-    CHECK(cpp17::as_const(cache).data<A, B>()[1].second == std::ref(b2));
+    CHECK(std::as_const(cache).data<A, B>()[1].first == std::ref(a1));
+    CHECK(std::as_const(cache).data<A, B>()[1].second == std::ref(b2));
 
-    CHECK(cpp17::as_const(cache).data<A, B>()[2].first == std::ref(a1));
-    CHECK(cpp17::as_const(cache).data<A, B>()[2].second == std::ref(b3));
+    CHECK(std::as_const(cache).data<A, B>()[2].first == std::ref(a1));
+    CHECK(std::as_const(cache).data<A, B>()[2].second == std::ref(b3));
 
-    CHECK(cpp17::as_const(cache).data<A, B>()[3].first == std::ref(a2));
-    CHECK(cpp17::as_const(cache).data<A, B>()[3].second == std::ref(b1));
+    CHECK(std::as_const(cache).data<A, B>()[3].first == std::ref(a2));
+    CHECK(std::as_const(cache).data<A, B>()[3].second == std::ref(b1));
 
-    CHECK(cpp17::as_const(cache).data<A, B>()[4].first == std::ref(a2));
-    CHECK(cpp17::as_const(cache).data<A, B>()[4].second == std::ref(b2));
+    CHECK(std::as_const(cache).data<A, B>()[4].first == std::ref(a2));
+    CHECK(std::as_const(cache).data<A, B>()[4].second == std::ref(b2));
 
-    CHECK(cpp17::as_const(cache).data<A, B>()[5].first == std::ref(a2));
-    CHECK(cpp17::as_const(cache).data<A, B>()[5].second == std::ref(b3));
+    CHECK(std::as_const(cache).data<A, B>()[5].first == std::ref(a2));
+    CHECK(std::as_const(cache).data<A, B>()[5].second == std::ref(b3));
 
-    CHECK(cpp17::as_const(cache).data<A, C>()[0].first == std::ref(a1));
-    CHECK(cpp17::as_const(cache).data<A, C>()[0].second == std::ref(c1));
+    CHECK(std::as_const(cache).data<A, C>()[0].first == std::ref(a1));
+    CHECK(std::as_const(cache).data<A, C>()[0].second == std::ref(c1));
 
-    CHECK(cpp17::as_const(cache).data<A, C>()[1].first == std::ref(a2));
-    CHECK(cpp17::as_const(cache).data<A, C>()[1].second == std::ref(c2));
+    CHECK(std::as_const(cache).data<A, C>()[1].first == std::ref(a2));
+    CHECK(std::as_const(cache).data<A, C>()[1].second == std::ref(c2));
 
-    CHECK_FALSE(cpp17::as_const(cache).data<A, B>().empty());
-    CHECK_FALSE(cpp17::as_const(cache).data<A, C>().empty());
+    CHECK_FALSE(std::as_const(cache).data<A, B>().empty());
+    CHECK_FALSE(std::as_const(cache).data<A, C>().empty());
     cache.clear();
-    CHECK(cpp17::as_const(cache).data<A, B>().empty());
-    CHECK(cpp17::as_const(cache).data<A, C>().empty());
+    CHECK(std::as_const(cache).data<A, B>().empty());
+    CHECK(std::as_const(cache).data<A, C>().empty());
   }
 
   ELASTICA_TEST_CASE("Unit.Environments.CollisionSystem.ContactCache",

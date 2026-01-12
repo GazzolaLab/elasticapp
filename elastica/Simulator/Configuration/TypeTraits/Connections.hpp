@@ -46,7 +46,7 @@ namespace elastica {
      * \endcode
      *
      * \metareturns
-     * cpp17::bool_constant
+     * std::bool_constant
      *
      * \semantics
      * If the type `CC` strictly conforms to

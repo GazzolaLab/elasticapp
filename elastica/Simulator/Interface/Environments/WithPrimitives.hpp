@@ -347,7 +347,7 @@ namespace elastica {
         template <typename Primitive>
         inline auto n_primitives() const noexcept -> SizeType {
           using ::elastica::collision::get_collection;
-          return cpp17::size(get_collection<Primitive>(primitives()));
+          return std::size(get_collection<Primitive>(primitives()));
         }
         //**********************************************************************
 
@@ -378,12 +378,12 @@ namespace elastica {
         /*!\brief Check if any of the registered environments needs primitives
          * support
          *
-         * \returns cpp17::bool_constant
+         * \returns std::bool_constant
          */
         static constexpr auto primitives_are_required() {
           using Test =
               ::elastica::environments::protocols::EnvironmentTag::Signatures;
-          return cpp17::bool_constant<tmpl::fold<
+          return std::bool_constant<tmpl::fold<
               tmpl::transform<
                   AdmissibleEnvironmentTags,
                   tmpl::bind<Test::template requires_primitives_result,
@@ -411,7 +411,7 @@ namespace elastica {
          */
         void reset_module(TimeType /*time_v*/) {
           // we don't shrink to fit here since it may well be used again
-          cpp17::apply(
+          std::apply(
               [](auto&... primitive_container) {
                 EXPAND_PACK_LEFT_TO_RIGHT(primitive_container.clear());
               },

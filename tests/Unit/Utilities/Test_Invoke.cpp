@@ -16,20 +16,20 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Utilities.invoke", "[Unit][Utilities]") {
     // From
     // https://github.com/BlackMATov/invoke.hpp/blob/main/untests/invoke_tests.cpp
-    cpp17::invoke(simple_static_function_r);
-    CHECK(cpp17::invoke(simple_static_function_r) == 42);
-    CHECK(cpp17::invoke(simple_static_function_r_with_arg, 42) == 42);
+    std::invoke(simple_static_function_r);
+    CHECK(std::invoke(simple_static_function_r) == 42);
+    CHECK(std::invoke(simple_static_function_r_with_arg, 42) == 42);
     {
       int v = 42;
-      CHECK(&cpp17::invoke(simple_static_function_r_with_ref_arg, v) == &v);
+      CHECK(&std::invoke(simple_static_function_r_with_ref_arg, v) == &v);
     }
 
     /// [invoke_example]
-    CHECK(cpp17::invoke([]() { return 42; }) == 42);
+    CHECK(std::invoke([]() { return 42; }) == 42);
     // sum of 2
-    CHECK(cpp17::invoke([](int x, int y) { return x + y; }, 19, 23) == 42);
+    CHECK(std::invoke([](int x, int y) { return x + y; }, 19, 23) == 42);
     // sum of first 9 integers
-    CHECK(cpp17::invoke(
+    CHECK(std::invoke(
               [](auto... args) {
                 int sum = 0;
                 EXPAND_PACK_LEFT_TO_RIGHT((sum += args));
@@ -44,7 +44,7 @@ namespace {
 
   // sum of two integers in a constexpr context
   // integral constants have implicit constexpr conversions to its type
-  static_assert(cpp17::invoke(two_sum, std::integral_constant<int, 8>{},
+  static_assert(std::invoke(two_sum, std::integral_constant<int, 8>{},
                               std::integral_constant<int, 9>{}) == 17,
                 "Constexpr invoke failure");
 
@@ -59,7 +59,7 @@ namespace {
   template <int... Is>
   constexpr int variadic_sum_helper(std::integer_sequence<int, Is...>) {
     // to help deduction of variadic sum template
-    return cpp17::invoke(variadic_sum<Is...>);
+    return std::invoke(variadic_sum<Is...>);
   }
 
   static_assert(variadic_sum_helper(std::make_integer_sequence<int, 5>{}) == 10,
@@ -69,25 +69,25 @@ namespace {
   ELASTICA_TEST_CASE("Unit.Utilities.apply", "[Unit][Utilities]") {
     // From
     // https://github.com/BlackMATov/invoke.hpp/blob/main/untests/invoke_tests.cpp
-    cpp17::apply(simple_static_function_r, std::make_tuple());
-    CHECK(cpp17::apply(simple_static_function_r, std::make_tuple()) == 42);
-    CHECK(cpp17::apply(simple_static_function_r_with_arg,
+    std::apply(simple_static_function_r, std::make_tuple());
+    CHECK(std::apply(simple_static_function_r, std::make_tuple()) == 42);
+    CHECK(std::apply(simple_static_function_r_with_arg,
                        std::make_tuple(42)) == 42);
     {
       int v = 42;
-      CHECK(&cpp17::apply(simple_static_function_r_with_ref_arg,
+      CHECK(&std::apply(simple_static_function_r_with_ref_arg,
                           std::make_tuple(std::ref(v))) == &v);
     }
     /// [apply_example]
-    CHECK(cpp17::apply([]() { return 42; }, std::make_tuple()) == 42);
+    CHECK(std::apply([]() { return 42; }, std::make_tuple()) == 42);
     // sum of 2
-    CHECK(cpp17::apply([](int x, int y) { return x + y; },
+    CHECK(std::apply([](int x, int y) { return x + y; },
                        std::make_tuple(19, 23)) == 42);
     // sum of 2, but with a pair
-    CHECK(cpp17::apply([](int x, int y) { return x + y; },
+    CHECK(std::apply([](int x, int y) { return x + y; },
                        std::make_pair(16, 26)) == 42);
     // sum of first 9 integers
-    CHECK(cpp17::apply(
+    CHECK(std::apply(
               [](auto... args) {
                 int sum = 0;
                 EXPAND_PACK_LEFT_TO_RIGHT((sum += args));
@@ -100,7 +100,7 @@ namespace {
   /// [apply_constexpr]
   // sum of two integers in a constexpr context
   static_assert(
-      cpp17::apply(two_sum, std::make_pair(std::integral_constant<int, 8>{},
+      std::apply(two_sum, std::make_pair(std::integral_constant<int, 8>{},
                                            std::integral_constant<int, 9>{})) ==
           17,
       "Constexpr apply failure");
@@ -113,7 +113,7 @@ namespace {
     return product;
   }
 
-  static_assert(cpp17::apply(product<int, int, int, int>,
+  static_assert(std::apply(product<int, int, int, int>,
                              std::make_tuple(1, 2, 3, 4)) == 24,
                 "Constexpr apply failure");
   /// [apply_constexpr]

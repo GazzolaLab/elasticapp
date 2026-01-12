@@ -66,7 +66,7 @@ namespace {
 
     PlanePrimitive plane(0UL, 0UL, true, position, Q, {10.0, 20.0}, iron);
 
-    ::testing::check_access_API(cpp17::as_const(plane));
+    ::testing::check_access_API(std::as_const(plane));
   }
 
 }  // namespace

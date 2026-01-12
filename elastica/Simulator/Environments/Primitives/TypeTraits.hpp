@@ -75,7 +75,7 @@ namespace elastica {
        * \endcode
        *
        * \metareturns
-       * cpp17::bool_constant
+       * std::bool_constant
        *
        * \semantics
        * If the type `F` is derived from `RigidBodyPrimitive`, then
@@ -152,7 +152,7 @@ namespace elastica {
        */
       template <typename T>
       struct PrimitiveTrait
-          : public detail::PrimitiveTraitEval<cpp20::remove_cvref_t<T>> {};
+          : public detail::PrimitiveTraitEval<std::remove_cvref_t<T>> {};
       //************************************************************************
 
       //************************************************************************

@@ -129,7 +129,7 @@ namespace {
       static_assert(sim.n_environments() == 1UL, "meta failure");
 
       (void)(sim.environments());
-      (void)(cpp17::as_const(sim).environments());
+      (void)(std::as_const(sim).environments());
 
       auto& mock_field = sim.get_environment<MockFieldTag>();
       // it initializes to unwated, but then initialze_params shuold set it
@@ -140,7 +140,7 @@ namespace {
       mock_field->status = FieldStatus::finalized;
 
       auto const& cmock_field =
-          cpp17::as_const(sim).get_environment<MockFieldTag>();
+          std::as_const(sim).get_environment<MockFieldTag>();
       CHECK(cmock_field->status == FieldStatus::finalized);
     }
   }
@@ -224,13 +224,13 @@ namespace {
     sim.finalize();
 
     (void)(sim.environment_timers());
-    (void)(cpp17::as_const(sim).environment_timers());
-    CHECK(cpp17::as_const(sim).get_environment_timer<MockFieldTag>().counter() == 0UL);
+    (void)(std::as_const(sim).environment_timers());
+    CHECK(std::as_const(sim).get_environment_timer<MockFieldTag>().counter() == 0UL);
     sim.get_environment_timer<MockFieldTag>().start();
     sim.get_environment_timer<MockFieldTag>().stop();
     CHECK(sim.get_environment_timer<MockFieldTag>().counter() == 1UL);
     sim.get_environment_timer<MockFieldTag>().get_counter() = 0UL; // mutate
-    CHECK(cpp17::as_const(sim).get_environment_timer<MockFieldTag>().counter() == 0UL);
+    CHECK(std::as_const(sim).get_environment_timer<MockFieldTag>().counter() == 0UL);
   }
 
   // clang-format off

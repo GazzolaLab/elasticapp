@@ -73,7 +73,7 @@ namespace elastica {
                   std::declval<Contact&>()));
           using penetration_depth_type = real_t;
           static_assert(
-              cpp17::is_same_v<op_return_type, penetration_depth_type>,
+              std::is_same_v<op_return_type, penetration_depth_type>,
               R"error(
 Not a conforming DEMForce, doesn't properly implement function
 `real_t operator()(ContactID)`)error");

@@ -184,9 +184,9 @@ namespace {
       constexpr std::size_t group = 0ul;  // checks the translation SE3 group
       CHECK(block.kinematic_states().get<group>().get() == 1.0F);
       CHECK(block.dynamic_states().get<group>().get() == 2.0F);
-      CHECK(cpp17::as_const(block).kinematic_rates(time_v).get<group>().get() ==
+      CHECK(std::as_const(block).kinematic_rates(time_v).get<group>().get() ==
             2.0F);
-      CHECK(/*cpp17::as_const*/ (block)
+      CHECK(/*std::as_const*/ (block)
                 .dynamic_rates(time_v)
                 .get<group>()
                 .get() == 5.0F);
@@ -196,9 +196,9 @@ namespace {
       constexpr std::size_t group = 1ul;  // checks the translation SE3 group
       CHECK(block.kinematic_states().get<group>().get() == 3.0F);
       CHECK(block.dynamic_states().get<group>().get() == 4.0F);
-      CHECK(cpp17::as_const(block).kinematic_rates(time_v).get<group>().get() ==
+      CHECK(std::as_const(block).kinematic_rates(time_v).get<group>().get() ==
             4.0F);
-      CHECK(/*cpp17::as_const*/ (block)
+      CHECK(/*std::as_const*/ (block)
                 .dynamic_rates(time_v)
                 .get<group>()
                 .get() == 5.0F);
@@ -218,8 +218,8 @@ namespace {
 
     //    CHECK(block.kinematic_states().get() == 1);
     //    CHECK(block.dynamic_states().get() == 2);
-    //    CHECK(cpp17::as_const(block).kinematic_rates(time_v).get() == 2);
-    //    CHECK(cpp17::as_const(block).dynamic_rates(time_v).get() == 5);
+    //    CHECK(std::as_const(block).kinematic_rates(time_v).get() == 2);
+    //    CHECK(std::as_const(block).dynamic_rates(time_v).get() == 5);
   }
 
 }  // namespace

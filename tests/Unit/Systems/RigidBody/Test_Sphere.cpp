@@ -76,7 +76,7 @@ namespace {
       using ExpectedSlice = ::elastica::rigid_body::detail::SphereBlockSlice;
 
       auto sliced_model = model.emplace(std::move(initializer));
-      static_assert(cpp17::is_same_v<decltype(sliced_model), ExpectedSlice>,
+      static_assert(std::is_same_v<decltype(sliced_model), ExpectedSlice>,
                     "Block slice failure with Spheres!");
 
       // check the base model
@@ -123,7 +123,7 @@ namespace {
       CHECK(model[0UL] == sliced_model);
 
       // check for a new slice of type const
-      const auto const_sliced_model(blocks::slice(cpp17::as_const(model), 0UL));
+      const auto const_sliced_model(blocks::slice(std::as_const(model), 0UL));
       CHECK((const_sliced_model).n_elements(0UL) == 1UL);
       CHECK(const_sliced_model.size() == 1UL);
       CHECK(::blocks::size(const_sliced_model) == 1UL);  // free function check
@@ -338,10 +338,10 @@ namespace {
               tmpl::transform<Variables,
                               tmpl::bind<::blocks::parameter_t, tmpl::_1>>;
 
-          auto first_slice = ::blocks::slice(cpp17::as_const(model), 0UL);
-          auto second_slice = ::blocks::slice(cpp17::as_const(model), 1UL);
+          auto first_slice = ::blocks::slice(std::as_const(model), 0UL);
+          auto second_slice = ::blocks::slice(std::as_const(model), 1UL);
 
-          tmpl::for_each<Tags>([&, &model = cpp17::as_const(model)](auto tag) {
+          tmpl::for_each<Tags>([&, &model = std::as_const(model)](auto tag) {
             using Tag = tmpl::type_from<decltype(tag)>;
             // Relies on blaze interface
             CHECK(std::addressof(::blocks::get<Tag>(first_slice).operand()) ==
@@ -378,8 +378,8 @@ namespace {
               tmpl::transform<Variables,
                               tmpl::bind<::blocks::parameter_t, tmpl::_1>>;
 
-          auto first_view = ::blocks::slice(cpp17::as_const(model), 0UL, 1UL);
-          auto second_view = ::blocks::slice(cpp17::as_const(model), 1UL, 2UL);
+          auto first_view = ::blocks::slice(std::as_const(model), 0UL, 1UL);
+          auto second_view = ::blocks::slice(std::as_const(model), 1UL, 2UL);
 
           tmpl::for_each<Tags>([&](auto tag) {
             using Tag = tmpl::type_from<decltype(tag)>;
@@ -427,15 +427,15 @@ namespace {
         EMPTY_TEST();
 
         check_member_API(model);
-        check_member_API(cpp17::as_const(model));
+        check_member_API(std::as_const(model));
 
         auto slice = ::blocks::slice(model, 0UL);
         check_member_API(slice);
-        check_member_API(cpp17::as_const(slice));
+        check_member_API(std::as_const(slice));
 
-        auto const_slice = ::blocks::slice(cpp17::as_const(model), 0UL);
+        auto const_slice = ::blocks::slice(std::as_const(model), 0UL);
         check_member_API(const_slice);
-        check_member_API(cpp17::as_const(const_slice));
+        check_member_API(std::as_const(const_slice));
       }
 
       auto check_access_API = [](auto& sphere_like) {
@@ -471,15 +471,15 @@ namespace {
         EMPTY_TEST();
 
         check_access_API(model);
-        check_access_API(cpp17::as_const(model));
+        check_access_API(std::as_const(model));
 
         auto slice = ::blocks::slice(model, 0UL);
         check_access_API(slice);
-        check_access_API(cpp17::as_const(slice));
+        check_access_API(std::as_const(slice));
 
-        auto const_slice = ::blocks::slice(cpp17::as_const(model), 0UL);
+        auto const_slice = ::blocks::slice(std::as_const(model), 0UL);
         check_access_API(const_slice);
-        check_access_API(cpp17::as_const(const_slice));
+        check_access_API(std::as_const(const_slice));
       }
 
       SECTION("Iteration") {
@@ -487,11 +487,11 @@ namespace {
 
         for (auto slice : model) {
           check_member_API(slice);
-          check_member_API(cpp17::as_const(slice));
+          check_member_API(std::as_const(slice));
         }
         for (const auto slice : model) {
           check_member_API(slice);
-          check_member_API(cpp17::as_const(slice));
+          check_member_API(std::as_const(slice));
         }
       }
     }
@@ -538,7 +538,7 @@ namespace {
                       [&](std::size_t i) {
                         CHECK(model.get_material(i) == ::elastica::copper);
 
-                        auto slice = ::blocks::slice(cpp17::as_const(model), i);
+                        auto slice = ::blocks::slice(std::as_const(model), i);
                         CHECK(slice.get_material(0UL) == ::elastica::copper);
                       });
       }
@@ -548,7 +548,7 @@ namespace {
                       elastica::make_counting_iterator(n_slices),
                       [&](std::size_t i) {
                         CHECK(model.get_radius(i) == approx(0.3));
-                        auto slice = ::blocks::slice(cpp17::as_const(model), i);
+                        auto slice = ::blocks::slice(std::as_const(model), i);
                         CHECK(slice.get_radius(0UL) == approx(0.3));
                       });
       }

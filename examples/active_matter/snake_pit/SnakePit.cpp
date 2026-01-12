@@ -41,7 +41,7 @@ auto make_damping_constraint(
 
   const real_t translational_mode_damping_coeff = std::exp(-damping_coeff_dt);
   constexpr std::size_t dim{3UL};
-  const auto n_elem(cpp17::size(rod));
+  const auto n_elem(std::size(rod));
 
   auto&& mass = ::elastica::get<elastica::tags::Mass>(rod);
 
@@ -71,7 +71,7 @@ auto make_damping_constraint(
             ::elastica::velocity(rod_system) *=
                 translational_mode_damping_coeff;
             // Easier to encode as powers
-            auto const n_elem(cpp17::size(rod_system));
+            auto const n_elem(std::size(rod_system));
             auto&& omega = ::elastica::angular_velocity(rod_system);
             auto&& dil =
                 ::blocks::get<elastica::tags::ElementDilatation>(rod_system);
@@ -102,7 +102,7 @@ auto make_damping_constraint_outdated(
 
   const real_t translational_mode_damping_coeff = std::exp(-damping_coeff_dt);
   constexpr std::size_t dim{3UL};
-  const auto n_elem(cpp17::size(rod));
+  const auto n_elem(std::size(rod));
 
   auto&& mass = ::elastica::get<elastica::tags::Mass>(rod);
 
@@ -495,7 +495,7 @@ void SnakePit::setup(InputTypes<This> const& input_parameters) {
                                                                   2 * M_PI);
     // out-of-plane angle
     constexpr auto is_cylinder_configuration(
-        cpp17::is_same_v<decltype(point_constraint),
+        std::is_same_v<decltype(point_constraint),
                          decltype(with_cylinder_constraint)>);
     // Code was non-symmetric distribution initially. Do not know if it matters
     // for self-organization. Hence it is now parametrized.

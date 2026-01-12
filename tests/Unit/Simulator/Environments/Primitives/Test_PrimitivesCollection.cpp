@@ -39,15 +39,15 @@ namespace {
 
       Collection collection;
       elastica::ignore_unused(collection.data());
-      elastica::ignore_unused(cpp17::as_const(collection).data());
+      elastica::ignore_unused(std::as_const(collection).data());
 
       elastica::ignore_unused(collection.get_collection<SpherePrimitive>());
       elastica::ignore_unused(
-          cpp17::as_const(collection).get_collection<SpherePrimitive>());
+          std::as_const(collection).get_collection<SpherePrimitive>());
 
       elastica::ignore_unused(get_collection<SpherePrimitive>(collection));
       elastica::ignore_unused(
-          get_collection<SpherePrimitive>(cpp17::as_const(collection)));
+          get_collection<SpherePrimitive>(std::as_const(collection)));
 
       static_assert(collection.get_number_of_primitive_types() == 3,
                     "Meta-failure");

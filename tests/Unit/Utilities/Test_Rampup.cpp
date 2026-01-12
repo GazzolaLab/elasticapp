@@ -84,7 +84,7 @@ namespace {
       /// [make_linear_rampup_eg]
 
       for (auto val : {-0.2, 0.0, 0.2, 0.5, 0.8, 1.0, 1.2}) {
-        CHECK(linear(val) == cpp17::clamp(val, start, start + interval));
+        CHECK(linear(val) == std::clamp(val, start, start + interval));
       }
     }
 

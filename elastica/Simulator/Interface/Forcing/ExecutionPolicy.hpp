@@ -128,7 +128,7 @@ namespace elastica {
           explicit ForceSystemsOp(
               std::tuple<ForcingModule*, ForcingTraits const&> args)
               : ForceSystemsOp(
-                    cpp17::make_from_tuple<ForceSystemsOp>(std::move(args))) {}
+                    std::make_from_tuple<ForceSystemsOp>(std::move(args))) {}
           //********************************************************************
 
           //********************************************************************
@@ -189,7 +189,7 @@ namespace elastica {
           explicit ForceSystemsOp(
               std::tuple<ForcingModule*, ForcingTraits const&> args)
               : ForceSystemsOp(
-                    cpp17::make_from_tuple<ForceSystemsOp>(std::move(args))) {}
+                    std::make_from_tuple<ForceSystemsOp>(std::move(args))) {}
           //********************************************************************
 
           //********************************************************************
@@ -259,7 +259,7 @@ namespace elastica {
           explicit ForceSystemsOp(
               std::tuple<ForcingModule*, ForcingTraits const&> args)
               : ForceSystemsOp(
-                    cpp17::make_from_tuple<ForceSystemsOp>(std::move(args))) {}
+                    std::make_from_tuple<ForceSystemsOp>(std::move(args))) {}
           //********************************************************************
 
           //********************************************************************

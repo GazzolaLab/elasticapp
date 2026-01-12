@@ -26,7 +26,7 @@ namespace cpp17 {
   // \usage
   // For any set of types `Ti`,
      \code
-       using result = cpp17::void_t<T0, T1, T2, T3>;
+       using result = std::void_t<T0, T1, T2, T3>;
      \endcode
   //
   // \metareturns

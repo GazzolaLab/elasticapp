@@ -87,11 +87,11 @@ namespace elastica {
               decltype(std::declval<Type const&>()
                            .constraints_parallelism_threshold());
           using parallelism_threshold_return_type = std::conditional_t<
-              cpp17::is_same_v<ExecutionPolicy, hybrid_policy>,
+              std::is_same_v<ExecutionPolicy, hybrid_policy>,
               ::tt::detected_t<return_type, ConformingType>, size>;
 
           static_assert(
-              cpp17::is_same_v<size, parallelism_threshold_return_type>,
+              std::is_same_v<size, parallelism_threshold_return_type>,
               R"error(
 Not a conforming hybrid Constraints configuration, doesn't properly implement function
 `std::size_t constraints_parallelism_threshold() const`)error");

@@ -58,7 +58,7 @@ namespace standalone_bindings {
     explicit CaseStudyWithOptions(typename Parameters::type args)
         : CaseStudy(), parameters_(std::move(args)) {}
 
-    void setup() { CaseStudy::setup(cpp17::as_const(parameters_.data)); }
+    void setup() { CaseStudy::setup(std::as_const(parameters_.data)); }
 
     auto parameters() const& noexcept -> typename Parameters::type const& {
       return parameters_;

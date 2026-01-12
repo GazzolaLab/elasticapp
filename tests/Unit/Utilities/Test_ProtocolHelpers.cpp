@@ -25,7 +25,7 @@ namespace {
         using name_return_type =
             decltype(std::declval<ConformingType>().name());
         // Check the return type of the `name` member function
-        static_assert(cpp17::is_same_v<name_return_type, std::string>,
+        static_assert(std::is_same_v<name_return_type, std::string>,
                       "The 'name' function must return a 'std::string'.");
       };
     };
@@ -118,7 +118,7 @@ namespace {
         // Check that the `name` function exists _and_ its return type
         using name_return_type =
             decltype(std::declval<ConformingType>().name());
-        static_assert(cpp17::is_same_v<name_return_type, NameType>,
+        static_assert(std::is_same_v<name_return_type, NameType>,
                       "The 'name' function must return a 'NameType'.");
       };
     };
@@ -133,7 +133,7 @@ namespace {
         using name_type = typename ConformingType::NameType;
         using name_return_type =
             decltype(std::declval<ConformingType>().name());
-        static_assert(cpp17::is_same_v<name_return_type, name_type>,
+        static_assert(std::is_same_v<name_return_type, name_type>,
                       "The 'name' function must return a 'NameType'.");
       };
     };
@@ -150,7 +150,7 @@ namespace {
       tt::assert_conforms_to<PersonWithNameType, protocols::NamedWithType>,
       "Failure!");
   static_assert(
-      cpp17::is_same_v<typename PersonWithNameType::NameType, std::string>,
+      std::is_same_v<typename PersonWithNameType::NameType, std::string>,
       "The `NameType` isn't a `std::string`!");
   /// [example_check_name_type]
 }  // namespace

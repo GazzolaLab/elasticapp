@@ -1,7 +1,7 @@
 //==============================================================================
 /*!
 //  \file
-//  \brief Defines cpp17::invoke and friends
+//  \brief Defines std::invoke and friends
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
@@ -87,9 +87,9 @@ namespace cpp17 {
     template <typename F, typename Tuple, std::size_t... Is>
     constexpr decltype(auto)
     apply_impl(F&& f, Tuple&& tuple, std::index_sequence<Is...>) noexcept(
-        noexcept(::cpp17::invoke(
+        noexcept(::std::invoke(
             std::forward<F>(f), std::get<Is>(std::forward<Tuple>(tuple))...))) {
-      return ::cpp17::invoke(std::forward<F>(f),
+      return ::std::invoke(std::forward<F>(f),
                              std::get<Is>(std::forward<Tuple>(tuple))...);
     }
     /*! \endcond */

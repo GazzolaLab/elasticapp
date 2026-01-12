@@ -42,7 +42,7 @@ namespace tt {
    * \endcode
    *
    * \metareturns
-   * cpp17::bool_constant
+   * std::bool_constant
    *
    * \semantics
    * If the type `C` is publicly derived from CRTPBaseTemplate<C>, then

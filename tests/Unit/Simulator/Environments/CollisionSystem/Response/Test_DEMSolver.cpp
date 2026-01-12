@@ -258,9 +258,9 @@ namespace {
       };
 
       auto check_each_indices_integrity = [=](auto& indices) {
-        CHECK(cpp17::size(std::get<sphere_tuple_index>(indices)) ==
+        CHECK(std::size(std::get<sphere_tuple_index>(indices)) ==
               n_spheres_in_one_batch);
-        CHECK(cpp17::size(std::get<capsule_tuple_index>(indices)) ==
+        CHECK(std::size(std::get<capsule_tuple_index>(indices)) ==
               n_capsules_in_one_batch);
       };
 
@@ -271,7 +271,7 @@ namespace {
 
       const std::size_t n_batches = 15UL;
       auto unique_indices = generate_contact_batch_indices(n_batches);
-      CHECK(cpp17::size(unique_indices) == n_batches);
+      CHECK(std::size(unique_indices) == n_batches);
       check_indices_integrity(unique_indices);
 
       auto n_choose_k = [](unsigned n, unsigned k) -> unsigned {
@@ -411,7 +411,7 @@ namespace {
       };
 
       auto setup_batches = [&](auto& contacts, auto& batches) {
-        const auto s = cpp17::size(contacts);
+        const auto s = std::size(contacts);
         const auto n_contacts_in_one_set =
             s / n_batches;  // this has to be integral
         const auto stride = n_contacts_in_one_set;
@@ -441,7 +441,7 @@ namespace {
         using RT = std::vector<Vec3>;
         return [f](auto const& primitives) -> RT {
           RT buffer{};
-          buffer.reserve(cpp17::size(primitives));
+          buffer.reserve(std::size(primitives));
           std::transform(std::cbegin(primitives), std::cend(primitives),
                          std::back_inserter(buffer), f);
           return buffer;
@@ -449,7 +449,7 @@ namespace {
       };
       auto apply_on_primitives = [&](auto f) {
         return [&, f]() {
-          return cpp17::apply(
+          return std::apply(
               [=](auto&... primitive_containers) {
                 return std::make_tuple(f(primitive_containers)...);
               },
@@ -473,7 +473,7 @@ namespace {
       };
 
       auto clear_forces_from_primitives = [&]() {
-        cpp17::apply(
+        std::apply(
             [=](auto&... primitive_containers) {
               EXPAND_PACK_LEFT_TO_RIGHT(
                   clear_forces_from_primitive_buffer(primitive_containers));
@@ -489,7 +489,7 @@ namespace {
           return std::accumulate(std::begin(force_buffer),
                                  std::end(force_buffer), Vec3{});
         };
-        auto force_buffers = cpp17::apply(
+        auto force_buffers = std::apply(
             [=](auto&&... buffers) {
               return std::make_tuple(accumulate_from(buffers)...);
             },

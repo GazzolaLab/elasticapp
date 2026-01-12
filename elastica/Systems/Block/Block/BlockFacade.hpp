@@ -173,7 +173,7 @@ namespace blocks {
      * and initialization can be skipped. This check for skipping can happen in
      * compile-time and is facilitated by this function.
      *
-     * \metareturns cpp17::bool_constant
+     * \metareturns std::bool_constant
      */
     static inline constexpr auto parent_to_be_initialized() noexcept {
       // This one-liner doesn't work if the initialized_variables_t is protected
@@ -188,12 +188,12 @@ namespace blocks {
     /*! \cond ELASTICA_INTERNAL */
     /*!\brief Compile-time check for initialized variables in Plugin
      *
-     * \metareturns cpp17::bool_constant
+     * \metareturns std::bool_constant
      *
      * \see parent_to_be_initialized()
      */
     static inline constexpr auto parent_need_not_be_initialized() noexcept {
-      return cpp17::negation<decltype(parent_to_be_initialized())>{};
+      return std::negation<decltype(parent_to_be_initialized())>{};
     }
     /*! \endcond */
     //**************************************************************************

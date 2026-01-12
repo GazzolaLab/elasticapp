@@ -47,7 +47,7 @@ namespace elastica {
      * \endcode
      *
      * \metareturns
-     * cpp17::bool_constant
+     * std::bool_constant
      *
      * \semantics
      * If the type `D` inherits from elastica::protocols::ComputationalDomain,
@@ -111,7 +111,7 @@ namespace elastica {
      * \endcode
      *
      * \metareturns
-     * cpp17::bool_constant
+     * std::bool_constant
      *
      * \semantics
      * If the type `D` strictly conforms to
@@ -154,7 +154,7 @@ namespace elastica {
      * \endcode
      *
      * \metareturns
-     * cpp17::bool_constant
+     * std::bool_constant
      *
      * \semantics
      * If at least one BoundaryTypeAlong is Periodic, then the simulation domain
@@ -169,7 +169,7 @@ namespace elastica {
      *
      * \note
      * Code can be simplified to just at the expense of readability
-     * cpp17::disjunction_v<BoundaryTypes...>
+     * std::disjunction_v<BoundaryTypes...>
      *
      * \example
      * \snippet Domain/Test_TypeTraits.cpp SimulationDomainType_eg
@@ -180,7 +180,7 @@ namespace elastica {
      */
     template <typename... BoundaryTypesAlong>
     using SimulationDomainType =
-        std::conditional_t<cpp17::disjunction_v<BoundaryTypesAlong...>,
+        std::conditional_t<std::disjunction_v<BoundaryTypesAlong...>,
                            PeriodicDomain, UnboundedDomain>;
     //**************************************************************************
 

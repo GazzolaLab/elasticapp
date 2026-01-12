@@ -100,12 +100,12 @@ namespace elastica {
         // 2. actually reserve size
         auto reserve = [reserve_size = std::move(reserve_buffer)](
                            auto& primitive_container) {
-          using P = typename cpp20::remove_cvref_t<
+          using P = typename std::remove_cvref_t<
               decltype(primitive_container)>::value_type;
           primitive_container.reserve(get_offset<P>(reserve_size));
         };
 
-        cpp17::apply(
+        std::apply(
             [reserve](auto&... primitive_container) {
               EXPAND_PACK_LEFT_TO_RIGHT(reserve(primitive_container));
             },
@@ -185,7 +185,7 @@ namespace elastica {
              &primitive_buffer_mutex](auto& block) {
               std::lock_guard<std::mutex> guard(primitive_buffer_mutex);
 
-              using BlockType = cpp20::remove_cvref_t<decltype(block)>;
+              using BlockType = std::remove_cvref_t<decltype(block)>;
               using PrimitiveType = PrimitiveTrait_t<BlockType>;
               add_primitives_dispatch(tmpl::type_<PrimitiveType>{}, block,
                                       primitives, offsets);

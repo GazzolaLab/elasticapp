@@ -146,7 +146,7 @@ namespace elastica {
       template <typename TL, template <typename...> class DL,
                 typename... D>  // Dependencies contained in the Type List
       struct HasCyclicDependencyHelper<TL, DL<D...>> {
-        static constexpr bool value = cpp17::disjunction_v<
+        static constexpr bool value = std::disjunction_v<
             HasCyclicDependency<D, TL, ::tmpl::list_contains_v<TL, D>>...>;
       };
       /*! \endcond */
@@ -170,7 +170,7 @@ namespace elastica {
     // \tparam D... Type of dependencies to be checked
     */
     template <typename... D>  // Dependencies (types)
-    constexpr bool has_cyclic_dependency = cpp17::disjunction_v<
+    constexpr bool has_cyclic_dependency = std::disjunction_v<
         singleton_detail::HasCyclicDependency<D, ::tmpl::empty_sequence>...>;
     //**************************************************************************
 

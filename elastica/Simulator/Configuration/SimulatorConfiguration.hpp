@@ -55,7 +55,7 @@ namespace elastica {
 
       // all this hooha for abstracting away the actual type of SystemStorage
       template <typename SystemStorage,
-                Requires<cpp17::is_same_v<
+                Requires<std::is_same_v<
                     typename AddSystemStorageType<
                         typename SystemStorage::value_type>::type,
                     SystemStorage>> = nullptr>

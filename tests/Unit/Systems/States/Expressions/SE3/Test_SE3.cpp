@@ -109,11 +109,11 @@ namespace {
 
   //  template <typename... Args>
   //  struct WithArgs {
-  //    template <typename T, typename = cpp17::void_t<>>
+  //    template <typename T, typename = std::void_t<>>
   //    struct CanBeInstantiated : std::false_type {};
   //    template <typename T>
   //    struct CanBeInstantiated<
-  //        T, cpp17::void_t<cpp17::tt::invoke_result_t<T, Args...>>>
+  //        T, std::void_t<std::tt::invoke_result_t<T, Args...>>>
   //        : std::true_type {};
   //  };
 
@@ -146,12 +146,12 @@ namespace {
       auto expr = state * td;
       using E = decltype(expr);
       static_assert(
-          cpp17::is_same_v<E, SE3TimeDeltaMultExpr<D, ::elastica::TimeDelta>>,
+          std::is_same_v<E, SE3TimeDeltaMultExpr<D, ::elastica::TimeDelta>>,
           "Meta failure!");
       static_assert(::elastica::states::tt::is_vectorized_t<E>::value,
                     "SE3 meta failure");
       static_assert(
-          cpp17::is_same_v<::elastica::states::tt::order_t<E>,
+          std::is_same_v<::elastica::states::tt::order_t<E>,
                            tags::internal::DerivativeMultipliedByTimeTag>,
           "SE3 meta failure");
       CHECK(float(expr.get()) == approx(10.0));
@@ -165,22 +165,22 @@ namespace {
 
       using SE = decltype(scaled_expr);
       static_assert(
-          cpp17::is_same_v<SE, SE3TimeDeltaMultExpr<D, ::elastica::TimeDelta>>,
+          std::is_same_v<SE, SE3TimeDeltaMultExpr<D, ::elastica::TimeDelta>>,
           "Meta failure!");
       static_assert(::elastica::states::tt::is_vectorized_t<E>::value,
                     "SE3 meta failure");
       static_assert(
-          cpp17::is_same_v<::elastica::states::tt::order_t<E>,
+          std::is_same_v<::elastica::states::tt::order_t<E>,
                            tags::internal::DerivativeMultipliedByTimeTag>,
           "SE3 meta failure");
       CHECK(float(scaled_expr.get()) == approx(50.0));
       CHECK(scaled_expr.size() == 1UL);
 
-      static_assert(cpp17::is_same_v<SE, decltype(another_scaled_expr)>,
+      static_assert(std::is_same_v<SE, decltype(another_scaled_expr)>,
                     "Meta failure!");
-      static_assert(cpp17::is_same_v<SE, decltype(yet_another_scaled_expr)>,
+      static_assert(std::is_same_v<SE, decltype(yet_another_scaled_expr)>,
                     "Meta failure!");
-      static_assert(cpp17::is_same_v<SE, decltype(yet_yet_another_scaled_expr)>,
+      static_assert(std::is_same_v<SE, decltype(yet_yet_another_scaled_expr)>,
                     "Meta failure!");
       CHECK(float(another_scaled_expr.get()) == approx(50.0));
       CHECK(float(yet_another_scaled_expr.get()) == approx(50.0));
@@ -197,12 +197,12 @@ namespace {
       auto expr = state * td;
       using E = decltype(expr);
       static_assert(
-          cpp17::is_same_v<E, SE3TimeDeltaMultExpr<DD, ::elastica::TimeDelta>>,
+          std::is_same_v<E, SE3TimeDeltaMultExpr<DD, ::elastica::TimeDelta>>,
           "Meta failure!");
       static_assert(::elastica::states::tt::is_vectorized_t<E>::value,
                     "SE3 meta failure");
       static_assert(
-          cpp17::is_same_v<::elastica::states::tt::order_t<E>,
+          std::is_same_v<::elastica::states::tt::order_t<E>,
                            tags::internal::DoubleDerivativeMultipliedByTimeTag>,
           "SE3 meta failure");
       CHECK(float(expr.get()) == approx(10.0F));
@@ -216,22 +216,22 @@ namespace {
 
       using SE = decltype(scaled_expr);
       static_assert(
-          cpp17::is_same_v<SE, SE3TimeDeltaMultExpr<DD, ::elastica::TimeDelta>>,
+          std::is_same_v<SE, SE3TimeDeltaMultExpr<DD, ::elastica::TimeDelta>>,
           "Meta failure!");
       static_assert(::elastica::states::tt::is_vectorized_t<E>::value,
                     "SE3 meta failure");
       static_assert(
-          cpp17::is_same_v<::elastica::states::tt::order_t<E>,
+          std::is_same_v<::elastica::states::tt::order_t<E>,
                            tags::internal::DoubleDerivativeMultipliedByTimeTag>,
           "SE3 meta failure");
       CHECK(float(scaled_expr.get()) == approx(50.0F));
       CHECK(scaled_expr.size() == 1UL);
 
-      static_assert(cpp17::is_same_v<SE, decltype(another_scaled_expr)>,
+      static_assert(std::is_same_v<SE, decltype(another_scaled_expr)>,
                     "Meta failure!");
-      static_assert(cpp17::is_same_v<SE, decltype(yet_another_scaled_expr)>,
+      static_assert(std::is_same_v<SE, decltype(yet_another_scaled_expr)>,
                     "Meta failure!");
-      static_assert(cpp17::is_same_v<SE, decltype(yet_yet_another_scaled_expr)>,
+      static_assert(std::is_same_v<SE, decltype(yet_yet_another_scaled_expr)>,
                     "Meta failure!");
       CHECK(float(another_scaled_expr.get()) == approx(50.0F));
       CHECK(float(yet_another_scaled_expr.get()) == approx(50.0F));
@@ -290,7 +290,7 @@ namespace {
 
       auto expr = derivative + double_derivative * td;
       static_assert(
-          cpp17::is_same_v<decltype(expr),
+          std::is_same_v<decltype(expr),
                            SE3SE3AddExpr<D, SE3TimeDeltaMultExpr<
                                                 DD, ::elastica::TimeDelta>>>,
           "Meta failure!");
@@ -300,7 +300,7 @@ namespace {
       // add a layer
       auto another_expr = expr + double_derivative * td;
       static_assert(
-          cpp17::is_same_v<
+          std::is_same_v<
               decltype(another_expr),
               SE3SE3AddExpr<decltype(expr),
                             SE3TimeDeltaMultExpr<DD, ::elastica::TimeDelta>>>,
@@ -311,7 +311,7 @@ namespace {
       // another layer
       auto yet_another_expr = double_derivative * td + expr;
       static_assert(
-          cpp17::is_same_v<
+          std::is_same_v<
               SE3SE3AddExpr<SE3TimeDeltaMultExpr<DD, ::elastica::TimeDelta>,
                             decltype(expr)>,
               decltype(yet_another_expr)>,

@@ -143,7 +143,7 @@ namespace elastica {
           //          }
 
           //          ~Cache() {
-          //            cpp17::apply(
+          //            std::apply(
           //                [](auto&... pp) {
           //                  // pp is Primitive**&
           //                  EXPAND_PACK_LEFT_TO_RIGHT(delete[] pp);
@@ -171,7 +171,7 @@ namespace elastica {
           //          template <typename P>
           //          void reserve(std::size_t size) {
           //            const auto old_size =
-          //                std::get<decltype(size_type<P>())>(cpp17::as_const(sizes_))
+          //                std::get<decltype(size_type<P>())>(std::as_const(sizes_))
           //                    .value();
           //
           //            if (size <= old_size) {

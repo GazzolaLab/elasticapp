@@ -161,7 +161,7 @@ namespace elastica {
         //**Compile time checks*************************************************
         /*! \cond ELASTICA_INTERNAL */
         // static_assert(
-        //     cpp17::is_same_v<
+        //     std::is_same_v<
         //         This, typename CollisionConfig::template BatchGenerator<C>>,
         //     R"error(Union-find meta-failure, contact the developers!)error");
         // /*! \endcond */

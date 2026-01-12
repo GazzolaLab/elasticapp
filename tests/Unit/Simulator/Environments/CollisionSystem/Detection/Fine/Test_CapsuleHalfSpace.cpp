@@ -128,7 +128,7 @@ namespace {
                   get_unit_vector_along(LagrangianFrame::Normal),
                   angle_between_capsule_and_half_space_normal, false);
               const Rot3 tiltedR =
-                  R * cpp17::as_const(first_capsule).get_rotation_matrix();
+                  R * std::as_const(first_capsule).get_rotation_matrix();
 
               const Vec3 rotated_axis{
                   tiltedR(cast_along(LagrangianFrame::Tangent),
@@ -211,9 +211,9 @@ namespace {
 
           CHECK_FALSE(contacts.empty());
 #ifndef _ELASTICA_CAPSULE_HALFSPACE_SPHERE_CHECK
-          REQUIRE(cpp17::size(contacts) == 1UL);
+          REQUIRE(std::size(contacts) == 1UL);
 #else
-          REQUIRE(cpp17::size(contacts) == 2UL);
+          REQUIRE(std::size(contacts) == 2UL);
 #endif
 
           // negative distances are interpenetrating so stick with the
@@ -246,7 +246,7 @@ namespace {
           clear(contacts);
         };
 
-        const Rot3 capR = cpp17::as_const(first_capsule).get_rotation_matrix();
+        const Rot3 capR = std::as_const(first_capsule).get_rotation_matrix();
 
         SECTION("Centerline outside hafspace") {
           real_t const expected_penetration_depth = 0.25 * capsule_radius;

@@ -64,8 +64,8 @@ namespace {
       // RHS needs to be un-consted because thats the return type from blaze,
       // this usually shouldn't be a problem
       static_assert(
-          cpp17::is_same_v<decltype(expr.get()),
-                           cpp20::remove_cvref_t<
+          std::is_same_v<decltype(expr.get()),
+                           std::remove_cvref_t<
                                decltype(data + td.value() * another_data)>>,
           "Vectorization failure");
 
@@ -132,9 +132,9 @@ namespace {
       // RHS needs to be un-consted because thats the return type from blaze,
       // this usually shouldn't be a problem
       static_assert(
-          cpp17::is_same_v<
+          std::is_same_v<
               decltype(expr.get()),
-              cpp20::remove_cvref_t<decltype(td.value() * another_data)>>,
+              std::remove_cvref_t<decltype(td.value() * another_data)>>,
           "Vectorization failure");
 
       {

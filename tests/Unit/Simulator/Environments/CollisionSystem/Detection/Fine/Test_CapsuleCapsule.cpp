@@ -286,7 +286,7 @@ namespace {
                   geometry::rotate_via_axis_angle(
                       get_unit_vector_along(elastica::LagrangianFrame::Tangent),
                       angle, false) *
-                  cpp17::as_const(first_capsule).get_rotation_matrix();
+                  std::as_const(first_capsule).get_rotation_matrix();
 
               // convert the binormal to the tangent of the second axis
               // (could have been normal as well)
@@ -362,7 +362,7 @@ namespace {
                       get_unit_vector_along(
                           ::elastica::LagrangianFrame::Normal),
                       out_of_plane_angle, false) *
-                  cpp17::as_const(first_capsule.get_rotation_matrix());
+                  std::as_const(first_capsule.get_rotation_matrix());
 
               // permute the matrix so that
               // tangent -> normal
@@ -480,7 +480,7 @@ namespace {
             do_collide(first_capsule, second_capsule, contacts);
 
             CHECK_FALSE(contacts.empty());
-            REQUIRE(cpp17::size(contacts) == 1UL);
+            REQUIRE(std::size(contacts) == 1UL);
             // negative distances are interpenetrating so stick with the
             // sign convention
             CHECK(contacts[0].get_first_body() == &first_capsule);
@@ -539,7 +539,7 @@ namespace {
             do_collide(first_capsule, second_capsule, contacts);
 
             CHECK_FALSE(contacts.empty());
-            REQUIRE(cpp17::size(contacts) == 2UL);
+            REQUIRE(std::size(contacts) == 2UL);
             // negative distances are interpenetrating so stick with the
             // sign convention
             CHECK(contacts[0].get_first_body() == &first_capsule);

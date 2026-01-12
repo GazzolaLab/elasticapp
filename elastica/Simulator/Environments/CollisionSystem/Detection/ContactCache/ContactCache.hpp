@@ -51,13 +51,13 @@ namespace elastica {
     }
 
     auto clear() /*const noexcept */ -> void {
-      cpp17::apply(
+      std::apply(
           [](auto&... data) { EXPAND_PACK_LEFT_TO_RIGHT(data.clear()); },
           data_);
     }
 
     auto empty() const noexcept -> bool {
-      return cpp17::apply(
+      return std::apply(
           [](auto&... data) {
             bool is_empty = true;
             EXPAND_PACK_LEFT_TO_RIGHT((is_empty &= data.empty()));

@@ -268,7 +268,7 @@ namespace elastica {
             // provide E or B, the modulus of elasticity. We are responsible
             // for putting in the correct are etc. from the expression.
             auto const n_elem = blocks::get<elastica::tags::NElement>(
-                cpp17::as_const(initializer))();
+                std::as_const(initializer))();
 
             // bending and twisting only
             {

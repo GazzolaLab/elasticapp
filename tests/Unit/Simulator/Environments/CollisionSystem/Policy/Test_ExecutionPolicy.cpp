@@ -114,7 +114,7 @@ namespace {
 
     using Policy = KEP<ForEachPolicy, OverPairPolicy>;
     static_assert(
-        cpp17::is_same_v<typename Policy::ExecutionPolicy, ExpectedAnswer>,
+        std::is_same_v<typename Policy::ExecutionPolicy, ExpectedAnswer>,
         "Meta-failure");
   };
 

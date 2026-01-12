@@ -365,7 +365,7 @@ namespace elastica {
               DoubleDerivativeMultipliedByTimeTag /* meta */) noexcept -> void {
         add_assign_impl(
             rhs_expr,
-            cpp17::conjunction<is_vectorized, tt::is_vectorized_t<LHS>>{});
+            std::conjunction<is_vectorized, tt::is_vectorized_t<LHS>>{});
       }
       //@}
       //************************************************************************
@@ -418,7 +418,7 @@ namespace elastica {
         const SO3Base<SO3T>& rhs) & {
       resize((*rhs).size());
       assign(*rhs,
-             cpp17::conjunction<is_vectorized, tt::is_vectorized_t<SO3T>>{});
+             std::conjunction<is_vectorized, tt::is_vectorized_t<SO3T>>{});
       return *this;
     }
     //**************************************************************************

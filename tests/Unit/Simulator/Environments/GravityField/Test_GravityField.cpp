@@ -97,18 +97,18 @@ namespace {
     (void)(g->initialize(*simulator));
     ::elastica::Vec3 my_gravity{0.2, 0.2, 0.3};
     g->gravity() = my_gravity;
-    CHECK(cpp17::as_const(g)->gravity() == my_gravity);
+    CHECK(std::as_const(g)->gravity() == my_gravity);
 
     ::elastica::Time time_v{0.0};
     using ::elastica::environments::reset;
     reset(*g, time_v);
-    CHECK_FALSE(cpp17::as_const(g)->gravity() == my_gravity);
+    CHECK_FALSE(std::as_const(g)->gravity() == my_gravity);
 
     using ::elastica::configuration::make_gravity_configuration;
     using ::elastica::environments::initialize_parameters;
     auto config = make_gravity_configuration(my_gravity);
     initialize_parameters(*g, config);
-    CHECK(cpp17::as_const(g)->gravity() == my_gravity);
+    CHECK(std::as_const(g)->gravity() == my_gravity);
   }
 
   ELASTICA_TEST_CASE("Unit.Environments.GravityField.resolve",

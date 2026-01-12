@@ -104,7 +104,7 @@ namespace {
     }
 
     // stringifying this requires operator << for vectors.
-    CHECK(cpp17::as_const(b).data() == cpp17::as_const(loaded_b).data());
+    CHECK(std::as_const(b).data() == std::as_const(loaded_b).data());
   }
 
 }  // namespace

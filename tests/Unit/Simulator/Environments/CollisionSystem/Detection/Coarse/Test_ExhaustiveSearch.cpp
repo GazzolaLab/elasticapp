@@ -193,10 +193,10 @@ namespace {
     using ::elastica::collision::get_collection;
 
     auto clear_collections = [&]() {
-      cpp17::apply(
+      std::apply(
           [](auto&... storage) { EXPAND_PACK_LEFT_TO_RIGHT(storage.clear()); },
           primitive_storage.data());
-      cpp17::apply(
+      std::apply(
           [](auto&... storage) { EXPAND_PACK_LEFT_TO_RIGHT(storage.clear()); },
           imposed_primitive_storage.data());
     };
@@ -780,7 +780,7 @@ namespace {
           //                            expected.end(),
           //                            std::back_inserter(difference));
 
-          // CHECK(cpp17::size(difference) == 0);
+          // CHECK(std::size(difference) == 0);
           CHECK(actual == expected);
           // CHECK(cache_to_be_checked == baseline_cache);
         }

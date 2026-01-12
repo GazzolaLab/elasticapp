@@ -104,7 +104,7 @@ namespace tt {
           "Have you forgotten to (publicly) inherit the type from "
           "tt::ConformsTo<Protocol>?");
       static_assert(
-          not cpp17::is_same_v<
+          not std::is_same_v<
               decltype(typename Protocol::template test<ConformingType>{}),
               void>,
           "Protocol failure!");

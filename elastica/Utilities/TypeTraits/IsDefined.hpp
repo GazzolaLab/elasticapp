@@ -61,7 +61,7 @@ namespace tt {
   // \ingroup type_traits
   */
   template <typename T>
-  constexpr bool is_defined_v<T, cpp17::void_t<decltype(sizeof(T))>> = true;
+  constexpr bool is_defined_v<T, std::void_t<decltype(sizeof(T))>> = true;
   /*! \endcond */
   //****************************************************************************
 

@@ -25,7 +25,7 @@ namespace {
       tmpl::pair<Integer<3>, Integer<1>>, tmpl::pair<Integer<3>, Integer<2>>,
       tmpl::pair<Integer<3>, Integer<3>>>;
 
-  static_assert(cpp17::is_same_v<matrix, expected_matrix>, "Meta-failure");
+  static_assert(std::is_same_v<matrix, expected_matrix>, "Meta-failure");
   /// [matrix_of_pairs_eg]
 
   /// [matrix_of_distinct_pairs_eg]
@@ -36,7 +36,7 @@ namespace {
       tmpl::pair<Integer<1>, Integer<3>>, tmpl::pair<Integer<2>, Integer<2>>,
       tmpl::pair<Integer<2>, Integer<3>>, tmpl::pair<Integer<3>, Integer<3>>>;
 
-  static_assert(cpp17::is_same_v<distinct_matrix, expected_distinct_matrix>,
+  static_assert(std::is_same_v<distinct_matrix, expected_distinct_matrix>,
                 "Meta-failure");
   /// [matrix_of_distinct_pairs_eg]
 

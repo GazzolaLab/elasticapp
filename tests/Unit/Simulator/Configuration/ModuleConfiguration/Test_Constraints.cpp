@@ -33,13 +33,13 @@ namespace {
                       decltype(sequential_constraints)>::value,
                   "meta failure!");
     static_assert(
-        cpp17::is_same_v<decltype(sequential_constraints),
+        std::is_same_v<decltype(sequential_constraints),
                          ConstraintsConfiguration<
                              sequential_policy,
                              ELASTICA_DEFAULT_REGISTRARS_FOR_CONSTRAINTS>>,
         "meta failure");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(sequential_constraints),
             ConstraintsConfiguration<sequential_policy, CustomRegistrars>>,
         "meta failure");
@@ -61,13 +61,13 @@ namespace {
                       decltype(parallel_constraints)>::value,
                   "meta failure!");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(parallel_constraints),
             ConstraintsConfiguration<
                 parallel_policy, ELASTICA_DEFAULT_REGISTRARS_FOR_CONSTRAINTS>>,
         "meta failure");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(parallel_constraints),
             ConstraintsConfiguration<parallel_policy, CustomRegistrars>>,
         "meta failure");
@@ -85,13 +85,13 @@ namespace {
                       decltype(hybrid_constraints)>::value,
                   "meta failure!");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(hybrid_constraints),
             ConstraintsConfiguration<
                 hybrid_policy, ELASTICA_DEFAULT_REGISTRARS_FOR_CONSTRAINTS>>,
         "meta failure");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(hybrid_constraints),
             ConstraintsConfiguration<hybrid_policy, CustomRegistrars>>,
         "meta failure");

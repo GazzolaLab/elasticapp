@@ -20,14 +20,14 @@ namespace {
   using C =
       TestCollisionConfiguration<::elastica::configuration::sequential_policy>;
   static_assert(
-      cpp17::is_same_v<typename HybridBatch<C>::BatchingAlgorithm,
+      std::is_same_v<typename HybridBatch<C>::BatchingAlgorithm,
                        ::elastica::collision::batches::SingleBatch<C>>,
       "Meta-failure");
 
 
   using CP =
       TestCollisionConfiguration<::elastica::configuration::parallel_policy>;
-  static_assert(cpp17::is_same_v<typename HybridBatch<CP>::BatchingAlgorithm,
+  static_assert(std::is_same_v<typename HybridBatch<CP>::BatchingAlgorithm,
                                  ::elastica::collision::batches::UnionFind<CP>>,
                 "Meta-failure");
 

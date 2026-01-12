@@ -46,7 +46,7 @@ namespace elastica {
        * \endcode
        *
        * \metareturns
-       * cpp17::bool_constant
+       * std::bool_constant
        *
        * \semantics
        * If the state type `ST` has a bulit-in order in the ODE system, i.e. has

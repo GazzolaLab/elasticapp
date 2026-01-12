@@ -41,7 +41,7 @@ namespace {
     /// [seq_eg]
 
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(sequential_systems_configuration),
             SystemsConfiguration<
                 ELASTICA_DEFAULT_ADMISSIBLE_PLUGINS_FOR_SYSTEMS,
@@ -49,7 +49,7 @@ namespace {
                 IterationPolicy<sequential_policy, sequential_policy, void>>>,
         "meta failure");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(sequential_systems_configuration_with_custom_tags),
             SystemsConfiguration<
                 CustomSystemTags, BlockingPolicy<RestrictSizeAcrossBlockTypes>,

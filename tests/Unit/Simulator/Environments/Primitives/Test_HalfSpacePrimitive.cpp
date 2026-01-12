@@ -143,7 +143,7 @@ namespace {
 
     HalfSpacePrimitive half_space(0UL, 0UL, true, anchor_position, Q, iron);
 
-    ::testing::check_access_API(cpp17::as_const(half_space));
+    ::testing::check_access_API(std::as_const(half_space));
   }
 
 }  // namespace

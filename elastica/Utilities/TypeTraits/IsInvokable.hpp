@@ -67,11 +67,11 @@ namespace cpp17 {
    * \usage
    * For any type `F`, `R` and types `A...`
    * \code
-   * using result = cpp17::tt::is_invocable_r<R, F, A...>;
+   * using result = std::tt::is_invocable_r<R, F, A...>;
    * \endcode
    *
    * \metareturns
-   * cpp17::bool_constant
+   * std::bool_constant
    *
    * \semantics
    * For any type `F` defines an operator() with arguments of types `A...` to
@@ -126,11 +126,11 @@ namespace cpp17 {
    * \usage
    * For any type `F` and types `A...`
    * \code
-   * using result = cpp17::tt::is_invocable<F, A...>;
+   * using result = std::tt::is_invocable<F, A...>;
    * \endcode
    *
    * \metareturns
-   * cpp17::bool_constant
+   * std::bool_constant
    *
    * \semantics
    * For any type `F` defines an operator() with arguments of types `A...`
@@ -185,11 +185,11 @@ namespace cpp17 {
    * \usage
    * For any type `F` and types `A...`
    * \code
-   * using result = cpp17::tt::is_nothrow_callable<F, A...>;
+   * using result = std::tt::is_nothrow_callable<F, A...>;
    * \endcode
    *
    * \metareturns
-   * cpp17::bool_constant
+   * std::bool_constant
    *
    * \semantics
    * For any type `F` defines a `noexcept` operator() with arguments of types
@@ -229,11 +229,11 @@ namespace cpp17 {
    * \usage
    * For any type `F`, `R` and types `A...`
    * \code
-   * using result = cpp17::tt::is_nothrow_invocable_r<R, F, A...>;
+   * using result = std::tt::is_nothrow_invocable_r<R, F, A...>;
    * \endcode
    *
    * \metareturns
-   * cpp17::bool_constant
+   * std::bool_constant
    *
    * \semantics
    * For any type `F` defines a `noexcept` operator() with arguments of types
@@ -292,11 +292,11 @@ namespace cpp17 {
    * \usage
    * For any type `F` and types `A...`
    * \code
-   * using result = cpp17::tt::is_nothrow_invocable<F, A...>;
+   * using result = std::tt::is_nothrow_invocable<F, A...>;
    * \endcode
    *
    * \metareturns
-   * cpp17::bool_constant
+   * std::bool_constant
    *
    * \semantics
    * For any type `F` defines a `noexcept` operator() with arguments of

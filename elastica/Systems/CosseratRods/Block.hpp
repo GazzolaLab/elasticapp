@@ -1280,7 +1280,7 @@ TypeDisplayer<decltype(make_slices_of_members_marked_with<ElementTag>(unit))>
 // rather we can add all dofs in one go. Of course, by putting in one block
 // initializer, we get the regular implementation
 template <typename... FirstBlockInitializers, typename... BlockInitializers,
-          Requires<cpp17::conjunction_v<
+          Requires<std::conjunction_v<
               detail_cosserat_rod::tt::IsBlockInitializer<
                   CRT, BlockInitializers>...>> = nullptr>
 auto emplace_back(CosseratInitializer<FirstBlockInitializers...>&&

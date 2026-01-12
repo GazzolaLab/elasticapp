@@ -180,7 +180,7 @@ namespace elastica {
          *
          * \tparam ConcreteConstraint The type of constraint
          *
-         * \metareturns cpp17::bool_constant
+         * \metareturns std::bool_constant
          */
         template <typename ConcreteConstraint>
         static inline constexpr auto conformant_constraint() noexcept {
@@ -195,13 +195,13 @@ namespace elastica {
          *
          * \tparam ConcreteConstraint The type of constraint
          *
-         * \metareturns cpp17::bool_constant
+         * \metareturns std::bool_constant
          *
          * \see conformant_constraint()
          */
         template <typename ConcreteConstraint>
         static inline constexpr auto non_conformant_constraint() noexcept {
-          return cpp17::negation<
+          return std::negation<
               decltype(conformant_constraint<ConcreteConstraint>())>{};
         }
         //**********************************************************************
@@ -212,7 +212,7 @@ namespace elastica {
          *
          * \tparam IndexSet The type of index set
          *
-         * \metareturns cpp17::bool_constant
+         * \metareturns std::bool_constant
          */
         template <typename IndexSet>
         static inline constexpr auto conformant_index_set() noexcept {
@@ -226,13 +226,13 @@ namespace elastica {
          *
          * \tparam IndexSet The type of index set
          *
-         * \metareturns cpp17::bool_constant
+         * \metareturns std::bool_constant
          *
          * \see conformant_index_set
          */
         template <typename IndexSet>
         static inline constexpr auto non_conformant_index_set() noexcept {
-          return cpp17::negation<decltype(conformant_index_set<IndexSet>())>{};
+          return std::negation<decltype(conformant_index_set<IndexSet>())>{};
         }
         //**********************************************************************
 
@@ -243,11 +243,11 @@ namespace elastica {
          * \tparam ConcreteConstraint The type of constraint
          * \tparam IndexSet The type of index set
          *
-         * \metareturns cpp17::bool_constant
+         * \metareturns std::bool_constant
          */
         template <typename ConcreteConstraint, typename IndexSet>
         static inline constexpr auto conformant_interface() noexcept {
-          return cpp17::conjunction<
+          return std::conjunction<
               decltype(conformant_constraint<ConcreteConstraint>()),
               decltype(conformant_index_set<IndexSet>())>{};
         }
@@ -260,11 +260,11 @@ namespace elastica {
          * \tparam ConcreteConstraint The type of constraint
          * \tparam IndexSet The type of index set
          *
-         * \metareturns cpp17::bool_constant
+         * \metareturns std::bool_constant
          */
         template <typename ConcreteConstraint, typename IndexSet>
         static inline constexpr auto non_conformant_interface() noexcept {
-          return cpp17::negation<
+          return std::negation<
               decltype(conformant_interface<ConcreteConstraint, IndexSet>())>{};
         }
         //**********************************************************************

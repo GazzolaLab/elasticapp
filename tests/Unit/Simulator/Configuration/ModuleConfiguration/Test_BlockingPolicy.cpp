@@ -213,7 +213,7 @@ namespace {
       return true;
     };
     auto blocker = make_blocking_policy(std::move(custom_criteria));
-    static_assert(cpp17::is_same_v<decltype(blocker),
+    static_assert(std::is_same_v<decltype(blocker),
                                    BlockingPolicy<decltype(custom_criteria)>>,
                   "meta failure!");
 
@@ -240,7 +240,7 @@ namespace {
       return false;
     };
     auto blocker = make_blocking_policy(std::move(custom_criteria));
-    static_assert(cpp17::is_same_v<decltype(blocker),
+    static_assert(std::is_same_v<decltype(blocker),
                                    BlockingPolicy<decltype(custom_criteria)>>,
                   "meta failure!");
 
@@ -288,7 +288,7 @@ namespace {
                                         std::move(custom_char_criteria));
 
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(blocker),
             BlockingPolicy<CompositeCriteria<decltype(custom_int_criteria),
                                              decltype(custom_char_criteria)>>>,

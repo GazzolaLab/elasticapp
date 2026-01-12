@@ -75,7 +75,7 @@ namespace elastica {
     // Make a copy of the initializer as there is no guarantee to the number of
     // times it will be called.
     auto const n_elem =
-        blocks::get<::elastica::tags::NElement>(cpp17::as_const(initializer))();
+        blocks::get<::elastica::tags::NElement>(std::as_const(initializer))();
     struct {
       Initializer value;
     } cap{std::forward<Initializer>(initializer)};

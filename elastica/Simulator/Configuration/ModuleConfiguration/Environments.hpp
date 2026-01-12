@@ -83,7 +83,7 @@ namespace elastica {
           // no dupes
           tmpl::transform<
               // get value types
-              ImposedPrimitives, cpp20::remove_cvref<tmpl::_1>
+              ImposedPrimitives, std::remove_cvref<tmpl::_1>
               // get value types
               >
           // no dupes

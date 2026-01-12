@@ -107,7 +107,7 @@ namespace {
     template <typename Primitive>
     inline auto n_primitives() const noexcept -> std::size_t {
       using ::elastica::collision::get_collection;
-      return cpp17::size(get_collection<Primitive>(primitives()));
+      return std::size(get_collection<Primitive>(primitives()));
     }
 
     inline auto n_primitives() const -> std::size_t {
@@ -193,10 +193,10 @@ namespace {
     };
 
     auto clear_collections = [&]() {
-      cpp17::apply(
+      std::apply(
           [](auto&... storage) { EXPAND_PACK_LEFT_TO_RIGHT(storage.clear()); },
           primitive_storage.data());
-      cpp17::apply(
+      std::apply(
           [](auto&... storage) { EXPAND_PACK_LEFT_TO_RIGHT(storage.clear()); },
           imposed_primitive_storage.data());
     };
@@ -900,7 +900,7 @@ namespace {
             [lim = std::min(n_spheres, n_capsules)](auto& container) {
               CHECK_FALSE(container.size() < lim);
             };
-        cpp17::apply(
+        std::apply(
             [=](auto&... containers) {
               EXPAND_PACK_LEFT_TO_RIGHT(size_check(containers));
             },
@@ -933,7 +933,7 @@ namespace {
         run_algorithm(cache_to_be_checked, def, {[](Algorithm& algorithm) {
                         // 500 range, so minimum n for which 2^n >  500
                         // is n = 9
-                        CHECK(cpp17::size(algorithm.grids()) > 7UL);
+                        CHECK(std::size(algorithm.grids()) > 7UL);
                       }});
 
         auto actual(collect_pairs(cache_to_be_checked));

@@ -71,7 +71,7 @@ namespace elastica {
           using p_return_type = decltype(std::declval<ConformingType const&>()
                                              .apply_constraints_on_primitives(
                                                  std::declval<time_type>()));
-          static_assert(cpp17::is_same_v<p_return_type, void>,
+          static_assert(std::is_same_v<p_return_type, void>,
                         R"error(
 Not a conforming data trait, doesn't properly implement static function
 `void apply_constraints_on_primitives(time_type time_v) const`
@@ -82,7 +82,7 @@ Not a conforming data trait, doesn't properly implement static function
                                                  std::declval<time_type>()));
           // Confirm that there are no side effects upon calling this function
           // by comparing strictly against void
-          static_assert(cpp17::is_same_v<r_return_type, void>,
+          static_assert(std::is_same_v<r_return_type, void>,
                         R"error(
 Not a conforming Constraint, doesn't properly implement function
 `void apply_constraints_on_rates(time_type time_v) const`

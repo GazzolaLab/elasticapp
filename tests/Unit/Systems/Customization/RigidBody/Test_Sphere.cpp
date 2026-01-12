@@ -20,21 +20,21 @@ namespace {
   using namespace elastica::rigid_body;
   using ::elastica::collision::tt::PrimitiveTrait_t;
 
-  static_assert(cpp17::is_same_v<
+  static_assert(std::is_same_v<
                     ::elastica::collision::tt::PrimitiveTrait_t<detail::Sphere>,
                     ::elastica::collision::SpherePrimitive>,
                 "Meta-failure");
   static_assert(
-      cpp17::is_same_v<
+      std::is_same_v<
           ::elastica::collision::tt::PrimitiveTrait_t<detail::SphereBlock>,
           ::elastica::collision::SpherePrimitive>,
       "Meta-failure");
   static_assert(
-      cpp17::is_same_v<
+      std::is_same_v<
           ::elastica::collision::tt::PrimitiveTrait_t<detail::SphereBlockSlice>,
           ::elastica::collision::SpherePrimitive>,
       "Meta-failure");
-  static_assert(cpp17::is_same_v<::elastica::collision::tt::PrimitiveTrait_t<
+  static_assert(std::is_same_v<::elastica::collision::tt::PrimitiveTrait_t<
                                      detail::SphereBlockConstSlice>,
                                  ::elastica::collision::SpherePrimitive>,
                 "Meta-failure");
@@ -87,7 +87,7 @@ namespace {
     std::for_each(
         elastica::make_counting_iterator(0UL),
         elastica::make_counting_iterator(n_slices), [&](std::size_t i) {
-          auto slice = ::blocks::slice(cpp17::as_const(model), i);
+          auto slice = ::blocks::slice(std::as_const(model), i);
           primitives.emplace_back(i, 0UL, true, slice.get_material(0UL));
         });
 
@@ -171,7 +171,7 @@ namespace {
         elastica::make_counting_iterator(0UL),
         elastica::make_counting_iterator(n_slices),
         [&, beg = std::begin(primitives)](std::size_t i) {
-          auto slice = ::blocks::slice(cpp17::as_const(model), i);
+          auto slice = ::blocks::slice(std::as_const(model), i);
           auto begit =
               beg + static_cast<typename decltype(beg)::difference_type>(i);
           auto endit =

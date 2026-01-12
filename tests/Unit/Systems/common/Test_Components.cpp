@@ -66,14 +66,14 @@ static_assert(
 
 /// [geometry_component_trait_eg]
 static_assert(
-    cpp17::is_same_v<typename elastica::tt::GeometryComponentTrait<Test1>::type,
+    std::is_same_v<typename elastica::tt::GeometryComponentTrait<Test1>::type,
                      NoSuchType>,
     "Component type traits failure!");
 static_assert(
-    cpp17::is_same_v<typename elastica::tt::GeometryComponentTrait<Test5>::type,
+    std::is_same_v<typename elastica::tt::GeometryComponentTrait<Test5>::type,
                      Test5>,
     "Component type traits failure!");
-static_assert(cpp17::is_same_v<typename elastica::tt::GeometryComponentTrait<
+static_assert(std::is_same_v<typename elastica::tt::GeometryComponentTrait<
                                    DerivedGeometryComponent>::type,
                                Test5>,
               "Component type traits failure!");
@@ -103,15 +103,15 @@ static_assert(
 /// [is_kinematics_component_example]
 
 /// [kinematics_component_trait_eg]
-static_assert(cpp17::is_same_v<
+static_assert(std::is_same_v<
                   typename elastica::tt::KinematicsComponentTrait<Test1>::type,
                   NoSuchType>,
               "Component type traits failure!");
 static_assert(
-    cpp17::is_same_v<
+    std::is_same_v<
         typename elastica::tt::KinematicsComponentTrait<Test6>::type, Test6>,
     "Component type traits failure!");
-static_assert(cpp17::is_same_v<typename elastica::tt::KinematicsComponentTrait<
+static_assert(std::is_same_v<typename elastica::tt::KinematicsComponentTrait<
                                    DerivedKinematicsComponent>::type,
                                Test6>,
               "Component type traits failure!");

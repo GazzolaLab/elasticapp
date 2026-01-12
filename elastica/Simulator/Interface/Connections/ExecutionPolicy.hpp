@@ -129,7 +129,7 @@ namespace elastica {
           explicit ConnectSystemsOp(
               std::tuple<ConnectionsModule*, ConnectionsTraits const&> args)
               : ConnectSystemsOp(
-                    cpp17::make_from_tuple<ConnectSystemsOp>(std::move(args))) {
+                    std::make_from_tuple<ConnectSystemsOp>(std::move(args))) {
           }
           //********************************************************************
 
@@ -190,7 +190,7 @@ namespace elastica {
           explicit ConnectSystemsOp(
               std::tuple<ConnectionsModule*, ConnectionsTraits const&> args)
               : ConnectSystemsOp(
-                    cpp17::make_from_tuple<ConnectSystemsOp>(std::move(args))) {
+                    std::make_from_tuple<ConnectSystemsOp>(std::move(args))) {
           }
           //********************************************************************
 
@@ -256,7 +256,7 @@ namespace elastica {
           explicit ConnectSystemsOp(
               std::tuple<ConnectionsModule*, ConnectionsTraits const&> args)
               : ConnectSystemsOp(
-                    cpp17::make_from_tuple<ConnectSystemsOp>(std::move(args))) {
+                    std::make_from_tuple<ConnectSystemsOp>(std::move(args))) {
           }
           //********************************************************************
 

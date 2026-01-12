@@ -19,7 +19,7 @@ namespace {
           : first_(first), second_(second), third_(third) {}
     };
     auto tuple = std::make_tuple(42, 3.14f, 0);
-    auto foo = cpp17::make_from_tuple<Foo>(std::move(tuple));
+    auto foo = std::make_from_tuple<Foo>(std::move(tuple));
     // [make_from_tuple_eg]
 
     CHECK(foo.first_ == 42);

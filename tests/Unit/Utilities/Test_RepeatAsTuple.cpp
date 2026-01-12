@@ -15,7 +15,7 @@ namespace {
     int x = 2;
     auto repeated_x = repeat_as_tuple<3UL>(x);
     static_assert(
-        cpp17::is_same_v<decltype(repeated_x), std::tuple<int, int, int>>,
+        std::is_same_v<decltype(repeated_x), std::tuple<int, int, int>>,
         "Repeat failure!");
     CHECK(repeated_x == std::make_tuple(x, x, x));
     // [repeat_eg]
@@ -33,12 +33,12 @@ namespace {
     // check if zero arguments make sense even with custom types
     auto another_pi = std::make_unique<int>(5);
     auto repeated_another_pi = repeat_as_tuple<0UL>(std::move(pi));
-    static_assert(cpp17::is_same_v<decltype(repeated_another_pi), std::tuple<>>,
+    static_assert(std::is_same_v<decltype(repeated_another_pi), std::tuple<>>,
                   "Meta-failure");
 
     // auto another_func = [x = 10]() { return x; };
     auto repeated_func = repeat_as_tuple<0UL>(a);
-    static_assert(cpp17::is_same_v<decltype(repeated_func), std::tuple<>>,
+    static_assert(std::is_same_v<decltype(repeated_func), std::tuple<>>,
                   "Meta-failure");
   }
 

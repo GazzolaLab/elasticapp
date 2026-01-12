@@ -14,7 +14,7 @@ namespace {
   };
   // compilation error, cannot lower primitives
   //  static_assert(
-  //      cpp17::is_same_v<elastica::states::tt::lower_order_t<PrimitiveState>,
+  //      std::is_same_v<elastica::states::tt::lower_order_t<PrimitiveState>,
   //      elastica::states::tags::internal::PrimitiveTag,
   //      >, "Lower order failure!");
 
@@ -23,7 +23,7 @@ namespace {
     using Order = elastica::states::tags::DerivativeTag;
   };
   static_assert(
-      cpp17::is_same_v<
+      std::is_same_v<
           elastica::states::tt::lower_order_t<DerivativeState>,
           elastica::states::tags::internal::DerivativeMultipliedByTimeTag>,
       "Lower order failure!");
@@ -32,7 +32,7 @@ namespace {
     // mimics a state
     using Order = elastica::states::tags::DoubleDerivativeTag;
   };
-  static_assert(cpp17::is_same_v<
+  static_assert(std::is_same_v<
                     elastica::states::tt::lower_order_t<DoubleDerivativeState>,
                     elastica::states::tags::internal::
                         DoubleDerivativeMultipliedByTimeTag>,
@@ -47,7 +47,7 @@ namespace {
   struct Two {
     using Order = elastica::states::tags::DerivativeTag;
   };
-  static_assert(cpp17::is_same_v<elastica::states::tt::common_order_t<One, Two>,
+  static_assert(std::is_same_v<elastica::states::tt::common_order_t<One, Two>,
                                  elastica::states::tags::internal::
                                      DoubleDerivativeMultipliedByTimeTag>,
                 "Common order failure!");
@@ -56,16 +56,16 @@ namespace {
     using Order =
         elastica::states::tags::internal::DerivativeMultipliedByTimeTag;
   };
-  static_assert(cpp17::is_same_v<elastica::states::tt::common_order_t<Two, One>,
+  static_assert(std::is_same_v<elastica::states::tt::common_order_t<Two, One>,
                                  elastica::states::tags::internal::
                                      DoubleDerivativeMultipliedByTimeTag>,
                 "Common order failure!");
-  static_assert(cpp17::is_same_v<elastica::states::tt::common_order_t<One, One>,
+  static_assert(std::is_same_v<elastica::states::tt::common_order_t<One, One>,
                                  elastica::states::tags::internal::
                                      DoubleDerivativeMultipliedByTimeTag>,
                 "Common order failure!");
   static_assert(
-      cpp17::is_same_v<
+      std::is_same_v<
           elastica::states::tt::common_order_t<Three, Three>,
           elastica::states::tags::internal::DerivativeMultipliedByTimeTag>,
       "Common order failure!");

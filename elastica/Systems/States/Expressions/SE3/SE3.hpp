@@ -359,7 +359,7 @@ namespace elastica {
         const SE3Base<SE3T>& rhs) & {
       resize((*rhs).size());
       assign(*rhs,
-             cpp17::conjunction<is_vectorized, tt::is_vectorized_t<SE3T>>{});
+             std::conjunction<is_vectorized, tt::is_vectorized_t<SE3T>>{});
       return *this;
     }
     //**************************************************************************
@@ -383,7 +383,7 @@ namespace elastica {
       }
       add_assign(
           *rhs_expr,
-          cpp17::conjunction<is_vectorized, tt::is_vectorized_t<SE3T>>{});
+          std::conjunction<is_vectorized, tt::is_vectorized_t<SE3T>>{});
       return *this;
     }
     //**************************************************************************

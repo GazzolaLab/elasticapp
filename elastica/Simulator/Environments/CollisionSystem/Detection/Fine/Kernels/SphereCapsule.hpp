@@ -74,7 +74,7 @@ namespace elastica {
                             Q(2, 2) * (spos[2] - cpos[2]));
 
           // Calculation the center of the sphere representing the capsule
-          rp_tangent = cpp17::clamp(rp_tangent, -half_capsule_length,
+          rp_tangent = std::clamp(rp_tangent, -half_capsule_length,
                                     half_capsule_length);
 
           // Compute the point of closest distance along centerline

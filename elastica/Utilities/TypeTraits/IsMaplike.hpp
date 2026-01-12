@@ -40,7 +40,7 @@ namespace tt {
   /// \endcode
   ///
   /// \metareturns
-  /// cpp17::bool_constant
+  /// std::bool_constant
   ///
   /// \semantics
   /// If the type `T` has a type alias `key_type`,
@@ -59,12 +59,12 @@ namespace tt {
   /// \see std::map std::unordered_map is_a
   /// \tparam T the type to check
   namespace detail {
-    template <typename T, typename = cpp17::void_t<>>
+    template <typename T, typename = std::void_t<>>
     struct is_maplike : std::false_type {};
     /// \cond HIDDEN_SYMBOLS
     template <typename T>
     struct is_maplike<
-        T, cpp17::void_t<typename T::key_type, typename T::mapped_type,
+        T, std::void_t<typename T::key_type, typename T::mapped_type,
                          decltype(std::declval<T&>()[std::declval<
                              const typename T::key_type&>()]),
                          Requires<tt::is_iterable_v<T>>>> : std::true_type {};

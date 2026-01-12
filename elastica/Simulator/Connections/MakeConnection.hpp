@@ -134,7 +134,7 @@ namespace elastica {
          * \tparam FirstSystem Type of first system
          * \tparam SecondSystem Type of second system
          *
-         * \metareturns ::cpp17::bool_constant
+         * \metareturns ::std::bool_constant
          *
          * \see force_is_rightly_ordered(), torque_is_rightly_ordered()
          */
@@ -165,7 +165,7 @@ namespace elastica {
          * \tparam FirstSystem Type of first system
          * \tparam SecondSystem Type of second system
          *
-         * \metareturns ::cpp17::bool_constant
+         * \metareturns ::std::bool_constant
          *
          * \see force_is_rightly_ordered(), torque_is_rightly_ordered()
          */
@@ -200,7 +200,7 @@ namespace elastica {
         template <typename TimeType, typename FirstSystem,
                   typename SecondSystem>
         static inline constexpr auto force_is_not_rightly_ordered() noexcept {
-          return cpp17::negation<
+          return std::negation<
               decltype(force_is_rightly_ordered<TimeType, FirstSystem,
                                                 SecondSystem>())>{};
         }
@@ -229,7 +229,7 @@ namespace elastica {
                   typename SecondSystem>
         static inline constexpr auto
         force_is_not_rightly_ordered_deferred() noexcept {
-          return cpp17::negation<
+          return std::negation<
               decltype(force_is_rightly_ordered_deferred<TimeType, FirstSystem,
                                                          SecondSystem>())>{};
         }
@@ -256,7 +256,7 @@ namespace elastica {
         template <typename TimeType, typename FirstSystem,
                   typename SecondSystem>
         static inline constexpr auto torque_is_not_rightly_ordered() noexcept {
-          return cpp17::negation<
+          return std::negation<
               decltype(torque_is_rightly_ordered<TimeType, FirstSystem,
                                                  SecondSystem>())>{};
         }
@@ -287,7 +287,7 @@ namespace elastica {
                   typename SecondSystem>
         static inline constexpr auto
         torque_is_not_rightly_ordered_deferred() noexcept {
-          return cpp17::negation<
+          return std::negation<
               decltype(torque_is_rightly_ordered_deferred<TimeType, FirstSystem,
                                                           SecondSystem>())>{};
         }
@@ -461,7 +461,7 @@ namespace elastica {
       // returned from make_connection() can be used multiple times.
       // here we use deMoivre's theorem as !(A or B) = !A and !B
       template <typename T>
-      constexpr bool should_be_moved = cpp17::negation<cpp17::disjunction<
+      constexpr bool should_be_moved = std::negation<std::disjunction<
           std::is_lvalue_reference<T>, std::is_copy_constructible<T>>>::value;
     }  // namespace make_connection_detail
 
@@ -495,7 +495,7 @@ namespace elastica {
           G g;
         } capture{std::forward<F>(f), std::forward<G>(g)};
         return [capture = std::move(capture)]() noexcept(
-                   cpp17::conjunction_v<std::is_nothrow_copy_constructible<dF>,
+                   std::conjunction_v<std::is_nothrow_copy_constructible<dF>,
                                         std::is_nothrow_copy_constructible<dG>>)
                    -> ReturnType { return ReturnType(capture.f, capture.g); };
       }

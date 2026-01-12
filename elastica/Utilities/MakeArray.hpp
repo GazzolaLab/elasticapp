@@ -103,7 +103,7 @@ ELASTICA_ALWAYS_INLINE constexpr auto make_array(T&& t, V&&... values) noexcept(
         {std::forward<T>(t), std::forward<V>(values)...}}))
     -> std::array<typename std::decay_t<T>, sizeof...(V) + 1> {
   static_assert(
-      cpp17::conjunction_v<std::is_same<std::decay_t<T>, std::decay_t<V>>...>,
+      std::conjunction_v<std::is_same<std::decay_t<T>, std::decay_t<V>>...>,
       "all types to make_array(...) must be the same");
   return std::array<std::decay_t<T>, sizeof...(V) + 1>{
       {std::forward<T>(t), std::forward<V>(values)...}};
@@ -118,12 +118,12 @@ ELASTICA_ALWAYS_INLINE constexpr auto make_array(T&& t) noexcept(
 
 // namespace MakeArray_detail {
 //  template <typename Seq, typename T,
-//            Requires<cpp17::is_rvalue_reference_v<Seq>> = nullptr>
+//            Requires<std::is_rvalue_reference_v<Seq>> = nullptr>
 //  constexpr T&& forward_element(T& t) noexcept {
 //    return std::move(t);
 //  }
 //  template <typename Seq, typename T,
-//            Requires<not cpp17::is_rvalue_reference_v<Seq>> = nullptr>
+//            Requires<not std::is_rvalue_reference_v<Seq>> = nullptr>
 //  constexpr T& forward_element(T& t) noexcept {
 //    return t;
 //  }

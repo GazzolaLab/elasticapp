@@ -71,7 +71,7 @@ namespace elastica {
         using This = HybridBatch<CollisionConfig>;
         //! Type of the batching algorithm
         using BatchingAlgorithm = std::conditional_t<
-            cpp17::is_same_v<typename C::KernelExecutionPolicy::ExecutionPolicy,
+            std::is_same_v<typename C::KernelExecutionPolicy::ExecutionPolicy,
                              ::elastica::configuration::sequential_policy>,
             SingleBatcher, UnionFinder>;
         //**********************************************************************

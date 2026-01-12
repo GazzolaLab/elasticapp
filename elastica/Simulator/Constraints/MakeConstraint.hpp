@@ -176,7 +176,7 @@ namespace elastica {
       // returned from make_constraint() can be used multiple times
       // !(A or B) = !A and !B
       template <typename T>
-      constexpr bool should_be_moved = cpp17::negation<cpp17::disjunction<
+      constexpr bool should_be_moved = std::negation<std::disjunction<
           std::is_lvalue_reference<T>, std::is_copy_constructible<T>>>::value;
     }  // namespace make_constraint_detail
 
@@ -211,7 +211,7 @@ namespace elastica {
         } capture{std::forward<F>(f), std::forward<G>(g)};
         // is not noexcept given that the copy constructor can throw
         return [capture = std::move(capture)]() noexcept(
-                   cpp17::conjunction_v<std::is_nothrow_copy_constructible<dF>,
+                   std::conjunction_v<std::is_nothrow_copy_constructible<dF>,
                                         std::is_nothrow_copy_constructible<dG>>)
                    -> ReturnType { return ReturnType(capture.f, capture.g); };
       }

@@ -246,7 +246,7 @@ namespace elastica {
       //**Compile-time checks***************************************************
       // These need the constructor of Modules<SimTraits, int> be accessible
       // static_assert(
-      //     cpp17::conjunction_v<
+      //     std::conjunction_v<
       //         std::is_default_constructible<Modules<SimTraits, int>>...>,
       //     "Simulation modules must have a default/empty constructor!");
       //************************************************************************
@@ -1053,7 +1053,7 @@ reorganizing your code logic.
         algorithms_ = std::make_unique<Algorithms>(
             // tagged tuple does not have a tuple constructor but has a
             // variadic constructor
-            cpp17::apply(
+            std::apply(
                 [](auto&&... initializer_as_a_tuple) noexcept {
                   return Algorithms(
                       std::forward<decltype(initializer_as_a_tuple)>(
@@ -1065,7 +1065,7 @@ reorganizing your code logic.
         batching_algorithms_ = std::make_unique<BatchingAlgorithms>(
             // tagged tuple does not have a tuple constructor but has a
             // variadic constructor
-            cpp17::apply(
+            std::apply(
                 [](auto&&... initializer_trait) noexcept {
                   return BatchingAlgorithms(
                       std::forward<decltype(initializer_trait)>(

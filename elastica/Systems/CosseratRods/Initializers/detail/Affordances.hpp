@@ -83,7 +83,7 @@ namespace elastica {
 
           //          auto needed_cache = [this]() {
           //            DefaultInitializersNeededCache needed_cache;
-          //            cpp17::apply(, self().default_initializers())
+          //            std::apply(, self().default_initializers())
           //                tmpl::for_each<default_initializers_needed>([&](auto
           //                di) {
           //                  using DefaultInitializer =

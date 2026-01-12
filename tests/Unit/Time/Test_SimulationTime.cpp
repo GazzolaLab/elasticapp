@@ -15,9 +15,9 @@ namespace {
   using ::elastica::Time;
   using ::elastica::TimeDelta;
 
-  static_assert(cpp17::is_same_v<typename Time::Real, ::elastica::real_t>,
+  static_assert(std::is_same_v<typename Time::Real, ::elastica::real_t>,
                 "Meta-failure");
-  static_assert(cpp17::is_same_v<typename TimeDelta::Real, ::elastica::real_t>,
+  static_assert(std::is_same_v<typename TimeDelta::Real, ::elastica::real_t>,
                 "Meta-failure");
 
   ELASTICA_TEST_CASE("Unit.Time.Time", "[Unit][Time]") {

@@ -215,7 +215,7 @@ namespace elastica {
     template <typename AnyCosseratPlugin, typename... NamedInitializers>
     constexpr inline decltype(auto) initialize_cosserat_rod(
         std::tuple<NamedInitializers...> initializer_tuple) noexcept {
-      return cpp17::apply(
+      return std::apply(
           [](auto&& ...args){
             return initialize_cosserat_rod<AnyCosseratPlugin>(std::forward<decltype(args)>(args)...);
           },

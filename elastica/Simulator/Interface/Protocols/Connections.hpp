@@ -77,7 +77,7 @@ namespace elastica {
                   std::declval<time_type>()));
           // Confirm that there are no side effects upon calling this function
           // by comparing strictly against void
-          static_assert(cpp17::is_same_v<return_type, void>,
+          static_assert(std::is_same_v<return_type, void>,
                         R"error(
 Not a conforming Connection, doesn't properly implement function
 `void apply_connections(time_type time_v) const`

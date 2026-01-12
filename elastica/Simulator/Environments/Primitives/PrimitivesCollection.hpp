@@ -186,7 +186,7 @@ namespace elastica {
           std::for_each(begin(prim_collection), end(prim_collection), func);
         };
 
-        cpp17::apply(
+        std::apply(
             [apply_per_primitive](auto&... collection) {
               EXPAND_PACK_LEFT_TO_RIGHT(apply_per_primitive(collection));
             },

@@ -73,7 +73,7 @@ namespace elastica {
          */
         template <typename IndexSet>
         struct IndexSetConcept
-            : public ::cpp17::disjunction<tt::IsAt<IndexSet>,
+            : public ::std::disjunction<tt::IsAt<IndexSet>,
                                           tt::IsRange<IndexSet>> {};
         //**********************************************************************
 
@@ -178,7 +178,7 @@ namespace elastica {
          *
          * \tparam ConcreteForcing The type of forcing
          *
-         * \metareturns cpp17::bool_constant
+         * \metareturns std::bool_constant
          */
         template <typename ConcreteForcing>
         static inline constexpr auto conformant_forcing() noexcept {
@@ -193,13 +193,13 @@ namespace elastica {
          *
          * \tparam ConcreteForcing The type of forcing
          *
-         * \metareturns cpp17::bool_constant
+         * \metareturns std::bool_constant
          *
          * \see conformant_forcing()
          */
         template <typename ConcreteForcing>
         static inline constexpr auto non_conformant_forcing() noexcept {
-          return cpp17::negation<
+          return std::negation<
               decltype(conformant_forcing<ConcreteForcing>())>{};
         }
         //**********************************************************************
@@ -210,7 +210,7 @@ namespace elastica {
          *
          * \tparam IndexSet The type of index set
          *
-         * \metareturns cpp17::bool_constant
+         * \metareturns std::bool_constant
          */
         template <typename IndexSet>
         static inline constexpr auto conformant_index_set() noexcept {
@@ -224,13 +224,13 @@ namespace elastica {
          *
          * \tparam IndexSet The type of index set
          *
-         * \metareturns cpp17::bool_constant
+         * \metareturns std::bool_constant
          *
          * \see conformant_index_set
          */
         template <typename IndexSet>
         static inline constexpr auto non_conformant_index_set() noexcept {
-          return cpp17::negation<decltype(conformant_index_set<IndexSet>())>{};
+          return std::negation<decltype(conformant_index_set<IndexSet>())>{};
         }
         //**********************************************************************
 
@@ -241,11 +241,11 @@ namespace elastica {
          * \tparam ConcreteForcing The type of forcing
          * \tparam IndexSet The type of index set
          *
-         * \metareturns cpp17::bool_constant
+         * \metareturns std::bool_constant
          */
         template <typename ConcreteForcing, typename IndexSet>
         static inline constexpr auto conformant_interface() noexcept {
-          return cpp17::conjunction<
+          return std::conjunction<
               decltype(conformant_forcing<ConcreteForcing>()),
               decltype(conformant_index_set<IndexSet>())>{};
         }
@@ -258,11 +258,11 @@ namespace elastica {
          * \tparam ConcreteForcing The type of forcing
          * \tparam IndexSet The type of index set
          *
-         * \metareturns cpp17::bool_constant
+         * \metareturns std::bool_constant
          */
         template <typename ConcreteForcing, typename IndexSet>
         static inline constexpr auto non_conformant_interface() noexcept {
-          return cpp17::negation<
+          return std::negation<
               decltype(conformant_interface<ConcreteForcing, IndexSet>())>{};
         }
         //**********************************************************************

@@ -807,13 +807,13 @@ namespace pretty_type {
   //****************************************************************************
 
   namespace detail {
-    template <typename T, typename = cpp17::void_t<>>
+    template <typename T, typename = std::void_t<>>
     struct name_helper {
       static std::string name() { return pretty_type::short_name<T>(); }
     };
 
     template <typename T>
-    struct name_helper<T, cpp17::void_t<decltype(T::name())>> {
+    struct name_helper<T, std::void_t<decltype(T::name())>> {
       static std::string name() { return T::name(); }
     };
   }  // namespace detail

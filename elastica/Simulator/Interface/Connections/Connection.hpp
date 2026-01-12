@@ -189,7 +189,7 @@ namespace elastica {
          *
          * \tparam ConcreteConnection The type of connection
          *
-         * \metareturns cpp17::bool_constant
+         * \metareturns std::bool_constant
          */
         template <typename ConcreteConnection>
         static inline constexpr auto conformant_connection() noexcept {
@@ -204,13 +204,13 @@ namespace elastica {
          *
          * \tparam ConcreteConnection The type of connection
          *
-         * \metareturns cpp17::bool_constant
+         * \metareturns std::bool_constant
          *
          * \see conformant_connection()
          */
         template <typename ConcreteConnection>
         static inline constexpr auto non_conformant_connection() noexcept {
-          return cpp17::negation<
+          return std::negation<
               decltype(conformant_connection<ConcreteConnection>())>{};
         }
         //**********************************************************************
@@ -221,7 +221,7 @@ namespace elastica {
          *
          * \tparam IndexPair The type of index pair
          *
-         * \metareturns cpp17::bool_constant
+         * \metareturns std::bool_constant
          */
         template <typename IndexPair>
         static inline constexpr auto conformant_index_pair() noexcept {
@@ -235,13 +235,13 @@ namespace elastica {
          *
          * \tparam IndexPair The type of index pair
          *
-         * \metareturns cpp17::bool_constant
+         * \metareturns std::bool_constant
          *
          * \see conformant_index_pair
          */
         template <typename IndexPair>
         static inline constexpr auto non_conformant_index_pair() noexcept {
-          return cpp17::negation<
+          return std::negation<
               decltype(conformant_index_pair<IndexPair>())>{};
         }
         //**********************************************************************
@@ -253,11 +253,11 @@ namespace elastica {
          * \tparam ConcreteConnection The type of connection
          * \tparam IndexPair The type of index pair
          *
-         * \metareturns cpp17::bool_constant
+         * \metareturns std::bool_constant
          */
         template <typename ConcreteConnection, typename IndexPair>
         static inline constexpr auto conformant_interface() noexcept {
-          return cpp17::conjunction<
+          return std::conjunction<
               decltype(conformant_connection<ConcreteConnection>()),
               decltype(conformant_index_pair<IndexPair>())>{};
         }
@@ -270,11 +270,11 @@ namespace elastica {
          * \tparam ConcreteConnection The type of connection
          * \tparam IndexPair The type of index pair
          *
-         * \metareturns cpp17::bool_constant
+         * \metareturns std::bool_constant
          */
         template <typename ConcreteConnection, typename IndexPair>
         static inline constexpr auto non_conformant_interface() noexcept {
-          return cpp17::negation<decltype(conformant_interface<
+          return std::negation<decltype(conformant_interface<
                                           ConcreteConnection, IndexPair>())>{};
         }
         //**********************************************************************

@@ -68,7 +68,7 @@ namespace {
     real_t radius(4.0);
     ISP imposed_sphere(SpherePrimitive(0UL, 0UL, true, position, radius, iron));
     ::testing::check_access_API(imposed_sphere);  // only const
-    ::testing::check_access_API(cpp17::as_const(imposed_sphere));
+    ::testing::check_access_API(std::as_const(imposed_sphere));
   }
 
   // clang-format off

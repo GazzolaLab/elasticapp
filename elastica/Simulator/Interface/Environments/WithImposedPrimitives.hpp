@@ -113,7 +113,7 @@ namespace elastica {
             ListOfAdmissibleImposedPrimitives>;
         //! Metafunction to check if a plugin is valid
         template <typename ImposedPrimitive>
-        using an_admissible = cpp17::bool_constant<
+        using an_admissible = std::bool_constant<
             // brigand's bool constant does not have constexpr bool() operator
             tmpl::list_contains<ListOfAdmissibleImposedPrimitives,
                                 ImposedPrimitive>::value>;
@@ -213,7 +213,7 @@ namespace elastica {
                               std::end(prim_collection), func);
               };
 
-          cpp17::apply(
+          std::apply(
               [apply_per_primitive](auto&&... collection) {
                 EXPAND_PACK_LEFT_TO_RIGHT(apply_per_primitive(collection));
               },
@@ -339,7 +339,7 @@ namespace elastica {
           // TODO : Refactor, getting hairy without testing
          private:
           friend This;
-          using SourceCollection = cpp20::remove_cvref_t<
+          using SourceCollection = std::remove_cvref_t<
               decltype(::elastica::collision::get_collection<ImposedPrimitive>(
                   std::declval<ImposedPrimitives&>()))>;
 
@@ -413,7 +413,7 @@ namespace elastica {
           using ::elastica::collision::get_collection;
           auto& imposed_primitive_container =
               get_collection<ImposedPrimitive>(imposed_primitives());
-          const std::size_t index = cpp17::size(imposed_primitive_container);
+          const std::size_t index = std::size(imposed_primitive_container);
           imposed_primitive_container.emplace_back(std::forward<Args>(args)...);
           // return non-owning handle to the System just pushed back
           using RT = IndexedReferenceWrapper<ImposedPrimitive>;
@@ -462,7 +462,7 @@ Please add them to the above type-list, using EnvironmentsConfiguration
         template <typename ImposedPrimitive>
         inline auto n_imposed_primitives() const noexcept -> SizeType {
           using ::elastica::collision::get_collection;
-          return cpp17::size(
+          return std::size(
               get_collection<ImposedPrimitive>(imposed_primitives()));
         }
         //**********************************************************************
@@ -473,9 +473,9 @@ Please add them to the above type-list, using EnvironmentsConfiguration
          */
         inline auto n_imposed_primitives() const noexcept -> SizeType {
           auto count_primitives_in = [](auto const& container) -> SizeType {
-            return cpp17::size(container);
+            return std::size(container);
           };
-          return cpp17::apply(
+          return std::apply(
               [n_primitives = 0UL,
                count_primitives_in](auto const&... container) mutable {
                 EXPAND_PACK_LEFT_TO_RIGHT(
@@ -540,7 +540,7 @@ Please add them to the above type-list, using EnvironmentsConfiguration
          */
         void reset_module(TimeType /*time_v*/) {
           // we don't shrink to fit here since it may well be used again
-          cpp17::apply(
+          std::apply(
               [](auto&... primitive_container) {
                 EXPAND_PACK_LEFT_TO_RIGHT(primitive_container.clear());
               },

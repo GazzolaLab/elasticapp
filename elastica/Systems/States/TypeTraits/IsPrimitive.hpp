@@ -51,7 +51,7 @@ namespace elastica {
        * \endcode
        *
        * \metareturns
-       * cpp17::bool_constant
+       * std::bool_constant
        *
        * \semantics
        * If the state type `ST` is a primitive state in the ODE system, i.e.
@@ -85,7 +85,7 @@ namespace elastica {
        * \see IsPrimitive
        */
       template <typename ST>
-      struct IsNotPrimitive : public cpp17::negation<IsPrimitive<ST>> {};
+      struct IsNotPrimitive : public std::negation<IsPrimitive<ST>> {};
       //************************************************************************
 
       //************************************************************************

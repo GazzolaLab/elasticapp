@@ -37,7 +37,7 @@ namespace {
     CHECK(test_aabb[1] == approx(0.5));
 
     // not assignable
-    // cpp17::as_const(test_aabb)[1] = 0.5;
+    // std::as_const(test_aabb)[1] = 0.5;
 
     // explicit copy constructor
     AABB another_aabb(test_aabb);
@@ -65,7 +65,7 @@ namespace {
 
     AABB invalid_aabb(get_aabb());
     for (std::size_t i = 0UL; i < Dimensions(); ++i) {
-      auto temp = cpp17::as_const(invalid_aabb)[i];
+      auto temp = std::as_const(invalid_aabb)[i];
       invalid_aabb[i] = 0.9;
       CHECK(not invalid_aabb.is_valid());
       invalid_aabb[i] = temp;

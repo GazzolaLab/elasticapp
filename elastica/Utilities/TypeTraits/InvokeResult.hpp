@@ -112,7 +112,7 @@ namespace cpp17 {
     // \usage
     // For any type `F` callable with arguments of types `Args...`
        \code
-       using result = cpp17::tt::invoke_result<T>;
+       using result = std::tt::invoke_result<T>;
        \endcode
     // \metareturns
     // the type `T = F(Args...)`

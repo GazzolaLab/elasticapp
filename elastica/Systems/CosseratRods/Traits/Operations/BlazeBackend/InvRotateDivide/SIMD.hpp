@@ -55,7 +55,7 @@ namespace elastica {
           * constexpr bool second_condition(
           *     (!::blaze::usePadding) ||
           *     // use demorgan
-          *     !cpp17::conjunction_v<blaze::IsPadded<MT>, blaze::IsPadded<TT>,
+          *     !std::conjunction_v<blaze::IsPadded<MT>, blaze::IsPadded<TT>,
           *                           blaze::IsPadded<VT>>);
           * const bool remainder(first_condition || second_condition);
 

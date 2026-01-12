@@ -250,29 +250,29 @@ namespace elastica {
             Traits, ComputationalBlock>& block_like) COSSERATROD_LIB_NOEXCEPT {
       // Immutable fields
       auto&& director(
-          blocks::get<tags::Director>(cpp17::as_const(block_like).self()));
+          blocks::get<tags::Director>(std::as_const(block_like).self()));
       auto&& omega(blocks::get<tags::AngularVelocity>(
-          cpp17::as_const(block_like).self()));
+          std::as_const(block_like).self()));
       auto&& velocity(
-          blocks::get<tags::Velocity>(cpp17::as_const(block_like).self()));
+          blocks::get<tags::Velocity>(std::as_const(block_like).self()));
       auto&& curvature(
-          blocks::get<tags::Curvature>(cpp17::as_const(block_like).self()));
+          blocks::get<tags::Curvature>(std::as_const(block_like).self()));
       auto&& tangent(
-          blocks::get<tags::Tangent>(cpp17::as_const(block_like).self()));
+          blocks::get<tags::Tangent>(std::as_const(block_like).self()));
       auto&& dilatation(blocks::get<tags::ElementDilatation>(
-          cpp17::as_const(block_like).self()));
+          std::as_const(block_like).self()));
       auto&& voronoi_dilatation(blocks::get<tags::VoronoiDilatation>(
-          cpp17::as_const(block_like).self()));
+          std::as_const(block_like).self()));
       auto&& bend_matrix(blocks::get<tags::BendingTwistRigidityMatrix>(
-          cpp17::as_const(block_like).self()));
+          std::as_const(block_like).self()));
       auto&& reference_curvature(blocks::get<tags::ReferenceCurvature>(
-          cpp17::as_const(block_like).self()));
+          std::as_const(block_like).self()));
       auto&& reference_voronoi_length(blocks::get<tags::ReferenceVoronoiLength>(
-          cpp17::as_const(block_like).self()));
+          std::as_const(block_like).self()));
       auto&& reference_element_length(blocks::get<tags::ReferenceElementLength>(
-          cpp17::as_const(block_like).self()));
+          std::as_const(block_like).self()));
       auto&& mass_SMOI(blocks::get<tags::MassSecondMomentOfInertia>(
-          cpp17::as_const(block_like).self()));
+          std::as_const(block_like).self()));
 
       // Mutable fields
       auto&& internal_stress(

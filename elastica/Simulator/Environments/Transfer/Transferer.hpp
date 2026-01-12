@@ -83,7 +83,7 @@ namespace elastica {
                           "Invalid iterator beyond end of collection");
 
           // 4. ... and transfer
-          TransferWizard<cpp20::remove_cvref_t<decltype(slice)>>::transfer(
+          TransferWizard<std::remove_cvref_t<decltype(slice)>>::transfer(
               from, slice, to, primitive_begin, primitive_end);
 
           std::exchange(primitive_begin, primitive_end);
@@ -125,8 +125,8 @@ namespace elastica {
         simulator.for_each_block_untimed(
             [this, &primitives = simulator.primitives(),
              &offsets =
-                 cpp17::as_const(simulator).offsets()](auto const& block) {
-              using BlockType = cpp20::remove_cvref_t<decltype(block)>;
+                 std::as_const(simulator).offsets()](auto const& block) {
+              using BlockType = std::remove_cvref_t<decltype(block)>;
               using PrimitiveType = PrimitiveTrait_t<BlockType>;
               this->from_dispatch(tmpl::type_<PrimitiveType>{}, block,
                                   primitives, offsets);
@@ -215,9 +215,9 @@ namespace elastica {
         // This kernel gets profiled as part of environments, so use the untimed
         // version of block
         simulator.for_each_block_untimed(
-            [this, &primitives = cpp17::as_const(simulator).primitives(),
-             &offsets = cpp17::as_const(simulator).offsets()](auto& block) {
-              using BlockType = cpp20::remove_cvref_t<decltype(block)>;
+            [this, &primitives = std::as_const(simulator).primitives(),
+             &offsets = std::as_const(simulator).offsets()](auto& block) {
+              using BlockType = std::remove_cvref_t<decltype(block)>;
               using PrimitiveType = PrimitiveTrait_t<BlockType>;
               this->to_dispatch(tmpl::type_<PrimitiveType>{}, block, primitives,
                                 offsets);

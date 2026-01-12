@@ -28,12 +28,12 @@ namespace {
   /// [specialize_eg]
 
   static_assert(
-      cpp17::is_same_v<
+      std::is_same_v<
           Snake, elastica::cosserat_rod::TaggedCosseratRodPlugin<
                      CosseratTraits, DummyBlock, SnakeTag, DummyComponent>>,
       "Specialize meta-failure!");
   static_assert(
-      cpp17::is_same_v<
+      std::is_same_v<
           SmolSnake,
           elastica::cosserat_rod::TaggedCosseratRodPlugin<
               CosseratTraits, DummyBlock, SmolSnakeTag, DummyComponent>>,

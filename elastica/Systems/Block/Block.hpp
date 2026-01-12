@@ -180,7 +180,7 @@ namespace blocks {
   template <typename Plugin>
   inline auto cbegin(BlockView<Plugin> const& block_view) noexcept
       -> ConstBlockIterator<Plugin> {
-    return {&cpp17::as_const(block_view.parent()), block_view.region().start};
+    return {&std::as_const(block_view.parent()), block_view.region().start};
   }
   //****************************************************************************
 
@@ -191,7 +191,7 @@ namespace blocks {
   template <typename Plugin>
   inline auto cend(BlockView<Plugin> const& block_view) noexcept
       -> ConstBlockIterator<Plugin> {
-    return {&cpp17::as_const(block_view.parent()),
+    return {&std::as_const(block_view.parent()),
             block_view.region().start + block_view.region().size};
   }
   //****************************************************************************

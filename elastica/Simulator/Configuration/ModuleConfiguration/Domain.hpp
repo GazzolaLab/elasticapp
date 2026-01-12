@@ -105,7 +105,7 @@ namespace elastica {
       template <class Dummy>
       struct BoundaryTypeAlongHelper<::elastica::detail::EulerianFrame::X,
                                      Dummy> {
-        using type = cpp20::remove_cvref_t<BoundaryConditionInX>;
+        using type = std::remove_cvref_t<BoundaryConditionInX>;
       };
       /*! \endcond */
       //************************************************************************
@@ -119,7 +119,7 @@ namespace elastica {
       template <class Dummy>
       struct BoundaryTypeAlongHelper<::elastica::detail::EulerianFrame::Y,
                                      Dummy> {
-        using type = cpp20::remove_cvref_t<BoundaryConditionInY>;
+        using type = std::remove_cvref_t<BoundaryConditionInY>;
       };
       /*! \endcond */
       //************************************************************************
@@ -133,7 +133,7 @@ namespace elastica {
       template <class Dummy>
       struct BoundaryTypeAlongHelper<::elastica::detail::EulerianFrame::Z,
                                      Dummy> {
-        using type = cpp20::remove_cvref_t<BoundaryConditionInZ>;
+        using type = std::remove_cvref_t<BoundaryConditionInZ>;
       };
       /*! \endcond */
       //************************************************************************

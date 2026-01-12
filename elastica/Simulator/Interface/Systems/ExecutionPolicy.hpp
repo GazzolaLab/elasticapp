@@ -521,7 +521,7 @@ namespace elastica {
            */
           explicit InvokeOverSystemsOp(
               std::tuple<SystemsModule*, SystemsTraits const&>&& args)
-              : InvokeOverSystemsOp(cpp17::make_from_tuple<InvokeOverSystemsOp>(
+              : InvokeOverSystemsOp(std::make_from_tuple<InvokeOverSystemsOp>(
                     std::move(args))) {}
           //********************************************************************
 
@@ -571,7 +571,7 @@ namespace elastica {
           template <typename F, typename... SystemsBlocks>
           inline void subset_for_each(
               F func, tmpl::list<SystemsBlocks...>) const noexcept {
-            (void)cpp17::apply(
+            (void)std::apply(
                 invoke_over_systems(for_each_system(std::move(func))),
                 std::tie(module_handle.template get_system_collection_container<
                          SystemsBlocks>()...));
@@ -599,7 +599,7 @@ namespace elastica {
            */
           template <typename F>
           inline void operator()(F func) const noexcept {
-            cpp17::apply(invoke_over_systems(for_each_system(std::move(func))),
+            std::apply(invoke_over_systems(for_each_system(std::move(func))),
                          module_handle.get_system_collection_container());
           }
           //********************************************************************
@@ -647,7 +647,7 @@ namespace elastica {
            */
           explicit TaggedInvoke(
               std::tuple<SystemsModule*, SystemsTraits const&> args)
-              : TaggedInvoke(cpp17::make_from_tuple<TaggedInvoke<Tag>>(
+              : TaggedInvoke(std::make_from_tuple<TaggedInvoke<Tag>>(
                     std::move(args))) {}
           //********************************************************************
 

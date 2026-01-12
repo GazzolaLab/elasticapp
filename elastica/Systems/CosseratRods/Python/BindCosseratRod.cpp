@@ -55,7 +55,7 @@ namespace py_bindings {
       // Wrapper for basic type operations
       auto py_cosserat_rod =
           py::class_<type>(m, "CosseratRod")
-              .def("__len__", [](const type& t) { return cpp17::size(t); })
+              .def("__len__", [](const type& t) { return std::size(t); })
               .def(
                   "__str__", +[](const type& /*meta*/) {
                     return std::string("CosseratRod");
@@ -71,7 +71,7 @@ namespace py_bindings {
       // Wrapper for basic type operations
       auto py_cosserat_rod =
           py::class_<type>(m, "CosseratRodView")
-              .def("__len__", [](const type& t) { return cpp17::size(t); })
+              .def("__len__", [](const type& t) { return std::size(t); })
               .def(
                   "__str__",
                   +[](const type& /*meta*/) {
@@ -126,7 +126,7 @@ namespace py_bindings {
                      return result;
                    }),
                    py::arg("n_rods"), py::arg("n_elems"))
-              .def("__len__", [](const type& t) { return cpp17::size(t); })
+              .def("__len__", [](const type& t) { return std::size(t); })
               .def(
                   "__str__",
                   +[](const type& /*meta*/) {

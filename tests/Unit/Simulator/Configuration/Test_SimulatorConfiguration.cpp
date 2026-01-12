@@ -51,7 +51,7 @@ namespace {
 
       static_assert(
           ::elastica::tt::IsValidDomainConfiguration<
-              cpp20::remove_cvref_t<decltype(basic_sim_config)>>::value,
+              std::remove_cvref_t<decltype(basic_sim_config)>>::value,
           "meta failure!");
       CHECK(basic_sim_config.domain().get_upper_bound(
                 elastica::EulerianFrame::Y) ==
@@ -62,7 +62,7 @@ namespace {
 
       static_assert(
           ::elastica::tt::IsValidSystemsConfiguration<
-              cpp20::remove_cvref_t<decltype(basic_sim_config)>>::value,
+              std::remove_cvref_t<decltype(basic_sim_config)>>::value,
           "meta failure!");
       CHECK(basic_sim_config.blocking_policy().criterion_.value() == 20UL);
       (void)basic_sim_config.iteration_policy();
@@ -87,7 +87,7 @@ namespace {
       /// [basic_shorthand_eg]
       static_assert(
           ::elastica::tt::IsValidDomainConfiguration<
-              cpp20::remove_cvref_t<decltype(basic_sim_config)>>::value,
+              std::remove_cvref_t<decltype(basic_sim_config)>>::value,
           "meta failure!");
       CHECK(basic_sim_config.domain().get_upper_bound(
                 elastica::EulerianFrame::Y) ==
@@ -98,7 +98,7 @@ namespace {
 
       static_assert(
           ::elastica::tt::IsValidSystemsConfiguration<
-              cpp20::remove_cvref_t<decltype(basic_sim_config)>>::value,
+              std::remove_cvref_t<decltype(basic_sim_config)>>::value,
           "meta failure!");
       CHECK(basic_sim_config.blocking_policy().criterion_.value() == 20UL);
       (void)basic_sim_config.iteration_policy();
@@ -124,7 +124,7 @@ namespace {
           make_connections_configuration(hybrid, 50UL));
       /// [with_connections_eg]
       static_assert(
-          ::elastica::tt::IsValidDomainConfiguration<cpp20::remove_cvref_t<
+          ::elastica::tt::IsValidDomainConfiguration<std::remove_cvref_t<
               decltype(with_connections_sim_config)>>::value,
           "meta failure!");
       CHECK(with_connections_sim_config.domain().get_upper_bound(
@@ -135,7 +135,7 @@ namespace {
             (elastica::real_t(-elastica::inf)));
 
       static_assert(
-          ::elastica::tt::IsValidSystemsConfiguration<cpp20::remove_cvref_t<
+          ::elastica::tt::IsValidSystemsConfiguration<std::remove_cvref_t<
               decltype(with_connections_sim_config)>>::value,
           "meta failure!");
       CHECK(with_connections_sim_config.blocking_policy().criterion_.value() ==
@@ -143,7 +143,7 @@ namespace {
       (void)with_connections_sim_config.iteration_policy();
 
       static_assert(
-          ::elastica::tt::IsValidConnectionsConfiguration<cpp20::remove_cvref_t<
+          ::elastica::tt::IsValidConnectionsConfiguration<std::remove_cvref_t<
               decltype(with_connections_sim_config)>>::value,
           "meta failure!");
       CHECK(with_connections_sim_config.connections_parallelism_threshold() ==
@@ -179,7 +179,7 @@ namespace {
       /// [all_eg]
 
       static_assert(::elastica::tt::IsValidDomainConfiguration<
-                        cpp20::remove_cvref_t<decltype(sim_config)>>::value,
+                        std::remove_cvref_t<decltype(sim_config)>>::value,
                     "meta failure!");
       CHECK(sim_config.domain().get_upper_bound(elastica::EulerianFrame::Y) ==
             approx(20.0));
@@ -187,26 +187,26 @@ namespace {
             (elastica::real_t(-elastica::inf)));
 
       static_assert(::elastica::tt::IsValidSystemsConfiguration<
-                        cpp20::remove_cvref_t<decltype(sim_config)>>::value,
+                        std::remove_cvref_t<decltype(sim_config)>>::value,
                     "meta failure!");
       CHECK(sim_config.blocking_policy().criterion_.value() == 20UL);
       (void)sim_config.iteration_policy();
 
       static_assert(::elastica::tt::IsValidConnectionsConfiguration<
-                        cpp20::remove_cvref_t<decltype(sim_config)>>::value,
+                        std::remove_cvref_t<decltype(sim_config)>>::value,
                     "meta failure!");
       CHECK(sim_config.connections_parallelism_threshold() == 50UL);
 
       static_assert(::elastica::tt::IsValidConstraintsConfiguration<
-                        cpp20::remove_cvref_t<decltype(sim_config)>>::value,
+                        std::remove_cvref_t<decltype(sim_config)>>::value,
                     "meta failure!");
 
       static_assert(::elastica::tt::IsValidForcingConfiguration<
-                        cpp20::remove_cvref_t<decltype(sim_config)>>::value,
+                        std::remove_cvref_t<decltype(sim_config)>>::value,
                     "meta failure!");
 
       static_assert(::elastica::tt::IsValidEnvironmentsConfiguration<
-                        cpp20::remove_cvref_t<decltype(sim_config)>>::value,
+                        std::remove_cvref_t<decltype(sim_config)>>::value,
                     "meta failure!");
     }
 
@@ -226,23 +226,23 @@ namespace {
       /// [defaults_eg]
 
       static_assert(::elastica::tt::IsValidConstraintsConfiguration<
-                        cpp20::remove_cvref_t<decltype(sim_config)>>::value,
+                        std::remove_cvref_t<decltype(sim_config)>>::value,
                     "meta failure!");
 
       static_assert(::elastica::tt::IsValidForcingConfiguration<
-                        cpp20::remove_cvref_t<decltype(sim_config)>>::value,
+                        std::remove_cvref_t<decltype(sim_config)>>::value,
                     "meta failure!");
 
       static_assert(::elastica::tt::IsValidConnectionsConfiguration<
-                        cpp20::remove_cvref_t<decltype(sim_config)>>::value,
+                        std::remove_cvref_t<decltype(sim_config)>>::value,
                     "meta failure!");
 
       static_assert(::elastica::tt::IsValidSystemsConfiguration<
-                        cpp20::remove_cvref_t<decltype(sim_config)>>::value,
+                        std::remove_cvref_t<decltype(sim_config)>>::value,
                     "meta failure!");
 
       static_assert(::elastica::tt::IsValidDomainConfiguration<
-                        cpp20::remove_cvref_t<decltype(sim_config)>>::value,
+                        std::remove_cvref_t<decltype(sim_config)>>::value,
                     "meta failure!");
     }
   }

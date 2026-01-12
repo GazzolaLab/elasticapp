@@ -31,11 +31,11 @@ namespace {
     STAMP_PRIMITIVES;
 
     Contact cb(&first, &second, Vec3{0., 0., 0.5}, Vec3{0., 0., 1.}, 0.5);
-    CHECK_FALSE(cpp17::as_const(cb).is_penetrating());
+    CHECK_FALSE(std::as_const(cb).is_penetrating());
 
     Contact other_cb(&first, &second, Vec3{0., 0., 0.5}, Vec3{0., 0., 1.},
                      -0.2);
-    CHECK(cpp17::as_const(other_cb).is_penetrating());
+    CHECK(std::as_const(other_cb).is_penetrating());
   }
 
   void test_is_contacting() {
@@ -46,9 +46,9 @@ namespace {
     third.transfer(third_position, velocity, omega);
 
     Contact cb(&first, &second, Vec3{0., 0., 0.5}, Vec3{0., 0., 1.}, 0.5);
-    REQUIRE(cpp17::as_const(cb).is_contacting(&first));
-    REQUIRE(cpp17::as_const(cb).is_contacting(&second));
-    REQUIRE_FALSE(cpp17::as_const(cb).is_contacting(&third));
+    REQUIRE(std::as_const(cb).is_contacting(&first));
+    REQUIRE(std::as_const(cb).is_contacting(&second));
+    REQUIRE_FALSE(std::as_const(cb).is_contacting(&third));
   }
 
   void test_getters() {
@@ -58,20 +58,20 @@ namespace {
     // Because of static tracking
     // Will this be a problem in multithreaded application?
     // DONE : removed
-    // CHECK(cpp17::as_const(cb).get_ID() == 5);
+    // CHECK(std::as_const(cb).get_ID() == 5);
 
-    CHECK(cpp17::as_const(cb).get_index() == 0);
-    CHECK(cpp17::as_const(cb).get_first_body() == &first);
-    CHECK(cpp17::as_const(cb).get_second_body() == &second);
-    CHECK(cpp17::as_const(cb).get_position() == Vec3{0., 0., 0.5});
-    CHECK(cpp17::as_const(cb).get_normal() == Vec3{0., 0., 1.0});
-    CHECK(cpp17::as_const(cb).get_distance() == approx(0.5));
+    CHECK(std::as_const(cb).get_index() == 0);
+    CHECK(std::as_const(cb).get_first_body() == &first);
+    CHECK(std::as_const(cb).get_second_body() == &second);
+    CHECK(std::as_const(cb).get_position() == Vec3{0., 0., 0.5});
+    CHECK(std::as_const(cb).get_normal() == Vec3{0., 0., 1.0});
+    CHECK(std::as_const(cb).get_distance() == approx(0.5));
     // how to test?
-    CHECK(cpp17::as_const(cb).get_restitution() >= 0.0);
-    CHECK(cpp17::as_const(cb).get_stiffness() > 0.0);
-    CHECK(cpp17::as_const(cb).get_normal_damping() > 0.0);
-    CHECK(cpp17::as_const(cb).get_tangential_damping() > 0.0);
-    CHECK(cpp17::as_const(cb).get_friction() > 0.0);
+    CHECK(std::as_const(cb).get_restitution() >= 0.0);
+    CHECK(std::as_const(cb).get_stiffness() > 0.0);
+    CHECK(std::as_const(cb).get_normal_damping() > 0.0);
+    CHECK(std::as_const(cb).get_tangential_damping() > 0.0);
+    CHECK(std::as_const(cb).get_friction() > 0.0);
   }
 
   void test_compute_methods() {
@@ -79,9 +79,9 @@ namespace {
       STAMP_PRIMITIVES;
       Contact cb(&first, &second, Vec3{0., 0., 0.5}, Vec3{0., 0., 1.}, 0.5);
 
-      CHECK(cpp17::as_const(cb).get_relative_velocity() == Vec3{0., 0., 0.});
-      CHECK(cpp17::as_const(cb).get_normal_relative_velocity() == 0.0);
-      CHECK(cpp17::as_const(cb).get_contact_type() == ContactType::resting);
+      CHECK(std::as_const(cb).get_relative_velocity() == Vec3{0., 0., 0.});
+      CHECK(std::as_const(cb).get_normal_relative_velocity() == 0.0);
+      CHECK(std::as_const(cb).get_contact_type() == ContactType::resting);
     }
     {
       using Prim = SpherePrimitive;
@@ -99,9 +99,9 @@ namespace {
       Contact cb(&first, &second, Vec3{0., 0., 0.5}, Vec3{0., 1., 0.}, 0.5);
 
       // from 2 to 1 always so 1 -2
-      CHECK(cpp17::as_const(cb).get_relative_velocity() == Vec3{0., 1., 0.});
-      CHECK(cpp17::as_const(cb).get_normal_relative_velocity() == 1.0);
-      CHECK(cpp17::as_const(cb).get_contact_type() == ContactType::separating);
+      CHECK(std::as_const(cb).get_relative_velocity() == Vec3{0., 1., 0.});
+      CHECK(std::as_const(cb).get_normal_relative_velocity() == 1.0);
+      CHECK(std::as_const(cb).get_contact_type() == ContactType::separating);
     }
     {
       using Prim = SpherePrimitive;
@@ -119,9 +119,9 @@ namespace {
       Contact cb(&first, &second, Vec3{0., 0., 0.5}, Vec3{0., 1., 0.}, 0.5);
 
       // from 2 to 1 always so 1 -2
-      CHECK(cpp17::as_const(cb).get_relative_velocity() == Vec3{0., -1., 0.});
-      CHECK(cpp17::as_const(cb).get_normal_relative_velocity() == -1.0);
-      CHECK(cpp17::as_const(cb).get_contact_type() == ContactType::colliding);
+      CHECK(std::as_const(cb).get_relative_velocity() == Vec3{0., -1., 0.});
+      CHECK(std::as_const(cb).get_normal_relative_velocity() == -1.0);
+      CHECK(std::as_const(cb).get_contact_type() == ContactType::colliding);
     }
   }
 

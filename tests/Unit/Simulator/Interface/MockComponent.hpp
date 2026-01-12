@@ -24,7 +24,7 @@ namespace mock {
     struct UpdateStep {
       UpdateStep(S*, T const& traits) : counter{traits.counter()} {};
       explicit UpdateStep(std::tuple<S*, T const&>&& args)
-          : UpdateStep(cpp17::make_from_tuple<UpdateStep>(std::move(args))) {}
+          : UpdateStep(std::make_from_tuple<UpdateStep>(std::move(args))) {}
 
       void operator()(TimeType) const { ++counter; }
       mutable std::size_t counter;

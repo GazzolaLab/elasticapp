@@ -59,7 +59,7 @@ namespace {
 
   // declare a + operation to put the results into
   template <typename T,
-            Requires<not cpp17::is_same_v<T, CountedString>> = nullptr>
+            Requires<not std::is_same_v<T, CountedString>> = nullptr>
   Holder<T, elastica::states::tags::PrimitiveTag> operator+(
       Holder<T, elastica::states::tags::PrimitiveTag> const& l,
       Holder<T, elastica::states::tags::internal::
@@ -68,7 +68,7 @@ namespace {
   }
 
   template <typename T,
-            Requires<not cpp17::is_same_v<T, CountedString>> = nullptr>
+            Requires<not std::is_same_v<T, CountedString>> = nullptr>
   Holder<T, elastica::states::tags::PrimitiveTag> operator+(
       Holder<T, elastica::states::tags::internal::
                     DerivativeMultipliedByTimeTag> const& r,
@@ -77,7 +77,7 @@ namespace {
   }
 
   template <typename T,
-            Requires<not cpp17::is_same_v<T, CountedString>> = nullptr>
+            Requires<not std::is_same_v<T, CountedString>> = nullptr>
   Holder<T, elastica::states::tags::internal::DerivativeMultipliedByTimeTag>
   operator*(Holder<T, elastica::states::tags::DerivativeTag> const& l,
             TimeDelta const td) {
@@ -257,7 +257,7 @@ namespace {
       // and the assignment operator of state
       auto addexpr = state + another_state;
       static_assert(
-          cpp17::is_same_v<
+          std::is_same_v<
               decltype(addexpr),
               StatesStatesAddExpr<decltype(state), decltype(another_state)>>,
           "Failure!");
@@ -279,7 +279,7 @@ namespace {
       decltype(another_state) yet_another_state(A{4}, B{"Pai"}, C{5.0F});
       auto addexpr = state + another_state + yet_another_state;
       static_assert(
-          cpp17::is_same_v<
+          std::is_same_v<
               decltype(addexpr),
               StatesStatesAddExpr<
                   StatesStatesAddExpr<decltype(state), decltype(another_state)>,
@@ -300,7 +300,7 @@ namespace {
       auto addexpr = state + another_state;
       auto another_addexpr = addexpr + yet_another_state;
       static_assert(
-          cpp17::is_same_v<
+          std::is_same_v<
               decltype(another_addexpr),
               StatesStatesAddExpr<
                   StatesStatesAddExpr<decltype(state), decltype(another_state)>,
@@ -309,7 +309,7 @@ namespace {
 
       auto yet_another_addexpr = yet_another_state + addexpr;
       static_assert(
-          cpp17::is_same_v<decltype(yet_another_addexpr),
+          std::is_same_v<decltype(yet_another_addexpr),
                            StatesStatesAddExpr<
                                decltype(yet_another_state),
                                StatesStatesAddExpr<decltype(state),
@@ -444,7 +444,7 @@ namespace {
       // but holder's variaid args constructor constructs it in place
       S number_state(2, 3.0);
       auto mult_expr = number_state * td;
-      static_assert(cpp17::is_same_v<decltype(mult_expr),
+      static_assert(std::is_same_v<decltype(mult_expr),
                                      StatesTimeDeltaMultExpr<S, TimeDelta>>,
                     "Failure!");
       S result_state;
@@ -455,7 +455,7 @@ namespace {
       CHECK(result_state.get<1UL>().t_ == approx(6.0));
 
       auto another_mult_expr = td * number_state;
-      static_assert(cpp17::is_same_v<decltype(another_mult_expr),
+      static_assert(std::is_same_v<decltype(another_mult_expr),
                                      StatesTimeDeltaMultExpr<S, TimeDelta>>,
                     "Failure!");
       S another_result_state;
@@ -466,7 +466,7 @@ namespace {
       CHECK(another_result_state.get<1UL>().t_ == approx(6.0));
 
       auto yet_another_mult_expr = another_mult_expr * 5.0;
-      static_assert(cpp17::is_same_v<decltype(yet_another_mult_expr),
+      static_assert(std::is_same_v<decltype(yet_another_mult_expr),
                                      StatesTimeDeltaMultExpr<S, TimeDelta>>,
                     "Failure!");
       S yet_another_result_state;
@@ -477,7 +477,7 @@ namespace {
       CHECK(yet_another_result_state.get<1UL>().t_ == approx(30.0));
 
       auto yet_yet_another_mult_expr = 5.0 * another_mult_expr;
-      static_assert(cpp17::is_same_v<decltype(yet_yet_another_mult_expr),
+      static_assert(std::is_same_v<decltype(yet_yet_another_mult_expr),
                                      StatesTimeDeltaMultExpr<S, TimeDelta>>,
                     "Failure!");
       S yet_yet_another_result_state;

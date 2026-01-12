@@ -85,7 +85,7 @@ Not a conforming EnvironmentTag, doesn't have a member typedef
 `using requires_primitives = /* true or false type*/`
 )error");
           static_assert(
-              cpp17::disjunction_v<
+              std::disjunction_v<
                   std::conditional_t<
                       has_primitives_result::value,
                       // need to protect in case its false

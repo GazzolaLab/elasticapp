@@ -364,9 +364,9 @@ namespace {
                 ExecutionPolicy>::type;
         //        static_assert(
         //            std::conditional<
-        //                cpp17::is_same_v<ExecutionPolicy,
+        //                std::is_same_v<ExecutionPolicy,
         //                                 ::elastica::configuration::parallel_policy>,
-        //                cpp17::is_same<typename
+        //                std::is_same<typename
         //                elastica::PairwiseCacheContainerPolicy<
         //                    ExecutionPolicy>::type,
         //                    tbb::concurrent_vector<std::pair<std::reference_wrapper>>>,

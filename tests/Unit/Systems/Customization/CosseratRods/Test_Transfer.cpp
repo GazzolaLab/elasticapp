@@ -65,7 +65,7 @@ namespace {
     std::for_each(elastica::make_counting_iterator(0UL),
                   elastica::make_counting_iterator(n_slices),
                   [&, begit = std::begin(primitives)](std::size_t i) mutable {
-                    auto slice = ::blocks::slice(cpp17::as_const(model), i);
+                    auto slice = ::blocks::slice(std::as_const(model), i);
                     auto endit =
                         begit +
                         static_cast<typename decltype(begit)::difference_type>(

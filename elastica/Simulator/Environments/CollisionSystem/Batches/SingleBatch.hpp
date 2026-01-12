@@ -95,7 +95,7 @@ namespace elastica {
         // checks*************************************************
         // /*! \cond ELASTICA_INTERNAL */
         // static_assert(
-        //     cpp17::is_same_v<This, typename CollisionConfig::BatchGenerator>,
+        //     std::is_same_v<This, typename CollisionConfig::BatchGenerator>,
         //     R"error(Single-batch meta-failure, contact the
         //     developers!)error");
         // /*! \endcond */

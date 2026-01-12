@@ -54,7 +54,7 @@ namespace elastica {
         //! Metafunction that checks if the primitives passed in is rigid and
         //! convex
         template <typename Primitive>
-        static constexpr auto is_convex_rigid() -> cpp17::conjunction<
+        static constexpr auto is_convex_rigid() -> std::conjunction<
             tt::IsRigidPrimitive<Primitive>,
             ::tt::conforms_to<Primitive, protocols::ConvexPrimitive>>;
         //**********************************************************************
@@ -151,7 +151,7 @@ namespace elastica {
          */
         template <typename FirstPrimitive, typename SecondPrimitive,
                   typename CC,
-                  Requires<cpp17::conjunction_v<
+                  Requires<std::conjunction_v<
                       decltype(is_convex_rigid<FirstPrimitive>()),
                       decltype(is_convex_rigid<SecondPrimitive>())>> = nullptr>
         static void do_collide(FirstPrimitive& f, SecondPrimitive& s,

@@ -82,7 +82,7 @@ namespace {
 
     using Sim = tmpl::type_from<decltype(sim_type)>;
     static_assert(
-        cpp17::is_same_v<typename Sim::Algorithm,
+        std::is_same_v<typename Sim::Algorithm,
                          typename Sim::ConnectSystemsOp<sequential_policy>>,
         "Algorithm meta-failure!");
   }
@@ -97,7 +97,7 @@ namespace {
 
     using Sim = tmpl::type_from<decltype(sim_type)>;
     static_assert(
-        cpp17::is_same_v<typename Sim::Algorithm,
+        std::is_same_v<typename Sim::Algorithm,
                          typename Sim::ConnectSystemsOp<parallel_policy>>,
         "Algorithm meta-failure!");
   }
@@ -112,7 +112,7 @@ namespace {
 
     using Sim = tmpl::type_from<decltype(sim_type)>;
     static_assert(
-        cpp17::is_same_v<typename Sim::Algorithm,
+        std::is_same_v<typename Sim::Algorithm,
                          typename Sim::ConnectSystemsOp<hybrid_policy>>,
         "Algorithm meta-failure!");
   }

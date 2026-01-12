@@ -133,7 +133,7 @@ namespace elastica {
             time_stepper, [&, dt = dt](auto const& substep) noexcept {
               dispatch_based_on(
                   substep,
-                  [&, &time_v = cpp17::as_const(time_v),
+                  [&, &time_v = std::as_const(time_v),
                       dt = dt](auto const& kinematic_update_substep) noexcept {
                     // parallel invoke 4 available system collection
                     // parallel for each system in system collection
@@ -143,7 +143,7 @@ namespace elastica {
                           kinematic_update_substep(system, time_v, dt);
                         });
                   },
-                  [&, &time_v = cpp17::as_const(time_v),
+                  [&, &time_v = std::as_const(time_v),
                       dt = dt](auto const& dynamic_update_substep) noexcept {
                     // parallel pipeline here, based on strategy
 

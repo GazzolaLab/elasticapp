@@ -32,13 +32,13 @@ namespace {
     using elastica::for_each;
     using elastica::get_meter;
 
-    CHECK(get_meter<tmpl::integral_constant<int, 1>>(cpp17::as_const(meters))
+    CHECK(get_meter<tmpl::integral_constant<int, 1>>(std::as_const(meters))
               .get_counter() == 0UL);
-    CHECK(get_meter<tmpl::integral_constant<int, 2>>(cpp17::as_const(meters))
+    CHECK(get_meter<tmpl::integral_constant<int, 2>>(std::as_const(meters))
               .get_counter() == 0UL);
-    CHECK(get_meter<tmpl::integral_constant<int, 3>>(cpp17::as_const(meters))
+    CHECK(get_meter<tmpl::integral_constant<int, 3>>(std::as_const(meters))
               .get_counter() == 0UL);
-    CHECK(get_meter<tmpl::integral_constant<int, 4>>(cpp17::as_const(meters))
+    CHECK(get_meter<tmpl::integral_constant<int, 4>>(std::as_const(meters))
               .get_counter() == 0UL);
 
     get_meter<tmpl::integral_constant<int, 1>>(meters).start();
@@ -52,7 +52,7 @@ namespace {
               [](auto&... meter) {
                 return std::make_tuple(meter.get_counter()...);
               },
-              cpp17::as_const(meters).data()) ==
+              std::as_const(meters).data()) ==
           std::make_tuple(1UL, 1UL, 1UL, 1UL));
   }
 
