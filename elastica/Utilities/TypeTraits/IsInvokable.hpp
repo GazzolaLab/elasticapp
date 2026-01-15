@@ -67,7 +67,7 @@ namespace cpp17 {
    * \usage
    * For any type `F`, `R` and types `A...`
    * \code
-   * using result = std::tt::is_invocable_r<R, F, A...>;
+   * using result = std::is_invocable_r<R, F, A...>;
    * \endcode
    *
    * \metareturns
@@ -126,7 +126,7 @@ namespace cpp17 {
    * \usage
    * For any type `F` and types `A...`
    * \code
-   * using result = std::tt::is_invocable<F, A...>;
+   * using result = std::is_invocable<F, A...>;
    * \endcode
    *
    * \metareturns
@@ -185,7 +185,7 @@ namespace cpp17 {
    * \usage
    * For any type `F` and types `A...`
    * \code
-   * using result = std::tt::is_nothrow_callable<F, A...>;
+   * using result = std::is_nothrow_invocable<F, A...>;
    * \endcode
    *
    * \metareturns
@@ -229,7 +229,7 @@ namespace cpp17 {
    * \usage
    * For any type `F`, `R` and types `A...`
    * \code
-   * using result = std::tt::is_nothrow_invocable_r<R, F, A...>;
+   * using result = std::is_nothrow_invocable_r<R, F, A...>;
    * \endcode
    *
    * \metareturns
@@ -292,7 +292,7 @@ namespace cpp17 {
    * \usage
    * For any type `F` and types `A...`
    * \code
-   * using result = std::tt::is_nothrow_invocable<F, A...>;
+   * using result = std::is_nothrow_invocable<F, A...>;
    * \endcode
    *
    * \metareturns
