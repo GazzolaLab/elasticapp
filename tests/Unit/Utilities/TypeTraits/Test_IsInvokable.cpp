@@ -97,10 +97,10 @@ namespace {
     return x;
   };
   static_assert(
-      !std::is_nothrow_callable<decltype(simple_lambda), int>::value,
+      !cpp17::is_nothrow_callable<decltype(simple_lambda), int>::value,
       "is_nothrow_callable failure");
   static_assert(
-      std::is_nothrow_callable<decltype(simple_lambda_nothrow), int>::value,
+      cpp17::is_nothrow_callable<decltype(simple_lambda_nothrow), int>::value,
       "is_nothrow_callable failure");
   /// [is_nothrow_callable]
 

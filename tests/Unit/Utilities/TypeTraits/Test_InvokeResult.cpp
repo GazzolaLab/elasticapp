@@ -12,7 +12,7 @@ namespace {
     double operator()(char, int&);
   };
 
-  static_assert(std::is_same<std::tt::invoke_result<S, char, int&>::type,
+  static_assert(std::is_same<std::invoke_result<S, char, int&>::type,
                              double>::value,
                 "invoke_result failure");
   /// [invoke_result_example]
@@ -23,8 +23,8 @@ namespace {
   };
 
   static_assert(
-      std::is_same<std::tt::invoke_result_t<P, int>,
-                   typename std::tt::invoke_result<P, int>::type>::value,
+      std::is_same<std::invoke_result_t<P, int>,
+                   typename std::invoke_result<P, int>::type>::value,
       "invoke_result_t failure");
   /// [invoke_result_t_example]
 
@@ -39,21 +39,21 @@ namespace {
   }
 
   static_assert(
-      std::is_same<void, std::tt::invoke_result_t<
+      std::is_same<void, std::invoke_result_t<
                              decltype(simple_static_function)>>::value,
       "invoke_result failure");
   static_assert(
-      std::is_same<int, std::tt::invoke_result_t<
+      std::is_same<int, std::invoke_result_t<
                             decltype(simple_static_function_r)>>::value,
       "invoke_result failure");
   static_assert(
       std::is_same<
-          int, std::tt::invoke_result_t<
+          int, std::invoke_result_t<
                    decltype(simple_static_function_r_with_arg), int>>::value,
       "invoke_result failure");
   static_assert(
       std::is_same<const int&,
-                   std::tt::invoke_result_t<
+                   std::invoke_result_t<
                        decltype(simple_static_function_r_with_ref_arg),
                        const int&>>::value,
       "invoke_result failure");

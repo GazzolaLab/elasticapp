@@ -113,7 +113,7 @@ namespace {
   //    struct CanBeInstantiated : std::false_type {};
   //    template <typename T>
   //    struct CanBeInstantiated<
-  //        T, std::void_t<std::tt::invoke_result_t<T, Args...>>>
+  //        T, std::void_t<std::invoke_result_t<T, Args...>>>
   //        : std::true_type {};
   //  };
 
