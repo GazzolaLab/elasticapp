@@ -12,7 +12,6 @@
 #include "Simulator/Interface/MockComponent.hpp"
 #include "Simulator/Interface/Simulator.hpp"  // all of simulator
 #include "Simulator/Simulator.hpp"            // all of simulator
-#include "Utilities/AsConst.hpp"
 #include "Utilities/StdHelpers.hpp"  // needed for streaming operations
 #include "Utilities/TMPL.hpp"
 

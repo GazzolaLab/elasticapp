@@ -3,7 +3,6 @@
 //
 
 #include "Framework/TestingFramework.hpp"
-#include "Utilities/Clamp.hpp"
 #include "Utilities/Rampup.hpp"
 
 namespace {

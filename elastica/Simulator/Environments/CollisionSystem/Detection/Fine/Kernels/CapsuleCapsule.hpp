@@ -22,7 +22,6 @@
 #include "Simulator/Environments/Primitives/CapsulePrimitive.hpp"
 #include "Simulator/Environments/Primitives/detail/CapsulePrimitiveBase.hpp"
 //
-#include "Utilities/Clamp.hpp"
 #include "Utilities/DefineTypes.h"
 #include "Utilities/Logging.hpp"
 #include "Utilities/Thresholds.hpp"

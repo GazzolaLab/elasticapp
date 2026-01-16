@@ -23,7 +23,6 @@
 #include "Simulator/Environments/Primitives/PlanePrimitive.hpp"
 #include "Simulator/Environments/Primitives/detail/CapsulePrimitiveBase.hpp"
 //
-#include "Utilities/Clamp.hpp"
 #include "Utilities/DefineTypes.h"
 #include "Utilities/Logging.hpp"
 #include "Utilities/Thresholds.hpp"

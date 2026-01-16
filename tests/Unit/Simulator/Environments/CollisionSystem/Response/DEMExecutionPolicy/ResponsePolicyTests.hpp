@@ -13,7 +13,6 @@
 //
 #include "Simulator/Environments/Primitives.hpp"
 #include "Simulator/Materials.hpp"
-#include "Utilities/AsConst.hpp"
 #include "Utilities/DefineTypes.h"
 #include "Utilities/Math/Identity.hpp"
 #include "Utilities/Math/Vec3.hpp"

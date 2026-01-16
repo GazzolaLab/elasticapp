@@ -12,7 +12,6 @@
 
 // catch wants << declared and defined while comparing equality, so we include
 // STD helpers
-#include "Utilities/AsConst.hpp"
 #include "Utilities/StdHelpers.hpp"
 
 namespace tags {

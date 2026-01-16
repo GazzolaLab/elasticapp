@@ -8,7 +8,6 @@
 #include "Framework/TestingFramework.hpp"
 #include "Systems/Sphere.hpp"
 //
-#include "Utilities/AsConst.hpp"
 #include "Utilities/CountingIterator.hpp"
 #include "Utilities/End.hpp"
 #include "Utilities/Math/Identity.hpp"

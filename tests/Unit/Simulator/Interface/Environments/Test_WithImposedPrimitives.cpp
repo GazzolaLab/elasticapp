@@ -7,7 +7,6 @@
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Interface/Environments/MockEnvironments.hpp"
 #include "Simulator/Interface/Environments/WithImposedPrimitives.hpp"
-#include "Utilities/AsConst.hpp"
 #include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/Invoke.hpp"
 #include "Utilities/MakeArray.hpp"

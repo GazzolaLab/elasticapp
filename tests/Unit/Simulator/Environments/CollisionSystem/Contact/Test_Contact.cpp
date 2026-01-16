@@ -7,7 +7,6 @@
 #include "Simulator/Environments/CollisionSystem/Contact/ContactType.hpp"
 #include "Simulator/Environments/Primitives.hpp"
 #include "Simulator/Materials.hpp"
-#include "Utilities/AsConst.hpp"
 
 namespace {
 

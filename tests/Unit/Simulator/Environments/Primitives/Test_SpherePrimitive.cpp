@@ -5,7 +5,6 @@
 #include "Simulator/Environments/Primitives/Protocols.hpp"
 #include "Simulator/Environments/Primitives/SpherePrimitive.hpp"
 #include "Simulator/Materials.hpp"
-#include "Utilities/AsConst.hpp"
 #include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/Math/Rot3.hpp"
 #include "Utilities/Math/Vec3.hpp"

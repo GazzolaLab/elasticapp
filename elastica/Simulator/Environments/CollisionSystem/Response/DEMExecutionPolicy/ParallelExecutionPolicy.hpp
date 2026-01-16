@@ -27,7 +27,6 @@
 #include "Parallel/detail.hpp"  // for warning
 #include "Parallel/reduce.hpp"
 //
-#include "Utilities/AsConst.hpp"
 #include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/Overloader.hpp"
 //

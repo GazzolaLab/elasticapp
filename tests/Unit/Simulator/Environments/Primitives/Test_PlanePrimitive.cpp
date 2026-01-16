@@ -4,7 +4,6 @@
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Environments/Primitives/PlanePrimitive.hpp"
 #include "Simulator/Materials.hpp"
-#include "Utilities/AsConst.hpp"
 #include "Utilities/Math/Infinity.hpp"
 #include "Utilities/Math/Vec3.hpp"
 #include "Utilities/Thresholds.hpp"

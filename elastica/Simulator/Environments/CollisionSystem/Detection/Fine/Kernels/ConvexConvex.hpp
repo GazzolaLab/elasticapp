@@ -24,7 +24,6 @@
 #include "Simulator/Environments/Primitives/TypeTraits.hpp"
 #include "Simulator/Environments/Primitives/Types.hpp"
 //
-#include "Utilities/Clamp.hpp"
 #include "Utilities/DefineTypes.h"
 #include "Utilities/Logging.hpp"
 #include "Utilities/PrettyType.hpp"

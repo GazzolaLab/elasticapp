@@ -8,7 +8,6 @@
 #include "Simulator/Environments/CollisionSystem/Contact/ContactVectorAdapter.hpp"
 #include "Simulator/Environments/Primitives.hpp"
 #include "Simulator/Materials.hpp"
-#include "Utilities/AsConst.hpp"
 
 namespace {
 

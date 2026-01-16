@@ -7,7 +7,6 @@
 #include "Systems/Customization/RigidBody/Sphere.hpp"
 // init
 #include "Systems/Sphere.hpp"
-#include "Utilities/AsConst.hpp"
 #include "Utilities/CountingIterator.hpp"
 #include "Utilities/Math/Identity.hpp"
 #include "Utilities/TypeTraits/Cpp17.hpp"

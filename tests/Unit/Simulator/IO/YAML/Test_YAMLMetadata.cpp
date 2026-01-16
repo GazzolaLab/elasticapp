@@ -4,7 +4,6 @@
 #include "Framework/TestingFramework.hpp"
 //
 #include "Simulator/IO/YAML/YAMLMetadata.hpp"
-#include "Utilities/AsConst.hpp"
 //
 #include <cstdio>
 //

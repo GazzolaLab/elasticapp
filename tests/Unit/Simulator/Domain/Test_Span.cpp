@@ -3,7 +3,6 @@
 //
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Domain/Span.hpp"
-#include "Utilities/AsConst.hpp"
 #include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace {

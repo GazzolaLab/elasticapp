@@ -3,7 +3,6 @@
 //
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Environments/CollisionSystem/Detection/ContactCache/ContactCache.hpp"
-#include "Utilities/AsConst.hpp"
 
 namespace {
 

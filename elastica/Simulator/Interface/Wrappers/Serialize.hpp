@@ -25,7 +25,6 @@
 ///
 #include "Simulator/IO/Serialization.hpp"  // all custom, stl and so on
 #include "Utilities/MakeString.hpp"
-#include "Utilities/AsConst.hpp"
 
 namespace elastica {
 

@@ -6,9 +6,7 @@ set(LIBRARY_SOURCES
         # Test_StdHelpers.cpp
         # Test_TaggedTuple.cpp
         # Test_Tuple.cpp
-        Test_AsConst.cpp
         Test_AsTaggedTuple.cpp
-        Test_Clamp.cpp
         Test_CountingIterator.cpp
         Test_CRTP.cpp
         Test_Defer.cpp

@@ -11,7 +11,6 @@
 #include "Simulator/Environments/Primitives/CapsulePrimitive.hpp"
 #include "Simulator/Environments/Primitives/PrimitivesCollection.hpp"
 #include "Simulator/Environments/Primitives/SpherePrimitive.hpp"
-#include "Utilities/AsConst.hpp"
 #include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/Invoke.hpp"
 #include "Utilities/Overloader.hpp"

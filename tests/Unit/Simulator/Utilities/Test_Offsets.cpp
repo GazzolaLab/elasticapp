@@ -4,7 +4,6 @@
 
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Utilities/Offsets.hpp"
-#include "Utilities/AsConst.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {

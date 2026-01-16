@@ -4,7 +4,6 @@
 #include "Framework/TestingFramework.hpp"
 //
 #include "Simulator/IO/Interface/MetadataInterface.hpp"
-#include "Utilities/AsConst.hpp"
 
 namespace {
 

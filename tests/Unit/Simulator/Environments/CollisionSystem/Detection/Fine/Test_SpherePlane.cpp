@@ -10,7 +10,6 @@
 #include "Simulator/Environments/CollisionSystem/Contact/Contact.hpp"
 #include "Simulator/Environments/CollisionSystem/Contact/ContactVectorAdapter.hpp"
 #include "Simulator/Materials.hpp"
-#include "Utilities/AsConst.hpp"
 #include "Utilities/Geometry/Angles.hpp"
 #include "Utilities/Math/Vec3.hpp"
 

@@ -23,7 +23,6 @@
 //
 #include "Simulator/Environments/CollisionSystem/Response/DEMExecutionPolicy/SequentialContactResolver.hpp"
 //
-#include "Utilities/AsConst.hpp"
 
 namespace elastica {
 

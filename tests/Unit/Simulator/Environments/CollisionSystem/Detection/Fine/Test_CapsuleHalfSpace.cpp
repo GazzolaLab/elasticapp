@@ -13,7 +13,6 @@
 #include "Simulator/Frames.hpp"
 #include "Simulator/Materials.hpp"
 //
-#include "Utilities/AsConst.hpp"
 #include "Utilities/Math/Orthogonal.hpp"
 #include "Utilities/Math/Vec3.hpp"
 #include "Utilities/Size.hpp"

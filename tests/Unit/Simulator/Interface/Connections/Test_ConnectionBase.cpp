@@ -5,7 +5,6 @@
 
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Interface/Connections/ConnectionBase.hpp"
-#include "Utilities/AsConst.hpp"
 #include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/TMPL.hpp"
 

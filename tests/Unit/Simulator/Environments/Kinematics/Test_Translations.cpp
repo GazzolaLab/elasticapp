@@ -7,7 +7,6 @@
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Environments/Kinematics/Translations.hpp"
 #include "Simulator/Frames.hpp"
-#include "Utilities/AsConst.hpp"
 
 namespace {
 

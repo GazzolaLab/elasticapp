@@ -6,7 +6,6 @@
 #include "Simulator/IO/H5/Interface/H5Metadata.hpp"
 // Also needs implementation of writer
 #include "Simulator/IO/H5/Interface/H5Interface.hpp"
-#include "Utilities/AsConst.hpp"
 //
 #include <cstdio>
 //

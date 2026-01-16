@@ -7,7 +7,6 @@
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Configuration/ModuleConfiguration/common/Serialize.hpp"
 #include "Simulator/Configuration/ModuleConfiguration/common/common.hpp"
-#include "Utilities/AsConst.hpp"
 
 namespace {
   struct SSP : public ::elastica::configuration::SingleSizePolicy<SSP> {

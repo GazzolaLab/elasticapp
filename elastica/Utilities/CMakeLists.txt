@@ -29,9 +29,7 @@ elastica_target_headers(
         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
         HEADERS
         Approx.hpp
-        AsConst.hpp
         Byte.hpp
-        Clamp.hpp
         CountingIterator.hpp
         CRTP.hpp
         DefineTypes.h

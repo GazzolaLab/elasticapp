@@ -11,7 +11,6 @@
 #include "Systems/CosseratRods/BlockView.hpp"
 #include "Systems/CosseratRods/CosseratRodPlugin.hpp"
 #include "Systems/CosseratRods/CosseratRodTraits.hpp"
-#include "Utilities/AsConst.hpp"
 
 // Unique namespace to avoid GCC linker errors, see Test_Module.cpp
 

@@ -8,7 +8,6 @@
 #include "Simulator/Environments/Primitives/Protocols.hpp"
 #include "Simulator/Environments/Primitives/detail/CapsulePrimitiveBase.hpp"
 #include "Simulator/Materials.hpp"
-#include "Utilities/AsConst.hpp"
 #include "Utilities/Geometry/Angles.hpp"
 #include "Utilities/Math/Identity.hpp"
 #include "Utilities/Math/Vec3.hpp"

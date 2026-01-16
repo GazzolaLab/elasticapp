@@ -6,7 +6,6 @@
 #include "Simulator/Materials.hpp"
 #include "Systems/CosseratRods.hpp"
 #include "Systems/CosseratRods/Initializers/StraightCosseratRod.hpp"  // TODO : replace later
-#include "Utilities/AsConst.hpp"
 
 namespace {
 

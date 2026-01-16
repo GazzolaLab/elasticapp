@@ -46,7 +46,6 @@
 #include "Simulator/Environments/CollisionSystem/Detection/Coarse/ExhaustiveSearch.hpp"
 #include "Simulator/Environments/CollisionSystem/Detection/Coarse/TypeTraits.hpp"
 //
-#include "Utilities/AsConst.hpp"
 #include "Utilities/AsTaggedTuple.hpp"
 #include "Utilities/CountingIterator.hpp"
 #include "Utilities/DefineTypes.h"

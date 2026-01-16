@@ -4,7 +4,6 @@
 
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Utilities/MemoryMeters.hpp"
-#include "Utilities/AsConst.hpp"
 #include "Utilities/Invoke.hpp"
 #include "Utilities/TMPL.hpp"
 

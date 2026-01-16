@@ -4,7 +4,6 @@
 
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Environments/Primitives/RigidBodyPrimitive.hpp"
-#include "Utilities/AsConst.hpp"
 #include "Utilities/Math/Orthogonal.hpp"
 //
 #include "Simulator/Environments/Primitives/Test_AccessAPI.hpp"

@@ -7,7 +7,6 @@
 #include "Framework/TestingFramework.hpp"
 //
 #include "Systems/CosseratRods.hpp"
-#include "Utilities/AsConst.hpp"
 #include "Utilities/CountingIterator.hpp"
 #include "Utilities/Math/Identity.hpp"
 #include "Utilities/Size.hpp"

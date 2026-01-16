@@ -13,7 +13,6 @@
 #include "Simulator/Environments/CollisionSystem/Contact/ContactVectorAdapter.hpp"
 #include "Simulator/Frames.hpp"
 #include "Simulator/Materials.hpp"
-#include "Utilities/AsConst.hpp"
 #include "Utilities/Geometry/Angles.hpp"
 #include "Utilities/Math/Length.hpp"
 #include "Utilities/Math/Orthogonal.hpp"

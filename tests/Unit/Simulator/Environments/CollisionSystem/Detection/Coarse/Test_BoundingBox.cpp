@@ -5,7 +5,6 @@
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Environments/CollisionSystem/Detection/Coarse/BoundingBox.hpp"
 #include "Simulator/Frames.hpp"
-#include "Utilities/AsConst.hpp"
 #include "Utilities/DefineTypes.h"
 
 namespace {
