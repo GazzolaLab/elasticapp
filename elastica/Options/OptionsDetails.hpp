@@ -34,7 +34,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
-#include "Utilities/TypeTraits/Void.hpp"
 #include "Utilities/WrapText.hpp"
 
 namespace Options {

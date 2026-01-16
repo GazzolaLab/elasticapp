@@ -26,7 +26,6 @@
 
 #include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/NonCopyable.hpp"
-#include "Utilities/TypeTraits/Void.hpp"
 
 // namespace elastica {
 //

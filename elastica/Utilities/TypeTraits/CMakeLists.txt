@@ -21,5 +21,4 @@ elastica_target_headers(
         IsStdArray.hpp
         IsStdArrayOfSize.hpp
         IsStreamable.hpp
-        Void.hpp
 )

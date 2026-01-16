@@ -36,7 +36,6 @@
 #include "Utilities/TypeTraits/IsStdArray.hpp"
 #include "Utilities/TypeTraits/IsStdArrayOfSize.hpp"
 #include "Utilities/TypeTraits/IsStreamable.hpp"
-#include "Utilities/TypeTraits/Void.hpp"
 
 //==============================================================================
 //

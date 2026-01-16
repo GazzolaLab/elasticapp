@@ -18,7 +18,6 @@
 //******************************************************************************
 #include <type_traits>
 
-#include "Utilities/TypeTraits/Void.hpp"
 
 namespace tt {
 

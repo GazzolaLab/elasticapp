@@ -18,7 +18,6 @@
 //******************************************************************************
 #include <type_traits>
 // void_t
-#include "Utilities/TypeTraits/Void.hpp"
 
 namespace cpp17 {
 

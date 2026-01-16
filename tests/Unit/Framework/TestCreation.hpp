@@ -12,7 +12,6 @@
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/Void.hpp"
 
 namespace TestHelpers {
   namespace TestCreation_detail {

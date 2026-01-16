@@ -42,7 +42,6 @@
 #include "Utilities/TypeTraits/ArraySize.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 #include "Utilities/TypeTraits/IsStdArray.hpp"
-#include "Utilities/TypeTraits/Void.hpp"
 
 //==============================================================================
 //

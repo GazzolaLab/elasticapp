@@ -13,7 +13,6 @@ set(LIBRARY_SOURCES
         Test_IsDetected.cpp
         Test_IsInvokable.cpp
         Test_IsStdArray.cpp
-        Test_Void.cpp
         )
 
 add_test_library(

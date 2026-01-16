@@ -21,7 +21,6 @@
 #include <type_traits>
 
 #include "Utilities/NoSuchType.hpp"
-#include "Utilities/TypeTraits/Void.hpp"
 
 namespace tt {
 
