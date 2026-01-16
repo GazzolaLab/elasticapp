@@ -17,6 +17,8 @@
 
 #include "Utilities/Demangle.hpp"
 
+#include <cstdlib>
+
 /// \cond
 //#define DEMANGLE_USE_BOOST
 /// \endcond
