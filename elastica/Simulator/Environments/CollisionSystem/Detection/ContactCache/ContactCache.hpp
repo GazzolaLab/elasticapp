@@ -4,7 +4,6 @@
 #include "Simulator/Environments/CollisionSystem/Detection/ContactCache/ContainerPolicy.hpp"
 #include "Simulator/Environments/CollisionSystem/Detection/ContactCache/Types.hpp"
 //
-#include "Utilities/Invoke.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace elastica {

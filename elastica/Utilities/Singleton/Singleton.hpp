@@ -49,7 +49,6 @@
 ///
 #include "Utilities/Singleton/Types.hpp"
 ///
-#include "Utilities/Invoke.hpp"
 #include "Utilities/NonCopyable.hpp"
 #include "Utilities/Singleton/Dependency.hpp"
 #include "Utilities/Singleton/TypeTraits.hpp"

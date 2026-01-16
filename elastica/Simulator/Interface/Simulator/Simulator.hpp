@@ -52,7 +52,6 @@
 ///
 #include "ErrorHandling/NestedExceptions.hpp"
 /// Utilities
-#include "Utilities/Invoke.hpp"
 #include "Utilities/Logging.hpp"
 #include "Utilities/Logging/Logger.hpp"
 #include "Utilities/RepeatAsTuple.hpp"

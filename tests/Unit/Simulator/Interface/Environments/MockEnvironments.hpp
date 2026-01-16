@@ -11,6 +11,7 @@
 #include "Simulator/Interface/Environments/Module.hpp"
 #include "Simulator/Utilities/Timers.hpp"
 #include "Time/SimulationTime.hpp"
+#include "Utilities/Invoke.hpp"
 #include "Utilities/NonCopyable.hpp"
 #include "Utilities/TMPL.hpp"
 

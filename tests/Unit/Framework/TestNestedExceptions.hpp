@@ -7,8 +7,6 @@
 #include <exception>
 #include <sstream>
 
-#include "Utilities/Invoke.hpp"
-
 // from
 // https://github.com/catchorg/Catch2/issues/1918
 void full_exception_stack_to_stream(

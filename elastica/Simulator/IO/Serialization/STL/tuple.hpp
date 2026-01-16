@@ -25,7 +25,6 @@
 
 #include "Simulator/IO/Serialization/Helpers.hpp"
 #include "Simulator/IO/Serialization/Serialize.hpp"
-#include "Utilities/Invoke.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace elastica {

@@ -9,7 +9,6 @@ set(LIBRARY_SOURCES
         Test_IsCallable.cpp
         Test_IsConvertibleToA.cpp
         Test_IsDetected.cpp
-        Test_IsInvokable.cpp
         Test_IsStdArray.cpp
         )
 

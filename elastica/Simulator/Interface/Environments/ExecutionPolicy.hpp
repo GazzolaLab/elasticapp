@@ -26,8 +26,7 @@
 //
 #include "Simulator/Interface/Affordances/detail/EmptyUpdateSteps.hpp"
 #include "Simulator/Interface/Environments/Types.hpp"
-///
-#include "Utilities/Invoke.hpp"
+//
 #include "Utilities/MakeString.hpp"
 #include "Utilities/TMPL.hpp"
 

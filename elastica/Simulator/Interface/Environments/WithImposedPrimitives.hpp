@@ -33,7 +33,6 @@
 ///
 #include "Utilities/CRTP.hpp"
 #include "Utilities/GSL.hpp"
-#include "Utilities/Invoke.hpp"
 #include "Utilities/Logging.hpp"
 #include "Utilities/NonCopyable.hpp"
 #include "Utilities/Requires.hpp"

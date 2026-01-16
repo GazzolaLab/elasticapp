@@ -18,8 +18,7 @@
 //******************************************************************************
 #include <tuple>
 #include <vector>
-
-#include "Utilities/Invoke.hpp"
+//
 #include "Utilities/TMPL.hpp"
 
 namespace elastica {

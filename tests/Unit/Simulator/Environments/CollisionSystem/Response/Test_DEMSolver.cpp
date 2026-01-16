@@ -17,7 +17,6 @@
 #include "Simulator/Environments/Primitives.hpp"
 #include "Simulator/Materials.hpp"
 #include "Utilities/Geometry/Angles.hpp"
-#include "Utilities/Invoke.hpp"
 #include "Utilities/Math/Rot3.hpp"
 #include "Utilities/Math/Vec3.hpp"
 #include "Utilities/PrettyType.hpp"

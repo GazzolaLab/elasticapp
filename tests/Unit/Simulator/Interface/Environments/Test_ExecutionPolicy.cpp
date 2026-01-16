@@ -6,6 +6,7 @@
 #include "Simulator/Interface/Environments/ExecutionPolicy.hpp"
 #include "Simulator/Interface/Environments/MockEnvironments.hpp"
 #include "Utilities/IgnoreUnused.hpp"
+#include "Utilities/Invoke.hpp"
 #include "Utilities/MakeArray.hpp"
 
 namespace {

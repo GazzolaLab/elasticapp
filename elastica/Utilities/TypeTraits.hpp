@@ -27,7 +27,6 @@
 #include "Utilities/TypeTraits/IsConvertibleToA.hpp"
 #include "Utilities/TypeTraits/IsDefined.hpp"
 #include "Utilities/TypeTraits/IsDetected.hpp"
-#include "Utilities/TypeTraits/IsInvokable.hpp"
 #include "Utilities/TypeTraits/IsIterable.hpp"
 #include "Utilities/TypeTraits/IsMaplike.hpp"
 #include "Utilities/TypeTraits/IsStdArray.hpp"

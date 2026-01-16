@@ -12,7 +12,6 @@ elastica_target_headers(
         IsConvertibleToA.hpp
         IsDefined.hpp
         IsDetected.hpp
-        IsInvokable.hpp
         IsIterable.hpp
         IsMaplike.hpp
         IsStdArray.hpp

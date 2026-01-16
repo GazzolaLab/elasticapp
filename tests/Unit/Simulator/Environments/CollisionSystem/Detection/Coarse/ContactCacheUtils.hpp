@@ -5,7 +5,6 @@
 #pragma once
 
 #include "Simulator/Environments/CollisionSystem/Detection/ContactCache.hpp"  // assume tested
-#include "Utilities/Invoke.hpp"
 #include "Utilities/TMPL.hpp"
 //
 #include <algorithm>

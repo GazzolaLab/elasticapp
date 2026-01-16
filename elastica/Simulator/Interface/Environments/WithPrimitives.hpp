@@ -36,7 +36,6 @@
 #include "Simulator/Utilities/Offsets.hpp"
 //
 #include "Utilities/CRTP.hpp"
-#include "Utilities/Invoke.hpp"
 #include "Utilities/Logging.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/NonCopyable.hpp"

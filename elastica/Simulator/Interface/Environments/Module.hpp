@@ -42,7 +42,6 @@
 #include "Simulator/IO/Serialization/Types.hpp"
 /// Utilities
 #include "Utilities/CRTP.hpp"
-#include "Utilities/Invoke.hpp"
 #include "Utilities/Logging.hpp"
 #include "Utilities/Math/Vec3.hpp"
 #include "Utilities/NonCopyable.hpp"

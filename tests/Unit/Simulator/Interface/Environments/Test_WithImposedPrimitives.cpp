@@ -23,7 +23,6 @@
 #include "Simulator/Frames.hpp"
 #include "Simulator/Materials.hpp"
 #include "Time/SimulationTime.hpp"
-#include "Utilities/Invoke.hpp"
 
 namespace mock {
 
