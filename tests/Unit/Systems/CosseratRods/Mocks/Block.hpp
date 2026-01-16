@@ -30,6 +30,7 @@ namespace blocks {
 
    public:
     using Parent::initialize;
+    Block() = default;
   };
 
   template <typename Tr, template <typename> class... T>
@@ -50,6 +51,7 @@ namespace blocks {
 
    public:
     using Parent::initialize;
+    Block() = default;
   };
 
   // we need a ghosts function here :(
