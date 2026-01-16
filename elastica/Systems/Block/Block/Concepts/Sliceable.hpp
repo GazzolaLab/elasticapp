@@ -127,6 +127,12 @@ namespace blocks {
     // index types in favor of actual types below, for it to appear nicer in
     // Doxygen.
 
+    //************************************************************************
+    /*!\brief Default Constructor for the Sliceable class.
+     */
+    Sliceable() = default;
+    //************************************************************************
+
     //**Slice operators*********************************************************
     /*!\name slice operators */
     //@{

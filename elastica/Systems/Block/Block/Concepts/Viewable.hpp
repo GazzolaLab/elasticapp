@@ -124,6 +124,12 @@ namespace blocks {
     // index types below in favor of actual types, for it to appear nicer in
     // Doxygen.
 
+    //************************************************************************
+    /*!\brief Default Constructor for the Viewable class.
+     */
+    Viewable() = default;
+    //************************************************************************
+
     //**Slice operators*********************************************************
     /*!\name slice operators */
     //@{
