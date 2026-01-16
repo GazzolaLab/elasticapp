@@ -8,7 +8,6 @@
 #include "Systems/CosseratRods/Initializers/detail/Kinematics.hpp"
 #include "Systems/CosseratRods/Initializers/detail/Transformations.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 // depends on Affordances passing
 

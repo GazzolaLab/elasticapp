@@ -5,7 +5,6 @@
 #include <type_traits>
 
 #include "Systems/common/Components.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 /// [is_component_example]
 template <typename Traits, typename Block>

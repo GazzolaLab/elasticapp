@@ -6,7 +6,6 @@
 
 #include "Systems/CosseratRods/Components/helpers/Component.hpp"
 #include "Systems/CosseratRods/Components/helpers/TypeTraits.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 template <typename Traits, typename Block>
 struct SomeComponent : public elastica::cosserat_rod::component::Component<

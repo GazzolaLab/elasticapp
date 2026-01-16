@@ -5,7 +5,6 @@
 
 #include <type_traits>
 
-#include "Utilities/TypeTraits/Cpp17.hpp"
 #include "Utilities/TypeTraits/IsDetected.hpp"
 
 namespace tt {

@@ -4,7 +4,6 @@
 
 #include "Systems/CosseratRods/CosseratRods.hpp"
 #include "Systems/Customization/CosseratRods.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace {
 

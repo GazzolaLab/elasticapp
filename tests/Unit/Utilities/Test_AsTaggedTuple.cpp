@@ -7,7 +7,6 @@
 #include "Utilities/AsTaggedTuple.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace {
   /// [as_tagged_tuple_eg]

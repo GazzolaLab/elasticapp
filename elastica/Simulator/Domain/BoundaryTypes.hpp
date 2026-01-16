@@ -20,7 +20,6 @@
 #include <type_traits>
 
 #include "Simulator/Domain/Types.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace elastica {
 

@@ -30,7 +30,6 @@
 #include "Systems/States/TypeTraits/Aliases.hpp"
 #include "Systems/States/TypeTraits/IsExpression.hpp"
 #include "Systems/States/TypeTraits/IsVectorized.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace elastica {
 

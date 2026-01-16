@@ -5,7 +5,6 @@ elastica_target_headers(
         INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/elastica
         HEADERS
         ArraySize.hpp
-        Cpp17.hpp
         HasEquivalence.hpp
         InvokeResult.hpp
         IsA.hpp

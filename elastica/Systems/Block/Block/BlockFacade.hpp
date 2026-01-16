@@ -26,7 +26,6 @@
 //
 #include "Utilities/CRTP.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 #include "Utilities/TypeTraits/IsDetected.hpp"
 //
 #include <type_traits>

@@ -8,7 +8,6 @@
 ///
 #include "Simulator/Domain/TypeTraits.hpp"
 #include "Utilities/IgnoreUnused.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace {
 

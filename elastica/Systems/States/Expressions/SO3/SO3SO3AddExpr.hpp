@@ -32,7 +32,6 @@
 #include "Systems/States/TypeTraits/IsPrimitive.hpp"
 #include "Systems/States/TypeTraits/IsVectorized.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace elastica {
 

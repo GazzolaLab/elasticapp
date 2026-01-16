@@ -21,7 +21,6 @@
 #include <utility>
 
 #include "Utilities/Math/Vec3.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace elastica {
 

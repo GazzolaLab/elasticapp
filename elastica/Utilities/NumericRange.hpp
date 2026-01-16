@@ -21,7 +21,6 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/NonCopyable.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 
 namespace elastica {

@@ -10,7 +10,6 @@
 #include "Simulator/Frames.hpp"
 #include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/Math/Infinity.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace {
 

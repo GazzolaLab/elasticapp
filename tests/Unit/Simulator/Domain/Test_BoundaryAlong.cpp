@@ -6,7 +6,6 @@
 #include "Simulator/Frames.hpp"
 #include "Utilities/DefineTypes.h"
 #include "Utilities/IgnoreUnused.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace {
 

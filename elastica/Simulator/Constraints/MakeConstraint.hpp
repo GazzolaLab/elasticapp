@@ -27,7 +27,6 @@
 #include "Utilities/Registration.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace elastica {
 

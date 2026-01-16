@@ -5,7 +5,6 @@
 
 #include "Framework/TestingFramework.hpp"
 #include "Utilities/MakeFromTuple.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace {
 

@@ -32,7 +32,6 @@
 #include "Utilities/NumericRange.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Registration.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 #include "Utilities/TypeTraits/IsDetected.hpp"
 
 namespace elastica {

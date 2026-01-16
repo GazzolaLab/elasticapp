@@ -7,7 +7,6 @@
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Environments/CollisionSystem/Detection/PairwiseTMPL.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace {
 

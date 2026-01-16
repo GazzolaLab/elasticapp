@@ -22,7 +22,6 @@
 #include "Systems/States/Expressions/OrderTags/Types.hpp"
 ///
 #include "Systems/States/TypeTraits/Aliases.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace elastica {
 

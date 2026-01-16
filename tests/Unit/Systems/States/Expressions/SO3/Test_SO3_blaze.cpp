@@ -9,7 +9,6 @@
 #include "Time/SimulationTime.hpp"
 #include "Time/Types.hpp"
 #include "Utilities/DefineTypes.h"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 // catch wants << declared and defined while comparing equality, so we include
 // STD helpers

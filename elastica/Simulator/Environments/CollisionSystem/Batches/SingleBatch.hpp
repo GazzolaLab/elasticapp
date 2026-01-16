@@ -45,7 +45,6 @@
 //
 #include "Utilities/Logging.hpp"
 #include "Utilities/NonCopyable.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace elastica {
 

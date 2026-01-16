@@ -37,7 +37,6 @@
 #include "Utilities/Math/Vec3.hpp"
 //
 #include "Utilities/ProtocolHelpers.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 //
 #include <cmath>
 

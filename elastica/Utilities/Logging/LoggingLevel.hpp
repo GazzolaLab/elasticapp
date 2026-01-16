@@ -18,7 +18,6 @@
 //******************************************************************************
 
 #include "Configuration/Logging.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace elastica {
 

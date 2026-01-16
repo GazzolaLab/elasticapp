@@ -9,7 +9,6 @@
 #include "Simulator/Configuration/ModuleConfiguration/BlockingPolicy.hpp"
 #include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 //
 #include "Options/ParseOptions.hpp"
 

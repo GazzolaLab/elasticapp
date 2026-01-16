@@ -6,7 +6,6 @@
 #include "Simulator/Configuration/ModuleConfiguration/IterationPolicy.hpp"
 #include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace {
 

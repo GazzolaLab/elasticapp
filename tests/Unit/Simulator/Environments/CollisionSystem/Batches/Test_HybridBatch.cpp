@@ -4,7 +4,6 @@
 #include "Simulator/Environments/CollisionSystem/Batches/HybridBatch.hpp"
 #include "Simulator/Environments/CollisionSystem/Configuration.hpp"
 #include "Simulator/Environments/Primitives.hpp" // why?
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace {
 

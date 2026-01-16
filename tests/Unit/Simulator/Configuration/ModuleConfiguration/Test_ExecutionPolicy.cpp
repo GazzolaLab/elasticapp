@@ -6,7 +6,6 @@
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Configuration/ModuleConfiguration/ExecutionPolicy.hpp"
 #include "Utilities/IgnoreUnused.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace {
 

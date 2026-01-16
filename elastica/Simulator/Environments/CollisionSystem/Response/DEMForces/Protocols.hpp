@@ -23,7 +23,6 @@
 #include "Simulator/Environments/CollisionSystem/Contact/Types.hpp"
 //
 #include "Utilities/DefineTypes.h"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace elastica {
 

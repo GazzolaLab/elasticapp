@@ -32,7 +32,6 @@
 #include "Utilities/NumericAt.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace elastica {
 

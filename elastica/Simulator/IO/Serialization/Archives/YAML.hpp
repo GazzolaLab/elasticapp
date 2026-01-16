@@ -44,7 +44,6 @@
 #include "Simulator/IO/Serialization/Serialization.hpp"
 //
 #include "Utilities/Requires.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace elastica {
 

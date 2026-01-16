@@ -23,7 +23,6 @@
 #include "Utilities/Singleton/Types.hpp"
 ///
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace elastica {
 

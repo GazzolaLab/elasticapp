@@ -10,7 +10,6 @@
 #include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/Timing/Timer.h"
 #include "Utilities/Timing/WcTimer.h"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace {
 

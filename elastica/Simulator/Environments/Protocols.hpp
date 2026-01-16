@@ -22,7 +22,6 @@
 #include "Simulator/Environments/Common/Protocols.hpp"
 //
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 #include "Utilities/TypeTraits/IsDetected.hpp"
 
 namespace elastica {

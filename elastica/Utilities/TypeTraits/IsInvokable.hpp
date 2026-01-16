@@ -20,8 +20,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "Cpp17.hpp"
-
 namespace cpp17 {
 
   namespace is_invocable_detail {
@@ -212,7 +210,7 @@ namespace cpp17 {
    */
   template <typename F, typename... Args>
   struct is_nothrow_callable
-      : bool_constant<noexcept(std::declval<F>()(std::declval<Args>()...))> {};
+      : std::bool_constant<noexcept(std::declval<F>()(std::declval<Args>()...))> {};
   //****************************************************************************
 
   //****************************************************************************
@@ -257,7 +255,7 @@ namespace cpp17 {
    */
   template <class R, class F, class... A>
   struct is_nothrow_invocable_r
-      : conjunction<is_invocable_r<R, F, A...>, is_nothrow_callable<F, A...>> {
+      : std::conjunction<is_invocable_r<R, F, A...>, is_nothrow_callable<F, A...>> {
   };
   //****************************************************************************
 

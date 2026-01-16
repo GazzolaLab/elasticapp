@@ -17,7 +17,6 @@
 #include "Utilities/End.hpp"
 #include "Utilities/IgnoreUnused.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace unique {
   using namespace elastica;

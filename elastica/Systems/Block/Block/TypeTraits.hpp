@@ -22,7 +22,6 @@
 #include "Systems/Block/Block/Types.hpp"
 ///
 #include "Utilities/ProtocolHelpers.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 
 namespace blocks {

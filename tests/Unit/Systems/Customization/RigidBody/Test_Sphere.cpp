@@ -9,7 +9,6 @@
 #include "Systems/Sphere.hpp"
 #include "Utilities/CountingIterator.hpp"
 #include "Utilities/Math/Identity.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 //
 #include "Simulator/Environments/Transfer.hpp"

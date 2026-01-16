@@ -49,7 +49,6 @@
 #include <type_traits>
 
 #include "Systems/States/TypeTraits/HasOrder.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace elastica {
 

@@ -6,7 +6,6 @@
 
 #include "Framework/TestingFramework.hpp"
 #include "Utilities/RepeatAsTuple.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace {
 

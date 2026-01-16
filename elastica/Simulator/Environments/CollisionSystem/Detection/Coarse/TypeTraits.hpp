@@ -21,7 +21,6 @@
 #include <type_traits>
 //
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace elastica {
 

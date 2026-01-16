@@ -56,7 +56,6 @@
 #include "Utilities/NonCopyable.hpp"
 #include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace elastica {
 

@@ -23,7 +23,6 @@
 ///
 #include "Utilities/End.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 
 namespace elastica {

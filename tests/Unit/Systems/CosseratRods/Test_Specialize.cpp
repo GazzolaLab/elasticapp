@@ -3,7 +3,6 @@
 //
 
 #include "Systems/CosseratRods/Specialize.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 
 namespace {
 

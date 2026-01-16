@@ -16,7 +16,6 @@
 #include "Utilities/Restrict.hpp"
 //
 #include "ErrorHandling/Assert.hpp"
-#include "Utilities/TypeTraits/Cpp17.hpp"
 #include "Utilities/Unroll.hpp"
 
 namespace elastica {
