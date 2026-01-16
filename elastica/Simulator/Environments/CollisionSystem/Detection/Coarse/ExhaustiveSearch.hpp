@@ -54,7 +54,6 @@
 #include "Utilities/Logging.hpp"
 #include "Utilities/Logging/Logger.hpp"
 #include "Utilities/NonCopyable.hpp"
-#include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace elastica {

@@ -35,44 +35,10 @@
 
 #include "Utilities/StaticConst.hpp"
 
-namespace cpp17 {
-
-  //****************************************************************************
-  /*!\brief Returns the size of a type
-   * \ingroup utils
-   *
-   * \details
-   * Drop-in replacement for std::size in C++17. Returns the size of the given
-   * range.
-   * See https://en.cppreference.com/w/cpp/iterator/size for more details.
-   *
-   * \example
-   * \snippet Test_Size.cpp size_eg
-   *
-   * \param container a container or view with a size() member function
-   * \return The size of container
-   */
-  template <class Container>
-  constexpr auto size(Container const& container) noexcept(
-      noexcept(container.size())) -> decltype(container.size()) {
-    return container.size();
-  }
-  //****************************************************************************
-
-}  // namespace cpp17
-
 // size proxy
 namespace elastica {
 
   namespace detail {
-
-    //==========================================================================
-    //
-    //  CLASS DEFINITION
-    //
-    //==========================================================================
-    // using std::size;
-
     //**************************************************************************
     /*! \cond ELASTICA_INTERNAL */
     /*!\brief Size type

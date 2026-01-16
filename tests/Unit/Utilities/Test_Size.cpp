@@ -24,11 +24,6 @@ namespace custom {
 namespace {
 
   ELASTICA_TEST_CASE("Unit.Utilities.Size.size", "[Unit][Utilities]") {
-    /// [size_eg]
-    auto a = std::vector<int>{1, 2, 3, 4, 5};
-    CHECK(std::size(a) == 5UL);
-    /// [size_eg]
-
     /// [size_example]
     auto b = std::vector<int>{1, 2, 3};
     // instead of doing two-phase lookup, or std::size,

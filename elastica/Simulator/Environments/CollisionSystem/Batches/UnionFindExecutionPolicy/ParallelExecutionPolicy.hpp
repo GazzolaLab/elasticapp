@@ -36,7 +36,6 @@
 #endif
 //
 #include "Utilities/NonCopyable.hpp"
-#include "Utilities/Size.hpp"
 
 namespace elastica {
 

@@ -40,7 +40,6 @@
 #include "Utilities/Logging.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/NonCopyable.hpp"
-#include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
 ///
 

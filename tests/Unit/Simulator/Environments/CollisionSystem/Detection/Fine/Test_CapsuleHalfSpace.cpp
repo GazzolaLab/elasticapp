@@ -15,7 +15,6 @@
 //
 #include "Utilities/Math/Orthogonal.hpp"
 #include "Utilities/Math/Vec3.hpp"
-#include "Utilities/Size.hpp"
 //
 #include "Utilities/Geometry/Angles.hpp"
 #include "Utilities/Geometry/AxisAngleRotation.hpp"

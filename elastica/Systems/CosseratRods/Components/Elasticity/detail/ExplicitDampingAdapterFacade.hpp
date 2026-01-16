@@ -29,7 +29,6 @@
 #include "Systems/CosseratRods/Components/Tags.hpp"
 //
 #include "Utilities/CRTP.hpp"
-#include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace elastica {

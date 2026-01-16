@@ -17,7 +17,6 @@
 #include "Utilities/Math/Length.hpp"
 #include "Utilities/Math/Orthogonal.hpp"
 #include "Utilities/Math/Vec3.hpp"
-#include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {

@@ -21,6 +21,7 @@
 #include "Utilities/Math/Rot3.hpp"
 #include "Utilities/Math/Vec3.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/Size.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 //

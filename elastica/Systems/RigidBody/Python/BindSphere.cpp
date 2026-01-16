@@ -28,7 +28,6 @@
 #include "Systems/common/Python/Generators/BindVariableLocator.hpp"
 //
 #include "Utilities/Math/Python/SliceHelpers.hpp"
-#include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace py = pybind11;

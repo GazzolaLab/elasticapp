@@ -7,7 +7,6 @@
 #include "ErrorHandling/ExpectsAndEnsures.hpp"
 //
 #include "Utilities/DefineTypes.h"
-#include "Utilities/Size.hpp"
 //
 #include <cmath>
 #include <utility>  // move
