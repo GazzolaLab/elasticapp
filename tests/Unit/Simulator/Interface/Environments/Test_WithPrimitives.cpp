@@ -497,10 +497,9 @@ namespace {
         // using P = tmpl::at_c<typename
         // decltype(sim)::ListOfAdmissibleImposedPrimitives, Is>;
         return make_overloader(
-            [&i = counters[Is]](
-                tmpl::at_c<tmpl::list<::elastica::collision::SpherePrimitive,
+            [&](tmpl::at_c<tmpl::list<::elastica::collision::SpherePrimitive,
                                       ::elastica::collision::CapsulePrimitive>,
-                           Is> const&) { ++i; }...);
+                           Is> const&) { ++counters[Is]; }...);
       });
 
       sim.for_each_primitive(func);

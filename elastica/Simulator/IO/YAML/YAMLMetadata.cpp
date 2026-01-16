@@ -77,7 +77,7 @@ namespace elastica {
     auto YAMLMetadata::register_metadata(::elastica::TimeMetadata time_metadata)
         -> FileName {
       auto const raw_id = std::to_string(time_metadata.id.step());
-      auto formatted_id = format(raw_id, *this);
+      auto formatted_id = ::elastica::io::format(raw_id, *this);
       std::string file_name = get_file_name(std::move(formatted_id), *this);
 
       // Prepending 0 in front of the string makes YAML interpret results

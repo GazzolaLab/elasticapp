@@ -317,10 +317,9 @@ namespace {
           // using P = tmpl::at_c<typename
           // decltype(sim)::ListOfAdmissibleImposedPrimitives, Is>;
           return make_overloader(
-              [&i = counters[Is]](
-                  tmpl::at_c<
-                      typename decltype(sim)::ListOfAdmissibleImposedPrimitives,
-                      Is> const&) { ++i; }...);
+              [&](tmpl::at_c<
+                  typename decltype(sim)::ListOfAdmissibleImposedPrimitives,
+                  Is> const&) { ++counters[Is]; }...);
         });
 
     sim.for_each_imposed_primitive(func);

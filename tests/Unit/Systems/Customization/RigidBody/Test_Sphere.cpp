@@ -176,7 +176,7 @@ namespace {
               beg +
               static_cast<typename decltype(beg)::difference_type>(i + 1UL);
           using namespace ::elastica::collision;
-          Transfer<decltype(slice)>::template do_transfer(
+          Transfer<decltype(slice)>::do_transfer(
               ::elastica::collision::from, slice, ::elastica::collision::to,
               begit, endit);
         });
@@ -212,7 +212,7 @@ namespace {
 
           auto slice = ::blocks::slice(model, i);
           using namespace ::elastica::collision;
-          Transfer<decltype(slice)>::template do_transfer(
+          Transfer<decltype(slice)>::do_transfer(
               ::elastica::collision::to, slice, ::elastica::collision::from,
               begit, endit);
         });

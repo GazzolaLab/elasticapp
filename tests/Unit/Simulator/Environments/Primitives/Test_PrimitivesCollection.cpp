@@ -99,9 +99,8 @@ namespace {
           // using P = tmpl::at_c<typename
           // decltype(sim)::ListOfAdmissibleImposedPrimitives, Is>;
           return make_overloader(
-              [&i = counters[Is]](
-                  tmpl::at_c<typename decltype(collection)::PrimitiveList,
-                             Is> const&) { ++i; }...);
+              [&](tmpl::at_c<typename decltype(collection)::PrimitiveList,
+                             Is> const&) { ++counters[Is]; }...);
         });
 
     for_each(collection, func);

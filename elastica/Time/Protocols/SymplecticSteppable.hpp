@@ -65,7 +65,7 @@ namespace elastica {
           /// [expected_functions]
           // Try calling the `ConformingType::step` templated member function
           using span_return_type =
-              decltype(std::declval<ConformingType const&>().template step(
+              decltype(std::declval<ConformingType const&>().step(
                   std::declval<SymplecticStepper<PositionVerlet> const&>(),
                   std::declval<Time&>(), std::declval<TimeDelta const>()));
           static_assert(std::is_same_v<span_return_type, void>,

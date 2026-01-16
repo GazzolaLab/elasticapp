@@ -70,7 +70,7 @@ namespace {
                         static_cast<typename decltype(begit)::difference_type>(
                             elastica::size(slice));
                     using namespace ::elastica::collision;
-                    Transfer<decltype(slice)>::template do_transfer(
+                    Transfer<decltype(slice)>::do_transfer(
                         ::elastica::collision::from, slice,
                         ::elastica::collision::to, begit, endit);
                     std::exchange(begit, endit);
@@ -118,7 +118,7 @@ namespace {
                         static_cast<typename decltype(begit)::difference_type>(
                             elastica::size(slice));
                     using namespace ::elastica::collision;
-                    Transfer<decltype(slice)>::template do_transfer(
+                    Transfer<decltype(slice)>::do_transfer(
                         ::elastica::collision::to, slice,
                         ::elastica::collision::from, begit, endit);
                     std::exchange(begit, endit);
