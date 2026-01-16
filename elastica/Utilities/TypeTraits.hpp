@@ -22,7 +22,6 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits/ArraySize.hpp"
 #include "Utilities/TypeTraits/HasEquivalence.hpp"
-#include "Utilities/TypeTraits/InvokeResult.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 #include "Utilities/TypeTraits/IsCallable.hpp"
 #include "Utilities/TypeTraits/IsConvertibleToA.hpp"

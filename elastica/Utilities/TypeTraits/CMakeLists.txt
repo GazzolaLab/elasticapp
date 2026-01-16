@@ -6,7 +6,6 @@ elastica_target_headers(
         HEADERS
         ArraySize.hpp
         HasEquivalence.hpp
-        InvokeResult.hpp
         IsA.hpp
         IsCallable.hpp
         IsCRTP.hpp

@@ -21,7 +21,6 @@
 #include <utility>
 #include <tuple>
 
-#include "Utilities/TypeTraits/InvokeResult.hpp"
 #include "Utilities/TypeTraits/IsInvokable.hpp"
 
 namespace cpp17 {
@@ -70,7 +69,7 @@ namespace cpp17 {
   // \see apply()
   */
   template <class F, class... Args>
-  constexpr tt::invoke_result_t<F, Args...> invoke(
+  constexpr std::invoke_result_t<F, Args...> invoke(
       F&& f, Args&&... args) noexcept(is_nothrow_invocable_v<F, Args...>) {
     return invoke_detail::invoke(std::forward<F>(f),
                                  std::forward<Args>(args)...);

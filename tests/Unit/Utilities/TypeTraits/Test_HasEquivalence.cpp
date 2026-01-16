@@ -1,7 +1,6 @@
 //
 // Created by Tejaswin Parthasarathy on 5/25/21.
 //
-#include "Utilities/TypeTraits/InvokeResult.hpp"
 
 // [has_equivalence_example]
 namespace {
