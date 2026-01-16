@@ -5,7 +5,6 @@
 #include "Simulator/IO/H5/CreateH5.hpp"
 #include "Simulator/IO/H5/Utilities/Blaze/Submatrix.hpp"
 #include "Utilities/CountingIterator.hpp"
-#include "Utilities/TypeTraits/Cpp20.hpp"
 //
 #include <algorithm>
 #include <blaze/math/DynamicMatrix.h>

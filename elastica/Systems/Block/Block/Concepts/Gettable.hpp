@@ -22,7 +22,6 @@
 #include "Systems/Block/BlockVariables/TypeTraits.hpp"  // IsVariable
 //
 #include "Utilities/CRTP.hpp"
-#include "Utilities/TypeTraits/Cpp20.hpp"
 //
 #include <cstddef>  // size_t
 

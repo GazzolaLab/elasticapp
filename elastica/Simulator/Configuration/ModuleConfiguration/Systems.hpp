@@ -27,7 +27,6 @@
 //
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"  // for registrants
-#include "Utilities/TypeTraits/Cpp20.hpp"
 
 //==============================================================================
 //

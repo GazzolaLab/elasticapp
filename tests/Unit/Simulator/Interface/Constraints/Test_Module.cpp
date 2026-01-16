@@ -18,7 +18,6 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/Cpp17.hpp"
-#include "Utilities/TypeTraits/Cpp20.hpp"
 /// mocks
 #include "Simulator/Interface/Constraints/MockConstraints.hpp"
 #include "Simulator/Interface/MockSimulator.hpp"

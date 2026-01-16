@@ -20,7 +20,6 @@
 //
 #include "Simulator/Environments/Primitives/Types.hpp"
 //
-#include "Utilities/TypeTraits/Cpp20.hpp"
 #include "Utilities/TypeTraits/IsDetected.hpp"
 
 namespace elastica {

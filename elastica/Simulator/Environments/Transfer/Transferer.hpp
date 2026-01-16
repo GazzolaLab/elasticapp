@@ -30,7 +30,6 @@
 #include "Simulator/Utilities/Offsets.hpp"
 #include "Utilities/AsConst.hpp"
 #include "Utilities/Size.hpp"
-#include "Utilities/TypeTraits/Cpp20.hpp"
 
 namespace elastica {
 

@@ -30,7 +30,6 @@
 // Complete implementation of this type is needed to do manipulations
 #include "Simulator/Configuration/Protocols/Domain.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
-#include "Utilities/TypeTraits/Cpp20.hpp"
 
 namespace elastica {
 

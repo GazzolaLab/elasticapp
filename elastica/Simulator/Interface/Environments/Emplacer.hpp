@@ -26,7 +26,6 @@
 #include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-#include "Utilities/TypeTraits/Cpp20.hpp"
 
 namespace elastica {
 

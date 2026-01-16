@@ -12,7 +12,6 @@
 #include "Utilities/CountingIterator.hpp"
 #include "Utilities/End.hpp"
 #include "Utilities/Math/Identity.hpp"
-#include "Utilities/TypeTraits/Cpp20.hpp"
 
 namespace {
   using namespace elastica;
