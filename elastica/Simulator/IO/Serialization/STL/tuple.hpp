@@ -94,7 +94,7 @@ namespace elastica {
       struct tuple_serialize {
         template <class Archive, class... Types>
         inline static void apply(Archive& ar, std::tuple<Types...>& tuple) {
-          tuple_serialize<Height - 1>::template apply(ar, tuple);
+          tuple_serialize<Height - 1>::apply(ar, tuple);
           ar(make_nvp<Archive>(tuple_element_name<Height - 1>::c_str(),
                                std::get<Height - 1>(tuple)));
         }
@@ -102,7 +102,7 @@ namespace elastica {
         template <class Archive, class... Types>
         inline static void apply(Archive& ar,
                                  std::tuple<Types...> const& tuple) {
-          tuple_serialize<Height - 1>::template apply(ar, tuple);
+          tuple_serialize<Height - 1>::apply(ar, tuple);
           ar(make_nvp<Archive>(tuple_element_name<Height - 1>::c_str(),
                                std::get<Height - 1>(tuple)));
         }
@@ -128,14 +128,14 @@ namespace elastica {
 
       template <typename InArchive>
       static inline void load(InArchive& ar, type& tuple) {
-        detail::tuple_serialize<std::tuple_size<std::tuple<Types...>>::value>::
-            template apply(ar, tuple);
+        detail::tuple_serialize<
+            std::tuple_size<std::tuple<Types...>>::value>::apply(ar, tuple);
       }
 
       template <typename OutArchive>
       static inline void save(OutArchive& ar, type const& tuple) {
-        detail::tuple_serialize<std::tuple_size<std::tuple<Types...>>::value>::
-            template apply(ar, tuple);
+        detail::tuple_serialize<
+            std::tuple_size<std::tuple<Types...>>::value>::apply(ar, tuple);
       }
     };
     /*! \endcond */
