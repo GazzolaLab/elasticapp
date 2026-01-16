@@ -25,7 +25,6 @@
 #include "Simulator/Interface/Connections/Types.hpp"
 ///
 #include "Utilities/CRTP.hpp"
-#include "Utilities/MakeFromTuple.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/TMPL.hpp"
 

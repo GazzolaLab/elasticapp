@@ -27,7 +27,6 @@
 #include "Parallel/for_each.hpp"  // uses elastica's, not GLIBCXX
 ///
 #include "Utilities/CRTP.hpp"
-#include "Utilities/MakeFromTuple.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"

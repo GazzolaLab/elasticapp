@@ -49,7 +49,6 @@ elastica_target_headers(
         Logging.hpp
         MakeArray.hpp
         MakeCopyable.hpp
-        MakeFromTuple.hpp
         MakeNamedFunctor.hpp
         MakeSignalingNan.hpp
         MakeString.hpp

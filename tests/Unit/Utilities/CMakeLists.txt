@@ -17,7 +17,6 @@ set(LIBRARY_SOURCES
         Test_GetOutput.cpp
         Test_Invoke.cpp
         Test_KarmarkarKarpPartition.cpp
-        Test_MakeFromTuple.cpp
         Test_MakeNamedFunctor.cpp
         Test_NumericAt.cpp
         Test_NumericRange.cpp
