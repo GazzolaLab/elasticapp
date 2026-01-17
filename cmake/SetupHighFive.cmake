@@ -3,7 +3,11 @@
 log_info("Finding HighFive")
 
 include(SetupHDF5)
+<<<<<<< HEAD
 find_package(HighFive CONFIG)
+=======
+# find_package(HighFive)
+>>>>>>> 697108ff (build: move brigand and cxxopts to external/ and add cmake files)
 
 if (HighFive_FOUND)
  log_debug("HighFive version: ${HIGHFIVE_VERSION}")
