@@ -4,24 +4,22 @@ log_info("Finding CxxOpts")
 # creating a FindCxxOpts.cmake file
 find_package(cxxopts 3.0 REQUIRED)
 
+log_debug("cxxopts_INCLUDE_DIR: ${cxxopts_INCLUDE_DIR}")
+log_debug("cxxopts_VERSION: ${cxxopts_VERSION}")
+
+add_library(cxxopts::cxxopts INTERFACE IMPORTED)
+set_property(TARGET cxxopts::cxxopts PROPERTY
+        INTERFACE_INCLUDE_DIRECTORIES ${cxxopts_INCLUDE_DIR})
+
 file(APPEND "${CMAKE_BINARY_DIR}/BuildInformation.txt"
         "cxxopts Version:  ${cxxopts_VERSION}\n")
 
-get_target_property(INTERFACE_DIRECTORIES cxxopts::cxxopts INTERFACE_INCLUDE_DIRECTORIES)
-list(GET INTERFACE_DIRECTORIES 0 cxxopts_INCLUDE_DIRS)
-
-set_property(
-        GLOBAL APPEND PROPERTY ELASTICA_THIRD_PARTY_LIBS
-        cxxopts
-)
 add_interface_lib_headers(
         TARGET cxxopts::cxxopts
         HEADERS
-        cxxopts.h
+        cxxopts.hpp
 )
-mark_as_advanced(cxxopts_DIR) # ugly, so hide from user
-
-log_debug("cxxopts_INCLUDE_DIRS: ${cxxopts_INCLUDE_DIRS}")
-log_debug("cxxopts_VERSION: ${cxxopts_VERSION}")
-
-
+set_property(
+        GLOBAL APPEND PROPERTY ELASTICA_THIRD_PARTY_LIBS
+        cxxopts::cxxopts
+)
