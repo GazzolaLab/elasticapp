@@ -9,9 +9,9 @@ endif()
 
 find_path(
     BRIGAND_INCLUDE_DIR
-    PATH_SUFFIXES include
-    NAMES brigand/brigand.hpp
-    HINTS ${BRIGAND_ROOT}
+    PATH_SUFFIXES include brigand
+    NAMES brigand.hpp
+    HINTS ${CMAKE_SOURCE_DIR}/external ${BRIGAND_ROOT}
     DOC "Brigand include directory. Used BRIGAND_ROOT to set a search dir."
 )
 
