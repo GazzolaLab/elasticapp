@@ -26,7 +26,7 @@ namespace elastica {
           COSSERATROD_LIB_NOEXCEPT->void {
         lazy_twopoint_kernel_simd(DifferenceOperation{},
                                   std::forward<Args>(args)...);
-      };
+      }
     };
 
   }  // namespace cosserat_rod
