@@ -793,7 +793,7 @@ reorganizing your code logic.
       inline auto apply_post_dynamic_updates(TimeType time_v) /*const*/ noexcept
           -> void {
         tmpl::for_each<PostDynamicUpdateSteps>([this, time_v](auto update) {
-          perform<tmpl::type_from<decltype(update)>>(time_v);
+          this->template perform<tmpl::type_from<decltype(update)>>(time_v);
         });
       }
       //************************************************************************
