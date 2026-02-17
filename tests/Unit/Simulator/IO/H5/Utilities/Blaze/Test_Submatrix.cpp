@@ -6,8 +6,10 @@
 #include "Simulator/IO/H5/Utilities/Blaze/Submatrix.hpp"
 #include "Utilities/CountingIterator.hpp"
 //
-#include <algorithm>
 #include <blaze/math/DynamicMatrix.h>
+//
+#include <algorithm>
+#include <ranges>
 
 namespace {
 
@@ -54,9 +56,9 @@ namespace {
           auto s = i + 10 + stride_start;
           auto ss = i + 10 + stride_stop;
           CAPTURE(i, stride_start, stride_stop);
-          CHECK(std::vector<int>(a.begin(i), a.end(i)) ==
-                std::vector<int>(elastica::make_counting_iterator(s),
-                                 elastica::make_counting_iterator(ss)));
+          CHECK(
+              std::ranges::equal(std::ranges::subrange(a.cbegin(i), a.cend(i)),
+                                 std::ranges::iota_view{s, ss}));
         }
       };
       run_check();
@@ -73,9 +75,8 @@ namespace {
         auto s = i + 200 + stride_start;
         auto ss = i + 200 + stride_stop;
         CAPTURE(i, stride_start, stride_stop);
-        CHECK(std::vector<int>(a.begin(i), a.end(i)) ==
-              std::vector<int>(elastica::make_counting_iterator(s),
-                               elastica::make_counting_iterator(ss)));
+        CHECK(std::ranges::equal(std::ranges::subrange(a.cbegin(i), a.cend(i)),
+                                 std::ranges::iota_view{s, ss}));
       }
 
       // Read data back
@@ -87,8 +88,8 @@ namespace {
       // Check to see if only third row is not affected, since testing others
       // is a paing
       for (auto i = stop; i < total; ++i)
-        CHECK(std::equal(matrix.begin(i), matrix.end(i),
-                         elastica::make_counting_iterator(i + 200)));
+        CHECK(std::equal(matrix.cbegin(i), matrix.cend(i),
+                         std::ranges::iota_view{i + 200}.begin()));
     };
 
     SECTION("Row major") {

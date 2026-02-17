@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <array>
+#include <ranges>
 
 #include "Framework/TestingFramework.hpp"
 #include "Utilities/CountingIterator.hpp"
@@ -16,9 +17,9 @@ namespace {
     using value_type = int;
     std::array<value_type, 5> data = {1, 3, 5, 7, 9};
     value_type counter = 0;
-    std::for_each(elastica::make_counting_iterator(0UL),
-                  elastica::make_counting_iterator(n_values),
-                  [&counter, &data](std::size_t idx) { counter += data[idx]; });
+    std::ranges::for_each(
+        std::ranges::iota_view{0UL, n_values},
+        [&counter, &data](std::size_t idx) { counter += data[idx]; });
     /// [counting_iterator_eg]
     CHECK(counter == 25);
   }

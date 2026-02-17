@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <ranges>
 
 #include "Framework/TestingFramework.hpp"
 #include "Simulator/Configuration.hpp"  // all configuration
@@ -135,9 +136,8 @@ namespace {
     ::elastica::Vec3 first_position{0.0, 0.0, 0.0};
     ::elastica::real_t first_radius{0.3};
 
-    std::for_each(
-        elastica::make_counting_iterator(0UL),
-        elastica::make_counting_iterator(20UL), [&](std::size_t i) {
+    std::ranges::for_each(
+        std::ranges::iota_view{0UL, 20UL}, [&](std::size_t i) {
           // there is always some contact
           ::elastica::Vec3 pos =
               first_position +
@@ -177,9 +177,8 @@ namespace {
 
     // Second sphere intersects first sphere
     auto another_initializer = ::blocks::initialize_block<Sys>(
-        ::blocks::initialize<::elastica::tags::Position>([]() {
-          return ::elastica::Vec3{-0.4, 0.0, 0.0};
-        }),
+        ::blocks::initialize<::elastica::tags::Position>(
+            []() { return ::elastica::Vec3{-0.4, 0.0, 0.0}; }),
         ::blocks::initialize<::elastica::tags::Director>(
             []() { return ::elastica::identity3(); }),
         ::blocks::initialize<::elastica::tags::Radius>([]() { return 0.2; }),

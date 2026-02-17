@@ -6,8 +6,10 @@
 #include "Simulator/IO/H5/Utilities/Blaze/Subvector.hpp"
 #include "Utilities/CountingIterator.hpp"
 //
-#include <algorithm>
 #include <blaze/math/DynamicVector.h>
+//
+#include <algorithm>
+#include <ranges>
 
 namespace {
 
@@ -23,7 +25,8 @@ namespace {
     auto a = blaze::subvector(vector, slice_start, slice_length);
 
     // Pre check
-    CHECK(std::equal(a.begin(), a.end(), elastica::make_counting_iterator(7)));
+    CHECK(std::ranges::equal(
+        a, std::ranges::iota_view{7, 7 + static_cast<int>(slice_length)}));
 
     // Write and flush
     elastica::io::write_data(group, a, "data");
@@ -31,19 +34,22 @@ namespace {
 
     // Clobber data
     std::iota(vector.begin(), vector.end(), -200);
-    CHECK(
-        std::equal(a.begin(), a.end(), elastica::make_counting_iterator(-195)));
+    CHECK(std::ranges::equal(
+        a,
+        std::ranges::iota_view{-195, -195 + static_cast<int>(slice_length)}));
 
     // Read data back
     elastica::io::read_data(group, a, "data");
 
     // Post check
-    CHECK(std::equal(a.begin(), a.end(), elastica::make_counting_iterator(7)));
+    CHECK(std::ranges::equal(
+        a, std::ranges::iota_view{7, 7 + static_cast<int>(slice_length)}));
     CHECK(std::equal(vector.begin(), vector.begin() + slice_start,
-                     elastica::make_counting_iterator(-200)));
-    CHECK(std::equal(vector.begin() + slice_start + slice_length, vector.end(),
-                     elastica::make_counting_iterator(
-                         -200 + int(slice_start + slice_length))));
+                     std::ranges::iota_view{-200}.begin()));
+    CHECK(std::equal(
+        vector.begin() + slice_start + slice_length, vector.end(),
+        std::ranges::iota_view{-200 + int(slice_start + slice_length)}
+            .begin()));
   }
 
 }  // namespace
