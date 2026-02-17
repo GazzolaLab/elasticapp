@@ -98,7 +98,7 @@ namespace blocks {
     using VariableMap = VariableMapping<Variables>;
     ////////////////////////////// end conformance /////////////////////////////
 
-    Block() : variables_(){};
+    Block() : variables_() {};
     ~Block() = default;
   };
 
@@ -289,7 +289,7 @@ namespace blocks {
 
     ///////////////////////////// end conformance //////////////////////////////
 
-    Block() : variables_(){};
+    Block() : variables_() {};
     ~Block() = default;
   };
 
@@ -529,8 +529,7 @@ namespace {
       check_subview_from_view(subview);
       check_subview_from_view(std::as_const(subview));
 
-      auto another_subview =
-          blocks::slice(std::as_const(block_view), 0UL, 1UL);
+      auto another_subview = blocks::slice(std::as_const(block_view), 0UL, 1UL);
       check_subview_from_constview(another_subview);
       check_subview_from_constview(std::as_const(another_subview));
 
@@ -609,7 +608,7 @@ namespace {
             std::vector<int>{0, 1, 2});
 
       // View using the operator[]
-      auto another_block_view = block[{1UL, 3UL}];  // block[1, 2]
+      auto another_block_view = block[std::make_pair(1UL, 3UL)];  // block[1, 2]
       // assign to a view
       (blocks::get<tags::ExampleAcceleration>(another_block_view).at(0).get() =
            3);
