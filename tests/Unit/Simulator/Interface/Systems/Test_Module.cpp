@@ -450,7 +450,7 @@ namespace unique {
           check_view(bref_sl1);
         }
         {
-          auto bref_sl1 = bref[{1, 4}];  // 1, 2, 3
+          auto bref_sl1 = bref[std::make_pair(1, 4)];  // 1, 2, 3
           check_view(bref_sl1);
         }
         {
