@@ -68,7 +68,7 @@ namespace elastica {
         template <typename MassType, typename DimensionType,
                   typename PositionType>
         static inline decltype(auto) compute_position_center_of_mass(
-            MassType const& mass_batch, DimensionType const& dimension_batch,
+            MassType const& mass_batch, DimensionType const& /*dimension_batch*/,
             PositionType const& position_batch) {
           // TODO: Check math, and move blaze operation into trait
           auto mass_times_position_batch =
