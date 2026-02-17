@@ -3,7 +3,7 @@
 log_info("Finding HighFive")
 
 include(SetupHDF5)
-# find_package(HighFive)
+find_package(HighFive)
 
 if (HighFive_FOUND)
  log_debug("HighFive include: ${HIGHFIVE_INCLUDE_DIRS}")
