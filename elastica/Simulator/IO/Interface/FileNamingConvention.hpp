@@ -18,6 +18,7 @@
 //******************************************************************************
 #include "Simulator/IO/Interface/Types.hpp"
 //
+#include <cstdint>
 #include <cstddef>
 #include <string>
 
