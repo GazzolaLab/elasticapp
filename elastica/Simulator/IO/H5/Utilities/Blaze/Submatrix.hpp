@@ -41,8 +41,8 @@ namespace HighFive {
       using hdf5_type = base_type;
 
       static constexpr size_t ndim = 2;
-      static constexpr size_t recursive_ndim =
-          ndim + inspector<value_type>::recursive_ndim;
+      static constexpr size_t min_ndim = ndim + inspector<value_type>::min_ndim;
+      static constexpr size_t max_ndim = ndim + inspector<value_type>::max_ndim;
       // We force non-trivially copyable since a submatrix may not have
       // contiguous elements which can be copied into a buffer of data
       static constexpr bool is_trivially_copyable = false;
@@ -56,6 +56,13 @@ namespace HighFive {
       template <typename T>
       static auto get_size(T&& val) -> std::size_t {
         return column_major ? val.columns() : val.rows();
+      }
+
+      static size_t getRank(const type& val) {
+        if (get_size(val))
+          return ndim + inspector<value_type>::getRank(val(0, 0));
+        else
+          return min_ndim;
       }
 
       static std::vector<size_t> getDimensions(const type& val) {
@@ -99,7 +106,7 @@ namespace HighFive {
         return inspector<value_type>::data(*(val.data()));
       }
 
-      static void serialize(const type& val, hdf5_type* m) {
+      static void serialize(const type& val, const std::vector<size_t>& /* dims*/, hdf5_type* m) {
         // We know that elements of major type are contiguous, so here we
         // serialize the data row by row.
         const auto stride = get_stride(val);

@@ -40,10 +40,17 @@ namespace HighFive {
       using hdf5_type = base_type;
 
       static constexpr size_t ndim = 1;
-      static constexpr size_t recursive_ndim =
-          ndim + inspector<value_type>::recursive_ndim;
+      static constexpr size_t min_ndim = ndim + inspector<value_type>::min_ndim;
+      static constexpr size_t max_ndim = ndim + inspector<value_type>::max_ndim;
       static constexpr bool is_trivially_copyable =
           std::is_trivially_copyable<value_type>::value;
+
+      static size_t getRank(const type& val) {
+        if (val.size())
+          return ndim + inspector<value_type>::getRank(val[0]);
+        else
+          return min_ndim;
+      }
 
       static std::vector<size_t> getDimensions(const type& val) {
         std::vector<size_t> sizes{static_cast<size_t>(val.size())};
@@ -80,7 +87,7 @@ namespace HighFive {
         return inspector<value_type>::data(val[0]);
       }
 
-      static void serialize(const type& val, hdf5_type* m) {
+      static void serialize(const type& val, const std::vector<size_t>& /* dims*/, hdf5_type* m) {
         std::copy(val.cbegin(), val.cend(), m);
       }
 
