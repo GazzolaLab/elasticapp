@@ -266,8 +266,7 @@ namespace elastica {
       });
       */
       return std::apply(
-          [callable = std::move(callable)](auto const&... substep) noexcept(
-              noexcept(EXPAND_PACK_LEFT_TO_RIGHT(callable(substep)))) {
+          [callable = std::move(callable)](auto const&... substep) {
             EXPAND_PACK_LEFT_TO_RIGHT(callable(substep));
             return callable;
           },
