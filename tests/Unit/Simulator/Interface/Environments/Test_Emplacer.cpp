@@ -20,6 +20,8 @@
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Size.hpp"
 #include "Utilities/TMPL.hpp"
+//
+#include <ranges>
 
 /*
  * This is an integrated test masquerading as a unit test
@@ -586,32 +588,25 @@ namespace {
       // this will result in 2 blocks with the Restrictionpolcy we have in place
       const std::size_t n_elements = 24UL;
 
-      std::for_each(
-          elastica::make_counting_iterator(0UL),
-          elastica::make_counting_iterator(n_elements), [&](std::size_t) {
+      std::ranges::for_each(
+          std::ranges::iota_view{0UL, n_elements}, [&](std::size_t) {
             auto initializer = ::blocks::initialize_block<Plugin>(
-                ::blocks::initialize<::elastica::tags::Position>([]() {
-                  return ::elastica::Vec3{1., 0., 0.};
-                }),
+                ::blocks::initialize<::elastica::tags::Position>(
+                    []() { return ::elastica::Vec3{1., 0., 0.}; }),
                 ::blocks::initialize<::elastica::tags::Director>(
                     []() -> ::elastica::Rot3 {
                       return 2.0 * ::elastica::identity3();
                     }),
                 ::blocks::initialize<::elastica::tags::Radius>(
                     []() { return 0.3; }),
-                ::blocks::initialize<::elastica::tags::Velocity>([]() {
-                  return ::elastica::Vec3{1., 0., 0.};
-                }),
-                ::blocks::initialize<::elastica::tags::AngularVelocity>([]() {
-                  return ::elastica::Vec3{1., 0., 0.};
-                }),
-                ::blocks::initialize<::elastica::tags::Acceleration>([]() {
-                  return ::elastica::Vec3{1., 0., 0.};
-                }),
+                ::blocks::initialize<::elastica::tags::Velocity>(
+                    []() { return ::elastica::Vec3{1., 0., 0.}; }),
+                ::blocks::initialize<::elastica::tags::AngularVelocity>(
+                    []() { return ::elastica::Vec3{1., 0., 0.}; }),
+                ::blocks::initialize<::elastica::tags::Acceleration>(
+                    []() { return ::elastica::Vec3{1., 0., 0.}; }),
                 ::blocks::initialize<::elastica::tags::AngularAcceleration>(
-                    []() {
-                      return ::elastica::Vec3{1., 0., 0.};
-                    }),
+                    []() { return ::elastica::Vec3{1., 0., 0.}; }),
                 ::blocks::initialize<::elastica::tags::Material>(
                     []() { return ::elastica::fir; }));
 

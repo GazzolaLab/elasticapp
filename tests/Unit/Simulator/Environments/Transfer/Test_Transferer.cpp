@@ -18,9 +18,11 @@
 //
 #include "Simulator/Environments/Transfer/Transferer.hpp"
 #include "Utilities/CountingIterator.hpp"
-#include "Utilities/Overloader.hpp"
 #include "Utilities/NoSuchType.hpp"
+#include "Utilities/Overloader.hpp"
 #include "Utilities/TMPL.hpp"
+//
+#include <ranges>
 
 // Type customization to test transfer mechanism does no-op for NoSuchType.
 namespace elastica {
@@ -222,33 +224,25 @@ namespace {
       // this will result in 2 blocks with the Restrictionpolcy we have in
       // place
 
-      std::for_each(
-          elastica::make_counting_iterator(0UL),
-          elastica::make_counting_iterator(n_elements_per_slice),
-          [&](std::size_t) {
+      std::ranges::for_each(
+          std::ranges::iota_view{0UL, n_elements_per_slice}, [&](std::size_t) {
             auto initializer = ::blocks::initialize_block<Plugin>(
-                ::blocks::initialize<::elastica::tags::Position>([]() {
-                  return ::elastica::Vec3{1., 0., 0.};
-                }),
+                ::blocks::initialize<::elastica::tags::Position>(
+                    []() { return ::elastica::Vec3{1., 0., 0.}; }),
                 ::blocks::initialize<::elastica::tags::Director>(
                     []() -> ::elastica::Rot3 {
                       return 2.0 * ::elastica::identity3();
                     }),
                 ::blocks::initialize<::elastica::tags::Radius>(
                     []() { return 0.3; }),
-                ::blocks::initialize<::elastica::tags::Velocity>([]() {
-                  return ::elastica::Vec3{1., 0., 0.};
-                }),
-                ::blocks::initialize<::elastica::tags::AngularVelocity>([]() {
-                  return ::elastica::Vec3{1., 0., 0.};
-                }),
-                ::blocks::initialize<::elastica::tags::Acceleration>([]() {
-                  return ::elastica::Vec3{1., 0., 0.};
-                }),
+                ::blocks::initialize<::elastica::tags::Velocity>(
+                    []() { return ::elastica::Vec3{1., 0., 0.}; }),
+                ::blocks::initialize<::elastica::tags::AngularVelocity>(
+                    []() { return ::elastica::Vec3{1., 0., 0.}; }),
+                ::blocks::initialize<::elastica::tags::Acceleration>(
+                    []() { return ::elastica::Vec3{1., 0., 0.}; }),
                 ::blocks::initialize<::elastica::tags::AngularAcceleration>(
-                    []() {
-                      return ::elastica::Vec3{1., 0., 0.};
-                    }),
+                    []() { return ::elastica::Vec3{1., 0., 0.}; }),
                 ::blocks::initialize<::elastica::tags::Material>(
                     []() { return ::elastica::fir; }));
 
@@ -328,13 +322,12 @@ namespace {
         CHECK(pos == expected);
       };
 
-      std::for_each(elastica::make_counting_iterator(0UL),
-                    elastica::make_counting_iterator(n_elements_per_slice),
-                    [&, check_capsule_position](std::size_t index) {
-                      // use index to check position
-                      check_capsule_position(index,
-                                             crp.at(index).get_position());
-                    });
+      std::ranges::for_each(std::ranges::iota_view(0UL, n_elements_per_slice),
+                            [&, check_capsule_position](std::size_t index) {
+                              // use index to check position
+                              check_capsule_position(
+                                  index, crp.at(index).get_position());
+                            });
     }
 
     {  // post to transfer

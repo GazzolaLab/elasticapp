@@ -2,6 +2,7 @@
 // Created by Tejaswin Parthasarathy on 4/25/22.
 //
 #include <algorithm>
+#include <ranges>
 
 #include "Framework/TestingFramework.hpp"
 #include "Systems/Customization/RigidBody/Sphere.hpp"
@@ -33,8 +34,8 @@ namespace {
           ::elastica::collision::SpherePrimitive>,
       "Meta-failure");
   static_assert(std::is_same_v<::elastica::collision::tt::PrimitiveTrait_t<
-                                     detail::SphereBlockConstSlice>,
-                                 ::elastica::collision::SpherePrimitive>,
+                                   detail::SphereBlockConstSlice>,
+                               ::elastica::collision::SpherePrimitive>,
                 "Meta-failure");
 
   ELASTICA_TEST_CASE("Unit.Systems.Customization.Sphere.emplacement",
@@ -51,40 +52,33 @@ namespace {
     // random values
     Primitives primitives{};
 
-    std::for_each(
-        elastica::make_counting_iterator(0UL),
-        elastica::make_counting_iterator(n_slices), [&](std::size_t) {
+    std::ranges::for_each(
+        std::ranges::iota_view{0UL, n_slices}, [&](std::size_t) {
           auto initializer = ::blocks::initialize_block<Plugin>(
-              ::blocks::initialize<::elastica::tags::Position>([]() {
-                return ::elastica::Vec3{1., 0., 0.};
-              }),
+              ::blocks::initialize<::elastica::tags::Position>(
+                  []() { return ::elastica::Vec3{1., 0., 0.}; }),
               ::blocks::initialize<::elastica::tags::Director>(
                   []() -> ::elastica::Rot3 {
                     return 2.0 * ::elastica::identity3();
                   }),
               ::blocks::initialize<::elastica::tags::Radius>(
                   []() { return 0.3; }),
-              ::blocks::initialize<::elastica::tags::Velocity>([]() {
-                return ::elastica::Vec3{1., 0., 0.};
-              }),
-              ::blocks::initialize<::elastica::tags::AngularVelocity>([]() {
-                return ::elastica::Vec3{1., 0., 0.};
-              }),
-              ::blocks::initialize<::elastica::tags::Acceleration>([]() {
-                return ::elastica::Vec3{1., 0., 0.};
-              }),
-              ::blocks::initialize<::elastica::tags::AngularAcceleration>([]() {
-                return ::elastica::Vec3{1., 0., 0.};
-              }),
+              ::blocks::initialize<::elastica::tags::Velocity>(
+                  []() { return ::elastica::Vec3{1., 0., 0.}; }),
+              ::blocks::initialize<::elastica::tags::AngularVelocity>(
+                  []() { return ::elastica::Vec3{1., 0., 0.}; }),
+              ::blocks::initialize<::elastica::tags::Acceleration>(
+                  []() { return ::elastica::Vec3{1., 0., 0.}; }),
+              ::blocks::initialize<::elastica::tags::AngularAcceleration>(
+                  []() { return ::elastica::Vec3{1., 0., 0.}; }),
               ::blocks::initialize<::elastica::tags::Material>(
                   []() { return ::elastica::copper; }));
 
           model.emplace(std::move(initializer));
         });
 
-    std::for_each(
-        elastica::make_counting_iterator(0UL),
-        elastica::make_counting_iterator(n_slices), [&](std::size_t i) {
+    std::ranges::for_each(
+        std::ranges::iota_view{0UL, n_slices}, [&](std::size_t i) {
           auto slice = ::blocks::slice(std::as_const(model), i);
           primitives.emplace_back(i, 0UL, true, slice.get_material(0UL));
         });
@@ -109,50 +103,45 @@ namespace {
     // random values
     Primitives primitives{};
 
-    std::for_each(elastica::make_counting_iterator(0UL),
-                  elastica::make_counting_iterator(n_slices),
-                  [&](std::size_t i) {
-                    primitives.emplace_back(i, 0UL, true, ::elastica::copper);
-                  });
+    std::ranges::for_each(
+        std::ranges::iota_view{0UL, n_slices}, [&](std::size_t i) {
+          primitives.emplace_back(i, 0UL, true, ::elastica::copper);
+        });
 
-    std::for_each(
-        elastica::make_counting_iterator(0UL),
-        elastica::make_counting_iterator(n_slices), [&](std::size_t) {
+    std::ranges::for_each(
+        std::ranges::iota_view{0UL, n_slices}, [&](std::size_t) {
           auto initializer = ::blocks::initialize_block<Plugin>(
-              ::blocks::initialize<::elastica::tags::Position>([]() {
-                return ::elastica::Vec3{1., 0., 0.};
-              }),
+              ::blocks::initialize<::elastica::tags::Position>(
+                  []() { return ::elastica::Vec3{1., 0., 0.}; }),
               ::blocks::initialize<::elastica::tags::Director>(
                   []() -> ::elastica::Rot3 {
                     return 2.0 * ::elastica::identity3();
                   }),
               ::blocks::initialize<::elastica::tags::Radius>(
                   []() { return 0.3; }),
-              ::blocks::initialize<::elastica::tags::Velocity>([]() {
-                return ::elastica::Vec3{1., 0., 0.};
-              }),
-              ::blocks::initialize<::elastica::tags::AngularVelocity>([]() {
-                return ::elastica::Vec3{1., 0., 0.};
-              }),
-              ::blocks::initialize<::elastica::tags::Acceleration>([]() {
-                return ::elastica::Vec3{1., 0., 0.};
-              }),
-              ::blocks::initialize<::elastica::tags::AngularAcceleration>([]() {
-                return ::elastica::Vec3{1., 0., 0.};
-              }),
+              ::blocks::initialize<::elastica::tags::Velocity>(
+                  []() { return ::elastica::Vec3{1., 0., 0.}; }),
+              ::blocks::initialize<::elastica::tags::AngularVelocity>(
+                  []() { return ::elastica::Vec3{1., 0., 0.}; }),
+              ::blocks::initialize<::elastica::tags::Acceleration>(
+                  []() { return ::elastica::Vec3{1., 0., 0.}; }),
+              ::blocks::initialize<::elastica::tags::AngularAcceleration>(
+                  []() { return ::elastica::Vec3{1., 0., 0.}; }),
               ::blocks::initialize<::elastica::tags::Material>(
                   []() { return ::elastica::iron; }));
 
           model.emplace(std::move(initializer));
         });
 
-    auto pre_check = [](Primitive const& p) {
-      CHECK_FALSE(p.get_radius() == approx(0.3));
-      CHECK_FALSE(p.get_position() == ::elastica::Vec3{1., 0., 0.});
-      CHECK_FALSE(p.get_rotation_matrix() == (2.0 * ::elastica::identity3()));
-      CHECK_FALSE(p.get_velocity() == ::elastica::Vec3{1., 0., 0.});
-      CHECK_FALSE(p.get_angular_velocity() == ::elastica::Vec3{1., 0., 0.});
-    };
+    // auto pre_check = [](Primitive const& p) {
+    //   CHECK_FALSE(p.get_radius() == approx(0.3));
+    //   CHECK_FALSE(p.get_position() == ::elastica::Vec3{1., 0., 0.});
+    //   CHECK_FALSE(p.get_rotation_matrix() == (2.0 * ::elastica::identity3()));
+    //   CHECK_FALSE(p.get_velocity() == ::elastica::Vec3{1., 0., 0.});
+    //   CHECK_FALSE(p.get_angular_velocity() == ::elastica::Vec3{1., 0., 0.});
+    // };
+    // are NaNs and usually throw
+    // std::for_each(std::begin(primitives), std::end(primitives), pre_check);
 
     auto post_check = [](Primitive const& p) {
       CHECK(p.get_radius() == approx(0.3));
@@ -162,12 +151,8 @@ namespace {
       CHECK(p.get_angular_velocity() == ::elastica::Vec3{1., 0., 0.});
     };
 
-    // are NaNs and usually throw
-    // std::for_each(std::begin(primitives), std::end(primitives), pre_check);
-
-    std::for_each(
-        elastica::make_counting_iterator(0UL),
-        elastica::make_counting_iterator(n_slices),
+    std::ranges::for_each(
+        std::ranges::iota_view{0UL, n_slices},
         [&, beg = std::begin(primitives)](std::size_t i) {
           auto slice = ::blocks::slice(std::as_const(model), i);
           auto begit =
@@ -181,13 +166,12 @@ namespace {
               begit, endit);
         });
 
-    std::for_each(std::begin(primitives), std::end(primitives), post_check);
+    std::ranges::for_each(primitives, post_check);
 
-    std::for_each(std::begin(primitives), std::end(primitives),
-                  [](Primitive& p) {
-                    p.add_force_at_position(::elastica::Vec3{1.0, 2.0, 3.0},
-                                            ::elastica::Vec3{1.0, 2.0, 3.0});
-                  });
+    std::ranges::for_each(primitives, [](Primitive& p) {
+      p.add_force_at_position(::elastica::Vec3{1.0, 2.0, 3.0},
+                              ::elastica::Vec3{1.0, 2.0, 3.0});
+    });
 
     auto pre_transfer_check_block = [](Model& m) {
       CHECK(::blocks::get<::elastica::tags::ExternalLoads>(m) == 0.0);
@@ -200,9 +184,8 @@ namespace {
 
     pre_transfer_check_block(model);
 
-    std::for_each(
-        elastica::make_counting_iterator(0UL),
-        elastica::make_counting_iterator(n_slices),
+    std::ranges::for_each(
+        std::ranges::iota_view{0UL, n_slices},
         [&, beg = std::cbegin(primitives)](std::size_t i) {
           auto begit =
               beg + static_cast<typename decltype(beg)::difference_type>(i);

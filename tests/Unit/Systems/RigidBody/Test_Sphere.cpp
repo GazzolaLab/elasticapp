@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <ranges>
 
 #include "Framework/TestingFramework.hpp"
 #include "Systems/Sphere.hpp"
@@ -161,24 +162,19 @@ namespace {
       model.emplace(std::move(initializer));
 
       auto another_initializer = ::blocks::initialize_block<Plugin>(
-          ::blocks::initialize<::elastica::tags::Position>([]() {
-            return ::elastica::Vec3{1., 1., 1.};
-          }),
+          ::blocks::initialize<::elastica::tags::Position>(
+              []() { return ::elastica::Vec3{1., 1., 1.}; }),
           ::blocks::initialize<::elastica::tags::Director>(
               []() { return ::elastica::identity3(); }),
           ::blocks::initialize<::elastica::tags::Radius>([]() { return 2.0; }),
-          ::blocks::initialize<::elastica::tags::Velocity>([]() {
-            return ::elastica::Vec3{1., 1., 1.};
-          }),
-          ::blocks::initialize<::elastica::tags::AngularVelocity>([]() {
-            return ::elastica::Vec3{1., 1., 1.};
-          }),
-          ::blocks::initialize<::elastica::tags::Acceleration>([]() {
-            return ::elastica::Vec3{1., 1., 1.};
-          }),
-          ::blocks::initialize<::elastica::tags::AngularAcceleration>([]() {
-            return ::elastica::Vec3{1., 1., 1.};
-          }),
+          ::blocks::initialize<::elastica::tags::Velocity>(
+              []() { return ::elastica::Vec3{1., 1., 1.}; }),
+          ::blocks::initialize<::elastica::tags::AngularVelocity>(
+              []() { return ::elastica::Vec3{1., 1., 1.}; }),
+          ::blocks::initialize<::elastica::tags::Acceleration>(
+              []() { return ::elastica::Vec3{1., 1., 1.}; }),
+          ::blocks::initialize<::elastica::tags::AngularAcceleration>(
+              []() { return ::elastica::Vec3{1., 1., 1.}; }),
           ::blocks::initialize<::elastica::tags::Material>(
               []() { return ::elastica::copper; }));
 
@@ -498,32 +494,25 @@ namespace {
       Model model{};
       const std::size_t n_slices = 20UL;
 
-      std::for_each(
-          elastica::make_counting_iterator(0UL),
-          elastica::make_counting_iterator(n_slices), [&](std::size_t) {
+      std::ranges::for_each(
+          std::ranges::iota_view{0UL, n_slices}, [&](std::size_t) {
             auto initializer = ::blocks::initialize_block<Plugin>(
-                ::blocks::initialize<::elastica::tags::Position>([]() {
-                  return ::elastica::Vec3{1., 0., 0.};
-                }),
+                ::blocks::initialize<::elastica::tags::Position>(
+                    []() { return ::elastica::Vec3{1., 0., 0.}; }),
                 ::blocks::initialize<::elastica::tags::Director>(
                     []() -> ::elastica::Rot3 {
                       return 2.0 * ::elastica::identity3();
                     }),
                 ::blocks::initialize<::elastica::tags::Radius>(
                     []() { return 0.3; }),
-                ::blocks::initialize<::elastica::tags::Velocity>([]() {
-                  return ::elastica::Vec3{1., 0., 0.};
-                }),
-                ::blocks::initialize<::elastica::tags::AngularVelocity>([]() {
-                  return ::elastica::Vec3{1., 0., 0.};
-                }),
-                ::blocks::initialize<::elastica::tags::Acceleration>([]() {
-                  return ::elastica::Vec3{1., 0., 0.};
-                }),
+                ::blocks::initialize<::elastica::tags::Velocity>(
+                    []() { return ::elastica::Vec3{1., 0., 0.}; }),
+                ::blocks::initialize<::elastica::tags::AngularVelocity>(
+                    []() { return ::elastica::Vec3{1., 0., 0.}; }),
+                ::blocks::initialize<::elastica::tags::Acceleration>(
+                    []() { return ::elastica::Vec3{1., 0., 0.}; }),
                 ::blocks::initialize<::elastica::tags::AngularAcceleration>(
-                    []() {
-                      return ::elastica::Vec3{1., 0., 0.};
-                    }),
+                    []() { return ::elastica::Vec3{1., 0., 0.}; }),
                 ::blocks::initialize<::elastica::tags::Material>(
                     []() { return ::elastica::copper; }));
 
@@ -531,24 +520,22 @@ namespace {
           });
 
       {
-        std::for_each(elastica::make_counting_iterator(0UL),
-                      elastica::make_counting_iterator(n_slices),
-                      [&](std::size_t i) {
-                        CHECK(model.get_material(i) == ::elastica::copper);
+        std::ranges::for_each(
+            std::ranges::iota_view{0UL, n_slices}, [&](std::size_t i) {
+              CHECK(model.get_material(i) == ::elastica::copper);
 
-                        auto slice = ::blocks::slice(std::as_const(model), i);
-                        CHECK(slice.get_material(0UL) == ::elastica::copper);
-                      });
+              auto slice = ::blocks::slice(std::as_const(model), i);
+              CHECK(slice.get_material(0UL) == ::elastica::copper);
+            });
       }
 
       {
-        std::for_each(elastica::make_counting_iterator(0UL),
-                      elastica::make_counting_iterator(n_slices),
-                      [&](std::size_t i) {
-                        CHECK(model.get_radius(i) == approx(0.3));
-                        auto slice = ::blocks::slice(std::as_const(model), i);
-                        CHECK(slice.get_radius(0UL) == approx(0.3));
-                      });
+        std::ranges::for_each(
+            std::ranges::iota_view{0UL, n_slices}, [&](std::size_t i) {
+              CHECK(model.get_radius(i) == approx(0.3));
+              auto slice = ::blocks::slice(std::as_const(model), i);
+              CHECK(slice.get_radius(0UL) == approx(0.3));
+            });
       }
     }
   }

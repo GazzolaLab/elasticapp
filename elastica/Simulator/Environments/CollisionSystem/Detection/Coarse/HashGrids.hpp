@@ -69,6 +69,7 @@
 #include <list>
 #include <mutex>
 #include <numeric>  // accumulate
+#include <ranges>   // views
 #include <tuple>
 #include <type_traits>
 #include <unordered_map>
@@ -775,7 +776,7 @@ namespace elastica {
           //**Constructor*******************************************************
           /*!\name Constructor */
           //@{
-          HashGrids() : HashGrids(nullptr){};
+          HashGrids() : HashGrids(nullptr) {};
           explicit HashGrids(DomainType const* domain);
           HashGrids(DomainType const* domain, Parameters parameters);
           //@}
@@ -1186,9 +1187,8 @@ namespace elastica {
           tmpl::for_each<AdmissiblePrimitives>([this](auto p) {
             using Primitive = tmpl::type_from<decltype(p)>;
 
-            std::for_each(
-                elastica::make_counting_iterator(0UL),
-                elastica::make_counting_iterator(xyzCellCount_),
+            std::ranges::for_each(
+                std::ranges::iota_view{0UL, xyzCellCount_},
                 [=](auto const expected_hash) {
                   Cell* cell = cell_ + expected_hash;
                   auto* primitives = cell->template get_handle_to<Primitive>();
@@ -1741,7 +1741,7 @@ namespace elastica {
           std::apply(
               [](auto&... prim) {
                 // delete a bunch of pointers we allpcated
-                EXPAND_PACK_LEFT_TO_RIGHT(delete[](prim));
+                EXPAND_PACK_LEFT_TO_RIGHT(delete[] (prim));
               },
               primitives);
         }
@@ -2101,10 +2101,10 @@ namespace elastica {
                                                            fine_grid_primitive,
                                                            *second_primitive);
                           }  // second primitive
-                        };   // null check
-                      });    // type of second primitive
-                }            // neighbor
-              });            // first primitive
+                        };  // null check
+                      });  // type of second primitive
+                }  // neighbor
+              });  // first primitive
         }
         //**********************************************************************
 

@@ -6,8 +6,10 @@
 #include "Simulator/IO/H5/Utilities/Blaze/Subtensor.hpp"
 #include "Utilities/CountingIterator.hpp"
 //
-#include <algorithm>
 #include <blaze_tensor/math/DynamicTensor.h>
+//
+#include <algorithm>
+#include <ranges>
 
 namespace {
 
@@ -35,10 +37,10 @@ namespace {
         for (auto i = 0UL; i < 2; ++i) {
           const int val = 2 + i * k + slice_start;
           CAPTURE(i, k);
-          CHECK(std::vector<int>(a.cbegin(i, k), a.cend(i, k)) ==
-                std::vector<int>(
-                    elastica::make_counting_iterator(val),
-                    elastica::make_counting_iterator(val + int(slice_length))));
+          CHECK(std::ranges::equal(
+              std::ranges::subrange(a.cbegin(i, k), a.cend(i, k)),
+              std::ranges::iota_view{val,
+                                     val + static_cast<int>(slice_length)}));
         }
     };
     run_check("pre");
@@ -57,10 +59,10 @@ namespace {
     for (auto k = 0UL; k < 2; ++k)
       for (auto i = 0UL; i < 2; ++i) {
         const int val = (i + 1) * (k + 1) + slice_start;
-        CHECK(std::vector<int>(a.cbegin(i, k), a.cend(i, k)) ==
-              std::vector<int>(elastica::make_counting_iterator(-200 + val),
-                               elastica::make_counting_iterator(
-                                   -200 + val + int(slice_length))));
+        CHECK(std::ranges::equal(
+            std::ranges::subrange(a.cbegin(i, k), a.cend(i, k)),
+            std::ranges::iota_view{
+                -200 + val, -200 + val + static_cast<int>(slice_length)}));
       }
 
     // Read data back
@@ -70,9 +72,9 @@ namespace {
     run_check("post");
 
     // last row of tensor should be unmodified.
-    CHECK(std::vector<int>(tensor.cbegin(2UL, 2UL), tensor.cend(2UL, 2UL)) ==
-          std::vector<int>(elastica::make_counting_iterator(-191),
-                           elastica::make_counting_iterator(-191 + int(cols))));
+    CHECK(std::ranges::equal(
+        std::ranges::subrange(tensor.cbegin(2UL, 2UL), tensor.cend(2UL, 2UL)),
+        std::ranges::iota_view{-191, -191 + static_cast<int>(cols)}));
   }
 
 }  // namespace
