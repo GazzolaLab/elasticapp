@@ -18,7 +18,7 @@ namespace elastica {
       template <typename... Args>
       static inline auto apply(Args&&... args) -> void {
         elastica::two_point_difference_kernel(std::forward<Args>(args)...);
-      };
+      }
     };
 
   }  // namespace cosserat_rod

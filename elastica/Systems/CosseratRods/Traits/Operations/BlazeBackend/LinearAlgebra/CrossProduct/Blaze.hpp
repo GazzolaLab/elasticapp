@@ -19,7 +19,7 @@ namespace elastica {
       static inline auto apply(Args&&... args) noexcept -> void {
         using ::elastica::batch_cross;
         elastica::batch_cross(std::forward<Args>(args)...);
-      };
+      }
     };
 
   }  // namespace cosserat_rod

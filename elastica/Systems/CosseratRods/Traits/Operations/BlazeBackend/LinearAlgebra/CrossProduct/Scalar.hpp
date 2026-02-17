@@ -26,7 +26,7 @@ namespace elastica {
           COSSERATROD_LIB_NOEXCEPT->void {
         lazy_vector_vector_kernel_scalar(VectorCrossProductOperation{},
                                          std::forward<Args>(args)...);
-      };
+      }
     };
 
   }  // namespace cosserat_rod

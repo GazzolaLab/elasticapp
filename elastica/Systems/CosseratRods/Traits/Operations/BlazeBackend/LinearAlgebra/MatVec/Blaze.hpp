@@ -18,7 +18,7 @@ namespace elastica {
       template <typename... Args>  // blaze Matrix expression type
       static inline auto apply(Args&&... args) noexcept -> void {
         elastica::batch_matvec(std::forward<Args>(args)...);
-      };
+      }
     };
 
   }  // namespace cosserat_rod

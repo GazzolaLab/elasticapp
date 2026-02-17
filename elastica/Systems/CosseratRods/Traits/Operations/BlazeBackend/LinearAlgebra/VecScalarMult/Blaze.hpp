@@ -35,7 +35,7 @@ namespace elastica {
             blaze::row(numerator, 1UL) * tp_denominator;
         blaze::row(out_matrix, 2UL) =
             blaze::row(numerator, 2UL) * tp_denominator;
-      };
+      }
     };
 
   }  // namespace cosserat_rod
