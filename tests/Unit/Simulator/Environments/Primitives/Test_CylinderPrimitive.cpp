@@ -9,6 +9,7 @@
 #include "Simulator/Materials.hpp"
 #include "Utilities/Geometry/Angles.hpp"
 #include "Utilities/Math/Identity.hpp"
+#include "Utilities/Math/Normalize.hpp"
 #include "Utilities/Math/Vec3.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 //
@@ -122,20 +123,22 @@ namespace {
         CylinderPrimitive cylinder(0UL, 0UL, true, position, axis, radius,
                                    length, iron);
 
-        // TODO very weak fit, why?
+        auto normal{::elastica::normalize(Vec3{1.0, 0.4, -1.4})};
+        auto binormal{::elastica::normalize(Vec3{-0.6, 0.8, -0.2})};
+
         CHECK(cylinder.get_AABB() ==  //.contains
               (typename CylinderPrimitive::AABB(
-                  5.0 - (1.5 * 1.0 * coeff) - (4 * 1.0 * coeff) -
+                  5.0 - (1.5 * 1.0 * coeff) - 4 * (normal[0] - binormal[0]) -
                       contact_threshold,
-                  3.0 - (1.5 * 1.0 * coeff) - (4 * 1.0 * coeff) -
+                  3.0 - (1.5 * 1.0 * coeff) - 4 * (normal[1] + binormal[1]) -
                       contact_threshold,
-                  6.0 - (1.5 * 1.0 * coeff) - (4 * 1.0 * coeff) -
+                  6.0 - (1.5 * 1.0 * coeff) + 4 * (normal[2] + binormal[2]) -
                       contact_threshold,
-                  5.0 + (1.5 * 1.0 * coeff) + (4 * 1.0 * coeff) +
+                  5.0 + (1.5 * 1.0 * coeff) + 4 * (normal[0] - binormal[0]) +
                       contact_threshold,
-                  3.0 + (1.5 * 1.0 * coeff) + (4 * 1.0 * coeff) +
+                  3.0 + (1.5 * 1.0 * coeff) + 4 * (normal[1] + binormal[1]) +
                       contact_threshold,
-                  6.0 + (1.5 * 1.0 * coeff) + (4 * 1.0 * coeff) +
+                  6.0 + (1.5 * 1.0 * coeff) - 4 * (normal[2] + binormal[2]) +
                       contact_threshold)));
       }
     }
