@@ -99,7 +99,7 @@ namespace elastica {
     //**************************************************************************
     /*!\brief Gets the current time of the case-study simulation
      */
-    ::elastica::real_t current_time() const noexcept {
+    ::elastica::real_t current_time() const /*noexcept*/ {
       return static_cast<::elastica::real_t>(time_);
     }
     //**************************************************************************
@@ -107,7 +107,7 @@ namespace elastica {
     //**************************************************************************
     /*!\brief Gets the current time-step of the case-study simulation
      */
-    ::elastica::real_t current_dt() const noexcept {
+    ::elastica::real_t current_dt() const /*noexcept*/ {
       return static_cast<::elastica::real_t>(dt_);
     }
     //**************************************************************************
@@ -115,7 +115,7 @@ namespace elastica {
     //**************************************************************************
     /*!\brief Gets the current iteration of the case-study simulation
      */
-    std::size_t current_iteration() const noexcept {
+    std::size_t current_iteration() const /*noexcept*/ {
       return current_iter_.step();
     }
     //**************************************************************************
