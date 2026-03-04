@@ -1,4 +1,8 @@
 log_info("Finding CxxOpts")
+if (TARGET cxxopts::cxxopts)
+    log_info("Found existing cxxopts::cxxopts target, reusing it.")
+    return()
+endif ()
 
 # cxxopts seems to do a good job of exporting its target, hence I skip
 # creating a FindCxxOpts.cmake file
