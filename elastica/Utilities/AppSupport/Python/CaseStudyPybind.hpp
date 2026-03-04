@@ -125,7 +125,9 @@ namespace py_bindings {
         .def("current_iteration", &CaseStudy::current_iteration,
              "Gets the current iteration of the simulation")
         .def("reset", &CaseStudy::reset_case_study,
-             "Resets the current case study");
+             "Resets the current case study")
+        .def("set_current_time", &CaseStudy::set_current_time,
+             "Sets the case-study simulation time to a given value");
   }
   //****************************************************************************
 
