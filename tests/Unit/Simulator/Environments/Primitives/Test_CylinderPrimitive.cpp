@@ -123,8 +123,8 @@ namespace {
         CylinderPrimitive cylinder(0UL, 0UL, true, position, axis, radius,
                                    length, iron);
 
-        auto normal{::elastica::normalize(Vec3{1.0, 0.4, -1.4})};
-        auto binormal{::elastica::normalize(Vec3{-0.6, 0.8, -0.2})};
+        Vec3 normal{::elastica::normalize(Vec3{1.0, 0.4, -1.4})};
+        Vec3 binormal{::elastica::normalize(Vec3{-0.6, 0.8, -0.2})};
 
         CHECK(cylinder.get_AABB() ==  //.contains
               (typename CylinderPrimitive::AABB(
