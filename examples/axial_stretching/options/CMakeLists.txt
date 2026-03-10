@@ -12,7 +12,7 @@ target_link_libraries(axial_stretching_case_options
         CaseStudyOptionsParser
         # Needed for taking in the input file
         cxxopts::cxxopts
-        IO::YAML
+        yaml-cpp::yaml-cpp
         )
 ##
 
