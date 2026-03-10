@@ -22,7 +22,7 @@ add_custom_target(
         VERBATIM
 )
 
-if (YamlCpp_FOUND)
+if (yaml-cpp_FOUND)
     configure_file(
             "${CMAKE_CURRENT_SOURCE_DIR}/io_yaml.py"
             "${CMAKE_CURRENT_BINARY_DIR}/io_yaml.py"
