@@ -1,0 +1,17 @@
+{
+  "name": "blaze-tensor",
+  "version": "0.1.0",
+  "description": "3D Tensors for Blaze.",
+  "homepage": "https://github.com/STEllAR-GROUP/blaze_tensor/tree/master",
+  "license": "BSD-3-Clause",
+  "dependencies": [
+    {
+      "name": "blaze",
+      "default-features": false
+    },
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ]
+}
