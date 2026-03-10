@@ -1,0 +1,27 @@
+{
+    "dependencies": [
+        "cxxopts",
+        "yaml-cpp",
+        "brigand",
+        "catch2",
+        {
+            "name": "highfive",
+            "default-features": false
+        },
+        {
+            "name": "blaze",
+            "default-features": false
+        },
+        "blaze-tensor"
+    ],
+    "overrides": [
+        {
+            "name": "catch2",
+            "version": "2.13.8"
+        },
+        {
+            "name": "blaze-tensor",
+            "version": "0.1.0"
+        }
+    ]
+}
