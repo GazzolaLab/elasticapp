@@ -6,11 +6,16 @@
 
 log_info("Finding Catch")
 
-find_package(Catch 2.9.0 REQUIRED)
+find_package(Catch2 CONFIG REQUIRED)
 
-elastica_include_directories("${CATCH_INCLUDE_DIR}")
-log_debug("CATCH_INCLUDE_DIR: ${CATCH_INCLUDE_DIR}")
-log_debug("CATCH_VERSION: ${CATCH_VERSION}")
-
-file(APPEND "${CMAKE_BINARY_DIR}/BuildInformation.txt"
+if (Catch2_FOUND)
+    log_debug("Found Catch2: ${Catch2_VERSION}")
+    file(APPEND "${CMAKE_BINARY_DIR}/BuildInformation.txt"
         "Catch Version:  ${CATCH_VERSION}\n")
+
+    add_library(Catch INTERFACE IMPORTED)
+    target_link_libraries(Catch INTERFACE Catch2::Catch2 Catch2::Catch2WithMain)
+else ()
+    message(FATAL_ERROR "Catch2 not found")
+endif()
+

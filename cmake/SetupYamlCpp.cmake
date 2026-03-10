@@ -3,33 +3,24 @@
 
 log_info("Finding YamlCpp")
 
-find_package(YamlCpp REQUIRED)
+find_package(yaml-cpp CONFIG REQUIRED)
 
-log_debug("YamlCpp_LIBRARIES: ${YamlCpp_LIBRARIES}")
-log_debug("YamlCpp_INCLUDE_DIRS: ${YamlCpp_INCLUDE_DIRS}")
+if (yaml-cpp_FOUND)
+    log_debug("yaml-cpp version: ${yaml-cpp_VERSION}")
+    add_library(YamlCpp INTERFACE IMPORTED)
+    target_link_libraries(YamlCpp INTERFACE yaml-cpp::yaml-cpp)
+    add_interface_lib_headers(
+            TARGET YamlCpp
+            HEADERS
+            yaml-cpp/yaml.h
+    )
 
-add_library(YamlCpp INTERFACE IMPORTED)
-# Have to use `set_property` before CMake version 3.11. See:
-# https://gitlab.kitware.com/cmake/cmake/-/merge_requests/1264
-set_property(TARGET YamlCpp
-        APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${YamlCpp_INCLUDE_DIRS})
-set_property(TARGET YamlCpp
-        APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${YamlCpp_LIBRARIES})
-
-add_interface_lib_headers(
-        TARGET YamlCpp
-        HEADERS
-        yaml-cpp/yaml.h
+    set_property(
+            GLOBAL APPEND PROPERTY ELASTICA_THIRD_PARTY_LIBS
+            YamlCpp
 )
 
-set_property(
-        GLOBAL APPEND PROPERTY ELASTICA_THIRD_PARTY_LIBS
-        YamlCpp
-)
-
-add_library(_ElasticaUseYAMLCpp INTERFACE)
-
-if (YamlCpp_FOUND)
+    add_library(_ElasticaUseYAMLCpp INTERFACE)
     set_property(
             TARGET _ElasticaUseYAMLCpp
             APPEND PROPERTY
