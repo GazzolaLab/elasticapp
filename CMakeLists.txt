@@ -18,6 +18,11 @@ if (POLICY CMP0110)
 endif ()
 
 # ##############################################################################
+# VCPKG port overlay
+# ##############################################################################
+set(VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_SOURCE_DIR}/external" CACHE PATH "Vcpkg overlay ports")
+
+# ##############################################################################
 # Versioning
 # ##############################################################################
 file(READ ${CMAKE_CURRENT_LIST_DIR}/elastica/ModuleSettings/Version.hpp ELASTICA_VERSION_FILE)
