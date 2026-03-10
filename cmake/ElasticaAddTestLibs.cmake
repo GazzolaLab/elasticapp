@@ -96,6 +96,8 @@ function(add_test_library
             ${LINK_LIBS}
             ${PYTHON_LIBRARIES}
             ElasticaFlags
+            PUBLIC 
+            Catch
     )
 
     set_target_properties(
