@@ -17,6 +17,7 @@ add_library(${STRING_LIBRARY} ${STRING_LIBRARY_SOURCES})
 target_include_directories(${STRING_LIBRARY} PUBLIC
         ${PROJECT_SOURCE_DIR}/elastica
         )
+target_link_libraries(${STRING_LIBRARY} PUBLIC Catch)
 
 target_link_libraries(
         ${LIBRARY}
