@@ -3,18 +3,15 @@
 
 log_info("Finding Blaze Tensor")
 
-find_package(BlazeTensor 0.1 REQUIRED QUIET)
+find_path(BLAZE_TENSOR_INCLUDE_DIRS "blaze_tensor/Blaze.h")
 
-log_debug("BLAZE_TENSOR_INCLUDE_DIR: ${BLAZE_TENSOR_INCLUDE_DIR}")
-log_debug("BLAZE_TENSOR_VERSION: ${BLAZE_TENSOR_VERSION}")
+log_debug("BLAZE_TENSOR_INCLUDE_DIRS: ${BLAZE_TENSOR_INCLUDE_DIRS}")
 
 file(APPEND "${CMAKE_BINARY_DIR}/BuildInformation.txt"
         "BlazeTensor Version:  ${BLAZE_TENSOR_VERSION}\n")
 
-#elastica_include_directories("${BLAZE_INCLUDE_DIR}")
 add_library(BlazeTensor INTERFACE IMPORTED)
-set_property(TARGET BlazeTensor PROPERTY
-        INTERFACE_INCLUDE_DIRECTORIES ${BLAZE_TENSOR_INCLUDE_DIR})
+target_include_directories(BlazeTensor INTERFACE ${BLAZE_TENSOR_INCLUDE_DIRS})
 
 add_interface_lib_headers(
         TARGET BlazeTensor

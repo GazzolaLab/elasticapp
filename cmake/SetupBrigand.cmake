@@ -3,13 +3,12 @@
 
 log_info("Finding Brigand")
 
-find_package(Brigand REQUIRED)
+find_path(BRIGAND_INCLUDE_DIRS "brigand/brigand.hpp")
 
-log_debug("Brigand include: ${BRIGAND_INCLUDE_DIR}")
+log_debug("Brigand include: ${BRIGAND_INCLUDE_DIRS}")
 
 add_library(Brigand INTERFACE IMPORTED)
-set_property(TARGET Brigand PROPERTY
-        INTERFACE_INCLUDE_DIRECTORIES ${BRIGAND_INCLUDE_DIR})
+target_include_directories(Brigand INTERFACE ${BRIGAND_INCLUDE_DIRS})
 
 add_interface_lib_headers(
         TARGET Brigand

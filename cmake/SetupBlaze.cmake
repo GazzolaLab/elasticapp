@@ -5,18 +5,18 @@ option(USE_SLEEF "Use Sleef to add more vectorized instructions." OFF)
 
 log_info("Finding Blaze")
 
-find_package(Blaze 3.9 REQUIRED QUIET)
-
-log_debug("BLAZE_INCLUDE_DIR: ${BLAZE_INCLUDE_DIR}")
-log_debug("BLAZE_VERSION: ${BLAZE_VERSION}")
+find_package(Blaze CONFIG REQUIRED)
+if (Blaze_FOUND)
+    log_info("Found Blaze: ${Blaze_VERSION}")
+else ()
+    message(FATAL_ERROR "Blaze not found")
+endif()
 
 file(APPEND "${CMAKE_BINARY_DIR}/BuildInformation.txt"
-        "Blaze Version:  ${BLAZE_VERSION}\n")
+        "Blaze Version:  ${Blaze_VERSION}\n")
 
-#elastica_include_directories("${BLAZE_INCLUDE_DIR}")
 add_library(Blaze INTERFACE IMPORTED)
-set_property(TARGET Blaze PROPERTY
-        INTERFACE_INCLUDE_DIRECTORIES ${BLAZE_INCLUDE_DIR})
+target_link_libraries(Blaze INTERFACE blaze::blaze)
 
 set(_BLAZE_USE_SLEEF 0)
 
