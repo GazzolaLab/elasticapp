@@ -85,11 +85,9 @@ namespace py_bindings {
       // Define getters and setters for loc_indexer
       auto indexer = py::class_<Locator>(context, "VariableLocator");
 
-      indexer
-          .def(
-              "__str__", +[](Locator const&) { return "Variable indexer"; })
-          .def(
-              "__repr__", +[](Locator const&) { return "Variable indexer"; });
+      indexer.def(
+                 "__str__", +[](Locator const&) { return "Variable indexer"; })
+          .def("__repr__", +[](Locator const&) { return "Variable indexer"; });
 
       // first define variables as a read only property for named evaluation
       tmpl::for_each<VariablesToBeBound>([&indexer](auto v) {
@@ -117,9 +115,10 @@ the pandas module. Allowed tags are accessed from the context.
 
       // Loc indexer is bound to class as a loc[] method
       context.def_property_readonly(
-          "loc", [](type& self) { return Locator{self}; }, variable_loc_doc,
-          // Keep object alive while indexer exists
-          py::keep_alive<0, 1>());
+          "loc", py::cpp_function([](type& self) { return Locator{self}; },
+                                  variable_loc_doc,
+                                  // Keep object alive while indexer exists
+                                  py::keep_alive<0, 1>()));
     }
 
     template <typename ModelsBlock>
