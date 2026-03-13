@@ -3,6 +3,7 @@
         "cxxopts",
         "yaml-cpp",
         "brigand",
+        "tbb",
         "catch2",
         {
             "name": "highfive",
