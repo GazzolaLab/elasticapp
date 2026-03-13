@@ -2,24 +2,19 @@
 
 declare -A compilers
 
-# compilers[gcc10]="g++-10"
-compilers[gcc11]="g++-11"
-# compilers[gcc12]="g++-12"
-
-compilers[clang11]="clang++-11"
-# compilers[clang12]="clang++-12"
-# compilers[clang13]="clang++-13"
+# Usage: compilers[compiler_nickname]="/path/to/compiler"
+compilers[test]="/usr/bin/clang++"
 
 declare -A cmake_build_types
+
 cmake_build_types[debug]="Debug"
 # cmake_build_types[release]="Release"
 # cmake_build_types[relwithdebuginfo]="RelWithDebInfo"
 
 declare -A smp_options
-# smp_options[smp_enabled]="ON"
-smp_options[smp_disabled]="OFF"
+smp_options[smp_enabled]="ON"
+# smp_options[smp_disabled]="OFF"
 
-# CMAKE="${HOME}/Desktop/third_party/vcpkg/downloads/tools/cmake-3.21.1-linux/cmake-3.21.1-linux-x86_64/bin/cmake"
 CMAKE="cmake"
 
 for compiler in "${!compilers[@]}"; do
@@ -32,10 +27,8 @@ for compiler in "${!compilers[@]}"; do
 			SMP_OPTION=${smp_options[$smp_option]}
 			${CMAKE} .. -DCMAKE_CXX_COMPILER="${CXX}" \
 				-DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
-				-DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-				-GNinja \
 				-DBUILD_TESTING=ON \
-				-DELASTICA_BUILD_DOCUMENTATION=ON \
+				-DELASTICA_BUILD_DOCUMENTATION=OFF \
 				-DELASTICA_BUILD_EXAMPLES=ON \
 				-DELASTICA_BUILD_BENCHMARKS=ON \
 				-DELASTICA_BUILD_PYTHON_BINDINGS=ON \
@@ -48,7 +41,8 @@ for compiler in "${!compilers[@]}"; do
 				-DASAN=OFF \
 				-DUBSAN_UNDEFINED=OFF \
 				-DUBSAN_INTEGER=OFF \
-				-DPY_DEV_MODE=OFF
+				-DPY_DEV_MODE=OFF \
+				-DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake
 			cd ..
 		done
 	done
