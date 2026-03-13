@@ -1,0 +1,7 @@
+[project]
+name = "elasticapp"
+version = "0.0.2"
+description = "A performance-oriented C++ simulator for soft-filament dynamics."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["pybind11"]
