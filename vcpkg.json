@@ -13,7 +13,8 @@
             "name": "blaze",
             "default-features": false
         },
-        "blaze-tensor"
+        "blaze-tensor",
+        "spline"
     ],
     "overrides": [
         {
@@ -22,6 +23,10 @@
         },
         {
             "name": "blaze-tensor",
+            "version": "0.1.0"
+        },
+        {
+            "name": "spline",
             "version": "0.1.0"
         }
     ]
