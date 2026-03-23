@@ -1,0 +1,13 @@
+{
+  "name": "spline",
+  "version": "0.1.0",
+  "description": "C++ cubic spline interpolation.",
+  "homepage": "https://github.com/tp5uiuc/spline.git",
+  "license": "GPL-2.0",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    }
+  ]
+}
