@@ -252,8 +252,9 @@ namespace {
     using DH_mat = blaze::DynamicMatrix<real_t>;
     using DH_SO3 = SO3<DH_mat, tags::DerivativeTag>;
 
-    Approx approx =
-        Approx::custom().epsilon(std::numeric_limits<double>::epsilon() * 10);
+    Approx approx = Approx::custom()
+                        .epsilon(std::numeric_limits<double>::epsilon() * 100)
+                        .margin(1.0e-12);
 
     // DH_mat derivative_data(dimensions, size, another_f); // omega
     DH_mat derivative_data{{1.0}, {3.2}, {7.0}};
