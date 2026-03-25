@@ -56,6 +56,7 @@ namespace {
       correct_rot_mat = {{{cost}, {sint}, {0.0}},
                          {{-sint}, {cost}, {0.0}},
                          {{0.0}, {0.0}, {1.0}}};
+      CHECK(blaze::row(vector_collection, 2UL)[0] == approx(test_theta));
     }
     SECTION("y-axis") {
       vector_collection = 0.0;
@@ -63,6 +64,7 @@ namespace {
       correct_rot_mat = {{{cost}, {0.0}, {-sint}},
                          {{0.0}, {1.0}, {0.0}},
                          {{sint}, {0.0}, {cost}}};
+      CHECK(blaze::row(vector_collection, 1UL)[0] == approx(test_theta));
     }
     SECTION("x-axis") {
       vector_collection = 0.0;
@@ -70,6 +72,7 @@ namespace {
       correct_rot_mat = {{{1.0}, {0.0}, {0.0}},
                          {{0.0}, {cost}, {sint}},
                          {{0.0}, {-sint}, {cost}}};
+      CHECK(blaze::row(vector_collection, 0UL)[0] == approx(test_theta));
     }
 
     Matrix::data_type test_rot_mat(dimension, dimension, n_elem);
@@ -93,4 +96,3 @@ namespace {
 }
 
 #endif  // ELASTICA_USE_BLAZE
-

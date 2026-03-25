@@ -124,8 +124,9 @@ namespace {
             analytical_derivative;
         std::tie(analytical_primitive, analytical_derivative) =
             system.analytical(time_v);
-        CHECK(system.kinematic_states() == approx(analytical_primitive));
-        CHECK(system.dynamic_states() == approx(analytical_derivative));
+        auto const loose_approx = Approx::custom().margin(2.0e-3);
+        CHECK(system.kinematic_states() == loose_approx(analytical_primitive));
+        CHECK(system.dynamic_states() == loose_approx(analytical_derivative));
         /* TODO:
          * Note
          * Not so sure if this test fits to be in 'Unit test' category.

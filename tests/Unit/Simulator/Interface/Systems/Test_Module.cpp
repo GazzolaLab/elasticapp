@@ -737,6 +737,7 @@ namespace unique {
       // LooselyRestrictSizeAcrossBlockTypes is in the default list
       sim.blocking_policy() = ::elastica::configuration::virtualize(
           std::move(policy_with_higher_threshold));
+      CHECK(sim.blocking_policy() != nullptr);
     }
     SECTION("different policy") {
       auto one = make_blocking_policy(RestrictSizeAcrossBlockTypes{40UL});
@@ -750,6 +751,7 @@ namespace unique {
       auto three = make_blocking_policy(AlwaysNewAcrossBlockTypes{40UL});
       sim.blocking_policy() =
           ::elastica::configuration::virtualize(std::move(three));
+      CHECK(sim.blocking_policy() != nullptr);
     }
   }
 

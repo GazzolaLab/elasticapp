@@ -85,11 +85,13 @@ namespace {
       // Anti-Clockwise
       theta = blaze::linspace(n_elem, 0.0, 2.0 * M_PI);
       axis_of_rotation = {{0.0}, {0.0}, {-1.0}};
+      CHECK(axis_of_rotation[2] == approx(-1.0));
     }
     SECTION("Clockwise") {
       // Anti-Clockwise
       theta = blaze::linspace(n_elem, 2.0 * M_PI, 0.0);
       axis_of_rotation = {{0.0}, {0.0}, {1.0}};
+      CHECK(axis_of_rotation[2] == approx(1.0));
     }
 
     const real_t dtheta_di(
