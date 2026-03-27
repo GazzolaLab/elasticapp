@@ -36,17 +36,13 @@ namespace elastica {
     template <typename Variables, typename CRT,
               template <typename /*CRT*/, typename /* ComputationalBlock */>
               class... Components,
-              // typename Initializer>
-              typename... Initializers>
+              typename Initializer>
     inline void initialize_component(
         ::blocks::BlockSlice<cosserat_rod::CosseratRodPlugin<
             CRT, ::blocks::BlockSlice, Components...>>& block_like,
-        ::blocks::BlockInitializer<cosserat_rod::CosseratRodPlugin<
-                                       CRT, ::blocks::Block, Components...>,
-                                   Initializers...>
-            initializers) {
+        Initializer&& initializers) {
       ::elastica::detail::initialize_component<Variables>(
-          block_like, std::move(initializers));
+          block_like, std::forward<Initializer>(initializers));
     }
     //**************************************************************************
 
@@ -63,17 +59,13 @@ namespace elastica {
     template <typename Variables, typename CRT,
               template <typename /*CRT*/, typename /* ComputationalBlock */>
               class... Components,
-              // typename Initializer>
-              typename... Initializers>
+              typename Initializer>
     void initialize_component(
         ::blocks::Block<cosserat_rod::CosseratRodPlugin<
             CRT, ::blocks::Block, Components...>>& block_like,
-        ::blocks::BlockInitializer<cosserat_rod::CosseratRodPlugin<
-                                       CRT, ::blocks::Block, Components...>,
-                                   Initializers...>
-            initializers) {
+        Initializer&& initializers) {
       ::elastica::detail::initialize_component<Variables>(
-          block_like, std::move(initializers));
+          block_like, std::forward<Initializer>(initializers));
     }
     //**************************************************************************
 

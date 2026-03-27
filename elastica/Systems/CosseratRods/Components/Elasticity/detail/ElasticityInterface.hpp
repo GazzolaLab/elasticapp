@@ -265,9 +265,9 @@ namespace elastica {
               ElasticityInterface<Traits, BlockLike, ElasticityModel>&
                   this_component,
               CosseratInitializer&& initializer) {
+            auto&& stable_initializer = initializer;
             // 1. Initialize parent
-            Parent::initialize(this_component,
-                               std::forward<CosseratInitializer>(initializer));
+            Parent::initialize(this_component, stable_initializer);
 
             // 2. Only computed variables here
             tmpl::for_each<typename VariableDefinitions::ComputedVariables>(

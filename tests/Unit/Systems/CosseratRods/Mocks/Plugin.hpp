@@ -99,9 +99,10 @@ namespace mock {
     template <class CosseratInitializer>
     static void initialize(Model& downstream_block,
                            CosseratInitializer&& initializers) {
-      downstream_block.resize_members(initializers.n_elems());
+      auto&& stable_initializers = initializers;
+      downstream_block.resize_members(stable_initializers.n_elems());
       EXPAND_PACK_LEFT_TO_RIGHT(T<Model>::initialize(
-          downstream_block, std::forward<CosseratInitializer>(initializers)));
+          downstream_block, stable_initializers));
     }
   };
 
@@ -123,8 +124,9 @@ namespace elastica {
   void initialize_component(
       ::blocks::Block<mock::MultiComponentPlugin<Tr, ::blocks::Block, T...>>&
           block_like,
-      Initializer initializer) {
-    detail::initialize_component<Variables>(block_like, std::move(initializer));
+      Initializer&& initializer) {
+    detail::initialize_component<Variables>(block_like,
+                                            std::forward<Initializer>(initializer));
   }
 
 }  // namespace elastica

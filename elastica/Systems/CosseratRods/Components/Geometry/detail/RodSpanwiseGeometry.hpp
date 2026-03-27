@@ -180,9 +180,9 @@ namespace elastica {
           static void initialize(
               RodSpanwiseGeometry<Traits, BlockLike>& this_component,
               CosseratInitializer&& initializer) {
+            auto&& stable_initializer = initializer;
             initialize_component<This::InitializedVariables>(
-                this_component.self(),
-                std::forward<CosseratInitializer>(initializer));
+                this_component.self(), stable_initializer);
           }
           //********************************************************************
 
