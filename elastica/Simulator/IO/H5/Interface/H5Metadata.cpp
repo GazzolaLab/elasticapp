@@ -40,7 +40,7 @@ namespace elastica {
     H5Metadata::H5Metadata(NamingConvention naming_convention,
                            WorkingDirectory cwd)
         : H5Metadata(open_h5_file(get_file_path(metadata_filename(), cwd)),
-                     std::move(naming_convention), std::move(cwd)) {}
+                     std::move(naming_convention), cwd) {}
 
     H5Metadata::H5Metadata()
         : H5Metadata(NamingConvention{}, WorkingDirectory{}) {}
@@ -48,7 +48,7 @@ namespace elastica {
     auto H5Metadata::register_metadata(::elastica::TimeMetadata time_metadata)
         -> FileName {
       auto formatted_id =
-          format(std::to_string(time_metadata.id.step()), *this);
+          ::elastica::io::format(time_metadata.id.step(), *this);
 
       auto metadata_group = metadata_file().createGroup(formatted_id);
       write_data(metadata_group, time_metadata, "TimeMetadata");
