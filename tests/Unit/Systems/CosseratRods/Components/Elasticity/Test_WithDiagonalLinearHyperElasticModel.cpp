@@ -23,14 +23,68 @@ namespace {
   using Traits = typename elastica::cosserat_rod::DefaultCosseratRodTraits;
 
   template <typename B>
-  struct TestGeometry : public component::WithCircularCosseratRod<Traits, B> {};
+  struct TestGeometry : public component::WithCircularCosseratRod<Traits, B> {
+    using Parent = component::WithCircularCosseratRod<Traits, B>;
+    using typename Parent::ElementDimension;
+    using typename Parent::ElementVolume;
+
+    template <typename CosseratInitializer>
+    static void initialize(
+        TestGeometry& this_component,
+        CosseratInitializer&& initializer) {
+      auto&& stable_initializer = initializer;
+
+      auto&& dimensions =
+          blocks::get<ElementDimension>(this_component.self());
+      ElementDimension::resize(dimensions,
+                               ElementDimension::get_dofs(
+                                   stable_initializer.n_elems()));
+
+      auto&& volumes = blocks::get<ElementVolume>(this_component.self());
+      ElementVolume::resize(volumes,
+                            ElementVolume::get_dofs(
+                                stable_initializer.n_elems()));
+
+      Parent::initialize(this_component, stable_initializer);
+    }
+  };
 
   template <typename B>
   struct TestKinematics : public component::WithRodKinematics<Traits, B> {};
 
   template <typename B>
   struct TestElasticity
-      : public component::WithDiagonalLinearHyperElasticModel<Traits, B> {};
+      : public component::WithDiagonalLinearHyperElasticModel<Traits, B> {
+    using Parent = component::WithDiagonalLinearHyperElasticModel<Traits, B>;
+
+    template <typename CosseratInitializer>
+    static void initialize(
+        TestElasticity& this_component,
+        CosseratInitializer&& initializer) {
+      auto&& stable_initializer = initializer;
+      using Model = std::decay_t<decltype(this_component.self())>;
+      using ShearStretchRigidityMatrix =
+          typename Model::VariableMap::template variable_from<
+              tags::ShearStretchRigidityMatrix>;
+      using BendingTwistRigidityMatrix =
+          typename Model::VariableMap::template variable_from<
+              tags::BendingTwistRigidityMatrix>;
+
+      auto&& shear_stretch_rigidity_matrix =
+          blocks::get<ShearStretchRigidityMatrix>(this_component.self());
+      ShearStretchRigidityMatrix::resize(
+          shear_stretch_rigidity_matrix,
+          ShearStretchRigidityMatrix::get_dofs(stable_initializer.n_elems()));
+
+      auto&& bending_twist_rigidity_matrix =
+          blocks::get<BendingTwistRigidityMatrix>(this_component.self());
+      BendingTwistRigidityMatrix::resize(
+          bending_twist_rigidity_matrix,
+          BendingTwistRigidityMatrix::get_dofs(stable_initializer.n_elems()));
+
+      Parent::initialize(this_component, stable_initializer);
+    }
+  };
 
   using Plugin =
       mock::MockPlugin<Traits, TestGeometry, TestElasticity, TestKinematics>;
@@ -59,8 +113,6 @@ namespace {
   ELASTICA_TEST_CASE(
       "Unit.Systems.CosseratRods.WithDiagonalLinearHyperElasticModel.data",
       "[Systems][Unit]") {
-    Model model{};
-
     // Reference Parameters
     const std::size_t dim = 3UL;
     const real_t moduli = 4.0;
@@ -120,9 +172,7 @@ namespace {
         blocks::initialize<tags::Acceleration>([](...) { return 3.0; }),
         blocks::initialize<tags::AngularAcceleration>([](...) { return 1.0; }));
 
-    // FIXME : https://github.com/tp5uiuc/elasticapp/issues/460
-    // Don't use initialize on model
-    Model::initialize(model, std::move(initializer));
+    Model model(std::move(initializer));
 
     /* Check the function compute_internal_forces() */
     // clang-format off
@@ -154,9 +204,11 @@ namespace {
         Traits::DataType::Vector::slice(compute_internal_forces_result, 2UL);
     const Vec3 end_force =
         Traits::DataType::Vector::slice(compute_internal_forces_result, 10UL);
-    CHECK(edge_force == director * internal_stress);
+    const Vec3 expected_edge_force = director * internal_stress;
+    const Vec3 expected_end_force = -(director * internal_stress);
+    CHECK(edge_force == expected_edge_force);
     CHECK(mid_force == 0.0);
-    CHECK(end_force == -(director * internal_stress));
+    CHECK(end_force == expected_end_force);
 
     /* Check the function compute_internal_torques() */
     // clang-format off
@@ -186,11 +238,15 @@ namespace {
     const Vec3 end_torque =
         Traits::DataType::Vector::slice(compute_internal_torques_result, 9UL);
     // Remove 3./4. end-effector after fixing mass issue.
-    CHECK(edge_torque ==
-          couple_solution + shear_stretch_couple + lagrangian_transport);
-    CHECK(mid_torque == shear_stretch_couple + lagrangian_transport);
-    CHECK(end_torque ==
-          -couple_solution + shear_stretch_couple + lagrangian_transport);
+    const Vec3 expected_edge_torque =
+        couple_solution + shear_stretch_couple + lagrangian_transport;
+    const Vec3 expected_mid_torque =
+        shear_stretch_couple + lagrangian_transport;
+    const Vec3 expected_end_torque =
+        -couple_solution + shear_stretch_couple + lagrangian_transport;
+    CHECK(edge_torque == expected_edge_torque);
+    CHECK(mid_torque == expected_mid_torque);
+    CHECK(end_torque == expected_end_torque);
 
     // check if initialization is done as expected
     auto expected_call_count = make_array(11U, 10U, 10U, 9U, 10U, 10U, 10U);

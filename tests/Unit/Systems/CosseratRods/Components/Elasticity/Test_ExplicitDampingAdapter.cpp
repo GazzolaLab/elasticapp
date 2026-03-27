@@ -126,8 +126,6 @@ namespace {
   ELASTICA_TEST_CASE(
       "Unit.Systems.CosseratRods.ExplicitDampingAdapter.compute_forces_torques",
       "[Systems][Unit]") {
-    Model model{};
-
     auto initializer = mock::initialize_block<Plugin>(
         // FIXME : Remove 10UL taken from mock::initialize_block
         blocks::initialize<tags::NElement>([]() { return 10UL; }),
@@ -154,9 +152,7 @@ namespace {
         blocks::initialize<tags::Acceleration>([](...) { return 0.0; }),
         blocks::initialize<tags::AngularAcceleration>([](...) { return 0.0; }));
 
-    // FIXME : https://github.com/tp5uiuc/elasticapp/issues/460
-    // Don't use initialize on model
-    Model::initialize(model, std::move(initializer));
+    Model model(std::move(initializer));
 
     CHECK(blocks::get<::elastica::tags::InternalLoads>(model) != approx(3.14));
     compute_internal_forces(model);
@@ -174,8 +170,6 @@ namespace {
       "Unit.Systems.CosseratRods.ExplicitDampingAdapter.compute_forces_torques_with_damping",
       "[Systems][Unit]") {
     // clang-format on
-    DampedModel model{};
-
     auto initializer = mock::initialize_block<DampedPlugin>(
         // FIXME : Remove 10UL taken from mock::initialize_block
         blocks::initialize<tags::NElement>([]() { return 10UL; }),
@@ -204,9 +198,7 @@ namespace {
         blocks::initialize<tags::Acceleration>([](...) { return 0.0; }),
         blocks::initialize<tags::AngularAcceleration>([](...) { return 0.0; }));
 
-    // FIXME : https://github.com/tp5uiuc/elasticapp/issues/460
-    // Don't use initialize on model
-    DampedModel::initialize(model, std::move(initializer));
+    DampedModel model(std::move(initializer));
 
     // TODO: Need to initialize velocity(at least) to resolve
     CHECK(blocks::get<::elastica::tags::InternalLoads>(model) != approx(3.14));

@@ -56,8 +56,6 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.RodSpanwiseGeometry.data",
                      "[Systems][Unit]") {
-    Model model{};
-
     auto initializer = mock::initialize_block<Plugin>(
         // FIXME : Remove 10UL taken from mock::initialize_block
         blocks::initialize<elastica::tags::NElement>([]() { return 10UL; }),
@@ -67,7 +65,7 @@ namespace {
     //    model.get_position().resize(3UL, 2 + initializer.n_elems());
     //    model.get_director().resize(3UL, 3UL, 2 + initializer.n_elems());
 
-    Model::initialize(model, std::move(initializer));
+    Model model(std::move(initializer));
 
     CHECK(model.get_position() == 2.0);
     CHECK(model.get_director() == 3.0);

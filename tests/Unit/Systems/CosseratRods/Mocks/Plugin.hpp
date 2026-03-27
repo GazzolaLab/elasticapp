@@ -10,6 +10,7 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TMPLDebugging.hpp"
+#include <type_traits>
 
 namespace mock {
 
