@@ -154,15 +154,14 @@ namespace elastica {
               ExplicitDampingAdapterFacade<Traits, BlockLike, ElasticityModel,
                                            VariableInfo>& this_component,
               CosseratInitializer&& initializer) {
+            auto&& stable_initializer = initializer;
             // 1. Initializer parent's first
-            Parent::initialize(this_component,
-                               std::forward<CosseratInitializer>(initializer));
+            Parent::initialize(this_component, stable_initializer);
 
             // 2. Initialize required variables
             initialize_component<
                 typename VariableDefinitions::InitializedVariables>(
-                this_component.self(),
-                std::forward<CosseratInitializer>(initializer));
+                this_component.self(), stable_initializer);
           }
           //********************************************************************
         };

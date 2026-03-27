@@ -59,17 +59,50 @@ namespace {
         CosseratRodCrossSectionInterface<Traits, B, MockCrossSectionOperations>;
     using Parent::Parent;
     using typename Parent::ComputedVariables;
+    using typename Parent::ElementDimension;
+    using typename Parent::ElementVolume;
     using typename Parent::InitializedVariables;
     using typename Parent::Variables;
 
-    using Parent::initialize;
     using typename Parent::DirectionType;
     using typename Parent::Frame;
+
+    template <typename CosseratInitializer>
+    static void initialize(
+        TestGeometry& this_component,
+        CosseratInitializer&& initializer) {
+      auto&& stable_initializer = initializer;
+
+      auto&& dimensions =
+          blocks::get<ElementDimension>(this_component.self());
+      ElementDimension::resize(dimensions,
+                               ElementDimension::get_dofs(
+                                   stable_initializer.n_elems()));
+
+      auto&& volumes = blocks::get<ElementVolume>(this_component.self());
+      ElementVolume::resize(volumes,
+                            ElementVolume::get_dofs(
+                                stable_initializer.n_elems()));
+
+      Parent::initialize(this_component, stable_initializer);
+    }
   };
 
   using Plugin = mock::MockPlugin<Traits, TestGeometry>;
   //  using Model = blocks::Block<Plugin>;
   using Model = typename Plugin::Model;
+  static_assert(
+      std::is_same_v<
+          typename Model::VariableMap::template variable_from<
+              tags::ElementDimension>,
+          typename TestGeometry<Model>::ElementDimension>,
+      "Cross-section model VariableMap is missing ElementDimension");
+  static_assert(
+      std::is_same_v<
+          typename Model::VariableMap::template variable_from<
+              tags::ElementVolume>,
+          typename TestGeometry<Model>::ElementVolume>,
+      "Cross-section model VariableMap is missing ElementVolume");
 
   ELASTICA_TEST_CASE(
       "Unit.Systems.CosseratRods.CosseratRodCrossSectionInterface.EBO",
@@ -98,8 +131,6 @@ namespace {
   ELASTICA_TEST_CASE(
       "Unit.Systems.CosseratRods.CosseratRodCrossSectionInterface.data",
       "[Systems][Unit]") {
-    Model model{};
-
     constexpr auto n_initializers = 6UL;
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
@@ -140,9 +171,7 @@ namespace {
         // n_times_called[5]](...) { ++i; return 1.0; })
     );
 
-    // FIXME : https://github.com/tp5uiuc/elasticapp/issues/460
-    // Don't use initialize on model
-    Model::initialize(model, std::move(initializer));
+    Model model(std::move(initializer));
 
     // After compute geometry, dimension should be updated to 50.0
     // get_second_moment_of_area return r*r (MockCrossSectionOperations)

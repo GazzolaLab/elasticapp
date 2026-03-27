@@ -330,6 +330,8 @@ namespace elastica {
       static void initialize(
           CosseratRodPlugin<Traits, BlockLike, Components...>& this_component,
           CosseratInitializer&& initializer) {
+        auto&& stable_initializer = initializer;
+
         // initialize the elements boi
         {
           using Variable = typename VariableDefinitions::NElement;
@@ -338,7 +340,8 @@ namespace elastica {
           auto&& variable(blocks::get<Tag>(this_component.self()));
           // this automatically is deduced to 1
           constexpr index_type index_of_rod = 0UL;
-          auto const n_elem = blocks::get<Tag>(std::as_const(initializer))();
+          auto const n_elem =
+              blocks::get<Tag>(std::as_const(stable_initializer))();
           ELASTICA_ASSERT(
               Variable::slice(variable, index_of_rod) == n_elem,
               "Invariant violation detected, contact the developers!");
@@ -346,8 +349,7 @@ namespace elastica {
 
         // Pass self here to make minimal changes to the tests.
         EXPAND_PACK_LEFT_TO_RIGHT(Components<CRT, Self>::initialize(
-            this_component.self(),
-            std::forward<CosseratInitializer>(initializer)));
+            this_component.self(), stable_initializer));
       }
       //************************************************************************
 

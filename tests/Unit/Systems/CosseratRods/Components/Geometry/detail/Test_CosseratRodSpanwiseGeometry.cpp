@@ -69,14 +69,14 @@ namespace {
   ELASTICA_TEST_CASE(
       "Unit.Systems.CosseratRods.CosseratRodSpanwiseGeometry.data",
       "[Systems][Unit]") {
-    Model model{};
+    Model empty_model{};
 
-    CHECK(model.get_reference_element_length() == 0.0);
-    CHECK(model.get_element_length() == 0.0);
-    CHECK(model.get_reference_curvature() == 0.0);
-    CHECK(model.get_reference_shear_stretch_strain() == 0.0);
+    CHECK(empty_model.get_reference_element_length() == 0.0);
+    CHECK(empty_model.get_element_length() == 0.0);
+    CHECK(empty_model.get_reference_curvature() == 0.0);
+    CHECK(empty_model.get_reference_shear_stretch_strain() == 0.0);
 
-    constexpr auto n_initializers = 6UL;
+    constexpr auto n_initializers = 5UL;
     auto n_times_called = make_array<n_initializers>(0U);
     auto initializer = mock::initialize_block<Plugin>(
         // FIXME : Remove 10UL taken from mock::initialize_block
@@ -104,19 +104,12 @@ namespace {
             [&i = n_times_called[4]](...) {
               ++i;
               return 1.0;
-            }),
-        blocks::initialize<tags::ElementDimension>(
-            [&i = n_times_called[4]](...) {
-              ++i;
-              return 1.0;
             }));
 
-    // FIXME : https://github.com/tp5uiuc/elasticapp/issues/460
-    // Don't use initialize on model
-    Model::initialize(model, std::move(initializer));
+    Model model(std::move(initializer));
 
     // check if initialization is done as expected
-    auto expected_call_count = make_array(11U, 10U, 9U, 10U, 10U, 0U);
+    auto expected_call_count = make_array(11U, 10U, 9U, 10U, 10U);
     CHECK_ITERABLE_APPROX(n_times_called, expected_call_count);
 
     CHECK(model.get_element_length() == sqrt(3.0));

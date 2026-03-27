@@ -50,12 +50,33 @@ namespace {
     using Parent = WithSquareCosseratRod<Traits, B>;
     using Parent::Parent;
     using typename Parent::ComputedVariables;
+    using typename Parent::ElementDimension;
+    using typename Parent::ElementVolume;
     using typename Parent::InitializedVariables;
     using typename Parent::Variables;
 
-    using Parent::initialize;
     using typename Parent::DirectionType;
     using typename Parent::Frame;
+
+    template <typename CosseratInitializer>
+    static void initialize(
+        TestGeometry& this_component,
+        CosseratInitializer&& initializer) {
+      auto&& stable_initializer = initializer;
+
+      auto&& dimensions =
+          blocks::get<ElementDimension>(this_component.self());
+      ElementDimension::resize(dimensions,
+                               ElementDimension::get_dofs(
+                                   stable_initializer.n_elems()));
+
+      auto&& volumes = blocks::get<ElementVolume>(this_component.self());
+      ElementVolume::resize(volumes,
+                            ElementVolume::get_dofs(
+                                stable_initializer.n_elems()));
+
+      Parent::initialize(this_component, stable_initializer);
+    }
   };
 
   using Plugin = mock::MockPlugin<Traits, TestGeometry>;
@@ -77,11 +98,10 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.WithSquareCosseratRod.data",
                      "[Systems][Unit]") {
-    Model model{};
-
     // same as cross_section_interface
-    CHECK(model.get_element_dimension() == 0.0);
-    CHECK(model.get_element_volume() == 0.0);
+    Model empty_model{};
+    CHECK(empty_model.get_element_dimension() == 0.0);
+    CHECK(empty_model.get_element_volume() == 0.0);
 
     constexpr auto n_initializers = 6UL;
     auto n_times_called = make_array<n_initializers>(0U);
@@ -118,9 +138,7 @@ namespace {
               return 1.0;
             }));
 
-    // FIXME : https://github.com/tp5uiuc/elasticapp/issues/460
-    // Don't use initialize on model
-    Model::initialize(model, std::move(initializer));
+    Model model(std::move(initializer));
 
     // check if initialization is done as expected
     auto expected_call_count = make_array(11U, 10U, 10U, 9U, 10U, 10U);

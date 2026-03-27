@@ -42,17 +42,14 @@ namespace elastica {
     struct {
       Initializer value;
     } cap{std::forward<Initializer>(initializer)};
-    // Note : need a mutable lambda as we can now "move" from cap
-    tmpl::for_each<Variables>([&block_like, &cap](auto v) mutable -> void {
+    tmpl::for_each<Variables>([&block_like, &cap](auto v) -> void {
       using Variable = tmpl::type_from<decltype(v)>;
       using Tag = blocks::initializer_t<Variable>;
 
       // && since get() may be lazy and so can return either
       // lvalue of rvalue reference.
       auto&& variable(blocks::get<Tag>(block_like));
-      // We may not need a ref here as it will be moved, but keep it for
-      // symmetry.
-      auto&& variable_initializer(blocks::get<Tag>(std::move(cap.value)));
+      auto&& variable_initializer(blocks::get<Tag>(cap.value));
       Variable::slice(variable, UnitCardinality::index()) = variable_initializer();
     });
   }
@@ -70,7 +67,6 @@ namespace elastica {
   void initialize_component(BlockLike& block_like, Initializer&& initializer,
                             MultipleCardinality /*meta*/
   ) {
-    // Note : need a mutable lambda as we can now "move" from cap
     // Make a copy of the initializer as there is no guarantee to the number of
     // times it will be called.
     auto const n_elem =
@@ -79,16 +75,14 @@ namespace elastica {
       Initializer value;
     } cap{std::forward<Initializer>(initializer)};
     tmpl::for_each<Variables>(
-        [n_elem, &block_like, &cap](auto v) mutable -> void {
+        [n_elem, &block_like, &cap](auto v) -> void {
           using Variable = tmpl::type_from<decltype(v)>;
           using Tag = blocks::initializer_t<Variable>;
 
           // && since get() may be lazy and so can return either
           // lvalue of rvalue reference.
           auto&& variable(blocks::get<Tag>(block_like));
-          // We may not need a ref here as it will be moved, but keep
-          // it for symmetry.
-          auto&& variable_initializer(blocks::get<Tag>(std::move(cap.value)));
+          auto&& variable_initializer(blocks::get<Tag>(cap.value));
 
           const auto dofs = Variable::get_dofs(n_elem);
           for (std::size_t i = 0; i < dofs; ++i) {

@@ -41,8 +41,6 @@ namespace {
 
   ELASTICA_TEST_CASE("Unit.Systems.CosseratRods.LinearHyperElasticityBase.data",
                      "[Systems][Unit]") {
-    Model model{};
-
     // same as cross_section_interface
     // CHECK(model.get_element_dimension() == 0.0);
     // CHECK(model.get_element_volume() == 0.0);
@@ -94,9 +92,7 @@ namespace {
               return 1.0;
             }));
 
-    // FIXME : https://github.com/tp5uiuc/elasticapp/issues/460
-    // Don't use initialize on model
-    Model::initialize(model, std::move(initializer));
+    Model model(std::move(initializer));
 
     CHECK(model.get_element_dimension() == 4.0);
     CHECK(model.get_element_volume() == 4.0 * 4.0 * M_PI * blaze::sqrt(3));

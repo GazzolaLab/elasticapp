@@ -9,6 +9,8 @@
 #include "Systems/Block/Block/AsVariables.hpp"
 #include "Systems/Block/Block/TypeTraits.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+//
+#include <utility>
 
 namespace blocks {
 
@@ -31,6 +33,11 @@ namespace blocks {
    public:
     using Parent::initialize;
     Block() = default;
+
+    template <typename Initializer>
+    explicit Block(Initializer&& initializer) : Block() {
+      Parent::initialize(*this, std::forward<Initializer>(initializer));
+    }
   };
 
   template <typename Tr, template <typename> class... T>
@@ -52,6 +59,11 @@ namespace blocks {
    public:
     using Parent::initialize;
     Block() = default;
+
+    template <typename Initializer>
+    explicit Block(Initializer&& initializer) : Block() {
+      Parent::initialize(*this, std::forward<Initializer>(initializer));
+    }
   };
 
   // we need a ghosts function here :(

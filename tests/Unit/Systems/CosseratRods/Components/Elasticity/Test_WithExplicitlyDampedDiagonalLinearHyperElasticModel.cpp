@@ -23,14 +23,87 @@ namespace {
   using Traits = typename elastica::cosserat_rod::DefaultCosseratRodTraits;
 
   template <typename B>
-  struct TestGeometry : WithCircularCosseratRod<Traits, B> {};
+  struct TestGeometry : WithCircularCosseratRod<Traits, B> {
+    using Parent = WithCircularCosseratRod<Traits, B>;
+    using typename Parent::ElementDimension;
+    using typename Parent::ElementVolume;
+
+    template <typename CosseratInitializer>
+    static void initialize(
+        TestGeometry& this_component,
+        CosseratInitializer&& initializer) {
+      auto&& stable_initializer = initializer;
+
+      auto&& dimensions =
+          blocks::get<ElementDimension>(this_component.self());
+      ElementDimension::resize(dimensions,
+                               ElementDimension::get_dofs(
+                                   stable_initializer.n_elems()));
+
+      auto&& volumes = blocks::get<ElementVolume>(this_component.self());
+      ElementVolume::resize(volumes,
+                            ElementVolume::get_dofs(
+                                stable_initializer.n_elems()));
+
+      Parent::initialize(this_component, stable_initializer);
+    }
+  };
 
   template <typename B>
   struct TestKinematics : WithRodKinematics<Traits, B> {};
 
   template <typename B>
   struct TestElasticity
-      : WithExplicitlyDampedDiagonalLinearHyperElasticModel<Traits, B> {};
+      : WithExplicitlyDampedDiagonalLinearHyperElasticModel<Traits, B> {
+    using Parent =
+        WithExplicitlyDampedDiagonalLinearHyperElasticModel<Traits, B>;
+
+    template <typename CosseratInitializer>
+    static void initialize(
+        TestElasticity& this_component,
+        CosseratInitializer&& initializer) {
+      auto&& stable_initializer = initializer;
+      using Model = std::decay_t<decltype(this_component.self())>;
+      using ShearStretchRigidityMatrix =
+          typename Model::VariableMap::template variable_from<
+              tags::ShearStretchRigidityMatrix>;
+      using BendingTwistRigidityMatrix =
+          typename Model::VariableMap::template variable_from<
+              tags::BendingTwistRigidityMatrix>;
+      using ForceDampingRate =
+          typename Model::VariableMap::template variable_from<
+              tags::ForceDampingRate>;
+      using TorqueDampingRate =
+          typename Model::VariableMap::template variable_from<
+              tags::TorqueDampingRate>;
+
+      auto&& shear_stretch_rigidity_matrix =
+          blocks::get<ShearStretchRigidityMatrix>(this_component.self());
+      ShearStretchRigidityMatrix::resize(
+          shear_stretch_rigidity_matrix,
+          ShearStretchRigidityMatrix::get_dofs(stable_initializer.n_elems()));
+
+      auto&& bending_twist_rigidity_matrix =
+          blocks::get<BendingTwistRigidityMatrix>(this_component.self());
+      BendingTwistRigidityMatrix::resize(
+          bending_twist_rigidity_matrix,
+          BendingTwistRigidityMatrix::get_dofs(stable_initializer.n_elems()));
+
+      auto&& force_damping_rate =
+          blocks::get<ForceDampingRate>(this_component.self());
+      ForceDampingRate::resize(force_damping_rate,
+                               ForceDampingRate::get_dofs(
+                                   stable_initializer.n_elems()));
+
+      auto&& torque_damping_rate =
+          blocks::get<TorqueDampingRate>(this_component.self());
+      TorqueDampingRate::resize(torque_damping_rate,
+                                TorqueDampingRate::get_dofs(
+                                    stable_initializer.n_elems()));
+
+      Parent::initialize(this_component, stable_initializer);
+    }
+  };
 
   using Plugin =
       mock::MockPlugin<Traits, TestGeometry, TestElasticity, TestKinematics>;
@@ -53,8 +126,6 @@ namespace {
       "Unit.Systems.CosseratRods.WithExplicitlyDampedDiagonalLinearHyperElasticModel.data",
       "[Systems][Unit]") {
     // clang-format on
-    Model model{};
-
     // Reference Parameters
     const std::size_t dim = 3UL;
     const real_t moduli = 4.0;
@@ -122,9 +193,7 @@ namespace {
               return damping_rate_for_torque;
             }));
 
-    // FIXME : https://github.com/tp5uiuc/elasticapp/issues/460
-    // Don't use initialize on model
-    Model::initialize(model, std::move(initializer));
+    Model model(std::move(initializer));
 
     /* Check the function compute_internal_forces() */
     // clang-format off
@@ -158,11 +227,17 @@ namespace {
         Traits::DataType::Vector::slice(compute_internal_forces_result, 2UL);
     const Vec3 end_force =
         Traits::DataType::Vector::slice(compute_internal_forces_result, 10UL);
-    CHECK(edge_force == director * internal_stress -
-                            damped_force * end_mass_correction_factor);
-    CHECK(mid_force == -damped_force);
-    CHECK(end_force == -(director * internal_stress) -
-                           damped_force * end_mass_correction_factor);
+    const Vec3 expected_edge_force =
+        director * internal_stress -
+        damped_force * end_mass_correction_factor;
+    const Vec3 expected_mid_force = Vec3{-damped_force, -damped_force,
+                                         -damped_force};
+    const Vec3 expected_end_force =
+        -(director * internal_stress) -
+        damped_force * end_mass_correction_factor;
+    CHECK(edge_force == expected_edge_force);
+    CHECK(mid_force == expected_mid_force);
+    CHECK(end_force == expected_end_force);
 
     /* Check the function compute_internal_torques() */
     // clang-format off
@@ -203,14 +278,17 @@ namespace {
      * And hence need to account for it
      */
     const real_t pyelastica_correction_factor(3.0 / 4.0);
-    CHECK(edge_torque == couple_solution + shear_stretch_couple +
-                             lagrangian_transport -
-                             (damped_torque * pyelastica_correction_factor));
-    CHECK(mid_torque ==
-          shear_stretch_couple + lagrangian_transport - damped_torque);
-    CHECK(end_torque == -couple_solution + shear_stretch_couple +
-                            lagrangian_transport -
-                            (damped_torque * pyelastica_correction_factor));
+    const Vec3 expected_edge_torque =
+        couple_solution + shear_stretch_couple + lagrangian_transport -
+        (damped_torque * pyelastica_correction_factor);
+    const Vec3 expected_mid_torque =
+        shear_stretch_couple + lagrangian_transport - damped_torque;
+    const Vec3 expected_end_torque =
+        -couple_solution + shear_stretch_couple + lagrangian_transport -
+        (damped_torque * pyelastica_correction_factor);
+    CHECK(edge_torque == expected_edge_torque);
+    CHECK(mid_torque == expected_mid_torque);
+    CHECK(end_torque == expected_end_torque);
 
     // check if initialization is done as expected
     auto expected_call_count = make_array(11U, 10U, 10U, 9U, 10U, 10U, 10U);

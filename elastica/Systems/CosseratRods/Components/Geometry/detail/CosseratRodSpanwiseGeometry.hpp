@@ -353,15 +353,14 @@ namespace elastica {
           static void initialize(
               CosseratRodSpanwiseGeometry<Traits, BlockLike>& this_component,
               CosseratInitializer&& initializer) {
+            auto&& stable_initializer = initializer;
             // 1. Initialize parent
-            Parent::initialize(this_component,
-                               std::forward<CosseratInitializer>(initializer));
+            Parent::initialize(this_component, stable_initializer);
 
             // 2. Initialize required variables
             initialize_component<
                 typename VariableDefinitions::InitializedVariables>(
-                this_component.self(),
-                std::forward<CosseratInitializer>(initializer));
+                this_component.self(), stable_initializer);
 
             // 3. Computed reference variables
             //  - ReferenceElementLength
