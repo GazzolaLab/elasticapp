@@ -2,10 +2,14 @@
 
 [![](https://img.shields.io/badge/c%2B%2B-14-blue.svg)](https://en.wikipedia.org/wiki/CollisionConfi%2B%2B#Standardization)
 [![](https://img.shields.io/badge/license-MIT-blue.svg)]()
+[![CMake Build](https://github.com/GazzolaLab/elasticapp/actions/workflows/cmake-build.yml/badge.svg?branch=main)](https://github.com/GazzolaLab/elasticapp/actions/workflows/cmake-build.yml)
 
-| **Build Status** | **Memo** | **Compiler** | **OS** |
-|---|---|---|---|
-| ![Test][Git_Cmake_Action_Badge] | Build Test | `GCC` > 10.0, `Clang` > 10 | Ubuntu-latest, MacOS-latest |
+| Job | Purpose | Compiler | OS | Build Type | Unit Tests | Sanitizers |
+|---|---|---|---|---|---|---|
+| Ubuntu GCC Debug | Baseline Linux test job | `gcc` | `ubuntu-latest` | `Debug` | Yes | No |
+| Ubuntu Clang Release | Optimized Linux test job | `clang` | `ubuntu-latest` | `Release` | Yes | No |
+| Ubuntu Clang Debug Sanitizers | Memory and UB checking | `clang` | `ubuntu-latest` | `Debug` | Yes | ASan/UBSan |
+| macOS AppleClang Release Build | macOS build coverage | `AppleClang` | `macos-latest` | `Release` | No | No |
 
 *Efficiently simulate soft-filaments on devices from your laptop to supercomputing clusters.*
 
@@ -170,9 +174,9 @@ project.
 
 **Steps to create a pull request<a id="PR"></a>**
 
-1. Make a PR to `master` branch.
+1. Make a PR to `main` branch.
 2. Please comply with best practices and guidelines, found in the contribution guidelines [here](contrib/README.md).
-3. It must pass all continuous integration checks and get positive reviews. 
+3. It must pass all continuous integration checks and get positive reviews.
 
 After this, changes will be merged.
 

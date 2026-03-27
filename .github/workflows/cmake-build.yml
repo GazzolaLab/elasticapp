@@ -1,151 +1,117 @@
 name: CMake Build
 
 on:
-  push:
-    branches: [ "master" ]
   pull_request:
-    branches: [ "master" ]
+    branches: ["main"]
 
 jobs:
   build:
-    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
-    # You can convert this to a matrix build if you need cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    #name: ${{ matrix.config.name }}
+    name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-      matrix:
-        os: [ubuntu-latest] # macos-latest
-        # Ninja ensures all builds are parallel to reduce the CI billing time
-        generators: [Ninja] # make
-        build_type: [Release, Debug]
-        compiler-version: [
-          [gcc-10, g++-10],
-          [gcc-11, g++-11],
-          #[gcc-12, g++-12],
-          [clang-10, clang++-10],
-          [clang-11, clang++-11],
-          [clang-12, clang++-12]
-          #[clang-13, clang++-13]
-        ]
-
+      matrix:  # Only run on deefault-compiler
+        include:
+          - name: Ubuntu GCC Debug
+            os: ubuntu-latest
+            cc: gcc
+            cxx: g++
+            build_type: Debug
+            run_tests: true
+            asan: false
+            ubsan: false
+          - name: Ubuntu Clang Release
+            os: ubuntu-latest
+            cc: clang
+            cxx: clang++
+            build_type: Release
+            run_tests: true
+            asan: false
+            ubsan: false
+          - name: Ubuntu Clang Debug Sanitizers
+            os: ubuntu-latest
+            cc: clang
+            cxx: clang++
+            build_type: Debug
+            run_tests: true
+            asan: true
+            ubsan: true
+          - name: macOS AppleClang Release Build
+            os: macos-latest
+            cc: clang
+            cxx: clang++
+            build_type: Release
+            run_tests: true
+            asan: false
+            ubsan: false
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-    - name: Print env
-      run: |
-        echo github.event.action: ${{ github.event.action }}
-        echo github.event_name: ${{ github.event_name }}
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential clang cmake ninja-build python3-pip
 
-    - name: Configuration Setting
-      run: |
-        echo ${{ matrix.os }}
-        echo ${{ matrix.compiler-version[0] }}
-        echo ${{ matrix.compiler-version[1] }}
-        echo ${{ matrix.generators }}
-        echo ${{ matrix.build_type}}
+      - name: Install macOS dependencies
+        if: runner.os == 'macOS'
+        run: |
+          brew install cmake ninja python
 
-    - name: Install dependencies on ubuntu
-      if: startsWith(matrix.os, 'ubuntu')
-      run: |
-        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
-        # Fingerprint: 6084 F3CF 814B 57C1 CF12 EFD5 15CF 4D18 AF4F 7421
-        sudo apt-get update
-        sudo apt-get install ninja-build cmake doxygen
-        sudo apt-get install ${{ matrix.compiler-version[0] }} ${{ matrix.compiler-version[1] }}
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-    - name: Install dependencies on macos
-      if: startsWith(matrix.os, 'macos')
-      run: |
-        brew install cmake ninja ${{ matrix.compiler-version[0] }} ${{ matrix.compiler-version[1] }}
-        brew install doxygen
+      - name: Install Python build dependencies
+        run: python -m pip install pybind11
 
-    - name: Install Elasticapp Quick Setup
-      run: |
-        git clone https://github.com/tp5uiuc/elastica_quick_setup
-        cd elastica_quick_setup
-        bash install.sh
-        bash ~/.localrc
-        echo "[ -f ~/.localrc -a -r ~/.localrc ] && . ~/.localrc" >> ~/.bashrc
+      - name: Install third-party dependencies
+        shell: bash
+        run: |
+          git clone --depth 1 https://github.com/tp5uiuc/elastica_quick_setup
+          cd elastica_quick_setup
+          bash install.sh
 
-    - name: Check module version
-      run: |
-        ninja --version
-        cmake --version
-        ${{ matrix.compiler-version[0] }} --version
-        ${{ matrix.compiler-version[1] }} --version
+      - name: Print tool versions
+        shell: bash
+        run: |
+          cmake --version
+          ninja --version
+          python --version
+          "${{ matrix.cc }}" --version
+          "${{ matrix.cxx }}" --version
 
-    - name: Setup conda
-      # You may pin to the exact commit or the version.
-      # uses: s-weigand/setup-conda@12b718b536e4be4da931f6d0fcfcc40a646ffed9
-      uses: s-weigand/setup-conda@v1.1.1
-      with:
-        # Whether to activate the conda base env (Default: 'true')
-        activate-conda: 'true'
-        # If conda should be updated before running other commands (Default: 'false')
-        update-conda: 'false'
-        # Python version which should be installed with conda (default: 'Default')
-        python-version: 3.9
-        # Additional channels like 'conda-forge' which can be used to install packages
-        conda-channels: 'conda-forge'
+      - name: Configure
+        shell: bash
+        run: |
+          THIRD_PARTY_ROOT="${HOME}/Desktop/third_party_installed"
+          export BLAZE_ROOT="${THIRD_PARTY_ROOT}"
+          export BLAZE_TENSOR_ROOT="${THIRD_PARTY_ROOT}"
+          export BRIGAND_ROOT="${THIRD_PARTY_ROOT}"
+          export cxxopts_DIR="${THIRD_PARTY_ROOT}"
+          export YamlCpp_ROOT="${THIRD_PARTY_ROOT}"
+          cmake \
+            -B build \
+            -G Ninja \
+            -D CMAKE_BUILD_TYPE="${{ matrix.build_type }}" \
+            -D CMAKE_C_COMPILER="$(which "${{ matrix.cc }}")" \
+            -D CMAKE_CXX_COMPILER="$(which "${{ matrix.cxx }}")" \
+            -D BUILD_TESTING=${{ matrix.run_tests }} \
+            -D ASAN=${{ matrix.asan }} \
+            -D UBSAN_UNDEFINED=${{ matrix.ubsan }} \
+            -D ELASTICA_BUILD_BENCHMARKS=OFF \
+            -D ELASTICA_BUILD_DOCUMENTATION=OFF \
+            -D ELASTICA_BUILD_EXAMPLES=OFF \
+            -D ELASTICA_BUILD_PYTHON_BINDINGS=OFF
 
-    - name: Conda - Install python-related packages
-      run: |
-        conda --version
-        python --version
-        which python
-        which pip
-        conda install -q -c conda-forge pybind11
+      - name: Build
+        run: cmake --build build --parallel
 
-    - name: Configure CMake and Build
-      shell: bash # This runs bashrc
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: |
-        # TODO: I don't know why 'bash ~/.localrc' doesn't work.
-        export BLAZE_ROOT='/home/runner/Desktop/third_party_installed'
-        export BLAZE_TENSOR_ROOT='/home/runner/Desktop/third_party_installed'
-        export BRIGAND_ROOT='/home/runner/Desktop/third_party_installed'
-        export cxxopts_DIR='/home/runner/Desktop/third_party_installed'
-        export YamlCpp_ROOT='/home/runner/Desktop/third_party_installed'
-        cd ${{ github.workspace }}
-        cmake \
-          -B build \
-          -G ${{ matrix.generators }} \
-          -D CMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-          -D CMAKE_C_COMPILER=$(which ${{ matrix.compiler-version[0] }}) \
-          -D CMAKE_CXX_COMPILER=$(which ${{ matrix.compiler-version[1] }}) \
-          -D ELASTICA_BUILD_BENCHMARKS=OFF \
-          -D ELASTICA_BUILD_EXAMPLES=ON \
-          -D ELASTICA_BUILD_PYTHON_BINDINGS=ON \
-          -D ELASTICA_BUILD_DOCUMENTATION=OFF
-
-    - name: Build Tests
-      # Execute tests defined by the CMake configuration.
-      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: |
-        cd ${{github.workspace}}
-        cmake --build build --target RunTests
-
-    - name: Build Tutorials
-      run: |
-        cd ${{github.workspace}}
-        cmake --build build --target all-tutorials
-
-    - name: Build Examples
-      run: |
-        cd ${{github.workspace}}
-        cmake --build build --target all-examples
-
-    - name: Build Case-studies
-      run: |
-        cd ${{github.workspace}}
-        cmake --build build --target all-casestudies
-
-    - name: Build Python-bindings
-      run: |
-        cd ${{github.workspace}}
-        cmake --build build --target all-pybindings
+      - name: Run unit tests
+        if: matrix.run_tests
+        working-directory: build
+        env:
+          CTEST_OUTPUT_ON_FAILURE: "1"
+        run: ctest --output-on-failure --build-config "${{ matrix.build_type }}"
