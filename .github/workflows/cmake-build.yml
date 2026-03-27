@@ -20,30 +20,30 @@ jobs:
             run_tests: true
             asan: false
             ubsan: false
-          # - name: Ubuntu Clang Release
-          #   os: ubuntu-latest
-          #   cc: clang
-          #   cxx: clang++
-          #   build_type: Release
-          #   run_tests: true
-          #   asan: false
-          #   ubsan: false
-          # - name: Ubuntu Clang Debug Sanitizers
-          #   os: ubuntu-latest
-          #   cc: clang
-          #   cxx: clang++
-          #   build_type: Debug
-          #   run_tests: true
-          #   asan: true
-          #   ubsan: true
-          # - name: macOS AppleClang Release Build
-          #   os: macos-latest
-          #   cc: clang
-          #   cxx: clang++
-          #   build_type: Release
-          #   run_tests: true
-          #   asan: false
-          #   ubsan: false
+          - name: Ubuntu Clang Release
+            os: ubuntu-latest
+            cc: clang
+            cxx: clang++
+            build_type: Release
+            run_tests: true
+            asan: false
+            ubsan: false
+          - name: Ubuntu Clang Debug Sanitizers
+            os: ubuntu-latest
+            cc: clang
+            cxx: clang++
+            build_type: Debug
+            run_tests: true
+            asan: true
+            ubsan: true
+          - name: macOS AppleClang Release Build
+            os: macos-latest
+            cc: clang
+            cxx: clang++
+            build_type: Release
+            run_tests: true
+            asan: false
+            ubsan: false
 
     steps:
       - uses: actions/checkout@v4

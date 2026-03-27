@@ -48,7 +48,8 @@ namespace elastica {
     auto H5Metadata::register_metadata(::elastica::TimeMetadata time_metadata)
         -> FileName {
       auto formatted_id =
-          format(std::to_string(time_metadata.id.step()), *this);
+          ::elastica::io::format(std::to_string(time_metadata.id.step()),
+                                 *this);
 
       auto metadata_group = metadata_file().createGroup(formatted_id);
       write_data(metadata_group, time_metadata, "TimeMetadata");

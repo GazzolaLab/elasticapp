@@ -269,14 +269,15 @@ namespace elastica {
               CosseratRodCrossSectionInterface<Traits, BlockLike, CrossSection>&
                   this_component,
               CosseratInitializer&& initializer) {
-            auto&& stable_initializer = initializer;
             // 1. Initialize parent
-            Parent::initialize(this_component, stable_initializer);
+            Parent::initialize(this_component,
+                               std::forward<CosseratInitializer>(initializer));
 
             // 2. Initialize required variables
             initialize_component<
                 typename VariableDefinitions::InitializedVariables>(
-                this_component.self(), stable_initializer);
+                this_component.self(),
+                std::forward<CosseratInitializer>(initializer));
 
             // 3. Computed tags (<conserved> volumes)
             {
