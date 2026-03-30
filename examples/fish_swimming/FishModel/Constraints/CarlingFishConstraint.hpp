@@ -32,7 +32,7 @@ namespace fish {
 
         auto const& rod = rod_like.self();
 
-        auto const n_elems{cpp17::size(rod)};
+        auto const n_elems{std::size(rod)};
         real_t const length{::blaze::sum(
             ::elastica::get<::elastica::tags::ReferenceElementLength>(rod))};
         real_t const total_mass{
