@@ -67,7 +67,7 @@ namespace fish {
 
       // sanity check cross section classes
       static_assert(
-          cpp17::is_same_v<typename Parent::CrossSection, CrossSection>,
+          std::is_same_v<typename Parent::CrossSection, CrossSection>,
           "Cross section assertion failure, contact the developers!");
 
      protected:

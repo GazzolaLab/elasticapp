@@ -35,7 +35,7 @@ namespace py_bindings {
       // Wrapper for basic type operations
       auto py_cosserat_rod =
           py::class_<type>(m, "Fish")
-              .def("__len__", [](const type& t) { return cpp17::size(t); })
+              .def("__len__", [](const type& t) { return std::size(t); })
               .def(
                   "__str__",
                   +[](const type& /*meta*/) { return std::string("Fish"); });
@@ -50,7 +50,7 @@ namespace py_bindings {
       // Wrapper for basic type operations
       auto py_cosserat_rod =
           py::class_<type>(m, "FishView")
-              .def("__len__", [](const type& t) { return cpp17::size(t); })
+              .def("__len__", [](const type& t) { return std::size(t); })
               .def(
                   "__str__",
                   +[](const type& /*meta*/) { return std::string("FishView"); })

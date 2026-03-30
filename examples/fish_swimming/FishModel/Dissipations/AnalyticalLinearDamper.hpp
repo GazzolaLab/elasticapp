@@ -29,7 +29,7 @@ namespace fish {
           ::elastica::get<::elastica::tags::InvMassSecondMomentOfInertia>(rod)};
 
       constexpr std::size_t dim{3UL};
-      const auto n_elem{cpp17::size(rod)};
+      const auto n_elem{std::size(rod)};
       const auto n_node{n_elem + 1UL};
 
       // Compute exponential damping constants
@@ -118,7 +118,7 @@ namespace fish {
       const real_t translational_mode_damping_coeff =
           std::exp(-damping_coeff_dt);
       constexpr std::size_t dim{3UL};
-      const auto n_elem(cpp17::size(rod));
+      const auto n_elem(std::size(rod));
 
       auto&& mass = ::elastica::get<elastica::tags::Mass>(rod);
 
@@ -148,7 +148,7 @@ namespace fish {
             ::elastica::velocity(rod_system) *=
                 translational_mode_damping_coeff;
             // Easier to encode as powers
-            auto const n_elem(cpp17::size(rod_system));
+            auto const n_elem(std::size(rod_system));
             auto&& omega = ::elastica::angular_velocity(rod_system);
             auto&& dil =
                 ::blocks::get<elastica::tags::ElementDilatation>(rod_system);
