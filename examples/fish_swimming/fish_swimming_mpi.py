@@ -17,9 +17,12 @@ from elasticapp.CaseStudies.PyFishCaseStudy import FishCaseStudy
 from elasticapp.Arrays._PyArrays import Matrix
 
 
-def reload_flow_interaction(
-    flow_interaction: ImmersedBodyFlowInteractionMPI, time: float
-) -> None:
+def reload_flow_interaction(flow_interaction: ImmersedBodyFlowInteractionMPI, time: float) -> None:
+    """Reload the flow interaction state from the given time.
+
+    Must be called after restart.
+    """
+
     flow_interaction.time = time
     flow_interaction.forcing_grid.compute_lag_grid_position_field()
     flow_interaction.forcing_grid.compute_lag_grid_velocity_field()
@@ -46,10 +49,13 @@ def distribute_fish(
     num_fish_total: int,
     mode: str = "kz",
 ) -> tuple[list, list]:
+    """Distribute the fish across MPI ranks based on the given mode:
+    
+    even: Distribute the fish as evenly as possible across all ranks.
+    kz: Allocate all fish to rank 0.
+    """
     if mode.lower() == "even":
-        num_fish_per_rank = np.ones((mpi_size,), np.int32) * (
-            num_fish_total // mpi_size
-        )
+        num_fish_per_rank = np.ones((mpi_size,), np.int32) * (num_fish_total // mpi_size)
         rem = num_fish_total % mpi_size
         num_fish_per_rank[:rem] += 1
         indices = np.insert(np.cumsum(num_fish_per_rank), 0, 0)
@@ -71,9 +77,7 @@ def distribute_fish(
     default=1.0,
     help="Non-dimensional final time of the simulation. Scaled by the period.",
 )
-@click.option(
-    "--n-elem", "-n", type=int, default=16, help="Number of elements per fish."
-)
+@click.option("--n-elem", "-n", type=int, default=16, help="Number of elements per fish.")
 @click.option(
     "--grid-size-x",
     "-g",
@@ -270,9 +274,7 @@ def run_fish_swimming_mpi(
             dt_scale=5e-4,
             period=period,
         )
-        elastic_fish_list, virtual_fish_list, flow_forces, flow_torques = (
-            cs.communicate()
-        )
+        elastic_fish_list, virtual_fish_list, flow_forces, flow_torques = cs.communicate()
         flow_forces = np.asarray(flow_forces)
         flow_torques = np.asarray(flow_torques)
     else:
@@ -320,8 +322,7 @@ def run_fish_swimming_mpi(
     # ================ IO ================
     if has_fish:
         num_lag_node_per_fish = (
-            flow_interactions[mpi_rank].forcing_grid.num_lag_nodes
-            // num_fish_per_rank[mpi_rank]
+            flow_interactions[mpi_rank].forcing_grid.num_lag_nodes // num_fish_per_rank[mpi_rank]
         )
         lag_fields = {
             "position_mismatch": flow_interactions[
@@ -338,9 +339,7 @@ def run_fish_swimming_mpi(
             "velocity_mismatch": None,
         }
 
-    num_lag_node_per_fish = flow_sim.mpi_construct.grid.bcast(
-        num_lag_node_per_fish, root=0
-    )
+    num_lag_node_per_fish = flow_sim.mpi_construct.grid.bcast(num_lag_node_per_fish, root=0)
     fish_writer = fuio.MPIFishIO(
         mpi_comm=flow_sim.mpi_construct.grid,
         fish_list=elastic_fish_list,
@@ -410,17 +409,13 @@ def run_fish_swimming_mpi(
             fish_time = cs.current_time() if has_fish else 0.0
             fish_time = flow_sim.mpi_construct.grid.bcast(fish_time, root=0)
             fish_writer.write_to_file(
-                filename=os.path.join(
-                    data_dir, f"fish_{int(flow_sim.time * 1000):04d}.h5"
-                ),
+                filename=os.path.join(data_dir, f"fish_{int(flow_sim.time * 1000):04d}.h5"),
                 time=fish_time,
             )
 
             # Log flow data for all ranks (HDF5-MPI)
             flow_writer.write_to_file(
-                filename=os.path.join(
-                    data_dir, f"flow_{int(flow_sim.time * 1000):04d}.vtkhdf"
-                ),
+                filename=os.path.join(data_dir, f"flow_{int(flow_sim.time * 1000):04d}.vtkhdf"),
                 time=flow_sim.time,
                 velocity=flow_sim.velocity_field,
                 vorticity=flow_sim.vorticity_field,
@@ -455,9 +450,7 @@ def run_fish_swimming_mpi(
         a = time()
         for flow_interaction in flow_interactions:
             flow_interaction()
-            flow_interaction.update_buffers(
-                flow_interaction.forcing_grid.position_field
-            )
+            flow_interaction.update_buffers(flow_interaction.forcing_grid.position_field)
         fsi_time += time() - a
 
         # Flow step
