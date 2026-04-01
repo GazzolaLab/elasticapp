@@ -134,8 +134,16 @@ implemented correctly.
     }
   };
 
+  struct n_steps {
+    using type = std::size_t;
+    static constexpr String help = {
+        "Number of simulation steps to run. Set to 0 to use the final "
+        "simulation time."};
+    static type default_value() { return 0UL; }
+  };
+
   using Parameters = tmpl::list<n_rods, n_elements, angle_of_inclination,
-                                length, final_sim_time, dt>;
+                                length, final_sim_time, dt, n_steps>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);
@@ -170,6 +178,7 @@ implemented correctly.
       decltype(simulator->get_invalid_ref<CosseratRodWithoutDamping>());
   std::vector<RodRef> rod_refs;
   ::elastica::real_t final_time;
+  std::size_t n_steps_to_run = n_steps::default_value();
 };
 
 ELASTICA_REGISTER_CASE_STUDY(ButterflyCaseStudy);

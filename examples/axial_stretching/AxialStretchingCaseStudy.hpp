@@ -145,9 +145,18 @@ oscillations enables comparison with theory.
     }
   };
 
+  struct n_steps {
+    using type = std::size_t;
+    static constexpr String help = {
+        "Number of simulation steps to run. Set to 0 to use the default "
+        "runtime."};
+    static type default_value() { return 0UL; }
+  };
+
   using Parameters =
       tmpl::list<n_elements, damping_rate, youngs_modulus, applied_force,
-                 radius, length, rampup_interval, rampup_profile, dt>;
+                 radius, length, rampup_interval, rampup_profile, dt,
+                 n_steps>;
 
   /* Required functions */
   void setup(InputTypes<This> const& input_parameters);
@@ -172,6 +181,7 @@ oscillations enables comparison with theory.
       Configuration::make_simulator();
   using RodRef = decltype(simulator->get_invalid_ref<CosseratRod>());
   RodRef rod_ref = simulator->get_invalid_ref<CosseratRod>();
+  std::size_t n_steps_to_run = n_steps::default_value();
 };
 
 ELASTICA_REGISTER_CASE_STUDY(AxialStretchingCaseStudy);
