@@ -145,6 +145,7 @@ void TimoshenkoCaseStudy::setup(InputTypes<This> const& input_parameters) {
 
   // Set the dt value
   set_dt(::elastica::get<dt>(input_parameters));
+  n_steps_to_run = ::elastica::get<n_steps>(input_parameters);
 }
 
 void TimoshenkoCaseStudy::step() {
@@ -162,7 +163,9 @@ void TimoshenkoCaseStudy::run() {
   const auto n_elements = ::elastica::size(rod_ref.get());
   constexpr auto x_axis = 0UL;
 
-  const auto n_iterations = static_cast<std::size_t>(final_time / current_dt());
+  const auto n_iterations =
+      n_steps_to_run ? n_steps_to_run
+                     : static_cast<std::size_t>(final_time / current_dt());
 
   const std::size_t write_interval = 200UL;
   //  time_and_disps.reserve(n_steps / write_interval);
