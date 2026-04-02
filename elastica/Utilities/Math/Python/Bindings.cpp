@@ -30,7 +30,7 @@ namespace py_bindings {
 
 PYBIND11_MODULE(_PyArrays, m) {  // NOLINT
   m.doc() = R"pbdoc(
-    Bindings for Elastica++ array types
+    Python bindings for Elastica++ array types.
     )pbdoc";
   py_bindings::bind_blaze_vector(m);
   py_bindings::bind_blaze_index_vector(m);

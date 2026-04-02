@@ -22,11 +22,9 @@ namespace py_bindings {
 }  // namespace py_bindings
 
 PYBIND11_MODULE(_PyRigidBody, m) {  // NOLINT
-  // TODO : detailed documentation
   m.doc() = R"pbdoc(
-    Bindings for Elastica++ RigidBody types
+    Python bindings for Elastica++ rigid body types.
     )pbdoc";
-  // Experimental : what are the drawbacks
   py::module::import("elasticapp.Arrays");
   py::module::import("elasticapp.Systems.Tags");
   //

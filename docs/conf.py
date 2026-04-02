@@ -19,9 +19,9 @@ sys.path.insert(0, '@CMAKE_SOURCE_DIR@/docs')
 
 # -- Project information -----------------------------------------------------
 
-project = 'elastica'
-copyright = 'Unknown'
-author = 'Unkonw'
+project = 'Elastica++'
+copyright = 'Elastica development team'
+author = 'Elastica development team'
 
 # -- General configuration ---------------------------------------------------
 

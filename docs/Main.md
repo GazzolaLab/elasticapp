@@ -19,6 +19,6 @@ and muscles.
 
 `Elastica++` models these filaments using Cosserat rod theory which allows for modeling assemblies of such rods while
 interacting with complex exogenous (surface contact, friction and hydrodynamics) and endogenous (muscular activity)
-effects. `Elastica++` maps such assemblies efficiently to multicore processors using a novel Block architecure which
+effects. `Elastica++` maps such assemblies efficiently to multicore processors using a novel Block architecture which
 allows it to scale from laptops to computing clusters. More information about `Elastica++` is available at the
 Elastica [project website](https://cosseratrods.org)

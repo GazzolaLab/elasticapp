@@ -1,13 +1,12 @@
 \cond NEVER Distributed under the MIT License. See LICENSE.txt for details. \endcond
 
-# Installation of Py-binded case-studies {#python_installation}
+# Installation of Python-bound case studies {#python_installation}
 
-In order to generate and install the Python bindings for case-studies make sure to run the following steps:
+To generate and install the Python bindings for case studies:
 
-1. Compile the case study using Cmake.
-2. Go to the `cmake-build` folder.
-3. Go to `bin/python`
-4. Run the command: `python3 -m pip install --editable .`
+1. Configure and build the project with `ELASTICA_BUILD_PYTHON_BINDINGS=ON`.
+2. Change into the build tree's `bin/python` directory.
+3. Run `python3 -m pip install --editable .`.
 
-This should install a package called `elasticapp` system-wide in editable mode (https://stackoverflow.com/a/30306403).
-You can also add `--user` in case you want to install it for a particular user.
+This installs the `elasticapp` package in editable mode. Add `--user` if you want
+to install it for only the current user.

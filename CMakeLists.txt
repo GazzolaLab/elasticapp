@@ -66,10 +66,9 @@ include(Logging)
 set_logs_on()
 set_log_level("DEBUG") # INFO  DEBUG  HEAVYDEBUG
 
-option(DOCS_ONLY "Skip all initialization not required for rendering documentation" OFF)
 option(ELASTICA_BUILD_BENCHMARKS "Build microbenchmarks" OFF)
 option(ELASTICA_BUILD_EXAMPLES "Build examples" OFF)
-option(ELASTICA_BUILD_DOCUMENTATION "Builds the documentation in addition to code" OFF)
+option(ELASTICA_BUILD_DOCUMENTATION "Configure the documentation target and skip code targets" OFF)
 option(ELASTICA_BUILD_PYTHON_BINDINGS "Build the python bindings for elastica" ON)
 
 # Define standard installation directories before since python targets utilize
@@ -84,9 +83,7 @@ include(ElasticaSetSiteName)
 
 if (ELASTICA_BUILD_DOCUMENTATION)
     include(SetupDoxygen)
-    if (DOCS_ONLY)
-        return()
-    endif(DOCS_ONLY)
+    return()
 endif (ELASTICA_BUILD_DOCUMENTATION)
 
 include(ProhibitInSourceBuild)

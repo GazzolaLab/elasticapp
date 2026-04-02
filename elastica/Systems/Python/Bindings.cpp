@@ -23,7 +23,7 @@ namespace py_bindings {
 
 PYBIND11_MODULE(_PyTags, m) {  // NOLINT
   m.doc() = R"pbdoc(
-    Bindings for Elastica++ tag types
+    Python bindings for Elastica++ system tag types.
     )pbdoc";
   py_bindings::bind_tags(m);
 }

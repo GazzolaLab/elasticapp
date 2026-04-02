@@ -23,11 +23,9 @@ namespace py_bindings {
 }  // namespace py_bindings
 
 PYBIND11_MODULE(_PyCosseratRods, m) {  // NOLINT
-  // TODO : detailed documentation
   m.doc() = R"pbdoc(
-    Bindings for Elastica++ CosseratRod types
+    Python bindings for Elastica++ Cosserat rod types.
     )pbdoc";
-  // Experimental : what are the drawbacks
   py::module::import("elasticapp.Arrays");
   py::module::import("elasticapp.Systems.Tags");
   //
