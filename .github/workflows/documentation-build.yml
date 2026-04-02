@@ -4,8 +4,11 @@ on:
   pull_request:
     branches: ["main"]
     paths:
+      - ".github/workflows/documentation-build.yml"
+      - "CMakeLists.txt"
       - "docs/**"
       - "elastica/**"
+      - "README.md"
 
 jobs:
   docs:
@@ -20,11 +23,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build doxygen graphviz
 
-      - name: Set up vcpkg
-        uses: lukka/run-vcpkg@v11
-        with:
-          vcpkgJsonGlob: "vcpkg.json"
-
       - name: Print tool versions
         run: |
           cmake --version
@@ -36,7 +34,6 @@ jobs:
           cmake \
             -B build \
             -G Ninja \
-            -D CMAKE_TOOLCHAIN_FILE="${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" \
             -D ELASTICA_BUILD_DOCUMENTATION=ON
 
       - name: Build documentation

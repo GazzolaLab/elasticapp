@@ -42,7 +42,6 @@ jobs:
             -D CMAKE_TOOLCHAIN_FILE="${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" \
             -D BUILD_TESTING=OFF \
             -D ELASTICA_BUILD_BENCHMARKS=OFF \
-            -D ELASTICA_BUILD_DOCUMENTATION=OFF \
             -D ELASTICA_BUILD_EXAMPLES=ON \
             -D ELASTICA_BUILD_PYTHON_BINDINGS=ON
 

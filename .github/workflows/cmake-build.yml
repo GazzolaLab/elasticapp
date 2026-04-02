@@ -95,7 +95,6 @@ jobs:
             -D ASAN=${{ matrix.asan }} \
             -D UBSAN_UNDEFINED=${{ matrix.ubsan }} \
             -D ELASTICA_BUILD_BENCHMARKS=OFF \
-            -D ELASTICA_BUILD_DOCUMENTATION=OFF \
             -D ELASTICA_BUILD_EXAMPLES=OFF \
             -D ELASTICA_BUILD_PYTHON_BINDINGS=OFF
 
