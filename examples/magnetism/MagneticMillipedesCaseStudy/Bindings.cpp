@@ -16,6 +16,7 @@
 //******************************************************************************
 
 #include <cstddef>
+#include <iterator>
 #include <string>
 #include <utility>
 //
@@ -58,7 +59,7 @@ namespace py_bindings {
       // Wrapper for basic type operations
       auto py_cosserat_rod =
           py::class_<type>(m, "BackBoneCrissRod")
-              .def("__len__", [](const type& t) { return cpp17::size(t); })
+              .def("__len__", [](const type& t) { return std::size(t); })
               .def(
                   "__str__", +[](const type& /*meta*/) {
                     return std::string("BackBoneCrissRod");
@@ -75,7 +76,7 @@ namespace py_bindings {
       // Wrapper for basic type operations
       auto py_cosserat_rod =
           py::class_<type>(m, "BackBoneCrissRodView")
-              .def("__len__", [](const type& t) { return cpp17::size(t); })
+              .def("__len__", [](const type& t) { return std::size(t); })
               .def(
                   "__str__",
                   +[](const type& /*meta*/) {
@@ -117,7 +118,7 @@ namespace py_bindings {
       // Wrapper for basic type operations
       auto py_cosserat_rod =
           py::class_<type>(m, "BackBoneCrossRod")
-              .def("__len__", [](const type& t) { return cpp17::size(t); })
+              .def("__len__", [](const type& t) { return std::size(t); })
               .def(
                   "__str__", +[](const type& /*meta*/) {
                     return std::string("BackBoneCrossRod");
@@ -134,7 +135,7 @@ namespace py_bindings {
       // Wrapper for basic type operations
       auto py_cosserat_rod =
           py::class_<type>(m, "BackBoneCrossRodView")
-              .def("__len__", [](const type& t) { return cpp17::size(t); })
+              .def("__len__", [](const type& t) { return std::size(t); })
               .def(
                   "__str__",
                   +[](const type& /*meta*/) {

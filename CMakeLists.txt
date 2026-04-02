@@ -82,10 +82,12 @@ set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY ON)
 include(ElasticaGetGitHash)
 include(ElasticaSetSiteName)
 
-if (ELASTICA_BUILD_DOCUMENTATION AND DOCS_ONLY)
+if (ELASTICA_BUILD_DOCUMENTATION)
     include(SetupDoxygen)
-    return()
-endif (ELASTICA_BUILD_DOCUMENTATION AND DOCS_ONLY)
+    if (DOCS_ONLY)
+        return()
+    endif(DOCS_ONLY)
+endif (ELASTICA_BUILD_DOCUMENTATION)
 
 include(ProhibitInSourceBuild)
 include(CheckCompilerVersion)
@@ -135,9 +137,6 @@ include(SetupYamlCpp)
 include(SetupFilesystem)
 include(SetupSpline) # Optional for active matter cases
 
-if (ELASTICA_BUILD_DOCUMENTATION)
-    include(SetupDoxygen)
-endif (ELASTICA_BUILD_DOCUMENTATION)
 include(CodeCoverageDetection)
 
 include(ElasticaSetupTesting)

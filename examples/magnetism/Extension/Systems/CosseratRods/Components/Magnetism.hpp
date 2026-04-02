@@ -20,6 +20,7 @@
 #include <elastica/Systems/CosseratRods/Components/Initialization.hpp>
 #include <elastica/Utilities/CRTP.hpp>
 #include <elastica/Utilities/TMPL.hpp>
+#include <utility>
 
 #include "Extension/Systems/CosseratRods/Components/Tags.hpp"
 #include "Extension/Systems/CosseratRods/Components/Types.hpp"
@@ -143,7 +144,7 @@ namespace elastica {
               std::forward<CosseratInitializer>(initializer));
 
           auto const n_elem = blocks::get<elastica::tags::NElement>(
-              cpp17::as_const(initializer))();
+              std::as_const(initializer))();
 
           {
             using Variable = Magnetization;

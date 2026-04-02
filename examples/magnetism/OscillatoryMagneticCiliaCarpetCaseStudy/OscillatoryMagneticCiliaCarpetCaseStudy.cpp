@@ -15,10 +15,12 @@
 #include "OscillatoryMagneticCiliaCarpetCaseStudy.hpp"
 
 #include <cmath>
+#include <iterator>
 #include <elastica/ErrorHandling/FloatingPointExceptions.hpp>
 #include <elastica/Simulator/Materials.hpp>
 #include <elastica/Utilities/Get.hpp>
 #include <set>
+#include <tuple>
 
 template <template <typename> class ViewOrSliceGenerator>
 auto make_damping_constraint(
@@ -33,7 +35,7 @@ auto make_damping_constraint(
   auto rod = blocks::generate_from(generator);
   const real_t translational_mode_damping_coeff = std::exp(-damping_coeff_dt);
   constexpr std::size_t dim{3UL};
-  const auto n_elem(cpp17::size(rod));
+  const auto n_elem(std::size(rod));
 
   auto&& mass = ::elastica::get<elastica::tags::Mass>(rod);
 
@@ -63,7 +65,7 @@ auto make_damping_constraint(
             ::elastica::velocity(rod_system) *=
                 translational_mode_damping_coeff;
             // Easier to encode as powers
-            auto const n_elem(cpp17::size(rod_system));
+            auto const n_elem(std::size(rod_system));
             auto&& omega = ::elastica::angular_velocity(rod_system);
             auto&& dil =
                 ::blocks::get<elastica::tags::ElementDilatation>(rod_system);
@@ -229,7 +231,7 @@ void OscillatoryMagneticCiliaCarpetCaseStudy::setup(
     }
 
     auto& container = simulator->get_system_collection_container();
-    auto const block_count = cpp17::apply(
+    auto const block_count = std::apply(
         [](auto&... cont) {
           std::size_t count = 0UL;
           EXPAND_PACK_LEFT_TO_RIGHT(count += cont.size());
