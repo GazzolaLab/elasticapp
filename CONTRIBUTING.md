@@ -23,6 +23,27 @@ the collective opinion of the `elastica++` developers.
 Please use `clang-format` together with the configuration file shipped with the
 repository for all C++ code formatting.
 
+- The repository configuration lives in
+  [`.clang-format`](/Users/skim0119/github/elasticapp/.clang-format).
+- A typical invocation is:
+
+```bash
+clang-format -i -style=file path/to/file.cpp
+```
+
+### CMake Format
+
+Please use `cmake-format` together with the configuration file shipped with the
+repository for CMake formatting.
+
+- The repository configuration lives in
+  [`.cmake-format.yaml`](/Users/skim0119/github/elasticapp/.cmake-format.yaml).
+- A typical invocation is:
+
+```bash
+cmake-format -i path/to/CMakeLists.txt
+```
+
 ### Avoid the `typedef` Keyword
 
 Use `using` rather than `typedef` when declaring type definitions.
