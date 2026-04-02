@@ -28,7 +28,9 @@
 #include "IsotropicFrictionPlane.hpp"
 //
 #include <cmath>
+#include <iterator>
 #include <set>
+#include <tuple>
 
 template <typename Traits, template <typename> class ComputationalBlock,
           template <typename /*CRT*/, typename /*InitializedBlock*/>
@@ -44,7 +46,7 @@ auto make_damping_constraint(
 
   const real_t translational_mode_damping_coeff = std::exp(-damping_coeff_dt);
   constexpr std::size_t dim{3UL};
-  const auto n_elem(cpp17::size(rod));
+  const auto n_elem(std::size(rod));
 
   auto&& mass = ::elastica::get<elastica::tags::Mass>(rod);
 
@@ -74,7 +76,7 @@ auto make_damping_constraint(
             ::elastica::velocity(rod_system) *=
                 translational_mode_damping_coeff;
             // Easier to encode as powers
-            auto const n_elem(cpp17::size(rod_system));
+            auto const n_elem(std::size(rod_system));
             auto&& omega = ::elastica::angular_velocity(rod_system);
             auto&& dil =
                 ::blocks::get<elastica::tags::ElementDilatation>(rod_system);
@@ -642,7 +644,7 @@ void MagneticMillipedesCaseStudy::setup(
 
   // Thread-safe version
   auto& container = simulator->get_system_collection_container();
-  auto const block_counts = cpp17::apply(
+  auto const block_counts = std::apply(
       [](auto&... cont) { return std::make_tuple(cont.size()...); }, container);
   std::cout << "Block Count: " << block_counts << '\n';
 
@@ -834,8 +836,8 @@ void MagneticMillipedesCaseStudy::group_parallel_connection(
 
   const bool same_size_constraint_satisfied =
       std::all_of(rod_list.cbegin(), rod_list.cend(),
-                  [s = cpp17::size(rod_list[0].get())](auto& rod_ref) {
-                    return cpp17::size(rod_ref.get()) == s;
+                  [s = std::size(rod_list[0].get())](auto& rod_ref) {
+                    return std::size(rod_ref.get()) == s;
                   });
   if (not same_size_constraint_satisfied) {
     throw std::runtime_error("Not same size");
@@ -848,7 +850,7 @@ void MagneticMillipedesCaseStudy::group_parallel_connection(
   auto rod_one = v_one_ref.get();
   auto rod_two = v_two_ref.get();
 
-  const std::size_t n_dofs = cpp17::size(rod_one);
+  const std::size_t n_dofs = std::size(rod_one);
 
   blaze::DynamicMatrix<real_t> rod_one_direction_vec_in_material_frame(3UL,
                                                                        n_dofs);

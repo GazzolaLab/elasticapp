@@ -16,6 +16,7 @@
 //******************************************************************************
 
 #include <cstddef>
+#include <iterator>
 #include <string>
 #include <utility>
 //
@@ -58,7 +59,7 @@ namespace py_bindings {
       // Wrapper for basic type operations
       auto py_cosserat_rod =
           py::class_<type>(m, "MagnetizedCosseratRod")
-              .def("__len__", [](const type& t) { return cpp17::size(t); })
+              .def("__len__", [](const type& t) { return std::size(t); })
               .def(
                   "__str__", +[](const type& /*meta*/) {
                     return std::string("MagnetizedCosseratRod");
@@ -75,7 +76,7 @@ namespace py_bindings {
       // Wrapper for basic type operations
       auto py_cosserat_rod =
           py::class_<type>(m, "MagnetizedCosseratRodView")
-              .def("__len__", [](const type& t) { return cpp17::size(t); })
+              .def("__len__", [](const type& t) { return std::size(t); })
               .def(
                   "__str__",
                   +[](const type& /*meta*/) {

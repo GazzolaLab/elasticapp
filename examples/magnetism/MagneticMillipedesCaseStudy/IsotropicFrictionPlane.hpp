@@ -12,6 +12,7 @@
 #include <elastica/Utilities/Math/Vec3.hpp>
 //
 #include <cmath>
+#include <iterator>
 
 /*
  This function takes the velocity of elements and checks if they are larger than
@@ -61,7 +62,7 @@ void calculate_force(
     elastica::real_t const slip_velocity_tol, elastica::real_t const kinetic_mu,
     elastica::real_t const static_mu) {
   //  auto& system = block_like.self();
-  auto const n_elem = cpp17::size(system);
+  auto const n_elem = std::size(system);
 
   // std::cout << system.get_internal_loads() << std::endl;
 
