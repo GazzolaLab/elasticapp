@@ -1,36 +1,17 @@
-# Elastica++
+<div align='center'>
+<h1> Elastica++</h1>
 
-[![](https://img.shields.io/badge/c%2B%2B-14-blue.svg)](https://en.wikipedia.org/wiki/CollisionConfi%2B%2B#Standardization)
-[![](https://img.shields.io/badge/license-MIT-blue.svg)]()
-[![CMake Build](https://github.com/GazzolaLab/elasticapp/actions/workflows/cmake-build.yml/badge.svg?branch=main)](https://github.com/GazzolaLab/elasticapp/actions/workflows/cmake-build.yml)
+[![](https://img.shields.io/badge/c%2B%2B-20-blue.svg)](https://isocpp.org/)
+[![](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![CMake Build](https://github.com/GazzolaLab/elasticapp/actions/workflows/cmake-build.yml/badge.svg)](https://github.com/GazzolaLab/elasticapp/actions/workflows/cmake-build.yml)
+[![Example Run](https://github.com/GazzolaLab/elasticapp/actions/workflows/examples-smoke-run.yml/badge.svg)](https://github.com/GazzolaLab/elasticapp/actions/workflows/examples-smoke-run.yml)
+[![Documentation Build](https://github.com/GazzolaLab/elasticapp/actions/workflows/documentation-build.yml/badge.svg)](https://github.com/GazzolaLab/elasticapp/actions/workflows/documentation-build.yml)
+</div>
 
-| Job | Purpose | Compiler | OS | Build Type | Unit Tests | Sanitizers |
-|---|---|---|---|---|---|---|
-| Ubuntu GCC Debug | Baseline Linux test job | `gcc` | `ubuntu-latest` | `Debug` | Yes | No |
-| Ubuntu Clang Release | Optimized Linux test job | `clang` | `ubuntu-latest` | `Release` | Yes | No |
-| Ubuntu Clang Debug Sanitizers | Memory and UB checking | `clang` | `ubuntu-latest` | `Debug` | Yes | ASan/UBSan |
-| macOS AppleClang Release Build | macOS build coverage | `AppleClang` | `macos-latest` | `Release` | No | No |
+Efficiently simulate soft filaments on devices ranging from laptops to
+supercomputing clusters.
 
-*Efficiently simulate soft-filaments on devices from your laptop to supercomputing clusters.*
-
-[Add project logo.]
-
-- [About](#sec-1)
-- [Setup](#sec-2)
-    - [Installation](#sec-2-1)
-    - [Build](#sec-2-2)
-- [Usage](#sec-x)
-- [Development](#sec-3)
-    - [Pre-Requisites](#sec-3-1)
-    - [Development Environment](#sec-3-2)
-    - [Build](#sec-3-3)
-    - [Deployment](#sec-3-4)
-- [Community](#sec-4)
-    - [Contribution](#sec-4-1)
-    - [Branches](#sec-4-2)
-    - [Guideline](#sec-4-3)
-
-# About<a id="sec-1"></a>
+## About
 
 `Elastica++` is a `C++` package to simulate the dynamics of soft-filaments that, at every cross-section, can undergo all
 six possible modes of deformation, allowing the filament to bend, twist, stretch and shear. Such slender structures are
