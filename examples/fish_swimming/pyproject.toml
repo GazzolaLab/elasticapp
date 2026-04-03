@@ -6,12 +6,11 @@ build-backend = "setuptools.build_meta"
 name = "fish_swimming_utils"
 version = "0.0.1"
 description = "Python utilities for fish swimming simulations"
-requires-python = ">=3.10"
+requires-python = ">=3.10, <3.14"
 dependencies = [
   "h5py",
-  "typing-extensions"
+  "sopht @ git+https://github.com/SophT-Team/SophT.git#egg=package[]"
 ]
 
 [tool.setuptools.package-dir]
 "fish_utils" = "utils"
-"vtkh5py" = "utils/io/vtkh5py"
