@@ -1,40 +1,59 @@
-# Distributed under the MIT License.
-# See LICENSE.txt for details.
-
-log_info("Finding Doxygen")
-
+message(STATUS "Finding Doxygen")
 find_package(Doxygen REQUIRED)
 
-if (DOXYGEN_FOUND)
-    log_debug("DOXYGEN_VERSION: ${DOXYGEN_VERSION}")
+set(ELASTICA_DOCS_OUTPUT_DIR "${PROJECT_BINARY_DIR}/docs/html")
+set(ELASTICA_DOCS_DOXYFILE "${PROJECT_BINARY_DIR}/docs/Doxyfile")
+set(ELASTICA_DOCS_THEME_DIR "${PROJECT_BINARY_DIR}/docs/doxygen-awesome-css")
+set(ELASTICA_DOCS_WARN_LOG "${PROJECT_BINARY_DIR}/docs/doxygen-warnings.log")
+set(ELASTICA_DOCS_TARGET_OUTPUT_ROOT "${PROJECT_BINARY_DIR}")
 
-    set(ELASTICA_DOX_GENERATE_HTML "YES")
-    set(ELASTICA_DOX_GENERATE_XML "NO")
+set(ELASTICA_DOXYGEN_HTML_EXTRA_STYLESHEETS "")
+set(ELASTICA_DOXYGEN_HTML_EXTRA_FILES "")
 
-    configure_file(
-            docs/Doxyfile.in
-            ${PROJECT_BINARY_DIR}/docs/DoxyfileHtml @ONLY IMMEDIATE
-    )
+include(FetchContent)
+FetchContent_Declare(
+        doxygen-awesome-css
+        URL https://github.com/jothepro/doxygen-awesome-css/archive/refs/heads/main.zip
+        DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
+FetchContent_MakeAvailable(doxygen-awesome-css)
+FetchContent_GetProperties(doxygen-awesome-css SOURCE_DIR AWESOME_CSS_DIR)
 
-    # Construct the command that calls Doxygen
-    set(
-            GENERATE_DOCS_COMMAND
-            "${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/docs/DoxyfileHtml"
-    )
+string(JOIN " \\\n    " ELASTICA_DOXYGEN_HTML_EXTRA_STYLESHEETS
+        "doxygen-awesome-css/doxygen-awesome.css"
+        "doxygen-awesome-css/doxygen-awesome-sidebar-only.css"
+        "doxygen-awesome-css/doxygen-awesome-sidebar-only-darkmode-toggle.css")
 
-    # Parse the command into a CMake list for the `add_custom_target`
-    separate_arguments(GENERATE_DOCS_COMMAND)
+string(JOIN " \\\n    " ELASTICA_DOXYGEN_HTML_EXTRA_FILES
+        "${ELASTICA_DOCS_THEME_DIR}/doxygen-awesome-darkmode-toggle.js"
+        "${ELASTICA_DOCS_THEME_DIR}/doxygen-awesome-fragment-copy-button.js"
+        "${ELASTICA_DOCS_THEME_DIR}/doxygen-awesome-interactive-toc.js")
 
-    add_custom_target(
-            doc
-            COMMAND ${GENERATE_DOCS_COMMAND}
-            DEPENDS
-            ${PROJECT_BINARY_DIR}/docs/DoxyfileHtml
-            COMMENT
-            "Generating API documentation with Doxygen"
-            VERBATIM
-    )
+file(MAKE_DIRECTORY "${ELASTICA_DOCS_THEME_DIR}")
+file(COPY
+        "${AWESOME_CSS_DIR}/doxygen-awesome.css"
+        "${AWESOME_CSS_DIR}/doxygen-awesome-sidebar-only.css"
+        "${AWESOME_CSS_DIR}/doxygen-awesome-sidebar-only-darkmode-toggle.css"
+        "${AWESOME_CSS_DIR}/doxygen-awesome-darkmode-toggle.js"
+        "${AWESOME_CSS_DIR}/doxygen-awesome-fragment-copy-button.js"
+        "${AWESOME_CSS_DIR}/doxygen-awesome-interactive-toc.js"
+        DESTINATION "${ELASTICA_DOCS_THEME_DIR}")
 
-else (DOXYGEN_FOUND)
-    message(WARNING "Doxygen is needed to build the documentation.")
-endif (DOXYGEN_FOUND)
+configure_file(
+        "${PROJECT_SOURCE_DIR}/docs/Doxyfile.in"
+        "${ELASTICA_DOCS_DOXYFILE}"
+        @ONLY)
+
+add_custom_target(
+        doc
+        COMMAND "${CMAKE_COMMAND}" -E echo "[doc] Starting Doxygen build."
+        COMMAND "${CMAKE_COMMAND}" -E echo "[doc] Warnings will be written to: ${ELASTICA_DOCS_WARN_LOG}"
+        COMMAND "${CMAKE_COMMAND}" -E echo "[doc] HTML output: ${ELASTICA_DOCS_OUTPUT_DIR}"
+        COMMAND "${DOXYGEN_EXECUTABLE}" "${ELASTICA_DOCS_DOXYFILE}"
+        WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/docs"
+        DEPENDS "${ELASTICA_DOCS_DOXYFILE}"
+        COMMENT "Generating API documentation with Doxygen"
+        USES_TERMINAL
+        VERBATIM)
+
+message(STATUS "Documentation target enabled")
+message(STATUS "Documentation output directory: ${ELASTICA_DOCS_OUTPUT_DIR}")
