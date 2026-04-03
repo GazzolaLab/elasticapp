@@ -8,7 +8,7 @@ from typing import Type, Optional
 
 
 class FishFlowInteraction(ImmersedBodyFlowInteraction):
-    """Class for Elastica++ Cosserat rod flow interaction."""
+    """Elastica++ flow interaction construct for a single fish."""
 
     def __init__(
         self,
@@ -28,7 +28,6 @@ class FishFlowInteraction(ImmersedBodyFlowInteraction):
         start_time: float = 0.0,
         **forcing_grid_kwargs,
     ) -> None:
-        """Class initialiser."""
         n_elems = int(cosserat_rod.n_elems[0])
         body_flow_forces = np.zeros(
             (3, n_elems + 1),
@@ -39,7 +38,6 @@ class FishFlowInteraction(ImmersedBodyFlowInteraction):
 
         forcing_grid_kwargs["cosserat_rod"] = cosserat_rod
 
-        # initialising super class
         super().__init__(
             eul_grid_forcing_field,
             eul_grid_velocity_field,
@@ -61,7 +59,7 @@ class FishFlowInteraction(ImmersedBodyFlowInteraction):
 
 
 class MultiFishFlowInteraction(ImmersedBodyFlowInteraction):
-    """Class for Elastica++ Cosserat rod flow interaction."""
+    """Elastica++ flow interaction construct for multiple fish."""
 
     def __init__(
         self,
@@ -81,7 +79,6 @@ class MultiFishFlowInteraction(ImmersedBodyFlowInteraction):
         start_time: float = 0.0,
         **forcing_grid_kwargs,
     ) -> None:
-        """Class initialiser."""
         n_elems = n_nodes = 0
         for fish in fish_list:
             n_elems += int(fish.n_elems[0])
@@ -92,7 +89,6 @@ class MultiFishFlowInteraction(ImmersedBodyFlowInteraction):
 
         forcing_grid_kwargs["fish_list"] = fish_list
 
-        # initialising super class
         super().__init__(
             eul_grid_forcing_field,
             eul_grid_velocity_field,
