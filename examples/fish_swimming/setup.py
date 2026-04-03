@@ -7,7 +7,7 @@ extension = Extension(
     sources=["utils/fish_grid.cpp"],
     include_dirs=[pybind11.get_include(), numpy.get_include()],
     language="c++", 
-    extra_compile_args=["-O3", "-std=c++17", "-march=native"],
+    extra_compile_args=["-O3", "-std=c++20", "-march=native"],
 )
 
 setup(ext_modules=[extension])
