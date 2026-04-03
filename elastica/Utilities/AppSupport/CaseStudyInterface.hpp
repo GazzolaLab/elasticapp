@@ -89,16 +89,6 @@ namespace elastica {
     }
     //**************************************************************************
 
-    //**************************************************************************
-    /*!\brief Step the simulation forward one step with a custom time step.
-     * The rod time step is irreversibly set to the new value.
-     */
-    void step_with(::elastica::real_t updated_dt) {
-      self().set_dt(updated_dt);
-      self().step();
-    }
-    //**************************************************************************
-
     //@}
     //**************************************************************************
 
@@ -165,7 +155,7 @@ namespace elastica {
     /*!\brief Dispatch for CaseStudy not having a reset method
      */
     template <typename U = CaseStudy,
-              Requires<not::tt::is_detected<detail::reset_t, U>{}> = nullptr>
+              Requires<not ::tt::is_detected<detail::reset_t, U>{}> = nullptr>
     void reset_dispatch() const noexcept {}
     //**************************************************************************
 

@@ -20,7 +20,6 @@
 //
 #include <cstdint>
 #include <cstddef>
-#include <cstdint>
 #include <string>
 
 namespace elastica {
