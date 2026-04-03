@@ -44,7 +44,7 @@ jobs:
             -D ELASTICA_BUILD_BENCHMARKS=OFF \
             -D ELASTICA_BUILD_DOCUMENTATION=OFF \
             -D ELASTICA_BUILD_EXAMPLES=ON \
-            -D ELASTICA_BUILD_PYTHON_BINDINGS=OFF
+            -D ELASTICA_BUILD_PYTHON_BINDINGS=ON
 
       - name: Build example executables
         run: |
@@ -54,6 +54,7 @@ jobs:
             example_free_nest \
             example_oscillatory_magnetic_field \
             example_timoshenko \
+            PyFishCaseStudy \
             --parallel
 
       - name: Run Axial Stretching
@@ -86,3 +87,13 @@ jobs:
         working-directory: build
         run: |
           ./bin/example_timoshenko --n_steps 10
+
+      - name: Install Fish Swimming Python dependencies
+        shell: bash 
+        run: |
+          python -m pip install examples/fish_swimming/
+      
+      - name: Run Fish Swimming
+        shell: bash
+        run: |
+          python examples/fish_swimming/fish_swimming.py
