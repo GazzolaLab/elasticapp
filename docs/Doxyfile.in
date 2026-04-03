@@ -1,34 +1,71 @@
-# Distributed under the MIT License.
-# See LICENSE.txt for details.
-
-# Last updated for Doxygen 1.8.10
-# See https://www.stack.nl/~dimitri/doxygen/manual/config.html
-# for documentation on the commands in this file.
-
-#---------------------------------------------------------------------------
-# Project related configuration options
-#---------------------------------------------------------------------------
-
 PROJECT_NAME           = Elastica++
+PROJECT_NUMBER         = "@PROJECT_VERSION@"
+PROJECT_BRIEF          = "@PROJECT_DESCRIPTION@"
 
-PROJECT_NUMBER         = @ELASTICA_VERSION@
+OUTPUT_DIRECTORY       = "@ELASTICA_DOCS_TARGET_OUTPUT_ROOT@"
+CREATE_SUBDIRS         = NO
+ALLOW_UNICODE_NAMES    = YES
 
-OUTPUT_DIRECTORY       = @PROJECT_BINARY_DIR@/docs
+INPUT                  = @ELASTICA_DOXYGEN_INPUTS@
+INPUT_ENCODING         = UTF-8
+FILE_PATTERNS          = *.hpp \
+                         *.cpp \
+                         *.md
+RECURSIVE              = YES
+EXCLUDE_PATTERNS       = */build/* \
+                         */.git/* \
+                         */PythonBindings/* \
+# Markdown files inside our source code for developers get listed
+# which is not what we want. So filter them out
+EXCLUDE_PATTERNS      += @PROJECT_SOURCE_DIR@/elastica/*.md
+EXCLUDE_SYMLINKS       = NO
+EXCLUDE_SYMBOLS        = *brigand*                                    \
+                         *detail*                                     \
+                         ELASTICA_TEST_CASE*                          \
+                         std*                                         \
+                         YAML*
+EXAMPLE_PATH           = @PROJECT_SOURCE_DIR@/tests/ \
+                         @PROJECT_SOURCE_DIR@/examples
+EXAMPLE_RECURSIVE      = NO
+IMAGE_PATH             = @ELASTICA_DOXYGEN_IMAGE_PATHS@
+USE_MDFILE_AS_MAINPAGE = "@PROJECT_SOURCE_DIR@/docs/Main.md"
+STRIP_FROM_PATH        = "@PROJECT_SOURCE_DIR@"
 
-STRIP_FROM_PATH        = @PROJECT_SOURCE_DIR@
-
+OPTIMIZE_OUTPUT_FOR_C  = NO
+OPTIMIZE_OUTPUT_JAVA   = NO
+OPTIMIZE_FOR_FORTRAN   = NO
+OPTIMIZE_OUTPUT_VHDL   = NO
+EXTRACT_ALL            = NO
+EXTRACT_PRIVATE        = NO
+EXTRACT_PRIV_VIRTUAL   = NO
+EXTRACT_PACKAGE        = NO
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = NO
+EXTRACT_ANON_NSPACES   = NO
+HIDE_UNDOC_MEMBERS     = NO
+HIDE_UNDOC_CLASSES     = NO
+HIDE_FRIEND_COMPOUNDS  = NO
+HIDE_IN_BODY_DOCS      = NO
+INTERNAL_DOCS          = NO
+CASE_SENSE_NAMES       = YES
+HIDE_SCOPE_NAMES       = NO
+SHOW_HEADERFILE        = YES
+SHOW_INCLUDE_FILES     = YES
+SHOW_GROUPED_MEMB_INC  = NO
+FORCE_LOCAL_INCLUDES   = NO
+INLINE_INFO            = YES
+SORT_MEMBER_DOCS       = YES
+SORT_BRIEF_DOCS        = YES
+SORT_BY_SCOPE_NAME     = YES
+SORT_GROUP_NAMES       = YES
 BRIEF_MEMBER_DESC      = YES
-
 REPEAT_BRIEF           = YES
-
 ALWAYS_DETAILED_SEC    = NO
-
 JAVADOC_AUTOBRIEF      = YES
-
 MULTILINE_CPP_IS_BRIEF = YES
-
+INHERIT_DOCS           = YES
+SEPARATE_MEMBER_PAGES  = NO
 TAB_SIZE               = 2
-
 ALIASES                = "elastica=<b>Elastica++</b>" \
                          "system=<i>system</i>" \
                          "systems=<i>systems</i>" \
@@ -52,212 +89,106 @@ ALIASES                = "elastica=<b>Elastica++</b>" \
                          "usage=<p></p><h3>Usage</h3>" \
                          "example=<p></p><h3>Example</h3>" \
                          "derivedrequires=<p></p><i>Derived Class Requires:</i>"
-
+MARKDOWN_SUPPORT       = YES
+TOC_INCLUDE_HEADINGS   = 2
+AUTOLINK_SUPPORT       = YES
+BUILTIN_STL_SUPPORT    = YES
+CPP_CLI_SUPPORT        = NO
+SIP_SUPPORT            = NO
+IDL_PROPERTY_SUPPORT   = YES
 DISTRIBUTE_GROUP_DOC   = YES
-
+GROUP_NESTED_COMPOUNDS = NO
 SUBGROUPING            = YES
+INLINE_GROUPED_CLASSES = NO
+INLINE_SIMPLE_STRUCTS  = NO
+TYPEDEF_HIDES_STRUCT   = NO
+LOOKUP_CACHE_SIZE      = 0
+NUM_PROC_THREADS       = 0
 
-#---------------------------------------------------------------------------
-# Build related configuration options
-#---------------------------------------------------------------------------
-
-EXTRACT_ALL            = NO
-
-EXTRACT_PRIVATE        = NO
-
-EXTRACT_STATIC         = YES
-
-EXTRACT_LOCAL_CLASSES  = NO
-
-EXTRACT_ANON_NSPACES   = NO
-
-# We want to be able to have undocumented members, such as size() that show
-# up but what they do is rather obvious.
+WARNINGS               = YES
 WARN_IF_UNDOCUMENTED   = NO
-
-CASE_SENSE_NAMES       = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_IF_INCOMPLETE_DOC = YES
+WARN_NO_PARAMDOC       = NO
+WARN_AS_ERROR          = NO
+WARN_LOGFILE           = "@ELASTICA_DOCS_WARN_LOG@"
 
 GENERATE_TODOLIST      = NO
-
 GENERATE_TESTLIST      = NO
-
 GENERATE_BUGLIST       = NO
-
 STRIP_CODE_COMMENTS    = NO
-
 SHOW_USED_FILES        = YES
-
-# CITE_BIB_FILES       = @PROJECT_SOURCE_DIR@/docs/References.bib
-
-# ENABLED_SECTIONS       = ELASTICA_INTERNAL
-
 VERBATIM_HEADERS       = NO
 
-#---------------------------------------------------------------------------
-# configuration options related to the input files
-#---------------------------------------------------------------------------
-
-INPUT = @PROJECT_SOURCE_DIR@/elastica \
-        @PROJECT_SOURCE_DIR@/tests/Unit/Framework
-
-# Add tutorials directory
-INPUT += @PROJECT_SOURCE_DIR@/docs/Installation \
-         @PROJECT_SOURCE_DIR@/docs
-
-USE_MDFILE_AS_MAINPAGE = @PROJECT_SOURCE_DIR@/docs/Main.md
-
-# We don't parse cpp files because Doxygen has trouble with some template
-# expressions and we place documentation in header files anyway.
-FILE_PATTERNS          = *.hpp \
-                         *.md
-
-RECURSIVE              = YES
-
-EXCLUDE                =
-
-EXCLUDE_SYMLINKS       = NO
-
-# Markdown files inside our source code for developers get listed
-# which is not what we want. So filter them out
-EXCLUDE_PATTERNS += @PROJECT_SOURCE_DIR@/elastica/*.md
-
-EXCLUDE_SYMBOLS        = *brigand*                                    \
-                         *detail*                                     \
-                         ELASTICA_TEST_CASE*                          \
-                         std*                                         \
-                         YAML*
-
-EXAMPLE_PATH           = @PROJECT_SOURCE_DIR@/tests/ \
-                         @PROJECT_SOURCE_DIR@/examples
-
-EXAMPLE_PATTERNS       =
-
-EXAMPLE_RECURSIVE      = NO
-
-#---------------------------------------------------------------------------
-# configuration options related to the output
-#---------------------------------------------------------------------------
-
-GENERATE_HTML          = @ELASTICA_DOX_GENERATE_HTML@
-
-HTML_HEADER            = @PROJECT_SOURCE_DIR@/docs/config/header.html
-
-HTML_FOOTER            = @PROJECT_SOURCE_DIR@/docs/config/footer.html
-
-#IMAGE_PATH             = @PROJECT_SOURCE_DIR@/docs/images/
-
-GENERATE_LATEX         = NO
-
-GENERATE_RTF           = NO
-
-GENERATE_XML           = @ELASTICA_DOX_GENERATE_XML@
-
-XML_OUTPUT             = xml
-
-#---------------------------------------------------------------------------
-# Configuration options related to the preprocessor
-#---------------------------------------------------------------------------
-
-ENABLE_PREPROCESSING   = YES
-
-MACRO_EXPANSION        = YES
-
-# Macros we actually want to expand during preprocessing
-# EXPAND_AS_DEFINED      = MAKE_BINARY_FUNCTIONAL \
-#                        MAKE_BINARY_INPLACE_OPERATOR \
-#                        MAKE_BINARY_OPERATOR \
-#                        MAKE_UNARY_FUNCTIONAL
-
-EXPAND_ONLY_PREDEF     = YES
-
-SEARCH_INCLUDES        = YES
-
-PREDEFINED             = ELASTICA_ALWAYS_INLINE= \
-                         OVERLOADER_CONSTEXPR=
-
-#---------------------------------------------------------------------------
-# Configuration options related to the dot tool
-#---------------------------------------------------------------------------
-
-CLASS_DIAGRAMS         = NO
-
-HAVE_DOT               = NO
-
-CLASS_GRAPH            = NO
-
-COLLABORATION_GRAPH    = NO
-
-GROUP_GRAPHS           = NO
-
-UML_LOOK               = NO
-
-TEMPLATE_RELATIONS     = NO
-
-INCLUDE_GRAPH          = NO
-
-INCLUDED_BY_GRAPH      = NO
-
-CALL_GRAPH             = NO
-
-CALLER_GRAPH           = NO
-
-GRAPHICAL_HIERARCHY    = NO
-
-DIRECTORY_GRAPH        = NO
-
-DOT_IMAGE_FORMAT       = png
-
-MAX_DOT_GRAPH_DEPTH    = 0
-
-GENERATE_LEGEND        = NO
-
-#---------------------------------------------------------------------------
-# HTML layout file
-#---------------------------------------------------------------------------
-
-LAYOUT_FILE = @PROJECT_SOURCE_DIR@/docs/config/layout.xml
-
-FORMULA_MACROFILE = @PROJECT_SOURCE_DIR@/docs/config/commands.tex
-
-HTML_EXTRA_FILES       = @PROJECT_SOURCE_DIR@/docs/config/icons/octicons.eot \
-                         @PROJECT_SOURCE_DIR@/docs/config/icons/octicons.svg \
-                         @PROJECT_SOURCE_DIR@/docs/config/icons/octicons.ttf \
-                         @PROJECT_SOURCE_DIR@/docs/config/icons/octicons.woff \
-                         @PROJECT_SOURCE_DIR@/docs/config/octicons.css \
-                         @PROJECT_SOURCE_DIR@/docs/config/js/doxygen-navtree-hacks.js \
-                         @PROJECT_SOURCE_DIR@/docs/config/js/spectre.js \
-                         @PROJECT_SOURCE_DIR@/docs/.nojekyll \
-                         @PROJECT_SOURCE_DIR@/docs/config/MathJax.js \
-                         @PROJECT_SOURCE_DIR@/LICENSE
-
-GENERATE_TREEVIEW      = YES
-
-# This width must correspond to `side-nav-fixed-width` in `custom.css`
-TREEVIEW_WIDTH         = 280
-
-HTML_EXTRA_STYLESHEET = @PROJECT_SOURCE_DIR@/docs/config/doxygen-awesome.css \
-                        @PROJECT_SOURCE_DIR@/docs/config/doxygen-awesome-sidebar-only.css \
-                        @PROJECT_SOURCE_DIR@/docs/config/custom.css
-
-# copied from https://jothepro.github.io/doxygen-awesome-css/md_docs_customization.html
+QUIET                  = @ELASTICA_DOXYGEN_QUIET@
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+HTML_FILE_EXTENSION    = .html
+HTML_HEADER            = "@ELASTICA_DOCS_HTML_HEADER@"
+HTML_COLORSTYLE        = LIGHT
 HTML_COLORSTYLE_HUE    = 209
 HTML_COLORSTYLE_SAT    = 255
 HTML_COLORSTYLE_GAMMA  = 113
-
-USE_MATHJAX = YES
-
-# MATHJAX_RELPATH ultimately links to docs/config/MathJax.js, which is
-# copied to docs/html/MathJax.js with the HTML_EXTRA_FILES
-MATHJAX_RELPATH = ./
-
-# Since Doxygen doesn't support MathJax 3 yet, we configure all the
-# extensions/packages through the docs/config/MathJax.js file.
-MATHJAX_EXTENSIONS =
-
-MATHJAX_CODEFILE =
-
-#---------------------------------------------------------------------------
-# Configuration::additions related to the search engine
-#---------------------------------------------------------------------------
-
+HTML_DYNAMIC_MENUS     = YES
+HTML_DYNAMIC_SECTIONS  = YES
+HTML_INDEX_NUM_ENTRIES = 100
+HTML_FOOTER            = @PROJECT_SOURCE_DIR@/docs/config/footer.html
+GENERATE_DOCSET        = NO
+GENERATE_HTMLHELP      = NO
+GENERATE_CHI           = NO
+GENERATE_QHP           = NO
+GENERATE_ECLIPSEHELP   = NO
+DISABLE_INDEX          = NO
+GENERATE_TREEVIEW      = YES
+FULL_SIDEBAR           = NO
+ENUM_VALUES_PER_LINE   = 1
+TREEVIEW_WIDTH         = 280
+EXT_LINKS_IN_WINDOW    = NO
+HTML_EXTRA_STYLESHEET  = @ELASTICA_DOXYGEN_HTML_EXTRA_STYLESHEETS@
+HTML_EXTRA_FILES       = @ELASTICA_DOXYGEN_HTML_EXTRA_FILES@
 SEARCHENGINE           = YES
+HTML_COPY_CLIPBOARD    = NO
+PAGE_OUTLINE_PANEL     = NO
+USE_MATHJAX            = YES
+FORMULA_MACROFILE      = "@PROJECT_SOURCE_DIR@/docs/commands.tex"
+
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = YES
+SEARCH_INCLUDES        = YES
+PREDEFINED             = ELASTICA_ALWAYS_INLINE= \
+                         OVERLOADER_CONSTEXPR=
+
+GENERATE_LATEX         = NO
+GENERATE_XML           = NO
+GENERATE_DOCBOOK       = NO
+GENERATE_RTF           = NO
+GENERATE_MAN           = NO
+
+HIDE_UNDOC_RELATIONS   = YES
+HAVE_DOT               = @ELASTICA_DOXYGEN_HAVE_DOT@
+DOT_NUM_THREADS        = 0
+DOT_MULTI_TARGETS      = YES
+CLASS_DIAGRAMS         = NO
+CALL_GRAPH             = @ELASTICA_DOXYGEN_CALL_GRAPH@
+CALLER_GRAPH           = @ELASTICA_DOXYGEN_CALLER_GRAPH@
+CLASS_GRAPH            = NO
+COLLABORATION_GRAPH    = NO
+GROUP_GRAPHS           = NO
+UML_LOOK               = NO
+UML_LIMIT_NUM_FIELDS   = 10
+DOT_UML_DETAILS        = NO
+DOT_WRAP_THRESHOLD     = 17
+TEMPLATE_RELATIONS     = NO
+INCLUDE_GRAPH          = NO
+INCLUDED_BY_GRAPH      = NO
+GRAPHICAL_HIERARCHY    = NO
+DIRECTORY_GRAPH        = NO
+DOT_IMAGE_FORMAT       = png
+MAX_DOT_GRAPH_DEPTH    = 0
+GENERATE_LEGEND        = NO
+INTERACTIVE_SVG        = YES
+DOT_PATH               = @ELASTICA_DOXYGEN_DOT_PATH@
+DOTFILE_DIRS           =
+MSCFILE_DIRS           =
+DIAFILE_DIRS           =
