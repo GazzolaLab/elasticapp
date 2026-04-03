@@ -14,7 +14,7 @@ FILE_PATTERNS          = *.hpp \
 RECURSIVE              = YES
 EXCLUDE_PATTERNS       = */build/* \
                          */.git/* \
-                         */PythonBindings/* \
+                         */PythonBindings/*
 # Markdown files inside our source code for developers get listed
 # which is not what we want. So filter them out
 EXCLUDE_PATTERNS      += @PROJECT_SOURCE_DIR@/elastica/*.md
