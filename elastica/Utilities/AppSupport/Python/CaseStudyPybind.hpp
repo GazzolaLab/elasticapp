@@ -118,6 +118,8 @@ namespace py_bindings {
         .def("run_for_n_iterations", &CaseStudy::run_for_n_iterations,
              py::arg("n_iterations"), py::pos_only(),
              "Runs the simulator for n additional iterations")
+        .def("step_with", &CaseStudy::step_with, py::arg("dt"),
+             "Change the time step to a given value and do one step.")
         .def("current_time", &CaseStudy::current_time,
              "Gets the current time of the simulation")
         .def("current_dt", &CaseStudy::current_dt,
