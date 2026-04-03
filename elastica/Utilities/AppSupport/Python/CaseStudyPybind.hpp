@@ -126,11 +126,6 @@ namespace py_bindings {
              "Gets the current iteration of the simulation")
         .def("reset", &CaseStudy::reset_case_study,
              "Resets the current case study")
-        .def("step_with", &CaseStudy::step_with, py::kw_only(),
-             py::arg("updated_dt"),
-             "Step forward the simulation one iteration with a custom dt "
-             "value. The stability of the simulation is not guaranteed when "
-             "using this method.")
         .def("set_current_time", &CaseStudy::set_current_time,
              "Sets the case-study simulation time to a given value");
   }
