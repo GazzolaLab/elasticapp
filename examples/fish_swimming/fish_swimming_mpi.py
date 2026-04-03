@@ -10,7 +10,6 @@ from sopht_mpi.simulator import UnboundedFlowSimulator3D
 from sopht_mpi.simulator.immersed_body import ImmersedBodyFlowInteractionMPI
 
 import fish_utils as fu
-import fish_utils.io as fuio
 
 from elasticapp.Systems import FishModel  # noqa: F401
 from elasticapp.CaseStudies.PyFishCaseStudy import FishCaseStudy
@@ -340,7 +339,7 @@ def run_fish_swimming_mpi(
         }
 
     num_lag_node_per_fish = flow_sim.mpi_construct.grid.bcast(num_lag_node_per_fish, root=0)
-    fish_writer = fuio.MPIFishIO(
+    fish_writer = fu.MPIFishIO(
         mpi_comm=flow_sim.mpi_construct.grid,
         fish_list=elastic_fish_list,
         virtual_fish_list=virtual_fish_list,
@@ -351,7 +350,7 @@ def run_fish_swimming_mpi(
         **lag_fields,
     )
 
-    flow_writer = fuio.MPIImageDataIO(
+    flow_writer = fu.MPIImageDataIO(
         mpi_comm=flow_sim.mpi_construct.grid,
         dx=flow_sim.dx,
         global_grid_size=flow_sim.grid_size,
