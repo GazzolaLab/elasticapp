@@ -173,5 +173,5 @@ which of these behaviors you need first.
 
 ## Suggested next reading
 
-- \ref simulation_setup_page "Simulation Setup Guide"
 - \ref examples_page "Case Examples"
+- Tutorial programs under `examples/` (see repository `examples/README.md`)

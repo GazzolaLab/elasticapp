@@ -3,10 +3,10 @@
 [TOC]
 
 This page describes the standard local build for Elastica++ on macOS and Linux.
-For Python package installation after the build, see the
-\ref python_installation "Python Installation" page.
+For Python package installation after the build, see the **Python Bindings**
+section on this page.
 For a first end-to-end local run after installation, continue with the
-\ref simulation_setup_page "Simulation Setup Guide".
+\ref examples_page "Case Examples" page and the tutorial sources under `examples/`.
 
 ## Requirements
 
@@ -92,6 +92,39 @@ ctest --output-on-failure
 
 ## Next steps
 
-- \ref simulation_setup_page "Simulation Setup Guide" for the first runnable
-  examples and for building a personal simulation
-- \ref examples_page "Case Examples" for condensed example selection
+- \ref examples_page "Case Examples" for the first runnable examples and for
+  building a personal simulation
+- Tutorial sources under `examples/` (for example `tutorial_single_rod` and
+  `tutorial_casestudy_setup`)
+
+## Advanced debugging build
+
+For local debugging, development, or dependency troubleshooting, it can be
+useful to configure a fuller build with extra diagnostics enabled:
+
+\code{.sh}
+cmake -B build-debug -G Ninja \
+  -D CMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" \
+  -D CMAKE_CXX_COMPILER=/usr/bin/clang++ \
+  -D CMAKE_BUILD_TYPE=Debug \
+  -D BUILD_TESTING=ON \
+  -D ELASTICA_BUILD_DOCUMENTATION=OFF \
+  -D ELASTICA_BUILD_EXAMPLES=ON \
+  -D ELASTICA_BUILD_BENCHMARKS=ON \
+  -D ELASTICA_BUILD_PYTHON_BINDINGS=ON \
+  -D Python_FIND_VIRTUALENV=FIRST \
+  -D ELASTICA_ENABLE_PROFILING=ON \
+  -D ELASTICA_SMP=ON \
+  -D USE_SLEEF=OFF \
+  -D DEBUG_SYMBOLS=ON \
+  -D ENABLE_WARNINGS=ON \
+  -D ASAN=OFF \
+  -D UBSAN_UNDEFINED=OFF \
+  -D UBSAN_INTEGER=OFF \
+  -D PY_DEV_MODE=OFF
+cmake --build build-debug --parallel
+\endcode
+
+This is not the recommended default for everyday builds, but it is a useful
+starting point when debugging configuration issues, running a broader local
+check, or working on examples and Python bindings at the same time.

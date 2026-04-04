@@ -6,8 +6,8 @@ For the complete automatically generated example list, use the `Examples` tab
 in the Doxygen navigation. For a source-tree overview, see
 [examples/README.md](../examples/README.md).
 
-If you are still onboarding, start with the
-\ref simulation_setup_page "Simulation Setup Guide" first.
+If you are still onboarding, start with \ref installation "Installation", then
+return here to pick an example program.
 
 ## Best first choices
 

@@ -28,6 +28,7 @@ EXCLUDE_SYMBOLS        = *brigand*                                    \
                          YAML*
 EXAMPLE_PATH           = @PROJECT_SOURCE_DIR@/tests/ \
                          @PROJECT_SOURCE_DIR@/tests/Unit \
+                         @PROJECT_SOURCE_DIR@/elastica \
                          @PROJECT_SOURCE_DIR@/examples
 EXAMPLE_RECURSIVE      = YES
 CITE_BIB_FILES         = @PROJECT_SOURCE_DIR@/docs/refs.bib
