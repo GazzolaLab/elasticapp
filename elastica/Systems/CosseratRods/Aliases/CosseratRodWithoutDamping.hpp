@@ -4,10 +4,9 @@
 //  \brief A CosseratRod without damping in \elastica
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -90,7 +89,7 @@ namespace elastica {
      * cosserat rods to a simulator, as detailed in the tutorials.
      *
      * ### Tags
-     * The member data can be accessed using @ref tags. For example, accessing
+     * The member data can be accessed using \ref system_tags "system tags". For example, accessing
      * the position of a rod is done as shown below
      * \snippet tutorial_single_rod/tutorial_single_rod.cpp tag_example
      *

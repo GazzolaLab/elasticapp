@@ -39,8 +39,8 @@ int main() {
       ec::DefaultDomainConfiguration{}, system_config,
       ec::DefaultParallelConfiguration{});
 
-  // 1. We first create a simulator. To customize the simulator
-  // itself see XXXX (TODO : fill link)
+  // 1. We first create a simulator. For the broader setup flow, see
+  // docs/SimulationSetup.md and docs/Tutorials.md.
   auto simulator = elastica::make_simulator<>(simulator_config);
 
   /* We will now showcase ways of creating a new CosseratRod using our simulator
@@ -194,7 +194,8 @@ int main() {
    * error is raised. For a list of these tags, either see the example below or
    * consult the documentation of CosseratRod.
    *
-   * To programatically obtain the list of tags, see the XXX (TODO) tutorial.
+   * For the broader walkthrough around initialization and case-study setup,
+   * see docs/Tutorials.md.
    */
   auto advanced_initializer =
       elastica::cosserat_rod::initialize_cosserat_rod<CosseratRod>(

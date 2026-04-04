@@ -4,10 +4,9 @@
 //  \brief Implementation of module for Systems
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -397,7 +396,7 @@ namespace elastica {
       //************************************************************************
       /*!\brief Checks if the system is registered in the simulator
        *
-       * \param system_slice_ref A ref to system to be checked for registration
+       * \param system_ref Reference to the system interface to check
        * \return True if system registered, else false
        */
       template <typename InterfaceType>
@@ -839,8 +838,7 @@ the above type-list, using SystemsConfiguration.
        * Pushes back based on the `SystemCollection` passed. Does some static
        * checking for type safety.
        *
-       * \param system \system to be pushed in
-       * \return Mutable reference to the system pushed in
+       * \param system System instance to append to the collection.
        */
       template <class SystemCollection,
                 class D = std::decay_t<SystemCollection>>
@@ -1000,7 +998,8 @@ the above type-list, using SystemsConfiguration.
        * \param time_v The time of reset
        * \exception std::runtime_error
        */
-      void reset_module(TimeType /*time_v*/) {
+      void reset_module(TimeType time_v) {
+        (void)time_v;
         std::fill(std::begin(n_total_systems()), std::end(n_total_systems()),
                   0UL);
         std::apply(

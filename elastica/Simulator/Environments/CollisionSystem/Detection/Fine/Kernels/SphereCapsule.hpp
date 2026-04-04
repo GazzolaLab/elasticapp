@@ -4,10 +4,9 @@
 //  \brief Implementation of a collision kernel.
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -117,7 +116,7 @@ namespace elastica {
          * between the capsule representation and the colliding sphere.
          *
          * \param s The colliding sphere.
-         * \param c The colliding capsule.
+         * \param p The colliding capsule.
          * \param contacts Contact container for the generated contacts.
          * \return void
          */
@@ -142,7 +141,7 @@ namespace elastica {
          * between the capsule representation and the colliding sphere.
          *
          * \param s The colliding sphere.
-         * \param c The colliding capsule.
+         * \param p The colliding capsule (from-rod specialization).
          * \param contacts Contact container for the generated contacts.
          * \return void
          */

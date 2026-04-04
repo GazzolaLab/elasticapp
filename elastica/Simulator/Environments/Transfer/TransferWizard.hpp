@@ -4,10 +4,9 @@
 //  \brief Transfer wizard
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -97,16 +96,7 @@ namespace elastica {
       //************************************************************************
 
       //**Reset function********************************************************
-      /*!\brief resets forces and torques
-      //
-      // Resets forces and torques for a range of primitives
-      //
-      // \param begin  Begin iterator of the primitive sequence
-      // \param end    End iterator of the primitive sequence
-      // \return void
-      //
-      // \tparam PrimitiveIterator Random access iterator for a primitive range
-      */
+      /* Disabled reset API (kept as non-Doxygen comment to avoid doc bleed). */
       // template <typename PrimitiveIterator>
       // static void reset_forces_and_torques(PrimitiveIterator begin,
       //                                      PrimitiveIterator end) {

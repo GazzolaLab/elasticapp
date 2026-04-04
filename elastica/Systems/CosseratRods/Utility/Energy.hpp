@@ -4,10 +4,9 @@
 //  \brief Energy calculation overloads for Cosserat rods
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -159,7 +158,6 @@ namespace elastica {
   // \example
   // The following shows a typical use of the compute_translational_energy()
   // function with the expected (correct) result also shown.
-  // \snippet test_gov_eqns.cpp compute_translational_energy_example
   //
   // \param[in] cosserat_rod whose translational kinetic energy will be computed
   //
@@ -192,7 +190,6 @@ namespace elastica {
   // \example
   // The following shows a typical use of the compute_rotational_energy()
   // function with the expected (correct) result also shown.
-  // \snippet test_gov_eqns.cpp compute_rotational_energy_example
   //
   // \param[in] cosserat_rod object whose rotational KE will be computed
   //
@@ -226,7 +223,6 @@ namespace elastica {
   // \example
   // The following shows a typical use of the compute_bend_energy()
   // function with the expected (correct) result also shown.
-  // \snippet test_gov_eqns.cpp compute_bend_energy_example
   //
   // \param[in] cosserat_rod object whose bend mode energy will be computed
   //
@@ -260,7 +256,6 @@ namespace elastica {
   // \example
   // The following shows a typical use of the compute_shear_energy()
   // function with the expected (correct) result also shown.
-  // \snippet test_gov_eqns.cpp compute_shear_energy_example
   //
   // \param[in] cosserat_rod object whose shear mode energy will be computed
   //

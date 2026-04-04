@@ -1,6 +1,6 @@
 //=================================================================================================
 /*!
- *  \file pe/math/shims/Square.h
+ *  \file elastica/Utilities/Math/Square.hpp
  *  \brief Header file for the square shim
  *
  *  Copyright (C) 2009 Klaus Iglberger

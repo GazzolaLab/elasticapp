@@ -4,10 +4,9 @@
 //  \brief Specialization of a Block slice for Rigid bodys
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -132,7 +131,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Returns the size of the Rigid body.
-   * \ingroup rigid_body blocks
+   * \ingroup blocks
    *
    * \param rigid_body The current rigid body.
    * \return The  number of elements in the rigid body.
@@ -150,7 +149,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Returns the size of the Rigid body.
-   * \ingroup rigid_body blocks
+   * \ingroup blocks
    *
    * \param rigid_body The current rigid body.
    * \return The  number of elements in the rigid body.

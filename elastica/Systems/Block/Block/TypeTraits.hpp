@@ -4,10 +4,9 @@
 //  \brief Block type traits
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -60,7 +59,7 @@ namespace blocks {
    * \endcode
    *
    * \example
-   * \snippet Block/Test_TypeTraits.cpp is_block_example
+ is_block_example
    *
    * \tparam B : the type to check
    *
@@ -120,7 +119,7 @@ namespace blocks {
    * \endcode
    *
    * \example
-   * \snippet Block/Test_TypeTraits.cpp is_blockslice_example
+ is_blockslice_example
    *
    * \tparam B : the type to check
    *
@@ -180,7 +179,7 @@ namespace blocks {
    * \endcode
    *
    * \example
-   * \snippet Block/Test_TypeTraits.cpp is_const_blockslice_example
+ is_const_blockslice_example
    *
    * \tparam B : the type to check
    *
@@ -240,7 +239,7 @@ namespace blocks {
    * \endcode
    *
    * \example
-   * \snippet Block/Test_TypeTraits.cpp is_blockview_example
+ is_blockview_example
    *
    * \tparam B : the type to check
    *
@@ -300,7 +299,7 @@ namespace blocks {
    * \endcode
    *
    * \example
-   * \snippet Block/Test_TypeTraits.cpp is_const_blockview_example
+ is_const_blockview_example
    *
    * \tparam B : the type to check
    *
@@ -361,7 +360,7 @@ namespace blocks {
    * \endcode
    *
    * \example
-   * \snippet Block/Test_TypeTraits.cpp is_plugin_example
+ is_plugin_example
    *
    * \tparam P : the type to check
    *
@@ -423,7 +422,7 @@ namespace blocks {
    * \endcode
    *
    * \example
-   * \snippet Block/Test_TypeTraits.cpp models_block_concept_example
+ models_block_concept_example
    *
    * \tparam B : the type to check
    *
@@ -453,7 +452,7 @@ namespace blocks {
    * concept
    *
    * \example
-   * \snippet Block/Test_TypeTraits.cpp plugin_trait_example
+ plugin_trait_example
    *
    * \tparam B Type (modeling block concept) whose `PluginTrait` is to be
    * retrieved
@@ -853,7 +852,7 @@ namespace blocks {
    * template type `type` of PluginTrait, used as follows.
    *
    * \example
-   * \snippet Block/Test_TypeTraits.cpp plugin_t_example
+ plugin_t_example
    *
    * \see PluginTrait
    */

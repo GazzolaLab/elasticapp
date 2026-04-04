@@ -4,10 +4,9 @@
 //  \brief A half-space primitive
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -67,6 +66,7 @@ namespace elastica {
       explicit HalfSpacePrimitive(id_t sid, id_t uid, bool finite,
                                   const Vec3& anchor_pos, const Rot3& rot,
                                   MaterialID material);
+      //! Move constructor (defaulted).
       HalfSpacePrimitive(HalfSpacePrimitive&&) noexcept = default;
       //@}
       //************************************************************************

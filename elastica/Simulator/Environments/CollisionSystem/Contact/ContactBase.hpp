@@ -4,10 +4,9 @@
 //  \brief A baseclass for recording Contacts
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 //
 //  This file contains implementation from the pe library with the following
 //  copyrights
@@ -114,6 +113,7 @@ namespace elastica {
       inline ContactBase(GeomID g1, GeomID g2, Vec3 const& gpos,
                          Vec3 const& normal, Vec3 const& e1, Vec3 const& e2,
                          real_t dist);
+      //! Move constructor (defaulted).
       ContactBase(ContactBase&&) noexcept = default;
       //@}
       //************************************************************************

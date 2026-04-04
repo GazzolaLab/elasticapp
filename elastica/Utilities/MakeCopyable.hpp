@@ -4,10 +4,9 @@
 //  \brief Utility for "copying" non-copyable objects
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -31,7 +30,7 @@
 // \param f : Callable object to be copied
 //
 // \example
-// \snippet Test_MakeCopyable.cpp make_copyable_function
+// Wrap `f` in a shared_ptr and return a lambda that forwards calls.
 */
 template <class F>
 auto make_copyable_function(F&& f) /*  noexcept */ {

@@ -4,10 +4,9 @@
 //  \brief Environment protocols
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -73,18 +72,13 @@ namespace elastica {
        * tt::conforms_to and tt::assert_conforms_to type traits recognizes the
        * class as valid Environment
        *
-       * Requires that a conforming type `ConformingType` has these
-       * metavariables
-       * \snippet this expected_metavariables
-       * and these member functions
-       * \snippet this expected_functions
-       * and these free functions
-       * \snippet this signatures
+       * Requires that a conforming type `ConformingType` satisfies the
+       * static checks in nested struct `test` (metavariables, member
+       * functions, and free-function signatures).
        *
-       *
-       * The following example shows a compliant class
+       * The following example shows a compliant class:
        * \example
-       * \snippet Environments/Test_Protocols.cpp environment_tag_protocol_eg
+       * \snippet Unit/Simulator/Environments/Test_Protocols.cpp environment_tag_protocol_eg
        */
       struct Environment {
         //**********************************************************************

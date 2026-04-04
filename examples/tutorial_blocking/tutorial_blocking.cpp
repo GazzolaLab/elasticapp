@@ -84,8 +84,9 @@ int main() {
    * DefaultParallelConfiguration are default values and can be ignored for the
    * purposes of this tutorial. Refer to their documentation for more details.
    *
-   * Customizations for other modules are possible, see the XXX
-   * (TODO : fill link) tutorials for more details.
+   * Customizations for other modules are possible; see docs/CoreConcepts.md,
+   * docs/Tutorials.md, and docs/SimulationSetup.md for the surrounding setup
+   * flow.
    */
   auto simulator_config = ec::make_simulator_configuration(
       ec::DefaultDomainConfiguration{}, system_config,

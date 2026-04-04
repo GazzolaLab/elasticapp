@@ -4,10 +4,9 @@
 //  \brief Collection of primitives
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -214,6 +213,7 @@ namespace elastica {
      *
      * \tparam PrimitivesList A `tmpl::list` of Primitives over which to
      * apply the callable
+     * \param primitives Primitive collection to traverse.
      * \param func Callable to be applied over primitives
      */
     template <typename PrimitivesList, typename PrimitiveList_,
@@ -238,8 +238,8 @@ namespace elastica {
      * cannot be strongly checked, so the user needs to satisfy this
      * guarantee
      *
-     * \tparam PrimitivesList A `tmpl::list` of Primitives over which to
-     * apply the callable
+     * \tparam PrimitiveList_ Registered primitive types for this collection.
+     * \param primitives Primitive collection to traverse.
      * \param func Callable to be applied over primitives
      */
     template <typename PrimitiveList_, typename ContainerPolicy, typename F>

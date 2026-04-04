@@ -4,10 +4,9 @@
 //  \brief Type traits for @ref cosserat_rod_component
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -55,9 +54,6 @@ namespace elastica {
          * \code
          * typename result::type = std::false_type;
          * \endcode
-         *
-         * \example
-         * \snippet helpers/Test_TypeTraits.cpp is_magnetism_component_example
          *
          * \tparam C : the type to check
          *

@@ -5,10 +5,9 @@
 //  properties
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 //
 //  This file contains implementation from the pe library with the following
 //  copyrights
@@ -78,6 +77,7 @@ namespace elastica {
       //@{
       explicit GeomPrimitive(bool finite, id_t sid, id_t uid,
                              MaterialID material);
+      //! Move constructor (defaulted).
       GeomPrimitive(GeomPrimitive&&) noexcept = default;
       //@}
       //************************************************************************

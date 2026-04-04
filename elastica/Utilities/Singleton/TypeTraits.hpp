@@ -4,10 +4,9 @@
 //  \brief Type traits for the Singleton class in \elastica
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -38,7 +37,7 @@ namespace elastica {
     // \tparam T : Type to check
     //
     // \example
-    // \snippet Singleton/Test_TypeTraits.cpp is_singleton_example
+    // (See singleton unit tests for patterns.)
     //
     // Developer note:
     // The following is a perfectly valid implementation for IsSingleton,
@@ -164,7 +163,7 @@ namespace elastica {
     // other dependency within the list.
     //
     // \example
-    // \snippet Singleton/Test_TypeTraits.cpp has_cyclic_dependency
+    // (See unit tests for usage patterns.)
     //
     // \tparam D... Type of dependencies to be checked
     */

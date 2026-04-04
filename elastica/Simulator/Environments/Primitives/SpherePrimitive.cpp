@@ -4,10 +4,9 @@
 //  \brief Source file for SpherePrimitive
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -34,6 +33,7 @@ namespace elastica {
      *
      * \param sid Unique system-specific ID for the sphere.
      * \param uid User-specific ID for the sphere.
+     * \param finite Whether the primitive participates in collision as finite.
      * \param material The material of the sphere.
      */
     SpherePrimitive::SpherePrimitive(id_t sid, id_t uid, bool finite,
@@ -54,6 +54,7 @@ namespace elastica {
      *
      * \param sid Unique system-specific ID for the sphere.
      * \param uid User-specific ID for the sphere.
+     * \param finite Whether the primitive participates in collision as finite.
      * \param gpos Global geometric center of the sphere.
      * \param radius The radius of the sphere \f$ (0..\infty) \f$.
      * \param material The material of the sphere.

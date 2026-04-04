@@ -78,6 +78,7 @@ namespace elastica {
                                    const std::size_t size) {
       return ::blaze::submatrix(*vector_batch, 0UL, start_index, 3UL, size);
     }
+    /*! \endcond */
 
     //**************************************************************************
     /*! \cond ELASTICA_INTERNAL */

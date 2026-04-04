@@ -106,11 +106,13 @@ namespace elastica {
         template <typename AdmissiblePrimitives>
         struct Cache;
 
+        /*! \cond ELASTICA_INTERNAL */
         template <typename Primitive, typename Primitives>
         inline constexpr decltype(auto) get(Cache<Primitives>& cache) noexcept;
         template <typename Primitive, typename Primitives>
         inline constexpr decltype(auto) get(
             Cache<Primitives> const& cache) noexcept;
+        /*! \endcond */
 
         template <typename AdmissiblePrimitives>
         struct Cache {
@@ -220,10 +222,23 @@ namespace elastica {
           PrimitiveBuffers buffers_;
         };
 
+        //********************************************************************
+        /*!\brief Access a primitive buffer from a coarse-detection cache.
+         *
+         * \tparam Primitive Which primitive type to select from the cache.
+         * \param cache The cache whose buffer to return.
+         */
         template <typename Primitive, typename Primitives>
         inline constexpr decltype(auto) get(Cache<Primitives>& cache) noexcept {
           return cache.template get<Primitive>();
         }
+        //********************************************************************
+        /*!\brief Access a primitive buffer from a coarse-detection cache
+         *       (const).
+         *
+         * \tparam Primitive Which primitive type to select from the cache.
+         * \param cache The cache whose buffer to return.
+         */
         template <typename Primitive, typename Primitives>
         inline constexpr decltype(auto) get(
             Cache<Primitives> const& cache) noexcept {

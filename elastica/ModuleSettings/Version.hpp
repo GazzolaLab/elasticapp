@@ -4,10 +4,9 @@
 //  \brief Current version of \elastica
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2020-2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -18,9 +17,7 @@
  * \ingroup config
  *
  * \details
- * This value corresponds to the major version of \elastica. For
- * instance, in \elastica version 3.9.0, the ELASTICA_MAJOR_VERSION corresponds
- * to 3.
+ * This value corresponds to the major version of \elastica.
  */
 #define ELASTICA_MAJOR_VERSION 0
 //******************************************************************************
@@ -30,11 +27,9 @@
  * \ingroup config
  *
  * \details
- * This value corresponds to the minor version of \elastica. For
- * instance, in \elastica version 3.9.0, the ELASTICA_MINOR_VERSION corresponds
- * to 9.
+ * This value corresponds to the minor version of \elastica.
  */
-#define ELASTICA_MINOR_VERSION 0
+#define ELASTICA_MINOR_VERSION 1
 //******************************************************************************
 
 //******************************************************************************
@@ -42,9 +37,7 @@
  * \ingroup config
  *
  * \details
- * This value corresponds to the patch version of \elastica. For
- * instance, in \elastica version 3.9.0, the ELASTICA_PATCH_VERSION corresponds
- * to 0.
+ * This value corresponds to the patch version of \elastica.
  */
-#define ELASTICA_PATCH_VERSION 2
+#define ELASTICA_PATCH_VERSION 0
 //******************************************************************************

@@ -4,10 +4,9 @@
 //  \brief Constraint interface type traits
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -40,8 +39,8 @@ namespace elastica {
      * \ingroup interface_type_traits
      *
      * This type trait class tests whether or not the given type \c CM has a
-     * \elastica \constraint interface. In order to qualify as a valid
-     * \constraint the given type has to derive publicly from the
+     * \elastica \c constraint interface. In order to qualify as a valid
+     * \c constraint the given type has to derive publicly from the
      * elastica::interface::protocols::Constraints protocol class. In case the
      * given type is a valid, Constraints type, the \a value member constant is
      * set to \a true, the nested type definition \a type is \a std::true_type,
@@ -50,7 +49,7 @@ namespace elastica {
      * \a std::false_type.
      *
      * \usage
-     * For any \constraint type \c CM,
+     * For any \c constraint type \c CM,
      * \code
      * using result = IsConstraintsModule<CM>;
      * \endcode
@@ -70,7 +69,7 @@ namespace elastica {
      *
      * \see protocols::Constraints
      *
-     * \tparam CM : the \constraint type to check
+     * \tparam CM : the \c constraint type to check
      */
     template <typename CM>  // Type to check
     struct IsConstraintsModule
@@ -110,8 +109,8 @@ namespace elastica {
      * \ingroup interface_type_traits
      *
      * This type trait class asserts whether or not the given type \c CM can
-     * be used as an \elastica \constraints module in the current
-     * simulation. In order to be safely used as a valid \constraints module
+     * be used as an \elastica \c constraints module in the current
+     * simulation. In order to be safely used as a valid \c constraints module
      * the given type \c CM has to derive publicly from
      * the elastica::interface::protocols::Constraints protocol class and
      * satisfy all its requirements. In case the given type is a safe

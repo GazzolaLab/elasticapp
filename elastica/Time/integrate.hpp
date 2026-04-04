@@ -1,3 +1,12 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Generic helpers for advancing a system in time
+//
+//  See LICENSE for details.
+*/
+//==============================================================================
+
 #pragma once
 #include <tuple>
 #include <type_traits>
@@ -162,6 +171,28 @@ namespace timestepper {
     }
   }  // namespace integrate_detail
 
+  /*!
+   * \brief Integrate a system forward in time using a compatible time stepper
+   *
+   * \tparam TimeStepper Stepper type used to advance the state
+   * \tparam System Simulated system object
+   * \tparam State Mutable state passed to non-symplectic steppers
+   * \tparam Callables Callback types invoked before stepping and after each step
+   * \param time_stepper The stepper instance that performs the update
+   * \param rod The simulated system
+   * \param state Mutable state advanced by explicit and adaptive steppers
+   * \param max_simulation_time Integration limit in simulation time units
+   * \param dt_ Initial or fixed time step
+   * \param callables Tuple of callbacks with signature compatible with the
+   *   selected stepping mode
+   * \return A tuple containing the number of function evaluations, the final
+   *   simulation time, and the final time-step value
+   *
+   * For explicit and adaptive steppers, callbacks receive `(time, dt, state)`.
+   * For symplectic steppers, callbacks receive `(time, dt, rod)` because the
+   * system itself is advanced directly. The helper chooses the appropriate
+   * internal path from `TimeStepper::StepperCategoryTag`.
+   */
   template <typename TimeStepper, typename System, typename State,
             class... Callables>
   auto integrate(TimeStepper& time_stepper, System& rod, State& state,

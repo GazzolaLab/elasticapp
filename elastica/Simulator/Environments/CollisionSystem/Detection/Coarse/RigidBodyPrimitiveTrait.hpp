@@ -5,10 +5,9 @@
 //  algorithm
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 //
 //  This file contains implementation from the pe library with the following
 //  copyrights
@@ -225,21 +224,19 @@ namespace elastica {
                 template <typename, typename, typename> class>
             class C>  // Type of the configuration
         inline RigidBodyPrimitiveTrait<
-            C<HashGrids, FD, BG, CR>>::RigidBodyPrimitiveTrait(BodyID /*body*/)
+            C<HashGrids, FD, BG, CR>>::RigidBodyPrimitiveTrait(BodyID body)
             : aabb_(),         // Axis-aligned bounding box for the rigid body
               grid_(nullptr),  // Pointer to the hash grid this rigid body is
                                // currently assigned to
               hash_(0),        // Current hash value of this rigid body
               cell_ID_(0)  // The body's index in the body container of the grid
                            // cell this rigid body is currently assigned to
-        {}
+        {
+          (void)body;
+        }
         //**********************************************************************
 
-        //**********************************************************************
-        /*!\brief Returns the grid the rigid body is currently assigned to.
-         *
-         * \return The grid the rigid body is currently assigned to.
-         */
+        /*! \cond DOXYGEN_SHOULD_SKIP_THIS */
         template <
             // Type of the fine collision detection algorithm
             typename FD,
@@ -258,17 +255,13 @@ namespace elastica {
                 // Template signature of the collision response algorithm
                 template <typename, typename, typename> class>
             class C>  // Type of the configuration
+        // Returns the grid the rigid body is currently assigned to.
         inline void* RigidBodyPrimitiveTrait<
             C<HashGrids, FD, BG, CR>>::get_grid() const noexcept {
           return grid_;
         }
         //**********************************************************************
 
-        //**********************************************************************
-        /*!\brief Returns the current hash value of the rigid body.
-         *
-         * \return The current hash value of the rigid body.
-         */
         template <
             // Type of the fine collision detection algorithm
             typename FD,
@@ -287,18 +280,13 @@ namespace elastica {
                 // Template signature of the collision response algorithm
                 template <typename, typename, typename> class>
             class C>  // Type of the configuration
+        // Returns the current hash value of the rigid body.
         inline std::size_t RigidBodyPrimitiveTrait<
             C<HashGrids, FD, BG, CR>>::get_hash() const noexcept {
           return hash_;
         }
         //**********************************************************************
 
-        //**********************************************************************
-        /*!\brief Returns the current body container index within the cell the
-         * body is currently assigned to.
-         *
-         * \return The current body container index.
-         */
         template <
             // Type of the fine collision detection algorithm
             typename FD,
@@ -317,21 +305,14 @@ namespace elastica {
                 // Template signature of the collision response algorithm
                 template <typename, typename, typename> class>
             class C>  // Type of the configuration
+        // Returns the body container index within the cell the body is
+        // assigned to.
         inline std::size_t RigidBodyPrimitiveTrait<
             C<HashGrids, FD, BG, CR>>::get_cell_ID() const noexcept {
           return cell_ID_;
         }
         //**********************************************************************
 
-        //**********************************************************************
-        /*!\brief Setting the grid the rigid body is associated with.
-         *
-         * \param grid The grid the rigid body is assigned to.
-         * \return void
-         *
-         * \todo
-         * Update according to modern C++
-         */
         template <
             // Type of the fine collision detection algorithm
             typename FD,
@@ -350,21 +331,13 @@ namespace elastica {
                 // Template signature of the collision response algorithm
                 template <typename, typename, typename> class>
             class C>  // Type of the configuration
+        // Sets the coarse hash grid pointer for this rigid body.
         inline void RigidBodyPrimitiveTrait<C<HashGrids, FD, BG, CR>>::set_grid(
             void* grid) noexcept {
           grid_ = grid;
         }
         //**********************************************************************
 
-        //**********************************************************************
-        /*!\brief Setting the hash value of the rigid body.
-         *
-         * \param hash The new hash value of the rigid body.
-         * \return void
-         *
-         * \todo
-         * Update according to modern C++
-         */
         template <
             // Type of the fine collision detection algorithm
             typename FD,
@@ -383,22 +356,13 @@ namespace elastica {
                 // Template signature of the collision response algorithm
                 template <typename, typename, typename> class>
             class C>  // Type of the configuration
+        // Sets the spatial hash value for this rigid body.
         inline void RigidBodyPrimitiveTrait<C<HashGrids, FD, BG, CR>>::set_hash(
             std::size_t hash) noexcept {
           hash_ = hash;
         }
         //**********************************************************************
 
-        //**********************************************************************
-        /*!\brief Setting the body container index within the cell the body is
-         * currently assigned to.
-         *
-         * \param cell The new body container index.
-         * \return void
-         *
-         * \todo
-         * Update according to modern C++
-         */
         template <
             // Type of the fine collision detection algorithm
             typename FD,
@@ -417,11 +381,13 @@ namespace elastica {
                 // Template signature of the collision response algorithm
                 template <typename, typename, typename> class>
             class C>  // Type of the configuration
+        // Sets the body index within the grid cell container.
         inline void
         RigidBodyPrimitiveTrait<C<HashGrids, FD, BG, CR>>::set_cell_ID(
             std::size_t cell) noexcept {
           cell_ID_ = cell;
         }
+        /*! \endcond */
         //**********************************************************************
 
       }  // namespace coarse

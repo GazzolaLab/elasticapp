@@ -4,10 +4,9 @@
 //  \brief Adapter to make an imposed primitive
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -33,7 +32,7 @@ namespace elastica {
      * \ingroup primitives
      *
      * The ImposedPrimitiveAdapter class adapts a rigid body primitive of the
-     * the \elasticaa engine. In addition tp primitive entities, users can
+     * the \elastica engine. In addition to primitive entities, users can
      * impose the motion (translations for now) at every step, by coding
      * positions and velocities.
      *

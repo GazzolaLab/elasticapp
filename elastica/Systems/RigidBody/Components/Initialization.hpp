@@ -4,10 +4,9 @@
 //  \brief Helpers to initialize Rigidbody components
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -31,7 +30,7 @@ namespace elastica {
      *
      * \tparam Variables Typelist of `BlockVariables` to initialize.
      * \param block_like Rigid-body block-slice.
-     * \param initializer Rigid-body block-initializer.
+     * \param initializers Rigid-body block-initializer(s).
      */
     template <typename Variables, typename RBT,
               template <typename /*CRT*/, typename /* ComputationalBlock */>
@@ -58,7 +57,7 @@ namespace elastica {
      *
      * \tparam Variables Typelist of `BlockVariables` to initialize.
      * \param block_like Rigid-body block.
-     * \param initializer Rigid-body block-initializer.
+     * \param initializers Rigid-body block-initializer(s).
      */
     template <typename Variables, typename RBT,
               template <typename /*CRT*/, typename /* ComputationalBlock */>

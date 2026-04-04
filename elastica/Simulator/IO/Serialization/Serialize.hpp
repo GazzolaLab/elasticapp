@@ -5,10 +5,9 @@
 //  serialization module
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -149,7 +148,6 @@ namespace elastica {
     STAMP_OUT_FUNDAMENTAL_SERIALIZERS(long double);
 
 #undef STAMP_OUT_FUNDAMENTAL_SERIALIZERS
-    /*! \endcond */
     //**************************************************************************
 
     //**************************************************************************

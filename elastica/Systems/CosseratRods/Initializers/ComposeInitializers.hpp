@@ -4,10 +4,9 @@
 //  \brief Quickly compose initializers together
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -142,7 +141,7 @@ namespace elastica {
        *
        * \param farg First argument to be forwarded
        * \param sarg Second argument to be forwarded
-       * \param Args Other arguments to be forwarded
+       * \param args Remaining arguments to be forwarded
        */
       template <typename First, typename Second, typename... Args>
       explicit ComposeInitializers(First&& farg, Second&& sarg, Args&&... args)

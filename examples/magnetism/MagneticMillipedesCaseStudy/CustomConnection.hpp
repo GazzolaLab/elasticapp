@@ -5,8 +5,7 @@
 //
 //  Copyright (C) 2022 Seung Hyun Kim - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 

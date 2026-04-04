@@ -3,8 +3,7 @@
 //  \file
 //  \brief HDF5 example
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 

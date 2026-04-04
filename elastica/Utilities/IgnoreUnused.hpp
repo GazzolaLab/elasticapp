@@ -4,10 +4,9 @@
 //  \brief Facilities for ignoring unused parameters
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 //
 //  File taken from the Boost and Blaze libraries, see LICENSE below for details
 */
@@ -21,7 +20,7 @@
 
 //==============================================================================
 /*!
-//  \file blaze/util/MaybeUnused.h
+//  \file elastica/Utilities/IgnoreUnused.hpp
 //  \brief Header file for the ignore_unused function template
 //
 //  Copyright (C) 2012-2020 Klaus Iglberger - All Rights Reserved

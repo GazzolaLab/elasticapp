@@ -1,3 +1,12 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Trigger interface for per-step simulation callbacks
+//
+//  See LICENSE for details.
+*/
+//==============================================================================
+
 #pragma once
 
 #include <vector>
@@ -14,6 +23,14 @@ namespace elastica {
   // Forward declaration
 //  struct Time;
 
+  /*!
+   * \brief Base class for trigger objects that receive simulation progress
+   * updates
+   *
+   * Trigger instances register themselves in a static registry and are invoked
+   * through trigger_all(). This mechanism is currently global in scope and is
+   * intended as a lightweight hook for step-based side effects.
+   */
   class Trigger {
    private:
 //    using Triggers = PtrVector<Trigger, NoDelete>;
@@ -23,7 +40,9 @@ namespace elastica {
     explicit Trigger();
     virtual ~Trigger();
 
+    //! Respond to the current simulation time and step.
     virtual void trigger(double time_v, std::size_t simulation_step) = 0;
+    //! Invoke all registered triggers for the given time and step.
     static inline void trigger_all(double time_v, std::size_t simulation_step);
 
    private:

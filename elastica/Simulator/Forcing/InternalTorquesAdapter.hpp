@@ -4,10 +4,9 @@
 //  \brief Adapter for internal torques
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -203,7 +202,7 @@ namespace elastica {
      * point number) and adapts it to apply the forces as internal torques on
      * the rod.
      *
-     * \param f A functor with signature (s, t) that applies torques
+     * \param func A functor with signature (s, t) that applies torques
      * \return Forcing
      */
     template <typename F>

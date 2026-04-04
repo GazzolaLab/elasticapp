@@ -76,9 +76,6 @@ namespace elastica {
      * \param user_threads_hint Number of threads to initialize the elastica
      * engine with
      *
-     * \example
-     * \snippet ModuleConfiguration/Test_Parallel.cpp eg
-     *
      * \see ParallelConfiguration
      */
     inline auto make_parallel_configuration(const int user_threads_hint = -1)

@@ -4,10 +4,9 @@
 //  \brief Imposed primitives component of the \elastica Environments module
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -254,15 +253,15 @@ namespace elastica {
          * cannot be strongly checked, so the user needs to satisfy this
          * guarantee
          *
-         * \param func Callable to be applied over imposed
-         * primitives
-         * \param PrimitivesList A `tmpl::list` of Primitives over which to
-         * apply the callable
+         * \param func Callable to be applied over imposed primitives
+         * \param primitive_list Which imposed primitive types to traverse
+         * (`tmpl::list<...>`).
          */
         template <typename F, typename... ImposedPrimitives>
         inline auto for_each_imposed_primitive(
-            F func, tmpl::list<ImposedPrimitives...> /*PrimitiveList*/) noexcept
+            F func, tmpl::list<ImposedPrimitives...> primitive_list) noexcept
             -> F {
+          (void)primitive_list;
           using ::elastica::collision::get_collection;
           return for_each_imposed_primitive_impl(
               std::move(func), std::tie(get_collection<ImposedPrimitives>(
@@ -484,10 +483,7 @@ Please add them to the above type-list, using EnvironmentsConfiguration
         //**********************************************************************
 
         // //**********************************************************************
-        // /*!\brief Push back an imposed primitive
-        //  *
-        //  * \param imposed_primitive Imposed primitive to push back
-        //  * \return Mutable reference to the primitive pushed in
+        // /* Disabled push_back_imposed API (see emplace_back).
         //  */
         // template <class ImposedPrimitive,
         //           class D = std::decay_t<ImposedPrimitive>>
@@ -535,7 +531,8 @@ Please add them to the above type-list, using EnvironmentsConfiguration
          * \param time_v The time of reset
          * \exception std::runtime_error
          */
-        void reset_module(TimeType /*time_v*/) {
+        void reset_module(TimeType time_v) {
+          (void)time_v;
           // we don't shrink to fit here since it may well be used again
           std::apply(
               [](auto&... primitive_container) {

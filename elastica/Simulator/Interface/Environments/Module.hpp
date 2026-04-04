@@ -4,10 +4,9 @@
 //  \brief Implementation of module for Environments
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -352,7 +351,7 @@ namespace elastica {
       //************************************************************************
 
       //************************************************************************
-      /*!\name Timer functions */
+      /*!\name Timer lookup */
       //@{
       /*!\brief Get a timer corresponding to an algorithm
        *
@@ -364,6 +363,7 @@ namespace elastica {
         using ::elastica::get_meter;
         return get_meter<EnvironmentTag>(environment_timers());
       }
+      //! Const overload of get_environment_timer().
       template <typename EnvironmentTag>
       inline constexpr decltype(auto) get_environment_timer() const& noexcept {
         using ::elastica::get_meter;
@@ -376,20 +376,13 @@ namespace elastica {
       //************************************************************************
 
      protected:
-      //************************************************************************
-      /*!\brief The finalize method.
-       *
-       * \details
-       * The finalize method is the interface to finalize the environments
-       * module of elastica before launching into temporal integration.
+      /*!\brief Finalizes the environments module before temporal integration.
        *
        * \param time_v The time to finalize, usually 0.0
-       * \exception std::runtime_error If any constraint information is
-       * missing/faulty
-       *
-       *
-       * \note This is not marked const because for some reason imposed
-       * primitives cannot be const in an interior scope
+       * \exception std::runtime_error If any constraint information is missing
+       * or faulty.
+       * \note This is not marked const because imposed primitives cannot be
+       * const in an interior scope.
        */
       void finalize(TimeType time_v) {
         // Call initialize on the more complex environments, passing the

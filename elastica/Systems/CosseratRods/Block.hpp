@@ -4,10 +4,9 @@
 //  \brief Specialization of a Block for Cosserat rods
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -957,6 +956,7 @@ namespace blocks {
     }
     //**************************************************************************
   };
+  /*! \endcond */
   //****************************************************************************
 
 }  // namespace blocks
@@ -974,7 +974,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Slices a tagged Cosserat Rod.
-   * \ingroup cosserat_rod blocks
+   * \ingroup blocks
    *
    * \param cosserat_rod The current cosserat rod.
    * \param index The index of the slice (int or from_end)
@@ -996,7 +996,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Slices a tagged Cosserat Rod.
-   * \ingroup cosserat_rod blocks
+   * \ingroup blocks
    *
    * \param cosserat_rod The current cosserat rod.
    * \param index The index of the slice (int or from_end)
@@ -1018,10 +1018,11 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Slices a tagged Cosserat Rod.
-   * \ingroup cosserat_rod blocks
+   * \ingroup blocks
    *
    * \param cosserat_rod The current cosserat rod.
-   * \param index The index of the slice (int or from_end)
+   * \param start_index Start index of the slice (int or from_end).
+   * \param stop_index Stop index of the slice (int or from_end).
    */
   template <typename CRT, typename Tag,
             template <typename /*CRT*/, typename /*InitializedBlock*/>
@@ -1041,10 +1042,11 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Slices a tagged Cosserat Rod.
-   * \ingroup cosserat_rod blocks
+   * \ingroup blocks
    *
    * \param cosserat_rod The current cosserat rod.
-   * \param index The index of the slice (int or from_end)
+   * \param start_index Start index of the slice (int or from_end).
+   * \param stop_index Stop index of the slice (int or from_end).
    */
   template <typename CRT, typename Tag,
             template <typename /*CRT*/, typename /*InitializedBlock*/>
@@ -1064,7 +1066,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Returns the size of the Cosserat Rod.
-   * \ingroup cosserat_rod blocks
+   * \ingroup blocks
    *
    * \param cosserat_rod The current cosserat rod.
    * \return The  number of elements in the cosserat rod.
@@ -1082,7 +1084,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Get number of units within a CosseratRod
-   * \ingroup cosserat_rod blocks
+   * \ingroup blocks
    *
    * \details
    * Get number of units from a Block. By 'units' we mean the number of
@@ -1127,7 +1129,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Get number of units within a CosseratRod
-   * \ingroup cosserat_rod blocks
+   * \ingroup blocks
    *
    * \details
    * Get number of units from a Block. By 'units' we mean the number of

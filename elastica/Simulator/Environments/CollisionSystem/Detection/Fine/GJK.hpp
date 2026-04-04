@@ -1,6 +1,6 @@
 //=================================================================================================
 /*!
- *  \file pe/core/detection/fine/GJK.h
+ *  \file elastica/Simulator/Environments/CollisionSystem/Detection/Fine/GJK.hpp
  *  \brief The Gilbert-Johnson-Keerthi Algorithm
  *
  *  Copyright (C) 2013-2014 Tobias Scharpff

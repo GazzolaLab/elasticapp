@@ -4,10 +4,9 @@
 //  \brief Configuration for the Environments module of an \elastica Simulator
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -121,7 +120,7 @@ namespace elastica {
      * \example
      * \snippet ModuleConfiguration/Test_Environments.cpp seq_eg
      *
-     * \param p execution policy for the configuration
+     * \param meta Tag-dispatch argument: pass `seq` for sequential policy.
      * \param individual_configurations individual environment configurations
      *
      * For details on Template parameters that need to be provided, see
@@ -133,7 +132,7 @@ namespace elastica {
             ELASTICA_DEFAULT_ADMISSIBLE_IMPOSED_PRIMITIVES,
         typename... IndividualConfigurations>
     inline constexpr decltype(auto) make_environments_configuration(
-        decltype(seq) /* meta */,
+        [[maybe_unused]] decltype(seq) meta,
         IndividualConfigurations... individual_configurations) noexcept {
       return EnvironmentsConfiguration<EnvironmentTags, ListOfImposedPrimitives,
                                        sequential_policy,
@@ -149,7 +148,7 @@ namespace elastica {
      * \example
      * \snippet ModuleConfiguration/Test_Environments.cpp par_eg
      *
-     * \param p execution policy for the configuration
+     * \param meta Tag-dispatch argument: pass `par` for parallel policy.
      * \param individual_configurations individual environment configurations
      *
      * For details on Template parameters that need to be provided, see
@@ -161,7 +160,7 @@ namespace elastica {
             ELASTICA_DEFAULT_ADMISSIBLE_IMPOSED_PRIMITIVES,
         typename... IndividualConfigurations>
     inline constexpr decltype(auto) make_environments_configuration(
-        decltype(par) /* meta */,
+        [[maybe_unused]] decltype(par) meta,
         IndividualConfigurations... individual_configurations) noexcept {
       return EnvironmentsConfiguration<EnvironmentTags, ListOfImposedPrimitives,
                                        parallel_policy,

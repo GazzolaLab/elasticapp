@@ -4,10 +4,9 @@
 //  \brief Temporal state evolving according to dynamics in SO3 group
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -166,9 +165,13 @@ namespace elastica {
       //**Constructors**********************************************************
       /*!\name Constructors */
       //@{
+      //! Default constructor.
       SO3() = default;
+      //! Constructor from a non-owning pointer to storage.
       explicit SO3(NonOwningPointer p);
+      //! Copy constructor.
       SO3(SO3 const&) = default;
+      //! Move constructor.
       SO3(SO3&&) noexcept = default;
       //@}
       //************************************************************************
@@ -176,6 +179,7 @@ namespace elastica {
       //**Destructor************************************************************
       /*!\name Destructor */
       //@{
+      //! Destructor.
       ~SO3() = default;
       //@}
       //************************************************************************
@@ -427,8 +431,8 @@ namespace elastica {
     /*!\brief Addition assignment operator for the addition of the SO3 groups
      * (\f$ \textrm{a}+=\textrm{b} \f$).
      *
-     * \param rhs The right-hand side SO3 group to be added to the current SO3
-     *            group
+     * \param rhs_expr The right-hand side SO3 group to be added to the current
+     *                 SO3 group
      * \return    Reference to the SO3 group.
      * \exception std::invalid_argument State sizes do not match.
      */

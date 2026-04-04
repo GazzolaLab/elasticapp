@@ -4,10 +4,9 @@
 //  \brief Block initializer functions for Rigid bodys
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -32,11 +31,11 @@ namespace blocks {
   //==========================================================================
 
   //**************************************************************************
-  /*!\brief Returns the size of a (yet to be) Cosserat Rod from the
-   * initializer \ingroup cosserat_rod
+  /*!\brief Returns the logical size of a rigid-body block initializer.
+   * \ingroup rigid_body
    *
-   * \param initializer The current cosserat rod initializer
-   * \return The  number of elements in the cosserat rod.
+   * \param block_initializer The rigid-body block initializer (size is 1).
+   * \return The number of elements (always \c 1 for rigid bodies).
    */
   template <typename RBT,
             template <typename /*RBT*/, typename /*InitializedBlock*/>
@@ -45,7 +44,8 @@ namespace blocks {
   inline constexpr auto size(
       BlockInitializer<
           elastica::rigid_body::RigidBodyPlugin<RBT, Block, Components...>,
-          Initializers...> const&) noexcept {
+          Initializers...> const& block_initializer) noexcept {
+    (void)block_initializer;
     return 1UL;
   }
   //****************************************************************************

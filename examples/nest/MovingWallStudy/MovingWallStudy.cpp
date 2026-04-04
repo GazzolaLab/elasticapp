@@ -7,8 +7,7 @@
 //  Seung Hyun Kim - All Rights Reserved
 //  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 

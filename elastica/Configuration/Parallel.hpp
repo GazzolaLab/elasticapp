@@ -4,45 +4,20 @@
 //  \brief Configuration of the parallelization library
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
 #pragma once
 
 //******************************************************************************
-/*!\brief Compilation switch for the (de-)activation of the shared-memory
- * parallelization
- * \ingroup config parallel
- *
- * This compilation switch enables/disables the shared-memory parallelization.
- * In case the switch is set to 1 (i.e. in case the shared-memory
- * parallelization is enabled), \elastica is allowed to execute operations in
- * parallel. In case the switch is set to 0 (i.e. parallelization
- * is disabled), \elastica is restricted from executing operations in parallel.
- *
- * Possible settings for the shared-memory parallelization switch:
- *  - Deactivated: \b 0
- *  - Activated  : \b 1 (default)
- *
- * \note It is possible to (de-)activate the shared-memory parallelization via
- * command line or by defining this symbol manually before including any
- * Blaze header file:
- *
- * \example
- * \code
- * g++ ... -DELASTICA_USE_SHARED_MEMORY_PARALLELIZATION=1 ...
- * \endcode
- *
- * \code
- * #define ELASTICA_USE_SHARED_MEMORY_PARALLELIZATION 1
- * #include <elastica/elastica.hpp>
- * \endcode
- *
- */
+// Compilation switch for the (de-)activation of the shared-memory
+// parallelization (ELASTICA_USE_SHARED_MEMORY_PARALLELIZATION). When set to 1,
+// Elastica++ may run operations in parallel; when 0, parallel execution is
+// disabled. Activate via -D on the compiler command line or before including
+// Blaze headers.
 // #ifndef ELASTICA_USE_SHARED_MEMORY_PARALLELIZATION
 // #define ELASTICA_USE_SHARED_MEMORY_PARALLELIZATION @ELASTICA_SMP@
 // #endif

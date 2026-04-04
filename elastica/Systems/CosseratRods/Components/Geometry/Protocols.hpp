@@ -4,10 +4,9 @@
 //  \brief Protocols for geometry component within @ref cosserat_rod_component
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -33,7 +32,7 @@ namespace elastica {
          * \brief Has rod shape functions.
          *
          * Requires the class has these member functions:
-         * \snippet this element_dimension
+         * \snippet this get_element_dimension
          * - `get_element_dimension`: Returns the principal dimension of the rod
          * (radius, half-edge etc.)
          * - `get_area`: Returns the cross sectional area of a rod element

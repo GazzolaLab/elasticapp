@@ -4,10 +4,9 @@
 //  \brief Block view definition
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -383,7 +382,7 @@ namespace blocks {
    * std::size_t n_units = blocks::n_units(b);
    * \endcode
    *
-   * \param block_like The block whose number of units is to be extracted.
+   * \param block_view The block view whose number of units is to be extracted.
    *
    * \note
    * These can be customized for your block type.
@@ -409,7 +408,7 @@ namespace blocks {
    * std::size_t n_units = blocks::n_units(b);
    * \endcode
    *
-   * \param block_like The block whose number of units is to be extracted.
+   * \param block_view The block view whose number of units is to be extracted.
    *
    * \note
    * These can be customized for your block type.
@@ -462,7 +461,7 @@ namespace blocks {
    *
    * \tparam Tag Tag to extract
    *
-   * \param block_like The block to extract the tag from
+   * \param block_view The block view to extract the tag from
    */
   template <typename BlockVariableTag, typename Plugin>
   inline constexpr decltype(auto) get_backend(

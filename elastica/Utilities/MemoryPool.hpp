@@ -1,6 +1,6 @@
 //=================================================================================================
 /*!
- *  \file pe/util/MemoryPool.h
+ *  \file elastica/Utilities/MemoryPool.hpp
  *  \brief Header file for the memory pool class
  *
  *  Copyright (C) 2009 Klaus Iglberger
@@ -67,14 +67,12 @@ namespace elastica {
       //! Dummy array to create an object of the appropriate size.
       byte dummy_[sizeof(Type)];
     };
-    /***************************************************************************
-
     //**Struct Block************************************************************
-    /*!\brief Memory block within the memory bool.
-    //
-    // One memory block holds the memory for exactly \a BlockSize objects of
-    // type \a Type.
-    */
+    /*!\brief Memory block within the memory pool.
+     *
+     * One memory block holds the memory for exactly \a BlockSize objects of
+     * type \a Type.
+     */
     struct Block {
      public:
       //**Memory management functions*******************************************

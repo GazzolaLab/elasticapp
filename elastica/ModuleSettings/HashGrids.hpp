@@ -1,3 +1,17 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Module settings for hierarchical hash-grid coarse collision detection
+//
+//  \ingroup coarse_collision_detection
+//
+//  \details
+//  Statically checks cell counts and embeds `Configuration/HashGrids.hpp` defaults.
+//
+//  See LICENSE for details.
+*/
+//==============================================================================
+
 #pragma once
 
 //******************************************************************************

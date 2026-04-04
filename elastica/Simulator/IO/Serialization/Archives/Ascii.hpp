@@ -4,10 +4,9 @@
 //  \brief Implementation of a non-portable ascii archive
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -78,21 +77,19 @@ namespace elastica {
       //**Destructor************************************************************
       /*!\name Destructor */
       //@{
+      //! Destructor.
       ~AsciiOutputArchive() = default;
       //@}
       //************************************************************************
 
      private:
       //**Save implementation***************************************************
-      /*!\brief Writes size bytes of data to the output stream
-      //
-      // \param data Pointer to address of data being written
-      // \param size Size of data
-      // \return void
-      //
-      // This method implements the ascii save operation and is intended for
-      // internal use of \elastica developers only.
-      */
+      /// Writes size bytes of data to the output stream.
+      /// \param data Pointer to address of data being written
+      /// \param size Size of data
+      ///
+      /// This method implements the ascii save operation and is intended for
+      /// internal use of \elastica developers only.
       void save_ascii(const void* data, std::streamsize size) {
         auto const written_size =
             stream_.rdbuf()->sputn(reinterpret_cast<const char*>(data), size);
@@ -166,6 +163,7 @@ namespace elastica {
       //**Destructor************************************************************
       /*!\name Destructor */
       //@{
+      //! Destructor.
       ~AsciiInputArchive() = default;
       //************************************************************************
       //@}
@@ -173,15 +171,12 @@ namespace elastica {
 
      private:
       //**Save implementation***************************************************
-      /*!\brief Reads size bytes of data from the input stream
-      //
-      // \param data Pointer to address of data being loaded
-      // \param size Size of data
-      // \return void
-      //
-      // This method implements the ascii load operation and is intended for
-      // internal use of \elastica developers only.
-      */
+      /// Reads size bytes of data from the input stream.
+      /// \param data Pointer to address of data being loaded
+      /// \param size Size of data
+      ///
+      /// This method implements the ascii load operation and is intended for
+      /// internal use of \elastica developers only.
       void load_ascii(void* const data, std::streamsize size) {
         auto const readSize =
             stream_.rdbuf()->sgetn(reinterpret_cast<char*>(data), size);

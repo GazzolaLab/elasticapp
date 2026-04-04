@@ -4,10 +4,9 @@
 //  \brief The Blocks module in \elastica
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -75,7 +74,7 @@ namespace blocks {
    * std::size_t n_units = blocks::n_units(b);
    * \endcode
    *
-   * \param block_like The block whose number of units is to be extracted.
+   * \param block The block whose number of units is to be extracted.
    *
    * \note
    * These need to be customized for your block type.

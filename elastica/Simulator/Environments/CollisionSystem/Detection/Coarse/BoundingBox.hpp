@@ -4,10 +4,9 @@
 //  \brief Implementation of an axis-aligned bounding box
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 //
 //  This file contains implementation from the pe library with the following
 //  copyrights
@@ -124,11 +123,11 @@ namespace elastica {
                                       const Vector3<Other>& b);
                                       */
 
-          inline BoundingBox(BoundingBox const& aabb);
+          inline BoundingBox(BoundingBox const& other);
           //          inline BoundingBox(BoundingBox&& aabb) noexcept;
 
           template <typename Other>
-          inline BoundingBox(BoundingBox<Other> const& aabb);
+          inline BoundingBox(BoundingBox<Other> const& other);
           //@}
           //********************************************************************
 
@@ -249,14 +248,10 @@ namespace elastica {
         //**********************************************************************
 
         //**********************************************************************
-        /*!\brief Constructor for the direct initialization of the bounding box.
+        /* Disabled Vector3 constructor (kept as non-Doxygen comment; avoids
+         *  merging a/b @param docs onto the copy constructor below).
          *
-         * \param a The bottom-left-front vertex.
-         * \param b The upper-right-back vertex.
-         *
-         * Direct initialization of the bounding box. The first vertex is
-         * initialized with \a a, whereas the second bounding box is set to \a
-         * b.
+         * template ... BoundingBox(Vector3<Other> const& a, Vector3<Other> const& b)
          */
         /*
          template <typename Type>  // Element type of the axis-aligned bounding
@@ -271,58 +266,41 @@ namespace elastica {
         //**********************************************************************
         /*!\brief Copy constructor for axis-aligned bounding boxes.
          *
-         * \param aabb Bounding box to be copied.
+         * \param other Bounding box to be copied.
          *
          * Explicit definition of a copy constructor in order to
          * enable/facilitate NRV optimization.
          */
         template <typename Type>
-        inline BoundingBox<Type>::BoundingBox(BoundingBox const& aabb) {
-          // std::copy(std::begin(v_), std::end(v_), std::begin(aabb.v_));
-          v_[0] = aabb.v_[0];
-          v_[1] = aabb.v_[1];
-          v_[2] = aabb.v_[2];
-          v_[3] = aabb.v_[3];
-          v_[4] = aabb.v_[4];
-          v_[5] = aabb.v_[5];
+        inline BoundingBox<Type>::BoundingBox(BoundingBox const& other) {
+          // std::copy(std::begin(v_), std::end(v_), std::begin(other.v_));
+          v_[0] = other.v_[0];
+          v_[1] = other.v_[1];
+          v_[2] = other.v_[2];
+          v_[3] = other.v_[3];
+          v_[4] = other.v_[4];
+          v_[5] = other.v_[5];
         }
         //**********************************************************************
 
         //**********************************************************************
         /*!\brief Conversion constructor from different BoundingBox instances.
          *
-         * \param aabb Bounding box to be copied.
+         * \param other Bounding box to be copied.
          */
         template <typename Type>   // Element type of the axis-aligned
                                    // bounding box
         template <typename Other>  // Element type of the foreign axis-aligned
                                    // bounding box
-        inline BoundingBox<Type>::BoundingBox(BoundingBox<Other> const& aabb) {
-          v_[0] = aabb.v_[0];
-          v_[1] = aabb.v_[1];
-          v_[2] = aabb.v_[2];
-          v_[3] = aabb.v_[3];
-          v_[4] = aabb.v_[4];
-          v_[5] = aabb.v_[5];
+        inline BoundingBox<Type>::BoundingBox(BoundingBox<Other> const& other) {
+          v_[0] = other.v_[0];
+          v_[1] = other.v_[1];
+          v_[2] = other.v_[2];
+          v_[3] = other.v_[3];
+          v_[4] = other.v_[4];
+          v_[5] = other.v_[5];
         }
         //**********************************************************************
-
-        //        //**********************************************************************
-        //        /*!\brief Move constructor for axis-aligned bounding boxes.
-        //         *
-        //         * \param aabb Bounding box to be moved.
-        //         *
-        //         * Explicit definition of a copy constructor in order to
-        //         * enable/facilitate NRV optimization.
-        //         */
-        //        template <typename Type>
-        //        inline BoundingBox<Type>::BoundingBox(BoundingBox&& aabb)
-        //        noexcept
-        //            : v_(std::move(aabb.v_)) {
-        //          // really no benefit here
-        //        }
-        //        //**********************************************************************
-        //
 
         //======================================================================
         //
@@ -359,7 +337,8 @@ namespace elastica {
         /*!\brief Copy assignment operator for different axis-aligned bounding
          * box instances.
          *
-         * \param rhs Bounding box to be copied.
+         * \param rhs Bounding box to be copied (possibly different element
+         * type).
          * \return Reference to the assigned bounding box.
          */
         template <typename Type>   // Element type of the axis-aligned bounding

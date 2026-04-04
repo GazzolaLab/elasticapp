@@ -4,10 +4,9 @@
 //  \brief Source file for the RigidBodyPrimitive
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 //
 //  This file contains implementation from the pe library with the following
 //  copyrights
@@ -55,6 +54,9 @@ namespace elastica {
     /*!\brief Constructor for the RigidBodyPrimitive class.
      *
      * \param body The body ID of this rigid body.
+     * \param finite Whether the primitive participates in collision as finite.
+     * \param sid System-specific primitive ID.
+     * \param uid User-specific primitive ID.
      */
     RigidBodyPrimitive::RigidBodyPrimitive(BodyID body, bool finite, id_t sid,
                                            id_t uid)

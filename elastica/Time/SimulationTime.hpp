@@ -4,10 +4,9 @@
 //  \brief Simulation time and increments
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -263,7 +262,7 @@ namespace elastica {
       //************************************************************************
       /*!\brief Subtraction assignment operator.
        *
-       * \param inc The time decrement
+       * \param dec The time decrement
        * \return Reference to the decremented time-delta.
        */
       SimulationTimeDelta& operator-=(const SimulationTimeDelta& dec) noexcept {
@@ -337,7 +336,7 @@ namespace elastica {
     //**************************************************************************
     /*!\brief Subtraction assignment operator.
      *
-     * \param inc The time decrement
+     * \param dec The time decrement
      * \return Reference to the decrement time.
      */
     template <typename Real>

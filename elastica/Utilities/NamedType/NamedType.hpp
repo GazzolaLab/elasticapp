@@ -4,10 +4,9 @@
 //  \brief Named types with affordances
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -36,7 +35,7 @@ namespace named_type {
   // \ingroup named_type
   //
   // \example
-  // \snippet TODO
+  // (See unit tests for NamedType usage.)
   //
   // \tparam T Any value type
   // \tparam Tag Tag type for naming
@@ -93,7 +92,7 @@ namespace named_type {
     //**************************************************************************
     /*!\brief The default constructor.
      *
-     * \param f temporary value of the underlying callable, moved into func
+     * \param value temporary value of the underlying callable, moved into storage
      */
     explicit constexpr NamedType(T&& value) noexcept(
         std::is_nothrow_move_constructible<T>::value)

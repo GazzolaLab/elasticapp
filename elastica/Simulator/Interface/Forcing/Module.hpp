@@ -4,10 +4,9 @@
 //  \brief Implementation of module for Forcing
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -237,7 +236,7 @@ namespace elastica {
       //************************************************************************
       /*!\brief Check if the system can be forced
        *
-       * \param first_system The system to be forced
+       * \param system The system to be forced
        * \exception std::nested exception, if forcing is not possible
        */
       template <typename System>
@@ -639,7 +638,8 @@ namespace elastica {
        * \param time_v The time of reset
        * \exception std::runtime_error
        */
-      void reset_module(TimeType /*time_v*/) {
+      void reset_module(TimeType time_v) {
+        (void)time_v;
         n_total_forcing = 0UL;
         forcing_.clear();  // no need, but okay for symmetry
         forcer_batches().clear();

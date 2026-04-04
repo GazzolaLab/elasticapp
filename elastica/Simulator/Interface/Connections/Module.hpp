@@ -4,10 +4,9 @@
 //  \brief Implementation of module for Connections
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -804,7 +803,8 @@ Did you give the right indices using the at() method?
        * \param time_v The time of reset
        * \exception std::runtime_error
        */
-      void reset_module(TimeType /*time_v*/) {
+      void reset_module(TimeType time_v) {
+        (void)time_v;
         n_total_connections = 0UL;
         connections_.clear();  // no need, but okay for symmetry
         connecters_.clear();

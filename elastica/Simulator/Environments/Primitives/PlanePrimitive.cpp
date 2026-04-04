@@ -4,10 +4,9 @@
 //  \brief Source file for PlanePrimitive
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -38,10 +37,11 @@ namespace elastica {
     //==========================================================================
 
     //**************************************************************************
-    /*!\brief Constructor for the CylinderPrimitive class.
+    /*!\brief Constructor for the PlanePrimitive class.
      *
      * \param sid Unique system-specific ID for the plane.
      * \param uid User-specific ID for the plane.
+     * \param finite Whether the primitive participates in collision as finite.
      * \param material The material of the plane.
      */
     PlanePrimitive::PlanePrimitive(id_t sid, id_t uid, bool finite,
@@ -80,6 +80,7 @@ namespace elastica {
      *
      * \param sid Unique system-specific ID for the plane.
      * \param uid User-specific ID for the plane.
+     * \param finite Whether the primitive participates in collision as finite.
      * \param gpos Global geometric center of the plane.
      * \param normal The normal direction of the plane
      * \param spans The spans of the plane \f$ (0..\infty) x (0..\infty) \f$.
@@ -98,8 +99,9 @@ namespace elastica {
      *
      * \param sid Unique system-specific ID for the plane.
      * \param uid User-specific ID for the plane.
+     * \param finite Whether the primitive participates in collision as finite.
      * \param gpos Global geometric center of the plane.
-     * \param rot The rotation matrix of the plane \f$ (0..\infty) \f$.
+     * \param rot Rotation matrix defining the plane orientation.
      * \param spans The spans of the plane \f$ (0..\infty) x (0..\infty) \f$.
      * \param material The material of the plane.
      */

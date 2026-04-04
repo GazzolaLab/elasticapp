@@ -5,10 +5,9 @@
 //  Method (DEM)
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -698,7 +697,7 @@ namespace elastica {
        * environment within \elastica.
        *
        * \param simulator Current simulation.
-       * \param time Current simulation time.
+       * \param time_v Current simulation time.
        * \return void
        *
        * TODO : noexcept guarnatees?
@@ -808,8 +807,8 @@ namespace elastica {
     /*!\brief Resets the current collision system
      * \ingroup environments
      *
-     * \param field Gravity field to be reset
-     * \param time_v Time value
+     * \param system Collision system using the DEM response model
+     * \param time Simulation time passed to the system reset
      */
     template <
         // Type of the simulator configuration (everything except collision)
@@ -839,11 +838,11 @@ namespace elastica {
     //**************************************************************************
 
     //**************************************************************************
-    /*!\brief Initializes parameters of a gravity field from its configuration
+    /*!\brief Initializes DEM collision parameters from configuration
      * \ingroup environments
      *
-     * \param field Gravity field to be initialized
-     * \param config Configuration of a gravity field
+     * \param system Collision system using the DEM response model
+     * \param config User configuration for the collision system
      */
     template <
         // Type of the simulator configuration (everything except collision)

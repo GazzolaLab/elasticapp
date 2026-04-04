@@ -4,10 +4,9 @@
 //  \brief Environment interface type traits
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -40,8 +39,8 @@ namespace elastica {
      * \ingroup interface_type_traits
      *
      * This type trait class tests whether or not the given type \c CM has a
-     * \elastica \environment interface. In order to qualify as a valid
-     * \environment the given type has to derive publicly from the
+     * \elastica \c environment interface. In order to qualify as a valid
+     * \c environment the given type has to derive publicly from the
      * elastica::interface::protocols::Environments protocol class. In case the
      * given type is a valid, Environments type, the \a value member constant is
      * set to \a true, the nested type definition \a type is \a std::true_type,
@@ -50,7 +49,7 @@ namespace elastica {
      * \a std::false_type.
      *
      * \usage
-     * For any \environment type \c CM,
+     * For any \c environment type \c CM,
      * \code
      * using result = IsEnvironmentsModule<CM>;
      * \endcode
@@ -70,7 +69,7 @@ namespace elastica {
      *
      * \see protocols::Environments
      *
-     * \tparam CM : the \environment type to check
+     * \tparam CM : the \c environment type to check
      */
     template <typename CM>  // Type to check
     struct IsEnvironmentsModule
@@ -110,8 +109,8 @@ namespace elastica {
      * \ingroup interface_type_traits
      *
      * This type trait class asserts whether or not the given type \c CM can
-     * be used as an \elastica \environments module in the current
-     * simulation. In order to be safely used as a valid \environments module
+     * be used as an \elastica \c environments module in the current
+     * simulation. In order to be safely used as a valid \c environments module
      * the given type \c CM has to derive publicly from
      * the elastica::interface::protocols::Environments protocol class and
      * satisfy all its requirements. In case the given type is a safe

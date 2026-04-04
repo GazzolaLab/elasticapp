@@ -4,10 +4,9 @@
 //  \brief Functionality surrounding a set of integral indices
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -246,7 +245,7 @@ namespace elastica {
    *
    *
    * \param x An integral index
-   * \param ...indices Other integral indices
+   * \param ints Additional integral indices (variadic pack)
   */
   template <typename... Ints>
   inline constexpr auto numeric_at(std::size_t x, Ints... ints)

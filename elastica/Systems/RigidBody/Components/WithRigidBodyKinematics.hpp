@@ -4,10 +4,9 @@
 //  \brief Kinematics component of @ref rigid_body
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -225,7 +224,7 @@ namespace elastica {
       //************************************************************************
 
       //********************************************************************
-      /*!\copydoc ComponentInitializationDocStub
+      /*!\copydoc elastica::cosserat_rod::ComponentInitializationDocStub
        */
       template <typename BlockLike, typename RigidBodyInitializer>
       static void initialize(
@@ -436,9 +435,9 @@ namespace elastica {
      * Also resets external_force_batch and external_torque_batch = 0.0
      *
      * \example
-     * The following shows a typical use of the update_acceleration()
-     * function with the expected (correct) result also shown.
-     * \snippet test_gov_eqns.cpp update_acceleration_example
+     * After forces and torques are assembled, call \c update_acceleration()
+     * on the kinematics component block so translational and angular
+     * accelerations are updated and external load buffers are cleared.
      *
      * \return void/None
      *

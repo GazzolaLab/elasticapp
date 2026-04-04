@@ -6,8 +6,7 @@
 //  Copyright (C) 2020-2022 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -119,10 +118,9 @@ namespace elastica {
       //@{
 
       //************************************************************************
-      /*!\name Gravity functions
-       * \brief Gets the gravity
-       */
+      //! \name Gravity functions
       //@{
+      //! Read/write access to the gravity acceleration vector.
       auto gravity() & noexcept -> GravityAcceleration& { return gravity_acc_; }
       auto gravity() const& noexcept -> GravityAcceleration const& {
         return gravity_acc_;
@@ -149,7 +147,9 @@ namespace elastica {
        * `noexcept` not guaranteed since coarse detector has internal state
        */
       template <typename Simulator>
-      void initialize(Simulator const&) const noexcept {}
+      void initialize(Simulator const& simulator) const noexcept {
+        (void)simulator;
+      }
       //************************************************************************
 
       //************************************************************************
@@ -160,11 +160,11 @@ namespace elastica {
        * environment within \elastica.
        *
        * \param simulator Current simulation.
-       * \param time Current simulation time.
-       * \return void
+       * \param time_v Current simulation time.
        */
       template <typename Simulator>
-      void resolve(Simulator& simulator, TimeType) {
+      void resolve(Simulator& simulator, TimeType time_v) {
+        (void)time_v;
         // This kernel gets profiled as part of environments, so use the untimed
         // version of block
         using elastica::environments::resolve;
@@ -189,11 +189,11 @@ namespace elastica {
      * \ingroup environments
      *
      * \param field Gravity field to be reset
-     * \param time_v Time value
+     * \param meta Tag type for time protocol (value unused)
      */
     template <typename Traits>
     void reset(GravityField<Traits>& field,
-               typename GravityField<Traits>::TimeType /* meta */) noexcept {
+               [[maybe_unused]] typename GravityField<Traits>::TimeType meta) noexcept {
       field.gravity() =
           typename GravityField<Traits>::GravityAcceleration{0., 0, 0.};
     }

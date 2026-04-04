@@ -4,10 +4,9 @@
 //  \brief Definition of addition operations for all SO3 states
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -54,7 +53,7 @@ namespace elastica {
      * (\f$ \textrm{c} = \textrm{a} + dt * \textrm{b} \f$).
      * used as shown below:
      *
-     * \usage
+     * \par Usage
      * \code
      * using namespace elastica::states;
      * using matrix_type = // your favorite matrix type;
@@ -130,7 +129,7 @@ algorithm! Specifically, adding a primitive to a primitive is forbidden.
      * (\f$ \textrm{d} = (\textrm{a} + dt * \textrm{b}) + dt * \textrm{c} \f$).
      * used as shown below:
      *
-     * \usage
+     * \par Usage
      * \code
      * using namespace elastica::states;
      * using matrix_type = // your favorite matrix type;

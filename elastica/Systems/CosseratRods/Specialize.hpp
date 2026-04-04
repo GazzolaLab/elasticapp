@@ -4,10 +4,9 @@
 //  \brief Specalize a plugin for Cosserat Rods
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -66,16 +65,13 @@ namespace elastica {
      *
      * \usage
      * For a plugin type `Plugin` and a tag type `Tag` (which only needs to be
-     * declared)
+     * declared):
      * \code
      * using result = specialize<Plugin, Tag>;
      * \endcode
      *
      * \metareturns
      * A new type TaggedPlugin
-     *
-     * \example
-     * \snippet Test_Specialized.cpp specialize_eg
      *
      * \tparam Plugin A cosserat rod Plugin type (maybe tagged or untagged)
      * \tparam Tag A tag type to tag the Plugin above

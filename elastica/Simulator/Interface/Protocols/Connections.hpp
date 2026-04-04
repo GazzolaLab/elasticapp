@@ -4,10 +4,9 @@
 //  \brief Connection interface protocols
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -50,10 +49,6 @@ namespace elastica {
        * \snippet this expected_types
        * and these member functions,
        * \snippet this expected_functions
-       *
-       * \example
-       * The following shows an example of minimal conformance to this protocol.
-       * \snippet Interface/Protocols/Test_Connections.cpp connections_eg
        */
       struct Connections {
         //**********************************************************************

@@ -108,7 +108,7 @@ namespace elastica {
    * \tparam BlockCache The block (along with data)
    *
    * \example
-   * \snippet Test_SymplecticStepperAdapter.cpp
+   * See \c tests/Unit/Systems/common/Test_SymplecticStepperAdapter.cpp for usage.
    */
   template <typename Traits, typename BlockLike,
             template <typename, typename> class... OtherComponents>

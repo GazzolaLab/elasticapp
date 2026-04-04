@@ -4,10 +4,9 @@
 //  \brief Get concept/affordance
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -162,31 +161,7 @@ namespace blocks {
    *
    * \tparam Tag Tag to extract
    *
-   * \param block_like The block to extract the tag from
-   */
-
-  //****************************************************************************
-  /*!\brief Slice operator
-   * \ingroup block_concepts
-   *
-   * \details
-   * Implements slices on entities modeling Sliceable concept.
-   *
-   * \param sliceable Data-structure modeling the Sliceable concept
-   * \param index The index of the slice (int or from_end)
-   *
-   * \example
-   * Given a block `b`, we can slice it using
-   * \code
-   * auto b_slice = block::slice(b, 5UL); // Gets b[5], at index 5 from start
-   * // Gets b[-2]
-   * auto b_slice_from_end = block::slice(b, elastica::end - 2UL); // 2 from end
-   * \endcode
-   *
-   * \note
-   * not marked noexcept because we can have out of range indices
-   *
-   * \see blocks::Sliceable , blocks::BlockSlice
+   * \param gettable The Gettable wrapper whose element to extract.
    */
 
   //****************************************************************************

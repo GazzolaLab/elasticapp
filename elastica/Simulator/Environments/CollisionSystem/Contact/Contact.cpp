@@ -4,10 +4,9 @@
 //  \brief Source file for the Contact class
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 //
 //  This file contains implementation from the pe library with the following
 //  copyrights
@@ -147,9 +146,11 @@ namespace elastica {
      * \param normal The global normal of the contact (running from body 2 to
      * body 1).
      * \param e1 Edge direction of the colliding edge of the first colliding
-     * rigid body. \param e2 Edge direction of the colliding edge of the second
-     * colliding rigid body. \param dist The distance between the surfaces of
-     * the contacting rigid bodies.
+     * rigid body.
+     * \param e2 Edge direction of the colliding edge of the second colliding
+     * rigid body.
+     * \param dist The distance between the surfaces of the contacting rigid
+     * bodies.
      */
     Contact::Contact(GeomID g1, GeomID g2, Vec3 const& gpos, Vec3 const& normal,
                      Vec3 const& e1, Vec3 const& e2, real_t dist)

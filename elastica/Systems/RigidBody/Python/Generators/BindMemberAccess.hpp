@@ -6,8 +6,7 @@
 //  Copyright (C) 2020-2022 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -156,7 +155,7 @@ namespace py_bindings {
    *
    * \tparam UnwantedVariableTags Tags that should not be bound/exposed to the
    * python side
-   * \param a Pybind11 class of a CosseratRod
+   * \param rigid_body Pybind11 class wrapping a rigid-body block slice
    */
   template <typename UnwantedVariableTags, typename CRT,
             template <typename /*CRT*/, typename /*InitializedBlock*/>
@@ -183,7 +182,7 @@ namespace py_bindings {
    *
    * \tparam UnwantedVariableTags Tags that should not be bound/exposed to the
    * python side
-   * \param a Pybind11 class of a CosseratRod
+   * \param rigid_body Pybind11 class wrapping a tagged rigid-body block slice
    */
   template <typename UnwantedVariableTags, typename CRT, typename Tag,
             template <typename /*CRT*/, typename /*InitializedBlock*/>

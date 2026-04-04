@@ -1,6 +1,6 @@
 //=================================================================================================
 /*!
- *  \file pe/vtk/Writer.h
+ *  \file elastica/Simulator/IO/vtk/Writer.hpp
  *  \brief Header of the VTK file writer for the VTK visualization
  *
  *  Copyright (C) 2012 Simon Bogner

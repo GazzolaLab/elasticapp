@@ -4,10 +4,9 @@
 //  \brief Helpers to initialize CosseratRod components
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -31,7 +30,7 @@ namespace elastica {
      *
      * \tparam Variables Typelist of `BlockVariables` to initialize.
      * \param block_like Cosserat-rod block-slice.
-     * \param initializer Cosserat-rod block-initializer.
+     * \param initializers Cosserat-rod block-initializer(s).
      */
     template <typename Variables, typename CRT,
               template <typename /*CRT*/, typename /* ComputationalBlock */>
@@ -54,7 +53,7 @@ namespace elastica {
      *
      * \tparam Variables Typelist of `BlockVariables` to initialize.
      * \param block_like Cosserat-rod block.
-     * \param initializer Cosserat-rod block-initializer.
+     * \param initializers Cosserat-rod block-initializer(s).
      */
     template <typename Variables, typename CRT,
               template <typename /*CRT*/, typename /* ComputationalBlock */>

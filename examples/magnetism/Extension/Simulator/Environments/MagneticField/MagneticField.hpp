@@ -6,8 +6,7 @@
 //  Copyright (C) 2020-2022 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -103,10 +102,9 @@ namespace elastica {
       //@{
 
       //************************************************************************
-      /*!\name Magnetic functions
-       * \brief Gets the profile
-       */
+      //! \name Magnetic functions
       //@{
+      //! Read/write access to the stored magnetic field profile functor.
       auto magnetic_field_profile() & noexcept -> MagneticFieldProfile& {
         return magnetic_field_profile_;
       }
@@ -150,7 +148,9 @@ namespace elastica {
        * `noexcept` not guaranteed since coarse detector has internal state
        */
       template <typename Simulator>
-      void initialize(Simulator const&) const noexcept {}
+      void initialize(Simulator const& simulator) const noexcept {
+        (void)simulator;
+      }
       //************************************************************************
 
      protected:
@@ -200,8 +200,7 @@ namespace elastica {
        * environment within \elastica.
        *
        * \param simulator Current simulation.
-       * \param time Current simulation time.
-       * \return void
+       * \param time_v Current simulation time.
        */
       template <typename Simulator>
       void resolve(Simulator& simulator, TimeType time_v) const {
@@ -232,11 +231,13 @@ namespace elastica {
      * \ingroup environments
      *
      * \param field Magnetic field to be reset
-     * \param time_v Time value
+     * \param meta Tag type for time protocol (value unused)
      */
     template <typename Traits>
-    void reset(MagneticField<Traits>& /*field*/,
-               typename MagneticField<Traits>::TimeType /* meta */) noexcept {}
+    void reset(MagneticField<Traits>& field,
+               [[maybe_unused]] typename MagneticField<Traits>::TimeType meta) noexcept {
+      (void)field;
+    }
     //**************************************************************************
 
     //**************************************************************************

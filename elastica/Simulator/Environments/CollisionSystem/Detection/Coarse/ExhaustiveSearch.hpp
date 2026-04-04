@@ -5,10 +5,9 @@
 //  algorithm
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 //
 //  This file contains implementation from the pe library with the following
 //  copyrights
@@ -128,8 +127,14 @@ changing the coarse-detection algorithm.
           //**Constructor*******************************************************
           /*!\name Constructor */
           //@{
+          //! Default constructor (null domain).
           explicit ExhaustiveSearch() : domain_(nullptr){};
-          explicit ExhaustiveSearch(const DomainType*);
+          /*! Constructor for exhaustive search collision detector.
+           *
+           * \param domain Pointer to the simulation domain (detector holds a
+           * reference for its lifetime).
+           */
+          explicit ExhaustiveSearch(const DomainType* domain);
           //@}
           //********************************************************************
 
@@ -233,15 +238,7 @@ changing the coarse-detection algorithm.
         //
         //======================================================================
 
-        //**********************************************************************
-        /*!\brief Constructor for exhaustive search collision detector.
-         *
-         * \param domain The domain of the simulator
-         * \param primitive_storage The storage of primitives
-         * \param ghosts NA
-         * \param imposed_primitive_storage The storage for primitives that are
-         * imposed (includes infinite objects as well)
-         */
+        // Out-of-line definition (documentation is on the declaration above).
         template <typename C>  // Type of the configuration
         ExhaustiveSearch<C>::ExhaustiveSearch(const DomainType* domain)
             : domain_(domain) {}
@@ -266,8 +263,7 @@ changing the coarse-detection algorithm.
         /*!\brief Registering a rigid primitive with the coarse collision
          * detector.
          *
-         * \param body The body to be registered with the coarse collision
-         * detector.
+         * \param primitive The primitive to register (no-op in this stub).
          * \return void
          *
          * This function is a requirement for all coarse collision detectors. It
@@ -276,14 +272,15 @@ changing the coarse-detection algorithm.
          */
         template <typename C>  // Type of the configuration
         template <typename PrimitiveType>
-        void ExhaustiveSearch<C>::add(PrimitiveType* /*primitive*/) {}
+        void ExhaustiveSearch<C>::add(PrimitiveType* primitive) {
+          (void)primitive;
+        }
         //**********************************************************************
 
         //**********************************************************************
         /*!\brief Deregistering a rigid body from the coarse collision detector.
          *
-         * \param body The body to be deregistered from the coarse collision
-         * detector.
+         * \param primitive The primitive to remove (no-op in this stub).
          * \return void
          *
          * This function is a requirement for all coarse collision detectors. It
@@ -292,7 +289,9 @@ changing the coarse-detection algorithm.
          */
         template <typename C>  // Type of the configuration
         template <typename PrimitiveType>
-        void ExhaustiveSearch<C>::remove(PrimitiveType* /*primitive*/) {}
+        void ExhaustiveSearch<C>::remove(PrimitiveType* primitive) {
+          (void)primitive;
+        }
         //**********************************************************************
 
         //======================================================================
@@ -316,6 +315,8 @@ changing the coarse-detection algorithm.
          * each primitive pairs at one time)
          *
          * \param contacts Contact container for the generated contacts.
+         * \param first First colliding primitive.
+         * \param second Second colliding primitive.
          * \return void
          */
         template <typename C>                  // Type of the configuration
@@ -344,6 +345,8 @@ changing the coarse-detection algorithm.
          * to the contact container \a contacts.
          *
          * \param contacts Contact container for the generated contacts.
+         * \param collection Container of primitives of a single type (paired
+         * within the collection).
          * \return void
          */
         template <typename C>                  // Type of the configuration
@@ -393,6 +396,8 @@ changing the coarse-detection algorithm.
          * generated are added to the container \a contacts.
          *
          * \param contacts Contact container for the generated contacts.
+         * \param first_primitive_collection Primitives of the first type.
+         * \param second_primitive_collection Primitives of the second type.
          * \return void
          */
         template <typename C>              // Type of the configuration
@@ -487,6 +492,8 @@ changing the coarse-detection algorithm.
          * contained in the simulation world. The contacts are added to the
          * contact container \a contacts.
          *
+         * \param primitives_collection Dynamic and static primitives.
+         * \param imposed_primitives_collection Imposed primitives.
          * \param contacts Contact container for the generated contacts.
          * \return void
          */

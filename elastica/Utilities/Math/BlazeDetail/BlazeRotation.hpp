@@ -32,12 +32,11 @@ namespace elastica {
   // \example
   // The following shows a typical use of the log_batch function
   // with the expected (correct) result also shown.
-  // \snippet test_rotations.cpp log_batch_example
   //
-  // \param[out] void/None
-  // \param[in] rot_matrix_batch(3, 3, n_elems) rotation matrix batch
+  // \param rot_axis_vector_batch Output rotation axis vector batch
+  // \param rot_matrix_batch Input rotation matrix batch
   //
-  // \return rot_axis_vector_batch(3, n_elems) rotation axis vector batch
+  // \return void
   //
   // \see fill later?
   */
@@ -100,10 +99,9 @@ namespace elastica {
   // \example
   // The following shows a typical use of the exp_batch function
   // with the expected (correct) result also shown.
-  // \snippet test_rotations.cpp exp_batch_example
   //
-  // \param[out] rot_matrix_batch(3, 3, n_elems) rotation matrix batch
-  // \param[in] rot_axis_vector_batch(3, n_elems) rotation axis vector batch
+  // \param rot_matrix_batch Output rotation matrix batch
+  // \param rot_axis_vector_batch Input rotation axis vector batch
   //
   // \return void/None
   //

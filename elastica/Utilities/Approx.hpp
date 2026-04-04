@@ -1,6 +1,11 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Floating-point comparison helper with configurable tolerance
 //
-// Created by Tejaswin Parthasarathy on 5/25/21.
-//
+//  See LICENSE for details.
+*/
+//==============================================================================
 
 #pragma once
 
@@ -19,8 +24,13 @@ namespace elastica {
 
   }  // namespace detail
 
-  // TODO : Add docs
-  // TODO : Add tests
+  /*!
+   * \brief Approximate floating-point comparison helper
+   *
+   * `Approx` stores a reference value and compares other numeric values against
+   * it using an absolute margin and a relative epsilon/scale-based tolerance.
+   * It is intended for readable comparisons in tests and setup validation code.
+   */
   class Approx {
    private:
     bool equalityComparisonImpl(double const other) const {
@@ -50,12 +60,14 @@ namespace elastica {
     };
 
    public:
+    //! Construct an approximation object around `value`.
     Approx(double value)
         : m_epsilon(std::numeric_limits<double>::epsilon() * 100),
           m_margin(0.0),
           m_scale(0.0),
           m_value(value) {}
 
+    //! Construct a default-configured `Approx` that can be called with a value.
     static Approx custom() { return Approx(0); }
 
     template <typename T, typename = typename std::enable_if<
@@ -121,6 +133,7 @@ namespace elastica {
       return lhs.m_value > static_cast<double>(rhs) || lhs == rhs;
     }
 
+    //! Set the relative comparison tolerance.
     template <typename T, typename = typename std::enable_if<
                               std::is_constructible<double, T>::value>::type>
     Approx& epsilon(T const& newEpsilon) {
@@ -129,6 +142,7 @@ namespace elastica {
       return *this;
     }
 
+    //! Set the absolute comparison tolerance.
     template <typename T, typename = typename std::enable_if<
                               std::is_constructible<double, T>::value>::type>
     Approx& margin(T const& newMargin) {
@@ -137,6 +151,7 @@ namespace elastica {
       return *this;
     }
 
+    //! Set the scale used in relative comparisons.
     template <typename T, typename = typename std::enable_if<
                               std::is_constructible<double, T>::value>::type>
     Approx& scale(T const& newScale) {

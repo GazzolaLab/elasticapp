@@ -362,7 +362,7 @@ namespace tuples {
      * \requires `std::is_convertible_v<Us, typename Tags::type>...` is `true`
      *
      * \example
-     * \snippet Test_TaggedTuple.cpp construction_example
+     * \snippet Utilities/Test_TaggedTuple.cpp construction_example
      */
     template <class... Us,
               typename std::enable_if<
@@ -380,7 +380,7 @@ namespace tuples {
      * \requires `std::is_convertible_v<Us, typename Tags::type>...` is `true`
      *
      * \example
-     * \snippet Test_TaggedTuple.cpp construction_example
+     * \snippet Utilities/Test_TaggedTuple.cpp construction_example
      */
     template <class... Us,
               typename std::enable_if<
@@ -730,7 +730,7 @@ namespace tuples {
   /// with the tags in a different order.  All tags must be the same
   /// except for ordering.
   /// \example
-  /// \snippet Test_TaggedTuple.cpp reorder_example
+  /// \snippet Utilities/Test_TaggedTuple.cpp reorder_example
   template <typename ReturnedTaggedTuple, typename... Tags>
   ReturnedTaggedTuple reorder(TaggedTuple<Tags...> input) noexcept {
     return TaggedTuple_detail::reorder_impl(
@@ -795,11 +795,11 @@ namespace tuples {
    *
    * Here is an example how to use the function:
    *
-   * \snippet Test_TaggedTuple.cpp expand_tuple_example
+   * \snippet Utilities/Test_TaggedTuple.cpp expand_tuple_example
    *
    * This is the function being called in the above example:
    *
-   * \snippet Test_TaggedTuple.cpp expand_tuple_example_function
+   * \snippet Utilities/Test_TaggedTuple.cpp expand_tuple_example_function
    *
    * \see std::apply
    */

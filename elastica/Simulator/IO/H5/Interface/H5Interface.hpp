@@ -4,10 +4,9 @@
 //  \brief Data collection interface in H5
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -155,8 +154,7 @@ namespace elastica {
       //************************************************************************
       /*!\brief Records the system `T` data into a H5 file
        *
-       * \param contact The contact being processed
-       * \return The penetration depth of the current contact
+       * \param system System whose state is written to the archive.
        */
       template <typename System>
       auto operator()(System const& system) /*const noexcept*/ {
@@ -201,10 +199,9 @@ namespace elastica {
       //@{
 
       //************************************************************************
-      /*!\brief Records the system `T` data into a H5 file
+      /*!\brief Reads the system `T` data from a H5 file
        *
-       * \param contact The contact being processed
-       * \return The penetration depth of the current contact
+       * \param system System whose state is restored from the archive.
        */
       template <typename System>
       auto operator()(System& system) /*const noexcept*/ {

@@ -4,10 +4,9 @@
 //  \brief Implementation of module for Constraints
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -246,7 +245,7 @@ namespace elastica {
       //************************************************************************
       /*!\brief Check if the system can be constrained
        *
-       * \param first_system The system to be constrained
+       * \param system The system to be constrained
        * \exception std::nested exception, if constraint is not possible
        */
       template <typename System>
@@ -667,7 +666,8 @@ namespace elastica {
        * \param time_v The time of reset
        * \exception std::runtime_error
        */
-      void reset_module(TimeType /*time_v*/) {
+      void reset_module(TimeType time_v) {
+        (void)time_v;
         n_total_constraints = 0UL;
         constraints_.clear();  // no need, but okay for symmetry
         constrainer_batches().clear();

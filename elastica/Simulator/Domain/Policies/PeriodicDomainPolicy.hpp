@@ -4,10 +4,9 @@
 //  \brief Periodic domain policy class
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -167,22 +166,9 @@ namespace elastica {
     //**************************************************************************
 
     //**************************************************************************
-    /*!\brief Set span of domain.
-     *
-     * Sets the simulation domain after creation.
-     *
-     * \param span A span of Vector like elements
-     * \return void
-     *
-     * \tparam VecLike Any vector like type
-     */
-    // template <typename VecLike>  // Vec3 like
-    // void set(Span<VecLike> span) noexcept {
-    //   VecLike& mins = span.span_[span.min_idx];
-    //   VecLike& maxs = span.span_[span.max_idx];
-    //   set(SpanType(mins[X], maxs[X]), SpanType(mins[Y], maxs[Y]),
-    //       SpanType(mins[Z], maxs[Z]));
-    // }
+    // Optional overload (disabled): set(Span<VecLike> span) for Vec3-like spans.
+    // template <typename VecLike>
+    // void set(Span<VecLike> span) noexcept { ... }
     //**************************************************************************
 
     //**************************************************************************

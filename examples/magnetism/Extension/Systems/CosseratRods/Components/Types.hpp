@@ -1,13 +1,12 @@
 //==============================================================================
 /*!
 //  \file
-//  \brief All component types within @ref magnetized_cosserat_rod_component
+//  \brief Component types for the magnetism extension Cosserat rod stack
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 

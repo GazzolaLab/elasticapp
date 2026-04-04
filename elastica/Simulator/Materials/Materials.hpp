@@ -4,10 +4,9 @@
 //  \brief Header file for materials
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 //
 //  This file contains implementation from the pe library with the following
 //  copyrights
@@ -300,7 +299,7 @@ namespace elastica {
      * determine the restitution factor of the contact point.
      */
     real_t restitution_;
-    //! The coefficient of static friction (CSF) \f [0..\infty) \f$
+    //! The coefficient of static friction (CSF) \f$[0,\infty)\f$
     /* The CSF is a dimensionless, non-negative quantity representing the
      * amount of static friction between two touching rigid bodies. Static
      * friction occurs in case the relative tangential velocity between the
@@ -312,7 +311,7 @@ namespace elastica {
      */
     real_t static_;
     //! The coefficient of static friction (CSF) in the backward direction
-    //! \f [0..\infty) \f$
+    //! \f$[0,\infty)\f$
     /* The CSF is a dimensionless, non-negative quantity representing the
      * amount of static friction between two touching rigid bodies. Static
      * friction occurs in case the relative tangential velocity between the
@@ -324,7 +323,7 @@ namespace elastica {
      */
     real_t backward_static_;
     //! The coefficient of static friction (CSF) in the lateral direction
-    //! \f [0..\infty) \f$
+    //! \f$[0,\infty)\f$
     /* The CSF is a dimensionless, non-negative quantity representing the
      * amount of static friction between two touching rigid bodies. Static
      * friction occurs in case the relative tangential velocity between the
@@ -335,7 +334,7 @@ namespace elastica {
      * imminent and is unresticted otherwise.
      */
     real_t lateral_static_;
-    //! The coefficient of dynamic friction (CDF) \f [0..\infty) \f.$
+    //! The coefficient of dynamic friction (CDF) \f$[0,\infty)\f$
     /* The CDF is a dimensionless, non-negative quantity representing the
      * amount of dynamic friction between two touching rigid bodies. Dynamic
      * friction occurs in case the relative tangential velocity between the
@@ -345,7 +344,7 @@ namespace elastica {
      */
     real_t dynamic_;
     //! The coefficient of dynamic friction (CDF) in the backward direction
-    //! \f [0..\infty) \f.$
+    //! \f$[0,\infty)\f$
     /* The CDF is a dimensionless, non-negative quantity representing the
      * amount of dynamic friction between two touching rigid bodies. Dynamic
      * friction occurs in case the relative tangential velocity between the
@@ -355,7 +354,7 @@ namespace elastica {
      */
     real_t backward_dynamic_;
     //! The coefficient of dynamic friction (CDF) in the lateral direction
-    //! \f [0..\infty) \f.$
+    //! \f$[0,\infty)\f$
     /* The CDF is a dimensionless, non-negative quantity representing the
      * amount of dynamic friction between two touching rigid bodies. Dynamic
      * friction occurs in case the relative tangential velocity between the
@@ -526,14 +525,17 @@ namespace elastica {
    * \f$ [0..1] \f$.
    * \param poisson The Poisson's ratio of the material \f$ [-1..0.5] \f$.
    * \param young The Young's modulus of the material \f$ (0..\infty) \f$.
+   * \param shear The shear modulus of the material \f$ (0..\infty) \f$.
    * \param stiffness The stiffness in normal direction of the material's
    * contact region.
    * \param normal_damping The damping coefficient in normal direction of the
    * material's contact region.
    * \param tangential_damping The damping coefficient in tangential direction
-   * of the material's contact region. \param csf The coefficient of static
-   * friction (CSF) of the material \f$ [0..\infty) \f$. \param cdf The
-   * coefficient of dynamic friction (CDF) of the material \f$ [0..\infty) \f$.
+   * of the material's contact region.
+   * \param csf The coefficient of static friction (CSF) of the material
+   * \f$ [0..\infty) \f$.
+   * \param cdf The coefficient of dynamic friction (CDF) of the material
+   * \f$ [0..\infty) \f$.
    */
   inline Material::Material(std::string name, real_t density, real_t cor,
                             real_t poisson, real_t young, real_t shear,
@@ -1339,7 +1341,7 @@ namespace elastica {
    *
    * \param material1 The material of the first colliding rigid body.
    * \param material2 The material of the second colliding rigid body.
-   * \param csf The coefficient of forward dynamic friction between \a material1
+   * \param forward_cdf The coefficient of forward dynamic friction between \a material1
    * and \a material2.
    * \return void
    */

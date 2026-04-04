@@ -4,10 +4,9 @@
 //  \brief Parallely resolve contacts using DEM collision response
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -133,8 +132,8 @@ namespace elastica {
          * computes the maximal overlap over all contacts. Contacts are expected
          * to be batched into a granularity that can be parallely invoked
          *
-         * \param contacts The number of contacts
-         * \return
+         * \param contact_batches Batched contact containers to resolve.
+         * \return Maximal overlap over all contacts.
          */
         template <typename BatchedContactContainer>
         auto operator()(BatchedContactContainer const& contact_batches)

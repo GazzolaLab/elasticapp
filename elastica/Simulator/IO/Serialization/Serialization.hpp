@@ -4,10 +4,9 @@
 //  \brief Main serialization classes with interface
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -51,7 +50,7 @@ namespace elastica {
      * epilogue functions together with specializations of save, and load to
      * alter the functionality of their serialization.
      *
-     * \section custom Customization
+     * \section serialization_output_customization Customization
      * If you create a custom archive class, it should derive from this, passing
      * itself as a template parameter for the ArchiveType.
      * \code
@@ -187,7 +186,7 @@ namespace elastica {
      * epilogue functions together with specializations of load, and load to
      * alter the functionality of their serialization.
      *
-     * \section custom Customization
+     * \section serialization_input_customization Customization
      * If you create a custom archive class, it should derive from this, passing
      * itself as a template parameter for the ArchiveType.
      *

@@ -4,10 +4,9 @@
 //  \brief Invoke a function in parallel over a sequence of elements
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -85,9 +84,8 @@ namespace elastica {
      * }, tbb::auto_partitioner);
      * \endcode
      *
-     * \param first The first value in the range
-     * \param last The last value in the range
-     * \param func function to be execute in parallel over the range
+     * \param args Arguments forwarded to the parallel for_each implementation
+     * (iterators, function object, optional partitioner)
      */
     template <typename... Args>
     inline void for_each(Args&&... args) {

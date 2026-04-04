@@ -4,11 +4,10 @@
 //  \brief Defines an abstract Singleton
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //  Modified from the `pe` library, see below for copyrights
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -126,7 +125,7 @@ namespace elastica {
   // Implements the abstract Singleton pattern in \elastica
   //
   // \example
-  // \snippet Singleton/Test_Singleton.cpp singleton_example
+  // (Singleton usage is illustrated in tests and dependent modules.)
   //
   // \tparam T Type to be made singleton
   // \tparam Deps... Dependencies of T

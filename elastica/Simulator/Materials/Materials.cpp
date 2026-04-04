@@ -4,10 +4,9 @@
 //  \brief Source file for materials
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 //
 //  This file contains implementation from the pe library with the following
 //  copyrights
@@ -512,7 +511,6 @@ namespace elastica {
    * \param density The density of the material \f$ (0..\infty) \f$.
    * \param cor The coefficient of restitution (COR) of the material
    * \f$ [0..1] \f$.
-   * \param poisson The Poisson's ratio of the material \f$ [-1..0.5] \f$.
    * \param young The Young's modulus of the material \f$ (0..\infty) \f$.
    * \param shear The Shear modulus of the material \f$ (0..\infty) \f$.
    * \param stiffness The stiffness in normal direction of the material's

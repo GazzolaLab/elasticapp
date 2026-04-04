@@ -5,10 +5,9 @@
 //  function, but can take template parameters.
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 //
 //  Reused from SpECTRE : https://spectre-code.org/
 */
@@ -35,10 +34,10 @@
 /// Each optional derived class defines a registrar helper and both
 /// the base class and derived classes are templated on the list of
 /// registrars.  The typical structure of these classes is:
-/// \snippet Test_Registration.cpp registrar_structure
+/// \snippet Unit/Utilities/Test_Registration.cpp registrar_structure
 /// A concrete base class type with a specific set of derived classes
 /// is constructed like
-/// \snippet Test_Registration.cpp registrar_use
+/// \snippet Unit/Utilities/Test_Registration.cpp registrar_use
 ///
 /// It is frequently useful to default the registrar list in a derived
 /// class to the registrar for that class.  This ensures that any
@@ -51,10 +50,10 @@ namespace Registration {
   ///
   /// A registrar for a class can be defined by making a type alias to
   /// this struct, filling in the registrant.
-  /// \snippet Test_Registration.cpp registrar
+  /// \snippet Unit/Utilities/Test_Registration.cpp registrar
   /// In more complex cases (such as with non-type template
   /// parameters) defining a registrar manually may be necessary.
-  /// \snippet Test_Registration.cpp custom_registrar
+  /// \snippet Unit/Utilities/Test_Registration.cpp custom_registrar
   template <template <typename...> class Registrant, typename... Args>
   struct Registrar {
     // Final registrant type, specialized with input Args... and the
@@ -87,11 +86,13 @@ namespace Registration {
 
   constexpr unsigned int max_registered_types() { return 10U; }
 
+  /// \cond DOXYGEN_SHOULD_SKIP_THIS
   template <unsigned int N>
   struct Rank : Rank<N - 1> {};
 
   template <>
   struct Rank<0> {};
+  /// \endcond
 
   template <class Tag>
   tmpl::list<> get_registered_types(Tag*, Rank<0>) {

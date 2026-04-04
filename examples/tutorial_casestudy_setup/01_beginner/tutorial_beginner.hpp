@@ -19,7 +19,8 @@
  * Here we describe how to write a case-study that \elastica (and users
  * reading the code) can recognize for generating code. As such, we do not run
  * a simulation here. Rather, a more descriptive and complete example that runs
- * an elastica simulation can be found in [TODO : insert link here]
+ * an elastica simulation can be found in
+ * [AxialStretchingCaseStudy.cpp](../../axial_stretching/AxialStretchingCaseStudy.cpp)
  */
 
 /* 1. The first step is to include this CaseStudy file that helps generate

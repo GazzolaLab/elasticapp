@@ -4,10 +4,9 @@
 //  \brief Specialization of a Block slice for Cosserat rods
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -129,7 +128,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Returns the size of the Cosserat Rod.
-   * \ingroup cosserat_rod blocks
+   * \ingroup blocks
    *
    * \param cosserat_rod The current cosserat rod.
    * \return The  number of elements in the cosserat rod.
@@ -147,7 +146,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Returns the size of the Cosserat Rod.
-   * \ingroup cosserat_rod blocks
+   * \ingroup blocks
    *
    * \param cosserat_rod The current cosserat rod.
    * \return The  number of elements in the cosserat rod.
@@ -235,14 +234,14 @@ namespace blocks {
   //****************************************************************************
   /*!\brief Fills ghosts for all variables in the current Block
    *
-   * \param block_like Block to fill ghosts
+   * \param block_view Const block view (stub; no-op in this configuration)
    */
   template <typename CRT,  // Cosserat Rod Traits
             template <typename /*CRT*/, typename /*InitializedBlock*/>
             class... Components>
-  inline void fill_ghosts(
-      ConstBlockView<elastica::cosserat_rod::CosseratRodPlugin<
-          CRT, ConstBlockView, Components...>>&) noexcept {
+  inline void fill_ghosts([[maybe_unused]] ConstBlockView<
+      elastica::cosserat_rod::CosseratRodPlugin<CRT, ConstBlockView, Components...>>&
+          block_view) noexcept {
     // This should be a compile-time error, but we don't enforce it.
   }
   //****************************************************************************

@@ -42,8 +42,9 @@ int main() {
 
   /*
    * 1. Simulator creation
-   * We first create a simulator. To customize the simulator
-   * itself see XXXX (TODO : fill link)
+   * We first create a simulator. To customize the simulator itself, follow the
+   * simulation setup guide in docs/SimulationSetup.md and the blocking tutorial
+   * for system-configuration examples.
    */
   auto simulator = elastica::make_simulator<>(simulator_config);
 
@@ -175,7 +176,7 @@ int main() {
    * Many more operations are possible on these arrays, see the documentation
    * and API of blaze library. In our experience, we rarely need to use
    * them---most geometry and algebra kernels are provided by \elastica itself.
-   * For more examples, see XXX (TODO : Link examples)
+   * For more examples, see docs/Examples.md and docs/Tutorials.md.
    */
 
   /*
@@ -267,8 +268,8 @@ int main() {
   /*
    * To see a list of all tags supported by the CosseratRod, please consult
    * its API documentation.
-   * To programatically obtain and print the list of tags, see the
-   * XXX (TODO) tutorial.
+   * To see how these rod-access patterns fit into a broader setup flow, see
+   * docs/Tutorials.md and docs/SimulationSetup.md.
    */
 
   return 0;

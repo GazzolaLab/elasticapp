@@ -4,10 +4,9 @@
 //  \brief parallel for
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -66,7 +65,7 @@ namespace elastica {
     /*!\brief Calls function f for all items from [first, last) interval
      * \ingroup parallel
      *
-     * \param funcs functions to execute in parallel
+     * \param args Arguments forwarded to the parallel for implementation
      */
     template <typename... Args>
     inline void for_(Args&&... args) {

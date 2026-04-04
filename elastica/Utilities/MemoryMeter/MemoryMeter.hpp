@@ -1,6 +1,6 @@
 //=================================================================================================
 /*!
- *  \file pe/util/MemoryMeter.h
+ *  \file elastica/Utilities/MemoryMeter/MemoryMeter.hpp
  *  \brief Memory meter for measuring memory consumption
  *
  *  Copyright (C) 2012 Tobias Preclik

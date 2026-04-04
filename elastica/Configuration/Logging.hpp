@@ -4,10 +4,9 @@
 //  \brief Configuration of the logging level
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -15,7 +14,7 @@
 
 //******************************************************************************
 /*!\brief Selection of the level of logging.
- * \ingroup config logging
+ * \ingroup logging
  *
  * This macro selects the level of logging, to effectively filter out logs that
  * are not deemed necessary. Any logs below the level chosen are not reported

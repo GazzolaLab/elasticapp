@@ -4,10 +4,9 @@
 //  \brief Base class for rigid environment primitives
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 //
 //  This file contains implementation from the pe library with the following
 //  copyrights
@@ -114,6 +113,7 @@ namespace elastica {
       /*!\name Constructor */
       //@{
       explicit RigidBodyPrimitive(BodyID body, bool finite, id_t sid, id_t uid);
+      //! Move constructor (defaulted).
       RigidBodyPrimitive(RigidBodyPrimitive&&) noexcept = default;
       //@}
       //************************************************************************
@@ -494,12 +494,8 @@ namespace elastica {
     //**************************************************************************
     /*!\brief Adds force at some position in global coordinates.
      *
-     * \param fx The x-component of the force.
-     * \param fy The y-component of the force.
-     * \param fz The z-component of the force.
-     * \param px The x-component of the global coordinate to add the force.
-     * \param py The y-component of the global coordinate to add the force.
-     * \param pz The z-component of the global coordinate to add the force.
+     * \param f Force vector in global coordinates.
+     * \param gpos Global point where the force is applied.
      */
     inline void RigidBodyPrimitive::add_force_at_position(const Vec3& f,
                                                           const Vec3& gpos) {

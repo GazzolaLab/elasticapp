@@ -4,10 +4,9 @@
 //  \brief Defines the IsCRTP type-trait
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -55,7 +54,7 @@ namespace tt {
    * \endcode
    *
    * \example
-   * \snippet Test_IsCRTP.cpp is_crtp_example
+   * \snippet Unit/Utilities/TypeTraits/Test_IsCRTP.cpp is_crtp_eg
    *
    * \tparam CRTPBaseTemplate The CRTP base class
    * \tparam Derived The CRTP derived class

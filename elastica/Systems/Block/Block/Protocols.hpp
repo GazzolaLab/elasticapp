@@ -4,10 +4,9 @@
 //  \brief Block plugin protocols
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -53,7 +52,7 @@ namespace blocks {
      * Plugin.
      *
      * Requires that conforming type has the following types:
-     * \snippet Block/Aliases.hpp variables_t
+     * \snippet Systems/Block/Block/Aliases.hpp variables_t
      * which should be a type list and each type within that list in turn
      * conforms to protocols::Variable
      *

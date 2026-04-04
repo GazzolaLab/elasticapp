@@ -4,10 +4,9 @@
 //  \brief Configuration for customizing blocking policy of Simulator
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -198,7 +197,7 @@ namespace elastica {
        *
        * \param collection The collection of blocks::Block
        * \param new_dofs The degrees of freedom of the new block to be added
-       * \return Iterator to a block element in \param collection
+       * \return Iterator to a block element in \a collection
        */
       template <typename T>
       auto get_iterator_to_block(std::vector<T>& collection,
@@ -251,9 +250,6 @@ The vector type passed in does not meet requirements of a Block!
     //**************************************************************************
     /*!\brief Create a BlockingPolicy from Criteria
      * \ingroup blocking
-     *
-     * \example
-     * \snippet Test_BlockingPolicy.cpp make_blocking_eg
      *
      * \see make_overloader
      * \see Documentation on @ref blocking for more policies
@@ -392,7 +388,9 @@ The vector type passed in does not meet requirements of a Block!
        *
        * \param limit Max size per block
        */
-      explicit inline AlwaysNew(const std::size_t){};
+      explicit inline AlwaysNew(const std::size_t limit) {
+        (void)limit;
+      }
       //************************************************************************
 
       //************************************************************************
@@ -403,11 +401,14 @@ The vector type passed in does not meet requirements of a Block!
       /*!\brief Determines if current block passes the criteria
        *
        * \param b The current blocks::Block
+       * \param meta Policy-specific size metadata (unused for AlwaysNew).
        * \return true if the current block passes the criteria
        */
-      inline auto operator()(Block const& /*b*/,
-                             const std::size_t /*meta*/) const noexcept
+      inline auto operator()(Block const& b,
+                             const std::size_t meta) const noexcept
           -> bool {
+        (void)b;
+        (void)meta;
         return false;
       }
       //************************************************************************
@@ -437,7 +438,9 @@ The vector type passed in does not meet requirements of a Block!
        *
        * \param limit Max size per block, can be skipped
        */
-      explicit inline AlwaysSame(const std::size_t){};
+      explicit inline AlwaysSame(const std::size_t limit) {
+        (void)limit;
+      }
       //************************************************************************
 
       //************************************************************************
@@ -448,11 +451,14 @@ The vector type passed in does not meet requirements of a Block!
       /*!\brief Determines if current block passes the criteria
        *
        * \param b The current blocks::Block
+       * \param meta Policy-specific size metadata (unused for AlwaysSame).
        * \return true if the current block passes the criteria
        */
-      inline auto operator()(Block const& /*b*/,
-                             const std::size_t /*meta*/) const noexcept
+      inline auto operator()(Block const& b,
+                             const std::size_t meta) const noexcept
           -> bool {
+        (void)b;
+        (void)meta;
         return true;
       }
       //************************************************************************
@@ -495,6 +501,7 @@ The vector type passed in does not meet requirements of a Block!
       /*!\brief Determines if current block passes the criteria
        *
        * \param b The current blocks::Block
+       * \param new_dofs Degrees of freedom for the system being added
        * \return true if the current block passes the criteria
        */
       template <typename Block>

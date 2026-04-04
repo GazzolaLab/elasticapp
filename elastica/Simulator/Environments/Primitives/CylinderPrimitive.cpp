@@ -4,10 +4,9 @@
 //  \brief Source file for CylinderPrimitive
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -35,6 +34,7 @@ namespace elastica {
      *
      * \param sid Unique system-specific ID for the cylinder.
      * \param uid User-specific ID for the cylinder.
+     * \param finite Whether the primitive participates in collision as finite.
      * \param material The material of the cylinder.
      */
     CylinderPrimitive::CylinderPrimitive(id_t sid, id_t uid, bool finite,
@@ -56,6 +56,7 @@ namespace elastica {
      *
      * \param sid Unique system-specific ID for the cylinder.
      * \param uid User-specific ID for the cylinder.
+     * \param finite Whether the primitive participates in collision as finite.
      * \param gpos Global geometric center of the cylinder.
      * \param axis_direction Direction of centerline axis of the cylinder.
      * \param radius The radius of the  \f$ (0..\infty) \f$.
@@ -77,6 +78,7 @@ namespace elastica {
      *
      * \param sid Unique system-specific ID for the cylinder.
      * \param uid User-specific ID for the cylinder.
+     * \param finite Whether the primitive participates in collision as finite.
      * \param gpos Global geometric center of the cylinder.
      * \param rot The rotation matrix of the cylinder.
      * \param radius The radius of the  \f$ (0..\infty) \f$.

@@ -4,10 +4,9 @@
 //  \brief Viewable concept/affordance
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -306,7 +305,7 @@ namespace blocks {
    * \details
    * Implements contiguous views on entities modeling block concept.
    *
-   * \param block_like Data-structure modeling the Viewable concept
+   * \param viewable Data-structure modeling the Viewable concept
    * \param start_index The start index of the slice (int or from_end)
    * \param stop_index The stop index of the slice (int or from_end)
    *

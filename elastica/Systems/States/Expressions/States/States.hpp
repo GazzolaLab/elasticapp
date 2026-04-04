@@ -4,10 +4,9 @@
 //  \brief A collection of temporally evolving state groups
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -164,6 +163,7 @@ namespace elastica {
       /*!\name Constructors */
       //@{
       inline States() : groups_(){};
+      //! Construct from forwarded group instances (one per template parameter).
       explicit States(Groups&&... group_elements);
       //@}
       //************************************************************************
@@ -171,6 +171,7 @@ namespace elastica {
       //**Destructor************************************************************
       /*!\name Destructor */
       //@{
+      //! Destructor.
       ~States() = default;
       //@}
       //************************************************************************
@@ -307,11 +308,7 @@ namespace elastica {
     //
     //==========================================================================
 
-    //**Constructor*************************************************************
-    /*!\brief Constructor for the State class.
-    //
-    // \param elements Initializers of groups
-    */
+    // Out-of-line definition (documentation is on the declaration above).
     template <typename... Groups>  // Parameter-pack of groups
     // TODO : Revisit, this doesnt seem right that you need to pass in
     // Groups by forwarding references.

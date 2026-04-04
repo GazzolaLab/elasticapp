@@ -58,8 +58,11 @@ namespace elastica {
     //**Assignment**************************************************************
     /*!\name Assignment operators */
     //@{
+    //! Copy assignment is deleted (pool is not copyable).
     MemoryPoolAllocator& operator=(MemoryPoolAllocator const & memoryPool) =
         delete;
+    //! Move assignment swaps the underlying memory pool with \a other.
+    //! \param other Allocator to swap pools with.
     MemoryPoolAllocator& operator=(MemoryPoolAllocator&& other) noexcept {
       if (this != &other) {
         std::swap(pool_, other.pool_);
@@ -70,28 +73,28 @@ namespace elastica {
     //**************************************************************************
 
     //**Storage and lifetime****************************************************
-    /*!\name Storage and lifetime functions */
-    //@{
-
-    //**************************************************************************
-    /*!\brief Allocates aligned memory for the specified number of objects.
-    //
-    // \param n The number of objects to be allocated.
-    // \return Pointer to the newly allocated memory.
-    //
-    // This function allocates a chunk of memory for the specified number of
-    // objects of type \a T. It allocates one block at a time, so
-    */
+    //! \brief Allocates aligned memory for the specified number of objects.
+    //! \param n The number of objects to be allocated.
+    //! \return Pointer to the newly allocated memory.
+    //! Allocates one block at a time from the pool (see implementation).
     inline pointer allocate(size_type n = 1){
         // allocate one object at a time. n and hint are ignored
     };
+    //! \brief Deallocates memory obtained from allocate().
+    //! \param p Pointer previously returned by allocate.
+    //! \param n Number of objects (ignored; STL interface compatibility).
     inline void deallocate(pointer p, size_type n = 1);
+    //! \brief Maximum number of \c T instances the allocator can handle in one call.
     size_type max_size() const noexcept;
+    //! \brief Constructs \c U at address \a p.
+    //! \param p Storage address.
+    //! \param args Arguments forwarded to \c U's constructor.
     template <class U, class... Args>
     void construct(U* p, Args&&... args);
+    //! \brief Destroys the object at \a p without releasing storage.
+    //! \param p Pointer to the object to destroy.
     template <class U>
     void destroy(U* p);
-    //@}
     //**************************************************************************
 
     Pool pool_;

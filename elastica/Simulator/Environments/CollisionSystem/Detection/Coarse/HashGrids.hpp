@@ -5,10 +5,9 @@
 //  detection algorithm
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 //
 //  This file contains implementation from the pe library with the following
 //  copyrights
@@ -884,8 +883,13 @@ namespace elastica {
               PrimitivesCollection_& primitives_collection,
               ImposedPrimitivesCollection_& imposed_primitives_collection,
               Contacts& contacts);
+          //@}
+          //********************************************************************
 
          protected:
+          //**Contact pair generation*********************************************
+          /*!\name Contact pair generation */
+          //@{
           template <typename FCP,                // First colliding primitive
                     typename SCP,                // Second colliding primitive
                     typename ContactsContainer>  // Contact container type
@@ -2163,9 +2167,9 @@ namespace elastica {
         /*!\brief Checks whether two bodies are colliding or not, and if so
          * generates the related points of contact.
          *
-         * \param first_primitive The first body.
-         * \param second_primitive The second body.
          * \param contacts Contact container for the generated contacts.
+         * \param first_primitive The first primitive.
+         * \param second_primitive The second primitive.
          * \return void
          */
         template <typename C>
@@ -2412,8 +2416,8 @@ namespace elastica {
         /*!\brief Deregistering a rigid body from the coarse collision
          * detector.
          *
-         * \param body The body to be deregistered from the coarse collision
-         * detector. \return void
+         * \param primitive The primitive to remove (stub implementation).
+         * \return void
          *
          * This function is a requirement for all coarse collision detectors.
          * It is automatically called every time a rigid body is removed from
@@ -2421,7 +2425,8 @@ namespace elastica {
          */
         template <typename C>
         template <typename PrimitiveType>
-        void HashGrids<C>::remove(PrimitiveType* /*primitive*/) {
+        void HashGrids<C>::remove(PrimitiveType* primitive) {
+          (void)primitive;
           // TODO : Complete
           /*
           HashGrid* grid = static_cast<HashGrid*>(body->getGrid());
@@ -2469,6 +2474,8 @@ namespace elastica {
          * contained in the simulation world. The contacts are added to the
          * contact container \a contacts.
          *
+         * \param primitives_collection Dynamic and static primitives.
+         * \param imposed_primitives_collection Imposed primitives.
          * \param contacts Contact container for the generated contacts.
          * \return void
          */

@@ -4,10 +4,9 @@
 //  \brief A plane primitive
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -78,6 +77,7 @@ namespace elastica {
       explicit PlanePrimitive(id_t sid, id_t uid, bool finite, const Vec3& gpos,
                               const Rot3& rot, const Spans& spans,
                               MaterialID material);
+      //! Move constructor (defaulted).
       PlanePrimitive(PlanePrimitive&&) noexcept = default;
       //@}
       //************************************************************************

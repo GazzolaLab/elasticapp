@@ -5,10 +5,9 @@
 //  @ref cosserat_rod_component
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -540,8 +539,7 @@ namespace elastica {
         //@{
         /*!\brief Gets mass second moment of inertia of the current rod
          */
-        STAMP_GETTERS(MassSecondMomentOfInertia,
-                      get_mass_second_moment_of_inertia)
+        STAMP_GETTERS(MassSecondMomentOfInertia, get_mass_second_moment_of_inertia)
         //@}
         //**********************************************************************
 
@@ -551,8 +549,7 @@ namespace elastica {
         /*!\brief Gets inverse fo mass second moment of inertia of the current
          * rod
          */
-        STAMP_GETTERS(InvMassSecondMomentOfInertia,
-                      get_inverse_mass_second_moment_of_inertia)
+        STAMP_GETTERS(InvMassSecondMomentOfInertia, get_inverse_mass_second_moment_of_inertia)
         //@}
         //**********************************************************************
 
@@ -675,9 +672,9 @@ namespace elastica {
      * Also resets external_force_batch and external_torque_batch = 0.0
      *
      * \example
-     * The following shows a typical use of the update_acceleration()
-     * function with the expected (correct) result also shown.
-     * \snippet test_gov_eqns.cpp update_acceleration_example
+     * After forces and torques are assembled, call \c update_acceleration()
+     * on the rod kinematics component block so translational and angular
+     * accelerations are updated and external load buffers are cleared.
      *
      * \return void/None
      *

@@ -4,10 +4,9 @@
 //  \brief Rigid bodies in \elastica
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -44,13 +43,9 @@
 //  DOXYGEN DOCUMENTATION
 //
 //==============================================================================
-
-//******************************************************************************
-/*!\defgroup rigid_body RigidBody
- * \ingroup systems
- * \brief Data, operations and helpers for manipulating rigid bodies
- */
-//******************************************************************************
+//
+//  Module group rigid_body is defined in docs/DoxygenGroups.hpp so
+//  @ingroup rigid_body resolves in all rigid-body headers.
 
 namespace elastica {
 

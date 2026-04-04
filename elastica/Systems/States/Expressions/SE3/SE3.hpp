@@ -4,10 +4,9 @@
 //  \brief Temporal state evolving according to dynamics in SE3 group
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -163,9 +162,13 @@ namespace elastica {
       //**Constructors**********************************************************
       /*!\name Constructors */
       //@{
+      //! Default constructor.
       SE3() = default;
+      //! Constructor from a non-owning pointer to storage.
       explicit SE3(NonOwningPointer p);
+      //! Copy constructor.
       SE3(SE3 const& other) = default;
+      //! Move constructor.
       SE3(SE3&&) noexcept = default;
       //@}
       //************************************************************************
@@ -173,6 +176,7 @@ namespace elastica {
       //**Destructor************************************************************
       /*!\name Destructor */
       //@{
+      //! Destructor.
       ~SE3() = default;
       //@}
       //************************************************************************
@@ -368,8 +372,8 @@ namespace elastica {
     /*!\brief Addition assignment operator for the addition of the SE3 groups
      * (\f$ \textrm{a}+=\textrm{b} \f$).
      *
-     * \param rhs The right-hand side SE3 group to be added to the current SE3
-     *            group
+     * \param rhs_expr The right-hand side SE3 group to be added to the current
+     *                 SE3 group
      * \return    Reference to the SE3 group.
      * \exception std::invalid_argument State sizes do not match.
      */

@@ -6,8 +6,7 @@
 //  Copyright (C) 2020-2022 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -75,7 +74,7 @@ Computes bending mode energy of the cosserat_rod.
   }  // namespace detail
 
   //****************************************************************************
-  /*!\brief Helps bind energy methods to a CosseratRod in \elastica
+  /*!\brief Helps bind energy methods to a CosseratRod in Elastica++
    * \ingroup python_bindings
    *
    * \details
@@ -95,7 +94,7 @@ Computes bending mode energy of the cosserat_rod.
   //****************************************************************************
 
   //****************************************************************************
-  /*!\brief Helps bind energy methods to a CosseratRod in \elastica
+  /*!\brief Helps bind energy methods to a CosseratRod in Elastica++
    * \ingroup python_bindings
    *
    * \details

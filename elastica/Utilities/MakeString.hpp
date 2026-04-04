@@ -4,10 +4,9 @@
 //  \brief Defines MakeString helper for making strings by streaming operation
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 //
 // Reused from SpECTRE : https://spectre-code.org/
 // Distributed under the MIT License.
@@ -28,7 +27,8 @@
  * \ingroup UtilitiesGroup
  * \brief Make a string by streaming into object.
  *
- * \snippet Test_MakeString.cpp make_string
+ * \details
+ * Stream values into the helper and convert with `static_cast<std::string>`.
  */
 class MakeString {
  public:

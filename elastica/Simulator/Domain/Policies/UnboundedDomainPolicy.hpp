@@ -4,10 +4,9 @@
 //  \brief Unbounded domain policy class
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -103,7 +102,8 @@ namespace elastica {
      *
      * \return void
      */
-    void set(SpanType&&, SpanType&&, SpanType&&) const noexcept {}
+    void set(SpanType&& x_span, SpanType&& y_span, SpanType&& z_span) const
+        noexcept {}
     //**************************************************************************
 
     //**************************************************************************
@@ -119,7 +119,8 @@ namespace elastica {
      * \param max_z The maximum coordinate in the Z direction
      * \return void
      */
-    void set(Real, Real, Real, Real, Real, Real) const noexcept {}
+    void set(Real min_x, Real max_x, Real min_y, Real max_y, Real min_z,
+             Real max_z) const noexcept {}
     //**************************************************************************
 
     //**************************************************************************
@@ -133,7 +134,7 @@ namespace elastica {
      * \tparam VecLike Any vector like type
      */
     template <typename VecLike>  // Vec3 like
-    void set(Span<VecLike>) const noexcept {}
+    void set(Span<VecLike> span) const noexcept {}
     //**************************************************************************
 
     //**************************************************************************
@@ -144,7 +145,7 @@ namespace elastica {
      * \param mins The minimum coordinates in all directions
      * \param maxs The maximum coordinates in all directions
      */
-    void set(const Vec3&, const Vec3&) const noexcept {}
+    void set(const Vec3& mins, const Vec3& maxs) const noexcept {}
     //**************************************************************************
 
     //**Get functions***********************************************************
@@ -171,10 +172,10 @@ namespace elastica {
      *
      * Gets the lower bound of the domain in a particular Direction.
      *
-     * \param Direction Direction to get lower bound, one of X, Y or Z
+     * \param direction Direction to get lower bound, one of X, Y or Z
      */
     inline constexpr Real get_lower_bound(
-        DirectionType ) const noexcept {
+        DirectionType direction) const noexcept {
       // TODO : -inf constructor is private, maybe copy into elastica and change
       // only the copy
       return -inf;
@@ -199,10 +200,10 @@ namespace elastica {
      *
      * Gets the upper bound of the domain in a particular Direction.
      *
-     * \param Direction Direction to get upper bound, one of X, Y or Z
+     * \param direction Direction to get upper bound, one of X, Y or Z
      */
     inline constexpr Real get_upper_bound(
-        DirectionType ) const noexcept {
+        DirectionType direction) const noexcept {
       return inf;
     }
     //**************************************************************************
@@ -225,9 +226,9 @@ namespace elastica {
      *
      * Gets the span of the domain in a particular Direction.
      *
-     * \param Direction Direction to get span, one of X, Y or Z
+     * \param direction Direction to get span, one of X, Y or Z
      */
-    inline Real get_span(DirectionType ) const noexcept {
+    inline Real get_span(DirectionType direction) const noexcept {
       return inf;
     }
     //**************************************************************************

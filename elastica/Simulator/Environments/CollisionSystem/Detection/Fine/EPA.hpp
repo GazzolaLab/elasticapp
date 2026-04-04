@@ -1,6 +1,6 @@
 //==============================================================================
 /*!
- *  \file pe/core/detection/fine/EPA.h
+ *  \file elastica/Simulator/Environments/CollisionSystem/Detection/Fine/EPA.hpp
  *  \brief The Expanding-Polytope Algorithm
  *
  *  Copyright (C) 2001-2003 Dtecta

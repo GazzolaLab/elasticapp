@@ -1,6 +1,6 @@
 //=================================================================================================
 /*!
- *  \file pe/math/shims/Equal.h
+ *  \file elastica/Utilities/Math/Equal.hpp
  *  \brief Header file for the equal shim
  *
  *  Copyright (C) 2009 Klaus Iglberger

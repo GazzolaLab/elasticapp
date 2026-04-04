@@ -1,3 +1,14 @@
+//==============================================================================
+/*!
+//  \file
+//  \brief Joint interfaces for coupling systems in simulations
+//
+//  \ingroup joints
+//
+//  See LICENSE for details.
+*/
+//==============================================================================
+
 #pragma once
 #include <cstddef>
 
@@ -10,6 +21,12 @@ namespace elastica {
 
   namespace joints {
 
+    /*!
+     * \brief Abstract base class for joints that apply coupled forces and
+     * torques
+     *
+     * Concrete joints implement force and torque application rules over time.
+     */
     class JointBase {
      protected:
       JointBase() = default;
@@ -18,12 +35,15 @@ namespace elastica {
       using ValueType = double;
       using TimeType = ValueType;
 
-     public:
+    public:
       virtual ~JointBase() = default;
+      //! Apply translational joint effects.
       virtual void apply_forces(ValueType& s, TimeType t) const = 0;
+      //! Apply rotational joint effects.
       virtual void apply_torques(ValueType& s, TimeType t) const = 0;
     };
 
+    //! Joint with spring and damping coefficients and fixed behavior hooks.
     struct FixedJoint : public JointBase {
       FixedJoint() : JointBase(){};
       FixedJoint(ValueType spring_constant, ValueType damping_coefficient)
@@ -38,6 +58,7 @@ namespace elastica {
       ValueType spring_constant_, damping_coefficient_;
     };
 
+    //! Hinge-like joint variant derived from FixedJoint.
     class HingeJoint final : public FixedJoint {
       // Only access is by YAML-CPP, how do we protect against it?
       // friend struct YAML::convert<HingeJoint>;
@@ -55,6 +76,7 @@ namespace elastica {
                                  TimeType /**/) const override{};
     };
 
+    //! Placeholder joint variant derived from FixedJoint.
     class FakeJoint final : public FixedJoint {
       // Only access is by YAML-CPP, how do we protect against it?
       // friend struct YAML::convert<FakeJoint>;

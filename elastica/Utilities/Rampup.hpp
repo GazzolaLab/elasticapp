@@ -6,8 +6,7 @@
 //  Copyright (C) 2020-2022 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -73,7 +72,12 @@ namespace elastica {
        * \param start Start value of ramp
        * \param interval Interval of ramp
        */
-      Real operator()(Real, Real, Real) const noexcept { return 1.0; }
+      Real operator()(Real val, Real start, Real interval) const noexcept {
+        (void)val;
+        (void)start;
+        (void)interval;
+        return 1.0;
+      }
       //************************************************************************
     };
     //**************************************************************************

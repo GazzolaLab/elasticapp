@@ -16,10 +16,9 @@ namespace elastica {
   //**************************************************************************
   /*!\brief Vector Diference
   //
-  // \param[out] output_vector(3, n_elems)
-  // \param[in] input_vector(3, n_elems)
+  // \param in_vector Input vector expression (3 rows, n_nodes columns)
   //
-  // \return void/None
+  // \return Element-wise difference between adjacent columns (nodal spacing)
   //
   // \see TODO: fill later
   */
@@ -44,11 +43,10 @@ namespace elastica {
   // \example
   // The following shows a typical use of the batch_matvec function
   // with the expected (correct) result also shown.
-  // \snippet test_linalg.cpp batch_matvec_example
   //
-  // \param[out] matvec_batch(3, n_elems) matrix-vector product
-  // \param[in] matrix_batch(3, 3, n_elems)
-  // \param[in] vector_batch(3, n_elems)
+  // \param matvec_batch Output matrix-vector product batch
+  // \param matrix_batch Input matrix batch
+  // \param vector_batch Input vector batch
   //
   // \return void/None
   //
@@ -98,11 +96,10 @@ namespace elastica {
   // \example
   // The following shows a typical use of the batch_matmul function
   // with the expected (correct) result also shown.
-  // \snippet test_linalg.cpp batch_matmul_example
   //
-  // \param[out] matmul_batch(3, 3, n_elems) matrix-matrix product
-  // \param[in] first_matrix_batch(3, 3, n_elems)
-  // \param[in] second_matrix_batch(3, 3, n_elems)
+  // \param matmul_batch Output matrix-matrix product batch
+  // \param first_matrix_batch First matrix batch
+  // \param second_matrix_batch Second matrix batch
   //
   // \return void/None
   //
@@ -148,11 +145,10 @@ namespace elastica {
   // \example
   // The following shows a typical use of the batch_cross function
   // with the expected (correct) result also shown.
-  // \snippet test_linalg.cpp batch_cross_example
   //
-  // \param[out] cross_batch(3, n_elems) vector-vector cross product
-  // \param[in] first_vector_batch(3, n_elems)
-  // \param[in] second_vector_batch(3, n_elems)
+  // \param cross_batch Output cross product batch
+  // \param first_vector_batch First vector batch
+  // \param second_vector_batch Second vector batch
   //
   // \return void/None
   //
@@ -194,13 +190,12 @@ namespace elastica {
   // \example
   // The following shows a typical use of the batch_dot function
   // with the expected (correct) result also shown.
-  // \snippet test_linalg.cpp batch_dot_example
   //
-  // \param[in] first_vector_batch(3, n_elems)
-  // \param[in] second_vector_batch(3, n_elems)
+  // \param first_vector_batch First vector batch
+  // \param second_vector_batch Second vector batch
   //
-  // \return dot_batch(n_elems): ET object pointer to the dot
-  // product (for lazy evaluation).
+  // \return Lazy expression for the per-column dot products; column count
+  // matches the input batches.
   //
   // \see fill later?
   */
@@ -229,9 +224,8 @@ namespace elastica {
   // \example
   // The following shows a typical use of the batch_norm function
   // with the expected (correct) result also shown.
-  // \snippet test_linalg.cpp batch_norm_example
   //
-  // \param[in] vector_batch(3, n_elems)
+  // \param vector_batch Input vector batch
   //
   // \return norm_batch(n_elems): ET object pointer to the vector L2 norm
   // (for lazy evaluation).
@@ -247,4 +241,4 @@ namespace elastica {
     return blaze::sqrt(blaze::trans(blaze::sum<blaze::columnwise>(vector_batch % vector_batch)));
   }
 
-}  // namespace rod
+}  // namespace elastica

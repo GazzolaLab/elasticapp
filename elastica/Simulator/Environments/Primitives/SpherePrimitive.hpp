@@ -4,10 +4,9 @@
 //  \brief A sphere primitive
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 //
 //  This file contains implementation from the pe library with the following
 //  copyrights
@@ -104,10 +103,12 @@ namespace elastica {
       inline Vec3 support_contact_threshold(const Vec3& d) const;
       //!< Calculation of the axis-aligned bounding box
       void calculate_bounding_box();
+      //! Updates kinematic state from global position, velocity, and spin.
       template <typename Vec3Convertible>
       inline void transfer(/*real_t radius,*/ Vec3Convertible const& gpos,
                            Vec3Convertible const& velocity,
                            Vec3Convertible const& omega) noexcept;
+      //! Updates radius, orientation, and kinematic state.
       template <typename Vec3Convertible, typename Rot3Convertible>
       inline void transfer(real_t radius, Vec3Convertible&& gpos,
                            Rot3Convertible const& rot_mat,
@@ -188,10 +189,11 @@ namespace elastica {
     // DONE : should we template Vec3Like for blaze's overload mechanism to kick
     // in?
     //**************************************************************************
-    /*!\brief Transfers information from the super-ordinate entity to the
-     * primitive
+    /*!\brief Transfers kinematic state from the caller into this primitive.
      *
-     * TODO Fill in
+     * \param gpos Global position of the sphere center.
+     * \param velocity Linear velocity.
+     * \param omega Angular velocity.
      */
     template <typename Vec3Like>
     inline void SpherePrimitive::transfer(
@@ -215,10 +217,13 @@ namespace elastica {
     //**************************************************************************
 
     //**************************************************************************
-    /*!\brief Transfers information from the super-ordinate entity to the
-     * primitive
+    /*!\brief Transfers kinematic state including radius and orientation.
      *
-     * TODO Fill in
+     * \param radius Sphere radius.
+     * \param gpos Global position of the sphere center.
+     * \param rot_mat Rotation matrix.
+     * \param velocity Linear velocity.
+     * \param omega Angular velocity.
      */
     template <typename Vec3Like, typename Rot3Like>
     inline void SpherePrimitive::transfer(real_t radius, Vec3Like&& gpos,

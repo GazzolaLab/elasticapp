@@ -4,10 +4,9 @@
 //  \brief A class for recording Contacts
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 //
 //  This file contains implementation from the pe library with the following
 //  copyrights
@@ -92,6 +91,7 @@ namespace elastica {
       explicit Contact(GeomID g1, GeomID g2, Vec3 const& gpos,
                        Vec3 const& normal, Vec3 const& e1, Vec3 const& e2,
                        real_t dist);
+      //! Move constructor (defaulted).
       Contact(Contact&&) noexcept = default;
       //@}
       //************************************************************************
@@ -136,27 +136,8 @@ namespace elastica {
     //
     //==========================================================================
 
-    // //**************************************************************************
-    // /*!\brief Dynamic allocation of a single Contact object.
-    //  *
-    //  * \param size (Implicit) size argument of the new operator.
-    //  * \return Pointer to the raw memory.
-    //  */
-    // inline void* Contact::operator new(::std::size_t /*size*/) {
-    //   return contactPool_.malloc();
-    // }
-    // //**************************************************************************
-
-    // //**************************************************************************
-    // /*!\brief Dynamic deallocation of a single Contact object.
-    //  *
-    //  * \param rawMemory Pointer to the raw memory.
-    //  * \return void
-    //  */
-    // inline void Contact::operator delete(void* rawMemory) {
-    //   contactPool_.free(rawMemory);
-    // }
-    // //**************************************************************************
+    // (Optional pool-based operator new/delete were disabled; keep out of
+    // Doxygen-parsed comments.)
 
     //==========================================================================
     //
@@ -168,7 +149,6 @@ namespace elastica {
     /*!\brief Force transfer to both contacting rigid bodies.
      *
      * \param f The acting force on the first contacting rigid body.
-     * \return void
      */
     inline void Contact::apply_force(Vec3 const& f) const {
       b1_->add_force_at_position(f, gpos_);
@@ -177,11 +157,8 @@ namespace elastica {
     //**************************************************************************
 
     //**************************************************************************
-    /*!\brief Impulse transfer to both contacting rigid bodies.
-     *
-     * \param j The acting impulse on the first contacting rigid body.
-     * \return void
-     */
+    // Impulse transfer (currently disabled):
+    // void Contact::apply_impulse(Vec3 const& j) const { ... }
     //    inline void Contact::apply_impulse(const Vec3& j) const {
     //      b1_->addImpulseAtPos(j, gpos_);
     //      b2_->addImpulseAtPos(-j, gpos_);
@@ -197,7 +174,7 @@ namespace elastica {
     //**************************************************************************
     /*!\brief Global output operator for contacts.
      * \ingroup contact
-     g
+     *
      * \param os Reference to the output stream.
      * \param c Reference to a constant contact object.
      * \return Reference to the output stream.

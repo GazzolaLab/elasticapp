@@ -4,10 +4,9 @@
 //  \brief Primitives component of the \elastica Environments module
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -406,7 +405,8 @@ namespace elastica {
          * \param time_v The time of reset
          * \exception std::runtime_error
          */
-        void reset_module(TimeType /*time_v*/) {
+        void reset_module(TimeType time_v) {
+          (void)time_v;
           // we don't shrink to fit here since it may well be used again
           std::apply(
               [](auto&... primitive_container) {
@@ -436,7 +436,8 @@ namespace elastica {
          * \exception std::runtime_error If any constraint information is
          * missing/faulty
          */
-        void finalize(TimeType /*time_v*/) {
+        void finalize(TimeType time_v) {
+          (void)time_v;
           if (primitives_are_required()) {
             populate_primitives();
           }

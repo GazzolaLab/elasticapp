@@ -5,10 +5,9 @@
 //  @ref cosserat_rod_component
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -480,10 +479,9 @@ namespace elastica {
      * given inputs of compute_all_dilatations() are set.
      *
      * \example
-     * The following shows a typical use of the
-     * compute_shear_stretch_strains()
-     * function with the expected (correct) result also shown.
-     * \snippet test_gov_eqns.cpp compute_shear_stretch_strains_example
+     * Call \c compute_shear_strains() on a block that has had
+     * \c compute_all_dilatations() applied so shear/stretch strain tensors are
+     * updated from directors and tangents.
      *
      * \return void/None
      *

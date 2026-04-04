@@ -4,10 +4,9 @@
 //  \brief Sphere geometry component
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -159,7 +158,7 @@ namespace elastica {
       //************************************************************************
 
       //************************************************************************
-      /*!\copydoc ComponentInitializationDocStub
+      /*!\copydoc elastica::cosserat_rod::ComponentInitializationDocStub
        */
       template <typename BlockLike, typename RigidBodyInitializer>
       static void initialize(WithSphereGeometry<RBT, BlockLike>& this_component,
@@ -290,9 +289,10 @@ namespace elastica {
 
     //************************************************************************
     /*!\brief computes unscaled moment of inertia
-     * \ingroup
+     * \ingroup rigid_body_component
      *
-     * \param radius radius of the circle
+     * \param block_like Sphere geometry / block handle (passed to volume helper)
+     * \param radius Geometric radius of the sphere
      */
     template <typename Traits, typename ComputationalBlock, typename Radius>
     inline decltype(auto) compute_unscaled_moment_of_inertia(

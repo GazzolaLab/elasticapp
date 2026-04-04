@@ -17,13 +17,10 @@ namespace elastica{
   // f(a) = f(b) = 0.0. Operates from rod's elemental space to nodal space.
   //
   // \example
-  // The following shows a typical use of the difference kernel
-  // with the expected (correct) result also shown.
-  // \snippet test_calculus.cpp difference_kernel_example
+  // Operates on elemental columns; output has one more column (nodes).
   //
-  // \param[out] out_matrix(3, n_nodes) difference values
-  // \param[in] in_matrix(3, n_elems) vector batch \n
-  // where n_nodes = n_elems + 1
+  // \param out_matrix Output difference matrix
+  // \param in_matrix Input matrix (elemental values)
   //
   // \return void/None
   //
@@ -58,13 +55,10 @@ namespace elastica{
  // Operates from rod's elemental space to nodal space.
  //
  // \example
- // The following shows a typical use of the quadrature kernel
- // with the expected (correct) result also shown.
- // \snippet test_calculus.cpp quadrature_kernel_example
+ // Trapezoidal accumulation from elemental values to nodal values.
  //
- // \param[out] out_matrix(3, n_nodes) quadrature values
- // \param[in] in_matrix(3, n_elems) vector batch \n
- // where n_nodes = n_elems + 1
+ // \param out_matrix Output quadrature matrix
+ // \param in_matrix Input matrix (elemental values)
  //
  // \return void/None
  //

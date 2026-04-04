@@ -4,10 +4,9 @@
 //  \brief Defines classes and functions that handle parsing of input parameters
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -172,7 +171,7 @@ namespace Options {
   /// \snippet Test_Options.cpp options_example_scalar_struct
   /// \snippet Test_Options.cpp options_example_scalar_parse
   ///
-  /// \see the \ref dev_guide_option_parsing tutorial
+  /// \see Option parsing is documented alongside the project developer guide.
   ///
   /// \tparam OptionList the list of option structs to parse
   /// \tparam Group the option group with a group hierarchy

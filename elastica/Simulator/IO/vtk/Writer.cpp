@@ -1,6 +1,6 @@
 //=================================================================================================
 /*!
- *  \file src/vtk/Writer.cpp
+ *  \file elastica/Simulator/IO/vtk/Writer.cpp
  *  \brief VTK file writer for the VTK visualization
  *
  *  Copyright (C) 2012 Simon Bogner
@@ -783,15 +783,15 @@ namespace elastica {
        * \ingroup vtk
        *
        * \param filename File name for the VTK visualization file.
-       * \param spacing Spacing between two visualized time steps \f$
-       * [1..\infty) \f$. \return Handle to the active VTK writer. \exception
-       * std::invalid_argument Invalid spacing value. \exception
-       * std::invalid_argument Invalid file name.
+       * \param spacing Spacing between two visualized time steps \f$ [1..\infty) \f$.
+       * \param tstart First time step index to visualize.
+       * \param tend Last time step index to visualize.
+       * \param binary If true, write binary VTK; otherwise ASCII.
+       * \return Handle to the active VTK writer.
+       * \exception std::invalid_argument Invalid spacing value or file name.
        *
-       * This function activates the VTK writer for an VTK visualization. The
-       * first call to this function will activate the VTK writer and return the
-       * handle to the active writer, subsequent calls will ignore the
-       * parameters and only return the handle to the VTK writer.
+       * The first call activates the writer and returns its handle; later calls
+       * return the same handle and ignore the arguments.
        */
       std::shared_ptr<Writer> make_writer(const std::string& filename,
                                           std::size_t spacing,

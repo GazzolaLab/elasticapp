@@ -1,4 +1,4 @@
-/*! \file yaml.hpp
+/*! \file elastica/Simulator/IO/Serialization/Archives/YAML.hpp
     \brief YAML input and output archives */
 /*
   Copyright (c) 2017, Matt Continisio
@@ -92,7 +92,6 @@ namespace elastica {
         saveValue(base64string);
       };
 
-      //! @}
       /*! @name Internal Functionality
           Functionality designed for use by those requiring control over the
          inner mechanisms of the YAMLOutputArchive */
@@ -349,7 +348,6 @@ namespace elastica {
       };
 
      private:
-      //! @}
       /*! @name Internal Functionality
           Functionality designed for use by those requiring control over the
          inner mechanisms of the YAMLInputArchive */

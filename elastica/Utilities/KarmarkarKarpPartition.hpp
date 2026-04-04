@@ -4,10 +4,9 @@
 //  \brief A set partition algorithm implementing Karmarkarp-Karp differencing
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -385,6 +384,7 @@ namespace elastica {
    *
    * \param inputs The input collection to be partitioned
    * \param n_partitions The number of requested partitions
+   * \param op Unary callable returning the numeric key used for each item
    * \return Collection of input collections that are partitioned
    */
   template <typename T, typename Op>

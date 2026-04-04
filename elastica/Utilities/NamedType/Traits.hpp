@@ -4,10 +4,9 @@
 //  \brief Traits for Affordances for Named types
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -34,7 +33,7 @@ namespace named_type {
   // be used in a SFINAE context
   //
   // \example
-  // \snippet TODO
+  // (NamedType affordance examples live in unit tests.)
   //
   // \tparam A Any affordance defined using the CRTP pattern
   */

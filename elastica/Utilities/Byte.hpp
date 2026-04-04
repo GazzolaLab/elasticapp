@@ -1,6 +1,6 @@
 //=================================================================================================
 /*!
- *  \file pe/util/Byte.h
+ *  \file elastica/Utilities/Byte.hpp
  *  \brief Header file for the byte type
  *
  *  Copyright (C) 2009 Klaus Iglberger

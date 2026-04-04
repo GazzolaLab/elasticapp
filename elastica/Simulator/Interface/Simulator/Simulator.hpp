@@ -4,10 +4,9 @@
 //  \brief Implementation of the \elastica simulator class
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -535,7 +534,6 @@ reorganizing your code logic.
        *
        * \param time_v Time of finalizing simulation
        * \exception std::nested_exception
-       * \return void
        */
       void finalize_modules(TimeType time_v) {
         try {
@@ -563,7 +561,6 @@ reorganizing your code logic.
        *
        * \param time_v Time of finalizing simulation
        * \exception std::runtime_error, if finalization of modules fail
-       * \return void
        */
       void finalize(TimeType time_v = TimeType{0.0}) {
         try {
@@ -752,7 +749,6 @@ reorganizing your code logic.
        * We need strong exception safety guarantee from all algorithms here.
        *
        * \param time_v Time of simulation
-       * \return void
        */
       inline auto apply_post_kinematic_updates(
           TimeType time_v) /*const*/ noexcept -> void {
@@ -770,7 +766,6 @@ reorganizing your code logic.
        * We need strong exception safety guarantee from all algorithms here.
        *
        * \param time_v Time of simulation
-       * \return void
        */
       inline auto apply_pre_dynamic_updates(TimeType time_v) /*const*/ noexcept
           -> void {
@@ -788,7 +783,6 @@ reorganizing your code logic.
        * We need strong exception safety guarantee from all algorithms here.
        *
        * \param time_v Time of simulation
-       * \return void
        */
       inline auto apply_post_dynamic_updates(TimeType time_v) /*const*/ noexcept
           -> void {
@@ -805,7 +799,6 @@ reorganizing your code logic.
        * We need strong exception safety guarantee from all algorithms here.
        *
        * \param time_v Time of simulation
-       * \return void
        */
       inline auto apply_updates(TimeType time_v) /*const*/ noexcept -> void {
         apply_post_kinematic_updates(time_v);

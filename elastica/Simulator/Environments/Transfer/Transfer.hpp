@@ -4,10 +4,9 @@
 //  \brief Transfer implementation
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -41,7 +40,7 @@ namespace elastica {
      * transfer operations between a \system of an \elastica Simulator and a
      * \primitive of the \elastica collision library.
      *
-     * \section custom Customization
+     * \section transfer_customization Customization
      * Customization is achieved by specializing this class template. If no
      * customization is found for a type via ADL lookup, \elastica falls
      * back to the operations implemented by a default class. If requirements
@@ -54,7 +53,7 @@ namespace elastica {
      * The following shows an example of customization.
      * \snippet Transfer/Test_Transfer.cpp customization_eg
      *
-     * As seen in the example above, the Transfer class's #do_transfer function
+     * As seen in the example above, the Transfer class's \c do_transfer function
      * needs to be implemented. Typically you can do this in the translation
      * unit where the `System` is defined.
      *

@@ -4,10 +4,9 @@
 //  \brief Specialization of a Block for Rigid bodys
 //
 //  Copyright (C) 2020-2020 Tejaswin Parthasarathy - All Rights Reserved
-//  Copyright (C) 2020-2020 MattiaLab - All Rights Reserved
+//  Copyright (C) 2026 GazzolaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -453,6 +452,7 @@ namespace blocks {
     }
     //**************************************************************************
   };
+  /*! \endcond */
   //****************************************************************************
 
 }  // namespace blocks
@@ -470,7 +470,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Slices a tagged Rigid Body.
-   * \ingroup rigid_body blocks
+   * \ingroup blocks
    *
    * \param rigid_body The current rigid body.
    * \param index The index of the slice (int or from_end)
@@ -491,7 +491,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Slices a tagged Rigid Body.
-   * \ingroup rigid_body blocks
+   * \ingroup blocks
    *
    * \param rigid_body The current rigid body.
    * \param index The index of the slice (int or from_end)
@@ -513,7 +513,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Returns the size of the Rigid Body.
-   * \ingroup rigid_body blocks
+   * \ingroup blocks
    *
    * \param rigid_body The current rigid body.
    * \return The  number of elements in the rigid body.
@@ -531,7 +531,7 @@ namespace blocks {
 
   //****************************************************************************
   /*!\brief Get number of units within a RigidBody
-   * \ingroup rigid_body blocks
+   * \ingroup blocks
    *
    * \details
    * Get number of units from a Block. By 'units' we mean the number of

@@ -6,8 +6,7 @@
 //  Copyright (C) 2020-2022 Tejaswin Parthasarathy - All Rights Reserved
 //  Copyright (C) 2020-2022 MattiaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
@@ -245,6 +244,7 @@ namespace elastica {
           return decltype(access_impl<Direction_>())::value;
         }
 
+        /*! \cond ELASTICA_INTERNAL */
         template <DirectionType Direction_, typename... Kinematics>
         friend constexpr decltype(auto) get_kinematics(
             GroupedTranslationKinematics<Kinematics...>&
@@ -253,6 +253,7 @@ namespace elastica {
         friend constexpr decltype(auto) get_kinematics(
             GroupedTranslationKinematics<Kinematics...> const&
                 grouped_kinematics) noexcept;
+        /*! \endcond */
 
        public:
         //**Data access*********************************************************
@@ -301,14 +302,12 @@ namespace elastica {
       //************************************************************************
 
       //**Get functions*********************************************************
-      /*!\name Get functions
-       * \brief Get the kinematics corresponding to a direction
-       * \tparam Dir_ Direction to obtaining the kinematics
-       */
-      //@{
+      // get_kinematics overloads (omitted from Doxygen: constexpr/decltype(auto)
+      // order does not match Doxygen's member matcher for out-of-line style).
+      /// \cond DOXYGEN_SHOULD_SKIP_THIS
       template <::elastica::EulerianFrame::DirectionType Direction_,
                 typename... Kinematics>
-      constexpr decltype(auto) get_kinematics(
+      inline constexpr decltype(auto) get_kinematics(
           GroupedTranslationKinematics<Kinematics...>&
               grouped_kinematics) noexcept {
         using std::get;
@@ -317,7 +316,7 @@ namespace elastica {
       }
       template <::elastica::EulerianFrame::DirectionType Direction_,
                 typename... Kinematics>
-      constexpr decltype(auto) get_kinematics(
+      inline constexpr decltype(auto) get_kinematics(
           GroupedTranslationKinematics<Kinematics...> const&
               grouped_kinematics) noexcept {
         using std::get;
@@ -326,7 +325,7 @@ namespace elastica {
       }
       template <::elastica::EulerianFrame::DirectionType Direction_,
                 typename... Kinematics>
-      constexpr decltype(auto) get_kinematics(
+      inline constexpr decltype(auto) get_kinematics(
           GroupedTranslationKinematics<Kinematics...>&&
               grouped_kinematics) noexcept {
         using std::get;
@@ -336,7 +335,7 @@ namespace elastica {
                 grouped_kinematics)
                 .data());
       }
-      //@}
+      /// \endcond
       //**************************************************************************
 
     }  // namespace detail
@@ -434,8 +433,8 @@ namespace elastica {
      * do not matter.
      *
      * \tparam Direction_ Direction to apply position and velocity
-     * \param position A functor marked as position function
-     * \param velocity A functor marked as velocity function
+     * \param p Position functor wrapped with mark_position()
+     * \param v Velocity functor wrapped with mark_velocity()
      * \return Translation
      *
      * \see mark_velocity(), mark_position()

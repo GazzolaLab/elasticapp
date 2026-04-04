@@ -6,8 +6,7 @@
 //  Copyright (C) 2020-2020 Tejaswin Parthasartohy - All Rights Reserved
 //  Copyright (C) 2020-2020 MtotiaLab - All Rights Reserved
 //
-//  Distributed under the MIT License.
-//  See LICENSE.txt for details.
+//  See LICENSE for details.
 */
 //==============================================================================
 
