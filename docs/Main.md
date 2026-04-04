@@ -14,27 +14,23 @@
 # Getting started {#getting_started_sec}
 
 For build and installation guidance, start with the \ref installation page.
-For the first successful local run, continue with the \ref getting_started_page "Getting Started".
 
 # Learn the codebase {#learn_sec}
 
 Use the narrative guides to understand the core abstractions before diving into
 the API reference:
 
-- \ref getting_started_page "Getting Started"
-- \ref tutorials_page "Tutorials"
 - \ref core_concepts_page "Core Concepts"
 
 # Build your own simulation {#build_your_own_sec}
 
 If your goal is to adapt Elastica++ for personal use, start here:
 
-- \ref simulation_setup_page "Simulation Setup Guide"
-- \ref case_study_recipes_page "Case Study Recipes"
+- \ref examples_page "Case Examples"
 
-# Examples and recipes {#examples_sec}
+# Case Examples {#examples_sec}
 
-Start with the curated \ref examples_page "Examples" page for grouped example programs and
+Start with the curated \ref examples_page "Case Examples" page for grouped example programs and
 recommended entry points. Use the examples as runnable companions to the
 tutorial and setup guides rather than as a flat catalog.
 
@@ -47,13 +43,9 @@ For outstanding architectural and implementation work, see the
 
 The generated documentation is organized around the following entry points:
 
-- Learn: \ref getting_started_page "Getting Started",
-  \ref tutorials_page "Tutorials",
+- Learn: \ref installation "Installation",
   \ref core_concepts_page "Core Concepts"
-- Build your own simulation: \ref simulation_setup_page
-  "Simulation Setup Guide", \ref case_study_recipes_page
-  "Case Study Recipes"
-- Browse runnable examples: \ref examples_page "Examples"
+- Browse runnable examples: \ref examples_page "Case Examples"
 - API reference:
 - \ref todo_page "Project TODO"
 - \ref systems "Physical systems"

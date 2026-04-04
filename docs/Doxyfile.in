@@ -7,6 +7,7 @@ CREATE_SUBDIRS         = NO
 ALLOW_UNICODE_NAMES    = YES
 
 INPUT                  = @PROJECT_SOURCE_DIR@/docs \
+                         @PROJECT_SOURCE_DIR@/examples \
                          @PROJECT_SOURCE_DIR@/elastica
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.hpp \
@@ -26,8 +27,10 @@ EXCLUDE_SYMBOLS        = *brigand*                                    \
                          std*                                         \
                          YAML*
 EXAMPLE_PATH           = @PROJECT_SOURCE_DIR@/tests/ \
+                         @PROJECT_SOURCE_DIR@/tests/Unit \
                          @PROJECT_SOURCE_DIR@/examples
-EXAMPLE_RECURSIVE      = NO
+EXAMPLE_RECURSIVE      = YES
+CITE_BIB_FILES         = @PROJECT_SOURCE_DIR@/docs/refs.bib
 IMAGE_PATH             = @PROJECT_SOURCE_DIR@/docs
 USE_MDFILE_AS_MAINPAGE = "@PROJECT_SOURCE_DIR@/docs/Main.md"
 STRIP_FROM_PATH        = "@PROJECT_SOURCE_DIR@"
