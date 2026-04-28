@@ -165,7 +165,7 @@ if __name__ == "__main__":
     n_elements = nx // 4
     n_max = n_elements // 4
     run_fish_swimming(
-        non_dim_final_time=0.6,
+        non_dim_final_time=0.06,
         n_elem=n_elements,
         grid_size_x=nx,
         surface_grid_density_for_largest_element=n_max,
