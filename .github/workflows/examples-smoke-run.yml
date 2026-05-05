@@ -91,6 +91,7 @@ jobs:
       - name: Install Fish Swimming Python dependencies
         shell: bash 
         run: |
+          python -m pip install build/bin/python/
           python -m pip install examples/fish_swimming/
       
       - name: Run Fish Swimming
