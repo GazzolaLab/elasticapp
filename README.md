@@ -2,7 +2,6 @@
 <h1> Elastica++</h1>
 
 [![](https://img.shields.io/badge/c%2B%2B-20-blue.svg)](https://isocpp.org/)
-[![](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![CMake Build](https://github.com/GazzolaLab/elasticapp/actions/workflows/cmake-build.yml/badge.svg)](https://github.com/GazzolaLab/elasticapp/actions/workflows/cmake-build.yml)
 [![Example Run](https://github.com/GazzolaLab/elasticapp/actions/workflows/examples-smoke-run.yml/badge.svg)](https://github.com/GazzolaLab/elasticapp/actions/workflows/examples-smoke-run.yml)
 [![Documentation Build](https://github.com/GazzolaLab/elasticapp/actions/workflows/documentation-build.yml/badge.svg)](https://github.com/GazzolaLab/elasticapp/actions/workflows/documentation-build.yml)
