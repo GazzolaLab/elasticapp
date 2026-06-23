@@ -1,8 +1,7 @@
 # Elastica Examples
 
 This directory contains number of examples demonstrating different features of elastica. All examples are stored in
-separate subdirectories, containing case descriptions, cmake configuration, and all other files necessary to run. More
-advanced cases are stored in separate repository with its description.
+separate subdirectories, containing case descriptions, cmake configuration, and all other files necessary to run.
 
 ## Example Overview
 
@@ -90,6 +89,15 @@ Some examples provide additional file or link to published paper for a complete 
         * Translations (Kinematics)
         * Environments (CollisionSystem, GravityField)
 
+* [`dynamic_cantilever`](./dynamic_cantilever)<img src="https://img.shields.io/badge/python-Advanced%20Case-brightgreen"/>
+    * __Name__: DynamicCantileverCaseStudy
+    * __Purpose__: Validate dynamic cantilever response with Python helpers for simulation, analysis, and visualization.
+    * __Features__:
+        * CosseratRod
+        * Dynamic forcing
+        * Analytical comparisons
+        * Frequency-response post-processing
+
 ### Rod Assembly
 
 * [`tutorial_single_rod`](./tutorial_single_rod)
@@ -116,6 +124,25 @@ Some examples provide additional file or link to published paper for a complete 
     * __Features__:
         * Generating casestudies in `C++` and `python`
         * CaseStudyInterface
+
+* [`parallel_butterfly`](./parallel_butterfly)
+    * __Name__: ParallelButterflyCaseStudy
+    * __Purpose__: Demonstrate parallel execution of the butterfly restoration case, including synchronized and no-sync
+      variants.
+    * __Features__:
+        * CosseratRod
+        * Parallel module
+        * Case-study options parser
+        * Threaded execution
+
+* [`parallel_update_dynamics`](./parallel_update_dynamics)
+    * __Name__: ParallelUpdateDynamicsCaseStudy
+    * __Purpose__: Demonstrate parallel update dynamics with configurable runtime options.
+    * __Features__:
+        * CosseratRod
+        * Parallel module
+        * Case-study options parser
+        * Threaded execution
 
 ### Function
 
@@ -162,5 +189,41 @@ Some examples provide additional file or link to published paper for a complete 
 
 ## Advanced Examples
 
+* [`active_matter`](./active_matter)<img src="https://img.shields.io/badge/python-Advanced%20Case-brightgreen"/>
+    * __Name__: Active matter examples
+    * __Purpose__: Demonstrate internally actuated rod systems, including snake locomotion on a plane and multi-snake
+      simulations.
+    * __Features__:
+        * CosseratRod
+        * Activation functions
+        * Frictional plane contact
+        * Parallel execution
 
+* [`nest`](./nest)<img src="https://img.shields.io/badge/python-Advanced%20Case-brightgreen"/>
+    * __Name__: Nest case studies
+    * __Purpose__: Simulate rod nest assemblies with free, moving-wall, and wall-constrained configurations.
+    * __Features__:
+        * Multiple CosseratRod systems
+        * Connections between rods
+        * Wall contact
+        * Parallel execution
 
+* [`magnetism`](./magnetism)<img src="https://img.shields.io/badge/python-Advanced%20Case-brightgreen"/>
+    * __Name__: Magnetism case studies
+    * __Purpose__: Demonstrate magnetic Cosserat rod extensions, magnetic field profiles, and magnetically actuated
+      assemblies.
+    * __Features__:
+        * MagnetizedCosseratRod
+        * Constant and oscillatory magnetic fields
+        * Magnetic cilia carpet
+        * Magnetic millipedes
+
+* [`fish_swimming`](./fish_swimming)<img src="https://img.shields.io/badge/python-Advanced%20Case-brightgreen"/>
+    * __Name__: FishCaseStudy
+    * __Purpose__: Simulate an elastic fish swimming in viscous fluid using an immersed-boundary fluid-structure
+      interaction workflow.
+    * __Features__:
+        * Custom fish body model
+        * CosseratRod
+        * SophT fluid solver integration
+        * Shared-memory and MPI workflows
