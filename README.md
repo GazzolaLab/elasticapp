@@ -36,6 +36,10 @@ cmake -B build -G Ninja \
 cmake --build build --parallel
 ```
 
+## Example/Demo
+
+All demonstration cases are in `examples` directory including tutorials, case studies, and advanced examples (on paper). To install, set the flag `ELASTICA_BUILD_EXAMPLES=ON`.
+
 ## Documentation
 
 We put details of how to use this package in [documentation](https://)
@@ -47,7 +51,7 @@ cmake -B build-docs -G Ninja \
 cmake --build build-docs --target doc --parallel
 ```
 
-## Repository Layout
+## Repository Layout for Devs
 
 - `elastica/`: core library sources and headers
 - `cmake/`: CMake modules and project build helpers
