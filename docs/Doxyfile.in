@@ -6,7 +6,9 @@ OUTPUT_DIRECTORY       = "@ELASTICA_DOCS_TARGET_OUTPUT_ROOT@"
 CREATE_SUBDIRS         = NO
 ALLOW_UNICODE_NAMES    = YES
 
-INPUT                  = @ELASTICA_DOXYGEN_INPUTS@
+INPUT                  = @PROJECT_SOURCE_DIR@/docs \
+                         @PROJECT_SOURCE_DIR@/examples \
+                         @PROJECT_SOURCE_DIR@/elastica
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.hpp \
                          *.cpp \
@@ -14,7 +16,7 @@ FILE_PATTERNS          = *.hpp \
 RECURSIVE              = YES
 EXCLUDE_PATTERNS       = */build/* \
                          */.git/* \
-                         */PythonBindings/* \
+                         */PythonBindings/*
 # Markdown files inside our source code for developers get listed
 # which is not what we want. So filter them out
 EXCLUDE_PATTERNS      += @PROJECT_SOURCE_DIR@/elastica/*.md
@@ -25,9 +27,12 @@ EXCLUDE_SYMBOLS        = *brigand*                                    \
                          std*                                         \
                          YAML*
 EXAMPLE_PATH           = @PROJECT_SOURCE_DIR@/tests/ \
+                         @PROJECT_SOURCE_DIR@/tests/Unit \
+                         @PROJECT_SOURCE_DIR@/elastica \
                          @PROJECT_SOURCE_DIR@/examples
-EXAMPLE_RECURSIVE      = NO
-IMAGE_PATH             = @ELASTICA_DOXYGEN_IMAGE_PATHS@
+EXAMPLE_RECURSIVE      = YES
+CITE_BIB_FILES         = @PROJECT_SOURCE_DIR@/docs/refs.bib
+IMAGE_PATH             = @PROJECT_SOURCE_DIR@/docs
 USE_MDFILE_AS_MAINPAGE = "@PROJECT_SOURCE_DIR@/docs/Main.md"
 STRIP_FROM_PATH        = "@PROJECT_SOURCE_DIR@"
 
@@ -120,11 +125,11 @@ STRIP_CODE_COMMENTS    = NO
 SHOW_USED_FILES        = YES
 VERBATIM_HEADERS       = NO
 
-QUIET                  = @ELASTICA_DOXYGEN_QUIET@
+QUIET                  = YES
 GENERATE_HTML          = YES
 HTML_OUTPUT            = html
 HTML_FILE_EXTENSION    = .html
-HTML_HEADER            = "@ELASTICA_DOCS_HTML_HEADER@"
+HTML_HEADER            = @PROJECT_SOURCE_DIR@/docs/header.html.in
 HTML_COLORSTYLE        = LIGHT
 HTML_COLORSTYLE_HUE    = 209
 HTML_COLORSTYLE_SAT    = 255
@@ -166,12 +171,11 @@ GENERATE_RTF           = NO
 GENERATE_MAN           = NO
 
 HIDE_UNDOC_RELATIONS   = YES
-HAVE_DOT               = @ELASTICA_DOXYGEN_HAVE_DOT@
+HAVE_DOT               = NO
 DOT_NUM_THREADS        = 0
 DOT_MULTI_TARGETS      = YES
-CLASS_DIAGRAMS         = NO
-CALL_GRAPH             = @ELASTICA_DOXYGEN_CALL_GRAPH@
-CALLER_GRAPH           = @ELASTICA_DOXYGEN_CALLER_GRAPH@
+CALL_GRAPH             = NO
+CALLER_GRAPH           = NO
 CLASS_GRAPH            = NO
 COLLABORATION_GRAPH    = NO
 GROUP_GRAPHS           = NO
@@ -188,7 +192,7 @@ DOT_IMAGE_FORMAT       = png
 MAX_DOT_GRAPH_DEPTH    = 0
 GENERATE_LEGEND        = NO
 INTERACTIVE_SVG        = YES
-DOT_PATH               = @ELASTICA_DOXYGEN_DOT_PATH@
+DOT_PATH               =
 DOTFILE_DIRS           =
 MSCFILE_DIRS           =
 DIAFILE_DIRS           =
