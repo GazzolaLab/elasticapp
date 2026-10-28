@@ -42,7 +42,9 @@ All demonstration cases are in `examples` directory including tutorials, case st
 
 ## Documentation
 
-We put details of how to use this package in [documentation](https://)
+Start with the [installation guide](docs/Installation.md), then browse the
+[case examples](docs/Examples.md). The generated API reference is built from
+the headers and examples with Doxygen.
 
 To build yourself,
 ```sh
