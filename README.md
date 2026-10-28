@@ -42,9 +42,9 @@ All demonstration cases are in `examples` directory including tutorials, case st
 
 ## Documentation
 
-Start with the [installation guide](docs/Installation.md), then browse the
-[case examples](docs/Examples.md). The generated API reference is built from
-the headers and examples with Doxygen.
+Start with the [installation guide](docs/Installation.md), then follow the
+[quickstart](docs/Quickstart.md). Browse [case examples](docs/Examples.md) or
+build the generated API reference with Doxygen.
 
 To build yourself,
 ```sh

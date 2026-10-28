@@ -7,7 +7,7 @@
 //==============================================================================
 // You can compile and run the tutorial using:
 // g++ tutorial_single_rod.cpp -g -I <path/to/elastica.hpp> -L
-// <path/to/libElastica.so> -lElastica -o tutorial_single_rod -std=c++14
+// <path/to/libElastica.so> -lElastica -o tutorial_single_rod -std=c++20
 // LD_LIBRARY_PATH=<path/to/libElastica.so>  // for linux
 // DYLD_LIBRARY_PATH=<path/to/libElastica.so>  // for osx
 // ./tutorial_single_rod
@@ -43,7 +43,7 @@ int main() {
   /*
    * 1. Simulator creation
    * We first create a simulator. To customize the simulator itself, follow the
-   * simulation setup guide in docs/SimulationSetup.md and the blocking tutorial
+   * simulation setup guide in docs/CoreConcepts.md and the blocking tutorial
    * for system-configuration examples.
    */
   auto simulator = elastica::make_simulator<>(simulator_config);
@@ -176,7 +176,7 @@ int main() {
    * Many more operations are possible on these arrays, see the documentation
    * and API of blaze library. In our experience, we rarely need to use
    * them---most geometry and algebra kernels are provided by \elastica itself.
-   * For more examples, see docs/Examples.md and docs/Tutorials.md.
+   * For more examples, see docs/Examples.md and docs/Quickstart.md.
    */
 
   /*
@@ -269,7 +269,7 @@ int main() {
    * To see a list of all tags supported by the CosseratRod, please consult
    * its API documentation.
    * To see how these rod-access patterns fit into a broader setup flow, see
-   * docs/Tutorials.md and docs/SimulationSetup.md.
+   * docs/Quickstart.md and docs/CoreConcepts.md.
    */
 
   return 0;

@@ -8,7 +8,7 @@
 //==============================================================================
 // You can compile and run the tutorial using:
 // g++ tutorial_rod_construction.cpp -g -I <path/to/elastica.hpp> -L
-// <path/to/libElastica.so> -lElastica -o tutorial_rod_construction -std=c++14
+// <path/to/libElastica.so> -lElastica -o tutorial_rod_construction -std=c++20
 // LD_LIBRARY_PATH=<path/to/libElastica.so>  // for linux
 // DYLD_LIBRARY_PATH=<path/to/libElastica.so>  // for osx
 // ./tutorial_rod_construction
@@ -40,7 +40,7 @@ int main() {
       ec::DefaultParallelConfiguration{});
 
   // 1. We first create a simulator. For the broader setup flow, see
-  // docs/SimulationSetup.md and docs/Tutorials.md.
+  // docs/CoreConcepts.md and docs/Quickstart.md.
   auto simulator = elastica::make_simulator<>(simulator_config);
 
   /* We will now showcase ways of creating a new CosseratRod using our simulator
@@ -195,7 +195,7 @@ int main() {
    * consult the documentation of CosseratRod.
    *
    * For the broader walkthrough around initialization and case-study setup,
-   * see docs/Tutorials.md.
+   * see docs/Quickstart.md.
    */
   auto advanced_initializer =
       elastica::cosserat_rod::initialize_cosserat_rod<CosseratRod>(

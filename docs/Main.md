@@ -14,6 +14,7 @@
 # Getting started {#getting_started_sec}
 
 For build and installation guidance, start with the \ref installation page.
+For a first runnable simulation, continue with the \ref quickstart_page "Quickstart".
 
 # Learn the codebase {#learn_sec}
 

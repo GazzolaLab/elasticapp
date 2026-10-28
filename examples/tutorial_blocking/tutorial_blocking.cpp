@@ -9,7 +9,7 @@
 //==============================================================================
 // You can compile and run the tutorial using:
 // g++ tutorial_blocking.cpp -g -I <path/to/elastica.hpp> -L
-// <path/to/libElastica.so> -lElastica -o tutorial_blocking -std=c++14
+// <path/to/libElastica.so> -lElastica -o tutorial_blocking -std=c++20
 // LD_LIBRARY_PATH=<path/to/libElastica.so>  // for linux
 // DYLD_LIBRARY_PATH=<path/to/libElastica.so>  // for osx
 // ./tutorial_blocking
@@ -85,7 +85,7 @@ int main() {
    * purposes of this tutorial. Refer to their documentation for more details.
    *
    * Customizations for other modules are possible; see docs/CoreConcepts.md,
-   * docs/Tutorials.md, and docs/SimulationSetup.md for the surrounding setup
+   * docs/Quickstart.md, and docs/CoreConcepts.md for the surrounding setup
    * flow.
    */
   auto simulator_config = ec::make_simulator_configuration(
