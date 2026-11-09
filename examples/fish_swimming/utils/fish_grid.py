@@ -61,10 +61,10 @@ class FishSurfaceForcingGrid(ImmersedBodyForcingGrid):
         # If there are too few (< 3), set it to 1 point at element center
         for i in range(len(self.surface_grid_points)):
             if self.surface_grid_points[i] % 2 == 1:
-                self.surface_grid_points += 1
+                self.surface_grid_points[i] += 1
 
             if self.surface_grid_points[i] < 3:
-                self.surface_grid_points = 1
+                self.surface_grid_points[i] = 1
 
         num_lag_nodes = self.surface_grid_points.sum()
         super().__init__(grid_dim, num_lag_nodes)
