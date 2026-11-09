@@ -1,3 +1,7 @@
+from pathlib import Path
+from time import time
+
+import click
 import numpy as np
 
 import sopht.simulator as sps
@@ -28,13 +32,13 @@ def run_fish_swimming(
     grid_dim = 3
     rho_f = 1.0
     base_length = 1.0
-    x_range, y_range, z_range = (3.5, 1.0, 0.8)
+    x_range, y_range, z_range = (4.0, 1.0, 0.5)
     dx = x_range / grid_size_x
     grid_size_y = int(np.ceil(y_range / dx))
     grid_size_z = int(np.ceil(z_range / dx))
 
     # ================ Fish parameters ================
-    head_position = Matrix(np.array([[2.3, 0.5, 0.4]], dtype=np.float64).T)
+    head_position = Matrix(np.array([[2.6, 0.5, 0.25]], dtype=np.float64).T)
     period = 1.0
     vel_scale = base_length / period
     rho_s = mass_ratio * rho_f
@@ -109,9 +113,21 @@ def run_fish_swimming(
     data_timer = 0.0
     rod_dt = cs.current_dt()
 
+    flow_time = 0.0
+    io_time = 0.0
+    fsi_time = 0.0
+    rod_time = 0.0
+
+
+    print(
+        f"{'Progress (time/final_time)':<26}  {'flow_time':>10}  {'fsi_time':>10}  "
+        f"{'rod_time':>10}  {'io_time':>10}  {'grid error':>12}"
+    )
+
     while flow_sim.time < final_time:
-        print(f"{flow_sim.time / final_time * 100:.2f}%", end="\r")
         # Save data
+
+        a = time()
         if save_data and (data_timer == 0.0 or data_timer > data_timer_limit):
             data_timer = 0.0
             flow_data_manager.write_to_file(
@@ -130,6 +146,13 @@ def run_fish_swimming(
                 position=flow_interaction.forcing_grid.position_field,
                 velocity=flow_interaction.forcing_grid.velocity_field,
             )
+            grid_error = flow_interaction.get_grid_deviation_error_l2_norm()
+            progress = f"{flow_sim.time:.4f}/{final_time:.4f}"
+            print(
+                f"{progress:<26}  {flow_time:>9.2f}s  {fsi_time:>9.2f}s  "
+                f"{rod_time:>9.2f}s  {io_time:>9.2f}s  {grid_error:>12.4e}"
+            )
+        io_time += time() - a
 
         # Compute time steps
         flow_dt = min(flow_sim.compute_stable_timestep(dt_prefac=0.25), rod_dt * 20)
@@ -138,6 +161,7 @@ def run_fish_swimming(
 
         # Rod + IBM steps
         for _ in range(rod_time_steps):
+            a = time()
             flow_interaction.compute_flow_forces_and_torques()
             flow_interaction.time_step(dt=local_rod_dt)
 
@@ -145,34 +169,53 @@ def run_fish_swimming(
             flow_forces[...] = flow_interaction.body_flow_forces
             flow_torques[...] = flow_interaction.body_flow_torques
 
+            fsi_time += time() - a
+
+            a = time()
             cs.step_with(dt=local_rod_dt)
+            rod_time += time() - a
 
         # Update IBM grid
+        a = time()
         flow_interaction()
+        fsi_time += time() - a
 
         # Flow step
+        a = time()
         flow_sim.time_step(dt=flow_dt)
+        flow_time += time() - a
 
         # Update data timer
         data_timer += flow_dt
 
 
-if __name__ == "__main__":
-    import logging
-    logging.basicConfig(level=logging.INFO)
+@click.command()
+@click.option("--final-time", "-t", type=float, default=1.0)
+@click.option("--grid-size", "-n", type=int, default=96)
+@click.option("--num-threads", "-j", type=int, default=1)
+@click.option("--out-dir", "-o", type=str, default="fish_data")
+def main(final_time: float, grid_size: int, num_threads: int, out_dir: str):
+    out_dir = Path(out_dir).resolve()
+    out_dir.mkdir(parents=True, exist_ok="True")
 
-    nx = 96
-    n_elements = nx // 4
-    n_max = n_elements // 4
+    n_elements = grid_size // 4
+    n_max = n_elements // 3
     run_fish_swimming(
-        non_dim_final_time=0.06,
+        non_dim_final_time=final_time,
         n_elem=n_elements,
-        grid_size_x=nx,
+        grid_size_x=grid_size,
         surface_grid_density_for_largest_element=n_max,
+        flow_num_threads=num_threads,
         slenderness_ratio=12.500535121608523,
         mass_ratio=1.0,
         non_dim_bending_stiffness=0.565414058870102,
         actuation_reynolds_number=7142.857142857143,
         save_data=True,
-        data_dir="fish_swimming_data",
+        data_dir=out_dir,
     )
+
+if __name__ == "__main__":
+    import logging
+    logging.basicConfig(level=logging.INFO)
+
+    main()
