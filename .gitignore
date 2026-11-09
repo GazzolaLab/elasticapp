@@ -30,6 +30,15 @@ compile_commands.json
 *.out
 *.bak
 
+# Caches
+.cache
+.ruff_cache/
+.mypy_cache/
+__pycache__/
+
+# Virtual environments
+.venv
+
 # Python related files
 *.pyc
 .ipynb_checkpoints
@@ -37,3 +46,5 @@ compile_commands.json
 # Other files
 # TODO.org
 *.zip
+
+
