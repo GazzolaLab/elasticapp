@@ -39,7 +39,9 @@ class FishSurfaceForcingGrid(ImmersedBodyForcingGrid):
 
         # Surface grid density at the arm maximum radius
         self.width = np.asarray(cosserat_rod.semi_minor_axis)
-        self.surface_grid_density_for_largest_element = surface_grid_density_for_largest_element
+        self.surface_grid_density_for_largest_element = (
+            surface_grid_density_for_largest_element
+        )
 
         # area = 4*np.pi * self.width * self.height
         # self.surface_grid_points = np.rint(area / np.max(area) * surface_grid_density_for_largest_element).astype(int)
@@ -55,9 +57,15 @@ class FishSurfaceForcingGrid(ImmersedBodyForcingGrid):
             * surface_grid_density_for_largest_element
         ).astype(int)
 
-        # If there are less than 1 point then set it equal to 1 since we will place
-        # it on the element center.
-        self.surface_grid_points[np.where(self.surface_grid_points < 3)[0]] = 1
+        # Make sure there are even numbers of grid points on each circumference
+        # If there are too few (< 3), set it to 1 point at element center
+        for i in range(len(self.surface_grid_points)):
+            if self.surface_grid_points[i] % 2 == 1:
+                self.surface_grid_points += 1
+
+            if self.surface_grid_points[i] < 3:
+                self.surface_grid_points = 1
+
         num_lag_nodes = self.surface_grid_points.sum()
         super().__init__(grid_dim, num_lag_nodes)
         self.n_elements = len(self.width)
@@ -65,11 +73,16 @@ class FishSurfaceForcingGrid(ImmersedBodyForcingGrid):
         self.surface_point_rotation_angle_list = []
         for i in range(self.n_elements):
             if self.surface_grid_points[i] > 1:
-                # If there are more than one point on the surface then compute
-                # the angle of these points. Surface points are on the local frame
-                self.surface_point_rotation_angle_list.append(
-                    np.linspace(0, 2 * np.pi, self.surface_grid_points[i], endpoint=False)
+                # Ensure balanced distribution of points
+                arr, dx = np.linspace(
+                    0,
+                    2 * np.pi,
+                    self.surface_grid_points[i],
+                    endpoint=False,
+                    retstep=True,
                 )
+                arr += 0.5 * dx
+                self.surface_point_rotation_angle_list.append(arr)
             else:
                 # If there is only one point, then that point is on the element
                 # center so pass empty array.
@@ -96,17 +109,21 @@ class FishSurfaceForcingGrid(ImmersedBodyForcingGrid):
         # Compute surface(grid) point positions on local frame for each element.
         # If there is one grid point then that point is on the element center
         # so just pass 0.0
-        for i, surface_point_rotation_angle in enumerate(self.surface_point_rotation_angle_list):
+        for i, surface_point_rotation_angle in enumerate(
+            self.surface_point_rotation_angle_list
+        ):
             if surface_point_rotation_angle.size == 0:
                 # This is true if there is only one point for element, and it is on element center.
-                self.local_frame_surface_points[:, self.start_idx[i] : self.end_idx[i]] = 0.0
+                self.local_frame_surface_points[
+                    :, self.start_idx[i] : self.end_idx[i]
+                ] = 0.0
             else:
-                self.local_frame_surface_points[0, self.start_idx[i] : self.end_idx[i]] = (
-                    self.height[i] * np.cos(surface_point_rotation_angle)
-                )
-                self.local_frame_surface_points[1, self.start_idx[i] : self.end_idx[i]] = (
-                    self.width[i] * np.sin(surface_point_rotation_angle)
-                )
+                self.local_frame_surface_points[
+                    0, self.start_idx[i] : self.end_idx[i]
+                ] = self.height[i] * np.cos(surface_point_rotation_angle)
+                self.local_frame_surface_points[
+                    1, self.start_idx[i] : self.end_idx[i]
+                ] = self.width[i] * np.sin(surface_point_rotation_angle)
 
         # some caching stuff
         self.rod_director_collection_transpose = np.zeros_like(self.director_collection)
@@ -139,13 +156,15 @@ class FishSurfaceForcingGrid(ImmersedBodyForcingGrid):
 
         # Broadcast rod properties to the grid points.
         for i in range(self.n_elements):
-            self.grid_point_director_transpose[:, :, self.start_idx[i] : self.end_idx[i]] = (
-                self.rod_director_collection_transpose[:, :, i : i + 1]
+            self.grid_point_director_transpose[
+                :, :, self.start_idx[i] : self.end_idx[i]
+            ] = self.rod_director_collection_transpose[:, :, i : i + 1]
+            self.grid_point_dilatation[self.start_idx[i] : self.end_idx[i]] = (
+                self.dilatation[i]
             )
-            self.grid_point_dilatation[self.start_idx[i] : self.end_idx[i]] = self.dilatation[i]
-            self.position_field[:, self.start_idx[i] : self.end_idx[i]] = self.rod_element_position[
-                :, i : i + 1
-            ]
+            self.position_field[:, self.start_idx[i] : self.end_idx[i]] = (
+                self.rod_element_position[:, i : i + 1]
+            )
 
         # Compute the moment arm or distance from the element center
         # for each grid point.
@@ -174,9 +193,9 @@ class FishSurfaceForcingGrid(ImmersedBodyForcingGrid):
             self.grid_point_omega[:, self.start_idx[i] : self.end_idx[i]] = (
                 self.rod_element_global_frame_omega[:, i : i + 1]
             )
-            self.velocity_field[:, self.start_idx[i] : self.end_idx[i]] = self.rod_element_velocity[
-                :, i : i + 1
-            ]
+            self.velocity_field[:, self.start_idx[i] : self.end_idx[i]] = (
+                self.rod_element_velocity[:, i : i + 1]
+            )
 
         # v_elem + omega X moment_arm
         self.velocity_field += _batch_cross(self.grid_point_omega, self.moment_arm)
@@ -201,7 +220,9 @@ class FishSurfaceForcingGrid(ImmersedBodyForcingGrid):
 
         # negative sign due to Newtons third law
         # torque generated by all lagrangian points are
-        self.lag_grid_torque_field[...] = _batch_cross(self.moment_arm, -lag_grid_forcing_field)
+        self.lag_grid_torque_field[...] = _batch_cross(
+            self.moment_arm, -lag_grid_forcing_field
+        )
 
         # Update body torques
         # convert global to local frame
@@ -293,7 +314,9 @@ class MultiFishSurfaceForcingGrid(ImmersedBodyForcingGrid):
             sub_grid.transfer_forcing_from_grid_to_body(
                 body_flow_forces=body_flow_forces[:, start_node:end_node].view(),
                 body_flow_torques=body_flow_torques[:, start_elem:end_elem].view(),
-                lag_grid_forcing_field=lag_grid_forcing_field[:, start_lag:end_lag].view(),
+                lag_grid_forcing_field=lag_grid_forcing_field[
+                    :, start_lag:end_lag
+                ].view(),
             )
             start_elem = end_elem
             start_node = end_node
@@ -302,17 +325,20 @@ class MultiFishSurfaceForcingGrid(ImmersedBodyForcingGrid):
     def get_maximum_lagrangian_grid_spacing(self) -> float:
         max_spacing = 0.0
         for sub_grid in self.sub_grids:
-            max_spacing = max(max_spacing, sub_grid.get_maximum_lagrangian_grid_spacing())
+            max_spacing = max(
+                max_spacing, sub_grid.get_maximum_lagrangian_grid_spacing()
+            )
 
         return max_spacing
 
 
 class MultiFishForcingGrid(ImmersedBodyForcingGrid):
     """Immersed boundary forcing grid for multiple fish.
-    
-    This implementation uses C++ helper and is much more optimized than 
+
+    This implementation uses C++ helper and is much more optimized than
     MultiFishSurfaceForcingGrid.
     """
+
     def __init__(
         self,
         grid_dim: int,
